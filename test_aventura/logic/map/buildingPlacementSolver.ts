@@ -7,6 +7,11 @@
  */
 
 import {
+  DEFAULT_STRUCTURE_PX_SIZE,
+  MAX_PLACEMENT_SPIRAL_SEARCH_RADIUS,
+  MAX_BUILDABLE_ELEVATION
+} from '../../config/studioConstants.ts';
+import {
   KANTO_GRID_W,
   KANTO_GRID_H,
   KANTO_TILE_SIZE,
@@ -14,11 +19,6 @@ import {
   OCCUPANCY_FLAGS,
   type IKantoCarverWorldContext
 } from '../../types/map/kantoGridModel.ts';
-import {
-  DEFAULT_STRUCTURE_PX_SIZE,
-  MAX_PLACEMENT_SPIRAL_SEARCH_RADIUS,
-  MAX_BUILDABLE_ELEVATION
-} from '../../config/studioConstants.ts';
 
 export interface BuildingPlacementResult {
   readonly found: boolean;
@@ -26,6 +26,31 @@ export interface BuildingPlacementResult {
   readonly y: number;
   readonly tx: number;
   readonly ty: number;
+}
+
+export function hasBuildingBoxOverlap(
+  tx: number,
+  ty: number,
+  bw: number,
+  bh: number,
+  buildings: readonly {
+    readonly x: number;
+    readonly y: number;
+    readonly w?: number;
+    readonly h?: number;
+  }[]
+): boolean {
+  const T = KANTO_TILE_SIZE;
+  for (const eb of buildings) {
+    const ebx = Math.floor(eb.x / T);
+    const eby = Math.floor(eb.y / T);
+    const ebw = Math.ceil((eb.w ?? DEFAULT_STRUCTURE_PX_SIZE) / T);
+    const ebh = Math.ceil((eb.h ?? DEFAULT_STRUCTURE_PX_SIZE) / T);
+    if (tx < ebx + ebw + 1 && tx + bw + 1 > ebx && ty < eby + ebh + 1 && ty + bh + 1 > eby) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export function findValidBuildingPlacementSpot(
@@ -36,10 +61,10 @@ export function findValidBuildingPlacementSpot(
   heightPx: number
 ): BuildingPlacementResult {
   const T = KANTO_TILE_SIZE;
-  let sx = initialPxX;
-  let sy = initialPxY;
-  let bx = Math.floor(sx / T);
-  let by = Math.floor(sy / T);
+  const sx = initialPxX;
+  const sy = initialPxY;
+  const bx = Math.floor(sx / T);
+  const by = Math.floor(sy / T);
   const bw = Math.ceil(widthPx / T);
   const bh = Math.ceil(heightPx / T);
 
@@ -72,43 +97,42 @@ export function findValidBuildingPlacementSpot(
     }
 
     // Strict bounding-box overlap check with existing buildings (1-tile separation buffer)
-    for (const eb of gen.buildings) {
-      const ebx = Math.floor(eb.x / T);
-      const eby = Math.floor(eb.y / T);
-      const ebw = Math.ceil((eb.w ?? DEFAULT_STRUCTURE_PX_SIZE) / T);
-      const ebh = Math.ceil((eb.h ?? DEFAULT_STRUCTURE_PX_SIZE) / T);
-      if (tx < ebx + ebw + 1 && tx + bw + 1 > ebx && ty < eby + ebh + 1 && ty + bh + 1 > eby) {
-        return false;
-      }
+    if (hasBuildingBoxOverlap(tx, ty, bw, bh, gen.buildings)) {
+      return false;
     }
     return true;
   };
 
-  let found = false;
   if (isSpotValid(bx, by)) {
-    found = true;
-  } else {
-    // Spiral search up to configured radius
-    for (let r = 1; r <= MAX_PLACEMENT_SPIRAL_SEARCH_RADIUS && !found; r++) {
-      for (let dy = -r; dy <= r; dy++) {
-        for (let dx = -r; dx <= r; dx++) {
-          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
-          if (isSpotValid(bx + dx, by + dy)) {
-            bx += dx;
-            by += dy;
-            sx = bx * T;
-            sy = by * T;
-            found = true;
-            break;
-          }
+    return {
+      found: true,
+      x: sx,
+      y: sy,
+      tx: bx,
+      ty: by
+    };
+  }
+
+  // Spiral search up to configured radius
+  for (let r = 1; r <= MAX_PLACEMENT_SPIRAL_SEARCH_RADIUS; r++) {
+    for (let dy = -r; dy <= r; dy++) {
+      for (let dx = -r; dx <= r; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+        if (isSpotValid(bx + dx, by + dy)) {
+          return {
+            found: true,
+            x: (bx + dx) * T,
+            y: (by + dy) * T,
+            tx: bx + dx,
+            ty: by + dy
+          };
         }
-        if (found) break;
       }
     }
   }
 
   return {
-    found,
+    found: false,
     x: sx,
     y: sy,
     tx: bx,

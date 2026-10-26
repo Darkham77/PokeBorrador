@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import PokemonTypeTag from './PokemonTypeTag.vue';
+
+import { toPokemonType, type PokemonType } from '@/data/battle/types';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { ComponentPillSize } from '@/types/system/game';
-import { toPokemonType, type PokemonType } from '@/data/battle/types';
+
+import PokemonTypeTag from './PokemonTypeTag.vue';
 
 interface Props {
   pokemon: Partial<Pokemon>;

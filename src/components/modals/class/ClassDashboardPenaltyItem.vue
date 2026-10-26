@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { gsap } from 'gsap';
+import { computed } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
+
 import { CLASS_DASHBOARD_HOVER_DURATION_SEC } from './classSelectionTypes';
 
 const props = withDefaults(
@@ -16,7 +18,7 @@ const props = withDefaults(
 
 const tooltipText = computed(() => props.technicalPenalty || 'Información no disponible.');
 
-const onMouseEnter = (event: MouseEvent) => {
+const onMouseEnter = (event: MouseEvent): void => {
   const target = event.currentTarget as HTMLElement;
   gsap.to(target, {
     backgroundColor: 'rgba(30, 41, 59, 0.6)',
@@ -26,7 +28,7 @@ const onMouseEnter = (event: MouseEvent) => {
   });
 };
 
-const onMouseLeave = (event: MouseEvent) => {
+const onMouseLeave = (event: MouseEvent): void => {
   const target = event.currentTarget as HTMLElement;
   gsap.to(target, {
     backgroundColor: 'rgba(15, 23, 42, 0.4)',

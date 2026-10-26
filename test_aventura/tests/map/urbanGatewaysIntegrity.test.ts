@@ -13,9 +13,10 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import { generateSettlementLayout } from '../../logic/map/cityLayoutEngine.ts';
-import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
 
 describe('urbanGatewaysIntegrity (Error 3)', () => {

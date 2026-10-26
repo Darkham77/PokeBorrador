@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
 import {
   useHomeWidgetsCollapse,
   HOME_WIDGET_IDS,

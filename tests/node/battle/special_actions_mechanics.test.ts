@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vite-plus/test';
+
 import { SPECIAL_ACTIONS } from '@/logic/battle/actions/specialActions';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { BattleStages } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 function createMockPokemon(overrides: Partial<Pokemon> = {}): Pokemon {
   return {

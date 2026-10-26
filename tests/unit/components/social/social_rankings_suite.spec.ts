@@ -1,16 +1,17 @@
-/** @vitest-environment jsdom */
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount, flushPromises } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
+/** @vitest-environment jsdom */
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import SocialRankings from '@/components/social/SocialRankings.vue';
 import SocialRankingsPodium from '@/components/social/SocialRankingsPodium.vue';
 import SocialRankingsTheater from '@/components/social/SocialRankingsTheater.vue';
-import { useSocialStore } from '@/stores/social/social';
-import { useLivePvPStore } from '@/stores/livePvP';
-import { useModalStore } from '@/stores/modals';
 import { useAuthStore } from '@/stores/auth';
 import { useGameStore } from '@/stores/game';
+import { useLivePvPStore } from '@/stores/livePvP';
+import { useModalStore } from '@/stores/modals';
 import { usePvPStore } from '@/stores/pvp';
+import { useSocialStore } from '@/stores/social/social';
 import type { RankedPodiumWinner } from '@/types/battle/pvp';
 import type { BattleCode } from '@/types/battle/pvp';
 

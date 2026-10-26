@@ -1,11 +1,12 @@
-import type { BattleContext } from '@/types/battle/battleContext';
-import type { BattleState } from '@/types/battle/battle';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { MapRouteId } from '@/data/world/map-assets';
 import { getItemById, type ItemId } from '@/data/inventory/items';
-import { incrementRecordKey } from '@/logic/utils/mapUtils';
-import { calculateMoneyGain } from '../battleRewards.ts';
+import type { MapRouteId } from '@/data/world/map-assets';
 import { BUFF_DURATION_30_MIN_SEC } from '@/logic/constants/items';
+import { incrementRecordKey } from '@/logic/utils/mapUtils';
+import type { BattleState } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import { calculateMoneyGain } from '../battleRewards.ts';
 
 const RIVAL_DROP_PROB_MAX_PERCENT = 100;
 const RIVAL_DROP_PROB_MASTERBALL = 10;
@@ -24,7 +25,7 @@ const GYM_EXP_FACTOR_PER_LEVEL = 5;
 const TRAINER_EXP_FACTOR_PER_LEVEL = 2;
 const SECONDS_TO_MS_MULTIPLIER = 1000;
 
-export function handleRivalSpecialDrops(ctx: BattleContext, active: BattleState) {
+export function handleRivalSpecialDrops(ctx: BattleContext, active: BattleState): void {
   if (!active.isRival && active.trainerArchetype !== 'rival') return;
 
   const randRec = Math.random() * RIVAL_DROP_PROB_MAX_PERCENT;
@@ -137,7 +138,7 @@ export function processCurrencyAndTrainerExp(
   active: BattleState,
   combatants: Pokemon[],
   warMods: { moneyMult: number }
-) {
+): void {
   const isGymRematch = Boolean(
     active.isGym && active.gymId && ctx.gs.state.defeatedGyms.includes(active.gymId)
   );

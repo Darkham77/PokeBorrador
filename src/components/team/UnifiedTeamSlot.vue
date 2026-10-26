@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, onUnmounted, watch } from 'vue';
 import { gsap } from 'gsap';
-import { Z_LAYERS } from '@/logic/constants/visuals';
-import PokemonDisplayCard from '@/components/pokemon/PokemonDisplayCard.vue';
+import { computed, ref, onUnmounted, watch } from 'vue';
 
+import PokemonDisplayCard from '@/components/pokemon/PokemonDisplayCard.vue';
+import { Z_LAYERS } from '@/logic/constants/visuals';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 interface Props {
@@ -81,8 +81,8 @@ const initialMaxScroll = ref(0);
 
 // ── AUTO-SCROLL LOOP ──────────────────────────────────────────────────────────
 
-function startAutoScrollLoop() {
-  function step() {
+function startAutoScrollLoop(): void {
+  function step(): void {
     if (!isDraggingCard.value || !scrollContainerRef.value) return;
     const container = scrollContainerRef.value;
     const rect = container.getBoundingClientRect();
@@ -124,7 +124,7 @@ function startAutoScrollLoop() {
   autoScrollRaf = requestAnimationFrame(step);
 }
 
-function stopAutoScrollLoop() {
+function stopAutoScrollLoop(): void {
   if (autoScrollRaf !== null) {
     cancelAnimationFrame(autoScrollRaf);
     autoScrollRaf = null;
@@ -140,7 +140,7 @@ const containerBottom = ref<number>(UNBOUNDED_COORDINATE);
 
 // ── UNIFIED POINTER DRAG ENGINE ──────────────────────────────────────────────
 
-function handlePointerDown(e: PointerEvent) {
+function handlePointerDown(e: PointerEvent): void {
   if (isEmpty.value) return;
   const targetEl = e.target as HTMLElement | null;
   if (
@@ -185,12 +185,12 @@ function handlePointerDown(e: PointerEvent) {
     containerBottom.value = viewportTarget.bottom - 4;
   }
 
-  window.addEventListener('pointermove', onWindowPointerMove, { passive: false });
-  window.addEventListener('pointerup', onWindowPointerUp);
-  window.addEventListener('pointercancel', onWindowPointerCancel);
+  globalThis.addEventListener('pointermove', onWindowPointerMove, { passive: false });
+  globalThis.addEventListener('pointerup', onWindowPointerUp);
+  globalThis.addEventListener('pointercancel', onWindowPointerCancel);
 }
 
-function onWindowPointerMove(e: PointerEvent) {
+function onWindowPointerMove(e: PointerEvent): void {
   if (activePointerId !== null && e.pointerId !== activePointerId) return;
   currentClientY.value = e.clientY;
   const dx = e.clientX - dragStartX.value;
@@ -225,7 +225,7 @@ function onWindowPointerMove(e: PointerEvent) {
     const target = document.elementFromPoint(e.clientX, e.clientY);
     const slot = target?.closest('.team-slot') as HTMLElement | null;
     if (slot && slot.dataset.index !== undefined) {
-      const targetIndex = parseInt(slot.dataset.index);
+      const targetIndex = parseInt(slot.dataset.index, 10);
       lastOverIndex.value = targetIndex;
       emit('drag-over', targetIndex);
     } else {
@@ -235,7 +235,7 @@ function onWindowPointerMove(e: PointerEvent) {
   }
 }
 
-function onWindowPointerUp(e: PointerEvent) {
+function onWindowPointerUp(e: PointerEvent): void {
   if (activePointerId !== null && e.pointerId !== activePointerId) return;
   cleanUpPointerListeners();
   if (isDraggingCard.value) {
@@ -243,7 +243,7 @@ function onWindowPointerUp(e: PointerEvent) {
     const target = document.elementFromPoint(e.clientX, e.clientY);
     const slot = target?.closest('.team-slot') as HTMLElement | null;
     if (slot && slot.dataset.index !== undefined) {
-      targetIndex = parseInt(slot.dataset.index);
+      targetIndex = parseInt(slot.dataset.index, 10);
     }
 
     if (targetIndex === null && lastOverIndex.value !== null) {
@@ -259,7 +259,7 @@ function onWindowPointerUp(e: PointerEvent) {
   resetDragState();
 }
 
-function onWindowPointerCancel() {
+function onWindowPointerCancel(): void {
   cleanUpPointerListeners();
   if (isDraggingCard.value) {
     emit('drag-end');
@@ -267,15 +267,15 @@ function onWindowPointerCancel() {
   resetDragState();
 }
 
-function cleanUpPointerListeners() {
-  window.removeEventListener('pointermove', onWindowPointerMove);
-  window.removeEventListener('pointerup', onWindowPointerUp);
-  window.removeEventListener('pointercancel', onWindowPointerCancel);
+function cleanUpPointerListeners(): void {
+  globalThis.removeEventListener('pointermove', onWindowPointerMove);
+  globalThis.removeEventListener('pointerup', onWindowPointerUp);
+  globalThis.removeEventListener('pointercancel', onWindowPointerCancel);
   stopAutoScrollLoop();
   activePointerId = null;
 }
 
-function resetDragState() {
+function resetDragState(): void {
   isDraggingCard.value = false;
   dragDeltaX.value = 0;
   dragDeltaY.value = 0;
@@ -283,7 +283,7 @@ function resetDragState() {
   lastOverIndex.value = null;
 }
 
-function handleSlotClick() {
+function handleSlotClick(): void {
   if (!hasMovedBeyondThreshold && !isDraggingCard.value) {
     emit('select', props.index);
   }
@@ -291,7 +291,7 @@ function handleSlotClick() {
 
 // ── GSAP HOVER HANDLERS ──────────────────────────────────────────────────────
 
-function handlePlaceholderEnter(e: MouseEvent) {
+function handlePlaceholderEnter(e: MouseEvent): void {
   const el = e.currentTarget as HTMLElement;
   if (!el) return;
   gsap.to(el, {
@@ -306,7 +306,7 @@ function handlePlaceholderEnter(e: MouseEvent) {
   });
 }
 
-function handlePlaceholderLeave(e: MouseEvent) {
+function handlePlaceholderLeave(e: MouseEvent): void {
   const el = e.currentTarget as HTMLElement;
   if (!el) return;
   gsap.to(el, {

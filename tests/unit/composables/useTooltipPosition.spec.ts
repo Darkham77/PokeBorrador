@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test';
 import { ref } from 'vue';
+
 import { useTooltipPosition } from '@/composables/ui/useTooltipPosition';
 
 describe('useTooltipPosition', () => {

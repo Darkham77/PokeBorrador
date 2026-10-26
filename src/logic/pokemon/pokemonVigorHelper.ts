@@ -4,13 +4,13 @@
  * Pokémon vigor initialization and accessor helpers.
  */
 
-import type { Pokemon, ObtainedMethod } from '@/types/pokemon/pokemon';
-import { toID } from '@/logic/utils/strings.ts';
 import {
   isLegendaryPokemonSpeciesId,
   isFossilPokemonSpeciesId,
   type PokemonSpeciesId
 } from '@/data/pokemon/pokedex';
+import { toID } from '@/logic/utils/strings.ts';
+import type { Pokemon, ObtainedMethod } from '@/types/pokemon/pokemon';
 
 /** Default maximum vigor value for standard non-legendary Pokémon. */
 export const DEFAULT_MAX_VIGOR = 10;

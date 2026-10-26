@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { MarketListingType } from '@/logic/economy/market';
-import type { InventoryItem } from './useMarketPublishInventory.ts';
 import BoxPokemonCard from '@/components/box/BoxPokemonCard.vue';
+import type { MarketListingType } from '@/logic/economy/market';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import type { InventoryItem } from './useMarketPublishInventory.ts';
 
 interface Props {
   selection: Pokemon | InventoryItem | null;

@@ -1,10 +1,12 @@
-import type { Directive } from 'vue';
 import gsap from 'gsap';
+import type { Directive } from 'vue';
 
 const INTERSECTION_THRESHOLD_RATIO = 0.05;
 const OPACITY_SPARK_MIN_LEVEL = 0.7;
 const SPARK_ANIM_DURATION_SEC = 0.25;
 const WATER_FLYING_BOB_OFFSET_PX = -2;
+const ADMIN_BG_POS_TARGET_PERCENT = 200;
+const ADMIN_ANIM_DURATION_SEC = 3;
 
 // Map to keep track of animations for cleanup
 const activeAnimations = new Map<HTMLElement, gsap.core.Tween | gsap.core.Timeline>();
@@ -46,7 +48,7 @@ export const gsapNick: Directive = {
   }
 };
 
-function cleanupAnimation(el: HTMLElement) {
+function cleanupAnimation(el: HTMLElement): void {
   observer.unobserve(el);
   const anim = activeAnimations.get(el);
   if (anim) {
@@ -57,12 +59,8 @@ function cleanupAnimation(el: HTMLElement) {
   gsap.set(el, { clearProps: 'textShadow,transform,y,opacity,backgroundPosition' });
 }
 
-const INLINE_BLOCK_STYLES_SET: ReadonlySet<string> = new Set([
-  'water',
-  'flying',
-  'psychic',
-  'admin'
-]); // runtime-set: Fast O(1) membership lookup set
+const INLINE_BLOCK_STYLE_VALUES = ['water', 'flying', 'psychic', 'admin'] as const;
+const INLINE_BLOCK_STYLES_SET: ReadonlySet<string> = new Set<string>(INLINE_BLOCK_STYLE_VALUES);
 
 function createElementalAnimation(el: HTMLElement, style: string): gsap.core.Tween | null {
   switch (style) {
@@ -237,19 +235,24 @@ function createClassFactionAnimation(el: HTMLElement, style: string): gsap.core.
           ease: 'steps(1)'
         }
       );
-    case 'admin':
-      // shimmer-ok: Text gradient clip requires backgroundPosition animation
-      return gsap.fromTo(
-        el,
-        { backgroundPosition: '0% center' },
-        { backgroundPosition: '200% center', duration: 3, repeat: -1, ease: 'none' }
-      );
+    case 'admin': {
+      const state = { pos: 0 };
+      return gsap.to(state, {
+        pos: ADMIN_BG_POS_TARGET_PERCENT,
+        duration: ADMIN_ANIM_DURATION_SEC,
+        repeat: -1,
+        ease: 'none',
+        onUpdate: () => {
+          el.style.backgroundPosition = `${state.pos}% center`;
+        }
+      });
+    }
     default:
       return null;
   }
 }
 
-function applyAnimation(el: HTMLElement, styleClass: unknown) {
+function applyAnimation(el: HTMLElement, styleClass: unknown): void {
   if (typeof styleClass !== 'string' || !styleClass.trim()) return;
 
   const cleanStyle = styleClass

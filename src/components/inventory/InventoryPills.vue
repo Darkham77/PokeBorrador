@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, nextTick, watch, useTemplateRef } from 'vue';
 import { useResizeObserver } from '@vueuse/core';
-import { useGameStore } from '@/stores/game';
-import { useModalStore } from '@/stores/modals';
+import { computed, onMounted, nextTick, watch, useTemplateRef } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 import { formatCurrency } from '@/logic/utils/formatters';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
 
 const _gameStore = useGameStore();
 const modalStore = useModalStore();
@@ -26,7 +27,7 @@ const DEFAULT_PILL_FONT_SIZE_PX = 14;
 /**
  * Dynamically adjusts font size to fit container width without overflowing.
  */
-const fitText = async (el: HTMLElement | null, baseSize: number) => {
+const fitText = async (el: HTMLElement | null, baseSize: number): Promise<void> => {
   if (!el) return;
   await nextTick();
 
@@ -47,10 +48,10 @@ const fitText = async (el: HTMLElement | null, baseSize: number) => {
   }
 };
 
-const fitAllPills = () => {
-  void fitText(moneyRef.value, DEFAULT_PILL_FONT_SIZE_PX);
-  void fitText(bcRef.value, DEFAULT_PILL_FONT_SIZE_PX);
-  void fitText(warRef.value, DEFAULT_PILL_FONT_SIZE_PX);
+const fitAllPills = (): void => {
+  fitText(moneyRef.value, DEFAULT_PILL_FONT_SIZE_PX);
+  fitText(bcRef.value, DEFAULT_PILL_FONT_SIZE_PX);
+  fitText(warRef.value, DEFAULT_PILL_FONT_SIZE_PX);
 };
 
 // Resize observer (mobile resize / orientation)

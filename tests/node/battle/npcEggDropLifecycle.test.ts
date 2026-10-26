@@ -1,16 +1,17 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useGameStore } from '@/stores/game';
-import { handleNpcBabyEggReward } from '@/logic/battle/rewards/npcEggRewardsHandler';
-import { formatBattleLog } from '@/logic/battle/battleLogger';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { NPC_BABY_POKEMON_POOL, NPC_EGG_TINT } from '@/logic/constants/gameplay';
-import { useBreedingActions } from '@/stores/game/actions/breedingActions';
-import { serializeState } from '@/logic/auth/saveSerializer';
-import { saveDataSchema } from '@/logic/validation/schemas';
 import * as v from 'valibot';
-import type { BattleContext } from '@/types/battle/battleContext';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
+import { serializeState } from '@/logic/auth/saveSerializer';
+import { formatBattleLog } from '@/logic/battle/battleLogger';
+import { handleNpcBabyEggReward } from '@/logic/battle/rewards/npcEggRewardsHandler';
+import { NPC_BABY_POKEMON_POOL, NPC_EGG_TINT } from '@/logic/constants/gameplay';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { saveDataSchema } from '@/logic/validation/schemas';
+import { useGameStore } from '@/stores/game';
+import { useBreedingActions } from '@/stores/game/actions/breedingActions';
 import type { BattleState } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('NPC Baby Egg Reward Lifecycle & Daycare Separation', () => {

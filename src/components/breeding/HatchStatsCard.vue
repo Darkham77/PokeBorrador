@@ -1,15 +1,15 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+
 /**
  * HatchStatsCard.vue
  * Premium stats card for hatched Pokémon.
  */
 import PVTooltip from '@/components/common/PVTooltip.vue';
 import { getNatureInfo } from '@/data/battle/natures';
+import { getPokemonTier } from '@/logic/pokemon/tierEngine';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-
-import { getPokemonTier } from '@/logic/pokemon/tierEngine';
-import { computed } from 'vue';
 
 interface Props {
   pokemon: Pokemon;
@@ -19,13 +19,13 @@ const props = defineProps<Props>();
 
 const tierInfo = computed(() => getPokemonTier(props.pokemon));
 
-const getAbilityDesc = (ability: string) => {
+const getAbilityDesc = (ability: string): string => {
   if (!ability) return 'Habilidad especial de este Pokémon.';
   const data = pokemonDataProvider.getAbilityData(ability);
   return data ? data.desc : 'Habilidad especial de este Pokémon.';
 };
 
-const getAbilityName = (ability: string) => {
+const getAbilityName = (ability: string): string => {
   if (!ability) return 'Común';
   const data = pokemonDataProvider.getAbilityData(ability);
   return data ? data.name : ability;

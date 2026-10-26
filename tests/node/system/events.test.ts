@@ -6,8 +6,9 @@
  * Migrated from tests/unit/events.spec.ts
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
 
 // Use relative path since Node native doesn't resolve aliases by default without loaders
 import {

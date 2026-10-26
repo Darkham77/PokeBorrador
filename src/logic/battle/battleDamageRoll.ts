@@ -1,10 +1,11 @@
+import { KALOS_GENERATION_NUM, UNOVA_GENERATION_NUM } from '@/logic/constants/gameplay';
+
 import type {
   PurePokemon,
   PureMove,
   PureBattleStages,
   PureDamageResult
 } from './battleMathTypes.ts';
-import { KALOS_GENERATION_NUM, UNOVA_GENERATION_NUM } from '@/logic/constants/gameplay';
 
 const CRIT_ROLL_DENOMINATOR_GEN6_BASE = 24 as const;
 const CRIT_ROLL_DENOMINATOR_GEN5_BASE = 16 as const;
@@ -36,7 +37,7 @@ export function calculateCritOutcome(
     const rates = [1 / CRIT_ROLL_DENOMINATOR_GEN5_BASE, 1 / 8, 1 / 4, 1 / 3, 1];
     critRate = rates[Math.min(critStage, 4)] ?? 1 / CRIT_ROLL_DENOMINATOR_GEN5_BASE;
   } else {
-    critRate = Math.min(1, (1 / CRIT_ROLL_DENOMINATOR_GEN5_BASE) * Math.pow(2, critStage));
+    critRate = Math.min(1, (1 / CRIT_ROLL_DENOMINATOR_GEN5_BASE) * 2 ** critStage);
   }
 
   let isCrit = forceCrit !== undefined ? forceCrit : Math.random() < critRate;

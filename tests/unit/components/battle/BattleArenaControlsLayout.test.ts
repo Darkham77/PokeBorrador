@@ -1,7 +1,8 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import BattleArenaControls from '@/components/battle/BattleArenaControls.vue';
 import { useBattleStore } from '@/stores/battle/battle';
 

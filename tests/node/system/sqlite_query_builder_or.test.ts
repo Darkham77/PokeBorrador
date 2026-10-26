@@ -1,8 +1,10 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert';
 import { DatabaseSync } from 'node:sqlite';
-import { SQLiteQueryBuilder } from '../../../src/logic/db/sqliteQueryBuilder.ts';
+
+import { describe, it } from 'vite-plus/test';
+
 import type { SQLiteDatabase, SQLiteResult } from '../../../src/logic/db/sqliteEngine.ts';
+import { SQLiteQueryBuilder } from '../../../src/logic/db/sqliteQueryBuilder.ts';
 
 describe('SQLiteQueryBuilder .or() filter clause parsing & query resolution', () => {
   it('should correctly query chat messages with simple OR syntax', async () => {

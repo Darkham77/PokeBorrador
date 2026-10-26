@@ -4,9 +4,11 @@
  * Renders an isolated particle overlay group for primary, secondary, tactical, or field status effects.
  */
 import { computed } from 'vue';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
 import { resolveEffectSettings } from '@/data/battle/fx-configs';
 import { Z_LAYERS } from '@/logic/constants/visuals';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
 import type { FXData, FXCategoryKind } from './statusParticleHelpers';
 
 const props = withDefaults(

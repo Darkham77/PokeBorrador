@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import { useGameStore } from '@/stores/game';
 import { useModalStore } from '@/stores/modals';
 import type { PokemonEgg } from '@/types/pokemon/pokemon';
+
 import IncubatingEggCard from './IncubatingEggCard.vue';
 
 const gameStore = useGameStore();
@@ -12,7 +14,7 @@ const eggs = computed<PokemonEgg[]>(() => gameStore.state.eggs || []);
 const regularEggs = computed(() => eggs.value.filter((e) => !e.isNpc));
 const npcEggs = computed(() => eggs.value.filter((e) => e.isNpc));
 
-const hatchEgg = (egg: PokemonEgg) => {
+const hatchEgg = (egg: PokemonEgg): void => {
   modalStore.open('HatchAnimation', { egg });
 };
 </script>

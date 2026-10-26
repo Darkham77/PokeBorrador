@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { gsap } from 'gsap';
 import { computed, watch } from 'vue';
-import { useInventoryStore } from '@/stores/inventory/inventory';
-import { useGameStore } from '@/stores/game';
+
+import BagItemCard from '@/components/inventory/BagItemCard.vue';
 import { useBagDataLoader } from '@/loaders/bagDataLoader';
 import { formatCurrency } from '@/logic/utils/formatters';
-import { gsap } from 'gsap';
-import BagItemCard from '@/components/inventory/BagItemCard.vue';
+import { useGameStore } from '@/stores/game';
+import { useInventoryStore } from '@/stores/inventory/inventory';
 import { ITEM_CATEGORIES, type BagMainTab } from '@/types/inventory/items';
 
 const inventoryStore = useInventoryStore();
@@ -63,20 +64,20 @@ const filteredBagItems = computed(() => {
   return inventoryStore.bagItems;
 });
 
-const onUseItem = (itemId: ItemId) => {
+const onUseItem = (itemId: ItemId): void => {
   inventoryStore.useItem(itemId);
 };
 
 // GSAP Interactions
-const onMainTabClick = (tabId: BagMainTab) => {
+const onMainTabClick = (tabId: BagMainTab): void => {
   activeMainTab.value = tabId;
 };
 
-const onTabClick = (catId: BagSubcategoryFilter) => {
+const onTabClick = (catId: BagSubcategoryFilter): void => {
   inventoryStore.activeCategory = catId;
 };
 
-const onItemClick = (itemId: ItemId, qty: number, event: MouseEvent) => {
+const onItemClick = (itemId: ItemId, qty: number, event: MouseEvent): void => {
   if (inventoryStore.bagSellMode) {
     inventoryStore.toggleBagSellItem(itemId, qty);
     const target = event.currentTarget as HTMLElement;
@@ -91,7 +92,7 @@ const onItemClick = (itemId: ItemId, qty: number, event: MouseEvent) => {
   }
 };
 
-const onSellModeMouseEnter = (event: MouseEvent) => {
+const onSellModeMouseEnter = (event: MouseEvent): void => {
   const target = event.currentTarget as HTMLElement;
   gsap.to(target, {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -101,7 +102,7 @@ const onSellModeMouseEnter = (event: MouseEvent) => {
   });
 };
 
-const onSellModeMouseLeave = (event: MouseEvent) => {
+const onSellModeMouseLeave = (event: MouseEvent): void => {
   const target = event.currentTarget as HTMLElement;
   gsap.to(target, {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -111,7 +112,7 @@ const onSellModeMouseLeave = (event: MouseEvent) => {
   });
 };
 
-const onMainTabMouseEnter = (event: MouseEvent) => {
+const onMainTabMouseEnter = (event: MouseEvent): void => {
   const target = event.currentTarget as HTMLElement;
   if (!target.classList.contains('active')) {
     gsap.to(target, {
@@ -122,7 +123,7 @@ const onMainTabMouseEnter = (event: MouseEvent) => {
   }
 };
 
-const onMainTabMouseLeave = (event: MouseEvent) => {
+const onMainTabMouseLeave = (event: MouseEvent): void => {
   const target = event.currentTarget as HTMLElement;
   if (!target.classList.contains('active')) {
     gsap.to(target, {

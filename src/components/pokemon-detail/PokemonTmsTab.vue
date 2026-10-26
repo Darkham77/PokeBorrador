@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants';
-import { GAME_TMS, TM_COMPAT_SETS } from '@/data/pokemon/pokedex';
-import { useUIStore } from '@/stores/ui';
+
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
 import { toPokemonType } from '@/data/battle/types';
+import { GAME_TMS, TM_COMPAT_SETS } from '@/data/pokemon/pokedex';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants';
+import { useUIStore } from '@/stores/ui';
 
 interface Props {
   speciesId: PokemonSpeciesId;

@@ -1,13 +1,14 @@
 import { DEFAULT_PLAYER_CLASS } from '@/data/player/playerClasses.ts';
+import { ONLINE_PRESENCE_WINDOW_MS } from '@/logic/constants/gameplay.ts';
+import { parseInstantSafe } from '@/logic/utils/timeUtils';
+import type { ProfileRow, GameSaveRow } from '@/types/system/database';
+import type { GameState } from '@/types/system/game';
 import {
   DEFAULT_TRAINER_NAME,
   DEFAULT_TRAINER_LEVEL,
   DEFAULT_GENDER
 } from '@/types/system/game.ts';
-import type { GameState } from '@/types/system/game';
-import type { ProfileRow, GameSaveRow } from '@/types/system/database';
-import { ONLINE_PRESENCE_WINDOW_MS } from '@/logic/constants/gameplay.ts';
-import { parseInstantSafe } from '@/logic/utils/timeUtils';
+
 import type { Friend, PendingRequest } from './social.ts';
 
 const SHORT_FALLBACK_SLICE_LENGTH = 8 as const;
@@ -47,7 +48,7 @@ function resolveSaveData(saveRow?: GameSaveRow): Partial<GameState> {
       return {};
     }
   }
-  return saveRow.save_data as Partial<GameState>;
+  return saveRow.save_data;
 }
 
 function resolveIsOnline(lastSeen?: Temporal.Instant | null): boolean {

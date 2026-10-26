@@ -6,8 +6,10 @@
  * generator to maintain strict unidirectional dependency flow and eliminate cycles.
  */
 
-import type { PlacedStructure } from './kantoTileEngineTypes.ts';
+import type { DisplayText } from '@francogp/auditor';
+
 import type { DynamicCatalogLoader } from '../../logic/map/kantoTileEngine.ts';
+import type { PlacedStructure } from './kantoTileEngineTypes.ts';
 
 export const KANTO_WORLD_WIDTH = 3600;
 export const KANTO_WORLD_HEIGHT = 4600;
@@ -47,38 +49,38 @@ export const OCCUPANCY_FLAGS = {
 } as const;
 
 export class OccupancyGrid {
-  readonly width: number;
-  readonly height: number;
-  readonly cells: Uint8Array[];
+  public readonly width: number;
+  public readonly height: number;
+  public readonly cells: Uint8Array[];
 
-  constructor(width: number, height: number) {
+  public constructor(width: number, height: number) {
     this.width = width;
     this.height = height;
     this.cells = Array.from({ length: height }, () => new Uint8Array(width));
   }
 
-  set(x: number, y: number, flag: number): void {
+  public set(x: number, y: number, flag: number): void {
     if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
       const row = this.cells[y];
       if (row) row[x] = (row[x] ?? 0) | flag;
     }
   }
 
-  clear(x: number, y: number, flag: number): void {
+  public clear(x: number, y: number, flag: number): void {
     if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
       const row = this.cells[y];
       if (row) row[x] = (row[x] ?? 0) & ~flag;
     }
   }
 
-  has(x: number, y: number, flag: number): boolean {
+  public has(x: number, y: number, flag: number): boolean {
     if (x < 0 || x >= this.width || y < 0 || y >= this.height) return false;
     const row = this.cells[y];
     if (!row) return false;
     return ((row[x] ?? 0) & flag) !== 0;
   }
 
-  reserveRect(x0: number, y0: number, w: number, h: number, flag: number): void {
+  public reserveRect(x0: number, y0: number, w: number, h: number, flag: number): void {
     for (let y = y0; y < y0 + h; y++) {
       for (let x = x0; x < x0 + w; x++) {
         this.set(x, y, flag);
@@ -86,7 +88,14 @@ export class OccupancyGrid {
     }
   }
 
-  reserveBuffer(x0: number, y0: number, w: number, h: number, buf: number, flag: number): void {
+  public reserveBuffer(
+    x0: number,
+    y0: number,
+    w: number,
+    h: number,
+    buf: number,
+    flag: number
+  ): void {
     for (let y = y0 - buf; y < y0 + h + buf; y++) {
       for (let x = x0 - buf; x < x0 + w + buf; x++) {
         this.set(x, y, flag);
@@ -94,7 +103,7 @@ export class OccupancyGrid {
     }
   }
 
-  clearAll(): void {
+  public clearAll(): void {
     for (const r of this.cells) {
       r.fill(0);
     }
@@ -102,9 +111,9 @@ export class OccupancyGrid {
 }
 
 export interface KantoNodeCoordinate {
-  readonly id?: string; // domain-ok: Open dynamic text or non-domain string payload
-  readonly name: string; // domain-ok: Open dynamic text or non-domain string payload
-  readonly type: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly id?: DisplayText;
+  readonly name: DisplayText;
+  readonly type: DisplayText;
   readonly x: number;
   readonly y: number;
 }

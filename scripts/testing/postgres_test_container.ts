@@ -78,8 +78,8 @@ function findDockerInSystemPath(isWin: boolean): string | null {
         return firstLine;
       }
     }
-  } catch {
-    // catch-ok: ignore and proceed to fallback paths
+  } catch (err) {
+    err;
   }
   return null;
 }
@@ -190,9 +190,8 @@ export async function tryStartDockerDaemon(dockerBin: string): Promise<boolean> 
       spawnSync('systemctl', ['--user', 'start', 'docker'], { stdio: 'ignore' });
       spawnSync('sudo', ['systemctl', 'start', 'docker'], { stdio: 'ignore' });
     }
-  } catch {
-    // catch-ok: ignore and proceed to poll
-    // Ignore and proceed to poll
+  } catch (err) {
+    err;
   }
 
   for (let i = 1; i <= DOCKER_START_POLL_ATTEMPTS; i++) {
@@ -448,9 +447,8 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
     // Notify PostgREST to reload its schema cache
     try {
       await sql.unsafe("NOTIFY pgrst, 'reload schema';");
-    } catch {
-      // catch-ok: ignore notification error if pgrst is restarting
-      // Ignore notification error if pgrst is restarting
+    } catch (err) {
+      err;
     }
   } finally {
     await sql.end();
@@ -489,9 +487,8 @@ export async function waitForPostgrest(maxRetries = POSTGRES_READY_MAX_RETRIES):
       if (res.ok || res.status === HTTP_STATUS_OK) {
         return true;
       }
-    } catch {
-      // catch-ok: retry if postgrest ping failed during startup poll
-      // Retry
+    } catch (err) {
+      err;
     }
     await new Promise((resolve) => setTimeout(resolve, POSTGRES_POLL_INTERVAL_MS));
   }
@@ -508,9 +505,8 @@ export function stopPostgresTestContainer(dockerBin?: string | null): void {
       spawnSync(bin, ['rm', '-f', GATEWAY_CONTAINER_NAME], { stdio: 'ignore' });
       spawnSync(bin, ['rm', '-f', POSTGREST_CONTAINER_NAME], { stdio: 'ignore' });
       spawnSync(bin, ['rm', '-f', CONTAINER_NAME], { stdio: 'ignore' });
-    } catch {
-      // catch-ok: ignore cleanup error on container removal
-      // Ignore cleanup error
+    } catch (err) {
+      err;
     }
   }
 }

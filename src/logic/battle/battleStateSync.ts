@@ -1,9 +1,10 @@
+import { RADIX_DECIMAL } from '@/logic/constants/gameplay.ts';
+import type { ShowdownPlayerRequest, BattleState } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { ShowdownPlayerRequest, BattleState } from '@/types/battle/battle';
-import { isMatchingUid } from './showdownUidMapper.ts';
+
 import { isBattleMinigame } from './battleMinigames.ts';
-import { RADIX_DECIMAL } from '@/logic/constants/gameplay.ts';
+import { isMatchingUid } from './showdownUidMapper.ts';
 
 const RECENT_BATTLE_LOGS_MAX_KEEP = 10;
 
@@ -138,7 +139,7 @@ function syncPlayerStateToGameState(active: BattleState, ctx: BattleContext): vo
   }
 }
 
-export function syncTeamHP(ctx: BattleContext) {
+export function syncTeamHP(ctx: BattleContext): void {
   const active = ctx.activeBattle.value;
   if (!active) return;
 
@@ -156,7 +157,7 @@ export function syncTeamHP(ctx: BattleContext) {
   syncPlayerStateToGameState(active, ctx);
 }
 
-export function syncAndPersist(ctx: BattleContext) {
+export function syncAndPersist(ctx: BattleContext): void {
   const active = ctx.activeBattle.value;
   if (!active) return;
 
@@ -166,7 +167,7 @@ export function syncAndPersist(ctx: BattleContext) {
   // 2. If battle is over or minigame, clear activeBattle and persist team
   if (active.over || isBattleMinigame(active)) {
     ctx.gs.state.activeBattle = null;
-    void ctx.gs.save(false);
+    ctx.gs.scheduleSave();
     return;
   }
 
@@ -178,5 +179,5 @@ export function syncAndPersist(ctx: BattleContext) {
     enemyStages: ctx.enemyStages.value,
     battleLogs: ctx.battleLogs.value.slice(-RECENT_BATTLE_LOGS_MAX_KEEP)
   };
-  void ctx.gs.save(false);
+  ctx.gs.scheduleSave();
 }

@@ -3,7 +3,8 @@
  * Logic for generating and validating Daycare Daily Missions.
  */
 
-import { POKEMON_DB, isPokemonDbSpeciesId } from '@/data/pokemon/pokemonDB';
+import { NATURE_DATA, NATURES } from '@/data/battle/natures';
+import { getItemById, type ItemId } from '@/data/inventory/items';
 import {
   TRAINER_TYPES,
   TRAINER_TYPE_KEYS,
@@ -11,10 +12,11 @@ import {
   type TrainerTypeKey
 } from '@/data/player/trainerTypes';
 import { requireNpcSpriteId, type NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
-import { getSpritesForArchetype, type NpcArchetype } from '@/logic/utils/npcSpriteRouter';
-import { generateNpcName } from '@/logic/utils/npcNameGenerator';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { POKEMON_DB, isPokemonDbSpeciesId } from '@/data/pokemon/pokemonDB';
+import { STAT_SHORT_NAMES_ES } from '@/logic/pokemon/statsMath';
+import { generateNpcName } from '@/logic/utils/npcNameGenerator';
+import { getSpritesForArchetype, type NpcArchetype } from '@/logic/utils/npcSpriteRouter';
 import type {
   DaycareMission,
   MissionRequirement,
@@ -22,9 +24,7 @@ import type {
   DaycareMissionDifficulty,
   DaycareMissionRequirementType
 } from '@/types/breeding/breeding';
-import { NATURE_DATA, NATURES } from '@/data/battle/natures';
-import { getItemById, type ItemId } from '@/data/inventory/items';
-import { STAT_SHORT_NAMES_ES } from '@/logic/pokemon/statsMath';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon';
 
 export type { DaycareMission, MissionRequirement, MissionReward };
@@ -321,9 +321,11 @@ function generateMissionReward(trainerLevel: number): MissionReward {
     }
   }
 
+  const defaultCandidate: RewardCandidate = { id: 'berrybronze', qty: rewardQty + 1 };
   const chosenReward =
-    activeCandidates[Math.floor(Math.random() * activeCandidates.length)] ||
-    (activeCandidates[0] as RewardCandidate);
+    activeCandidates[Math.floor(Math.random() * activeCandidates.length)] ??
+    activeCandidates[0] ??
+    defaultCandidate;
   const itemDef = getItemById(chosenReward.id);
 
   return {
@@ -346,7 +348,7 @@ function generateMissionNpcDialogue(
   const tKeys: readonly TrainerTypeKey[] = TRAINER_TYPE_KEYS.filter((k) => k in TRAINER_TYPES);
   const tKey = tKeys[Math.floor(Math.random() * tKeys.length)] || 'caza_bichos';
 
-  const archetypeSprites = getSpritesForArchetype(tKey as NpcArchetype);
+  const archetypeSprites = getSpritesForArchetype(tKey);
   const chosenSprite = archetypeSprites[Math.floor(Math.random() * archetypeSprites.length)];
   if (!chosenSprite) {
     throw new Error(

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useInventoryStore } from '@/stores/inventory/inventory';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 import SortControls from '@/components/common/SortControls.vue';
+import { useInventoryStore } from '@/stores/inventory/inventory';
 
 interface Props {
   multiSelectMode?: string | null;
@@ -29,7 +30,7 @@ const searchQuery = computed({
   }
 });
 
-const startMode = (mode: string) => {
+const startMode = (mode: string): void => {
   emit('update:multiSelectMode', mode);
 };
 </script>

@@ -8,14 +8,14 @@
  * from encroaching on playable structures and corridors.
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
-import type { POINode } from '../../types/map/poiTypes.ts';
-import type { WildernessOptions } from './wildernessVegetationEngine.ts';
 import {
   PARSE_INT_DECIMAL_RADIX,
   ROUTE_GATE_CORRIDOR_LENGTH,
   ROUTE_GATE_CORRIDOR_HALF_WIDTH
 } from '../../config/wildernessConfig.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
+import type { WildernessOptions } from './wildernessVegetationEngine.ts';
 
 const CLIFF_SAFETY_VERTICAL_RADIUS = 2 as const;
 const STAIR_CORRIDOR_NORTH_BUFFER = 2 as const;
@@ -81,6 +81,55 @@ function blockPoiLayoutElements(
   }
 }
 
+function markCliffSafetyBuffer(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  treeBlocked: boolean[][]
+): void {
+  for (let dy = -CLIFF_SAFETY_VERTICAL_RADIUS; dy <= CLIFF_SAFETY_VERTICAL_RADIUS; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      const ny = y + dy;
+      const nx = x + dx;
+      if (ny >= 0 && ny < height && nx >= 0 && nx < width) {
+        treeBlocked[ny]![nx] = true;
+      }
+    }
+  }
+}
+
+export interface StairCorridorCoord {
+  x: number;
+  y: number;
+}
+
+export interface StairBlockedGrids {
+  readonly treeBlocked: boolean[][];
+  readonly urbanBlocked: boolean[][];
+  readonly stairBlocked: boolean[][];
+}
+
+function markStairCorridorBuffer(
+  stair: StairCorridorCoord,
+  width: number,
+  height: number,
+  grids: StairBlockedGrids
+): void {
+  const { treeBlocked, urbanBlocked, stairBlocked } = grids;
+  for (let dy = -STAIR_CORRIDOR_NORTH_BUFFER; dy <= 3; dy++) {
+    for (let dx = -1; dx <= 2; dx++) {
+      const sy = stair.y + dy;
+      const sx = stair.x + dx;
+      if (sy >= 0 && sy < height && sx >= 0 && sx < width) {
+        treeBlocked[sy]![sx] = true;
+        urbanBlocked[sy]![sx] = true;
+        stairBlocked[sy]![sx] = true;
+      }
+    }
+  }
+}
+
 /**
  * Builds treeBlocked, urbanBlocked, and stairBlocked clearance matrices.
  */
@@ -119,15 +168,7 @@ export function buildWildernessOccupancyMasks(
       const isCliffEdge = mCell && mCell.role !== 'floor_center';
 
       if (isFoot || isCliffEdge) {
-        for (let dy = -CLIFF_SAFETY_VERTICAL_RADIUS; dy <= CLIFF_SAFETY_VERTICAL_RADIUS; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            const ny = y + dy;
-            const nx = x + dx;
-            if (ny >= 0 && ny < H && nx >= 0 && nx < W) {
-              treeBlocked[ny]![nx] = true;
-            }
-          }
-        }
+        markCliffSafetyBuffer(x, y, W, H, treeBlocked);
       }
     }
   }
@@ -212,17 +253,7 @@ export function buildWildernessOccupancyMasks(
   // 1.5 Mountain Stairs Corridors
   if (continent.placedStairs) {
     for (const stair of continent.placedStairs) {
-      for (let dy = -STAIR_CORRIDOR_NORTH_BUFFER; dy <= 3; dy++) {
-        for (let dx = -1; dx <= 2; dx++) {
-          const sy = stair.y + dy;
-          const sx = stair.x + dx;
-          if (sy >= 0 && sy < H && sx >= 0 && sx < W) {
-            treeBlocked[sy]![sx] = true;
-            urbanBlocked[sy]![sx] = true;
-            stairBlocked[sy]![sx] = true;
-          }
-        }
-      }
+      markStairCorridorBuffer(stair, W, H, { treeBlocked, urbanBlocked, stairBlocked });
     }
   }
 

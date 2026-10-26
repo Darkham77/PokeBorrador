@@ -1,20 +1,22 @@
 import { toValue } from 'vue';
+
+import { LUCKY_EGG_EXP_MULTIPLIER } from '@/logic/constants/gameplay.ts';
 import { gsapSleep } from '@/logic/utils/gsapHelpers';
-import { processExpGain } from './battleRewards.ts';
 import { getBattleRewardModifiers } from '@/logic/war/bonusEngine';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import type { BattleState } from '@/types/battle/battle.ts';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
-import type { BattleState } from '@/types/battle/battle.ts';
-import { processGymBattleRewards } from './rewards/gymRewardsHandler.ts';
-import { processCombatantExpAndEvs } from './rewards/combatantExpEvProcessor.ts';
+
+import { processExpGain } from './battleRewards.ts';
 import {
   handleRivalSpecialDrops,
   processCurrencyAndTrainerExp
 } from './rewards/classRewardsHandler.ts';
+import { processCombatantExpAndEvs } from './rewards/combatantExpEvProcessor.ts';
+import { processGymBattleRewards } from './rewards/gymRewardsHandler.ts';
 import { handleNpcBabyEggReward } from './rewards/npcEggRewardsHandler.ts';
-import { LUCKY_EGG_EXP_MULTIPLIER } from '@/logic/constants/gameplay.ts';
 
 const UI_QUEUE_POLL_INTERVAL_MS = 100;
 const EVOLUTION_MODAL_POLL_INTERVAL_MS = 100;
@@ -22,7 +24,7 @@ const EVOLUTION_MODAL_POLL_INTERVAL_MS = 100;
 export function registerRewardCombatant(
   active: BattleState | null,
   defeatedPokemon?: Pokemon | null
-) {
+): void {
   if (!active) return;
   if (!active._rewardCombatants) {
     active._rewardCombatants = [];
@@ -67,7 +69,10 @@ async function claimWarBattlePoints(
   }
 }
 
-function calculateExpMultipliers(ctx: BattleContext, warMods: { expMult: number }) {
+function calculateExpMultipliers(
+  ctx: BattleContext,
+  warMods: { expMult: number }
+): { totalExpMult: number; totalExpMultWithoutEvent: number; eventExpMultiplier: number } {
   const globalMults = toValue(ctx.eventStore?.globalMultipliers) as { exp?: number } | undefined;
   const eventExpMultiplier = globalMults?.exp || 1;
   let totalExpMult = warMods.expMult + (eventExpMultiplier - 1);
@@ -92,7 +97,7 @@ function syncActivePlayerPokemon(ctx: BattleContext, active: BattleState): void 
 /**
  * Calculates and distributes XP, money, EV, and item rewards at the end of a battle.
  */
-export async function calculateBattleRewards(ctx: BattleContext) {
+export async function calculateBattleRewards(ctx: BattleContext): Promise<void> {
   const active = ctx.activeBattle.value;
   if (!active || active.isPvP) return;
 
@@ -228,7 +233,7 @@ async function handleDebugLevelUp(
 /**
  * Simulates a standard experience reward in battle for testing purposes.
  */
-export async function awardDebugExp(ctx: BattleContext) {
+export async function awardDebugExp(ctx: BattleContext): Promise<void> {
   const active = ctx.activeBattle.value;
   if (!active || !active.player) return;
 

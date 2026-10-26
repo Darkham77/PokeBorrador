@@ -1,10 +1,12 @@
+import { setActivePinia, createPinia } from 'pinia';
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
+
+import { MODAL_REGISTRY, type ModalRegistryKey } from '@/logic/modals/registry';
+import { useBattleStore } from '@/stores/battle/battle';
 import { useModalStore } from '@/stores/modals';
 import { useUIStore } from '@/stores/ui';
-import { useBattleStore } from '@/stores/battle/battle';
-import { MODAL_REGISTRY, type ModalRegistryKey } from '@/logic/modals/registry';
+
 import { mockLocalStorage } from '../../helpers/debugSetup.ts';
 
 mockLocalStorage();

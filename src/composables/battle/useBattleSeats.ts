@@ -1,7 +1,9 @@
-import { ref } from 'vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { ref, type Ref } from 'vue';
+
 import type { ItemId } from '@/data/inventory/items';
 import type { BattleSeatSpecialState, BattleSeatId } from '@/types/battle/battle';
+import { isBattleSeatId } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export interface AnimSlotState {
   animState: BattleSeatSpecialState | null;
@@ -22,11 +24,26 @@ export interface SeatState {
 export type { BattleSeatId as BattleSeatKey };
 export type BattleSeatsMap = Record<BattleSeatId, SeatState>;
 
+export interface UseBattleSeatsReturn {
+  seats: Ref<BattleSeatsMap>;
+  resetSeats: () => void;
+  getSeatKey: (side: string, isIncoming?: boolean) => BattleSeatId;
+  getSeat: (side: string, isIncoming?: boolean) => SeatState;
+  getSeatProperty: <K extends keyof AnimSlotState>(
+    side: string,
+    pokemon: Pokemon | null | undefined,
+    prop: K,
+    fallback: AnimSlotState[K],
+    activePlayerUid?: string | null,
+    activeEnemyUid?: string | null
+  ) => AnimSlotState[K];
+}
+
 /**
  * Composable dedicated exclusively to managing and querying battle seats.
  * Adheres to the 4-seat architecture defined in the battle mechanics manual.
  */
-export function useBattleSeats() {
+export function useBattleSeats(): UseBattleSeatsReturn {
   const createDefaultSlot = (): AnimSlotState => ({
     animState: null,
     ballId: 'pokeball',
@@ -50,7 +67,7 @@ export function useBattleSeats() {
     seat4: createDefaultSeat()
   });
 
-  const resetSeats = () => {
+  const resetSeats = (): void => {
     seats.value.seat1 = createDefaultSeat();
     seats.value.seat2 = createDefaultSeat();
     seats.value.seat3 = createDefaultSeat();
@@ -62,7 +79,7 @@ export function useBattleSeats() {
     if (side === 'enemy') return 'seat2';
     if (side === 'ally') return 'seat3';
     if (side === 'enemy2') return 'seat4';
-    if (side === 'seat1' || side === 'seat2' || side === 'seat3' || side === 'seat4') return side;
+    if (isBattleSeatId(side)) return side;
     return 'seat1';
   };
 

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useGameStore } from '@/stores/game';
-import { usePvPStore } from '@/stores/pvp';
-import { useGymsStore } from '@/stores/gyms';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
 import type { GymId } from '@/data/world/gyms';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useGameStore } from '@/stores/game';
+import { useGymsStore } from '@/stores/gyms';
+import { usePvPStore } from '@/stores/pvp';
 
 interface ViteDebugBridge extends Record<string, unknown> {
   // open-record: Generic key-value data dictionary container
@@ -33,35 +34,35 @@ const debugWarCoins = ref(game.state.warCoins || 0);
 const currentForcedFaction = ref('none');
 const simDifficulty = ref('easy');
 
-const isDefeated = (gymId: GymId) => {
+const isDefeated = (gymId: GymId): boolean => {
   return (game.state.defeatedGyms || []).includes(gymId);
 };
 
-const simulateWin = (gymId: GymId) => {
+const simulateWin = (gymId: GymId): void => {
   getDebugBridge().winGym(gymId, simDifficulty.value);
 };
 
-const resetAllBadges = () => {
+const resetAllBadges = (): void => {
   getDebugBridge().resetBadges();
 };
 
-const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge;
+const getDebugBridge = (): ViteDebugBridge => globalThis.__VITE_DEBUG__ as ViteDebugBridge;
 
 // Call console commands directly (they handle securityCheck internally)
-const addMoney = () => {
+const addMoney = (): void => {
   const current = game.state.money;
   getDebugBridge().setMoney(current + debugMoney.value);
 };
-const setElo = () => getDebugBridge().setElo(debugElo.value);
-const setLevel = () => getDebugBridge().setLevel(debugLevel.value);
-const setBattleCoins = () => getDebugBridge().setBattleCoins(debugBattleCoins.value);
-const setWarCoins = () => getDebugBridge().setWarCoins(debugWarCoins.value);
-const forceDominance = (f: string) => {
+const setElo = (): void => getDebugBridge().setElo(debugElo.value);
+const setLevel = (): void => getDebugBridge().setLevel(debugLevel.value);
+const setBattleCoins = (): void => getDebugBridge().setBattleCoins(debugBattleCoins.value);
+const setWarCoins = (): void => getDebugBridge().setWarCoins(debugWarCoins.value);
+const forceDominance = (f: string): void => {
   getDebugBridge().setDominance(f);
   currentForcedFaction.value = f;
 };
 
-function setFaction(f: string) {
+function setFaction(f: string): void {
   getDebugBridge().setFaction(f);
 }
 </script>

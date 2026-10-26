@@ -10,19 +10,17 @@
  * 5. Active Dynamic Events (Shiny multipliers, rate boosts)
  */
 
-import { ACTIVE_GENERATION } from '@/data/system/constants';
-import { CAZABICHOS_STREAK_SHINY_STEP } from '@/logic/constants/gameplay';
 import type { AbilityId } from '@/data/battle/abilities';
-import type { Pokemon, PokemonGender, PokemonIVs } from '@/types/pokemon/pokemon';
 import type { NatureId } from '@/data/battle/natures';
-import { isPokemonSpeciesId, requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { PokemonType } from '@/data/battle/types';
 import type { ItemId } from '@/data/inventory/items';
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
-import type { DayPhase } from '@/logic/utils/timeUtils';
-import type { MapLocation, EncounterOptions } from '@/types/pokemon/encounters';
+import type { PlayerClassId } from '@/data/player/playerClasses';
+import { isPokemonSpeciesId, requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { ACTIVE_GENERATION } from '@/data/system/constants';
+import type { MapRouteId } from '@/data/world/map-assets';
+import { CAZABICHOS_STREAK_SHINY_STEP } from '@/logic/constants/gameplay';
 import type { Event as GameEvent } from '@/logic/events/eventEngine';
-import type { DominanceInfo } from '@/types/system/stores';
+import { getGlobalMultipliers } from '@/logic/events/eventEngine';
 import {
   getEffectiveLeaderAbility,
   resolveSynchronizeNature,
@@ -38,11 +36,12 @@ import {
   resolveHoneyGather,
   curePartyNaturalCure
 } from '@/logic/pokemon/pokemonFieldAbilities';
-import { getGlobalMultipliers } from '@/logic/events/eventEngine';
-
-import type { MapRouteId } from '@/data/world/map-assets';
-import type { PlayerClassId } from '@/data/player/playerClasses';
+import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import type { MapLocation, EncounterOptions } from '@/types/pokemon/encounters';
+import type { Pokemon, PokemonGender, PokemonIVs } from '@/types/pokemon/pokemon';
 import type { FactionId } from '@/types/system/game';
+import type { DominanceInfo } from '@/types/system/stores';
 
 const MAX_CAZABICHOS_IV_FLOOR = 20;
 const CAZABICHOS_IV_FLOOR_PER_STREAK = 5;
@@ -179,7 +178,7 @@ export function resolveFieldEncounterModifiers(
 
   // 6. Level Filtering (Intimidate / Keen Eye vs Pressure / Vital Spirit / Hustle)
   const forceMaxLevel = shouldForceMaxRouteLevel(leaderAbility, rand);
-  const shouldAvoidLowLevel = (wildLv: number) =>
+  const shouldAvoidLowLevel = (wildLv: number): boolean =>
     shouldAvoidLowLevelWild(leader, wildLv, gen, rand);
 
   const isDominant = Boolean(
@@ -340,7 +339,9 @@ export function resolveFieldBattleRewards(ctx: FieldBattleRewardContext): Resolv
   let moneyMult = 1.0;
   let expMult = 1.0;
 
-  const hasAmuletCoin = ctx.team?.some((p) => p != null && p.hp > 0 && p.heldItem === 'amuletcoin');
+  const hasAmuletCoin = ctx.team?.some(
+    (p) => p !== null && p !== undefined && p.hp > 0 && p.heldItem === 'amuletcoin'
+  );
   if (hasAmuletCoin) {
     moneyMult *= 2.0;
   }

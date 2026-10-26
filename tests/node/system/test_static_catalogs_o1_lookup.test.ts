@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vite-plus/test';
+
 import { SHOP_ITEMS, ITEMS_BY_ID, getItemById, isItemId } from '@/data/inventory/items';
-import { FIRE_RED_MAPS, MAPS_BY_ROUTE_ID, getMapLocationById } from '@/data/world/maps';
 import {
   isLegendaryPokemonSpeciesId,
   isBabyPokemonSpeciesId,
@@ -9,6 +9,7 @@ import {
   GAME_TMS_BY_ID
 } from '@/data/pokemon/pokedex';
 import { GYMS, GYMS_BY_ID, getGymById, isGymId } from '@/data/world/gyms';
+import { FIRE_RED_MAPS, MAPS_BY_ROUTE_ID, getMapLocationById } from '@/data/world/maps';
 
 describe('Static Catalogs O(1) Lookups & Domain Contracts', () => {
   describe('Items Catalog (ITEMS_BY_ID & getItemById)', () => {

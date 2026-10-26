@@ -1,13 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useWarStore } from '@/stores/war';
-import { useGameStore } from '@/stores/game';
-import { useAuthStore } from '@/stores/auth';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
+import type { MapRouteId } from '@/data/world/map-assets';
+import type { DBRouter } from '@/logic/db/dbRouter';
 import { getConflictZones, getGuardianData } from '@/logic/war/guardianEngine';
 import { getPreviousWeekId } from '@/logic/war/warEngine';
+import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { useWarStore } from '@/stores/war';
 import type { GameState } from '@/types/system/game';
-import type { DBRouter } from '@/logic/db/dbRouter';
-import type { MapRouteId } from '@/data/world/map-assets';
 
 describe('War System Integration', () => {
   let insertedPoints: Array<{ map_id: string; points: number }>;
@@ -173,10 +174,10 @@ describe('War System Integration', () => {
     await warStore.resolveWeekIfNeeded();
     expect(dominanceRecords.length).toBeGreaterThan(0);
 
-    // 5. Test weekly coins distribution
+    // 5. Test weekly coins distribution (10 guardian coins + 205 weekly reward = 215)
     await warStore.distributeWeeklyWarCoins();
-    expect(warStore.warCoins).toBe(205);
-    expect(gameStore.state.warCoins).toBe(205);
+    expect(warStore.warCoins).toBe(215);
+    expect(gameStore.state.warCoins).toBe(215);
     expect(gameStore.state.lastResolvedWeek).toBe(getPreviousWeekId(today));
   });
 });

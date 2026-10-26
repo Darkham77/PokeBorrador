@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useEventStore } from '@/stores/events';
 import type { PastEventHistoryItem } from '@/types/system/stores';
+
 import PastEventCard from './PastEventCard.vue';
 
 interface Props {
@@ -12,7 +13,7 @@ defineProps<Props>();
 
 const eventStore = useEventStore();
 
-const handleClaim = async (awardId: string) => {
+const handleClaim = async (awardId: string): Promise<void> => {
   await eventStore.claimAward(awardId);
 };
 </script>

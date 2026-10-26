@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { useGTSStore } from '@/stores/gts';
-import { useGameStore } from '@/stores/game';
-import { useAuthStore } from '@/stores/auth';
+
 import { type MarketListing, GTS_ITEMS_PER_PAGE } from '@/logic/economy/market';
+import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { useGTSStore } from '@/stores/gts';
+
 import MarketExplorerListingCard from './MarketExplorerListingCard.vue';
 
 const game = useGameStore();
@@ -30,7 +32,7 @@ watch(
   }
 );
 
-function handleBuy(listing: MarketListing) {
+function handleBuy(listing: MarketListing): void {
   gtsStore.buyListing(listing);
 }
 </script>

@@ -9,14 +9,16 @@
  *   3. CanvasTileRenderer Step 1 uses ground-level base terrain (grass / macro biome) for mountain outer corners bordering elevation 0.
  */
 
-import { describe, it, expect } from 'vitest';
-import sharp from 'sharp';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import sharp from 'sharp';
+import { describe, it, expect } from 'vitest';
+
+import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
-import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 
 const GRASS_PALETTE_COLORS = [
   '112,200,160', // base grass

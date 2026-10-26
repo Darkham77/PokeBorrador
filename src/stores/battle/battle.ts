@@ -1,22 +1,20 @@
 import { defineStore } from 'pinia';
 import { ref, computed, watch, nextTick, getCurrentScope, onScopeDispose } from 'vue';
-import { logger } from '@/logic/utils/logger';
-import { safeStorage } from '@/logic/utils/storage.ts';
-import { useGameStore } from '@/stores/game.ts';
-import { useWarStore } from '@/stores/war.ts';
-import { useEventStore } from '@/stores/events.ts';
-import { usePlayerClassStore } from '@/stores/player/playerClass.ts';
-import { useAudioStore } from '@/stores/audio.ts';
-import { useUIStore } from '@/stores/ui.ts';
-import { useModalStore } from '@/stores/modals.ts';
-import { useErrorStore } from '@/stores/errorStore.ts';
-import { gameBus } from '@/logic/events/gameBus.ts';
+
+import type { ItemId } from '@/data/inventory/items';
+import type { MapRouteId } from '@/data/world/map-assets';
+import { setupBattleDebug } from '@/logic/battle/battleDebug.ts';
+import { executeFlee } from '@/logic/battle/battleFlee.ts';
+import { applyEndTurnEffects as executeEndTurnEffects } from '@/logic/battle/battleFlow.ts';
+import { registerBattleFormulasContextResolver } from '@/logic/battle/battleFormulas.ts';
 import {
   createBattleStateMachine,
   BATTLE_STATES,
   BATTLE_SUBSTATES
 } from '@/logic/battle/battleStateMachine.ts';
 import { clearVolatileStatus } from '@/logic/battle/battleStatus.ts';
+import { executeTurn, runEnemyAction } from '@/logic/battle/battleTurn.ts';
+import { buildCombatReplayPayload } from '@/logic/battle/helpers/combatReplayHelper.ts';
 import {
   startBattleSequence,
   initBattleSequence,
@@ -28,21 +26,30 @@ import {
   triggerNextEncounter,
   startEncounter
 } from '@/logic/battle/searchLoop.ts';
-import { executeTurn, runEnemyAction } from '@/logic/battle/battleTurn.ts';
-import { applyEndTurnEffects as executeEndTurnEffects } from '@/logic/battle/battleFlow.ts';
-import { executeFlee } from '@/logic/battle/battleFlee.ts';
-import { setupBattleDebug } from '@/logic/battle/battleDebug.ts';
-import { executeBattleSwitch } from './battleSwitchHelper.ts';
-import type { BattleSide } from '@/types/battle/battle';
-import { setupBattleEventWatchers } from './battleEventWatchers.ts';
-import { checkAndAutoRecharge, consumeInventoryItem } from './battleRechargeHelper.ts';
-import { createBattleLoggerHelper } from './battleLogHelper.ts';
+import type {} from '@/logic/battle/showdown.worker.ts';
+import { gameBus } from '@/logic/events/gameBus.ts';
+import { logger } from '@/logic/utils/logger';
+import { safeStorage } from '@/logic/utils/storage.ts';
 import type { WeatherId } from '@/logic/weather/weatherRegistry.ts';
-import type { MapRouteId } from '@/data/world/map-assets';
-import type { ItemId } from '@/data/inventory/items';
-import { buildCombatReplayPayload } from '@/logic/battle/helpers/combatReplayHelper.ts';
+import { useAudioStore } from '@/stores/audio.ts';
+import { useErrorStore } from '@/stores/errorStore.ts';
+import { useEventStore } from '@/stores/events.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useModalStore } from '@/stores/modals.ts';
+import { usePlayerClassStore } from '@/stores/player/playerClass.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import { useWarStore } from '@/stores/war.ts';
+import type { BattleSide } from '@/types/battle/battle';
+import type { BattleState, BattleStages, BattleLog } from '@/types/battle/battle';
+import type { BattleUiConfig } from '@/types/battle/battleConfig';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Move, Pokemon } from '@/types/pokemon/pokemon';
 import { GAME_UI_EVENTS, type BattleEnteringDetail } from '@/types/system/gameEvents.ts';
-import { registerBattleFormulasContextResolver } from '@/logic/battle/battleFormulas.ts';
+import type { GameStore, BattleOptions } from '@/types/system/stores';
+
+import { setupBattleEventWatchers } from './battleEventWatchers.ts';
+import { createBattleLoggerHelper } from './battleLogHelper.ts';
+import { checkAndAutoRecharge, consumeInventoryItem } from './battleRechargeHelper.ts';
 import {
   ACTIVE_BATTLE_STATES,
   isFaintSubstate,
@@ -56,18 +63,7 @@ import {
   shouldResetRevivedPlayerSubstate,
   shouldAdvanceToWaitInput
 } from './battleStoreHelper.ts';
-
-import type {
-  GameStore,
-  EventStore,
-  AudioStore,
-  UIStore,
-  BattleOptions
-} from '@/types/system/stores';
-import type { BattleContext } from '@/types/battle/battleContext';
-import type { BattleState, BattleStages, BattleLog } from '@/types/battle/battle';
-import type { Move, Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleUiConfig } from '@/types/battle/battleConfig';
+import { executeBattleSwitch } from './battleSwitchHelper.ts';
 
 const INITIAL_STAGES: BattleStages = {
   atk: 0,
@@ -142,23 +138,23 @@ export const useBattleStore = defineStore('battle', () => {
     safeStorage.setItem('pvs_combat_zoom', String(newZoom));
   });
 
-  const syncActiveMovesFromRequest = async (side: BattleSide) => {
+  const syncActiveMovesFromRequest = async (side: BattleSide): Promise<void> => {
     const { syncActiveMovesFromRequest: syncMoves } = await import('./battleMoveSync.ts');
     syncMoves(activeBattle.value, side);
   };
 
   watch(
     () => [activeBattle.value?.playerRequest, activeBattle.value?.player],
-    () => {
-      void syncActiveMovesFromRequest('player');
+    async () => {
+      await syncActiveMovesFromRequest('player');
     },
     { deep: true }
   );
 
   watch(
     () => activeBattle.value?.enemyRequest,
-    () => {
-      void syncActiveMovesFromRequest('enemy');
+    async () => {
+      await syncActiveMovesFromRequest('enemy');
     },
     { deep: true }
   );
@@ -193,16 +189,16 @@ export const useBattleStore = defineStore('battle', () => {
     }
   );
 
-  const handleMapWeatherChanged = (e: Event) => {
+  const handleMapWeatherChanged = (e: Event): void => {
     const detail = (e as CustomEvent<{ weather?: WeatherId; mapId?: MapRouteId }>).detail;
     if (!detail || !activeBattle.value) return;
     syncBattleMapWeather(activeBattle.value, detail.weather, detail.mapId);
   };
   gameBus.on('MAP_WEATHER_CHANGED', handleMapWeatherChanged);
-  const handleBattleUseItem = (e: Event) => {
+  const handleBattleUseItem = async (e: Event): Promise<void> => {
     const detail = (e as CustomEvent<{ itemId: ItemId; targetIndex: number | null }>).detail;
     if (detail?.itemId) {
-      void useItemInBattle(detail.itemId, detail.targetIndex);
+      await useItemInBattle(detail.itemId, detail.targetIndex);
     }
   };
   gameBus.on('BATTLE_USE_ITEM', handleBattleUseItem);
@@ -262,10 +258,10 @@ export const useBattleStore = defineStore('battle', () => {
   const getContext = (): BattleContext => ({
     gs: gs as GameStore,
     warStore,
-    eventStore: eventStore as EventStore,
+    eventStore: eventStore,
     classStore,
-    audio: audio as AudioStore,
-    uiStore: uiStore as UIStore,
+    audio: audio,
+    uiStore: uiStore,
     activeBattle,
     player,
     enemy,
@@ -307,16 +303,16 @@ export const useBattleStore = defineStore('battle', () => {
     handleFaint
   });
 
-  const restoreBattle = async (battleData: BattleState) =>
+  const restoreBattle = async (battleData: BattleState): Promise<void> =>
     await restoreBattleState(getContext(), battleData);
 
-  const persistBattle = () => syncAndPersist(getContext());
+  const persistBattle = (): void => syncAndPersist(getContext());
 
-  const startBattle = async (enemyPoke: Pokemon, options?: BattleOptions) => {
+  const startBattle = async (enemyPoke: Pokemon, options?: BattleOptions): Promise<void> => {
     logger.info('BattleStore', `startBattle called for ${enemyPoke.name}`, options);
 
     // ATOMIC SYNCHRONOUS PRE-CLEANUP: Transition FSM to CONTEXT_SETUP and vacate all seats immediately!
-    void fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.RECEIVE_CONFIG);
+    await fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.RECEIVE_CONFIG);
 
     if (activeBattle.value) {
       activeBattle.value.enemy = null;
@@ -332,9 +328,9 @@ export const useBattleStore = defineStore('battle', () => {
     }
 
     uiStore.closeAll();
-    if (typeof window !== 'undefined') {
+    if (typeof globalThis.window !== 'undefined') {
       const detail: BattleEnteringDetail = { source: 'battle-store' };
-      window.dispatchEvent(
+      globalThis.dispatchEvent(
         new CustomEvent<BattleEnteringDetail>(GAME_UI_EVENTS.BATTLE_ENTERING, { detail })
       );
     }
@@ -346,7 +342,7 @@ export const useBattleStore = defineStore('battle', () => {
     initialEnemy?: Pokemon | null;
     initialPlayer?: Pokemon | null;
     wasSearching?: boolean;
-  }) =>
+  }): Promise<void> =>
     initBattleSequence(getContext(), {
       initialEnemy: options?.initialEnemy ?? activeBattle.value?.enemy ?? null,
       initialPlayer:
@@ -367,7 +363,7 @@ export const useBattleStore = defineStore('battle', () => {
     INITIAL_STAGES
   );
 
-  const executeMove = async (moveIndex: number) => {
+  const executeMove = async (moveIndex: number): Promise<void> => {
     if (
       !canExecuteMove(
         { isProc: isProcessing.value, isAct: isBattleActive.value },
@@ -385,8 +381,8 @@ export const useBattleStore = defineStore('battle', () => {
     }
     isProcessing.value = true;
     try {
-      void fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN);
-      void fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TURN_ENGINE);
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN);
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TURN_ENGINE);
 
       trackPlayerUsedMove(playerUsedMoves.value, player.value?.moves, moveIndex);
 
@@ -411,7 +407,7 @@ export const useBattleStore = defineStore('battle', () => {
     }
   };
 
-  const finalizeTurnExecution = async () => {
+  const finalizeTurnExecution = async (): Promise<void> => {
     const battle = activeBattle.value;
     if (!battle) return;
 
@@ -424,19 +420,19 @@ export const useBattleStore = defineStore('battle', () => {
       console.debug(
         `[E2E-FSM-Safeguard] Player Pokémon was revived/healed. Resetting FSM substate to ANIM_SYNC.`
       );
-      void fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC);
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC);
       sub = BATTLE_SUBSTATES.ANIM_SYNC;
     }
 
     if (shouldAdvanceToWaitInput(activeBattle.value, fsm.currentState.value, sub)) {
-      void fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC);
-      void fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON);
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC);
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON);
       isProcessing.value = false;
-      void fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
     }
   };
 
-  const executeStruggle = async () => {
+  const executeStruggle = async (): Promise<void> => {
     if (
       !canExecuteMove(
         { isProc: isProcessing.value, isAct: isBattleActive.value },
@@ -446,8 +442,8 @@ export const useBattleStore = defineStore('battle', () => {
       return;
     isProcessing.value = true;
     try {
-      void fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN);
-      void fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TURN_ENGINE);
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN);
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TURN_ENGINE);
       await executeTurn(getContext(), -1);
 
       if (
@@ -469,11 +465,15 @@ export const useBattleStore = defineStore('battle', () => {
     }
   };
 
-  const applyEndTurnEffects = async () => await executeEndTurnEffects(getContext());
+  const applyEndTurnEffects = async (): Promise<void> => await executeEndTurnEffects(getContext());
 
-  const handleFaint = async (side: BattleSide) => await processFaint(getContext(), side);
+  const handleFaint = async (side: BattleSide): Promise<void> =>
+    await processFaint(getContext(), side);
 
-  const useItemInBattle = async (itemId: ItemId, targetIndex: number | null = null) => {
+  const useItemInBattle = async (
+    itemId: ItemId,
+    targetIndex: number | null = null
+  ): Promise<void> => {
     if (isProcessing.value || !isBattleActive.value || !activeBattle.value) return;
 
     isProcessing.value = true;
@@ -510,13 +510,16 @@ export const useBattleStore = defineStore('battle', () => {
     fled?: boolean;
   }
 
-  const endBattle = async (winOrOptions: EndBattleOptions | boolean, fledParam = false) => {
+  const endBattle = async (
+    winOrOptions: EndBattleOptions | boolean,
+    fledParam = false
+  ): Promise<void> => {
     const win = typeof winOrOptions === 'boolean' ? winOrOptions : Boolean(winOrOptions.win);
     const fled = typeof winOrOptions === 'boolean' ? fledParam : Boolean(winOrOptions.fled);
     logger.info('BattleStore', `endBattle called. Win: ${win}, Fled: ${fled}`);
     return terminateBattle(getContext(), win, fled);
   };
-  const syncTeamHP = () => {
+  const syncTeamHP = (): void => {
     const team = gs.state.team;
     const active = activeBattle.value;
     if (!active || !team || active.isPvP) return;
@@ -531,18 +534,22 @@ export const useBattleStore = defineStore('battle', () => {
       }
     }
   };
-  const _executeSwitch = async (targetIdentifier: number | string, isForced = false) => {
+  const _executeSwitch = async (
+    targetIdentifier: number | string,
+    isForced = false
+  ): Promise<void> => {
     await executeBattleSwitch(getContext(), targetIdentifier, isForced);
   };
 
-  const consumeItem = (itemId: ItemId) => consumeInventoryItem(gs, itemId);
+  const consumeItem = (itemId: ItemId): void => consumeInventoryItem(gs, itemId);
 
-  const completeBattleFlow = async (option?: string) =>
+  const completeBattleFlow = async (option?: string): Promise<void> =>
     await handleBattleFlowCompletion(getContext(), option);
 
-  const triggerSearchEncounter = async () => await triggerNextEncounter(getContext());
+  const triggerSearchEncounter = async (): Promise<void> =>
+    await triggerNextEncounter(getContext());
 
-  const awardDebugExp = async () => {
+  const awardDebugExp = async (): Promise<void> => {
     const { awardDebugExp: awardExpFn } = await import('@/logic/battle/resolution.ts');
     await awardExpFn(getContext());
   };
@@ -561,7 +568,7 @@ export const useBattleStore = defineStore('battle', () => {
     isIntroAnimating
   });
 
-  const getCombatReplayPayload = () => {
+  const getCombatReplayPayload = (): ReturnType<typeof buildCombatReplayPayload> | null => {
     const active = activeBattle.value;
     if (!active) return null;
     if (!active.rawShowdownLogs && rawShowdownLogs.value.length > 0) {
@@ -570,8 +577,8 @@ export const useBattleStore = defineStore('battle', () => {
     return buildCombatReplayPayload(active);
   };
 
-  if (typeof window !== 'undefined') {
-    window.__VITE_DEBUG_STORE_RESOLVER__ = () => useBattleStore() as DebugStore;
+  if (typeof globalThis.window !== 'undefined') {
+    globalThis.window.__VITE_DEBUG_STORE_RESOLVER__ = () => useBattleStore() as DebugStore;
     setupBattleDebug(getContext());
   }
 
@@ -610,10 +617,8 @@ export const useBattleStore = defineStore('battle', () => {
     currentFsmState,
     currentSubState,
     isReadyToExit,
-    // fallow-ignore-next-line unused-store-member
     restoreBattle,
     addLog,
-    // fallow-ignore-next-line unused-store-member
     clearLogs,
     executeMove,
     executeStruggle,
@@ -625,7 +630,6 @@ export const useBattleStore = defineStore('battle', () => {
     syncTeamHP,
     startBattle,
     _startBattle: startBattle,
-    // fallow-ignore-next-line unused-store-member
     initBattle,
     executeSwitch: _executeSwitch,
     flee: async () => {
@@ -644,8 +648,8 @@ export const useBattleStore = defineStore('battle', () => {
     // fallow-ignore-next-line unused-store-member
     triggerSearchEncounter,
     // fallow-ignore-next-line unused-store-member
-    setFinishing: (cb: () => void) => {
-      void fsm.transition(BATTLE_STATES.REWARDS_PHASE);
+    setFinishing: async (cb: () => void) => {
+      await fsm.transition(BATTLE_STATES.REWARDS_PHASE);
       battleEndCallback.value = cb;
     },
     startEncounter: async () => await startEncounter(getContext()),

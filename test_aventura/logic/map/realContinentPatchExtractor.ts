@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/map/realContinentPatchExtractor.ts
  *
@@ -10,23 +11,6 @@
  *   4. Macro Biomes (Mint grass, deserts, volcanic dirt)
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
-import type { POINode } from '../../types/map/poiTypes.ts';
-import type { WildernessLayerResult } from './wildernessVegetationEngine.ts';
-import type {
-  ContinentTransitionCategory,
-  MountainPatchSubtype,
-  RealContinentPatch,
-  ResolvedPatchCell,
-  CellNeighborhood,
-  NeighborCellSummary,
-  NeighborDirection,
-  TileBlitInstruction
-} from '../../types/map/autotileStudioTypes.ts';
-import { buildMapBlitInstructions } from './canvasTileRenderer.ts';
-import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
-import { BASE_GRASS_TILE } from './waterAutotileEngine.ts';
-import { CANONICAL_ASSETS_BY_ID } from './canonicalAssetsRegistry.ts';
 import {
   FALLBACK_TALL_TREE_WIDTH,
   FALLBACK_TALL_TREE_HEIGHT,
@@ -46,8 +30,25 @@ import {
   SENTINEL_MAX_ELEVATION,
   MIN_CANDIDATE_POINT_DISTANCE
 } from '../../config/patchExtractorConfig.ts';
+import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+import type {
+  ContinentTransitionCategory,
+  MountainPatchSubtype,
+  RealContinentPatch,
+  ResolvedPatchCell,
+  CellNeighborhood,
+  NeighborCellSummary,
+  NeighborDirection,
+  TileBlitInstruction
+} from '../../types/map/autotileStudioTypes.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
+import { CANONICAL_ASSETS_BY_ID } from './canonicalAssetsRegistry.ts';
+import { buildMapBlitInstructions } from './canvasTileRenderer.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
+import { BASE_GRASS_TILE } from './waterAutotileEngine.ts';
+import type { WildernessLayerResult } from './wildernessVegetationEngine.ts';
 
-const FALLBACK_PREFAB_DIMS: Record<string, { readonly w: number; readonly h: number }> = {
+const FALLBACK_PREFAB_DIMS: Record<DisplayText, { readonly w: number; readonly h: number }> = {
   // open-record: Fallback prefab dimensions dictionary indexed by prefab id
   tree_viridian_forest: { w: FALLBACK_TALL_TREE_WIDTH, h: FALLBACK_TALL_TREE_HEIGHT },
   poke_tree_poke: { w: FALLBACK_TALL_TREE_WIDTH, h: FALLBACK_TALL_TREE_HEIGHT },
@@ -289,6 +290,22 @@ interface ScoredMountainCandidate extends CandidatePoint {
   readonly elev: number;
 }
 
+function hasLowerNeighborNearby(
+  x: number,
+  y: number,
+  curH: number,
+  heights: readonly (readonly number[])[]
+): boolean {
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      if ((heights[y + dy]?.[x + dx] ?? 0) < curH) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 function findMountainCandidates(
   continent: ContinentMapResult,
   radius: number,
@@ -344,16 +361,7 @@ function findMountainCandidates(
 
       if (!touchesLower) {
         if (curH < 2) continue;
-        let hasLowerNear = false;
-        for (let dy = -1; dy <= 1 && !hasLowerNear; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            if ((heights[y + dy]?.[x + dx] ?? 0) < curH) {
-              hasLowerNear = true;
-              break;
-            }
-          }
-        }
-        if (hasLowerNear) {
+        if (hasLowerNeighborNearby(x, y, curH, heights)) {
           multiTier.push({
             x,
             y,
@@ -622,24 +630,17 @@ function buildPatch(
       const gy = cy + dy;
       const isCenter = dx === 0 && dy === 0;
 
-      let layerStack: readonly string[]; // no-domain: composite layer stack
-      let filename: string;
-      let terrainKind: string | undefined;
-      let elevation: number | undefined;
-
-      if (gx >= 0 && gx < W && gy >= 0 && gy < H) {
-        const stack = blitGrid[gy]?.[gx] ?? [];
-        layerStack = stack.length > 0 ? stack : [BASE_GRASS_TILE];
-        filename = layerStack[layerStack.length - 1] ?? BASE_GRASS_TILE;
-        terrainKind = continent.terrainMatrix[gy]?.[gx];
-        elevation = continent.heightmap[gy]?.[gx];
-        if (typeof elevation === 'number') {
-          if (elevation < minElev) minElev = elevation;
-          if (elevation > maxElev) maxElev = elevation;
-        }
-      } else {
-        layerStack = [BASE_GRASS_TILE];
-        filename = BASE_GRASS_TILE;
+      const inBounds = gx >= 0 && gx < W && gy >= 0 && gy < H;
+      const stack = inBounds ? (blitGrid[gy]?.[gx] ?? []) : [];
+      const layerStack = stack.length > 0 ? stack : [BASE_GRASS_TILE];
+      const filename = inBounds
+        ? (layerStack[layerStack.length - 1] ?? BASE_GRASS_TILE)
+        : BASE_GRASS_TILE;
+      const terrainKind = inBounds ? continent.terrainMatrix[gy]?.[gx] : undefined;
+      const elevation = inBounds ? continent.heightmap[gy]?.[gx] : undefined;
+      if (inBounds && typeof elevation === 'number') {
+        if (elevation < minElev) minElev = elevation;
+        if (elevation > maxElev) maxElev = elevation;
       }
 
       row.push({

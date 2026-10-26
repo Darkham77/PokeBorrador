@@ -1,8 +1,11 @@
-import type { MoveAction, BattleSide } from '@/types/battle/battle';
-import { STATUS_ACTIONS } from './statusActions.ts';
-import { logger } from '@/logic/utils/logger';
+import type { DisplayText } from '@francogp/auditor';
+
 import { getItemById } from '@/data/inventory/items';
+import { logger } from '@/logic/utils/logger';
 import { incrementRecordKey, addToField } from '@/logic/utils/mapUtils';
+import type { MoveAction, BattleSide } from '@/types/battle/battle';
+
+import { STATUS_ACTIONS } from './statusActions.ts';
 
 /**
  * Special Actions Dictionary.
@@ -13,7 +16,7 @@ const TRI_ATTACK_BURN_THRESHOLD = 0.066 as const;
 const TRI_ATTACK_PARALYZE_THRESHOLD = 0.132 as const;
 const TRI_ATTACK_FREEZE_THRESHOLD = 0.2 as const;
 
-export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
+export const SPECIAL_ACTIONS: Record<DisplayText, MoveAction> = {
   // open-record: Special move effect dispatch table indexed by move effect string
   leech_seed: (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.type === 'grass' || tgt.type2 === 'grass') {

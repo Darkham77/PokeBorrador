@@ -5,12 +5,11 @@
  * Pure logic for evaluating Pokémon against event categories.
  */
 
-import type { Pokemon, PokemonStatKey, PokemonGender } from '@/types/pokemon/pokemon';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { normalizeZonedDateTime } from '@/logic/utils/timeUtils.ts';
-import { safeParse, resolveWeeklyRotation } from './eventSchedules.ts';
-import type { Event, EventConfig } from './eventEngine.ts';
+import type { Pokemon, PokemonStatKey, PokemonGender } from '@/types/pokemon/pokemon';
+
 import {
   resolveSubCompetitionDirection,
   evaluateIvsMetric,
@@ -26,6 +25,8 @@ import {
   resolveAwardCategoryId,
   resolveAwardCategoryDetails
 } from './eventCompetitionsHelper.ts';
+import type { Event, EventConfig } from './eventEngine.ts';
+import { safeParse, resolveWeeklyRotation } from './eventSchedules.ts';
 
 export { resolveSubCompetitionDirection, getSubCompIcon, getSubCompTitle, getSubCompDescription };
 

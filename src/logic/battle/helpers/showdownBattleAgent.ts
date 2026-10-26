@@ -1,5 +1,6 @@
 import type { SideID } from '@pkmn/sim';
-import { ChoiceRequest, classifyRequest } from './requestHelper.ts';
+
+import { type ChoiceRequest, classifyRequest } from './requestHelper.ts';
 
 export type ActiveSlotRequest = NonNullable<ChoiceRequest['active']>[number];
 
@@ -18,7 +19,7 @@ export abstract class ShowdownBattleAgent {
   protected turnCount = 0;
   protected justSwitched = false;
 
-  constructor(
+  public constructor(
     public sideId: SideID,
     public periodicSwitchEvery: number = 4
   ) {}
@@ -27,7 +28,7 @@ export abstract class ShowdownBattleAgent {
    * Main decision method. Returns a comma-separated choice string suitable for Showdown.
    */
   // fallow-ignore-next-line unused-class-member
-  decide(request: ChoiceRequest | null | undefined): string {
+  public decide(request: ChoiceRequest | null | undefined): string {
     const kind = classifyRequest(request);
     if (kind === 'none' || kind === 'wait') return 'pass';
 

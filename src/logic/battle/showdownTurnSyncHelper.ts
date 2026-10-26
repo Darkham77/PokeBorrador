@@ -1,5 +1,8 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { DisplayText } from '@francogp/auditor';
+
 import type { BattleState, ShowdownPlayerRequest } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { extractTeamHpAndStatus } from './helpers/showdownSyncHelper.ts';
 import { findMatchingPokemon } from './showdownUidMapper.ts';
 import { resolveBattleStore, resolveGameStore } from './showdownWorkerInstance.ts';
@@ -24,13 +27,16 @@ export const lastSyncTeamStates: Record<SideID, Array<SynchronizedPokemonState |
 function syncPokemonState(
   teamState: Array<SynchronizedPokemonState | null> | null,
   targetList: Array<Pokemon | null> | undefined
-) {
+): void {
   if (!teamState || !targetList) return;
   teamState.forEach((monState) => {
     if (monState && monState.uid) {
       const match = findMatchingPokemon(monState.uid, targetList);
       if (!match) {
-        if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+        if (
+          typeof globalThis.window !== 'undefined' &&
+          globalThis.__VITE_DEBUG__?.isScriptedReplayMode
+        ) {
           throw new Error(
             `[ShowdownWorkerClient] Certified worker state could not resolve a client Pokémon by UID. context=${JSON.stringify({ workerUid: monState.uid, workerHp: monState.hp, workerMaxHp: monState.maxHp, workerFainted: monState.fainted, clientUids: targetList.map((p) => p?.uid ?? null) })}`
           );
@@ -54,7 +60,7 @@ function syncPokemonState(
 function syncActiveCombatant(
   activeMon: Pokemon | null | undefined,
   teamState: Array<SynchronizedPokemonState | null> | null
-) {
+): void {
   if (!activeMon || !teamState) return;
   const activeState = findMatchingPokemon(activeMon.uid, teamState);
   if (activeState) {
@@ -122,13 +128,13 @@ export interface WorkerSuccessPayload {
 
 export interface PreparedTurnState {
   // open-record: Dynamic Pokemon UID mapped to HP
-  p1Hps?: Record<string, number>;
+  p1Hps?: Record<DisplayText, number>;
   // open-record: Dynamic Pokemon UID mapped to HP
-  p2Hps?: Record<string, number>;
+  p2Hps?: Record<DisplayText, number>;
   // open-record: Dynamic Pokemon UID mapped to status ID
-  p1Statuses?: Record<string, string>;
+  p1Statuses?: Record<DisplayText, string>;
   // open-record: Dynamic Pokemon UID mapped to status ID
-  p2Statuses?: Record<string, string>;
+  p2Statuses?: Record<DisplayText, string>;
   weatherVal: string;
 }
 
@@ -138,19 +144,19 @@ export function prepareTurnStateForWorker(
   replayContext: string
 ): PreparedTurnState {
   // open-record: Dynamic Pokemon UID mapped to HP
-  let p1Hps: Record<string, number> | undefined = undefined;
+  let p1Hps: Record<DisplayText, number> | undefined = undefined;
   // open-record: Dynamic Pokemon UID mapped to HP
-  let p2Hps: Record<string, number> | undefined = undefined;
+  let p2Hps: Record<DisplayText, number> | undefined = undefined;
   // open-record: Dynamic Pokemon UID mapped to status ID
-  let p1Statuses: Record<string, string> | undefined = undefined;
+  let p1Statuses: Record<DisplayText, string> | undefined = undefined;
   // open-record: Dynamic Pokemon UID mapped to status ID
-  let p2Statuses: Record<string, string> | undefined = undefined;
+  let p2Statuses: Record<DisplayText, string> | undefined = undefined;
   let weatherVal = 'none';
 
   try {
     const battleStore = resolveBattleStore();
-    const activeState = ((battleStore?.state as { value?: BattleState } | undefined)?.value ||
-      battleStore?.state) as BattleState | null | undefined;
+    const activeState =
+      (battleStore?.state as { value?: BattleState } | undefined)?.value || battleStore?.state;
     if (activeState) {
       weatherVal =
         typeof activeState.weather === 'string'
@@ -195,25 +201,25 @@ export function syncWorkerTurnSuccessToClient(payload: WorkerSuccessPayload): vo
     lastSyncTeamStates[seatId] = seatState || null;
   });
 
-  if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-    window.__VITE_DEBUG__.certifiedReplayWorkerEnded = payload.isOver;
+  if (typeof globalThis.window !== 'undefined' && globalThis.__VITE_DEBUG__) {
+    globalThis.__VITE_DEBUG__.certifiedReplayWorkerEnded = payload.isOver;
     if (payload.isOver) {
-      window.__VITE_DEBUG__.certifiedReplayWorkerFinalState = {
+      globalThis.__VITE_DEBUG__.certifiedReplayWorkerFinalState = {
         p1: payload.p1TeamState ?? [],
         p2: payload.p2TeamState ?? []
       };
     }
     if (typeof payload.p1ChoiceIdx === 'number') {
-      window.__VITE_DEBUG__.p1ChoiceIdx = payload.p1ChoiceIdx;
+      globalThis.__VITE_DEBUG__.p1ChoiceIdx = payload.p1ChoiceIdx;
     }
     if (typeof payload.p2ChoiceIdx === 'number') {
-      window.__VITE_DEBUG__.p2ChoiceIdx = payload.p2ChoiceIdx;
+      globalThis.__VITE_DEBUG__.p2ChoiceIdx = payload.p2ChoiceIdx;
     }
   }
 
   const battleStore = resolveBattleStore();
-  const activeState = ((battleStore?.state as { value?: BattleState } | undefined)?.value ||
-    battleStore?.state) as BattleState | null | undefined;
+  const activeState =
+    (battleStore?.state as { value?: BattleState } | undefined)?.value || battleStore?.state;
   if (activeState) {
     activeState.playerRequest = payload.p1Request;
     activeState.enemyRequest = payload.p2Request;

@@ -8,8 +8,9 @@
  */
 
 import { ref, computed, watch, onMounted } from 'vue';
-import { preloadTileImages, getImageCache } from '../../logic/map/canvasImageLoader.ts';
+
 import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+import { preloadTileImages, getImageCache } from '../../logic/map/canvasImageLoader.ts';
 import type { RealContinentPatch, ResolvedPatchCell } from '../../types/map/autotileStudioTypes.ts';
 
 const props = defineProps<{

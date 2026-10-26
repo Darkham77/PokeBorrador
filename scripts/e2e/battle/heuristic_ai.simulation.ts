@@ -196,12 +196,20 @@ class HeuristicAISimWrapper extends BaseBattleSimulation {
         store.player?.hp === 0 ||
         store.state?.enemy?.hp === 0 ||
         store.state?.player?.hp === 0;
+      const TERMINAL_FSM_STATE_VALUES = [
+        'REWARDS_PHASE',
+        'EXIT_BATTLE',
+        'SEARCH_PHASE'
+      ] as const;
+      type TerminalFsmStateValue = (typeof TERMINAL_FSM_STATE_VALUES)[number];
+      const TERMINAL_FSM_STATES: ReadonlySet<TerminalFsmStateValue> = new Set<TerminalFsmStateValue>(
+        TERMINAL_FSM_STATE_VALUES
+      );
+      const isTerminalFsm = fsmState !== undefined && TERMINAL_FSM_STATES.has(fsmState as TerminalFsmStateValue);
       return !!(
         store.state?.over ||
         storeObj.isBattleOver ||
-        fsmState === 'REWARDS_PHASE' ||
-        fsmState === 'EXIT_BATTLE' ||
-        fsmState === 'SEARCH_PHASE' ||
+        isTerminalFsm ||
         isFainted
       );
     });

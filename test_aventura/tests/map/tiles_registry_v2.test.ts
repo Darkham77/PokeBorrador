@@ -4,9 +4,11 @@
  * Tier 1 Unit Test: Validates the SSoT v2.0 Tiles Registry and runtime query API.
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import { describe, it, expect, beforeAll } from 'vitest';
+
 import {
   TilesRegistryService,
   defaultTilesRegistry,

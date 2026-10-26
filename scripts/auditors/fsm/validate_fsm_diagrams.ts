@@ -74,7 +74,7 @@ export function parseJsFsm(fsmCode: string) {
 
   const jsTransitions: { from: string; to: string }[] = [];
   const vtBlock = fsmCode.match(
-    /const validTransitions\s*:\s*Record<string,\s*(?:string\[\]|ReadonlySet<string>|Set<string>)>?\s*=\s*\{([\s\S]*?)\};/
+    /const validTransitions\s*(?::\s*Record<[\s\S]*?>)?\s*=\s*\{([\s\S]*?)\};/
   );
   if (vtBlock?.[1]) {
     const rowRx =
@@ -129,6 +129,7 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
       ruleIds: FSM_DIAGRAM_RULES,
       packageName: 'FSM',
       usesThirdPartyTool: false,
+      requiredPermissions: [],
       ruleDescriptions: {
         'fsm-state-missing-in-js': 'Estado Mermaid no definido en TS',
         'fsm-undocumented-js-state': 'Estado en TS no documentado en Mermaid',
@@ -142,6 +143,7 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
         'fsm-transition-missing-in-js':
           'Add missing transition in battleStateMachine validTransitions map'
       },
+      remediationPhase: 'polish',
       requiredFiles: [DIAGRAM_MANUAL_PATH, DIAGRAM_FSM_PATH],
       coverage: {
         include: [
@@ -191,7 +193,7 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
     });
 
     // [CHECK 3] Constantes JS -> Nodos Mermaid (Búsqueda de Código Basura)
-    const IGNORED_JS_STATES = new Set([
+    const IGNORED_JS_STATE_VALUES = [
       'FIRST_INTRO',
       'EXEC_TURN',
       'ANIM_SYNC',
@@ -205,7 +207,10 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
       'ESCAPE_PROCESS',
       'BUILD_QUEUE',
       'POP_ACTION'
-    ]);
+    ] as const;
+    const IGNORED_JS_STATES: ReadonlySet<string> = new Set<string>(
+      IGNORED_JS_STATE_VALUES
+    );
 
     this.runSubAuditorSync('fsm-undocumented-js-state', () => {
       const undocumented = Array.from(jsKeys).filter(
@@ -257,10 +262,4 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (
-  process.argv[1] &&
-  import.meta.filename &&
-  path.basename(process.argv[1]) === path.basename(import.meta.filename)
-) {
-  await BaseAuditor.runCli(new FsmDiagramAuditor());
-}
+await BaseAuditor.runCliIfMain(import.meta.url, new FsmDiagramAuditor());

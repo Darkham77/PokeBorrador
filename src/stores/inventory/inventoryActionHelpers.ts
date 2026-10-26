@@ -1,8 +1,8 @@
 import { getItemById, isItemId, type ItemId } from '@/data/inventory/items';
-import type { PokemonStorageLocation } from '@/types/pokemon/pokemon';
-import type { ItemDiscardAction } from '@/types/inventory/items';
 import { ITEM_SELL_REFUND_FACTOR } from '@/logic/constants/items.ts';
 import type { useGameStore } from '@/stores/game.ts';
+import type { ItemDiscardAction } from '@/types/inventory/items';
+import type { PokemonStorageLocation } from '@/types/pokemon/pokemon';
 
 type GameStoreInstance = ReturnType<typeof useGameStore>;
 
@@ -45,7 +45,7 @@ export function confirmBagSellAction(
 
   gameStore.state.inventory = { ...inv };
   gameStore.state.money += totalGain;
-  void gameStore.save();
+  gameStore.scheduleSave();
   return totalGain;
 }
 
@@ -61,12 +61,12 @@ export function removeItemAction(
   if (qty === REMOVE_ALL_ITEM_QTY_FLAG) {
     delete inv[itemId];
   } else {
-    inv[itemId]! -= qty;
-    if (inv[itemId]! <= 0) delete inv[itemId];
+    inv[itemId] -= qty;
+    if (inv[itemId] <= 0) delete inv[itemId];
   }
 
   gameStore.state.inventory = { ...inv };
-  void gameStore.save(false);
+  gameStore.scheduleSave();
 }
 
 export function addItemAction(gameStore: GameStoreInstance, itemId: ItemId, qty: number = 1): void {
@@ -75,7 +75,7 @@ export function addItemAction(gameStore: GameStoreInstance, itemId: ItemId, qty:
 
   inventory[itemId] = (inventory[itemId] || 0) + qty;
   gameStore.state.inventory = { ...inventory };
-  void gameStore.save(false);
+  gameStore.scheduleSave();
 }
 
 export function sellItemAction(
@@ -92,7 +92,7 @@ export function sellItemAction(
 
   removeItemAction(gameStore, itemId, sellQty);
   gameStore.state.money += gain;
-  void gameStore.save(false);
+  gameStore.scheduleSave();
 }
 
 export async function processBatchActionHandler(
@@ -106,15 +106,15 @@ export async function processBatchActionHandler(
   for (const [id, qty] of itemMap.entries()) {
     if (!inventory[id]) continue;
 
-    const actualQty = Math.min(qty, inventory[id]!);
+    const actualQty = Math.min(qty, inventory[id]);
 
     if (mode === 'sell') {
       const itemInfo = getItemById(id);
       totalGain += Math.floor((itemInfo.price || 0) * ITEM_SELL_REFUND_FACTOR) * actualQty;
     }
 
-    inventory[id]! -= actualQty;
-    if (inventory[id]! <= 0) delete inventory[id];
+    inventory[id] -= actualQty;
+    if (inventory[id] <= 0) delete inventory[id];
   }
 
   gameStore.state.inventory = { ...inventory };
@@ -143,12 +143,12 @@ export function equipItemAction(
 
   pokemon.heldItem = itemId;
   if (inv[itemId] !== undefined) {
-    inv[itemId]! -= 1;
-    if (inv[itemId]! <= 0) delete inv[itemId];
+    inv[itemId] -= 1;
+    if (inv[itemId] <= 0) delete inv[itemId];
   }
 
   gameStore.state.inventory = { ...inv };
-  void gameStore.save();
+  gameStore.scheduleSave();
   return true;
 }
 
@@ -168,6 +168,6 @@ export function unequipItemAction(
   pokemon.heldItem = null;
 
   gameStore.state.inventory = { ...inv };
-  void gameStore.save();
+  gameStore.scheduleSave();
   return item;
 }

@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { GYMS, type GymId } from '@/data/world/gyms';
-import type { BattleDifficulty } from '@/types/battle/battle';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
-import { useGymsStore } from '@/stores/gyms';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
+import { GYMS, type GymId } from '@/data/world/gyms';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useGameStore } from '@/stores/game';
+import { useGymsStore } from '@/stores/gyms';
+import { useUIStore } from '@/stores/ui';
+import type { BattleDifficulty } from '@/types/battle/battle';
+
 import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
 
 const gameStore = useGameStore();
@@ -16,15 +18,15 @@ const gymsStore = useGymsStore();
 const defeatedGyms = computed<readonly GymId[]>(() => gameStore.state.defeatedGyms || []);
 const defeatedCount = computed(() => defeatedGyms.value.length);
 
-const isGymDefeated = (gymId: GymId) => {
+const isGymDefeated = (gymId: GymId): boolean => {
   return defeatedGyms.value.includes(gymId);
 };
 
-const isDiffWon = (gymId: GymId, diff: BattleDifficulty) => {
+const isDiffWon = (gymId: GymId, diff: BattleDifficulty): boolean => {
   return gymsStore.isDifficultyDefeated(gymId, diff);
 };
 
-const getWonDiffCount = (gymId: GymId) => {
+const getWonDiffCount = (gymId: GymId): number => {
   let count = 0;
   if (isDiffWon(gymId, 'easy')) count++;
   if (isDiffWon(gymId, 'normal')) count++;
@@ -32,7 +34,7 @@ const getWonDiffCount = (gymId: GymId) => {
   return count;
 };
 
-const isGymMastered = (gymId: GymId) => {
+const isGymMastered = (gymId: GymId): boolean => {
   return getWonDiffCount(gymId) === 3;
 };
 
@@ -40,7 +42,7 @@ const totalDifficultiesWon = computed(() => {
   return GYMS.reduce((acc, g) => acc + getWonDiffCount(g.id), 0);
 });
 
-const getGymTooltipDesc = (gym: (typeof GYMS)[number]) => {
+const getGymTooltipDesc = (gym: (typeof GYMS)[number]): string => {
   const easy = isDiffWon(gym.id, 'easy') ? '✅ Fácil' : '⏳ Fácil (Pendiente)';
   const norm = isDiffWon(gym.id, 'normal') ? '✅ Normal' : '⏳ Normal (Pendiente)';
   const hard = isDiffWon(gym.id, 'hard') ? '✅ Difícil' : '⏳ Difícil (Pendiente)';
@@ -58,7 +60,7 @@ const getGymTooltipDesc = (gym: (typeof GYMS)[number]) => {
   return `${gym.leader} (${gym.city}) · ${status} | ${easy} · ${norm} · ${hard}${rematchStatus}`;
 };
 
-const openGyms = () => {
+const openGyms = (): void => {
   uiStore.activeTab = 'gyms';
 };
 </script>

@@ -1,17 +1,19 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { isMapLens, requireMapLens, type MapLens } from '../types/map/mapLenses.ts';
+
 import { logger } from '@/logic/utils/logger';
+
+import { isMapLens, requireMapLens, type MapLens } from '../types/map/mapLenses.ts';
 
 const MAP_LENS_STORAGE_KEY = 'pvs_active_map_lens';
 
 export const useMapLensStore = defineStore('mapLens', () => {
   const activeLens = ref<MapLens>('adventure');
 
-  function initFromStorage() {
+  function initFromStorage(): void {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const stored = window.localStorage.getItem(MAP_LENS_STORAGE_KEY);
+      if (typeof globalThis.window !== 'undefined' && globalThis.localStorage) {
+        const stored = globalThis.localStorage.getItem(MAP_LENS_STORAGE_KEY);
         if (stored && isMapLens(stored)) {
           activeLens.value = stored;
         }
@@ -21,12 +23,12 @@ export const useMapLensStore = defineStore('mapLens', () => {
     }
   }
 
-  function setLens(lens: MapLens) {
+  function setLens(lens: MapLens): void {
     const validated = requireMapLens(lens);
     activeLens.value = validated;
     try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.setItem(MAP_LENS_STORAGE_KEY, validated);
+      if (typeof globalThis.window !== 'undefined' && globalThis.localStorage) {
+        globalThis.localStorage.setItem(MAP_LENS_STORAGE_KEY, validated);
       }
     } catch (e) {
       logger.warn('[MapLensStore] Could not write to localStorage', String(e));
@@ -37,8 +39,8 @@ export const useMapLensStore = defineStore('mapLens', () => {
   initFromStorage();
 
   // Register in debug CLI if in browser debug environment
-  if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-    Reflect.set(window.__VITE_DEBUG__, 'setMapLens', setLens);
+  if (typeof globalThis.window !== 'undefined' && globalThis.__VITE_DEBUG__) {
+    Reflect.set(globalThis.__VITE_DEBUG__, 'setMapLens', setLens);
   }
 
   return {

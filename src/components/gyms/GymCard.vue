@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted, useTemplateRef } from 'vue';
 import { gsap } from 'gsap';
-import { useGymsStore } from '@/stores/gyms';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { computed, onMounted, useTemplateRef } from 'vue';
+
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
-import GymRewardPanel from './GymRewardPanel.vue';
 import { toPokemonType } from '@/data/battle/types';
 import type { Gym } from '@/data/world/gyms';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useGymsStore } from '@/stores/gyms';
 import { BATTLE_DIFFICULTIES, type BattleDifficulty } from '@/types/battle/battle';
+
 import {
   getPokemonTypeIcon,
   formatDifficultyLabel,
@@ -15,6 +16,7 @@ import {
   resolveGymButtonShadow,
   resolveGymHeaderGradient
 } from './gymCardHelper';
+import GymRewardPanel from './GymRewardPanel.vue';
 
 const GYM_CARD_HOVER_BG_OPACITY_PERCENT = 0.05;
 const GYM_CARD_HOVER_BTN_BG_OPACITY_PERCENT = 0.15;
@@ -53,12 +55,12 @@ onMounted(() => {
   }
 });
 
-const handleChallenge = () => {
+const handleChallenge = (): void => {
   if (props.isLocked) return;
   gymsStore.challengeGym(props.gym.id, selectedDifficulty.value);
 };
 
-const handleRematch = () => {
+const handleRematch = (): void => {
   if (props.isLocked) return;
   gymsStore.challengeRematch(props.gym.id);
 };
@@ -82,7 +84,7 @@ const isRematchDone = computed(() => gymsStore.isRematchDoneToday(props.gym.id))
 const currentDifficultyLabel = computed(() => formatDifficultyLabel(selectedDifficulty.value));
 const cardClasses = computed(() => ({ defeated: props.isDefeated, locked: props.isLocked }));
 
-const handleMouseEnter = () => {
+const handleMouseEnter = (): void => {
   if (props.isLocked || !cardRef.value) return;
   gsap.to(cardRef.value, {
     scale: GYM_CARD_HOVER_SCALE,
@@ -105,7 +107,7 @@ const handleMouseEnter = () => {
   }
 };
 
-const handleMouseLeave = () => {
+const handleMouseLeave = (): void => {
   if (props.isLocked || !cardRef.value) return;
   gsap.to(cardRef.value, {
     scale: 1,
@@ -128,7 +130,7 @@ const handleMouseLeave = () => {
   }
 };
 
-const handleBtnEnter = (e: MouseEvent) => {
+const handleBtnEnter = (e: MouseEvent): void => {
   gsap.to(e.currentTarget, {
     scale: GYM_CARD_HOVER_BTN_SCALE_BOOST,
     backgroundColor: `rgba(255, 255, 255, ${GYM_CARD_HOVER_BTN_BG_OPACITY_PERCENT})`,
@@ -137,7 +139,7 @@ const handleBtnEnter = (e: MouseEvent) => {
   });
 };
 
-const handleBtnLeave = (e: MouseEvent) => {
+const handleBtnLeave = (e: MouseEvent): void => {
   gsap.to(e.currentTarget, {
     scale: 1,
     backgroundColor: `rgba(255, 255, 255, ${GYM_CARD_HOVER_BG_OPACITY_PERCENT})`,

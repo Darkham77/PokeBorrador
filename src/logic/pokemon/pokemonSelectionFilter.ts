@@ -1,6 +1,7 @@
 import type { PokemonFilterTagId } from '@/logic/constants/tags';
-import { getPokemonSortMetric, type FilterablePokemonItem } from './pokemonSortMetric.ts';
+
 import { matchesPokemonCriteria } from './pokemonFilterMatcher.ts';
+import { getPokemonSortMetric, type FilterablePokemonItem } from './pokemonSortMetric.ts';
 
 export type { FilterablePokemonItem } from './pokemonSortMetric.ts';
 
@@ -20,7 +21,7 @@ export interface PokemonFilterCriteria {
 export function filterAndSortPokemon(
   sourceList: FilterablePokemonItem[],
   criteria: PokemonFilterCriteria
-) {
+): FilterablePokemonItem[] {
   const filtered = sourceList.filter((item) => matchesPokemonCriteria(item, criteria));
 
   if (

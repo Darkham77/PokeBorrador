@@ -11,6 +11,7 @@
  *   5. Coastal sand and water protection (leaves coastal beaches to waterAutotileEngine).
  */
 
+import type { MacroBiome } from './macroBiomeSynthesizer.ts';
 import {
   compute2DNeighborMask,
   classify2DAutotileRole,
@@ -20,7 +21,8 @@ import {
   type WaterAutotileRole,
   type WaterTerrainKind
 } from './waterAutotileEngine.ts';
-import type { MacroBiome } from './macroBiomeSynthesizer.ts';
+
+const CANONICAL_PLAIN_GRASS_TILE = 'poke_grass_plain.png' as const;
 
 export const CANONICAL_MINT_GRASS_BRUSH: Readonly<WaterCoastBrushSet> = {
   center: 'poke_grass_mint_center.png',
@@ -37,6 +39,11 @@ export const CANONICAL_MINT_GRASS_BRUSH: Readonly<WaterCoastBrushSet> = {
   cornerInnerSW: 'poke_grass_mint_corner_inner_sw.png',
   cornerInnerSE: 'poke_grass_mint_corner_inner_se.png'
 };
+
+const EXCLUDED_AQUATIC_TERRAIN_LIST = ['water', 'water_deep', 'sand'] as const;
+type ExcludedAquaticTerrain = (typeof EXCLUDED_AQUATIC_TERRAIN_LIST)[number];
+const EXCLUDED_AQUATIC_TERRAINS: ReadonlySet<ExcludedAquaticTerrain> =
+  new Set<ExcludedAquaticTerrain>(EXCLUDED_AQUATIC_TERRAIN_LIST);
 
 export const CANONICAL_VOLCANIC_DIRT_BRUSH: Readonly<WaterCoastBrushSet> = {
   center: 'poke_mountain_dirt_center.png',
@@ -115,7 +122,7 @@ export function resolveMacroBiomeAutotile(
     for (let x = 0; x < W; x++) {
       const terrain = terrainMatrix[y]?.[x];
       // Water and coastal beach sand are handled exclusively by waterAutotileEngine
-      if (terrain === 'water' || terrain === 'water_deep' || terrain === 'sand') {
+      if (terrain && EXCLUDED_AQUATIC_TERRAINS.has(terrain as ExcludedAquaticTerrain)) {
         continue;
       }
 
@@ -147,16 +154,14 @@ export function resolveMacroBiomeAutotile(
 
       const { role, innerOverlays } = classify2DAutotileRole(foreignMask);
       const primaryTile = getTileForRole(brush, role);
-      const overlayTiles: string[] = innerOverlays.map((r) => getTileForRole(brush, r)); // no-domain: Estructura o identificador procedural de aventura
+      const overlayTiles = innerOverlays.map((r) => getTileForRole(brush, r));
 
-      const layerStack: string[] = ['poke_grass_plain.png']; // no-domain: Estructura o identificador procedural de aventura
-      if (role.startsWith('corner_inner')) {
-        layerStack.push(brush.center);
-      }
-      layerStack.push(primaryTile);
-      if (overlayTiles.length > 0) {
-        layerStack.push(...overlayTiles);
-      }
+      const layerStack = [
+        CANONICAL_PLAIN_GRASS_TILE,
+        ...(role.startsWith('corner_inner') ? [brush.center] : []),
+        primaryTile,
+        ...overlayTiles
+      ];
 
       const cell: ResolvedMacroBiomeCell = {
         x,

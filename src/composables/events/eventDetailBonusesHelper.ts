@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/composables/events/eventDetailBonusesHelper.ts
  *
@@ -5,9 +6,10 @@
  * minigame bonuses, species resolutions, and schedule text formatting.
  */
 
-import { normalizeZonedDateTime } from '@/logic/utils/timeUtils';
 import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { ResolvedSubCompetition } from '@/logic/events/eventEngine';
+import { normalizeZonedDateTime } from '@/logic/utils/timeUtils';
+
 import type { Prize, ExtendedEventConfig, BonusItem, Schedule } from './useEventDetailBonuses.ts';
 
 const ALL_DAY_HOURS = 24;
@@ -121,7 +123,7 @@ export function buildActivityBonuses(c: ExtendedEventConfig): BonusItem[] {
   return bonuses;
 }
 
-const MINIGAME_DISPLAY_NAMES: Record<string, string> = {
+const MINIGAME_DISPLAY_NAMES: Record<DisplayText, string> = {
   // open-record: Minigame identifier to Spanish display name mapping
   fishing: '🎣 Pesca',
   archaeology: '⛏️ Arqueología',
@@ -166,7 +168,7 @@ const MINIGAME_BUFF_DEFS: readonly BuffTypeDef[] = [
 
 function extractMinigameBuffItems(
   mName: string,
-  buffs: Record<string, number | undefined> // open-record: Dynamic minigame multiplier dictionary
+  buffs: Record<DisplayText, number | undefined> // open-record: Dynamic minigame multiplier dictionary
 ): BonusItem[] {
   const items: BonusItem[] = [];
   for (const def of MINIGAME_BUFF_DEFS) {
@@ -187,7 +189,9 @@ export function buildMinigameBuffBonuses(
   for (const [mId, buffs] of Object.entries(minigameBuffs)) {
     if (mId === 'casino' || !buffs) continue;
     const mName = MINIGAME_DISPLAY_NAMES[mId] || `🎮 ${mId.toUpperCase()}`;
-    bonuses.push(...extractMinigameBuffItems(mName, buffs as Record<string, number | undefined>)); // open-record: Generic key-value data dictionary container
+    bonuses.push(
+      ...extractMinigameBuffItems(mName, buffs as Record<DisplayText, number | undefined>)
+    ); // open-record: Generic key-value data dictionary container
   }
   return bonuses;
 }
@@ -303,7 +307,7 @@ export function resolveInvolvedSpecies(
   const result: PokemonSpeciesId[] = [];
   const seen = new Set<string>();
 
-  const add = (raw: string | undefined | null) => {
+  const add = (raw: string | undefined | null): void => {
     if (!raw) return;
     const id = raw.trim().toLowerCase();
     if (isPokemonSpeciesId(id) && !seen.has(id)) {
@@ -321,7 +325,7 @@ export function resolveInvolvedSpecies(
   for (const sub of subCompetitions) {
     const subPrizes =
       sub.prizes && (sub.prizes.first || sub.prizes.second || sub.prizes.third)
-        ? (sub.prizes as { first?: Prize; second?: Prize; third?: Prize })
+        ? sub.prizes
         : prizes;
     collectPrizeSpecies(subPrizes).forEach(add);
   }

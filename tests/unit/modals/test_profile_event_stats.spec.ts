@@ -1,12 +1,13 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
 import { computeEventTrophyCounts } from '@/components/modals/trainerProfileResolver';
-import ProfileEventStatsCard from '@/components/profile/ProfileEventStatsCard.vue';
 import { useTrainerProfile } from '@/components/modals/useTrainerProfile';
-import { useGameStore } from '@/stores/game';
+import ProfileEventStatsCard from '@/components/profile/ProfileEventStatsCard.vue';
 import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
 
 describe('Profile Event Stats & Medals Integration', () => {
   beforeEach(() => {

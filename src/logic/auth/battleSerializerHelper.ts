@@ -1,5 +1,12 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { GameState } from '@/types/system/game';
+import { requireAbilityId } from '@/data/battle/abilities';
+import type { ItemId } from '@/data/inventory/items';
+import type { GymId } from '@/data/world/gyms';
+import { requireMapRouteId, isMapRouteId } from '@/data/world/map-assets';
+import type { MapRouteId } from '@/data/world/map-assets';
+import { logger } from '@/logic/utils/logger';
+import type { SaveDataDto } from '@/logic/validation/schemas';
+import { requireWeatherId } from '@/logic/weather/weatherRegistry';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
 import type {
   BattleLog,
   BattleStages,
@@ -13,16 +20,8 @@ import type {
   BattleState
 } from '@/types/battle/battle';
 import type { Inventory } from '@/types/inventory/items';
-import type { SaveDataDto } from '@/logic/validation/schemas';
-import { requireAbilityId } from '@/data/battle/abilities';
-import { requireWeatherId } from '@/logic/weather/weatherRegistry';
-import { requireMapRouteId, isMapRouteId } from '@/data/world/map-assets';
-import { logger } from '@/logic/utils/logger';
-
-import type { GymId } from '@/data/world/gyms';
-import type { MapRouteId } from '@/data/world/map-assets';
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
-import type { ItemId } from '@/data/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { GameState } from '@/types/system/game';
 
 const DEFAULT_POKEMON_FRIENDSHIP_FALLBACK = 70;
 
@@ -106,7 +105,17 @@ function serializeEnemyTeamForSave(rawEnemyTeam: Pokemon[] | null): Pokemon[] | 
 
 type BattleSerializeInput = BattleState & Partial<ActiveBattleSerialized> & { enemy?: Pokemon };
 
-function serializeBattleTrainerMeta(battle: BattleSerializeInput) {
+function serializeBattleTrainerMeta(battle: BattleSerializeInput): {
+  isGym: boolean;
+  gymId: GymId | null;
+  isTrainer: boolean;
+  isRival: boolean;
+  trainerName: string | null;
+  trainerSprite: string | null;
+  trainerArchetype: string | null;
+  quote: string | null;
+  locationId: MapRouteId | null;
+} {
   const isRival = Boolean(
     (battle as { isRival?: boolean }).isRival ||
     (battle as { trainerArchetype?: string }).trainerArchetype === 'rival'
@@ -124,10 +133,21 @@ function serializeBattleTrainerMeta(battle: BattleSerializeInput) {
   };
 }
 
-function serializeBattleTurnAndEscape(battle: BattleSerializeInput) {
+function serializeBattleTurnAndEscape(battle: BattleSerializeInput): {
+  turnCount: number;
+  turn: BattleSide | null;
+  escapeAttempts: number;
+  cannotEscape: boolean;
+  fled: boolean;
+  over: boolean;
+  isCapture: boolean;
+  lastDamage: number | undefined;
+  enemyUsedItem: boolean;
+  playerUsedItem: boolean;
+} {
   return {
     turnCount: typeof battle.turnCount === 'number' ? battle.turnCount : 1,
-    turn: battle.turn || null,
+    turn: (battle.turn as BattleSide) || null,
     escapeAttempts: typeof battle.escapeAttempts === 'number' ? battle.escapeAttempts : 0,
     cannotEscape: Boolean(battle.cannotEscape),
     fled: Boolean(battle.fled),
@@ -139,7 +159,15 @@ function serializeBattleTurnAndEscape(battle: BattleSerializeInput) {
   };
 }
 
-function serializeBattleWeatherAndField(battle: BattleSerializeInput) {
+function serializeBattleWeatherAndField(battle: BattleSerializeInput): {
+  weather: BattleWeather | null;
+  initialMapWeather: WeatherId | null;
+  terrain: string | null;
+  fieldConditions: Partial<Record<BattleConditionKey, BattleTimedCondition>> | null;
+  playerSideConditions: Partial<Record<BattleConditionKey, BattleTimedCondition>> | null;
+  enemySideConditions: Partial<Record<BattleConditionKey, BattleTimedCondition>> | null;
+  pendingSlotEffects: PendingSlotEffect[];
+} {
   const weather = battle.weather
     ? {
         type: requireWeatherId(battle.weather.type),
@@ -158,7 +186,15 @@ function serializeBattleWeatherAndField(battle: BattleSerializeInput) {
   };
 }
 
-function serializeBattleRewardsAndEconomy(battle: BattleSerializeInput) {
+function serializeBattleRewardsAndEconomy(battle: BattleSerializeInput): {
+  difficulty: BattleDifficulty | null;
+  rarity: number | undefined;
+  enemyMoney: number | null;
+  enemyMaxLevel: number | null;
+  rewardTM: ItemId | null;
+  enemyInventory: Inventory | null;
+  stolenResources: { money: number; items: Inventory } | null;
+} {
   const stolenResources = battle.stolenResources
     ? { money: battle.stolenResources.money, items: { ...battle.stolenResources.items } }
     : null;
@@ -198,7 +234,7 @@ function serializeCombatBattle(battle: BattleSerializeInput): ActiveBattleSerial
       battleLogs: Array.isArray(battle.battleLogs) ? battle.battleLogs : [],
       playerStages: battle.playerStages || null,
       enemyStages: battle.enemyStages || null,
-      enemyTeam: serializeEnemyTeamForSave(rawEnemyTeam as Pokemon[] | null),
+      enemyTeam: serializeEnemyTeamForSave(rawEnemyTeam),
       timestamp: Temporal.Now.instant().epochMilliseconds
     };
   } catch (e) {
@@ -213,7 +249,7 @@ const DEFAULT_PVP_TURN_COUNT = 1 as const;
 function extractPvPEnemyTeam(
   battle: BattleState & Partial<ActiveBattleSerialized> & { enemy?: Pokemon }
 ): Pokemon[] | null {
-  if (battle.enemyTeam) return battle.enemyTeam as Pokemon[];
+  if (battle.enemyTeam) return battle.enemyTeam;
   if (battle.enemy) return [battle.enemy];
   return null;
 }

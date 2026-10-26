@@ -1,12 +1,16 @@
 import { computed, type ComputedRef } from 'vue';
-import { usePlayerClassStore } from '@/stores/player/playerClass';
-import { useGameStore } from '@/stores/game';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { GYMS_BY_ID, isGymId } from '@/data/world/gyms';
+
 import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases';
+import { GYMS_BY_ID, isGymId } from '@/data/world/gyms';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useGameStore } from '@/stores/game';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
 import type { BattleState } from '@/types/battle/battle';
 
-export function useBattleTrainerVisuals(battle: ComputedRef<BattleState | null | undefined>) {
+export function useBattleTrainerVisuals(battle: ComputedRef<BattleState | null | undefined>): {
+  playerBackSpriteUrl: ComputedRef<string>;
+  trainerDialogText: ComputedRef<string>;
+} {
   const classStore = usePlayerClassStore();
   const gameStore = useGameStore();
 

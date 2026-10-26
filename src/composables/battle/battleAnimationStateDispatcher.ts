@@ -1,13 +1,15 @@
-import type { Ref } from 'vue';
 import { gsap } from 'gsap';
-import { logger } from '@/logic/utils/logger';
-import type { useBattleStore } from '@/stores/battle/battle';
-import type { TrainerAnimationState } from './useBattleTrainerAnimations.ts';
-import type { BattleSeatId } from '@/types/battle/battle';
+import type { Ref } from 'vue';
+
 import {
   isBattleSubStateName,
   type BattleSubStateName
 } from '@/logic/battle/battleStateMachine.ts';
+import { logger } from '@/logic/utils/logger';
+import type { useBattleStore } from '@/stores/battle/battle';
+import type { BattleSeatId } from '@/types/battle/battle';
+
+import type { TrainerAnimationState } from './useBattleTrainerAnimations.ts';
 
 export interface BattleAnimSeatState {
   entry: { animState?: string | null; pokemonUid?: string | null };

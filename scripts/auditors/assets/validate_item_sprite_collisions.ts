@@ -8,7 +8,7 @@
  */
 
 import { readFileSync, existsSync } from 'node:fs';
-import path, { resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { enableCompileCache } from 'node:module';
 import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
 
@@ -153,7 +153,7 @@ export class ItemSpriteCollisionAuditor extends BaseAuditor<ItemSpriteCollisionR
         changedOnly: false,
         critical: false
       }),
-      id: 'audit_item_sprite_collisions',
+      id: 'validate_item_sprite_collisions',
       configKey: 'assets.itemSpriteCollisions',
       defaultConfig: {
         enabled: true
@@ -166,6 +166,7 @@ export class ItemSpriteCollisionAuditor extends BaseAuditor<ItemSpriteCollisionR
       packageName: 'Sprites',
       ruleIds: ITEM_SPRITE_COLLISION_RULES,
       usesThirdPartyTool: false,
+      requiredPermissions: [],
       ruleDescriptions: {
         'item-missing-sprite': 'Sprite de ítem no encontrado',
         'item-sprite-collision': 'Colisión en sprite de ítem'
@@ -176,10 +177,8 @@ export class ItemSpriteCollisionAuditor extends BaseAuditor<ItemSpriteCollisionR
         'item-sprite-collision':
           'Assign unique sprite assets to items sharing duplicate sprite paths'
       },
-      requiredFiles: [itemsPath],
-      coverage: {
-        include: ['src/data/inventory/items.json']
-      }
+      remediationPhase: 'hygiene',
+      requiredFiles: [itemsPath]
     });
     this.itemsJsonPath = itemsPath;
   }
@@ -243,10 +242,4 @@ export class ItemSpriteCollisionAuditor extends BaseAuditor<ItemSpriteCollisionR
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (
-  process.argv[1] &&
-  import.meta.filename &&
-  path.basename(process.argv[1]) === path.basename(import.meta.filename)
-) {
-  await BaseAuditor.runCli(new ItemSpriteCollisionAuditor());
-}
+await BaseAuditor.runCliIfMain(import.meta.url, new ItemSpriteCollisionAuditor());

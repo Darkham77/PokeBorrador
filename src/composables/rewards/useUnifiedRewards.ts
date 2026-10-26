@@ -1,29 +1,32 @@
-// src/composables/rewards/useUnifiedRewards.ts
-import { ref, computed, getCurrentInstance, onMounted } from 'vue';
+import type { DisplayText } from '@francogp/auditor';
 import { storeToRefs } from 'pinia';
-import { useEventStore } from '@/stores/events';
-import { usePvPStore } from '@/stores/pvp';
-import { usePlayerClassStore } from '@/stores/player/playerClass';
-import { useGameStore } from '@/stores/game';
-import { useBreedingStore } from '@/stores/breeding';
-import { useGTSStore } from '@/stores/gts';
-import { useUIStore } from '@/stores/ui';
-import { isAwardClaimable } from '@/logic/events/eventValidators';
-import { getEventDisplayName as getEventDisplayNameCore } from '@/logic/events/eventEngine';
-import { resolveAwardCategory } from '@/logic/events/eventCompetitions';
-import { RANKED_REWARD_MILESTONES, isRankedRewardMilestoneId } from '@/data/system/rankedData';
+// src/composables/rewards/useUnifiedRewards.ts
+import { ref, computed, getCurrentInstance, onMounted, type ComputedRef, type Ref } from 'vue';
+
 import { CLASS_MISSIONS_BY_ID, isMissionId } from '@/data/player/playerClasses';
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
-import { logger } from '@/logic/utils/logger';
-import { parsePrize, buildRewardPills } from './rewardsPillExtractor.ts';
-import type { PendingAward, PastEventHistoryItem } from '@/types/system/stores';
-import type { DaycareMission } from '@/types/breeding/breeding';
-import type { UnifiedRewardItem } from '@/types/rewards/rewards';
-import type { Event as GameEvent } from '@/logic/events/eventEngine';
-import type { ActiveMission } from '@/types/system/game';
+import { RANKED_REWARD_MILESTONES, isRankedRewardMilestoneId } from '@/data/system/rankedData';
 import { isPokemonEligibleForMission } from '@/logic/breeding/missionEngine';
+import { resolveAwardCategory } from '@/logic/events/eventCompetitions';
+import { getEventDisplayName as getEventDisplayNameCore } from '@/logic/events/eventEngine';
+import type { Event as GameEvent } from '@/logic/events/eventEngine';
+import { isAwardClaimable } from '@/logic/events/eventValidators';
+import { logger } from '@/logic/utils/logger';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
+import { useBreedingStore } from '@/stores/breeding';
+import { useEventStore } from '@/stores/events';
+import { useGameStore } from '@/stores/game';
+import { useGTSStore } from '@/stores/gts';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { usePvPStore } from '@/stores/pvp';
+import { useUIStore } from '@/stores/ui';
+import type { DaycareMission } from '@/types/breeding/breeding';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { UnifiedRewardItem } from '@/types/rewards/rewards';
+import type { ActiveMission } from '@/types/system/game';
+import type { PendingAward, PastEventHistoryItem } from '@/types/system/stores';
+
 import { buildGtsClaimRewardItems } from './gtsRewardClaimHelpers.ts';
+import { parsePrize, buildRewardPills } from './rewardsPillExtractor.ts';
 
 function getEventAwardDisplayName(
   eventId: string,
@@ -51,7 +54,7 @@ function getEventCategoryBadge(
   award: PendingAward,
   allEvents: readonly GameEvent[],
   pastEvents: readonly PastEventHistoryItem[]
-) {
+): { icon: string; name: string } | null {
   if (award.event_id?.startsWith('ranked_season_')) {
     return { icon: '🎖️', name: 'Temporada Ranked' };
   }
@@ -101,7 +104,7 @@ function buildRankedMilestoneRewardItems(
   maxElo: number
 ): UnifiedRewardItem[] {
   const items: UnifiedRewardItem[] = [];
-  const claimedMap: Record<string, true> = {}; // open-record: Dynamic stringified reward identifiers and milestone ids
+  const claimedMap: Record<DisplayText, true> = {}; // open-record: Dynamic stringified reward identifiers and milestone ids
   for (const r of rewardsClaimed || []) {
     claimedMap[String(r)] = true;
   }
@@ -153,7 +156,20 @@ function buildClassMissionRewardItems(
   ];
 }
 
-export function useUnifiedRewards() {
+export interface UseUnifiedRewardsReturn {
+  unifiedRewards: ComputedRef<UnifiedRewardItem[]>;
+  totalClaimableRewards: ComputedRef<number>;
+  totalPendingRewards: ComputedRef<number>;
+  totalActionableMissions: ComputedRef<number>;
+  isClassMissionReadyToDeploy: ComputedRef<boolean>;
+  totalHomeNotifications: ComputedRef<number>;
+  isClaiming: Ref<boolean>;
+  claimReward: (item: UnifiedRewardItem) => Promise<boolean>;
+  claimAllRewards: () => Promise<number>;
+  confirmDiscardReward: (item: UnifiedRewardItem) => void;
+}
+
+export function useUnifiedRewards(): UseUnifiedRewardsReturn {
   const eventStore = useEventStore();
   const pvpStore = usePvPStore();
   const classStore = usePlayerClassStore();
@@ -165,9 +181,9 @@ export function useUnifiedRewards() {
   const { pendingAwards, allEvents } = storeToRefs(eventStore);
 
   if (getCurrentInstance()) {
-    onMounted(() => {
+    onMounted(async () => {
       if (gtsStore.salesHistory.length === 0) {
-        void gtsStore.fetchUserData();
+        await gtsStore.fetchUserData();
       }
     });
   }
@@ -307,7 +323,7 @@ export function useUnifiedRewards() {
     }
   }
 
-  function confirmDiscardReward(item: UnifiedRewardItem) {
+  function confirmDiscardReward(item: UnifiedRewardItem): void {
     if (item.source !== 'event') return;
     const award = item.rawData as PendingAward;
     uiStore.openConfirm({

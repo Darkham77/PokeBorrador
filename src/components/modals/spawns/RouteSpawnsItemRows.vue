@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import RouteSpawnsItemRow from './RouteSpawnsItemRow.vue';
 import type { ArchaeologyRewardData } from '@/composables/modals/useRouteSpawnsArchaeology';
+
+import RouteSpawnsItemRow from './RouteSpawnsItemRow.vue';
 
 interface Props {
   archaeologyItems: ArchaeologyRewardData[];

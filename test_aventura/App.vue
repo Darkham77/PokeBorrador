@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import KantoAdventureView from './views/KantoAdventureView.vue';
-import RegionalContinentStudioView from './views/RegionalContinentStudioView.vue';
-import MapStudioView from './views/MapStudioView.vue';
-import AutotileStudioView from './views/AutotileStudioView.vue';
-import AssetAtlasInspectorView from './views/AssetAtlasInspectorView.vue';
+
 import AdventureGraphStudioView from './views/AdventureGraphStudioView.vue';
+import AssetAtlasInspectorView from './views/AssetAtlasInspectorView.vue';
+import AutotileStudioView from './views/AutotileStudioView.vue';
+import KantoAdventureView from './views/KantoAdventureView.vue';
 import LocalTileStudioView from './views/LocalTileStudioView.vue';
+import MapStudioView from './views/MapStudioView.vue';
+import RegionalContinentStudioView from './views/RegionalContinentStudioView.vue';
 
 type ActiveTool =
   | 'kanto'

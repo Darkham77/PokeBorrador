@@ -5,8 +5,10 @@
 // ============================================================
 
 import { describe, test, expect } from 'vite-plus/test';
-import { heuristicDecision } from '@/logic/battle/ai/heuristic/heuristicEngine';
+
+import type { PokemonMoveId } from '@/data/battle/moves';
 import { HeuristicDamageCalculator } from '@/logic/battle/ai/heuristic/damageCalculator';
+import { heuristicDecision } from '@/logic/battle/ai/heuristic/heuristicEngine';
 import { InferenceEngine } from '@/logic/battle/ai/heuristic/inferenceEngine';
 import type {
   HeuristicBattleSnapshot,
@@ -17,7 +19,6 @@ import type {
   DamageMatchup,
   DamageResult
 } from '@/logic/battle/ai/heuristic/types';
-import type { PokemonMoveId } from '@/data/battle/moves';
 
 // ──────────────────────────────────────────
 // Synthetic state builders

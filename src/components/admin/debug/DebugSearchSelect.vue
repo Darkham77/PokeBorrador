@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
 import { onClickOutside } from '@vueuse/core';
+import { ref, computed, watch } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 
 interface Option {
@@ -47,7 +48,7 @@ const filteredOptions = computed(() => {
     .slice(0, MAX_SEARCH_SELECT_RESULTS_LIMIT);
 });
 
-function handleSelect(option: Option) {
+function handleSelect(option: Option): void {
   search.value = option.name.toUpperCase();
   showDropdown.value = false;
   emit('update:modelValue', option.id);

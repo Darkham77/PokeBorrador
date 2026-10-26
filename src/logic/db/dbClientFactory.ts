@@ -1,9 +1,10 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { logger } from '../utils/logger.ts';
-import { safeStorage, LOCAL_STORAGE_KEYS } from '../utils/storage.ts';
-import { isE2EEnvironment } from '../utils/env.ts';
+
 import type { DBConfig, SessionMode, DBRouterOptions } from '../../types/system/database.ts';
 import type { E2eDatabaseDriver } from '../../types/system/env.d.ts';
+import { isE2EEnvironment } from '../utils/env.ts';
+import { logger } from '../utils/logger.ts';
+import { safeStorage, LOCAL_STORAGE_KEYS } from '../utils/storage.ts';
 
 const MAX_RECONNECT_INTERVAL_MS = 300000 as const;
 const INITIAL_RECONNECT_BACKOFF_MS = [1000, 2000, 5000] as const;
@@ -13,8 +14,8 @@ function getE2EDriver(): E2eDatabaseDriver {
   if (typeof globalThis !== 'undefined' && globalThis.__E2E_DRIVER__) {
     return globalThis.__E2E_DRIVER__;
   }
-  if (typeof window !== 'undefined' && window.__E2E_DRIVER__) {
-    return window.__E2E_DRIVER__;
+  if (typeof globalThis.window !== 'undefined' && globalThis.__E2E_DRIVER__) {
+    return globalThis.__E2E_DRIVER__;
   }
   if (typeof process !== 'undefined' && process.env.SIM_DB_DRIVER === 'postgres') {
     return 'postgres';

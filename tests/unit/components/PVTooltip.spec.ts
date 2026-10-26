@@ -1,7 +1,8 @@
+import { mount } from '@vue/test-utils';
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test';
-import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 
 const SHORT_DESC = 'Linea 1\nLinea 2\nLinea 3';

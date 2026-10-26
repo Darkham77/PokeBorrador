@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { nextTick } from 'vue';
 import { gsap } from 'gsap';
+import { nextTick } from 'vue';
 
 interface Props {
   modelValue: string;
@@ -12,7 +12,7 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void;
 }>();
 
-function handleServerTabEnter(e: MouseEvent) {
+function handleServerTabEnter(e: MouseEvent): void {
   const tab = e.currentTarget as HTMLElement;
   if (!tab.classList.contains('active')) {
     gsap.to(tab, {
@@ -23,7 +23,7 @@ function handleServerTabEnter(e: MouseEvent) {
   }
 }
 
-function handleServerTabLeave(e: MouseEvent) {
+function handleServerTabLeave(e: MouseEvent): void {
   const tab = e.currentTarget as HTMLElement;
   if (!tab.classList.contains('active')) {
     gsap.to(tab, {
@@ -34,7 +34,7 @@ function handleServerTabLeave(e: MouseEvent) {
   }
 }
 
-async function selectTab(value: string) {
+async function selectTab(value: string): Promise<void> {
   emit('update:modelValue', value);
   await nextTick();
   gsap.killTweensOf('.login-server-tab');

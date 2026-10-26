@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
+import { ITEMS_BY_ID, isItemId, type ItemId } from '@/data/inventory/items';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { useGameStore } from '@/stores/game';
 import { useInventoryStore } from '@/stores/inventory/inventory';
 import { useShopStore } from '@/stores/inventory/shop';
-import { ITEMS_BY_ID, isItemId, type ItemId } from '@/data/inventory/items';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+
 import AdventureCheatTeamCard from './AdventureCheatTeamCard.vue';
 
 interface Props {
@@ -24,7 +26,7 @@ const shopStore = useShopStore();
 
 const filteredShopItems = computed(() => Object.values(ITEMS_BY_ID));
 
-const adjustItem = (itemId: ItemId, amount: number) => {
+const adjustItem = (itemId: ItemId, amount: number): void => {
   const nextInjected = new Set(props.injectedItems);
   if (amount > 0) {
     inventoryStore.addItem(itemId, amount);
@@ -46,7 +48,7 @@ const TEST_PIKACHU_LEVEL = 20 as const;
 const TEST_ABRA_LEVEL = 15 as const;
 const TEST_CHARIZARD_LEVEL = 25 as const;
 
-const clearTestItems = () => {
+const clearTestItems = (): void => {
   const inv = gameStore.state.inventory || {};
   props.injectedItems.forEach((itemId) => {
     if (isItemId(itemId) && inv[itemId]) {
@@ -60,7 +62,7 @@ const clearTestItems = () => {
   );
 };
 
-const injectTestTeam = () => {
+const injectTestTeam = (): void => {
   const currentTeam = gameStore.state.team || [];
   if (currentTeam.length >= 6) {
     emit('addLog', '⚠️ El equipo ya está lleno (máx. 6 Pokémon). Remueve alguno desde el PC.');
@@ -86,7 +88,7 @@ const injectTestTeam = () => {
   gameStore.save(false);
 };
 
-const healActiveTeam = () => {
+const healActiveTeam = (): void => {
   shopStore.healAllPokemon(0);
   emit('addLog', '🏥 Cheat: Todo tu equipo ha sido completamente curado.');
 };

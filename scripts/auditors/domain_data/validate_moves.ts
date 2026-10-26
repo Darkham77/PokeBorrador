@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * scripts/auditors/domain_data/validate_moves.ts
  *
@@ -8,11 +9,11 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { Dex, toID } from '@pkmn/sim';
+import { Dex, toID, type ID } from '@pkmn/sim';
 import { ACTIVE_GENERATION, isEnabledPokemonId } from '../../../src/data/system/constants.ts';
 import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
 import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
-import { MOVE_TRANSLATIONS_ES, type PokemonMoveId } from '../../../src/data/battle/moves.ts';
+import { MOVE_TRANSLATIONS_ES, isPokemonMoveId, type PokemonMoveId } from '../../../src/data/battle/moves.ts';
 
 enableCompileCache();
 
@@ -34,7 +35,7 @@ export const MOVE_RULES: readonly MoveRuleId[] = [
   'move-missing-effect-desc'
 ] as const;
 
-const STATUS_EFFECT_MAP: Record<string, string> = {
+const STATUS_EFFECT_MAP: Record<DisplayText, string> = {
   par: 'paralyze',
   brn: 'burn',
   frz: 'freeze',
@@ -43,7 +44,7 @@ const STATUS_EFFECT_MAP: Record<string, string> = {
   slp: 'sleep'
 };
 
-const STAT_ABBR_MAP: Record<string, string> = {
+const STAT_ABBR_MAP: Record<DisplayText, string> = {
   atk: 'atk',
   def: 'def',
   spa: 'spa',
@@ -53,7 +54,7 @@ const STAT_ABBR_MAP: Record<string, string> = {
   evasion: 'eva'
 };
 
-const SPECIAL_EFFECTS: Record<string, string> = {
+const SPECIAL_EFFECTS: Record<DisplayText, string> = {
   metronome: 'metronome',
   mirror_move: 'mirror_move',
   sandstorm: 'sandstorm',
@@ -96,12 +97,12 @@ interface SecondaryEffectInput {
   chance?: number;
   status?: string;
   volatileStatus?: string;
-  boosts?: Partial<Record<string, number>>;
+  boosts?: Partial<Record<DisplayText, number>>;
   self?: unknown;
 }
 
 function resolveBoostEffect(
-  boosts: Partial<Record<string, number>>,
+  boosts: Partial<Record<DisplayText, number>>,
   isSelf: boolean,
   chance: string
 ): string | undefined {
@@ -131,7 +132,7 @@ function resolveSecondaryEffect(sec: SecondaryEffectInput): string | undefined {
 }
 
 function resolveSelfBoostEffect(self: {
-  boosts?: Partial<Record<string, number>>;
+  boosts?: Partial<Record<DisplayText, number>>;
   chance?: number;
 }): string | undefined {
   if (!self.boosts) return undefined;
@@ -171,6 +172,7 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
       ruleIds: MOVE_RULES,
       packageName: 'Movimientos',
       usesThirdPartyTool: false,
+      requiredPermissions: [],
       ruleDescriptions: {
         'move-invalid-showdown': 'Movimiento no válido en Showdown',
         'move-missing-translation': 'Traducción faltante en movimiento',
@@ -181,6 +183,7 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
         'move-missing-translation': 'Add Spanish translation for move in src/data/battle/moves.ts',
         'move-missing-effect-desc': 'Register move secondary effect description in pokemonUtils.ts'
       },
+      remediationPhase: 'contracts',
       requiredFiles: [UTILS_FILE],
       coverage: {
         include: [
@@ -233,7 +236,7 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
     this.recordScanned('src/data/battle/movesData.json');
     this.recordScanned('src/logic/pokemon/pokemonUtils.ts');
 
-    const learnsetMoves = new Set<string>();
+    const learnsetMoves = new Set<ID>();
     let g3 = Dex.forGen(ACTIVE_GENERATION);
 
     this.runSubAuditorSync('move-invalid-showdown', () => {
@@ -294,13 +297,14 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
             registeredEffects.add(k[1]!);
           }
 
-          learnsetMoves.forEach((moveId) =>
-            this.validateMoveEffectDescription(moveId as PokemonMoveId, g3, registeredEffects)
-          );
+          learnsetMoves.forEach((moveId) => {
+            if (isPokemonMoveId(moveId)) {
+              this.validateMoveEffectDescription(moveId, g3, registeredEffects);
+            }
+          });
         }
-      } catch {
-        // catch-ok: optional dex data parsing error fallback
-        // Ignored
+      } catch (err) {
+        err;
       }
     });
 
@@ -309,10 +313,4 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (
-  process.argv[1] &&
-  import.meta.filename &&
-  path.basename(process.argv[1]) === path.basename(import.meta.filename)
-) {
-  await BaseAuditor.runCli(new MoveAuditor());
-}
+await BaseAuditor.runCliIfMain(import.meta.url, new MoveAuditor());

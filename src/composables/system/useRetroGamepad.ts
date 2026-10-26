@@ -1,5 +1,5 @@
-import { computed } from 'vue';
 import { useGamepad } from '@vueuse/core';
+import { computed, type ComputedRef, type Ref } from 'vue';
 
 const BUTTON_A_INDEX = 0;
 const BUTTON_B_INDEX = 1;
@@ -13,12 +13,27 @@ const DPAD_LEFT_INDEX = 14;
 const DPAD_RIGHT_INDEX = 15;
 const ANALOG_THRESHOLD = 0.5;
 
+export interface UseRetroGamepadReturn {
+  isSupported: Ref<boolean>;
+  isConnected: ComputedRef<boolean>;
+  dpadUp: ComputedRef<boolean>;
+  dpadDown: ComputedRef<boolean>;
+  dpadLeft: ComputedRef<boolean>;
+  dpadRight: ComputedRef<boolean>;
+  buttonA: ComputedRef<boolean>;
+  buttonB: ComputedRef<boolean>;
+  buttonX: ComputedRef<boolean>;
+  buttonY: ComputedRef<boolean>;
+  start: ComputedRef<boolean>;
+  select: ComputedRef<boolean>;
+}
+
 /**
  * useRetroGamepad
  * Reactive composable to interact with retro gamepads and standard controllers.
  * Powered by @vueuse/core useGamepad.
  */
-export function useRetroGamepad() {
+export function useRetroGamepad(): UseRetroGamepadReturn {
   const { isSupported, gamepads } = useGamepad();
 
   const activeGamepad = computed(() => {

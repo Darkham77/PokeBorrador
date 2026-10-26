@@ -1,18 +1,17 @@
-import { queryLocal, persistSQLite } from '../sqliteEngine.ts';
-import type { SQLiteDatabase } from '../sqliteEngine.ts';
-import type { DBResponse } from '@/types/system/database';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality.ts';
-import { isPokemonBusy } from '@/logic/constants/tags.ts';
-
+import { isItemId, type ItemId } from '@/data/inventory/items';
 import {
   ALPHANUMERIC_RADIX,
   RANDOM_STRING_SUBSTRING_START,
   RANDOM_STRING_SUBSTRING_END
 } from '@/logic/constants/gameplay.ts';
-
-import { isItemId, type ItemId } from '@/data/inventory/items';
+import { isPokemonBusy } from '@/logic/constants/tags.ts';
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality.ts';
 import type { Inventory } from '@/types/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { DBResponse } from '@/types/system/database';
+
+import { queryLocal, persistSQLite } from '../sqliteEngine.ts';
+import type { SQLiteDatabase } from '../sqliteEngine.ts';
 
 interface OfflineSaveData {
   box?: Pokemon[];
@@ -56,7 +55,7 @@ function deductOfferedPokemon(
   poke: Pokemon | null
 ): DBResponse | null {
   if (!poke) return null;
-  const uid = poke.uid as string;
+  const uid = poke.uid;
   const teamLenBefore = senderSave.team?.length || 0;
   senderSave.team = (senderSave.team || []).filter((p) => p.uid !== uid);
   if (senderSave.team.length === teamLenBefore) {
@@ -83,7 +82,7 @@ function deductOfferedItems(
       return { data: null, error: { message: `Cantidad insuficiente de ${itemName}.` } };
     }
     inventory[itemName] = currentQty - qty;
-    if (inventory[itemName]! <= 0) {
+    if (inventory[itemName] <= 0) {
       delete inventory[itemName];
     }
   }
@@ -135,7 +134,7 @@ export async function emulateSendTradeOffer(
   if (senderSaves.length === 0) return { data: null, error: { message: 'Save not found' } };
   const senderSave = (
     typeof senderSaves[0]!.save_data === 'string'
-      ? JSON.parse(senderSaves[0]!.save_data as string)
+      ? JSON.parse(senderSaves[0]!.save_data)
       : senderSaves[0]!.save_data
   ) as OfflineSaveData;
 
@@ -248,7 +247,7 @@ function deductItemsFromReceiverSave(
       return `Cantidad insuficiente de ${itemName}.`;
     }
     inventory[itemName] = currentQty - qty;
-    if (inventory[itemName]! <= 0) {
+    if (inventory[itemName] <= 0) {
       delete inventory[itemName];
     }
   }
@@ -261,10 +260,7 @@ function deductReceiverTradeCost(
   requestMoney: number,
   requestItemsObj: Record<ItemId, number> | null
 ): string | null {
-  if (
-    requestPokeObj &&
-    !removePokemonFromReceiverSave(receiverSave, requestPokeObj.uid as string)
-  ) {
+  if (requestPokeObj && !removePokemonFromReceiverSave(receiverSave, requestPokeObj.uid)) {
     return 'Pokémon solicitado no encontrado en tu inventario.';
   }
 
@@ -362,7 +358,7 @@ export async function emulateAcceptTrade(
   if (receiverSaves.length === 0) return { data: null, error: { message: 'Save not found' } };
   const receiverSave = (
     typeof receiverSaves[0]!.save_data === 'string'
-      ? JSON.parse(receiverSaves[0]!.save_data as string)
+      ? JSON.parse(receiverSaves[0]!.save_data)
       : receiverSaves[0]!.save_data
   ) as OfflineSaveData;
 

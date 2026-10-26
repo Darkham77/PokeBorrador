@@ -1,9 +1,13 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * classMath.ts
  * Pure functions and mathematical formulas module for player class mechanics
  * without database side effects or state storage.
  */
 
+import type { GymId } from '@/data/world/gyms';
+
+import { MAX_POKEMON_LEVEL } from '../../data/system/constants.ts';
 import {
   MINIMUM_POKEMON_LEVEL,
   DECIMAL_PLACES_PRECISION_TWO,
@@ -14,8 +18,6 @@ import {
   TRAINER_HIGH_IV_THRESHOLD,
   MAX_POKEMON_TEAM_SIZE
 } from '../constants/gameplay.ts';
-import { MAX_POKEMON_LEVEL } from '../../data/system/constants.ts';
-import type { GymId } from '@/data/world/gyms';
 
 /** Bonus level calculation step for excess criminality (1 level per 10%). */
 export const CRIMINALITY_BONUS_LEVEL_STEP_PERCENT = 10;
@@ -134,7 +136,7 @@ export function hasDoubleRivalChance(
   return defeatedGyms.every((gymId) => {
     const progress = (
       gymProgress as Record<
-        string,
+        DisplayText,
         { easy?: boolean; normal?: boolean; hard?: boolean } | undefined
       >
     )[gymId]; // open-record: Gym id lookup
@@ -160,7 +162,7 @@ export function getXPNeededForClassLevel(level: number): number {
  */
 export function calculateMaxNpcRobberyLimit(avgLevel: number): number {
   const level = Math.max(MINIMUM_POKEMON_LEVEL, avgLevel);
-  return NPC_ROBBERY_LIMIT_QUADRATIC_COEFF * Math.pow(level, QUADRATIC_EXPONENT);
+  return NPC_ROBBERY_LIMIT_QUADRATIC_COEFF * level ** QUADRATIC_EXPONENT;
 }
 
 /**
@@ -215,9 +217,7 @@ export function calculatePoliceBail(classLevel: number, criminality: number): nu
   const level = Math.max(MINIMUM_POKEMON_LEVEL, classLevel || MINIMUM_POKEMON_LEVEL);
   const crim = Math.max(0, criminality || 0);
   return Math.floor(
-    Math.pow(level, QUADRATIC_EXPONENT) *
-      POLICE_BAIL_BASE_MULTIPLIER *
-      (crim / MAX_CRIMINALITY_LEVEL)
+    level ** QUADRATIC_EXPONENT * POLICE_BAIL_BASE_MULTIPLIER * (crim / MAX_CRIMINALITY_LEVEL)
   );
 }
 

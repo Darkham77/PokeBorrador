@@ -1,12 +1,12 @@
-import type { BattleContext } from '../../types/battle/battleContext.ts';
 import type { BattleSide } from '../../types/battle/battle.ts';
+import type { BattleContext } from '../../types/battle/battleContext.ts';
 import type { Pokemon } from '../../types/pokemon/pokemon.ts';
 import { logger } from '../utils/logger.ts';
-import type { SBCtx } from './showdownBridgeCtx.ts';
 import { handleCoreEvents } from './showdownBridgeCore.ts';
-import { handleStageEvents } from './showdownBridgeStages.ts';
+import type { SBCtx } from './showdownBridgeCtx.ts';
 import { handleFieldEvents } from './showdownBridgeField.ts';
 import { handleMiscEvents } from './showdownBridgeMisc.ts';
+import { handleStageEvents } from './showdownBridgeStages.ts';
 import { determineCombatantFromLog, parseBattleSide } from './showdownCombatantResolver.ts';
 import { updateLogSkippingState } from './showdownLogSkipper.ts';
 
@@ -22,7 +22,7 @@ export async function parseShowdownLogLine(
   store: BattleContext,
   line: string,
   turnLogs?: string[]
-) {
+): Promise<void> {
   if (!line || !line.startsWith('|')) return;
 
   const parts = line.split('|').map((p) => p.trim());

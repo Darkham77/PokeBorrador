@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { usePvPStore } from '@/stores/pvp';
-import { useAuthStore } from '@/stores/auth';
-import { useUIStore } from '@/stores/ui';
+
 import BaseModal from '@/components/common/BaseModal.vue';
-import ArenaRankedPanel from '@/components/modals/ArenaRankedPanel.vue';
 import ArenaCasualPanel from '@/components/modals/ArenaCasualPanel.vue';
-import ArenaReplaysPanel from '@/components/modals/ArenaReplaysPanel.vue';
 import ArenaPassivePanel from '@/components/modals/ArenaPassivePanel.vue';
+import ArenaRankedPanel from '@/components/modals/ArenaRankedPanel.vue';
+import ArenaReplaysPanel from '@/components/modals/ArenaReplaysPanel.vue';
+import { useAuthStore } from '@/stores/auth';
+import { usePvPStore } from '@/stores/pvp';
+import { useUIStore } from '@/stores/ui';
 
 type ArenaTab = 'ranked' | 'casual' | 'replays' | 'defense';
 

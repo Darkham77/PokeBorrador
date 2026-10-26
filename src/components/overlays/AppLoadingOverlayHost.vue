@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { gsap } from 'gsap';
+
 import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue';
 
 type LoadingOverlayTheme = 'default' | 'purple' | 'error' | 'warning';
@@ -29,11 +30,11 @@ const emit = defineEmits<{
   (e: 'update'): void;
 }>();
 
-const onLoadingEnter = (el: Element, done: () => void) => {
+const onLoadingEnter = (el: Element, done: () => void): void => {
   gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'none', onComplete: done });
 };
 
-const onLoadingLeave = (el: Element, done: () => void) => {
+const onLoadingLeave = (el: Element, done: () => void): void => {
   gsap.to(el, { opacity: 0, duration: 0.8, ease: 'power2.inOut', onComplete: done });
 };
 </script>

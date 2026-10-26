@@ -1,8 +1,10 @@
+import { mount } from '@vue/test-utils';
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vite-plus/test';
-import { mount } from '@vue/test-utils';
-import CombatantSpriteLayer from '@/components/battle/CombatantSpriteLayer.vue';
+
 import CombatantSpriteAnimated from '@/components/battle/CombatantSpriteAnimated.vue';
+import CombatantSpriteLayer from '@/components/battle/CombatantSpriteLayer.vue';
+import SVGFilters from '@/components/common/SVGFilters.vue';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
@@ -100,5 +102,20 @@ describe('Combatant Silhouette Filter Integrity (Tier 1 RED)', () => {
     expect(variationImg.exists()).toBe(true);
     expect(variationImg.classes()).toContain('pokemon-combat-image');
     expect(variationImg.attributes('style')).toContain('width: 400%');
+  });
+
+  it('ensures SVGFilters renders all required SVG filter IDs in the DOM', () => {
+    const wrapper = mount(SVGFilters);
+    const expectedFilters = [
+      'pixel-outline-optimized',
+      'pixel-outline-optimized-3px',
+      'pixel-outline-ice',
+      'pixel-silhouette-optimized',
+      'pixel-energy-optimized'
+    ];
+    for (const filterId of expectedFilters) {
+      const filter = wrapper.find(`filter#${filterId}`);
+      expect(filter.exists()).toBe(true);
+    }
   });
 });

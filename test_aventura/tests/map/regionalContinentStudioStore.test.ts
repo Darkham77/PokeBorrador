@@ -10,8 +10,9 @@
  *   4. Concurrency control: incremental jobId and generation state.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach } from 'vitest';
+
 import { useRegionalContinentStudioStore } from '../../stores/continentStudioStore.ts';
 
 describe('useRegionalContinentStudioStore', () => {

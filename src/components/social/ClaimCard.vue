@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
 import { gsap } from 'gsap';
+import { ref, computed } from 'vue';
+
 import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
 import { useGTSStore } from '@/stores/gts';
+import { useUIStore } from '@/stores/ui';
 import type { ClaimItem } from '@/types/system/game';
+
 import {
   formatSoldDetails,
   getFriendlySourceType,
@@ -41,7 +43,7 @@ const soldDetails = computed(() => formatSoldDetails(props.claim, gtsStore.sales
 
 const CLAIM_COOLDOWN_DELAY_SEC = 5;
 
-const onClaim = async () => {
+const onClaim = async (): Promise<void> => {
   if (isCooldown.value) {
     uiStore.notify('Debes esperar entre reclamos', '⏳');
     return;

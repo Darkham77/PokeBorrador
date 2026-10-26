@@ -1,19 +1,31 @@
-import { computed } from 'vue';
-import { useGameStore } from '@/stores/game';
+import { computed, type ComputedRef } from 'vue';
+
+import type { RouteSpawnsProps } from '@/composables/modals/useRouteSpawnsCalculation';
 import { calculateArchaeologyWeights } from '@/logic/utils/archaeologyHelpers.ts';
+import { useGameStore } from '@/stores/game';
+
 import {
   type ArchaeologyRewardData,
   buildFossilReward,
   buildStaticCategoryRewards,
   formatArchaeologyTooltip
 } from './routeSpawnsArchaeologyHelpers.ts';
-import type { RouteSpawnsProps } from '@/composables/modals/useRouteSpawnsCalculation';
 
 export type { ArchaeologyRewardData };
 
 const DEFAULT_RATE_FALLBACK = 10 as const;
 
-export function useRouteSpawnsArchaeology(props: RouteSpawnsProps) {
+export interface UseRouteSpawnsArchaeologyReturn {
+  readonly archaeologyRewards: ComputedRef<ArchaeologyRewardData[]>;
+  readonly getArchaeologySpawnTooltip: (reward: ArchaeologyRewardData) => {
+    title: string;
+    description: string;
+  };
+}
+
+export function useRouteSpawnsArchaeology(
+  props: RouteSpawnsProps
+): UseRouteSpawnsArchaeologyReturn {
   const gameStore = useGameStore();
 
   const archaeologyRewards = computed<ArchaeologyRewardData[]>(() => {
@@ -37,7 +49,7 @@ export function useRouteSpawnsArchaeology(props: RouteSpawnsProps) {
       activeWeights.fossil + activeWeights.stone + activeWeights.common + activeWeights.rare;
 
     const fossilRewards = pool.map((id, index) => {
-      const rate = rates[index] !== undefined ? rates[index]! : DEFAULT_RATE_FALLBACK;
+      const rate = rates[index] !== undefined ? rates[index] : DEFAULT_RATE_FALLBACK;
       const relativeRate = rate / totalRates;
       return buildFossilReward(
         id,
@@ -59,7 +71,10 @@ export function useRouteSpawnsArchaeology(props: RouteSpawnsProps) {
     return [...fossilRewards, ...staticRewards];
   });
 
-  function getArchaeologySpawnTooltip(reward: ArchaeologyRewardData) {
+  function getArchaeologySpawnTooltip(reward: ArchaeologyRewardData): {
+    title: string;
+    description: string;
+  } {
     const pickaxeType =
       (gameStore.state.pickaxeSecs || 0) > 0 ? gameStore.state.pickaxeType || 'standard' : null;
     const brushType =

@@ -12,11 +12,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
+import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
 import { generateWildernessLayer } from '../../logic/map/wildernessVegetationEngine.ts';
-import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 
 describe('multiMapAuditFixes (10-Continent Audit Suite)', () => {
   it('guarantees zero floating bridge ends on maps with water turns (Map 4 & Map 6)', () => {
@@ -119,10 +120,14 @@ describe('multiMapAuditFixes (10-Continent Audit Suite)', () => {
         .map((b) => b.filename)
     );
 
+    const PLAIN_PROP_TYPE_LIST = ['fence_h', 'flower', 'bush', 'sapling'] as const;
+    type PlainPropType = (typeof PLAIN_PROP_TYPE_LIST)[number];
+    const PLAIN_PROP_TYPES: ReadonlySet<PlainPropType> = new Set<PlainPropType>(
+      PLAIN_PROP_TYPE_LIST
+    );
     const illegalMountainProps = wilderness9.props.filter((p) => {
       const elev = continent9.heightmap[p.y]?.[p.x] ?? 0;
-      const isPlainProp =
-        p.type === 'fence_h' || p.type === 'flower' || p.type === 'bush' || p.type === 'sapling';
+      const isPlainProp = PLAIN_PROP_TYPES.has(p.type as PlainPropType);
       return elev > 0 && isPlainProp;
     });
 

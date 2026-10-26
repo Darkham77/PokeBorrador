@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ParsedStatusEffectInfo } from '@/types/battle/tooltip';
+
 import {
   getTargetCssClass,
   getDirectionCssClass,

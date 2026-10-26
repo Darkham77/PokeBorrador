@@ -3,7 +3,7 @@ import { useBattleStore } from '@/stores/battle/battle';
 
 const battleStore = useBattleStore();
 
-const defeatEnemy = async () => {
+const defeatEnemy = async (): Promise<void> => {
   const e = battleStore.enemy;
   if (!e) return;
   battleStore.addLog('DEBUG: Ejecutando Daño Máximo...', 'log-info', e);
@@ -11,7 +11,7 @@ const defeatEnemy = async () => {
   await battleStore.handleFaint('enemy');
 };
 
-const defeatPlayer = async () => {
+const defeatPlayer = async (): Promise<void> => {
   const p = battleStore.player;
   if (!p) return;
   battleStore.addLog('DEBUG: Ejecutando Suicidio...', 'log-info', p);
@@ -19,7 +19,7 @@ const defeatPlayer = async () => {
   await battleStore.handleFaint('player');
 };
 
-const healPlayer = () => {
+const healPlayer = (): void => {
   const p = battleStore.player;
   if (!p) return;
   p.hp = p.maxHp;
@@ -27,7 +27,7 @@ const healPlayer = () => {
   battleStore.addLog('DEBUG: Jugador curado.', 'log-info', p);
 };
 
-const healEnemy = () => {
+const healEnemy = (): void => {
   const e = battleStore.enemy;
   if (!e) return;
   e.hp = e.maxHp;
@@ -35,11 +35,11 @@ const healEnemy = () => {
   battleStore.addLog('DEBUG: Enemigo curado.', 'log-info', e);
 };
 
-const addExpForNextLevel = async () => {
+const addExpForNextLevel = async (): Promise<void> => {
   await battleStore.awardDebugExp();
 };
 
-const drainPP = () => {
+const drainPP = (): void => {
   const p = battleStore.player;
   if (!p) return;
   p.moves.forEach((m) => {

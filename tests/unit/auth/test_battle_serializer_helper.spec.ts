@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vite-plus/test';
+
 import { serializeActiveBattle } from '@/logic/auth/battleSerializerHelper';
-import type { GameState } from '@/types/system/game';
 import type { BattleState } from '@/types/battle/battle';
+import type { GameState } from '@/types/system/game';
 
 describe('battleSerializerHelper', () => {
   it('returns null if no active battle or battle is over', () => {

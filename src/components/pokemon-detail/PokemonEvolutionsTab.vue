@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 interface Evolution {
   to: PokemonSpeciesId;
@@ -18,7 +18,7 @@ interface Props {
 
 defineProps<Props>();
 
-const getSprite = (id: string) => getAssetUrl(ASSET_TYPES.POKEMON, id);
+const getSprite = (id: string): string => getAssetUrl(ASSET_TYPES.POKEMON, id);
 
 const getEvolutionName = (evo: Evolution): string => {
   if (!evo.isSeen) return 'Desconocido';

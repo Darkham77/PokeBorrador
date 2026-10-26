@@ -1,13 +1,14 @@
-/** @vitest-environment jsdom */
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
+/** @vitest-environment jsdom */
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import ProfilePinnedReplaysCard from '@/components/profile/ProfilePinnedReplaysCard.vue';
 import ProfileRankedMedalsCard from '@/components/profile/ProfileRankedMedalsCard.vue';
-import type { BattleReplayRecord, BattleCode, RankedSeasonMedal } from '@/types/battle/pvp';
 import { useModalStore } from '@/stores/modals';
-import { useUIStore } from '@/stores/ui';
 import { usePvPStore } from '@/stores/pvp';
+import { useUIStore } from '@/stores/ui';
+import type { BattleReplayRecord, BattleCode, RankedSeasonMedal } from '@/types/battle/pvp';
 
 describe('Profile Cards Suite', () => {
   beforeEach(() => {

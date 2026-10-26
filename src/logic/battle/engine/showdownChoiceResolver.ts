@@ -1,4 +1,6 @@
+import type { DisplayText } from '@francogp/auditor';
 import type { Pokemon as SimPokemon, Battle, Side, SideID } from '@pkmn/sim';
+
 import { type ChoiceRequest, classifyRequest } from '../helpers/requestHelper.ts';
 import {
   resolveValidMoveChoice,
@@ -27,9 +29,7 @@ export function isPokemonFaintedOrActive(
         ? pokeObj.condition.includes('fnt')
         : false;
   const isAct =
-    typeof pokeObj.active === 'boolean'
-      ? pokeObj.active
-      : activeList.includes(targetPoke as SimPokemon);
+    typeof pokeObj.active === 'boolean' ? pokeObj.active : activeList.includes(targetPoke);
   return { isFnt, isAct };
 }
 
@@ -60,7 +60,7 @@ export function resolveExplicitChoiceHelper(
   }
   const activeMoves =
     effectiveReq && 'active' in effectiveReq && Array.isArray(effectiveReq.active?.[0]?.moves)
-      ? effectiveReq.active[0]!.moves
+      ? effectiveReq.active[0].moves
       : [];
   return resolveValidMoveChoice(explicitChoice, activeMoves);
 }
@@ -80,7 +80,7 @@ export function resolveForceSwitchFallback(
             !activeList.includes(p) &&
             (isReviving ? p.fainted || p.hp === 0 : !p.fainted && p.hp > 0)
         )
-      : (requestPokemons as RequestPokemonItem[]).findIndex(
+      : requestPokemons.findIndex(
           (p) =>
             p &&
             !p.active &&
@@ -95,9 +95,7 @@ export function resolveForceSwitchFallback(
   const hasAnyLiving =
     simPokemons.length > 0
       ? simPokemons.some((p) => p && !p.fainted && p.hp > 0)
-      : (requestPokemons as RequestPokemonItem[]).some(
-          (p) => p && !p.fainted && !String(p?.condition ?? '').includes('fnt')
-        );
+      : requestPokemons.some((p) => p && !p.fainted && !String(p?.condition ?? '').includes('fnt'));
   if (!hasAnyLiving) {
     return 'pass';
   }
@@ -114,7 +112,7 @@ export function resolveReplayerCandidate(
 ): string {
   const activeMoves =
     effectiveReq && 'active' in effectiveReq && Array.isArray(effectiveReq.active?.[0]?.moves)
-      ? effectiveReq.active[0]!.moves
+      ? effectiveReq.active[0].moves
       : [];
   const trimmed = choiceCandidate.trim().toLowerCase(); // domain-ok: Open dynamic text or non-domain string payload
   if (trimmed.startsWith('move ')) {
@@ -123,9 +121,7 @@ export function resolveReplayerCandidate(
   const switchMatch = /^switch\s+(\d+)$/.exec(trimmed);
   if (switchMatch) {
     const targetSlot = parseInt(switchMatch[1]!, 10);
-    const targetPoke =
-      simPokemons[targetSlot - 1] ??
-      (requestPokemons[targetSlot - 1] as RequestPokemonItem | undefined);
+    const targetPoke = simPokemons[targetSlot - 1] ?? requestPokemons[targetSlot - 1];
     const { isFnt, isAct } = isPokemonFaintedOrActive(targetPoke, activeList);
     if (isFnt || isAct) {
       if (reqKind === 'move') {
@@ -148,8 +144,8 @@ const SEAT_INDEX_MAP: Readonly<Record<SideID, number>> = { p1: 0, p2: 1, p3: 2, 
 export function extractSeatSide(battle: Battle | undefined, seatId: string): Side | undefined {
   return (
     battle?.sides.find((s) => s && s.id === seatId) ??
-    ((SEAT_INDEX_MAP as Record<string, number>)[seatId] !== undefined // open-record: Seat id fallback index lookup
-      ? battle?.sides[(SEAT_INDEX_MAP as Record<string, number>)[seatId]!]
+    ((SEAT_INDEX_MAP as Record<DisplayText, number>)[seatId] !== undefined // open-record: Seat id fallback index lookup
+      ? battle?.sides[(SEAT_INDEX_MAP as Record<DisplayText, number>)[seatId]!]
       : undefined)
   );
 }

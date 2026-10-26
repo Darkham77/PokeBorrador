@@ -1,19 +1,20 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue';
 import { gsap } from 'gsap';
-import { useUIStore } from '@/stores/ui';
-import { useWarStore } from '@/stores/war';
-import { useModalStore } from '@/stores/modals';
+import { ref, computed, watch, nextTick } from 'vue';
+
+import BaseModal from '@/components/common/BaseModal.vue';
+import ShopSearchControls from '@/components/common/ShopSearchControls.vue';
+import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue';
 import { SHOP_ITEMS } from '@/data/inventory/items';
 import { useGameStore } from '@/stores/game';
-import BaseModal from '@/components/common/BaseModal.vue';
-import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue';
-import ShopSearchControls from '@/components/common/ShopSearchControls.vue';
-import WarShopItemCard from './WarShopItemCard.vue';
-import { sortWarShopItems } from './warShopHelpers.ts';
-
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import { useWarStore } from '@/stores/war';
 import type { Item } from '@/types/inventory/items';
 import type { ItemSortKey, SortOrder } from '@/types/system/game';
+
+import { sortWarShopItems } from './warShopHelpers.ts';
+import WarShopItemCard from './WarShopItemCard.vue';
 
 const uiStore = useUIStore();
 const warStore = useWarStore();
@@ -71,7 +72,7 @@ const availableCategories = computed<string[]>(() => {
   return Array.from(cats);
 });
 
-const animateGrid = () => {
+const animateGrid = (): void => {
   nextTick(() => {
     const cards = document.querySelectorAll('.war-shop-item-card');
     if (cards.length > 0) {
@@ -112,19 +113,19 @@ watch(
   }
 );
 
-const closeWarShop = () => {
+const closeWarShop = (): void => {
   emit('close');
 };
 
 // Shim for legacy code
-if (typeof window !== 'undefined') {
-  Reflect.set(window, 'showWarShop', () => {
+if (typeof globalThis.window !== 'undefined') {
+  Reflect.set(globalThis, 'showWarShop', () => {
     useModalStore().open('WarShop');
   });
-  Reflect.set(window, 'closeWarShop', () => {
+  Reflect.set(globalThis, 'closeWarShop', () => {
     useModalStore().close('WarShop');
   });
-  Reflect.set(window, 'renderWarShop', () => {
+  Reflect.set(globalThis, 'renderWarShop', () => {
     // No-op, Vue handles reactivity
   });
 }

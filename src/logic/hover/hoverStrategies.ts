@@ -1,5 +1,6 @@
-import { resolveCssColor, parseToRgba, hasVisualBorders } from './hoverHelpers.ts';
 import { HOVER_STRATEGIES, GSAP_FAST_DURATION_SEC } from '@/logic/constants/animations';
+
+import { resolveCssColor, parseToRgba, hasVisualBorders } from './hoverHelpers.ts';
 
 export interface HoverValues {
   scale?: number;
@@ -461,7 +462,10 @@ function getMiscLeaveBorder(
   return null;
 }
 
-export function getHoverLeaveStrategy(el: HTMLElement) {
+export function getHoverLeaveStrategy(el: HTMLElement): {
+  targetBorderColor: string | null;
+  targetBoxShadow: string | null;
+} {
   if (!hasVisualBorders(el)) {
     return { targetBorderColor: null, targetBoxShadow: null };
   }

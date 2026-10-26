@@ -13,7 +13,7 @@ import { ShowdownBattleEngine } from '../../../../src/logic/battle/engine/showdo
 
 import { generateAiBattles } from '../generators/fuzzer_ai_team_generator.ts';
 import { BattleAgent, type ChoiceRequest } from './fuzzer_agent.ts';
-import { ActiveSlotRequest } from '../../../../src/logic/battle/helpers/showdownBattleAgent.ts';
+import { type ActiveSlotRequest } from '../../../../src/logic/battle/helpers/showdownBattleAgent.ts';
 import { createLocalPoke } from './fuzzer_engine.ts';
 import { patchShowdownSpreadModify } from '../../../../src/logic/battle/engine/showdownSpreadModifyHelper.ts';
 import { HeuristicAI } from '../../../../src/logic/battle/ai/heuristicAI.ts';

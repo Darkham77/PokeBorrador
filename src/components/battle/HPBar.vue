@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
 import { gsap } from 'gsap';
+import { ref, watch } from 'vue';
 
-import { useAudioStore } from '@/stores/audio';
 import { PERCENT_MAX } from '@/logic/constants/gameplay';
+import { useAudioStore } from '@/stores/audio';
 
 interface Props {
   hp: number;
@@ -104,8 +104,8 @@ watch(
 const HP_PCT_GREEN_THRESHOLD = 50;
 const HP_PCT_YELLOW_THRESHOLD = 25;
 
-const getHpPct = (cur: number, max: number) => (cur / max) * 100;
-const getHpClass = (pct: number) => {
+const getHpPct = (cur: number, max: number): number => (cur / max) * 100;
+const getHpClass = (pct: number): string => {
   if (pct > HP_PCT_GREEN_THRESHOLD) return 'hp-high';
   if (pct > HP_PCT_YELLOW_THRESHOLD) return 'hp-mid';
   return 'hp-low';

@@ -19,7 +19,7 @@ export function auditCatchRateMath(
   const content = readFileSync(catchMathPath, 'utf-8').toLowerCase();
 
   // Parámetros canónicos de la fórmula de captura de Showdown
-  const requiredTerms = ['catchrate', 'statusbonus', 'ballbonus', 'maxhp', 'currenthp']; // no-domain: Non-domain utility collection or data structure
+  const requiredTerms = ['catchrate', 'statusbonus', 'ballbonus', 'maxhp', 'currenthp'] as const;
 
   for (const term of requiredTerms) {
     if (!content.includes(term)) {

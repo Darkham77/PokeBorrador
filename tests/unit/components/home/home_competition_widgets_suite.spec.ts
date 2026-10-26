@@ -1,17 +1,18 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import HomeEventsSection from '@/components/home/HomeEventsSection.vue';
 import HomePassiveDefenseWidget from '@/components/home/HomePassiveDefenseWidget.vue';
 import HomeRankedWidget from '@/components/home/HomeRankedWidget.vue';
 import ArenaPassivePanel from '@/components/modals/ArenaPassivePanel.vue';
-import { useEventStore } from '@/stores/events';
-import { usePvPStore } from '@/stores/pvp';
-import { useLivePvPStore } from '@/stores/livePvP';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
 import type { Event as GameEvent } from '@/logic/events/eventEngine';
+import { useEventStore } from '@/stores/events';
+import { useGameStore } from '@/stores/game';
+import { useLivePvPStore } from '@/stores/livePvP';
+import { usePvPStore } from '@/stores/pvp';
+import { useUIStore } from '@/stores/ui';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Home Competition Widgets Suite (Events & PvP)', () => {

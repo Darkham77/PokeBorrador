@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { AutoEnrollCandidateCategory } from '@/logic/events/eventAutoEnrollHelper';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { useEventStore } from '@/stores/events';
 import { useModalStore } from '@/stores/modals';
 import { useUIStore } from '@/stores/ui';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { AutoEnrollCandidateCategory } from '@/logic/events/eventAutoEnrollHelper';
 
 interface Props {
   show?: boolean;
@@ -44,17 +45,17 @@ const pokemonSpriteUrl = computed(() => {
   return getAssetUrl(ASSET_TYPES.POKEMON, species, { isShiny: Boolean(props.pokemon.isShiny) });
 });
 
-const handleSelectCategory = (categoryId: string) => {
+const handleSelectCategory = (categoryId: string): void => {
   selectedCategoryId.value = categoryId;
 };
 
-const handleDismiss = () => {
+const handleDismiss = (): void => {
   modalStore.close('EventAutoEnroll');
   emit('close');
   props.onComplete?.();
 };
 
-const handleConfirm = async () => {
+const handleConfirm = async (): Promise<void> => {
   const candidate = selectedCandidate.value;
   if (!candidate || isSubmitting.value) return;
 
@@ -70,7 +71,7 @@ const handleConfirm = async () => {
     modalStore.close('EventAutoEnroll');
     emit('close');
     props.onComplete?.();
-  } catch (_err) {
+  } catch {
     uiStore.notify('Error al registrar inscripción.', '❌');
   } finally {
     isSubmitting.value = false;

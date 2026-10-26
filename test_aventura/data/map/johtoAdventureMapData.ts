@@ -1,9 +1,9 @@
 // Canonical Johto Adventure Map Data & Routes (Gen 2 / HGSS)
 
+import type { DisplayText } from '@francogp/auditor';
 import type { AdventureProjectNode } from '../../types/map/adventureWorldTypes.ts';
 
-export const rawJohtoNodes: Record<string, AdventureProjectNode> = {
-  // open-record: Estructura o identificador procedural de aventura
+export const rawJohtoNodes: Record<DisplayText, AdventureProjectNode> = {
   newbark: {
     id: 'newbark',
     name: 'Pueblo Primavera',

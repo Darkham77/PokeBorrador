@@ -5,9 +5,10 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import { clusterMountainMassifs } from '../../logic/map/geologicalClusterEngine.ts';
-import { resolveMountainMapGrid } from '../../logic/map/mountainAutotileEngine.ts';
 import type { MacroBiome } from '../../logic/map/macroBiomeSynthesizer.ts';
+import { resolveMountainMapGrid } from '../../logic/map/mountainAutotileEngine.ts';
 
 describe('geologicalClusterEngine', () => {
   const W = 32;

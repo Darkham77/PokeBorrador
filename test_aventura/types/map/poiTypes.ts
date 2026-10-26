@@ -9,6 +9,8 @@
  *   - Bidirectional route edge representation compatible with SVG vector graphs.
  */
 
+import type { AssetUri, DisplayText } from '@francogp/auditor';
+
 import type { UrbanScale } from './continentTypes.ts';
 
 export const POI_TYPES = [
@@ -112,7 +114,7 @@ export const URBAN_BUILDING_TYPES = [
 export type UrbanBuildingType = (typeof URBAN_BUILDING_TYPES)[number];
 
 export interface UrbanBuildingPlacement {
-  readonly id: string; // domain-ok: Identificador o estructura procedural de aventura
+  readonly id: DisplayText;
   readonly type: UrbanBuildingType;
   readonly x: number;
   readonly y: number;
@@ -120,7 +122,7 @@ export interface UrbanBuildingPlacement {
   readonly height: number;
   readonly doorX: number;
   readonly doorY: number;
-  readonly prefabFile: string; // domain-ok: filename of building prefab sprite
+  readonly prefabFile: AssetUri;
   readonly pixelOffsetX?: number;
   readonly pixelOffsetY?: number;
 }
@@ -148,11 +150,11 @@ export const URBAN_ELEMENT_TYPES = ['building', 'prop'] as const;
 export type UrbanElementType = (typeof URBAN_ELEMENT_TYPES)[number];
 
 export interface UrbanPropPlacement {
-  readonly id?: string; // domain-ok: Identificador o estructura procedural de aventura
+  readonly id?: DisplayText;
   readonly type: UrbanPropType;
   readonly x: number;
   readonly y: number;
-  readonly prefabFile: string; // domain-ok: filename of prop prefab sprite
+  readonly prefabFile: AssetUri;
 }
 
 export const COMPACT_CARDINAL_DIRECTIONS = ['n', 's', 'w', 'e'] as const;
@@ -162,14 +164,14 @@ export interface SettlementCurbPlacement {
   readonly x: number;
   readonly y: number;
   readonly direction: CompactCardinalDirection;
-  readonly curbTile: string; // domain-ok: filename of curb prefab sprite
+  readonly curbTile: AssetUri;
 }
 
 export const URBAN_ROAD_MATERIALS = ['dirt', 'paved', 'asphalt', 'stone', 'wood', 'brick'] as const;
 export type UrbanRoadMaterial = (typeof URBAN_ROAD_MATERIALS)[number];
 
 export interface SettlementLayoutResult {
-  readonly nodeId: string; // domain-ok: Identificador o estructura procedural de aventura
+  readonly nodeId: DisplayText;
   readonly buildings: readonly UrbanBuildingPlacement[];
   readonly props: readonly UrbanPropPlacement[];
   readonly internalStreets: readonly { readonly x: number; readonly y: number }[];
@@ -179,8 +181,8 @@ export interface SettlementLayoutResult {
 }
 
 export interface POINode {
-  readonly id: string; // domain-ok: dynamic settlement identifier
-  readonly name: string; // domain-ok: human readable settlement name
+  readonly id: DisplayText;
+  readonly name: DisplayText;
   readonly type: POIType;
   readonly footprint: POIFootprint;
   readonly terrainPreference: POITerrainPreference;
@@ -190,18 +192,18 @@ export interface POINode {
   readonly facing?: CardinalDirection;
   readonly gateways?: readonly POIGateway[];
   readonly urbanLayout?: SettlementLayoutResult;
-  readonly buildingFile?: string; // domain-ok: custom building sprite for specialized POIs (e.g. port docks)
+  readonly buildingFile?: AssetUri;
   readonly hasGym?: boolean;
   readonly hasPort?: boolean;
   readonly urbanScale?: UrbanScale;
   readonly roadMaterial?: UrbanRoadMaterial;
   readonly tier?: number;
   readonly progressionIndex?: number;
-  readonly transitPairId?: string; // domain-ok: Identificador o estructura procedural de aventura
+  readonly transitPairId?: DisplayText;
   readonly isTransitCaveEntry?: boolean;
   readonly isTransitCaveExit?: boolean;
-  readonly transitTargetId?: string; // domain-ok: Identificador o estructura procedural de aventura
-  readonly urbanTheme?: string; // domain-ok: Identificador o estructura procedural de aventura
+  readonly transitTargetId?: DisplayText;
+  readonly urbanTheme?: DisplayText;
 }
 
 export interface RouteWaypoint {
@@ -210,9 +212,9 @@ export interface RouteWaypoint {
 }
 
 export interface RouteEdge {
-  readonly id: string; // domain-ok: route edge identifier
-  readonly fromNodeId: string; // domain-ok: source node id
-  readonly toNodeId: string; // domain-ok: destination node id
+  readonly id: DisplayText;
+  readonly fromNodeId: DisplayText;
+  readonly toNodeId: DisplayText;
   readonly routeType: RouteType;
   readonly distance: number;
   readonly waypoints: readonly RouteWaypoint[];

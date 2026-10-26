@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+
+import DebugIllegalModal from './DebugIllegalModal.vue';
+import DebugPokemonCreatorFooter from './DebugPokemonCreatorFooter.vue';
+import DebugSearchSelect from './DebugSearchSelect.vue';
 import PokemonBaseStats from './PokemonBaseStats.vue';
 import PokemonIVEditor from './PokemonIVEditor.vue';
 import PokemonMovePicker from './PokemonMovePicker.vue';
-import PVTooltip from '@/components/common/PVTooltip.vue';
 import PokemonPreview from './PokemonPreview.vue';
-import DebugSearchSelect from './DebugSearchSelect.vue';
-import DebugIllegalModal from './DebugIllegalModal.vue';
-import DebugPokemonCreatorFooter from './DebugPokemonCreatorFooter.vue';
 import { useDebugPokemonCreator } from './useDebugPokemonCreator.ts';
-import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 
 const {
   config,
@@ -45,8 +47,8 @@ const {
 const showIllegalModal = ref(false);
 const illegalIssues = ref<string[]>([]);
 
-async function executeAction(protocol: string) {
-  if (!window.__VITE_DEBUG__) return;
+async function executeAction(protocol: string): Promise<void> {
+  if (!globalThis.__VITE_DEBUG__) return;
 
   const validation = validateLegality();
   if (!validation.valid) {
@@ -57,9 +59,9 @@ async function executeAction(protocol: string) {
 
   config.value.protocol = protocol;
   if (protocol === 'encounter') {
-    await window.__VITE_DEBUG__.spawnEncounter?.(config.value);
+    await globalThis.__VITE_DEBUG__.spawnEncounter?.(config.value);
   } else {
-    await window.__VITE_DEBUG__.createPokemon?.(config.value);
+    await globalThis.__VITE_DEBUG__.createPokemon?.(config.value);
   }
 }
 

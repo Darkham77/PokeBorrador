@@ -3,12 +3,13 @@
  * Responsible for processing and standardizing battle logs.
  */
 
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { getItemById } from '@/data/inventory/items';
 import { PLAYER_CLASSES, isPlayerClassId } from '@/data/player/playerClasses';
-import { logger } from '../utils/logger.ts';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import type { BattleLog, BattleSource, BattleSide } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import { logger } from '../utils/logger.ts';
 
 interface LogContext {
   gs: {
@@ -120,15 +121,13 @@ function resolveLogSide(source: BattleSource, ctx: LogContext): BattleSide | nul
   const { gs, activeBattle, attackerSide } = ctx;
   if (
     source === 'player' ||
-    (source &&
-      typeof source === 'object' &&
-      gs.state.team.some((p) => p && p.uid === (source as Pokemon).uid))
+    (source && typeof source === 'object' && gs.state.team.some((p) => p && p.uid === source.uid))
   ) {
     return 'player';
   }
   if (
     source === 'enemy_trainer' ||
-    (source && typeof source === 'object' && (source as Pokemon).uid === activeBattle?.enemy?.uid)
+    (source && typeof source === 'object' && source.uid === activeBattle?.enemy?.uid)
   ) {
     return 'enemy';
   }

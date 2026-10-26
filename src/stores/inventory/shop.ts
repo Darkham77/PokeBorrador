@@ -1,12 +1,15 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { useGameStore } from '@/stores/game.ts';
-import { useUIStore } from '@/stores/ui.ts';
-import { useWarStore } from '@/stores/war.ts';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import { getItemById, SHOP_ITEMS, BC_SHOP_ITEMS, type ItemId } from '@/data/inventory/items';
+
+import {
+  getItemById,
+  SHOP_ITEMS,
+  BC_SHOP_ITEMS,
+  type ItemId,
+  type ShopItemData
+} from '@/data/inventory/items';
 import { PLAYER_CLASSES } from '@/data/player/playerClasses';
-import { calculateTotalHealCost } from '@/logic/economy/economyFormulas';
+import { clearVolatileStatus } from '@/logic/battle/battleStatus';
 import {
   MAX_ITEM_PURCHASE_QTY,
   ROCKET_SHOP_PRICE_PENALTY_MULTIPLIER,
@@ -16,10 +19,13 @@ import {
   BLACK_MARKET_DEFAULT_DISCOUNT,
   BATTLE_COIN_TO_MONEY_RATE
 } from '@/logic/constants/gameplay.ts';
+import { calculateTotalHealCost } from '@/logic/economy/economyFormulas';
 import { hashString, mulberry32 } from '@/logic/utils/math';
 import { getGMT3Date } from '@/logic/utils/timeUtils';
-
-import { clearVolatileStatus } from '@/logic/battle/battleStatus';
+import { useGameStore } from '@/stores/game.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import { useWarStore } from '@/stores/war.ts';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
 export function getDeterministicDailyBlackMarketItemIds(dateStr: string): ItemId[] {
   const seed = hashString(`rocket_black_market_${dateStr}`);
@@ -45,12 +51,12 @@ export const useShopStore = defineStore('shop', () => {
 
   const quantities = ref<Partial<Record<ItemId, number>>>({});
 
-  function getQuantity(itemId: ItemId) {
+  function getQuantity(itemId: ItemId): number {
     return quantities.value[itemId] || 1;
   }
 
-  function setQuantity(itemId: ItemId, val: string | number) {
-    let q = parseInt(String(val));
+  function setQuantity(itemId: ItemId, val: string | number): void {
+    let q = parseInt(String(val), 10);
     if (isNaN(q) || q < 1) q = 1;
     if (q > MAX_ITEM_PURCHASE_QTY) q = MAX_ITEM_PURCHASE_QTY;
     quantities.value[itemId] = q;
@@ -59,7 +65,7 @@ export const useShopStore = defineStore('shop', () => {
   /**
    * Calculates the price modifier based on player class.
    */
-  function getPriceModifier() {
+  function getPriceModifier(): number {
     const playerClass = gameStore.state.playerClass;
     if (!playerClass) return 1.0;
 
@@ -71,7 +77,7 @@ export const useShopStore = defineStore('shop', () => {
     return 1.0;
   }
 
-  function buyItem(itemId: ItemId) {
+  function buyItem(itemId: ItemId): void {
     const item = getItemById(itemId);
     if (!item) return;
 
@@ -108,10 +114,10 @@ export const useShopStore = defineStore('shop', () => {
 
     uiStore.notify(`¡Compraste x${qty} ${item.name}!`, item.icon);
     uiStore.notify(`Gastaste ₽${total.toLocaleString()}`, '💸');
-    void gameStore.scheduleSave();
+    gameStore.scheduleSave();
   }
 
-  function buyItemBC(itemId: ItemId) {
+  function buyItemBC(itemId: ItemId): void {
     const item = getItemById(itemId);
     if (!item || !item.showInBCShop) return;
 
@@ -137,10 +143,10 @@ export const useShopStore = defineStore('shop', () => {
 
     uiStore.notify(`¡Compraste ${item.name}!`, '🏅');
     uiStore.notify(`Gastaste ${bcPrice} BC`, '🪙');
-    void gameStore.scheduleSave();
+    gameStore.scheduleSave();
   }
 
-  function buyItemWar(itemId: ItemId) {
+  function buyItemWar(itemId: ItemId): void {
     const item = getItemById(itemId);
     if (!item || !item.showInWarShop) return;
 
@@ -165,12 +171,12 @@ export const useShopStore = defineStore('shop', () => {
 
     uiStore.notify(`¡Compraste ${item.name}!`, '⚔️');
     uiStore.notify(`Gastaste ${warPrice} Monedas de Guerra`, '⚡');
-    void gameStore.scheduleSave();
+    gameStore.scheduleSave();
   }
 
   // ── POKÉMON CENTER HEALING ─────────────────────────────────────────────────
 
-  function getHealCost() {
+  function getHealCost(): number {
     return calculateTotalHealCost(
       gameStore.state.team,
       gameStore.state.trainerLevel || 1,
@@ -178,7 +184,7 @@ export const useShopStore = defineStore('shop', () => {
     );
   }
 
-  function healAllPokemon(manualCost: number | null = null) {
+  function healAllPokemon(manualCost: number | null = null): boolean {
     const costToCharge = manualCost !== null ? manualCost : getHealCost();
 
     if (gameStore.state.money < costToCharge) {
@@ -211,13 +217,13 @@ export const useShopStore = defineStore('shop', () => {
       uiStore.notify('¡Tus Pokémon están totalmente recuperados!', '🏥');
     }
 
-    void gameStore.scheduleSave();
+    gameStore.scheduleSave();
     return true;
   }
 
   // ── BLACK MARKET (TEAM ROCKET) ─────────────────────────────────────────────
 
-  function getBlackMarketItems() {
+  function getBlackMarketItems(): ShopItemData[] {
     if (gameStore.state.playerClass !== 'rocket') return [];
 
     if (!gameStore.state.classData) {
@@ -241,15 +247,17 @@ export const useShopStore = defineStore('shop', () => {
       daily.items = getDeterministicDailyBlackMarketItemIds(today);
       daily.date = today;
       daily.purchased = [];
-      void gameStore.scheduleSave();
+      gameStore.scheduleSave();
     } else if (!daily.items || daily.items.length === 0) {
       daily.items = getDeterministicDailyBlackMarketItemIds(today);
     }
 
-    return daily.items.map((id: string) => getItemById(id)).filter(Boolean);
+    return daily.items
+      .map((id: string) => getItemById(id))
+      .filter((item): item is ShopItemData => Boolean(item));
   }
 
-  function buyBlackMarketItem(itemId: ItemId) {
+  function buyBlackMarketItem(itemId: ItemId): void {
     if (gameStore.state.playerClass !== 'rocket') return;
     const daily = gameStore.state.classData.blackMarketDaily;
     if (!daily || !daily.items.includes(itemId)) return;
@@ -279,7 +287,7 @@ export const useShopStore = defineStore('shop', () => {
     gameStore.state.inventory[item.id] = (gameStore.state.inventory[item.id] || 0) + 1;
 
     useUIStore().notify(`¡Compraste ${item.name} en el Mercado Negro! 🚀`, '💰');
-    void gameStore.scheduleSave();
+    gameStore.scheduleSave();
   }
 
   return {

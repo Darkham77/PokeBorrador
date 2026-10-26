@@ -830,7 +830,7 @@
     },
     {
       "file": "src/logic/battle/helpers/showdownBattleRunner.ts",
-      "exports": ["REPLAY_SEATS"]
+      "exports": ["SHOWDOWN_SEAT_KEYS"]
     },
     {
       "file": "src/logic/battle/trainerInventory.ts",
@@ -931,7 +931,7 @@
     },
     {
       "file": "src/logic/battle/helpers/showdownSeats.ts",
-      "exports": ["REPLAY_SEATS"]
+      "exports": ["SHOWDOWN_SEAT_KEYS"]
     },
     {
       "file": "src/components/admin/debug/debugPanelCategories.ts",

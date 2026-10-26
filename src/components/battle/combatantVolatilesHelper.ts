@@ -1,5 +1,7 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { DisplayText } from '@francogp/auditor';
+
 import type { BattleStages } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export interface CombatantVolatilesProps {
   isConfused: boolean;
@@ -56,13 +58,28 @@ const EMPTY_COMBATANT_VOLATILES: Readonly<CombatantVolatilesProps> = Object.free
 });
 
 function isVolatileCounterActive(
-  vol: Record<string, number | undefined> | undefined, // open-record: Dynamic Showdown volatile status counter dictionary
+  vol: Record<DisplayText, number | undefined> | undefined, // open-record: Dynamic Showdown volatile status counter dictionary
   key: string
 ): boolean {
-  return Boolean(vol && typeof vol[key] === 'number' && (vol[key] as number) > 0);
+  return Boolean(vol && typeof vol[key] === 'number' && vol[key] > 0);
 }
 
-function computeAfflictionVolatiles(pokemon: Pokemon, isVol: (k: string) => boolean) {
+function computeAfflictionVolatiles(
+  pokemon: Pokemon,
+  isVol: (k: string) => boolean
+): {
+  isConfused: boolean;
+  isTaunted: boolean;
+  isFlinched: boolean;
+  isDisabled: boolean;
+  isEncored: boolean;
+  isCursed: boolean;
+  isSeeded: boolean;
+  isTrapped: boolean;
+  isPerishSong: boolean;
+  isAttracted: boolean;
+  attracted: boolean;
+} {
   return {
     isConfused: Boolean(pokemon.confused || isVol('confusion')),
     isTaunted: (pokemon.tauntTurns || 0) > 0 || isVol('taunt') || isVol('tauntTurns'),
@@ -88,7 +105,21 @@ function computeDefensiveAndFieldVolatiles(
   pokemon: Pokemon,
   stages: Partial<BattleStages> | undefined,
   isVol: (k: string) => boolean
-) {
+): {
+  isSubstitute: boolean;
+  isIngrained: boolean;
+  isFocusEnergy: boolean;
+  isProtected: boolean;
+  isEnduring: boolean;
+  isLockOn: boolean;
+  hasReflect: boolean;
+  hasLightScreen: boolean;
+  hasSafeguard: boolean;
+  hasMist: boolean;
+  hasSpikes: boolean;
+  hasStealthRock: boolean;
+  hasToxicSpikes: boolean;
+} {
   return {
     isSubstitute: Boolean(pokemon.substitute || isVol('substitute')),
     isIngrained: Boolean(pokemon.ingrain || isVol('ingrain')),

@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/db/proxyQueryHelpers.ts
  *
@@ -5,9 +6,11 @@
  * parameter mapping, row hydration, and response formatting).
  */
 
-import { persistSQLite, queryLocal, type SQLiteDatabase } from './sqliteEngine.ts';
+import { logger } from '@/logic/utils/logger';
 import type { DBResponse, ProxyQueryChainItem } from '@/types/system/database';
+
 import type { DBQueryResultShape } from './proxyQuery.ts';
+import { persistSQLite, queryLocal, type SQLiteDatabase } from './sqliteEngine.ts';
 
 // ─── Row Hydration ────────────────────────────────────────────────────────────
 
@@ -26,15 +29,18 @@ function hydrateLocalRow(
   row: Record<string, unknown> // open-record: Dynamic SQLite row payload
 ): void {
   if (table === 'battle_invites' && row.id !== undefined && row.id !== null) {
-    row.id = typeof row.id === 'string' ? row.id : String(row.id as string | number);
+    row.id = typeof row.id === 'string' ? row.id : typeof row.id === 'number' ? String(row.id) : '';
   }
   for (const col of JSON_COLUMNS) {
     const val = row[col];
     if (typeof val === 'string') {
       try {
         row[col] = JSON.parse(val);
-      } catch {
-        // catch-ok: Fallback to raw string if JSON parsing fails
+      } catch (err) {
+        logger.debug('[proxyQueryHelpers] Parseo JSON fallido, manteniendo string crudo', {
+          column: col,
+          cause: err instanceof Error ? err.message : String(err)
+        });
       }
     }
   }
@@ -107,7 +113,7 @@ function parseOrFilterClause(filterStr: string, params: unknown[]): string {
   return parseSimpleOrFilter(filterStr, params);
 }
 
-const COMPARISON_OPERATORS: Record<string, string> = {
+const COMPARISON_OPERATORS: Record<DisplayText, string> = {
   // open-record: SQL operator translation dictionary
   eq: '=',
   neq: '!=',
@@ -163,7 +169,7 @@ function handleOrFilter(args: unknown[], where: string[], params: unknown[]): vo
 
 type FilterHandler = (args: unknown[], where: string[], params: unknown[]) => void;
 
-const COMPLEX_FILTER_HANDLERS: Record<string, FilterHandler> = {
+const COMPLEX_FILTER_HANDLERS: Record<DisplayText, FilterHandler> = {
   // open-record: SQL filter handler dispatch table
   in: handleInFilter,
   is: handleIsFilter,

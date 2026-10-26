@@ -1,11 +1,13 @@
+import type { DisplayText } from '@francogp/auditor';
 import { Dex, type PokemonSet } from '@pkmn/sim';
-import { toID } from '@/logic/utils/strings.ts';
-import { ACTIVE_GENERATION } from '@/data/system/constants';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+
 import { isAbilityId, type AbilityId } from '@/data/battle/abilities';
 import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
+import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { ACTIVE_GENERATION } from '@/data/system/constants';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { toID } from '@/logic/utils/strings.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export interface LegalityCheckResult {
   valid: boolean;
@@ -21,10 +23,10 @@ interface NormalizedPokemonFields {
 
 function extractNormalizedPokemonFields(
   poke: Pokemon | PokemonSet | Record<string, unknown>
-): NormalizedPokemonFields | string {
+): NormalizedPokemonFields | DisplayText {
   const rawSpecies = String(Reflect.get(poke, 'species') || Reflect.get(poke, 'id') || '');
   if (!isPokemonSpeciesId(rawSpecies)) {
-    return `Invalid or non-existent species ID: "${rawSpecies}".`;
+    return `Invalid or non-existent species ID: "${rawSpecies}".` as DisplayText;
   }
   const abilityVal = Reflect.get(poke, 'ability');
   const rawAbility = typeof abilityVal === 'string' ? abilityVal : '';

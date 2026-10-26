@@ -1,9 +1,10 @@
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
 /**
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
-import { mount } from '@vue/test-utils';
-import { setActivePinia, createPinia } from 'pinia';
+
 import BattleActionButtons from '@/components/battle/BattleActionButtons.vue';
 import { useBattleStore } from '@/stores/battle/battle';
 import { useGameStore } from '@/stores/game';

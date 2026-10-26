@@ -1,10 +1,10 @@
-import type { BattleContext } from '@/types/battle/battleContext';
-import { incrementRecordKey } from '@/logic/utils/mapUtils';
-import { CRIMINALITY_GAINED_ON_STEAL } from '@/logic/constants/gameplay';
-import type { BattleState } from '@/types/battle/battle';
 import { getItemById, getItemName, isItemId, type ItemId } from '@/data/inventory/items';
+import { CRIMINALITY_GAINED_ON_STEAL } from '@/logic/constants/gameplay';
 import { calculateQuickStealChance, calculateMaxNpcRobberyLimit } from '@/logic/player/classMath';
+import { incrementRecordKey } from '@/logic/utils/mapUtils';
 import { classifyNpcArchetype } from '@/logic/utils/npcSpriteRouter';
+import type { BattleState } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
 
 const DEFAULT_ITEM_PRICE_FALLBACK = 100;
 const HALF_FACTOR = 0.5;
@@ -50,7 +50,7 @@ function stealItemsFromEnemy(
       const qtyToSteal = Math.floor(Math.random() * qtyAllowed) + 1;
 
       enemyInv[itemId] = availableQty - qtyToSteal;
-      if (enemyInv[itemId]! <= 0) {
+      if (enemyInv[itemId] <= 0) {
         delete enemyInv[itemId];
       }
 
@@ -100,7 +100,7 @@ async function executePlayerRocketSteal(
       `¡Robaste ${itemsText}! (+${CRIMINALITY_GAINED_ON_STEAL} criminalidad)`,
       '🏴‍☠️'
     );
-    void ctx.audio.play('steal');
+    await ctx.audio.play('steal');
   }
 }
 
@@ -137,7 +137,7 @@ function stealPotionsAndBallsFromPlayer(
       if (maxQtyAllowed >= 1) {
         const qtyToSteal = Math.floor(Math.random() * maxQtyAllowed) + 1;
         playerInventory[itemId] = availableQty - qtyToSteal;
-        if (playerInventory[itemId]! <= 0) {
+        if (playerInventory[itemId] <= 0) {
           delete playerInventory[itemId];
         }
         incrementRecordKey(stolenItems, itemId, qtyToSteal);
@@ -215,7 +215,7 @@ async function executeEnemyRocketSteal(
       ctx.uiStore.notify(`¡Te robaron ${qty}x ${displayName}!`, '🎒');
     }
 
-    void ctx.audio.play('steal');
+    await ctx.audio.play('steal');
   }
 }
 

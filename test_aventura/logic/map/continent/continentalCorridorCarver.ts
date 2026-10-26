@@ -1,9 +1,3 @@
-import type { ContinentMapResult } from '../continentGenerator.ts';
-import type { WaterTerrainKind } from '../waterAutotileEngine.ts';
-import type { POINode } from '../../../types/map/poiTypes.ts';
-import { computeOceanGrid, findPathAStar, getBestGateway } from '../routePathfinding.ts';
-import { compileGeologicalAutotiling } from '../geologicalAutotilingEngine.ts';
-import { pruneRedundantStairs } from '../mountainAutotileEngine.ts';
 import {
   HARBOR_BEACH_PADDING_WEST,
   HARBOR_BEACH_PADDING_EAST,
@@ -16,6 +10,12 @@ import {
   MIN_DISTANCE_BETWEEN_CAVES,
   HARBOR_WATER_PROXIMITY_RADIUS
 } from '../../../config/continentalEngineConfig.ts';
+import type { POINode } from '../../../types/map/poiTypes.ts';
+import type { ContinentMapResult } from '../continentGenerator.ts';
+import { compileGeologicalAutotiling } from '../geologicalAutotilingEngine.ts';
+import { pruneRedundantStairs } from '../mountainAutotileEngine.ts';
+import { computeOceanGrid, findPathAStar, getBestGateway } from '../routePathfinding.ts';
+import type { WaterTerrainKind } from '../waterAutotileEngine.ts';
 import type { ContinentalSettlementPoisResult } from './continentalSettlementCompiler.ts';
 
 interface GridCoordinatePoint {
@@ -49,7 +49,7 @@ function stampWaterBridgesForPath(
   let wStart = -1;
   let hasSurfWater = false;
 
-  const applyBridgeRun = (start: number, end: number) => {
+  const applyBridgeRun = (start: number, end: number): void => {
     for (let k = start; k <= end; k++) {
       const pt = pathCells[k]!;
       if (!isPointInHarborBasin(pt, pois)) {
@@ -218,7 +218,7 @@ export function carveContinentalCorridorsAndPaths(
           (corridor as { kind: string }).kind = 'surf_route';
         }
 
-        const stampAstarPath = (path: readonly { x: number; y: number }[]) => {
+        const stampAstarPath = (path: readonly { x: number; y: number }[]): void => {
           for (const pt of path) {
             if (pt.x < 0 || pt.x >= width || pt.y < 0 || pt.y >= height) continue;
             const t = continent.terrainMatrix[pt.y]?.[pt.x];
@@ -300,7 +300,7 @@ export function carveContinentalCorridorsAndPaths(
 
   // Procedural cave entrances on south cliff faces intersecting or adjacent to routes
   let proceduralTunnelIndex = 1;
-  const tryPlaceProceduralCave = (cx: number, cy: number) => {
+  const tryPlaceProceduralCave = (cx: number, cy: number): void => {
     const mCell = continent.resolvedMountain?.cellDetails?.[cy]?.[cx];
     const isSouthCliffWall =
       Boolean(mCell && (mCell.role.includes('edge_south') || mCell.role.includes('cliff'))) &&

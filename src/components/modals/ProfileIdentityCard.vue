@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
 import { computed } from 'vue';
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+
 import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import { isFactionId, type FactionId } from '@/types/system/game';
 
 const FACTION_DISPLAY_NAMES: Record<FactionId, string> = {
@@ -26,7 +28,7 @@ const props = defineProps<{
       icon: string;
     } | null;
   };
-  faction: FactionId | string | null;
+  faction: FactionId | DisplayText | null;
 }>();
 
 const displayFaction = computed(() => {

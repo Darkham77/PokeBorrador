@@ -1,16 +1,17 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
-import BuffsOverlay from '@/components/overlays/BuffsOverlay.vue';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import EventCard from '@/components/modals/EventCard.vue';
 import EventDetailModal from '@/components/modals/EventDetailModal.vue';
+import BuffsOverlay from '@/components/overlays/BuffsOverlay.vue';
+import type { Event as GameEvent } from '@/logic/events/eventEngine';
 import { useBuffsStore } from '@/stores/battle/buffs';
 import { useEventStore } from '@/stores/events';
+import { useGameStore } from '@/stores/game';
 import { useModalStore } from '@/stores/modals';
 import { useUIStore } from '@/stores/ui';
-import { useGameStore } from '@/stores/game';
-import type { Event as GameEvent } from '@/logic/events/eventEngine';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('System Events UI Components Suite', () => {

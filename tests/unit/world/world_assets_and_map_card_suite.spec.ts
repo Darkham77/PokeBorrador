@@ -1,31 +1,32 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
 /**
  * tests/unit/world/world_assets_and_map_card_suite.spec.ts
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
-import { mount } from '@vue/test-utils';
 import { computed, ref } from 'vue';
-import fs from 'node:fs';
-import path from 'node:path';
 
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import * as resolver from '@/logic/utils/assetResolver';
+import MapCard from '@/components/map/MapCard.vue';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { getMapBiomeAndTags } from '@/logic/battle/biomeHelper';
+import { restoreFossil } from '@/logic/items/fossilEngine';
 import {
   normalizeFaction,
   checkPlayerWinner,
   calculateSpawnGrid,
   isMapExtortable
 } from '@/logic/map/mapCardHelper';
-import MapCard from '@/components/map/MapCard.vue';
-import { useUIStore } from '@/stores/ui';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import * as resolver from '@/logic/utils/assetResolver';
+import { getNpcEncounterChances } from '@/logic/weather/weatherUtils';
 import { useGameStore } from '@/stores/game';
 import { useMapStore } from '@/stores/map';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { getMapBiomeAndTags } from '@/logic/battle/biomeHelper';
-import { restoreFossil } from '@/logic/items/fossilEngine';
-import { getNpcEncounterChances } from '@/logic/weather/weatherUtils';
+import { useUIStore } from '@/stores/ui';
 
 // Mock vue-router for MapCard navigation
 vi.mock('vue-router', () => ({ useRouter: () => ({ push: vi.fn() }) }));
@@ -516,8 +517,10 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
         expect(url1).toBe('/assets/fx/pattern-noise-1.webp');
         expect(url2).toBe('/assets/fx/pattern-noise-2.webp');
 
-        const publicPath1 = path.resolve(process.cwd(), 'public', url1.replace(/^\//, ''));
-        const publicPath2 = path.resolve(process.cwd(), 'public', url2.replace(/^\//, ''));
+        const rel1 = url1.startsWith('/') ? url1.slice(1) : url1;
+        const rel2 = url2.startsWith('/') ? url2.slice(1) : url2;
+        const publicPath1 = path.resolve(process.cwd(), 'public', rel1);
+        const publicPath2 = path.resolve(process.cwd(), 'public', rel2);
 
         expect(fs.existsSync(publicPath1)).toBe(true);
         expect(fs.existsSync(publicPath2)).toBe(true);

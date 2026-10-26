@@ -1,9 +1,10 @@
-import type { Move } from '@/types/pokemon/pokemon';
-import type { BattleState, BattleSide, ShowdownPlayerRequest } from '@/types/battle/battle';
-import type { MoveCategory } from '@/data/battle/moves';
 import { getActivePinia } from 'pinia';
-import { useGameStore } from '@/stores/game';
+
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { logger } from '@/logic/utils/logger';
+import { useGameStore } from '@/stores/game';
+import type { BattleState, BattleSide, ShowdownPlayerRequest } from '@/types/battle/battle';
+import type { Move } from '@/types/pokemon/pokemon';
 
 type RequestMoveItem = NonNullable<
   NonNullable<ShowdownPlayerRequest['active']>[number]['moves']
@@ -28,13 +29,13 @@ function buildTransformedMoves(reqMoves: readonly RequestMoveItem[]): Move[] {
         id: reqMove.id,
         name: md.name,
         type: md.type || 'normal',
-        cat: (md.cat || 'physical') as MoveCategory,
+        cat: md.cat || 'physical',
         power: md.power,
         acc: md.acc,
         pp: reqMove.pp ?? 5,
         maxPP: reqMove.maxpp ?? 5,
         priority: md.priority || 0,
-        effect: md.effect as Move['effect'],
+        effect: md.effect,
         target: undefined,
         disabled: Boolean(reqMove.disabled)
       });
@@ -82,13 +83,13 @@ function appendMissingShowdownMoves(
         id: reqMove.id,
         name: md.name,
         type: md.type || 'normal',
-        cat: (md.cat || 'physical') as MoveCategory,
+        cat: md.cat || 'physical',
         power: md.power,
         acc: md.acc,
         pp: reqMove.pp ?? 0,
         maxPP: reqMove.maxpp ?? 0,
         priority: md.priority || 0,
-        effect: md.effect as Move['effect'],
+        effect: md.effect,
         target: undefined,
         disabled: Boolean(reqMove.disabled)
       });
@@ -106,13 +107,17 @@ function syncPlayerTeamMoves(pokeUid: string, moves: (Move | null)[]): void {
     if (teamMon) {
       teamMon.moves = moves;
     }
-  } catch {
-    // catch-ok: Ignored if gameStore is not yet initialized during test or bootstrap
-    // Ignored if gameStore is not yet initialized
+  } catch (err) {
+    logger.debug(
+      '[battleMoveSync] No se pudo sincronizar movimientos del equipo (gameStore no inicializado)',
+      {
+        cause: err instanceof Error ? err.message : String(err)
+      }
+    );
   }
 }
 
-export function syncActiveMovesFromRequest(active: BattleState | null, side: BattleSide) {
+export function syncActiveMovesFromRequest(active: BattleState | null, side: BattleSide): void {
   if (!active) return;
 
   const request = side === 'player' ? active.playerRequest : active.enemyRequest;

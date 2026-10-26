@@ -12,6 +12,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import { generatePokemonTopology } from '../../logic/map/pokemonGraphTopology.ts';
 import {
   assignProgressionOrder,

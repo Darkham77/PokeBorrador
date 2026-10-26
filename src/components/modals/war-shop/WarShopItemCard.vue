@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useShopStore } from '@/stores/inventory/shop';
-import { useWarStore } from '@/stores/war';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
+
+import type { ItemId } from '@/data/inventory/items';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver';
-import type { ItemId } from '@/data/inventory/items';
+import { useGameStore } from '@/stores/game';
+import { useShopStore } from '@/stores/inventory/shop';
+import { useUIStore } from '@/stores/ui';
+import { useWarStore } from '@/stores/war';
 
 interface ShopItem {
   id: ItemId;
@@ -37,7 +38,7 @@ const hasEnoughCoins = computed(() => {
   return (warStore.warCoins || 0) >= (props.item.warPrice || 0);
 });
 
-const buy = () => {
+const buy = (): void => {
   if (!isUnlocked.value) {
     uiStore.notify('¡Objeto bloqueado! Sube tu nivel de entrenador.', '🔒');
     return;
@@ -53,7 +54,7 @@ const tierLabel = computed(() => getItemTierLabel(props.item.tier));
 
 const tierColor = computed(() => getItemTierColor(props.item.tier));
 
-const handleImageError = (e: Event) => {
+const handleImageError = (e: Event): void => {
   if (e.target) {
     (e.target as HTMLImageElement).style.display = 'none';
   }

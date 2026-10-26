@@ -1,18 +1,16 @@
-import type { DebugSystem } from '@/types/system/debug.ts';
-
+import { getItemById, requireItemId, SHOP_ITEMS } from '@/data/inventory/items';
+import { useBreedingStore } from '@/stores/breeding';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
-import { useBreedingStore } from '@/stores/breeding';
-
-import { getItemById, requireItemId, SHOP_ITEMS } from '@/data/inventory/items';
 import type { Inventory } from '@/types/inventory/items';
+import type { DebugSystem } from '@/types/system/debug.ts';
 
 const DEBUG_DEFAULT_ITEM_QTY = 10;
 const DEBUG_FILL_INVENTORY_QTY = 50;
 const DEBUG_CLONING_TEST_MONEY = 100_000;
 const DEBUG_CLONING_TEST_FOSSIL_QTY = 10;
 
-export function registerItemTools(debug: DebugSystem) {
+export function registerItemTools(debug: DebugSystem): void {
   const game = useGameStore();
   const ui = useUIStore();
   const breedingStore = useBreedingStore();
@@ -30,7 +28,7 @@ export function registerItemTools(debug: DebugSystem) {
       inventory[resolvedId] = (inventory[resolvedId] || 0) + qty;
       game.state.inventory = inventory;
       ui.notify(`Debug: +${qty} ${itemName}`, '🎒');
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description: 'Añade una cantidad de un item a la mochila.'
   });
@@ -47,7 +45,7 @@ export function registerItemTools(debug: DebugSystem) {
       });
       game.state.inventory = inventory;
       ui.notify(`Debug: Mochila llena (${SHOP_ITEMS.length} tipos de objetos)`, '🎒');
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description: 'Añade una cantidad de TODOS los objetos de la base de datos.'
   });
@@ -74,7 +72,7 @@ export function registerItemTools(debug: DebugSystem) {
     action: () => {
       game.state.daycare_missions = [];
       ui.notify('Misiones de Guardería eliminadas', '🗑️');
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description: 'Elimina todas las misiones actuales de la guardería.'
   });
@@ -93,7 +91,7 @@ export function registerItemTools(debug: DebugSystem) {
         `Debug: $${DEBUG_CLONING_TEST_MONEY.toLocaleString()} y ${DEBUG_CLONING_TEST_FOSSIL_QTY}x de cada fósil añadidos`,
         '🧪'
       );
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description: `Añade $100K y ${DEBUG_CLONING_TEST_FOSSIL_QTY} unidades de cada fósil para testear la clonación.`
   });

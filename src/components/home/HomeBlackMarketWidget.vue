@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useGameStore } from '@/stores/game';
-import { useShopStore } from '@/stores/inventory/shop';
-import { useModalStore } from '@/stores/modals';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { formatCurrency } from '@/logic/utils/formatters';
-import { getItemTierColor } from '@/logic/utils/itemTierResolver';
+
+import PVTooltip from '@/components/common/PVTooltip.vue';
 import { isItemId, type ItemId } from '@/data/inventory/items';
 import { PLAYER_CLASSES } from '@/data/player/playerClasses';
 import {
   BLACK_MARKET_BC_TO_MONEY_RATE,
   ROCKET_SHOP_DISCOUNT_RATIO
 } from '@/logic/constants/gameplay';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { formatCurrency } from '@/logic/utils/formatters';
+import { getItemTierColor } from '@/logic/utils/itemTierResolver';
+import { useGameStore } from '@/stores/game';
+import { useShopStore } from '@/stores/inventory/shop';
+import { useModalStore } from '@/stores/modals';
+
 import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
-import PVTooltip from '@/components/common/PVTooltip.vue';
 
 const gameStore = useGameStore();
 const shopStore = useShopStore();
@@ -36,11 +38,11 @@ function getItemPrice(bcPrice: number = 0): number {
   return Math.floor(baseMoney * (1 - blackMarketDiscount));
 }
 
-function openBlackMarketModal() {
+function openBlackMarketModal(): void {
   modalStore.open('BlackMarket');
 }
 
-function handleImageError(e: Event) {
+function handleImageError(e: Event): void {
   if (e.target) {
     (e.target as HTMLImageElement).style.display = 'none';
   }

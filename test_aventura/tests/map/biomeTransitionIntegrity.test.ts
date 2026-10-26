@@ -11,14 +11,15 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import {
   resolveMacroBiomeAutotile,
   CANONICAL_MINT_GRASS_BRUSH,
   CANONICAL_VOLCANIC_DIRT_BRUSH,
   type ResolvedMacroBiomeMapResult
 } from '../../logic/map/macroBiomeAutotileEngine.ts';
-import { CANONICAL_SAND_BEACH_BRUSH } from '../../logic/map/waterAutotileEngine.ts';
 import type { MacroBiome } from '../../logic/map/macroBiomeSynthesizer.ts';
+import { CANONICAL_SAND_BEACH_BRUSH } from '../../logic/map/waterAutotileEngine.ts';
 import type { WaterTerrainKind } from '../../logic/map/waterAutotileEngine.ts';
 
 describe('macroBiomeAutotileEngine (Tier 1 RED-to-GREEN)', () => {

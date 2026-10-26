@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vite-plus/test';
+
 import {
   evaluateCapturedPokemonForEvents,
   computeOptimalAutoFillAssignments
 } from '@/logic/events/eventAutoEnrollHelper';
 import type { Event } from '@/logic/events/eventEngine';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { CompetitionEntry } from '@/types/system/stores';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 
 describe('Event Auto-Enrollment & Greedy Auto-Fill Engine', () => {
   const mockSubCompetitions = [

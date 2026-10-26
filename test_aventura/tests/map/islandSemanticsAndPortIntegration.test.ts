@@ -10,14 +10,15 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
+import { generatePokemonContinentalWorld } from '../../logic/map/continent/continentalEngine.ts';
+import { clusterMountainMassifs } from '../../logic/map/geologicalClusterEngine.ts';
 import {
   resolveMountainMapGrid,
   resolveMountainAutotileCell,
   pruneRedundantStairs,
   type MountainStairLocation
 } from '../../logic/map/mountainAutotileEngine.ts';
-import { clusterMountainMassifs } from '../../logic/map/geologicalClusterEngine.ts';
-import { generatePokemonContinentalWorld } from '../../logic/map/continent/continentalEngine.ts';
 
 describe('islandSemanticsAndPortIntegration (Tier 1 Architecture Verification)', () => {
   describe('Pillar 1: Mountain Biome Palette Consistency & Redundant Stairs', () => {

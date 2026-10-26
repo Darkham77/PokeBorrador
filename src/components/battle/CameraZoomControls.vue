@@ -19,7 +19,7 @@ const props = withDefaults(
 const battleStore = useBattleStore();
 const uiStore = useUIStore();
 
-const zoomIn = () => {
+const zoomIn = (): void => {
   const current = battleStore.debugZoom;
   if (current < MAX_ZOOM_LEVEL) {
     const nextZoom = Math.min(
@@ -30,7 +30,7 @@ const zoomIn = () => {
   }
 };
 
-const zoomOut = () => {
+const zoomOut = (): void => {
   const current = battleStore.debugZoom;
   const minAllowed = props.minZoom;
   if (current > minAllowed) {
@@ -42,7 +42,7 @@ const zoomOut = () => {
   }
 };
 
-const copyReplay = async () => {
+const copyReplay = async (): Promise<void> => {
   const payload = battleStore.getCombatReplayPayload();
   if (!payload) {
     uiStore.notify('No hay combate activo para exportar', '⚠️');

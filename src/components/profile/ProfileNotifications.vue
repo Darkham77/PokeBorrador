@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useUIStore } from '@/stores/ui';
+
 import { formatTime } from '@/logic/utils/timeUtils';
+import { useUIStore } from '@/stores/ui';
 
 const uiStore = useUIStore();
 

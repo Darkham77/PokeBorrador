@@ -1,8 +1,10 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
+
 import { isValidTarget, itemEffects } from '@/logic/items/itemEffects';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { createDefaultEvs, MAX_STAT_EVS } from '@/logic/pokemon/evMath';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('All Consumable Items - Comprehensive Unit & Integrity Suite', () => {

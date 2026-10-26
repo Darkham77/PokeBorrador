@@ -1,19 +1,55 @@
-import { computed } from 'vue';
-import { useGameStore } from '@/stores/game';
+import { computed, type ComputedRef, type Ref } from 'vue';
+
 import { PLAYER_CLASSES, isPlayerClassId, type PlayerClassId } from '@/data/player/playerClasses';
+import { getXPNeededForClassLevel } from '@/logic/player/classMath';
 import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
 import { useChatStore } from '@/stores/social/chat';
 import { useSocialStore, type Friend } from '@/stores/social/social';
-import { getXPNeededForClassLevel } from '@/logic/player/classMath';
+import type { RankedSeasonMedal, BattleReplayRecord } from '@/types/battle/pvp.ts';
+
 import {
   resolveCosmeticField,
   resolveFactionLabel,
-  resolveFactionColor
+  resolveFactionColor,
+  type ProfileRow,
+  type SaveStateData
 } from './trainerProfileResolver.ts';
 import { useTrainerProfileFetcher } from './useTrainerProfileFetcher.ts';
-import { useTrainerProfileStats } from './useTrainerProfileStats.ts';
+import {
+  useTrainerProfileStats,
+  type UseTrainerProfileStatsReturn
+} from './useTrainerProfileStats.ts';
 
-export function useTrainerProfile(getUserId: () => string | null | undefined) {
+export interface UseTrainerProfileReturn extends UseTrainerProfileStatsReturn {
+  readonly loading: Ref<boolean>;
+  readonly profile: Ref<ProfileRow | null>;
+  readonly saveState: Ref<SaveStateData | null>;
+  readonly error: Ref<string | null>;
+  readonly isOwnProfile: ComputedRef<boolean>;
+  readonly trainerName: ComputedRef<string>;
+  readonly faction: ComputedRef<string | null>;
+  readonly playerClass: ComputedRef<PlayerClassId | null>;
+  readonly classDef: ComputedRef<(typeof PLAYER_CLASSES)[keyof typeof PLAYER_CLASSES] | null>;
+  readonly trainerLevel: ComputedRef<number>;
+  readonly avatarStyle: ComputedRef<string>;
+  readonly nickStyle: ComputedRef<string>;
+  readonly gender: ComputedRef<string>;
+  readonly factionLabel: ComputedRef<string>;
+  readonly factionColor: ComputedRef<string>;
+  readonly createdAt: ComputedRef<string | null>;
+  readonly lastPlayedAt: ComputedRef<string | null>;
+  readonly classLevel: ComputedRef<number>;
+  readonly classXP: ComputedRef<number>;
+  readonly classXPNeeded: ComputedRef<number>;
+  readonly rankedMedals: Ref<RankedSeasonMedal[]>;
+  readonly pinnedReplays: Ref<BattleReplayRecord[]>;
+  readonly fetchData: () => Promise<void>;
+}
+
+export function useTrainerProfile(
+  getUserId: () => string | null | undefined
+): UseTrainerProfileReturn {
   const gameStore = useGameStore();
   const authStore = useAuthStore();
   const chatStore = useChatStore();

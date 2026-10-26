@@ -1,12 +1,13 @@
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
+import type { RouteSpawnsProps } from '@/composables/modals/useRouteSpawnsCalculation';
 import { useRouteSpawnsWild } from '@/composables/modals/useRouteSpawnsWild';
-import { useEventStore } from '@/stores/events';
-import { useGameStore } from '@/stores/game';
 import { getMapLocationById } from '@/data/world/maps';
 import { getFinalGroundRates } from '@/logic/encounters/encounters';
 import { getSpeciesBoosts } from '@/logic/events/eventEngine';
-import type { RouteSpawnsProps } from '@/composables/modals/useRouteSpawnsCalculation';
+import { useEventStore } from '@/stores/events';
+import { useGameStore } from '@/stores/game';
 
 describe('useRouteSpawnsWild - Open Competition Event with species "*"', () => {
   beforeEach(() => {

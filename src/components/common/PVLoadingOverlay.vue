@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { gsap } from 'gsap';
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
+
 import { Z_LAYERS } from '@/logic/constants/visuals';
 
 const _LOADING_OVERLAY_THEMES = ['default', 'error', 'warning', 'purple'] as const;
@@ -42,7 +43,7 @@ const FULL_SPINNER_ROTATION_DEG = 360;
 const OVERLAY_PULSE_SCALE_BOOST = 1.08;
 const OVERLAY_PULSE_OPACITY_MIN = 0.75;
 
-const startRotation = () => {
+const startRotation = (): void => {
   if (spinnerTween) spinnerTween.kill();
   if (spinnerRef.value) {
     spinnerTween = gsap.to(spinnerRef.value, {
@@ -54,7 +55,7 @@ const startRotation = () => {
   }
 };
 
-const startGlow = () => {
+const startGlow = (): void => {
   if (glowTween) glowTween.kill();
   if (!cardRef.value) return;
 
@@ -99,7 +100,7 @@ const startGlow = () => {
   );
 };
 
-const startPulse = () => {
+const startPulse = (): void => {
   if (pulseTween) pulseTween.kill();
   if (iconRef.value) {
     pulseTween = gsap.fromTo(

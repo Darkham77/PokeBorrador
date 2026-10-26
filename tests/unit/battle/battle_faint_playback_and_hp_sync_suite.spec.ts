@@ -4,13 +4,14 @@
  * Faint interruptions during turn log playback and faint HP synchronization to 0.
  */
 
+import { setActivePinia, createPinia } from 'pinia';
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { ref } from 'vue';
-import { setActivePinia, createPinia } from 'pinia';
-import '../../helpers/battleMockSetup';
-import { filterShowdownLogs } from '@/logic/battle/showdownBridge';
-import { processFaint } from '@/logic/battle/resolution';
+
+import '../../helpers/battleMockSetup.ts';
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
+import { processFaint } from '@/logic/battle/resolution';
+import { filterShowdownLogs } from '@/logic/battle/showdownBridge';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 

@@ -1,3 +1,5 @@
+import { mount, flushPromises } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
 /** @vitest-environment jsdom */
 /**
  * Integration tests for PPUpModal, NaturePatchModal, AbilityPillModal.
@@ -14,14 +16,13 @@
  *   pp_max → maxPP  = floor(20 × 1.6) = 32   → 20 → 32
  */
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
-import { mount, flushPromises } from '@vue/test-utils';
-import { setActivePinia, createPinia } from 'pinia';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
-import { useInventoryStore } from '@/stores/inventory/inventory';
-import PPUpModal from '@/components/modals/PPUpModal.vue';
-import NaturePatchModal from '@/components/modals/NaturePatchModal.vue';
+
 import AbilityPillModal from '@/components/modals/AbilityPillModal.vue';
+import NaturePatchModal from '@/components/modals/NaturePatchModal.vue';
+import PPUpModal from '@/components/modals/PPUpModal.vue';
+import { useGameStore } from '@/stores/game';
+import { useInventoryStore } from '@/stores/inventory/inventory';
+import { useUIStore } from '@/stores/ui';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 // ── Mock provider ─────────────────────────────────────────────────────────────

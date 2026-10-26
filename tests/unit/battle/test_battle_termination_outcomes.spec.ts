@@ -1,10 +1,11 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
+
 import {
   handleBattleDefeatFlow,
   handleBattleFleeFlow
 } from '@/logic/battle/battleTerminationOutcomes';
-import type { BattleContext } from '@/types/battle/battleContext';
 import type { BattleState } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
 
 describe('battleTerminationOutcomes', () => {
   it('triggers defeat audio and transitions to DEFEAT_SCREEN in defeat flow', async () => {

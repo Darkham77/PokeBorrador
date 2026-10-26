@@ -5,6 +5,7 @@
  */
 
 import { gsap } from 'gsap';
+
 import {
   COMBATANT_IDLE_FLOAT_BASE_Y_PERCENT,
   COMBATANT_IDLE_FLOAT_VAR_Y_PERCENT,
@@ -23,13 +24,19 @@ import {
   RANDOM_DIRECTION_PROBABILITY_HALF
 } from '@/logic/constants/animations';
 
+const FROZEN_STATUS_VALUES = ['frz', 'freeze', '🧊'] as const;
+type FrozenStatusValue = (typeof FROZEN_STATUS_VALUES)[number];
+const FROZEN_STATUSES: ReadonlySet<FrozenStatusValue> = new Set<FrozenStatusValue>(
+  FROZEN_STATUS_VALUES
+);
+
 export function isIdleSuppressed(
   statusRaw: string | null | undefined,
   confusedCount: number | undefined,
   animStateRaw: string | null | undefined
 ): boolean {
   const status = statusRaw?.toLowerCase() || '';
-  const isFrozen = status === 'frz' || status === 'freeze' || status === '🧊';
+  const isFrozen = FROZEN_STATUSES.has(status as FrozenStatusValue);
   const isPara =
     status === 'par' || status.includes('paraly') || status.includes('para') || status === '⚡';
   const isConfused = (confusedCount || 0) > 0;

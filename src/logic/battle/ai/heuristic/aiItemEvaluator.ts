@@ -1,6 +1,7 @@
-import type { Pokemon } from '../../../../types/pokemon/pokemon.ts';
-import type { BattleContext } from '../../../../types/battle/battleContext.ts';
 import type { ItemId } from '@/data/inventory/items';
+
+import type { BattleContext } from '../../../../types/battle/battleContext.ts';
+import type { Pokemon } from '../../../../types/pokemon/pokemon.ts';
 
 const REVIVE_MIN_HEALTH_RATIO = 0.5;
 const AI_HEAL_TRIGGER_HP_RATIO = 0.25;
@@ -80,12 +81,12 @@ async function tryUseStatusHeal(
 
   for (const [itemId, itemName, curedMsg] of STATUS_ITEMS) {
     const statuses = STATUS_MATCH[itemId] ?? [];
-    if (!statuses.includes(e.status as string)) continue;
-    if (!enemyInventory[itemId] || enemyInventory[itemId]! <= 0) continue;
+    if (!statuses.includes(e.status)) continue;
+    if (!enemyInventory[itemId] || enemyInventory[itemId] <= 0) continue;
 
     if (itemId === 'fullrestore') e.hp = e.maxHp;
     e.status = '';
-    if (--enemyInventory[itemId]! <= 0) delete enemyInventory[itemId];
+    if (--enemyInventory[itemId] <= 0) delete enemyInventory[itemId];
 
     const teamMon = (battleState.enemyTeam ?? []).find((p) => p && p.uid === e.uid);
     if (teamMon) {
@@ -122,12 +123,12 @@ async function tryUseHpHeal(
   if (e.hp <= 0 || e.hp >= e.maxHp * AI_HEAL_TRIGGER_HP_RATIO) return false;
 
   for (const [itemId, itemName, amount] of HEAL_ITEMS) {
-    if (!enemyInventory[itemId] || enemyInventory[itemId]! <= 0) continue;
+    if (!enemyInventory[itemId] || enemyInventory[itemId] <= 0) continue;
 
     const prev = e.hp;
     e.hp = amount === 'full' ? e.maxHp : Math.min(e.maxHp, e.hp + amount);
     if (itemId === 'fullrestore') e.status = '';
-    if (--enemyInventory[itemId]! <= 0) delete enemyInventory[itemId];
+    if (--enemyInventory[itemId] <= 0) delete enemyInventory[itemId];
 
     const teamMon = (battleState.enemyTeam ?? []).find((p) => p && p.uid === e.uid);
     if (teamMon) {
@@ -155,7 +156,7 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
 
   const npcName = battleState.isGym
     ? `Líder ${battleState.trainerName || 'de Gimnasio'}`
-    : `${battleState.trainerName || 'Entrenador'}`;
+    : battleState.trainerName || 'Entrenador';
 
   const triggerFXAndSound: FXTrigger = async (onlySound = false) => {
     if (!onlySound) {
@@ -167,7 +168,7 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
       }
     } else {
       const audioStore = await import('../../../../stores/audio').then((m) => m.useAudioStore());
-      void audioStore.play('heal');
+      await audioStore.play('heal');
     }
   };
 

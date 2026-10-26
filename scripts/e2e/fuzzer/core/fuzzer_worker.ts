@@ -23,4 +23,4 @@ async function run() {
   }
 }
 
-void run();
+run();

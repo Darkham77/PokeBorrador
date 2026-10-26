@@ -19,14 +19,22 @@ const DEFAULT_HOVER_OPTIONS: Required<StatHoverOptions> = {
   duration: DEFAULT_STAT_HOVER_DURATION_SEC
 };
 
+export interface UseStatHoverReturn {
+  readonly handleStatEnter: (e: MouseEvent) => void;
+  readonly handleStatLeave: (e: MouseEvent) => void;
+}
+
 /**
  * Shared GSAP composable for smooth, non-destructive stat card hover animations.
  * Elevates the card and enhances brightness without wiping out underlying CSS gradients or borders.
  */
-export function useStatHover(_ignoredClassMap?: unknown, options: StatHoverOptions = {}) {
+export function useStatHover(
+  _ignoredClassMap?: unknown,
+  options: StatHoverOptions = {}
+): UseStatHoverReturn {
   const cfg = { ...DEFAULT_HOVER_OPTIONS, ...options };
 
-  const handleStatEnter = (e: MouseEvent) => {
+  const handleStatEnter = (e: MouseEvent): void => {
     const el = e.currentTarget as HTMLElement | null;
     if (!el) return;
     if (!el.style.filter) {
@@ -43,7 +51,7 @@ export function useStatHover(_ignoredClassMap?: unknown, options: StatHoverOptio
     });
   };
 
-  const handleStatLeave = (e: MouseEvent) => {
+  const handleStatLeave = (e: MouseEvent): void => {
     const el = e.currentTarget as HTMLElement | null;
     if (!el) return;
     gsap.to(el, {

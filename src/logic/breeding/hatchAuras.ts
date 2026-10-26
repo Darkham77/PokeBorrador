@@ -1,9 +1,9 @@
+import { isPokemonType, type PokemonType } from '@/data/battle/types';
 /**
  * hatchAuras.ts
  * Aura and color configuration utilities for egg hatching.
  */
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import { isPokemonType, type PokemonType } from '@/data/battle/types';
 
 export const TYPE_AURA_COLORS: Record<PokemonType, { c1: string; c2: string }> = {
   normal: { c1: 'rgba(168, 168, 120, 0.95)', c2: 'rgba(120, 120, 90, 0.8)' },
@@ -26,7 +26,17 @@ export const TYPE_AURA_COLORS: Record<PokemonType, { c1: string; c2: string }> =
   fairy: { c1: 'rgba(240, 166, 178, 0.95)', c2: 'rgba(180, 90, 110, 0.85)' }
 };
 
-export function getAuraStyles(pokemon: Pokemon | null, flare1Url: string, flare2Url: string) {
+export function getAuraStyles(
+  pokemon: Pokemon | null,
+  flare1Url: string,
+  flare2Url: string
+): {
+  '--flare-1-url': string;
+  '--flare-2-url': string;
+  '--aura-color-1': string;
+  '--aura-color-2': string;
+  '--particle-color': string;
+} {
   let c1 = 'rgba(0, 255, 255, 0.85)'; // Default bright cyan
   let c2 = 'rgba(0, 190, 255, 0.75)'; // Default deep blue
 

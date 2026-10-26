@@ -5,15 +5,16 @@
  * Manages deterministic turn-by-turn stepping and Fog-of-War reveal state.
  */
 
+import type { SideID } from '@pkmn/sim';
+
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService.ts';
 import type {
   BattleReplayRecord,
   ReplayChoiceStep,
   ReplayCombatantSummary,
   ReplayCombatantPokemonSummary
 } from '@/types/battle/pvp.ts';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService.ts';
-import type { SideID } from '@pkmn/sim';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
 
 export interface FogOfWarPokemonState extends ReplayCombatantPokemonSummary {
   isFainted: boolean;
@@ -183,7 +184,7 @@ export class TacticalReplayEngine implements ITacticalReplayEngine {
   private currentTurnIndex: number = 0; // 0 = initial preview, 1..N = after turn N choices
   private playing: boolean = false;
 
-  constructor(record: BattleReplayRecord) {
+  public constructor(record: BattleReplayRecord) {
     this.record = record;
   }
 

@@ -1,29 +1,30 @@
+import { Battle } from '@pkmn/sim';
+import { setActivePinia, createPinia } from 'pinia';
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { ref } from 'vue';
-import { setActivePinia, createPinia } from 'pinia';
-import { Battle } from '@pkmn/sim';
-import { BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
-import { BATTLE_UI_EVENTS, isBattleReadyForInputDetail } from '@/types/battle/battleEvents';
-import { nextBattleReadyEventKey } from '@/logic/battle/helpers/battleReadyEventKey';
+
 import { computeCombatantVolatiles } from '@/components/battle/combatantVolatilesHelper';
+import { useRankedValidation } from '@/composables/pvp/useRankedValidation';
+import { executeHealingItemUsage } from '@/logic/battle/battleHealingItemProcessor';
+import { BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
+import { nextBattleReadyEventKey } from '@/logic/battle/helpers/battleReadyEventKey';
+import { resolvePlayerForcedMoveIndex } from '@/logic/battle/helpers/turnMoveValidator';
+import { processRocketStealMechanics } from '@/logic/battle/orchestratorRocketHelper';
+import { resetActiveBattleState } from '@/logic/battle/orchestratorStateHelper';
+import { getShowdownFormatId } from '@/logic/battle/showdownAdapter';
+import { handleMiscEvents } from '@/logic/battle/showdownBridgeMisc';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { usePvPStore } from '@/stores/pvp';
+import type { BattleStages } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
+import { BATTLE_UI_EVENTS, isBattleReadyForInputDetail } from '@/types/battle/battleEvents';
 import {
   isVolatileStatusKey,
   requireVolatileStatusKey,
   type Pokemon,
   type Move
 } from '@/types/pokemon/pokemon';
-import type { BattleStages } from '@/types/battle/battle';
-import { handleMiscEvents } from '@/logic/battle/showdownBridgeMisc';
-import { processRocketStealMechanics } from '@/logic/battle/orchestratorRocketHelper';
-import type { BattleContext } from '@/types/battle/battleContext';
-import { executeHealingItemUsage } from '@/logic/battle/battleHealingItemProcessor';
 import type { AudioStore } from '@/types/system/stores';
-import { resolvePlayerForcedMoveIndex } from '@/logic/battle/helpers/turnMoveValidator';
-import { getShowdownFormatId } from '@/logic/battle/showdownAdapter';
-import { useRankedValidation } from '@/composables/pvp/useRankedValidation';
-import { usePvPStore } from '@/stores/pvp';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import { resetActiveBattleState } from '@/logic/battle/orchestratorStateHelper';
 
 describe('Battle Volatiles, Events & State Transitions Domain Suite', () => {
   describe('battle UI event contract', () => {

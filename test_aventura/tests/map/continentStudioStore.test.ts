@@ -6,8 +6,9 @@
  * SVG import/export, and undo/redo stacks.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach } from 'vitest';
+
 import { useContinentStudioStore } from '../../stores/continentStudio.ts';
 
 describe('continentStudioStore', () => {

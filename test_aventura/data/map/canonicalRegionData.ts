@@ -6,6 +6,7 @@
  * route graph topology, and architectural dimension presets.
  */
 
+import type { AssetUri, DisplayText } from '@francogp/auditor';
 import type { POINode, RouteType, UrbanRoadMaterial } from '../../types/map/poiTypes.ts';
 
 export type CanonicalPresetId = 'kanto' | 'johto';
@@ -77,8 +78,8 @@ const URBAN_NODE_ARCHETYPES = {
 // ---------------------------------------------------------------------------
 
 export interface CanonicalNodeBlueprint {
-  readonly id: string; // domain-ok: Adventure node ID
-  readonly name: string; // domain-ok: Adventure node name
+  readonly id: DisplayText;
+  readonly name: DisplayText;
   readonly type: POINode['type'];
   readonly urbanScale: NonNullable<POINode['urbanScale']>;
   readonly gridX: number;
@@ -88,14 +89,14 @@ export interface CanonicalNodeBlueprint {
   readonly hasGym: boolean;
   readonly elevation?: number;
   readonly facing?: POINode['facing'];
-  readonly buildingFile?: string; // domain-ok: Texture asset path
+  readonly buildingFile?: AssetUri;
   readonly roadMaterial?: UrbanRoadMaterial;
 }
 
 export interface CanonicalRouteBlueprint {
-  readonly id: string; // domain-ok: Adventure route ID
-  readonly from: string; // domain-ok: Adventure node ID
-  readonly to: string; // domain-ok: Adventure node ID
+  readonly id: DisplayText;
+  readonly from: DisplayText;
+  readonly to: DisplayText;
   readonly routeType: RouteType;
   readonly isWaterCrossing?: boolean;
 }

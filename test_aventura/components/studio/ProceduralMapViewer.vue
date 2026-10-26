@@ -1,18 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import {
-  generateProceduralMap,
-  stampStructure,
-  type GeneratedMap,
-  type CollisionType,
-  type MapType
-} from '../../logic/map/proceduralMapGenerator';
-import type { CanonicalThemeSource } from '../../types/map/adventureWorldTypes';
-import {
-  defaultTilesRegistry,
-  loadTilesRegistry,
-  type TilesRegistryJson
-} from '../../logic/map/tilesRegistry';
+
 import { STRUCTURE_TEMPLATES, getStructureTemplate } from '../../config/mapStructures';
 import {
   STUDIO_TILE_SIZE,
@@ -21,6 +9,19 @@ import {
   SUBTILE_INNER_SIZE,
   MAX_RANDOM_SEED
 } from '../../config/studioConstants.ts';
+import {
+  generateProceduralMap,
+  stampStructure,
+  type GeneratedMap,
+  type CollisionType,
+  type MapType
+} from '../../logic/map/proceduralMapGenerator';
+import {
+  defaultTilesRegistry,
+  loadTilesRegistry,
+  type TilesRegistryJson
+} from '../../logic/map/tilesRegistry';
+import type { CanonicalThemeSource } from '../../types/map/adventureWorldTypes';
 
 const DEFAULT_VIEWER_MAP_WIDTH = 30;
 const DEFAULT_VIEWER_MAP_HEIGHT = 30;

@@ -118,7 +118,7 @@ const GENE_PROBABILITIES = {
 function createPrng(seed: number): () => number {
   let s = seed >>> 0 || PRNG_CONSTANTS.DEFAULT_SEED;
   return () => {
-    s = (s * PRNG_CONSTANTS.MULTIPLIER + PRNG_CONSTANTS.INCREMENT) | 0;
+    s = Math.trunc(s * PRNG_CONSTANTS.MULTIPLIER + PRNG_CONSTANTS.INCREMENT);
     return (s >>> 0) / PRNG_CONSTANTS.DIVISOR;
   };
 }
@@ -166,7 +166,7 @@ export function synthesizeCityGenes(
   // Combine rngSeed with node id for deterministic per-settlement PRNG
   let combinedSeed = rngSeed;
   for (let i = 0; i < node.id.length; i++) {
-    combinedSeed = (combinedSeed * SEED_PRIME_MULTIPLIER + node.id.charCodeAt(i)) | 0;
+    combinedSeed = Math.trunc(combinedSeed * SEED_PRIME_MULTIPLIER + node.id.charCodeAt(i));
   }
   const prng = createPrng(combinedSeed);
 

@@ -1,3 +1,4 @@
+import { mount } from '@vue/test-utils';
 /**
  * tests/unit/world/world_weather_and_atmosphere_suite.spec.ts
  * Cohesive domain suite consolidating weather tables integrity, visitor/exclusive type compatibility,
@@ -5,29 +6,29 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach, afterAll } from 'vite-plus/test';
-import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
+
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue';
-import { checkSpecialEncounters } from '@/logic/encounters/encounterHelpers';
 import { useAdventureSimulation } from '@/composables/adventure/useAdventureSimulation';
-import { getRouteWeather, getWeatherMultiplier } from '@/logic/weather/weatherUtils';
-import { mulberry32 } from '@/logic/utils/math';
+import { getWeatherFamily } from '@/data/system/weatherFamilies';
+import { FIRE_RED_MAPS } from '@/data/world/maps';
 import {
   ROUTE_WEATHER_TABLES,
   requireWeatherSeasonId,
   requireWeatherTableRouteId,
   type RouteWeatherTable
 } from '@/data/world/weather-tables';
+import { checkSpecialEncounters } from '@/logic/encounters/encounterHelpers';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { mulberry32 } from '@/logic/utils/math';
 import { requireDayPhase } from '@/logic/utils/timeUtils';
 import {
   WEATHER_REGISTRY,
   getMechanicalWeather,
   isWeatherId
 } from '@/logic/weather/weatherRegistry';
-import { FIRE_RED_MAPS } from '@/data/world/maps';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getRouteWeather, getWeatherMultiplier } from '@/logic/weather/weatherUtils';
 import type { MapLocation } from '@/types/pokemon/encounters';
-import { getWeatherFamily } from '@/data/system/weatherFamilies';
 
 // Mock the logger for AtmosphereLayer
 vi.mock('@/logic/utils/logger', () => ({

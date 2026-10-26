@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/utils/itemTierResolver.ts
  *
@@ -21,18 +22,18 @@ export const ITEM_TIER_COLORS: Record<ItemTier, string> = {
   legend: 'var(--yellow)'
 };
 
-export function getItemTierLabel(tier?: string | null): string {
-  const t = tier || 'common';
+export function getItemTierLabel(tier: string | null = 'common'): string {
+  const t = tier ?? 'common';
   return (
-    (ITEM_TIER_LABELS as Record<string, string>)[t] || // open-record: Tier dictionary
-    ITEM_TIER_LABELS['common']!
+    (ITEM_TIER_LABELS as Record<DisplayText, string>)[t as DisplayText] ||
+    ITEM_TIER_LABELS['common']
   );
 }
 
-export function getItemTierColor(tier?: string | null): string {
-  const t = tier || 'common';
+export function getItemTierColor(tier: string | null = 'common'): string {
+  const t = tier ?? 'common';
   return (
-    (ITEM_TIER_COLORS as Record<string, string>)[t] || // open-record: Tier dictionary
-    ITEM_TIER_COLORS['common']!
+    (ITEM_TIER_COLORS as Record<DisplayText, string>)[t as DisplayText] ||
+    ITEM_TIER_COLORS['common']
   );
 }

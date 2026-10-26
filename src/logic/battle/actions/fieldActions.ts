@@ -1,7 +1,9 @@
-import type { MoveAction } from '@/types/battle/battle';
-import { incrementRecordKey } from '@/logic/utils/mapUtils';
+import type { DisplayText } from '@francogp/auditor';
 
-export const FIELD_ACTIONS: Record<string, MoveAction> = {
+import { incrementRecordKey } from '@/logic/utils/mapUtils';
+import type { MoveAction } from '@/types/battle/battle';
+
+export const FIELD_ACTIONS: Record<DisplayText, MoveAction> = {
   // open-record: Field and hazard move effect dispatch table indexed by move effect string
   reflect: (src, _tgt, srcStages, _tgtStages, addLogFn, _battleCtx) => {
     if (srcStages.reflect) {

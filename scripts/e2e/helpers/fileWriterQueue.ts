@@ -18,15 +18,16 @@ class FileWriterQueue {
    * sequentially in single-writer FIFO queue order to prevent OS file locking issues.
    */
   async safeWriteFile(filePath: string, data: string): Promise<void> {
-    const normalized = path.normalize(filePath);
-    if (normalized.includes('..')) {
+    const resolved = path.resolve(process.cwd(), filePath);
+    const rel = path.relative(process.cwd(), resolved);
+    if (rel.startsWith('..') || path.isAbsolute(rel)) {
       throw new Error(
         `[FileWriterQueue] Security Error: Path traversal attempt rejected for "${filePath}"`
       );
     }
     return new Promise((resolve, reject) => {
-      this.queue.push({ filePath: normalized, data, resolve, reject });
-      void this.processQueue();
+      this.queue.push({ filePath: resolved, data, resolve, reject });
+      this.processQueue();
     });
   }
 
@@ -44,7 +45,8 @@ class FileWriterQueue {
         const fileName = path.basename(task.filePath);
         const targetPath = path.resolve(projectRoot, 'scripts', 'e2e', 'results', fileName);
 
-        if (!targetPath.startsWith(projectRoot) || fileName.includes('..')) {
+        const relTarget = path.relative(projectRoot, targetPath);
+        if (relTarget.startsWith('..') || path.isAbsolute(relTarget)) {
           throw new Error(`[FileWriterQueue] Invalid file target path: ${task.filePath}`);
         }
 

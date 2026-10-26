@@ -1,6 +1,6 @@
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { PokemonGender, Pokemon } from '@/types/pokemon/pokemon';
 import { SPECIES_GENDERS } from '@/data/pokemon/speciesGenders.ts';
+import type { PokemonGender, Pokemon } from '@/types/pokemon/pokemon';
 
 export function isGenderlessSpeciesId(id: PokemonSpeciesId): boolean {
   return SPECIES_GENDERS[id] === 'N';

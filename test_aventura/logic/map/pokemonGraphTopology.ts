@@ -33,6 +33,11 @@ const MIN_SECONDARY_NODES = 2;
 const MAX_SECONDARY_NODES = 6;
 const WORMHOLE_PROBABILITY = 0.4;
 const MAX_WORMHOLES = 2;
+
+const SKIPPED_TOPOLOGY_EDGE_KIND_LIST = ['main_chain', 'branch_stub', 'wormhole_tunnel'] as const;
+type SkippedTopologyEdgeKind = (typeof SKIPPED_TOPOLOGY_EDGE_KIND_LIST)[number];
+const SKIPPED_TOPOLOGY_EDGE_KINDS: ReadonlySet<SkippedTopologyEdgeKind> =
+  new Set<SkippedTopologyEdgeKind>(SKIPPED_TOPOLOGY_EDGE_KIND_LIST);
 const WORMHOLE_MIN_HOP_DISTANCE = 4;
 
 // ---------------------------------------------------------------------------
@@ -122,8 +127,7 @@ function wouldCreateCrossing(
   const hi1 = Math.max(nfIdx, ntIdx);
 
   for (const e of edges) {
-    if (e.kind === 'main_chain' || e.kind === 'branch_stub' || e.kind === 'wormhole_tunnel')
-      continue;
+    if (SKIPPED_TOPOLOGY_EDGE_KINDS.has(e.kind as SkippedTopologyEdgeKind)) continue;
 
     const efIdx = orderMap.get(e.fromId);
     const etIdx = orderMap.get(e.toId);

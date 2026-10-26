@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+
 import {
   type PokemonMoveId,
   isPokemonMoveId,
   requirePokemonMoveId,
   MOVE_TRANSLATIONS_ES
 } from '@/data/battle/moves';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
 interface Props {
   modelValue: (PokemonMoveId | null)[];
@@ -50,7 +51,7 @@ function getMoveDisplayName(id: PokemonMoveId | null | undefined): string {
   return md ? md.name.toUpperCase() : id.toUpperCase();
 }
 
-function addMove(m: PokemonMoveId, slotIndex: number) {
+function addMove(m: PokemonMoveId, slotIndex: number): void {
   const newMoves = [...props.modelValue];
   newMoves[slotIndex] = m;
   emit('update:modelValue', newMoves);
@@ -58,7 +59,7 @@ function addMove(m: PokemonMoveId, slotIndex: number) {
   moveSearch.value = '';
 }
 
-function removeMove(slotIndex: number) {
+function removeMove(slotIndex: number): void {
   const newMoves = [...props.modelValue];
   newMoves.splice(slotIndex, 1);
   newMoves.push(null);

@@ -1,7 +1,8 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
-import { getExpNeededPure } from '../pokemon/statsMath.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { applyEvGains, type EvGainResult } from '../pokemon/evMath.ts';
+import { getExpNeededPure } from '../pokemon/statsMath.ts';
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 
 /**
@@ -9,7 +10,7 @@ import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
  * Logic for calculating EXP and Money rewards.
  */
 
-export function calculateBaseExp(enemyPoke: Pokemon) {
+export function calculateBaseExp(enemyPoke: Pokemon): number {
   return Math.floor(enemyPoke.level * 4);
 }
 
@@ -32,7 +33,7 @@ export function processExpGain(
   baseExp: number,
   _participants: Set<string>,
   options: RewardOptions = {}
-) {
+): { gained: number; levelUp: boolean; levelsGained: number } | null {
   const { isActive = false, classMult = 1, totalExpMult = 1, participantsSet = null } = options;
 
   // Strict Gen 6-9 Rule: Fainted Pokemon (0 HP) never receive Exp
@@ -79,7 +80,7 @@ export function processExpGain(
   return { gained, levelUp, levelsGained };
 }
 
-export function calculateMoneyGain(enemyPoke: Pokemon, options: RewardOptions = {}) {
+export function calculateMoneyGain(enemyPoke: Pokemon, options: RewardOptions = {}): number {
   const { bcMult = 1, totalMoneyMult = 1, isTrainer = false, isGym = false } = options;
   const multiplier =
     isTrainer || isGym ? TRAINER_OR_GYM_MONEY_MULTIPLIER : WILD_BATTLE_MONEY_MULTIPLIER;

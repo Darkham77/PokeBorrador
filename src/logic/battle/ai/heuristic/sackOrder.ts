@@ -3,15 +3,18 @@
 // Adapted from external/pokemon-showdown-ai/src/strategy/sack-order.ts
 // ============================================================
 
+import type { SideID } from '@pkmn/sim';
+
+import { logger } from '@/logic/utils/logger';
 import { toID } from '@/logic/utils/strings.ts';
+
+import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type {
   HeuristicBattleSnapshot,
   SackOrderEntry,
   WinCondition,
   ThreatAssessment
 } from './types.ts';
-import type { HeuristicDamageCalculator } from './damageCalculator.ts';
-import type { SideID } from '@pkmn/sim';
 
 const SACK_WEIGHT_WIN_CONDITION = 0.35;
 const SACK_WEIGHT_DEFENSIVE_HP_QUALIFIER = 50;
@@ -67,8 +70,10 @@ function calculateDefensiveUtil(
       for (const mv of oppMon.knownMoves) {
         try {
           bestOppDmg = Math.max(bestOppDmg, calc.calcDamage(oppMon, pokemon, mv, field).maxPercent);
-        } catch {
-          /* catch-ok: Hypothetical move exploration probe skip */
+        } catch (err) {
+          logger.debug('[SackOrder] Salto de cálculo hipotético de daño', {
+            cause: err instanceof Error ? err.message : String(err)
+          });
         }
       }
       if (bestOppDmg < SACK_WEIGHT_DEFENSIVE_LOW_DAMAGE_THRESHOLD)
@@ -124,8 +129,10 @@ function calculateMatchupScore(
           matchupScore += SACK_WEIGHT_MATCHUP_BONUS_PER_POKEMON;
           break;
         }
-      } catch {
-        /* catch-ok: Hypothetical move exploration probe skip */
+      } catch (err) {
+        logger.debug('[SackOrder] Salto de cálculo hipotético de daño', {
+          cause: err instanceof Error ? err.message : String(err)
+        });
       }
     }
   }

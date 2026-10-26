@@ -1,10 +1,11 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
+
 import { executeCanonicalTurn } from '@/logic/battle/helpers/canonicalTurnRunner';
-import { createBattleSession } from '@/logic/battle/session/battleSessionFactory';
-import { SpectatorBattleSession } from '@/logic/battle/session/spectatorBattleSession';
-import { ReplayBattleSession } from '@/logic/battle/session/replayBattleSession';
-import type { BattleContext } from '@/types/battle/battleContext';
 import type { ITacticalReplayEngine } from '@/logic/battle/replay/tacticalReplayEngine';
+import { createBattleSession } from '@/logic/battle/session/battleSessionFactory';
+import { ReplayBattleSession } from '@/logic/battle/session/replayBattleSession';
+import { SpectatorBattleSession } from '@/logic/battle/session/spectatorBattleSession';
+import type { BattleContext } from '@/types/battle/battleContext';
 
 vi.mock('@/logic/battle/showdownWorkerClient.ts', () => ({
   showdownWorker: {},

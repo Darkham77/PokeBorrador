@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+
 import { logger } from '@/logic/utils/logger';
 
 interface LoadingItem {
@@ -30,7 +31,7 @@ export const useLoadingStore = defineStore('loading', () => {
     subMessage = 'Por favor, no cierres la ventana',
     isGlobal = true,
     icon = '📶'
-  ) {
+  ): void {
     // If ID already exists, update it instead of pushing
     const index = stack.value.findIndex((item) => item.id === id);
     const payload: LoadingItem = {
@@ -55,7 +56,7 @@ export const useLoadingStore = defineStore('loading', () => {
    * Removes a loading operation from the stack by its ID.
    * @param {string} id - The identifier used in start()
    */
-  function finish(id: string) {
+  function finish(id: string): void {
     const originalLen = stack.value.length;
     stack.value = stack.value.filter((item) => item.id !== id);
 
@@ -67,7 +68,7 @@ export const useLoadingStore = defineStore('loading', () => {
   /**
    * Clears the entire loading stack.
    */
-  function clearAll() {
+  function clearAll(): void {
     stack.value = [];
   }
 
@@ -97,7 +98,7 @@ export const useLoadingStore = defineStore('loading', () => {
     id: string,
     message: string | null = null,
     subMessage: string | null = null
-  ) {
+  ): void {
     const item = stack.value.find((i) => i.id === id);
     if (item) {
       if (message !== null) item.message = message;
@@ -105,7 +106,7 @@ export const useLoadingStore = defineStore('loading', () => {
     }
   }
 
-  function markAppMounted() {
+  function markAppMounted(): void {
     isAppMounted.value = true;
     logger.success('LoadingStore', 'App View Mounted');
   }

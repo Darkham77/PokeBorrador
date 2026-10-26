@@ -10,10 +10,8 @@
 import { BUSH_FAMILIES, type BushFamily } from './bushCatalog.ts';
 export const BUSH_LAYER_DEPTHS = ['front', 'back'] as const; // domain-ok: Independent layer depth for environmental rendering
 export type BushLayerDepth = (typeof BUSH_LAYER_DEPTHS)[number];
-import { MAPS_BY_ROUTE_ID } from '../../data/world/maps.ts';
 import { isMapRouteId, type MapRouteId } from '@/data/world/map-assets';
 import { MAP_BIOME_KEYS, type MapBiomeKey } from '@/logic/constants/encounters';
-import { mulberry32 } from '../utils/math.ts';
 import {
   BUSH_SEED_MULTIPLIER,
   BUSH_BASE_SCALE,
@@ -26,6 +24,9 @@ import {
   FLIP_CHANCE_PERCENT,
   BIOME_WEIGHT_PRESETS
 } from '@/logic/constants/visuals';
+
+import { MAPS_BY_ROUTE_ID } from '../../data/world/maps.ts';
+import { mulberry32 } from '../utils/math.ts';
 
 export { BUSH_FAMILIES, type BushFamily };
 

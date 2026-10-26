@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { BattleReplayRecord } from '@/types/battle/pvp.ts';
 import { useStatHover } from '@/composables/ui/useStatHover';
+import type { BattleReplayRecord } from '@/types/battle/pvp.ts';
 
 interface Props {
   pinnedReplays?: BattleReplayRecord[];
@@ -28,17 +28,17 @@ function isUserP1(replay: BattleReplayRecord): boolean {
   return true;
 }
 
-function getRival(replay: BattleReplayRecord) {
+function getRival(replay: BattleReplayRecord): BattleReplayRecord['p1'] {
   return isUserP1(replay) ? replay.p2 : replay.p1;
 }
 
-function getResultText(replay: BattleReplayRecord) {
+function getResultText(replay: BattleReplayRecord): string {
   const isP1 = isUserP1(replay);
   const won = (isP1 && replay.winnerSide === 'p1') || (!isP1 && replay.winnerSide === 'p2');
   return won ? 'VICTORIA' : 'DERROTA';
 }
 
-function getResultIcon(replay: BattleReplayRecord) {
+function getResultIcon(replay: BattleReplayRecord): string {
   const isP1 = isUserP1(replay);
   const won = (isP1 && replay.winnerSide === 'p1') || (!isP1 && replay.winnerSide === 'p2');
   return won ? '🏆' : '💀';

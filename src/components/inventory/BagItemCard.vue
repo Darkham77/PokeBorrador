@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { getItemSpriteUrl } from '@/logic/inventory/inventoryEngine';
 import { gsap } from 'gsap';
-import { Z_LAYERS } from '@/logic/constants/visuals';
+
 import type { ItemId } from '@/data/inventory/items';
+import { Z_LAYERS } from '@/logic/constants/visuals';
+import { getItemSpriteUrl } from '@/logic/inventory/inventoryEngine';
 
 const props = defineProps<{
   item: { id: ItemId; name: string; qty: number | string };
@@ -19,7 +20,7 @@ const emit = defineEmits<{
 }>();
 
 // GSAP animations for cards
-const onItemMouseEnter = (event: MouseEvent) => {
+const onItemMouseEnter = (event: MouseEvent): void => {
   const target = event.currentTarget as HTMLElement;
   gsap.to(target, {
     backgroundColor: 'rgba(255, 255, 255, 0.06)',
@@ -30,7 +31,7 @@ const onItemMouseEnter = (event: MouseEvent) => {
   });
 };
 
-const onItemMouseLeave = (event: MouseEvent) => {
+const onItemMouseLeave = (event: MouseEvent): void => {
   const target = event.currentTarget as HTMLElement;
   gsap.to(target, {
     backgroundColor: props.isSelected ? 'rgba(16, 185, 129, 0.05)' : 'rgba(255, 255, 255, 0.03)',

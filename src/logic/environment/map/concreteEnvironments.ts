@@ -5,9 +5,9 @@ import { BaseMapEnvironment, type MapEnvironmentBoundaries } from './baseMapEnvi
  * Boundaries (weather, lighting cycles) are governed 100% by the map definition.
  */
 export class OutdoorEnvironment extends BaseMapEnvironment {
-  readonly environmentKind = 'outdoor' as const;
+  public readonly environmentKind = 'outdoor' as const;
 
-  constructor(boundaries: MapEnvironmentBoundaries) {
+  public constructor(boundaries: MapEnvironmentBoundaries) {
     super(boundaries);
     Object.freeze(this);
   }
@@ -18,9 +18,9 @@ export class OutdoorEnvironment extends BaseMapEnvironment {
  * Boundaries (weather, lighting cycles) are governed 100% by the map definition.
  */
 export class SubterraneanCaveEnvironment extends BaseMapEnvironment {
-  readonly environmentKind = 'cave' as const;
+  public readonly environmentKind = 'cave' as const;
 
-  constructor(boundaries: MapEnvironmentBoundaries) {
+  public constructor(boundaries: MapEnvironmentBoundaries) {
     super(boundaries);
     Object.freeze(this);
   }
@@ -31,9 +31,9 @@ export class SubterraneanCaveEnvironment extends BaseMapEnvironment {
  * Boundaries (weather, lighting cycles) are governed 100% by the map definition.
  */
 export class InteriorFacilityEnvironment extends BaseMapEnvironment {
-  readonly environmentKind = 'indoor' as const;
+  public readonly environmentKind = 'indoor' as const;
 
-  constructor(boundaries: MapEnvironmentBoundaries) {
+  public constructor(boundaries: MapEnvironmentBoundaries) {
     super(boundaries);
     Object.freeze(this);
   }
@@ -44,9 +44,9 @@ export class InteriorFacilityEnvironment extends BaseMapEnvironment {
  * Boundaries (weather, lighting cycles) are governed 100% by the map definition.
  */
 export class StadiumEnvironment extends BaseMapEnvironment {
-  readonly environmentKind = 'stadium' as const;
+  public readonly environmentKind = 'stadium' as const;
 
-  constructor(boundaries: MapEnvironmentBoundaries) {
+  public constructor(boundaries: MapEnvironmentBoundaries) {
     super(boundaries);
     Object.freeze(this);
   }

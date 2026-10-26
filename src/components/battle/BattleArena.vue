@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useWakeLock } from '@vueuse/core';
 import {
   ref,
   computed,
@@ -11,7 +12,7 @@ import {
   reactive,
   onWatcherCleanup
 } from 'vue';
-import { useWakeLock } from '@vueuse/core';
+
 import { logger } from '@/logic/utils/logger';
 
 const PILL_GLOW_DURATION_SEC = 1.5;
@@ -21,13 +22,21 @@ const PILL_SHAKE_ROTATION_DEG = 2;
 const PILL_SHAKE_HALF_DURATION_SEC = 0.125;
 const PILL_SHAKE_FULL_DURATION_SEC = 0.25;
 import { gsap } from 'gsap';
-import { useBattleStore } from '@/stores/battle/battle';
-import { useUIStore } from '@/stores/ui';
-import { useMapStore } from '@/stores/map';
-import { useDebugStore } from '@/stores/debug';
-import type { PillFxType } from '@/types/system/game';
-import { useGameStore } from '@/stores/game';
-import { getRouteWeather, getNpcEncounterChances } from '@/logic/weather/weatherUtils';
+
+import { useRouteSpawnsArchaeology } from '@/composables/modals/useRouteSpawnsArchaeology';
+import { useRouteSpawnsFishing } from '@/composables/modals/useRouteSpawnsFishing';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { ACTIVE_GENERATION } from '@/data/system/constants';
+import { getWeatherFamily } from '@/data/system/weatherFamilies.ts';
+import { isMapRouteId, requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
+import { requireWeatherSeasonId } from '@/data/world/weather-tables';
+import { getEncounterPool, getSpeciesEntries } from '@/logic/encounters/encounters';
+import type { Event as GameEvent } from '@/logic/events/eventEngine';
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { redistributeWeatherSpawns } from '@/logic/utils/routeSpawnHelpers';
+import { requireDayPhase } from '@/logic/utils/timeUtils';
+import { getWeatherCombatDescription } from '@/logic/weather/weatherCombatDescriptions.ts';
 import {
   getMechanicalWeather,
   requireWeatherId,
@@ -35,26 +44,21 @@ import {
   WEATHER_VISUAL_METADATA,
   type WeatherId
 } from '@/logic/weather/weatherRegistry';
-import { ACTIVE_GENERATION } from '@/data/system/constants';
-import { getWeatherCombatDescription } from '@/logic/weather/weatherCombatDescriptions.ts';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { getEncounterPool, getSpeciesEntries } from '@/logic/encounters/encounters';
-import { getWeatherFamily } from '@/data/system/weatherFamilies.ts';
-import { requireWeatherSeasonId } from '@/data/world/weather-tables';
-import { isMapRouteId, requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
-import { requireDayPhase } from '@/logic/utils/timeUtils';
-import { redistributeWeatherSpawns } from '@/logic/utils/routeSpawnHelpers';
-import type { DayPhase } from '@/types/system/time';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { getRouteWeather, getNpcEncounterChances } from '@/logic/weather/weatherUtils';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useDebugStore } from '@/stores/debug';
+import { useGameStore } from '@/stores/game';
+import { useMapStore } from '@/stores/map';
+import { useUIStore } from '@/stores/ui';
 import type { MapLocation, EncounterState } from '@/types/pokemon/encounters';
-import type { Event as GameEvent } from '@/logic/events/eventEngine';
-import { useRouteSpawnsFishing } from '@/composables/modals/useRouteSpawnsFishing';
-import { useRouteSpawnsArchaeology } from '@/composables/modals/useRouteSpawnsArchaeology';
-import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils';
+import type { PillFxType } from '@/types/system/game';
+import type { DayPhase } from '@/types/system/time';
 
 const debugStore = useDebugStore();
 const isDebugActive = computed(() => {
-  return debugStore.canAccess && typeof window !== 'undefined' && !!window.__VITE_DEBUG__;
+  return (
+    debugStore.canAccess && typeof globalThis.window !== 'undefined' && !!globalThis.__VITE_DEBUG__
+  );
 });
 const BattleDebugTools = defineAsyncComponent(() => import('./BattleDebugTools.vue')) as Component;
 
@@ -70,12 +74,13 @@ const isSmallScreen = computed(() => {
   return uiStore.windowWidth / uiStore.appZoom < RESPONSIVE_SMALL_SCREEN_MAX_WIDTH_PX;
 });
 
-// Sub-components
-import BattleLog from './BattleLog.vue';
-import BattleArenaView from './BattleArenaView.vue';
-import BattleArenaControls from './BattleArenaControls.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 import PVTooltip from '@/components/common/PVTooltip.vue';
+
+import BattleArenaControls from './BattleArenaControls.vue';
+import BattleArenaView from './BattleArenaView.vue';
+// Sub-components
+import BattleLog from './BattleLog.vue';
 
 const battle = computed(() => battleStore.state);
 
@@ -327,7 +332,7 @@ import type { ComponentPublicInstance } from 'vue';
 const envPillRef = ref<ComponentPublicInstance | HTMLElement | null>(null);
 let pillContext: gsap.Context | null = null;
 
-const initBattlePillAnimation = () => {
+const initBattlePillAnimation = (): void => {
   if (pillContext) {
     pillContext.revert();
     pillContext = null;
@@ -436,7 +441,7 @@ async function disableScreenWakeLock(): Promise<void> {
 
 onMounted(() => {
   if (battleStore.isBattleActive) {
-    void enableScreenWakeLock();
+    enableScreenWakeLock();
   }
   nextTick(() => {
     initBattlePillAnimation();
@@ -444,7 +449,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  void disableScreenWakeLock();
+  disableScreenWakeLock();
   if (pillContext) {
     pillContext.revert();
     pillContext = null;
@@ -471,10 +476,10 @@ watch(
   () => battleStore.isBattleActive,
   (active) => {
     if (active) {
-      void enableScreenWakeLock();
+      enableScreenWakeLock();
       document.body.classList.add('in-battle'); // [PureVue-Ignore]
       onWatcherCleanup(() => {
-        void disableScreenWakeLock();
+        disableScreenWakeLock();
         document.body.classList.remove('in-battle'); // [PureVue-Ignore]
       });
     }
@@ -482,7 +487,7 @@ watch(
   { immediate: true }
 );
 
-const handleClose = () => {
+const handleClose = (): void => {
   if (battleStore.isFinishing) {
     battleStore.completeBattleFlow('map');
   } else {

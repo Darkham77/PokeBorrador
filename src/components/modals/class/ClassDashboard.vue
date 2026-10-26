@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
 import { type PlayerClassDefinition } from '@/data/player/playerClasses';
-import { useModalStore } from '@/stores/modals';
-import { useGameStore } from '@/stores/game';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage';
 import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
 import { useProfileStore } from '@/stores/player/profile';
 import { useUIStore } from '@/stores/ui';
 import type { GenderId } from '@/types/system/game';
-import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage';
-import ClassDashboardSidebar from './ClassDashboardSidebar.vue';
+
 import ClassDashboardAbilityItem from './ClassDashboardAbilityItem.vue';
 import ClassDashboardPenaltyItem from './ClassDashboardPenaltyItem.vue';
+import ClassDashboardSidebar from './ClassDashboardSidebar.vue';
 
 interface Props {
   currentClass?: PlayerClassDefinition | null;
@@ -51,7 +53,7 @@ const canChangeGender = computed(() => {
   );
 });
 
-const handleSelectGender = (targetGender: GenderId) => {
+const handleSelectGender = (targetGender: GenderId): void => {
   if (currentGender.value === targetGender) {
     uiStore.notify(
       `Ya tienes seleccionado el género ${targetGender === 'm' ? 'Femenino ♀️' : 'Masculino ♂️'}.`,
@@ -136,12 +138,12 @@ const emit = defineEmits<{
   (e: 'close'): void;
 }>();
 
-const openMissionsModal = () => {
+const openMissionsModal = (): void => {
   modalStore.close('ClassMissions');
   modalStore.open('EventMissions');
 };
 
-const getTrainerSprite = (id: string | number | undefined, gender: GenderId = 'h') => {
+const getTrainerSprite = (id: string | number | undefined, gender: GenderId = 'h'): string => {
   return getAssetUrl(ASSET_TYPES.TRAINER, id as string, { trainerSuffix: 'front', gender });
 };
 </script>

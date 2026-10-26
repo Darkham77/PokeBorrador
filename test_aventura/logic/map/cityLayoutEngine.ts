@@ -28,8 +28,8 @@ import {
   getAssetFilename,
   type BuildingPrefabMeta
 } from './canonicalAssetsRegistry.ts';
-import { computeUrbanCurbs } from './urbanPavingEngine.ts';
 import { generateProceduralCityLayout } from './proceduralCityEngine.ts';
+import { computeUrbanCurbs } from './urbanPavingEngine.ts';
 
 export type { BuildingPrefabMeta, SettlementCurbPlacement };
 
@@ -43,6 +43,27 @@ export interface SettlementTerrainContext {
 }
 
 const CANONICAL_SETTLEMENT_LAYOUT_SEED = 1337;
+const LEAGUE_PORTAL_MIN_DY = 6;
+const LEAGUE_PORTAL_DX_PRIMARY = 5;
+const LEAGUE_PORTAL_DX_SECONDARY = 6;
+const MAJOR_SETTLEMENT_TYPE_LIST = ['metropolis', 'city', 'town'] as const;
+type MajorSettlementType = (typeof MAJOR_SETTLEMENT_TYPE_LIST)[number];
+const MAJOR_SETTLEMENT_TYPES: ReadonlySet<MajorSettlementType> = new Set<MajorSettlementType>(
+  MAJOR_SETTLEMENT_TYPE_LIST
+);
+
+const LAYOUT_CAPABLE_POI_TYPE_LIST = [
+  'metropolis',
+  'city',
+  'town',
+  'pokemon_league',
+  'route_gate',
+  'dungeon_forest'
+] as const;
+type LayoutCapablePoiType = (typeof LAYOUT_CAPABLE_POI_TYPE_LIST)[number];
+const LAYOUT_CAPABLE_POI_TYPES: ReadonlySet<LayoutCapablePoiType> = new Set<LayoutCapablePoiType>(
+  LAYOUT_CAPABLE_POI_TYPE_LIST
+);
 const LEAGUE_AVENUE_START_ROW = 7 as const;
 const LEAGUE_UPPER_LAMP_ROW = 9;
 const LEAGUE_UPPER_FLOWER_ROW = 10;
@@ -62,12 +83,28 @@ const DUNGEON_FOREST_MIN_GATES_DIMENSION = 16 as const;
  *   - Doorstep Clearance Invariant: Front doorstep cells (doorX, doorY + 1) are guaranteed
  *     to be 100% free of obstacles, lamps, fences, statues, or trees.
  */
+function addBuildingFootprintToMask(b: UrbanBuildingPlacement, buildingMask: Set<string>): void {
+  const isLeague = b.type === 'pokemon_league';
+  for (let dy = 0; dy < b.height; dy++) {
+    for (let dx = 0; dx < b.width; dx++) {
+      if (
+        isLeague &&
+        dy >= LEAGUE_PORTAL_MIN_DY &&
+        (dx === LEAGUE_PORTAL_DX_PRIMARY || dx === LEAGUE_PORTAL_DX_SECONDARY)
+      ) {
+        continue;
+      }
+      buildingMask.add(`${b.x + dx}_${b.y + dy}`);
+    }
+  }
+}
+
 export function generateSettlementLayout(
   node: POINode,
   context?: SettlementTerrainContext,
   seed = CANONICAL_SETTLEMENT_LAYOUT_SEED
 ): SettlementLayoutResult {
-  if (node.type === 'metropolis' || node.type === 'city' || node.type === 'town') {
+  if (MAJOR_SETTLEMENT_TYPES.has(node.type as MajorSettlementType)) {
     return generateProceduralCityLayout(node, seed, context);
   }
 
@@ -541,23 +578,7 @@ export function generateSettlementLayout(
   // Strict Building Footprint Mask: Ensure no streets, plazas, or props overlap building bounding boxes
   const buildingMask = new Set<string>();
   for (const b of buildings) {
-    if (b.type === 'pokemon_league') {
-      for (let dy = 0; dy < b.height; dy++) {
-        for (let dx = 0; dx < b.width; dx++) {
-          // Allow 2-cell ceremonial avenue to tuck 2 tiles under palace (dy=6, 7 at dx=5, 6)
-          const isEntrancePortal = dy >= 6 && (dx === 5 || dx === 6);
-          if (!isEntrancePortal) {
-            buildingMask.add(`${b.x + dx}_${b.y + dy}`);
-          }
-        }
-      }
-    } else {
-      for (let dy = 0; dy < b.height; dy++) {
-        for (let dx = 0; dx < b.width; dx++) {
-          buildingMask.add(`${b.x + dx}_${b.y + dy}`);
-        }
-      }
-    }
+    addBuildingFootprintToMask(b, buildingMask);
   }
 
   // Runtime Collision-Free Invariant: fail loudly if any buildings overlap
@@ -609,14 +630,7 @@ export function generateAllSettlementLayouts(
 ): Map<string, SettlementLayoutResult> {
   const layouts = new Map<string, SettlementLayoutResult>();
   for (const node of nodes) {
-    if (
-      node.type === 'metropolis' ||
-      node.type === 'city' ||
-      node.type === 'town' ||
-      node.type === 'pokemon_league' ||
-      node.type === 'route_gate' ||
-      node.type === 'dungeon_forest'
-    ) {
+    if (LAYOUT_CAPABLE_POI_TYPES.has(node.type as LayoutCapablePoiType)) {
       const res = generateSettlementLayout(node);
       layouts.set(node.id, res);
       // Attach to node

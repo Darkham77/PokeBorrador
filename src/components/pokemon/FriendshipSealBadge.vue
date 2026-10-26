@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, useTemplateRef } from 'vue';
 import { gsap } from 'gsap';
+import { computed, onMounted, onUnmounted, useTemplateRef } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
-import { getFriendshipTooltipDetails } from '@/logic/pokemon/friendshipLogic';
 import { DEFAULT_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay';
+import { getFriendshipTooltipDetails } from '@/logic/pokemon/friendshipLogic';
 import type { ComponentPillSize } from '@/types/system/game';
 
 interface Props {
@@ -59,7 +60,7 @@ onUnmounted(() => {
   }
 });
 
-function onMouseEnter() {
+function onMouseEnter(): void {
   if (badgeRef.value) {
     gsap.to(badgeRef.value, {
       scale: 1.25,
@@ -69,7 +70,7 @@ function onMouseEnter() {
   }
 }
 
-function onMouseLeave() {
+function onMouseLeave(): void {
   if (badgeRef.value) {
     gsap.to(badgeRef.value, {
       scale: 1.0,

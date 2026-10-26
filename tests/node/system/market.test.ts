@@ -7,8 +7,9 @@
  * Zero mocks, zero Pinia, zero Vue, zero browser dependencies.
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
 
 import {
   applyMarketFilters,
@@ -19,10 +20,8 @@ import {
   type MarketListing,
   type MarketFilters
 } from '../../../src/logic/economy/market.ts';
-
-import type { GameState } from '../../../src/types/system/game.ts';
-
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
+import type { GameState } from '../../../src/types/system/game.ts';
 
 // Test fixture helpers — builds a minimal but type-complete Pokemon for filter testing
 const BASE_POKEMON: Pokemon = {

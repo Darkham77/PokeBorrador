@@ -11,14 +11,15 @@
  *  Recoil    — 4 uses of Struggle should accumulate enough recoil to KO the user
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
-import { mount } from '@vue/test-utils';
-import { setActivePinia, createPinia } from 'pinia';
-import { ref, computed } from 'vue';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import { Battle } from '@pkmn/sim';
 import type { PokemonSet } from '@pkmn/sim';
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import { ref, computed } from 'vue';
+
 import { getShowdownFormatId } from '@/logic/battle/showdownAdapter';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared mocks

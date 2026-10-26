@@ -1,10 +1,25 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import type { DisplayText } from '@francogp/auditor';
 import { gsap } from 'gsap';
-import MapCard from '@/components/map/MapCard.vue';
-import AdventureInventoryModal from '../components/adventure/AdventureInventoryModal.vue';
-import AdventureDebugModal from '../components/adventure/AdventureDebugModal.vue';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 
+import MapCard from '@/components/map/MapCard.vue';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { requireMapRouteId } from '@/data/world/map-assets';
+import { FIRE_RED_MAPS } from '@/data/world/maps';
+import { isWeatherTableRouteId, requireWeatherSeasonId } from '@/data/world/weather-tables';
+import { getMapSpawnPoolData } from '@/logic/encounters/encounterHelpers';
+import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
+import { getRouteWeather } from '@/logic/weather/weatherUtils';
+// Import Poké Vicio Stores and Data
+import { useMapStore } from '@/stores/map';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import type { MapLocation } from '@/types/pokemon/encounters';
+
+import AdventureDebugModal from '../components/adventure/AdventureDebugModal.vue';
+import AdventureInventoryModal from '../components/adventure/AdventureInventoryModal.vue';
+import { getAdjacentNodes, getAlternativePaths } from '../logic/adventure/adventurePathfinding.ts';
 import {
   rawNodes,
   connections,
@@ -12,26 +27,11 @@ import {
   type MapNode,
   type DijkstraPath
 } from '../logic/adventure/mapData.ts';
-import { getAdjacentNodes, getAlternativePaths } from '../logic/adventure/adventurePathfinding.ts';
 import {
   SPRITE_FACING_DIRECTIONS,
   type SpriteFacingDirection,
   type TravelTerrainMode
 } from '../types/map/poiTypes.ts';
-
-// Import Poké Vicio Stores and Data
-import { useMapStore } from '@/stores/map';
-import { useUIStore } from '@/stores/ui';
-import { FIRE_RED_MAPS } from '@/data/world/maps';
-import { getRouteWeather } from '@/logic/weather/weatherUtils';
-import { isWeatherTableRouteId, requireWeatherSeasonId } from '@/data/world/weather-tables';
-import { requireMapRouteId } from '@/data/world/map-assets';
-import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
-import { getMapSpawnPoolData } from '@/logic/encounters/encounterHelpers';
-import type { MapLocation } from '@/types/pokemon/encounters';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-
-import { useModalStore } from '@/stores/modals';
 
 const mapStore = useMapStore();
 const uiStore = useUIStore();
@@ -151,7 +151,7 @@ function safeSetStorage(key: string, value: string): void {
 }
 
 // Reactive State
-const playerInventory = ref<Record<string, boolean>>( // open-record: Adventure inventory items and HMs state
+const playerInventory = ref<Record<DisplayText, boolean>>( // open-record: Adventure inventory items and HMs state
   JSON.parse(
     safeGetStorage(
       STORAGE_INVENTORY_KEY,
@@ -206,14 +206,14 @@ const playerToken = ref<HTMLElement | null>(null);
 const previewLinesSvg = ref<SVGElement | null>(null);
 
 const mapNodes = computed(() => {
-  const result: Record<string, MapNode> = {}; // open-record: Adventure map nodes keyed by procedural node id
+  const result: Record<DisplayText, MapNode> = {}; // open-record: Adventure map nodes keyed by procedural node id
   for (const [key, node] of Object.entries(rawNodes)) {
     result[key] = { ...node, x: node.x * SPACING_MULTIPLIER, y: node.y * SPACING_MULTIPLIER };
   }
   return result;
 });
 
-const cityDescriptions: Record<string, string> = {
+const cityDescriptions: Record<DisplayText, string> = {
   // open-record: City descriptions keyed by procedural node id
   pallet: 'El comienzo de tu viaje.',
   viridian: 'La ciudad del eterno verdor.',
@@ -229,7 +229,7 @@ const cityDescriptions: Record<string, string> = {
 };
 
 const mapLocationsById = computed(() => {
-  const map: Record<string, MapLocation> = {}; // open-record: Encounter map locations keyed by local map node id
+  const map: Record<DisplayText, MapLocation> = {}; // open-record: Encounter map locations keyed by local map node id
   for (const [localId, officialId] of Object.entries(officialMapIdMap)) {
     const loc = FIRE_RED_MAPS.find((m) => m.id === officialId);
     if (loc) {
@@ -304,7 +304,7 @@ const DAWN_HOUR_THRESHOLD = 6 as const;
 const DRAG_THRESHOLD_PX = 8 as const;
 
 const dayNightOverlayColor = ref('transparent');
-function updateDayNightCycle() {
+function updateDayNightCycle(): void {
   const hour = Temporal.Now.plainTimeISO().hour;
   if (hour >= NIGHT_HOUR_THRESHOLD || hour < DAWN_HOUR_THRESHOLD)
     dayNightOverlayColor.value = 'rgba(0, 0, 30, 0.45)';
@@ -317,7 +317,7 @@ function updateDayNightCycle() {
 const statusText = ref('Estacionado');
 const statusDotClass = ref('bg-green-400');
 
-function setStatus(text: string, isMovingState = false) {
+function setStatus(text: string, isMovingState = false): void {
   statusText.value = text;
   statusDotClass.value = isMovingState ? 'bg-yellow-400' : 'bg-green-400';
 }
@@ -325,22 +325,22 @@ function setStatus(text: string, isMovingState = false) {
 // Alert Modals
 const alertOpen = ref(false);
 const alertMsg = ref('');
-const showActionAlert = (msg: string) => {
+const showActionAlert = (msg: string): void => {
   alertMsg.value = msg;
   alertOpen.value = true;
 };
 
-const closeAlert = () => {
+const closeAlert = (): void => {
   alertOpen.value = false;
 };
 
-function setCompanion(comp: string) {
+function setCompanion(comp: string): void {
   activeCompanion.value = comp;
   safeSetStorage(STORAGE_COMPANION_KEY, comp);
   updatePlayerVisuals();
 }
 
-function updateInventory(item: string, value: boolean) {
+function updateInventory(item: string, value: boolean): void {
   playerInventory.value[item] = value;
   safeSetStorage(STORAGE_INVENTORY_KEY, JSON.stringify(playerInventory.value));
   if (item === 'Bicicleta' && !isMoving.value) updatePlayerVisuals();
@@ -348,7 +348,7 @@ function updateInventory(item: string, value: boolean) {
 }
 
 // Player visuals
-const updatePlayerVisuals = () => {
+const updatePlayerVisuals = (): void => {
   walkFrame.value = playerInventory.value['Bicicleta'] && !isSurfing.value ? 0 : 1;
 };
 
@@ -357,18 +357,18 @@ const showInventoryModal = ref(false);
 const showRadarModal = ref(false);
 const showDebugModal = ref(false);
 
-const toggleInventoryModal = () => {
+const toggleInventoryModal = (): void => {
   showInventoryModal.value = !showInventoryModal.value;
 };
-const toggleRadarModal = () => {
+const toggleRadarModal = (): void => {
   showRadarModal.value = !showRadarModal.value;
 };
-const toggleDebugModal = () => {
+const toggleDebugModal = (): void => {
   showDebugModal.value = !showDebugModal.value;
 };
 
 // Camera control
-function updateCameraTransform(smooth = false) {
+function updateCameraTransform(smooth = false): void {
   if (!worldContainer.value) return;
   worldContainer.value.style.transition = smooth
     ? 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'
@@ -376,7 +376,7 @@ function updateCameraTransform(smooth = false) {
   worldContainer.value.style.transform = `translate3d(${currentPanX.value}px, ${currentPanY.value}px, 0) scale(${currentScale.value})`;
 }
 
-function clampCamera() {
+function clampCamera(): void {
   if (!viewport.value) return;
   const vpWidth = viewport.value.clientWidth;
   const vpHeight = viewport.value.clientHeight;
@@ -385,14 +385,16 @@ function clampCamera() {
   let minX, maxX, minY, maxY;
 
   if (scaledWidth <= vpWidth) {
-    minX = maxX = (vpWidth - scaledWidth) / 2;
+    minX = (vpWidth - scaledWidth) / 2;
+    maxX = minX;
   } else {
     minX = vpWidth - scaledWidth;
     maxX = 0;
   }
 
   if (scaledHeight <= vpHeight) {
-    minY = maxY = (vpHeight - scaledHeight) / 2;
+    minY = (vpHeight - scaledHeight) / 2;
+    maxY = minY;
   } else {
     minY = vpHeight - scaledHeight;
     maxY = 0;
@@ -402,7 +404,12 @@ function clampCamera() {
   currentPanY.value = Math.max(minY, Math.min(maxY, currentPanY.value));
 }
 
-function centerCameraOn(x: number, y: number, smooth = true, customScale: number | null = null) {
+function centerCameraOn(
+  x: number,
+  y: number,
+  smooth = true,
+  customScale: number | null = null
+): void {
   if (!viewport.value) return;
   if (customScale !== null) currentScale.value = customScale;
   currentPanX.value = viewport.value.clientWidth / 2 - x * currentScale.value;
@@ -411,7 +418,7 @@ function centerCameraOn(x: number, y: number, smooth = true, customScale: number
   updateCameraTransform(smooth);
 }
 
-function returnToCurrentLocation() {
+function returnToCurrentLocation(): void {
   if (!isMoving.value && !isPlanning.value && !isZoomedIn.value) {
     enterParkedMode();
   }
@@ -421,7 +428,7 @@ function returnToCurrentLocation() {
 }
 
 // Parked mode setup
-function enterParkedMode() {
+function enterParkedMode(): void {
   isZoomedIn.value = true;
   isPlanning.value = false;
   setStatus('Estacionado', false);
@@ -433,7 +440,7 @@ function enterParkedMode() {
   }
 }
 
-function exitParkedMode() {
+function exitParkedMode(): void {
   isZoomedIn.value = false;
   setStatus('Modo Libre', true);
   const targetScale = getOptimalMapScale();
@@ -451,7 +458,7 @@ let initialClickY = 0;
 let dragStartX = 0;
 let dragStartY = 0;
 
-function startDrag(clientX: number, clientY: number) {
+function startDrag(clientX: number, clientY: number): void {
   if ((isZoomedIn.value && !isPlanning.value) || isMoving.value) return;
   isPointerDown = true;
   isDragging = false;
@@ -461,7 +468,7 @@ function startDrag(clientX: number, clientY: number) {
   dragStartY = clientY - currentPanY.value;
 }
 
-function doDrag(clientX: number, clientY: number) {
+function doDrag(clientX: number, clientY: number): void {
   if (!isPointerDown) return;
   if (
     !isDragging &&
@@ -478,7 +485,7 @@ function doDrag(clientX: number, clientY: number) {
   }
 }
 
-function endDrag() {
+function endDrag(): void {
   isPointerDown = false;
   gsap.delayedCall(POINTER_DRAG_DEBOUNCE_SEC, () => {
     isDragging = false;
@@ -486,7 +493,7 @@ function endDrag() {
 }
 
 // Travel confirms
-function travelToAdjacent(targetId: string) {
+function travelToAdjacent(targetId: string): void {
   if (isMoving.value) return;
   const targetNode = mapNodes.value[targetId];
   if (!targetNode) return;
@@ -505,7 +512,7 @@ function travelToAdjacent(targetId: string) {
 
 // GPS / Planning
 
-function planTravel(targetId: string) {
+function planTravel(targetId: string): void {
   if (targetId === currentNode.value) {
     if (!isZoomedIn.value) enterParkedMode();
     return;
@@ -565,7 +572,12 @@ function planTravel(targetId: string) {
   updatePlanUI();
 }
 
-function calculateRouteStats(nodesInPath: string[]) {
+function calculateRouteStats(nodesInPath: string[]): {
+  t: number;
+  w: number;
+  m: number;
+  f: number;
+} {
   const sums = { t: 0, w: 0, m: 0, f: 0 };
   for (let i = 1; i < nodesInPath.length; i++) {
     const routeNodeId = nodesInPath[i];
@@ -589,7 +601,7 @@ function calculateRouteStats(nodesInPath: string[]) {
   return sums;
 }
 
-function updatePlanUI() {
+function updatePlanUI(): void {
   const currentPath = currentPlanPaths.value[selectedPlanIndex.value];
   if (!currentPath) return;
 
@@ -597,7 +609,7 @@ function updatePlanUI() {
   zoomToFitPath(currentPath.nodes);
 }
 
-function zoomToFitPath(nodesIds: string[]) {
+function zoomToFitPath(nodesIds: string[]): void {
   if (!viewport.value) return;
   let minX = Infinity,
     minY = Infinity,
@@ -671,12 +683,12 @@ function zoomToFitPath(nodesIds: string[]) {
   centerCameraOn(midX, y_center, true, newScale);
 }
 
-function nextAlternative() {
+function nextAlternative(): void {
   selectedPlanIndex.value = (selectedPlanIndex.value + 1) % currentPlanPaths.value.length;
   updatePlanUI();
 }
 
-function drawPreviewPath(nodeIds: string[], isFly: boolean) {
+function drawPreviewPath(nodeIds: string[], isFly: boolean): void {
   if (!previewLinesSvg.value) return;
   previewLinesSvg.value.innerHTML = '';
   for (let i = 0; i < nodeIds.length - 1; i++) {
@@ -696,7 +708,7 @@ function drawPreviewPath(nodeIds: string[], isFly: boolean) {
   }
 }
 
-function cancelPlanning() {
+function cancelPlanning(): void {
   isPlanning.value = false;
   if (previewLinesSvg.value) previewLinesSvg.value.innerHTML = '';
   enterParkedMode();
@@ -706,7 +718,7 @@ function cancelPlanning() {
 const travelProgressText = ref('0%');
 const isTravelingProgressActive = ref(false);
 
-async function confirmTravel() {
+async function confirmTravel(): Promise<void> {
   const pathData = currentPlanPaths.value[selectedPlanIndex.value];
   if (!pathData || !pathData.nodes || pathData.nodes.length < 2) return;
 
@@ -761,7 +773,7 @@ async function confirmTravel() {
   enterParkedMode();
 }
 
-function preloadTrainerSprites() {
+function preloadTrainerSprites(): void {
   const directions = SPRITE_FACING_DIRECTIONS;
   const types = ['walk', 'bike', 'surf', 'fly'] as const;
   for (const type of types) {
@@ -777,7 +789,7 @@ function preloadTrainerSprites() {
   }
 }
 
-function animateFullRoute(nodes: string[], isFlying: boolean) {
+function animateFullRoute(nodes: string[], isFlying: boolean): Promise<void> {
   return new Promise<void>((resolve) => {
     if (nodes.length < 2) {
       resolve();
@@ -790,7 +802,7 @@ function animateFullRoute(nodes: string[], isFlying: boolean) {
     const vpWidth = viewport.value ? viewport.value.clientWidth : window.innerWidth;
     const vpHeight = viewport.value ? viewport.value.clientHeight : window.innerHeight;
 
-    const getClampedPan = (nodeX: number, nodeY: number) => {
+    const getClampedPan = (nodeX: number, nodeY: number): { x: number; y: number } => {
       const scaledW = WORLD_WIDTH * travelScale;
       const scaledH = WORLD_HEIGHT * travelScale;
       const minX = scaledW <= vpWidth ? (vpWidth - scaledW) / 2 : vpWidth - scaledW;
@@ -998,7 +1010,7 @@ function animateFullRoute(nodes: string[], isFlying: boolean) {
 }
 
 // Swarms
-const triggerSwarm = () => {
+const triggerSwarm = (): void => {
   const routes = Object.keys(mapNodes.value).filter((id) =>
     mapNodes.value[id]?.type.includes('route')
   );
@@ -1009,26 +1021,26 @@ const triggerSwarm = () => {
 };
 
 // Explore & Heal
-const exploreZone = () => {
+const exploreZone = (): void => {
   const current = mapNodes.value[currentNode.value];
   const zoneName = current ? current.name : 'la zona';
   showActionAlert(`La hierba alta de ${zoneName} se mueve... ¡Prepárate!`);
 };
 
-function healPokemon() {
+function healPokemon(): void {
   showActionAlert(
     'Turururu-ru~\n\nTus Pokémon están completamente sanos y listos para seguir luchando.'
   );
 }
 
 // Debug features
-const debugUnlockAll = () => {
+const debugUnlockAll = (): void => {
   discoveredNodes.value = Object.keys(mapNodes.value);
   safeSetStorage(STORAGE_DISCOVERED_KEY, JSON.stringify(discoveredNodes.value));
   showActionAlert('⚙️ Cheat: Todo el mapa ha sido descubierto.');
 };
 
-function debugGiveAllMOs() {
+function debugGiveAllMOs(): void {
   ['Corte', 'Surf', 'Flauta', 'Medallas', 'Vuelo', 'Bicicleta'].forEach(
     (mo) => (playerInventory.value[mo] = true)
   );
@@ -1037,7 +1049,7 @@ function debugGiveAllMOs() {
   showActionAlert('⚙️ Cheat: Tienes todos los Objetos y MOs.');
 }
 
-const debugTriggerSwarm = () => {
+const debugTriggerSwarm = (): void => {
   triggerSwarm();
   const routeName = currentSwarmRoute.value
     ? (mapNodes.value[currentSwarmRoute.value]?.name ?? currentSwarmRoute.value)
@@ -1045,7 +1057,7 @@ const debugTriggerSwarm = () => {
   showActionAlert('⚙️ Enjambre forzado en: ' + routeName);
 };
 
-function debugHardReset() {
+function debugHardReset(): void {
   if (
     confirm(
       '⚠️ ¿Estás seguro de que quieres BORRAR TODOS LOS DATOS Y REINICIAR? Esto no se puede deshacer.'
@@ -1056,8 +1068,8 @@ function debugHardReset() {
       localStorage.removeItem(STORAGE_DISCOVERED_KEY);
       localStorage.removeItem(STORAGE_COMPANION_KEY);
       localStorage.removeItem(STORAGE_LOCATION_KEY);
-    } catch {
-      // catch-ok: Storage removal restricted in private browsing mode
+    } catch (err) {
+      console.warn('Handled controlled exception:', err);
     }
     location.reload();
   }
@@ -1097,7 +1109,7 @@ const adjacentButtons = computed(() => {
   });
 });
 
-function handleResize() {
+function handleResize(): void {
   if (isZoomedIn.value && !isMoving.value && !isPlanning.value) {
     const targetScale = getOptimalParkedScale();
     const current = mapNodes.value[currentNode.value];
@@ -1118,7 +1130,7 @@ onMounted(() => {
   triggerSwarm();
   updatePlayerVisuals();
   let dayNightTimer: gsap.core.Tween | null = null;
-  const scheduleDayNight = () => {
+  const scheduleDayNight = (): void => {
     updateDayNightCycle();
     dayNightTimer = gsap.delayedCall(DAY_NIGHT_CYCLE_INTERVAL_SEC, scheduleDayNight);
   };

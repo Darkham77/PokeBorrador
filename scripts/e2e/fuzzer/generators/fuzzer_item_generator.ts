@@ -457,6 +457,15 @@ function createItemlessSupportPokemon(species: PokemonSpeciesId = 'mew'): Fuzzer
   };
 }
 
+const PINCH_BERRY_ITEM_IDS = [
+  'magoberry',
+  'starfberry',
+  'wikiberry'
+] as const;
+const PINCH_BERRIES: ReadonlySet<string> = new Set<string>(
+  PINCH_BERRY_ITEM_IDS
+);
+
 function getItemTriggerPlan(itemId: ItemId): Pick<
   ItemTestBatch,
   'playerPriorityMove' | 'enemyPriorityMove'
@@ -511,8 +520,7 @@ function getItemTriggerPlan(itemId: ItemId): Pick<
 
   const enemyHitMove = ENEMY_HIT_TRIGGER_MOVES[itemId];
   if (enemyHitMove) {
-    const isPinchBerry =
-      itemId === 'magoberry' || itemId === 'starfberry' || itemId === 'wikiberry';
+    const isPinchBerry = PINCH_BERRIES.has(itemId);
     return {
       playerMoves:
         itemId === 'custapberry'

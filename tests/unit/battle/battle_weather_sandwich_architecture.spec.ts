@@ -1,3 +1,5 @@
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
 /**
  * tests/unit/battle/battle_weather_sandwich_architecture.spec.ts
  * Tier 1 Unit Test: Atmosphere Sandwich Architecture (RED -> GREEN)
@@ -8,15 +10,14 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
-import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
-import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue';
-import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
-import BattleCombatantStatusOverlay from '@/components/battle/BattleCombatantStatusOverlay.vue';
-import BattleCombatant from '@/components/battle/BattleCombatant.vue';
+
 import BattleArenaEnemyCombatant from '@/components/battle/BattleArenaEnemyCombatant.vue';
 import BattleArenaPlayerCombatant from '@/components/battle/BattleArenaPlayerCombatant.vue';
+import BattleCombatant from '@/components/battle/BattleCombatant.vue';
+import BattleCombatantStatusOverlay from '@/components/battle/BattleCombatantStatusOverlay.vue';
+import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue';
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Atmosphere Sandwich Architecture Contract (RED -> GREEN)', () => {

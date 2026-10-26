@@ -1,20 +1,21 @@
-import type { Pokemon, Move } from '../../../types/pokemon/pokemon.ts';
 import type { BattleStages } from '../../../types/battle/battle.ts';
 import type { BattleContext } from '../../../types/battle/battleContext.ts';
-import type { CombatAI } from './combatAI.ts';
+import type { Pokemon, Move } from '../../../types/pokemon/pokemon.ts';
 import { ShowdownTeamResolver } from '../showdownTeamResolver.ts';
+import type { CombatAI } from './combatAI.ts';
 
 export class ScriptedAI implements CombatAI {
   private getDebugChoices(): { mockChoices: string[]; idx: number } | null {
-    if (typeof window === 'undefined' || !window.__VITE_DEBUG__?.mockEnemyChoices) return null;
-    const debugObj = window.__VITE_DEBUG__;
+    const debugObj = globalThis.__VITE_DEBUG__;
+
+    if (!debugObj?.mockEnemyChoices) return null;
     const mockChoices = debugObj.mockEnemyChoices;
     const idx =
       debugObj.p2ChoiceIdx !== undefined ? debugObj.p2ChoiceIdx : (debugObj.enemyChoiceIndex ?? 0);
     if (!mockChoices) return null;
     return { mockChoices, idx };
   }
-  decideMove(
+  public decideMove(
     enemy: Pokemon,
     _player: Pokemon,
     _playerStages: BattleStages,
@@ -39,7 +40,7 @@ export class ScriptedAI implements CombatAI {
     return null;
   }
 
-  shouldSwitch(
+  public shouldSwitch(
     _enemy: Pokemon,
     _player: Pokemon,
     _enemyTeam: Pokemon[] | undefined,
@@ -58,7 +59,7 @@ export class ScriptedAI implements CombatAI {
     return false;
   }
 
-  findBestSwitchIndex(
+  public findBestSwitchIndex(
     enemyTeam: Pokemon[],
     _player: Pokemon,
     _currentEnemyUid: string,
@@ -93,7 +94,7 @@ export class ScriptedAI implements CombatAI {
   }
 
   // Deterministic simulations strictly follow the script and do not use items automatically
-  async evaluateAndUseItem(_ctx: BattleContext, _e: Pokemon): Promise<boolean> {
+  public async evaluateAndUseItem(_ctx: BattleContext, _e: Pokemon): Promise<boolean> {
     console.debug(
       '[DEBUG-AI] [E2E-MOCK] ScriptedAI evaluateAndUseItem returning false (items disabled during E2E simulation)'
     );

@@ -1,25 +1,27 @@
 import '@/logic/utils/temporal-init.ts';
-import { createApp } from 'vue';
 import { createPinia } from 'pinia';
-import App from './App.vue';
+import { createApp } from 'vue';
+
+import PokemonPreview from '@/components/admin/debug/PokemonPreview.vue';
+
 import '@/styles/_index.scss';
 import './styles/animations.scss';
 
 // Global Components (matching main app so components compile successfully)
 import PVTooltip from '@/components/common/PVTooltip.vue';
-import PokemonPreview from '@/components/admin/debug/PokemonPreview.vue';
-
+import { gsapHover } from '@/directives/gsapHover';
+import { gsapLoop } from '@/directives/gsapLoop';
 // Global Directives
 import { gsapNick } from '@/directives/gsapNick';
-import { gsapLoop } from '@/directives/gsapLoop';
-import { gsapHover } from '@/directives/gsapHover';
 import { initGlobalHoverSystem } from '@/logic/hover/globalHover';
+
+import App from './App.vue';
 
 const app = createApp(App);
 const pinia = createPinia();
 
-if (typeof window !== 'undefined') {
-  window.Pinia = pinia;
+if (typeof globalThis.window !== 'undefined') {
+  globalThis.window.Pinia = pinia;
 }
 
 app.component('PVTooltip', PVTooltip);
@@ -41,6 +43,6 @@ app.use(pinia);
 
 app.mount('#app');
 
-if (typeof window !== 'undefined') {
+if (typeof globalThis.window !== 'undefined') {
   initGlobalHoverSystem();
 }

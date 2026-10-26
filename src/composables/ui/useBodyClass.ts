@@ -5,8 +5,8 @@ import { watch, onUnmounted, toValue, type MaybeRefOrGetter } from 'vue';
  * Reactively manages a class on the document.body.
  * Ensures the class is removed when the component is unmounted.
  */
-export function useBodyClass(className: string, isEnabled: MaybeRefOrGetter<boolean>) {
-  const updateClass = (val: boolean) => {
+export function useBodyClass(className: string, isEnabled: MaybeRefOrGetter<boolean>): void {
+  const updateClass = (val: boolean): void => {
     if (val) {
       document.body.classList.add(className);
     } else {

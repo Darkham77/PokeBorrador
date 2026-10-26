@@ -84,6 +84,7 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
       ruleIds: ASSET_USAGE_RULES,
       packageName: 'Asset',
       usesThirdPartyTool: false,
+      requiredPermissions: [],
       ruleDescriptions: {
         'asset-hardcoded-path-template': 'Ruta cableada en template',
         'asset-literal-bound-src': ':src con ruta literal',
@@ -108,6 +109,7 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
         'asset-physical-file-missing':
           'Provide the missing asset file in public/assets or verify file path'
       },
+      remediationPhase: 'prune',
       requiredFiles: [path.resolve(process.cwd(), 'src/logic/services/assetService.ts')],
       coverage: {
         include: [
@@ -353,10 +355,4 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
   }
 }
 
-if (
-  process.argv[1] &&
-  (process.argv[1].endsWith('validate_asset_usage.ts') ||
-    process.argv[1].endsWith('validate_asset_usage.js'))
-) {
-  await BaseAuditor.runCli(new AssetUsageAuditor());
-}
+await BaseAuditor.runCliIfMain(import.meta.url, new AssetUsageAuditor());

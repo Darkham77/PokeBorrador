@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/config/mapStructures.ts
  *
@@ -446,7 +447,7 @@ export const PLAZA_PARK: StructureTemplate = {
 /**
  * Registry dictionary for O(1) lookup of structure templates.
  */
-export const STRUCTURE_TEMPLATES: Record<string, StructureTemplate> = {
+export const STRUCTURE_TEMPLATES: Record<DisplayText, StructureTemplate> = {
   // open-record: Multitile structure templates catalog indexed by template id
   [KANTO_HOUSE_SMALL.id]: KANTO_HOUSE_SMALL,
   [KANTO_HOUSE_BLUE.id]: KANTO_HOUSE_BLUE,

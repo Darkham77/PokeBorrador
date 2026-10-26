@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+import { isMainModule } from '@francogp/auditor';
 /**
  * @file backup_supabase_db.ts
  * @description Script automático para descargar un respaldo completo (backup) en formato JSON
@@ -18,9 +20,8 @@ import path from 'node:path';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import postgres from 'postgres';
-import { readAndParseEnv, buildDatabaseUrl, parseServerArguments } from '../lib/supabaseClient.ts';
-
-export { parseServerArguments };
+import { defineCommand, runMain } from 'citty';
+import { readAndParseEnv, buildDatabaseUrl, resolveServerProfiles } from '../lib/supabaseClient.ts';
 
 enableCompileCache();
 
@@ -32,8 +33,8 @@ type ServerConfig = Parameters<typeof buildDatabaseUrl>[0];
 async function downloadTablesData(
   sql: postgres.Sql,
   tables: readonly { table_name: string }[]
-): Promise<{ backupData: Record<string, Record<string, unknown>[]>; totalRows: number }> {
-  const backupData: Record<string, Record<string, unknown>[]> = {};
+): Promise<{ backupData: Record<DisplayText, Record<string, unknown>[]>; totalRows: number }> {
+  const backupData: Record<DisplayText, Record<string, unknown>[]> = {};
   let totalRows = 0;
   for (const t of tables) {
     const tableName = t.table_name;
@@ -213,13 +214,13 @@ async function backupSingleServerProfile(
     );
     try {
       await sql.end();
-    } catch {
-      // catch-ok: ignore failure during disconnect on already errored connection
+    } catch (err) {
+      err;
     }
   }
 }
 
-export async function backupSupabaseDb() {
+export async function backupSupabaseDb(options: { server?: string; all?: boolean } = {}) {
   console.log(
     styleText(
       'bold',
@@ -241,11 +242,11 @@ export async function backupSupabaseDb() {
       baseProfiles.concat(
         Object.values(serverConfigs)
           .map((c) => c.ID)
-          .filter(Boolean) as string[]
+          .filter((id): id is string => Boolean(id))
       )
     )
-  ); // no-domain: Non-domain utility collection or data structure
-  const targetProfiles = parseServerArguments(process.argv.slice(2), baseProfiles, allAvailable);
+  );
+  const targetProfiles = resolveServerProfiles(options, baseProfiles, allAvailable);
 
   await fsPromises.mkdir(BACKUPS_DIR, { recursive: true });
 
@@ -270,15 +271,30 @@ export async function backupSupabaseDb() {
   }
 }
 
-// Permitir ejecución directa
-const isDirectRun =
-  process.argv[1] &&
-  (process.argv[1].endsWith('backup_supabase_db.ts') ||
-    process.argv[1].includes('backup_supabase_db.ts'));
-
-if (isDirectRun) {
-  backupSupabaseDb().catch((err) => {
-    console.error(styleText('red', `❌ Error fatal: ${(err as Error).message}`));
-    process.exit(1);
-  });
+export const command = defineCommand({
+  meta: {
+    name: 'backup-supabase-db',
+    description: 'Descarga un respaldo completo en formato JSON de la base de datos Supabase'
+  },
+  args: {
+    server: {
+      type: 'string',
+      alias: 's',
+      description: 'Nombre del perfil de servidor objetivo'
+    },
+    all: {
+      type: 'boolean',
+      alias: 'a',
+      description: 'Aplica la operación a todos los servidores del .env'
+    }
+  },
+  async run({ args }) {
+    await backupSupabaseDb({
+      server: typeof args.server === 'string' ? args.server : undefined,
+      all: Boolean(args.all)
+    });
+  }
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
 }

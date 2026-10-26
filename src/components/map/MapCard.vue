@@ -3,43 +3,41 @@ const MAP_CARD_HOVER_Y_OFFSET_PX = -8;
 const MAP_CARD_BG_SCALE_HOVER = 1.08;
 const MAP_CARD_TRANSITION_DURATION_SEC = 0.25;
 const DEFAULT_OVERLAY_OPACITY = 0.35;
-import { computed, ref, watch } from 'vue';
 import { gsap } from 'gsap';
+import { computed, ref, watch } from 'vue';
+
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue';
-import MapCardHeader from './MapCardHeader.vue';
-import MapCardSpawns from './MapCardSpawns.vue';
-import MapCardGuardianBadge from './MapCardGuardianBadge.vue';
-import MapCardLeftPills from './MapCardLeftPills.vue';
-import MapCardCyclePill from './MapCardCyclePill.vue';
-import MapCardSpawnsTrigger from './MapCardSpawnsTrigger.vue';
-import MapCardLockOverlay from './MapCardLockOverlay.vue';
-
+import { useWeatherVisuals } from '@/composables/effects/useWeatherVisuals';
+import { useMapCardAnimations } from '@/composables/map/useMapCardAnimations';
+import { useMapCardObservers } from '@/composables/map/useMapCardObservers';
+import { useMapCardSprites } from '@/composables/map/useMapCardSprites';
+import { requireWeatherSeasonId } from '@/data/world/weather-tables';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-
-import { useUIStore } from '@/stores/ui';
+import { logger } from '@/logic/utils/logger';
+import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts';
 import { useBattleStore } from '@/stores/battle/battle';
 import { useMapStore } from '@/stores/map';
 import { useModalStore } from '@/stores/modals';
-import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts';
-import { requireWeatherSeasonId } from '@/data/world/weather-tables';
+import { useUIStore } from '@/stores/ui';
 
-import { logger } from '@/logic/utils/logger';
-
-import { useMapCardObservers } from '@/composables/map/useMapCardObservers';
-import { useMapCardSprites } from '@/composables/map/useMapCardSprites';
-import { useMapCardAnimations } from '@/composables/map/useMapCardAnimations';
-import { useWeatherVisuals } from '@/composables/effects/useWeatherVisuals';
+import MapCardCyclePill from './MapCardCyclePill.vue';
+import MapCardGuardianBadge from './MapCardGuardianBadge.vue';
+import MapCardHeader from './MapCardHeader.vue';
+import MapCardLeftPills from './MapCardLeftPills.vue';
+import MapCardLockOverlay from './MapCardLockOverlay.vue';
+import MapCardSpawns from './MapCardSpawns.vue';
+import MapCardSpawnsTrigger from './MapCardSpawnsTrigger.vue';
 import { useMapCardState } from './useMapCardState.ts';
 
 // Flare URLs for spawn auras
 const flare1Url = getAssetUrl(ASSET_TYPES.FX, 'flare_1');
 const flare2Url = getAssetUrl(ASSET_TYPES.FX, 'flare_2');
 
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
 import type { MapLocation } from '@/types/pokemon/encounters';
 import type { DominanceInfo } from '@/types/system/stores';
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
-import type { DayPhase } from '@/logic/utils/timeUtils';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 interface SpawnPool {
   generic: PokemonSpeciesId[];
@@ -123,7 +121,7 @@ const {
   lockDescription
 } = mapCardState;
 
-const openRouteSpawnsModal = () => {
+const openRouteSpawnsModal = (): void => {
   modalStore.open('RouteSpawns', {
     map: props.map,
     weather: computedWeather.value,
@@ -133,7 +131,7 @@ const openRouteSpawnsModal = () => {
 
 // Hover effects
 const isHovered = ref(false);
-const onMouseEnter = () => {
+const onMouseEnter = (): void => {
   if (isCardLocked.value || uiStore.isLowPowerActive || isFastMode.value) return;
   isHovered.value = true;
 
@@ -165,7 +163,7 @@ const onMouseEnter = () => {
   }
 };
 
-const onMouseLeave = () => {
+const onMouseLeave = (): void => {
   isHovered.value = false;
 
   if (uiStore.isLowPowerActive) {
@@ -258,7 +256,7 @@ watch(
   { immediate: true }
 );
 
-function handleCardClick() {
+function handleCardClick(): void {
   logger.debug(
     'MapCard',
     `Click detected. isLocked: ${isCardLocked.value}, isFastMode: ${isFastMode.value}`

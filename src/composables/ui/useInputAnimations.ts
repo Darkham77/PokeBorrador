@@ -1,11 +1,18 @@
 import { gsap } from 'gsap';
 
+export interface UseInputAnimationsReturn {
+  readonly handleInputEnter: (e: MouseEvent) => void;
+  readonly handleInputLeave: (e: MouseEvent) => void;
+  readonly handleInputFocus: (e: FocusEvent) => void;
+  readonly handleInputBlur: (e: FocusEvent) => void;
+}
+
 /**
  * Composable to manage GSAP micro-animations on inputs during focus and hover.
  * Complies with the GSAP-first mandate for visual effects and UI transitions.
  */
-export function useInputAnimations() {
-  const handleInputEnter = (e: MouseEvent) => {
+export function useInputAnimations(): UseInputAnimationsReturn {
+  const handleInputEnter = (e: MouseEvent): void => {
     const el = e.currentTarget as HTMLInputElement;
     if (document.activeElement !== el) {
       gsap.to(el, {
@@ -16,7 +23,7 @@ export function useInputAnimations() {
     }
   };
 
-  const handleInputLeave = (e: MouseEvent) => {
+  const handleInputLeave = (e: MouseEvent): void => {
     const el = e.currentTarget as HTMLInputElement;
     if (document.activeElement !== el) {
       gsap.to(el, {
@@ -27,7 +34,7 @@ export function useInputAnimations() {
     }
   };
 
-  const handleInputFocus = (e: FocusEvent) => {
+  const handleInputFocus = (e: FocusEvent): void => {
     const el = e.currentTarget as HTMLInputElement;
     gsap.to(el, {
       borderColor: '#bf5af2',
@@ -36,7 +43,7 @@ export function useInputAnimations() {
     });
   };
 
-  const handleInputBlur = (e: FocusEvent) => {
+  const handleInputBlur = (e: FocusEvent): void => {
     const el = e.currentTarget as HTMLInputElement;
     gsap.to(el, {
       borderColor: 'rgba(255, 255, 255, 0.12)',

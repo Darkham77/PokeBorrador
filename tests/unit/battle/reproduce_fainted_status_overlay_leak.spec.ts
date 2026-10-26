@@ -1,7 +1,8 @@
-// @vitest-environment jsdom
-import { describe, it, expect } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
+// @vitest-environment jsdom
+import { describe, it, expect } from 'vite-plus/test';
+
 import BattleCombatantStatusOverlay from '@/components/battle/BattleCombatantStatusOverlay.vue';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 

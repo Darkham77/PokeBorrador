@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vite-plus/test';
+
+import type { Event as GameEvent } from '@/logic/events/eventEngine';
 import { healStuckEventPokemon } from '@/logic/player/eventRecovery';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { CompetitionEntry } from '@/types/system/stores';
-import type { Event as GameEvent } from '@/logic/events/eventEngine';
 
 describe('healStuckEventPokemon (Tier 1 Unit Test)', () => {
   it('should clear onEvent if the pokemon is not enrolled in any active event', () => {

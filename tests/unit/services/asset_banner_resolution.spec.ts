@@ -1,8 +1,10 @@
-import { describe, it, expect, afterEach } from 'vite-plus/test';
 import fs from 'node:fs';
 import path from 'node:path';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
+import { describe, it, expect, afterEach } from 'vite-plus/test';
+
 import { SEASONAL_ANNUAL_THEMES } from '@/data/system/rankedData';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 describe('Asset Banner Resolution & GitHub Pages Parity', () => {
   const originalBaseUrl = import.meta.env.BASE_URL;

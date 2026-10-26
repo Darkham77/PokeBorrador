@@ -1,7 +1,8 @@
 import { gameBus } from '@/logic/events/gameBus';
+import type { BattleState } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleState } from '@/types/battle/battle';
+
 import { executePokemonCallSequence } from '../orchestratorCallSequence.ts';
 
 export interface TrainerIntroOptions {
@@ -38,7 +39,7 @@ export async function runTrainerIntroSequence(
 
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SHOW_DIALOGS);
     if (battleState?.trainerArchetype === 'policeman') {
-      void ctx.audio.play('siren');
+      await ctx.audio.play('siren');
     }
 
     if (ctx.animations?.triggerTrainerDialogs) {
@@ -99,7 +100,7 @@ export async function runWildSearchIntroSequence(
 
   const promises: Promise<void>[] = [];
   if (ctx.animations?.triggerSearchEncounter) {
-    void fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.JUMP_SHADOW);
+    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.JUMP_SHADOW);
     promises.push(ctx.animations.triggerSearchEncounter());
   }
 

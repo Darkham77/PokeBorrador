@@ -1,5 +1,7 @@
-import { describe, it, expect } from 'vite-plus/test';
 import { parseArgs } from 'node:util';
+
+import { describe, it, expect } from 'vite-plus/test';
+
 import { parseServerArguments } from '@/../scripts/lib/supabaseClient.ts';
 
 describe('CLI Argument Parsing & Standardization', () => {

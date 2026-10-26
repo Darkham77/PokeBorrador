@@ -1,15 +1,16 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { useGameStore } from '@/stores/game.ts';
-import { logger } from '@/logic/utils/logger';
-import { parseInstantSafe } from '@/logic/utils/timeUtils';
-import type { LeaderboardEntry } from '@/stores/social/social.ts';
-import type { ProfileRow, GameSaveRow } from '@/types/system/database';
+
 import {
   LEADERBOARD_LIMIT,
   ONLINE_PRESENCE_WINDOW_MS,
   DEFAULT_INITIAL_ELO
 } from '@/logic/constants/gameplay.ts';
+import { logger } from '@/logic/utils/logger';
+import { parseInstantSafe } from '@/logic/utils/timeUtils';
+import { useGameStore } from '@/stores/game.ts';
+import type { LeaderboardEntry } from '@/stores/social/social.ts';
+import type { ProfileRow, GameSaveRow } from '@/types/system/database';
 
 export const useLeaderboardStore = defineStore('leaderboard', () => {
   const gameStore = useGameStore();
@@ -17,7 +18,7 @@ export const useLeaderboardStore = defineStore('leaderboard', () => {
   const leaderboard = ref<LeaderboardEntry[]>([]);
   const leaderboardLoading = ref(false);
 
-  async function fetchLeaderboard(sortBy = 'elo_rating') {
+  async function fetchLeaderboard(sortBy = 'elo_rating'): Promise<void> {
     if (!gameStore.db) {
       leaderboard.value = [];
       return;
@@ -48,7 +49,7 @@ export const useLeaderboardStore = defineStore('leaderboard', () => {
           (saves || []).map((s) => [s.user_id, s])
         );
 
-        leaderboard.value = (data as ProfileRow[]).map((p: ProfileRow) => {
+        leaderboard.value = data.map((p: ProfileRow) => {
           const saveRow = savesByUserId.get(p.id);
           const lastSeen = parseInstantSafe(saveRow?.updated_at);
           const isOnline =

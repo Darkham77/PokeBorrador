@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch, nextTick, useTemplateRef } from 'vue';
 import { gsap } from 'gsap';
+import { ref, watch, nextTick, useTemplateRef } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
@@ -108,14 +109,14 @@ watch(
 
 const hasStarted = ref(false);
 
-const handleFishingStart = () => {
+const handleFishingStart = (): void => {
   if (hasStarted.value) return;
   hasStarted.value = true;
   if (props.onStart) props.onStart();
   emit('close');
 };
 
-const handleArchaeologyStart = () => {
+const handleArchaeologyStart = (): void => {
   if (hasStarted.value) return;
   hasStarted.value = true;
   if (props.onStart) props.onStart();

@@ -1,11 +1,12 @@
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
-import { mount } from '@vue/test-utils';
+
 import CombatShadow from '@/components/battle/CombatShadow.vue';
-import { useCombatShadowStore } from '@/stores/battle/combatShadows';
-import { getPokemonFeetCoords } from '@/logic/combat/shadowHelpers';
 import { GLOBAL_SHADOW_CONFIG } from '@/data/pokemon/pokemonFeetDatabase';
+import { getPokemonFeetCoords } from '@/logic/combat/shadowHelpers';
+import { useCombatShadowStore } from '@/stores/battle/combatShadows';
 
 describe('Trainer & CombatShadow integration', () => {
   beforeEach(() => {

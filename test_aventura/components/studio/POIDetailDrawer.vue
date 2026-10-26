@@ -10,8 +10,9 @@
  *   - Incident routes with connection destinations and distances.
  */
 
-import { ref, computed } from 'vue';
 import { gsap } from 'gsap';
+import { ref, computed } from 'vue';
+
 import { useRegionalContinentStudioStore } from '../../stores/continentStudioStore.ts';
 import type { RouteEdge } from '../../types/map/poiTypes.ts';
 import RegionalLocalMapModal from './RegionalLocalMapModal.vue';

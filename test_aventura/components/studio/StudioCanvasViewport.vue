@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { gsap } from 'gsap';
-import { useMapStudioStore } from '../../stores/mapStudio';
-import { defaultTilesRegistry } from '../../logic/map/tilesRegistry';
-import { TILE_SIZE } from '../../logic/map/inBrowserTileProcessor.ts';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
+
 import { SUBTILE_INNER_SIZE, TILE_CENTER_OFFSET } from '../../config/studioConstants.ts';
+import { TILE_SIZE } from '../../logic/map/inBrowserTileProcessor.ts';
 import type { CollisionType, MapCell } from '../../logic/map/proceduralMapGenerator';
+import { defaultTilesRegistry } from '../../logic/map/tilesRegistry';
+import { useMapStudioStore } from '../../stores/mapStudio';
 
 const store = useMapStudioStore();
 
@@ -24,6 +25,16 @@ const DEFAULT_CONTAINER_HEIGHT = 600;
 const MIN_CANVAS_CENTER_PADDING = 20 as const;
 const GHOST_HOVER_BRUSH_ALPHA = 0.6 as const;
 const GHOST_HOVER_LINE_WIDTH = 1.5 as const;
+
+type UpKey = 'ArrowUp' | 'w' | 'W';
+type DownKey = 'ArrowDown' | 's' | 'S';
+type LeftKey = 'ArrowLeft' | 'a' | 'A';
+type RightKey = 'ArrowRight' | 'd' | 'D';
+
+const UP_KEYS: ReadonlySet<UpKey> = new Set<UpKey>(['ArrowUp', 'w', 'W']);
+const DOWN_KEYS: ReadonlySet<DownKey> = new Set<DownKey>(['ArrowDown', 's', 'S']);
+const LEFT_KEYS: ReadonlySet<LeftKey> = new Set<LeftKey>(['ArrowLeft', 'a', 'A']);
+const RIGHT_KEYS: ReadonlySet<RightKey> = new Set<RightKey>(['ArrowRight', 'd', 'D']);
 
 /**
  * Preload needed tile assets into cache.
@@ -52,10 +63,9 @@ async function preloadImages(): Promise<void> {
   if (store.selectedStructure) {
     for (const row of store.selectedStructure.tiles) {
       for (const tId of row) {
-        if (tId) {
-          const entry = defaultTilesRegistry.getTileById(tId);
-          if (entry?.file_path) paths.add(entry.file_path);
-        }
+        if (!tId) continue;
+        const entry = defaultTilesRegistry.getTileById(tId);
+        if (entry?.file_path) paths.add(entry.file_path);
       }
     }
   }
@@ -68,7 +78,7 @@ async function preloadImages(): Promise<void> {
           const img = new Image();
           let settled = false;
           let timer: gsap.core.Tween | null = null;
-          const done = () => {
+          const done = (): void => {
             if (!settled) {
               settled = true;
               if (timer) timer.kill();
@@ -451,16 +461,16 @@ function onKeyDown(e: KeyboardEvent): void {
   if (e.code === 'Space') isSpacePressed.value = true;
 
   if (store.testDriveActive) {
-    if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+    if (UP_KEYS.has(e.key as UpKey)) {
       store.movePlayer(0, -1, 'up');
       renderCanvas();
-    } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+    } else if (DOWN_KEYS.has(e.key as DownKey)) {
       store.movePlayer(0, 1, 'down');
       renderCanvas();
-    } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+    } else if (LEFT_KEYS.has(e.key as LeftKey)) {
       store.movePlayer(-1, 0, 'left');
       renderCanvas();
-    } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+    } else if (RIGHT_KEYS.has(e.key as RightKey)) {
       store.movePlayer(1, 0, 'right');
       renderCanvas();
     }
@@ -518,8 +528,8 @@ watch(
 );
 
 onMounted(() => {
-  window.addEventListener('keydown', onKeyDown);
-  window.addEventListener('keyup', onKeyUp);
+  globalThis.addEventListener('keydown', onKeyDown);
+  globalThis.addEventListener('keyup', onKeyUp);
   if (store.currentMap) {
     centerMap();
     renderCanvas();
@@ -531,8 +541,8 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', onKeyDown);
-  window.removeEventListener('keyup', onKeyUp);
+  globalThis.removeEventListener('keydown', onKeyDown);
+  globalThis.removeEventListener('keyup', onKeyUp);
 });
 
 defineExpose({

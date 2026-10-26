@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 import {
   POKEMON_SORT_OPTIONS,
@@ -60,7 +61,7 @@ const visibleOptions = computed<readonly PokemonSortOption[]>(() => {
   });
 });
 
-function handleOptionClick(opt: PokemonSortOption) {
+function handleOptionClick(opt: PokemonSortOption): void {
   const isCurrentlyActive = isSortOptionActive(opt, activeKey.value);
   const nextDirection = isCurrentlyActive && currentDirection.value === 'desc' ? 'asc' : 'desc';
 

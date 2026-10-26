@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ActiveMoveDetails } from '@/composables/battle/useMoveTooltip';
+
 import { formatStatValueDisplay, getArrowForStage } from './moveTooltipStatsGridHelper.ts';
 
 type CombatStat = NonNullable<ActiveMoveDetails['attackerStat']>;

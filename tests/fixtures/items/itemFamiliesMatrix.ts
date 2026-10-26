@@ -5,8 +5,8 @@
  */
 
 import type { ItemId } from '@/data/inventory/items';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type { ItemEffectResult } from '@/types/inventory/items';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
 export const ITEM_FAMILY_IDS = [
   'healing_direct',

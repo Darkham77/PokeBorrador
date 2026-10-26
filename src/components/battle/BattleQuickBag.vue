@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useGameStore } from '@/stores/game';
-import { useBattleStore } from '@/stores/battle/battle';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
 
-import { requireItemId, getItemById, type ItemId } from '@/data/inventory/items';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { isValidTarget } from '@/logic/items/itemEffects';
 import PVTooltip from '@/components/common/PVTooltip.vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { requireItemId, getItemById, type ItemId } from '@/data/inventory/items';
+import { isValidTarget } from '@/logic/items/itemEffects';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
 import type { ItemTier } from '@/types/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const gameStore = useGameStore();
 const battleStore = useBattleStore();
@@ -78,7 +78,7 @@ const canUseItems = computed(() => {
   return true;
 });
 
-const handleUseItem = (item: BattleItem) => {
+const handleUseItem = (item: BattleItem): void => {
   if (battleStore.isProcessing || battleStore.isIntroAnimating) return;
   if (!canUseItems.value) return;
 
@@ -122,7 +122,7 @@ const handleUseItem = (item: BattleItem) => {
   });
 };
 
-const getTierColor = (t?: string) => {
+const getTierColor = (t?: string): string => {
   if (t === 'common') return '#94a3b8';
   if (t === 'rare') return 'var(--blue)';
   if (t === 'epic') return 'var(--purple)';

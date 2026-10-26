@@ -5,6 +5,7 @@
  */
 
 import { describe, it, expect } from 'vite-plus/test';
+
 import { BattleUiBranchingAuditor } from '../../../scripts/auditors/architecture/validate_battle_ui_branching.ts';
 
 interface ScannableAuditor {

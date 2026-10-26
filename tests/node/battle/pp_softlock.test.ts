@@ -29,8 +29,9 @@
  *   if (!isLocked && props.move.pp <= 0) return true  // disable
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
 
 // ── Pure helpers (mirror of battleTurn.ts decision logic) ──────────────────
 

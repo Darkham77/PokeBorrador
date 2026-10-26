@@ -1,19 +1,38 @@
-import { useUIStore } from '@/stores/ui';
-import type { GameState } from '@/types/system/game';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { MAX_PVP_SLOTS, MAX_PVP6_SLOTS, type PvpTeamTab } from '@/types/battle/pvp';
 import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay';
-
 import { ensurePvpTeamsFilled } from '@/logic/pvp/pvpTeamHelper.ts';
+import { useUIStore } from '@/stores/ui';
+import { MAX_PVP_SLOTS, MAX_PVP6_SLOTS, type PvpTeamTab } from '@/types/battle/pvp';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { GameState } from '@/types/system/game';
 
-export function useTeamActions(state: GameState, scheduleSave: () => Promise<void>) {
-  function autoFillPvpTeam() {
+export interface UseTeamActionsReturn {
+  autoFillPvpTeam: () => void;
+  swapPvpSlot: (slotIndex: number, newPokemonUid: string) => void;
+  reorderPvpTeam: (draggedIndex: number, targetIndex: number) => void;
+  removePvpSlot: (slotIndex: number) => void;
+  autoFillPvpTeam6: () => void;
+  swapPvp6Slot: (slotIndex: number, newPokemonUid: string) => void;
+  reorderPvp6Team: (draggedIndex: number, targetIndex: number) => void;
+  removePvp6Slot: (slotIndex: number) => void;
+  unequipFromTeam: (uid: string) => void;
+  unequipFromBox: (uid: string) => void;
+  autoFillWarTeam: () => void;
+  swapWarSlot: (slotIndex: number, newPokemonUid: string) => void;
+  reorderWarTeam: (draggedIndex: number, targetIndex: number) => void;
+  setRankedTeam: (tab: PvpTeamTab, uids: string[]) => void;
+}
+
+export function useTeamActions(
+  state: GameState,
+  scheduleSave: (delayMs?: number, forceRemote?: boolean) => void
+): UseTeamActionsReturn {
+  function autoFillPvpTeam(): void {
     const uiStore = useUIStore();
     if (uiStore.pvpAutoFillDisabled) return;
     ensurePvpTeamsFilled(state);
   }
 
-  function swapPvpSlot(slotIndex: number, newPokemonUid: string) {
+  function swapPvpSlot(slotIndex: number, newPokemonUid: string): void {
     if (slotIndex < 0 || slotIndex >= MAX_PVP_SLOTS) return;
     const allPokes = [...state.team, ...(state.box || [])];
     const poke = allPokes.find((p) => p?.uid === newPokemonUid);
@@ -25,11 +44,11 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
       const updated = [...(state.pvpTeam || [])];
       updated[slotIndex] = newPokemonUid;
       state.pvpTeam = updated;
-      void scheduleSave();
+      scheduleSave();
     }
   }
 
-  function reorderPvpTeam(draggedIndex: number, targetIndex: number) {
+  function reorderPvpTeam(draggedIndex: number, targetIndex: number): void {
     if (draggedIndex === targetIndex) return;
     const newPvpTeam = [...(state.pvpTeam || [])];
     const moved = newPvpTeam[draggedIndex];
@@ -37,25 +56,25 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
     newPvpTeam.splice(draggedIndex, 1);
     newPvpTeam.splice(targetIndex, 0, moved);
     state.pvpTeam = newPvpTeam;
-    void scheduleSave();
+    scheduleSave();
   }
 
-  function removePvpSlot(slotIndex: number) {
+  function removePvpSlot(slotIndex: number): void {
     if (slotIndex < 0 || slotIndex >= MAX_PVP_SLOTS) return;
     const newPvpTeam = [...(state.pvpTeam || [])];
     if (slotIndex < newPvpTeam.length) {
       newPvpTeam.splice(slotIndex, 1);
       state.pvpTeam = newPvpTeam;
-      void scheduleSave();
+      scheduleSave();
     }
   }
 
-  function autoFillPvpTeam6() {
+  function autoFillPvpTeam6(): void {
     const uiStore = useUIStore();
     if (uiStore.pvpAutoFillDisabled) return;
 
     const allPokes = [...state.team, ...(state.box || [])].filter(
-      (p): p is Pokemon => p != null && !p.isIllegal
+      (p): p is Pokemon => p !== null && p !== undefined && !p.isIllegal
     );
     if (allPokes.length === 0) {
       state.pvpTeam6 = [];
@@ -80,7 +99,7 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
     }
   }
 
-  function swapPvp6Slot(slotIndex: number, newPokemonUid: string) {
+  function swapPvp6Slot(slotIndex: number, newPokemonUid: string): void {
     if (slotIndex < 0 || slotIndex >= MAX_PVP6_SLOTS) return;
     const allPokes = [...state.team, ...(state.box || [])];
     const poke = allPokes.find((p) => p?.uid === newPokemonUid);
@@ -92,11 +111,11 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
       const updated = [...(state.pvpTeam6 || [])];
       updated[slotIndex] = newPokemonUid;
       state.pvpTeam6 = updated;
-      void scheduleSave();
+      scheduleSave();
     }
   }
 
-  function reorderPvp6Team(draggedIndex: number, targetIndex: number) {
+  function reorderPvp6Team(draggedIndex: number, targetIndex: number): void {
     if (draggedIndex === targetIndex) return;
     const newPvpTeam6 = [...(state.pvpTeam6 || [])];
     const moved = newPvpTeam6[draggedIndex];
@@ -104,40 +123,40 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
     newPvpTeam6.splice(draggedIndex, 1);
     newPvpTeam6.splice(targetIndex, 0, moved);
     state.pvpTeam6 = newPvpTeam6;
-    void scheduleSave();
+    scheduleSave();
   }
 
-  function removePvp6Slot(slotIndex: number) {
+  function removePvp6Slot(slotIndex: number): void {
     if (slotIndex < 0 || slotIndex >= MAX_PVP6_SLOTS) return;
     const newPvpTeam6 = [...(state.pvpTeam6 || [])];
     if (slotIndex < newPvpTeam6.length) {
       newPvpTeam6.splice(slotIndex, 1);
       state.pvpTeam6 = newPvpTeam6;
-      void scheduleSave();
+      scheduleSave();
     }
   }
 
-  function unequipFromTeam(uid: string) {
+  function unequipFromTeam(uid: string): void {
     const p = state.team.find((x) => x?.uid === uid);
     if (!p || !p.heldItem) return;
     const item = p.heldItem;
     state.inventory[item] = (state.inventory[item] || 0) + 1;
     p.heldItem = null;
-    void scheduleSave();
+    scheduleSave();
   }
 
-  function unequipFromBox(uid: string) {
+  function unequipFromBox(uid: string): void {
     const p = state.box.find((x) => x?.uid === uid);
     if (!p || !p.heldItem) return;
     const item = p.heldItem;
     state.inventory[item] = (state.inventory[item] || 0) + 1;
     p.heldItem = null;
-    void scheduleSave();
+    scheduleSave();
   }
 
-  function autoFillWarTeam() {
+  function autoFillWarTeam(): void {
     const allPokes = [...state.team, ...(state.box || [])].filter(
-      (p): p is Pokemon => p != null && !p.isIllegal
+      (p): p is Pokemon => p !== null && p !== undefined && !p.isIllegal
     );
     if (allPokes.length === 0) {
       state.warTeam = [];
@@ -162,7 +181,7 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
     }
   }
 
-  function swapWarSlot(slotIndex: number, newPokemonUid: string) {
+  function swapWarSlot(slotIndex: number, newPokemonUid: string): void {
     const maxSlots = state.warSlots || MAX_POKEMON_TEAM_SIZE;
     if (slotIndex < 0 || slotIndex >= maxSlots) return;
 
@@ -176,11 +195,11 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
       const updated = [...(state.warTeam || [])];
       updated[slotIndex] = newPokemonUid;
       state.warTeam = updated;
-      void scheduleSave();
+      scheduleSave();
     }
   }
 
-  function reorderWarTeam(draggedIndex: number, targetIndex: number) {
+  function reorderWarTeam(draggedIndex: number, targetIndex: number): void {
     if (draggedIndex === targetIndex) return;
     const newWarTeam = [...(state.warTeam || [])];
     const moved = newWarTeam[draggedIndex];
@@ -188,16 +207,16 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
     newWarTeam.splice(draggedIndex, 1);
     newWarTeam.splice(targetIndex, 0, moved);
     state.warTeam = newWarTeam;
-    void scheduleSave();
+    scheduleSave();
   }
 
-  function setRankedTeam(tab: PvpTeamTab, uids: string[]) {
+  function setRankedTeam(tab: PvpTeamTab, uids: string[]): void {
     if (tab === 'pvp') {
       state.pvpTeam = uids.slice(0, MAX_PVP_SLOTS);
     } else {
       state.pvpTeam6 = uids.slice(0, MAX_PVP6_SLOTS);
     }
-    void scheduleSave();
+    scheduleSave();
   }
 
   return {

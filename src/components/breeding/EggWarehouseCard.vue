@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { gsap } from 'gsap';
-import type { DaycareEgg } from '@/types/breeding/breeding';
-import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { getPokemonTier } from '@/logic/pokemon/tierEngine';
+import { computed } from 'vue';
+
 import EggSprite from '@/components/common/EggSprite.vue';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
+import { getPokemonTier } from '@/logic/pokemon/tierEngine';
+import type { DaycareEgg } from '@/types/breeding/breeding';
 
 const CARD_HOVER_OFFSET_Y_PX = -4;
 const GSAP_CARD_TRANSITION_DUR_SEC = 0.25;
@@ -36,7 +37,7 @@ const eggTierInfo = computed(() => {
   return getPokemonTier({ ivs: props.egg.ivs });
 });
 
-const handleCardMouseEnter = (e: MouseEvent) => {
+const handleCardMouseEnter = (e: MouseEvent): void => {
   const el = e.currentTarget as HTMLElement;
   gsap.to(el, {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -83,7 +84,7 @@ const handleCardMouseEnter = (e: MouseEvent) => {
   }
 };
 
-const handleCardMouseLeave = (e: MouseEvent) => {
+const handleCardMouseLeave = (e: MouseEvent): void => {
   const el = e.currentTarget as HTMLElement;
   gsap.to(el, {
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
@@ -130,7 +131,7 @@ const handleCardMouseLeave = (e: MouseEvent) => {
   }
 };
 
-const handleTrashMouseEnter = (e: MouseEvent) => {
+const handleTrashMouseEnter = (e: MouseEvent): void => {
   const el = e.currentTarget as HTMLElement;
   gsap.to(el, {
     backgroundColor: 'rgba(239, 68, 68, 0.4)',
@@ -142,7 +143,7 @@ const handleTrashMouseEnter = (e: MouseEvent) => {
   });
 };
 
-const handleTrashMouseLeave = (e: MouseEvent) => {
+const handleTrashMouseLeave = (e: MouseEvent): void => {
   const el = e.currentTarget as HTMLElement;
   gsap.to(el, {
     backgroundColor: 'rgba(239, 68, 68, 0.15)',

@@ -17,7 +17,7 @@ const emit = defineEmits<{
   (e: 'update:searchQuery', query: string): void;
 }>();
 
-const handleSortClick = (key: string) => {
+const handleSortClick = (key: string): void => {
   if (sortBy === key) {
     emit('update:sortOrder', sortOrder === 'asc' ? 'desc' : 'asc');
   } else {

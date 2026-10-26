@@ -1,11 +1,12 @@
 import { ref, type Ref } from 'vue';
-import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers';
-import type { useBattleStore } from '@/stores/battle/battle';
+
 import type { BattleSeatsMap } from '@/composables/battle/useBattleSeats';
 import {
   TRAINER_ENTER_DURATION_SEC,
   TRAINER_EXIT_DURATION_SEC
 } from '@/logic/constants/animations';
+import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers';
+import type { useBattleStore } from '@/stores/battle/battle';
 
 const _TRAINER_ANIMATION_STATES = [
   'entering',
@@ -17,14 +18,30 @@ const _TRAINER_ANIMATION_STATES = [
 
 export type TrainerAnimationState = (typeof _TRAINER_ANIMATION_STATES)[number];
 
+const ACTIVE_TRANSITION_STATES: ReadonlySet<TrainerAnimationState> = new Set<TrainerAnimationState>(
+  ['entering', 'retreating', 'exiting']
+);
+
 export function isTrainerTransitionActive(state: TrainerAnimationState | null): boolean {
-  return state === 'entering' || state === 'retreating' || state === 'exiting';
+  return state !== null && ACTIVE_TRANSITION_STATES.has(state);
 }
 
 export function useBattleTrainerAnimations(
   seats: Ref<BattleSeatsMap>,
   battleStore: ReturnType<typeof useBattleStore>
-) {
+): {
+  trainerAnimState: Ref<
+    'idle' | 'entering' | 'retreating' | 'standing' | 'exiting' | null,
+    'idle' | 'entering' | 'retreating' | 'standing' | 'exiting' | null
+  >;
+  isTrainerVisible: Ref<boolean, boolean>;
+  triggerTrainerEntry: () => Promise<void>;
+  triggerTrainerDialogs: () => Promise<void>;
+  triggerTrainerRetreat: () => Promise<void>;
+  triggerTrainerExit: () => Promise<void>;
+  triggerPokemonCall: () => Promise<void>;
+  resetTrainerStates: () => void;
+} {
   // Trainer visual states
   const trainerAnimState = ref<TrainerAnimationState | null>(null);
   const isTrainerVisible = ref(false);
@@ -89,7 +106,7 @@ export function useBattleTrainerAnimations(
     return awaitAnimation(tl);
   };
 
-  const resetTrainerStates = () => {
+  const resetTrainerStates = (): void => {
     trainerAnimState.value = null;
     isTrainerVisible.value = false;
   };

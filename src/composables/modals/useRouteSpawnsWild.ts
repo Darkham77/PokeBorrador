@@ -1,16 +1,13 @@
-import { computed } from 'vue';
-import { getFinalGroundRates, getSpeciesEntries } from '@/logic/encounters/encounters';
-import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
-import { useGameStore } from '@/stores/game';
-import { useEventStore } from '@/stores/events';
-import { useUIStore } from '@/stores/ui';
+import { computed, type ComputedRef } from 'vue';
+
+import type { RouteSpawnsProps } from '@/composables/modals/useRouteSpawnsCalculation';
 import {
   requirePokemonSpeciesId,
   isPokemonSpeciesId,
   type PokemonSpeciesId
 } from '@/data/pokemon/pokedex';
-import { getGMT3Date } from '@/logic/utils/timeUtils';
-import { DAY_PHASES } from '@/types/system/time';
+import { getFinalGroundRates, getSpeciesEntries } from '@/logic/encounters/encounters';
+import { getMapWeatherConfig } from '@/logic/encounters/routeWeatherDomainHelpers';
 import { resolveWeeklyRotation, safeParse, type EventConfig } from '@/logic/events/eventEngine';
 import {
   getSpawnStatus,
@@ -19,12 +16,19 @@ import {
   createPopulatedRouteSpawnItem,
   type RouteSpawnMappedItem
 } from '@/logic/utils/routeSpawnHelpers';
-import { getMapWeatherConfig } from '@/logic/encounters/routeWeatherDomainHelpers';
-import type { RouteSpawnsProps } from '@/composables/modals/useRouteSpawnsCalculation';
+import { getGMT3Date } from '@/logic/utils/timeUtils';
+import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
+import { useEventStore } from '@/stores/events';
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
+import { DAY_PHASES } from '@/types/system/time';
 
 const DEFAULT_WILD_SPAWN_RATE_WEIGHT = 10;
 
-export function useRouteSpawnsWild(props: RouteSpawnsProps) {
+export function useRouteSpawnsWild(props: RouteSpawnsProps): {
+  wildSpawns: ComputedRef<RouteSpawnMappedItem[]>;
+  getWildSpawnTooltip: (poke: RouteSpawnMappedItem) => { title: string; description: string };
+} {
   const gameStore = useGameStore();
   const eventStore = useEventStore();
   const uiStore = useUIStore();
@@ -32,7 +36,7 @@ export function useRouteSpawnsWild(props: RouteSpawnsProps) {
   const wildSpawns = computed(() => {
     const activeEvents = eventStore.activeEvents || [];
     const allMapSpawns: PokemonSpeciesId[] = [];
-    const addMapSpawn = (id: PokemonSpeciesId) => {
+    const addMapSpawn = (id: PokemonSpeciesId): void => {
       if (!allMapSpawns.includes(id)) allMapSpawns.push(id);
     };
     DAY_PHASES.forEach((c) => {
@@ -151,7 +155,7 @@ export function useRouteSpawnsWild(props: RouteSpawnsProps) {
         if (a.percentage === 0 && b.percentage > 0) return 1;
         if (a.percentage > 0 && b.percentage > 0) return b.percentage - a.percentage;
 
-        const getInactivePriority = (type: string) => {
+        const getInactivePriority = (type: string): number => {
           if (type === 'Bloqueado' || type === 'Fuera de hora') return 0;
           return 1;
         };
@@ -163,7 +167,7 @@ export function useRouteSpawnsWild(props: RouteSpawnsProps) {
       });
   });
 
-  function getWildSpawnTooltip(poke: RouteSpawnMappedItem) {
+  function getWildSpawnTooltip(poke: RouteSpawnMappedItem): { title: string; description: string } {
     const pokeId = requirePokemonSpeciesId(poke.id);
     const lines: string[] = []; // no-domain: Non-domain utility collection or data structure
     lines.push(`Probabilidad Base: ${poke.basePercentage.toFixed(1)}%`);

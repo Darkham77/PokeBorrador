@@ -1,8 +1,11 @@
-import { ref, computed, watch, nextTick, Ref } from 'vue';
 import { gsap } from 'gsap';
-import { useShopStore } from '@/stores/inventory/shop';
+import { ref, computed, watch, nextTick, type Ref, type ComputedRef } from 'vue';
+
 import type { ItemId } from '@/data/inventory/items';
-import type { ItemTier } from '@/types/inventory/items';
+import { logger } from '@/logic/utils/logger.ts';
+import { useShopStore } from '@/stores/inventory/shop';
+import type { ItemTier, ShopMainTab } from '@/types/inventory/items';
+import type { ItemSortKey } from '@/types/system/game';
 
 interface ShopItem {
   id: ItemId;
@@ -21,18 +24,29 @@ interface ShopItem {
   showInNormalShop?: boolean;
 }
 
+export interface UseShopLogicReturn {
+  activeMainTab: Ref<ShopMainTab>;
+  activeTab: Ref<string>;
+  search: Ref<string>;
+  sortKey: Ref<ItemSortKey>;
+  sortOrder: Ref<'asc' | 'desc'>;
+  filteredItems: ComputedRef<ShopItem[]>;
+  availableCategories: ComputedRef<string[]>;
+  animateGrid: () => void;
+}
+
 export function useShopLogic(options: {
   isBCShop: boolean;
   initialCategory?: string;
   show: Ref<boolean>;
   cardSelector: string;
-}) {
+}): UseShopLogicReturn {
   const shopStore = useShopStore();
 
-  const activeMainTab = ref<'productos' | 'materiales'>('productos');
+  const activeMainTab = ref<ShopMainTab>('productos');
   const activeTab = ref(options.initialCategory || 'todos');
   const search = ref('');
-  const sortKey = ref<'name' | 'price' | 'rarity'>('name');
+  const sortKey = ref<ItemSortKey>('name');
   const sortOrder = ref<'asc' | 'desc'>('asc');
 
   const filteredItems = computed<ShopItem[]>(() => {
@@ -85,8 +99,8 @@ export function useShopLogic(options: {
 
   const MAX_GRID_ANIMATED_CARDS = 24;
 
-  const animateGrid = () => {
-    void nextTick(() => {
+  const animateGrid = (): void => {
+    nextTick(() => {
       const cards = document.querySelectorAll(options.cardSelector);
       if (cards.length > 0) {
         gsap.killTweensOf(cards);
@@ -116,6 +130,8 @@ export function useShopLogic(options: {
           }
         );
       }
+    }).catch((err) => {
+      logger.warn('Handled promise rejection:', { cause: err });
     });
   };
 

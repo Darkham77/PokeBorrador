@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useUIStore } from '@/stores/ui';
+
 import BaseModal from '@/components/common/BaseModal.vue';
+import { useUIStore } from '@/stores/ui';
 
 interface Props {
   show?: boolean;
@@ -21,15 +22,15 @@ const currentZoom = computed(() => {
   return Math.round(uiStore.appZoom * 100);
 });
 
-const updateZoom = (val: number) => {
+const updateZoom = (val: number): void => {
   const zoomVal = val / 100;
   const fn = Reflect.get(uiStore, 'setZoom') as ((v: number) => void) | undefined;
   if (typeof fn === 'function') fn(zoomVal);
-  const winFn = Reflect.get(window, 'updateZoom') as ((v: number) => void) | undefined;
+  const winFn = Reflect.get(globalThis, 'updateZoom') as ((v: number) => void) | undefined;
   if (typeof winFn === 'function') winFn(val);
 };
 
-const handleZoomInput = (e: Event) => {
+const handleZoomInput = (e: Event): void => {
   if (e.target) {
     updateZoom(Number((e.target as HTMLInputElement).value));
   }

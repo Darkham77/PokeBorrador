@@ -1,5 +1,7 @@
+import { isMainModule } from '@francogp/auditor';
 import fs from 'node:fs';
 import path from 'node:path';
+import { defineCommand, runMain } from 'citty';
 import { ENABLED_POKEMON_IDS } from '../../src/data/system/constants.ts';
 
 export function generateSpeciesPurgeMigration() {
@@ -314,6 +316,15 @@ ON CONFLICT(key) DO UPDATE SET value = '"20260831010000"';
   );
 }
 
-if (process.argv[1]?.includes('generate_species_purge_migration')) {
-  generateSpeciesPurgeMigration();
+export const command = defineCommand({
+  meta: {
+    name: 'generate-species-purge-migration',
+    description: 'Genera migración de purga de especies y huevos no habilitados'
+  },
+  run() {
+    generateSpeciesPurgeMigration();
+  }
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
 }

@@ -15,7 +15,7 @@ export function auditStatStageBoosts(bridgeStagesPath: string): StatStageAuditRe
   if (!existsSync(bridgeStagesPath)) return { statStageDiscrepancies };
 
   const content = readFileSync(bridgeStagesPath, 'utf-8');
-  const requiredStats = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion']; // no-domain: Non-domain utility collection or data structure
+  const requiredStats = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion'] as const;
   const requiredTokens = [
     '-boost',
     '-unboost',
@@ -24,7 +24,7 @@ export function auditStatStageBoosts(bridgeStagesPath: string): StatStageAuditRe
     '-clearallboost',
     '-swapboost',
     '-copyboost'
-  ]; // no-domain: Non-domain utility collection or data structure
+  ] as const;
 
   for (const stat of requiredStats) {
     if (!content.toLowerCase().includes(stat)) {

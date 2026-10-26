@@ -1,6 +1,6 @@
 import { gsap } from 'gsap';
-import { requireFeetPoints, type FeetPoints } from '@/data/pokemon/pokemonFeetDatabase';
 
+import { requireFeetPoints, type FeetPoints } from '@/data/pokemon/pokemonFeetDatabase';
 import { GLOBAL_SHADOW_CONFIG } from '@/data/pokemon/pokemonFeetDatabase';
 
 const DEFAULT_SHADOW_WIDTH = GLOBAL_SHADOW_CONFIG.pixelation;
@@ -39,8 +39,8 @@ export function generatePixelShadow(
   });
 }
 
-export function getPokemonFeetCoords(spriteUrl: string): FeetPoints {
-  let dbKey = spriteUrl || '';
+export function getPokemonFeetCoords(spriteUrl: string = ''): FeetPoints {
+  let dbKey = spriteUrl;
   const base = import.meta.env.BASE_URL || '/';
   if (base !== '/' && dbKey.startsWith(base)) {
     dbKey = dbKey.slice(base.length - 1);
@@ -64,7 +64,7 @@ const SPIKES_ENTRY_ROTATION = -10;
 const SPIKES_LEAVING_Y = -10;
 const ROOT_ITEM_HOVER_SCALE = 1.03;
 
-export const onGroundPopEnter = (el: Element, done: () => void) => {
+export const onGroundPopEnter = (el: Element, done: () => void): void => {
   const isSpikes = el.classList.contains('spikes');
   gsap.fromTo(
     el,

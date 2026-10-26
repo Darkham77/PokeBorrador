@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
-import { createPinia, setActivePinia } from 'pinia';
 import { Dex } from '@pkmn/sim';
+import { createPinia, setActivePinia } from 'pinia';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
 import { mapToShowdownSet, getShowdownFormatId } from '@/logic/battle/showdownAdapter';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 

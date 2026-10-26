@@ -4,8 +4,8 @@
  */
 
 import { requireGymId, type GymId } from '@/data/world/gyms';
-import type { GameState } from '@/types/system/game';
 import type { BattleDifficulty } from '@/types/battle/battle';
+import type { GameState } from '@/types/system/game';
 
 export interface Gym {
   id: GymId;

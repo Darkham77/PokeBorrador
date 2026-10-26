@@ -10,6 +10,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import {
   executeRegionalGenerationJob,
   executeRerouteJob,
@@ -116,5 +117,25 @@ describe('continentGenerator.worker pipeline', () => {
       (e) => e.fromNodeId === targetNode.id || e.toNodeId === targetNode.id
     );
     expect(incidentAfter.length).toBe(incidentBefore.length);
+  });
+
+  it('executes continental world generation pipeline for 400x400 maps with metropolis settlements (seed 884037)', () => {
+    const result = executeRegionalGenerationJob({
+      width: 400,
+      height: 400,
+      seed: 884037,
+      oceanWaterPercentage: 0.35,
+      mountainPercentage: 0.22,
+      lakeCount: 2,
+      targetCount: 12,
+      allowBridges: true
+    });
+
+    expect(result.continent).toBeDefined();
+    expect(result.continent.width).toBe(400);
+    expect(result.continent.height).toBe(400);
+    expect(result.pois.length).toBeGreaterThanOrEqual(10);
+    expect(result.rawBuffer).toBeDefined();
+    expect(result.rawBuffer!.byteLength).toBe(400 * 400 * 4);
   });
 });

@@ -1,27 +1,27 @@
+import { translateType, type PokemonType } from '@/data/battle/types';
+import { isMapRouteId, type MapRouteId } from '@/data/world/map-assets';
 import {
   isWeatherTableRouteId,
   ROUTE_WEATHER_TABLES,
   type WeatherSeasonId
 } from '@/data/world/weather-tables';
-import { isMapRouteId, type MapRouteId } from '@/data/world/map-assets';
-import { getDayCycle, type DayPhase } from '@/logic/utils/timeUtils';
+import { ONE_HOUR_MS } from '@/logic/constants/items.ts';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getDayCycle, type DayPhase } from '@/logic/utils/timeUtils';
+import type { PokemonData } from '@/types/system/database';
+
 import {
   isWeatherId,
   requireWeatherId,
   WEATHER_REGISTRY,
   type WeatherId
 } from './weatherRegistry.ts';
-import { translateType, type PokemonType } from '@/data/battle/types';
-import { ONE_HOUR_MS } from '@/logic/constants/items.ts';
-import type { PokemonData } from '@/types/system/database';
 
 const WEATHER_BUFF_MULTIPLIER = 1.5;
 const WEATHER_DEBUFF_MULTIPLIER = 0.4;
 const WEATHER_BLOCK_MULTIPLIER = 0;
 
 import { mulberry32, hashString } from '../utils/math.ts';
-
 import { PROBABILITY_PERCENT_SCALE } from './weatherMath.ts';
 
 /**
@@ -84,7 +84,7 @@ export function getRouteWeather(
 export function getWeatherMultiplier(id: string, weather: string): number {
   let pData: PokemonData & { type: string | string[] };
   try {
-    pData = pokemonDataProvider.getPokemonData(id) as PokemonData & { type: string | string[] };
+    pData = pokemonDataProvider.getPokemonData(id);
   } catch {
     return 1.0;
   }
@@ -94,10 +94,10 @@ export function getWeatherMultiplier(id: string, weather: string): number {
   if (Array.isArray(pData.type)) {
     types.push(...(pData.type as PokemonType[]));
   } else if (pData.type) {
-    types.push(pData.type as PokemonType);
+    types.push(pData.type);
   }
   if (pData.type2) {
-    types.push(pData.type2 as PokemonType);
+    types.push(pData.type2);
   }
 
   const w = isWeatherId(weather) ? weather : null;
@@ -124,7 +124,8 @@ export function getWeatherModifiersDescription(weather: string): string {
   const mods = entry?.modifiers;
   if (!mods) return '';
 
-  const formatList = (list?: readonly PokemonType[]) => (list || []).map(translateType).join(', ');
+  const formatList = (list?: readonly PokemonType[]): string =>
+    (list || []).map(translateType).join(', ');
 
   const lines = [];
   if (mods.boost?.length) lines.push(`▲ ${formatList(mods.boost)}`);

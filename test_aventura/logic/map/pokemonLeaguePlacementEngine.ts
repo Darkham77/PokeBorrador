@@ -8,17 +8,6 @@
  * and exclusive checkpoint gatehouse.
  */
 
-import type {
-  ContinentMapResult,
-  MountainStairLocation,
-  ResolvedMountainMapResult
-} from './continentGenerator.ts';
-import type { POINode, POIGateway } from '../../types/map/poiTypes.ts';
-import type { POITemplate } from './regionalPoiCatalog.ts';
-import type { POIPlacementOptions } from './poiPlacementEngine.ts';
-import { generateSettlementLayout, type SettlementTerrainContext } from './cityLayoutEngine.ts';
-import { clusterMountainMassifs, type GeologicalClusterResult } from './geologicalClusterEngine.ts';
-import { resolveMountainMapGrid } from './mountainAutotileEngine.ts';
 import {
   REGIONAL_MIN_SCALE_LEAGUE,
   LEAGUE_SEARCH_MAX_Y_RATIO,
@@ -28,6 +17,17 @@ import {
   LEAGUE_STAIRS_PRUNE_RADIUS,
   LEAGUE_SEARCH_MARGIN
 } from '../../config/poiPlacementConfig.ts';
+import type { POINode, POIGateway } from '../../types/map/poiTypes.ts';
+import { generateSettlementLayout, type SettlementTerrainContext } from './cityLayoutEngine.ts';
+import type {
+  ContinentMapResult,
+  MountainStairLocation,
+  ResolvedMountainMapResult
+} from './continentGenerator.ts';
+import { clusterMountainMassifs, type GeologicalClusterResult } from './geologicalClusterEngine.ts';
+import { resolveMountainMapGrid } from './mountainAutotileEngine.ts';
+import type { POIPlacementOptions } from './poiPlacementEngine.ts';
+import type { POITemplate } from './regionalPoiCatalog.ts';
 
 export interface PokemonLeaguePlacementContext {
   readonly continentMap: ContinentMapResult;
@@ -37,6 +37,27 @@ export interface PokemonLeaguePlacementContext {
   readonly isAreaFree: (bx: number, by: number, bw: number, bh: number, buffer?: number) => boolean;
   readonly markAreaOccupied: (bx: number, by: number, bw: number, bh: number) => void;
   readonly getSettlementContext: () => SettlementTerrainContext;
+}
+
+function evaluateLeaguePlateauElevation(
+  x: number,
+  y: number,
+  lW: number,
+  lH: number,
+  heightmap: readonly (readonly number[])[],
+  terrainMatrix: readonly (readonly (string | undefined)[])[]
+): { valid: boolean; totalElev: number } {
+  let totalElev = 0;
+  for (let dy = 0; dy < lH; dy++) {
+    for (let dx = 0; dx < lW; dx++) {
+      const terr = terrainMatrix[y + dy]?.[x + dx];
+      if (terr === 'water' || terr === 'sand') {
+        return { valid: false, totalElev: 0 };
+      }
+      totalElev += heightmap[y + dy]?.[x + dx] ?? 0;
+    }
+  }
+  return { valid: true, totalElev };
 }
 
 /**
@@ -75,20 +96,14 @@ export function placePokemonLeague(ctx: PokemonLeaguePlacementContext): void {
       if (!isAreaFree(x, y, lW, lH, 2)) continue;
 
       // Check mountain plateau clearance
-      let totalElev = 0;
-      let validPlateau = true;
-      for (let dy = 0; dy < lH; dy++) {
-        for (let dx = 0; dx < lW; dx++) {
-          const elev = continentMap.heightmap[y + dy]?.[x + dx] ?? 0;
-          const terr = continentMap.terrainMatrix[y + dy]?.[x + dx];
-          if (terr === 'water' || terr === 'sand') {
-            validPlateau = false;
-            break;
-          }
-          totalElev += elev;
-        }
-        if (!validPlateau) break;
-      }
+      const { valid: validPlateau, totalElev } = evaluateLeaguePlateauElevation(
+        x,
+        y,
+        lW,
+        lH,
+        continentMap.heightmap,
+        continentMap.terrainMatrix
+      );
 
       if (validPlateau) {
         // Score prioritizes higher elevation and central northern location

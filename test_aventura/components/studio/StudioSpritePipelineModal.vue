@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import StudioModalShell from './StudioModalShell.vue';
-import { useContinentStudioStore } from '../../stores/continentStudio';
+
 import {
   processSpriteSheet,
   type RawImageBuffer
 } from '../../logic/map/continent/spritePipelineEngine';
+import { defaultPrefabsRegistry, type PrefabCategory } from '../../logic/map/prefabsRegistry';
+import { useContinentStudioStore } from '../../stores/continentStudio';
 import {
   SPRITE_CATEGORIES,
   type SlicedSpriteMetadata,
   type SpriteCategory
 } from '../../types/map/continentTypes';
-import { defaultPrefabsRegistry, type PrefabCategory } from '../../logic/map/prefabsRegistry';
+import StudioModalShell from './StudioModalShell.vue';
 
 const DEFAULT_SPRITE_SLICE_TOLERANCE = 25;
 
@@ -82,23 +83,25 @@ function processImageFile(file: File): void {
   reader.readAsDataURL(file);
 }
 
+const PROP_CATEGORY_LIST = ['prop', 'tree', 'decor'] as const;
+type PropCategory = (typeof PROP_CATEGORY_LIST)[number];
+const PROP_CATEGORIES: ReadonlySet<PropCategory> = new Set<PropCategory>(PROP_CATEGORY_LIST);
+
+const TERRAIN_CATEGORY_LIST = ['water_edge', 'mountain', 'snow', 'path'] as const;
+type TerrainCategory = (typeof TERRAIN_CATEGORY_LIST)[number];
+const TERRAIN_CATEGORIES: ReadonlySet<TerrainCategory> = new Set<TerrainCategory>(
+  TERRAIN_CATEGORY_LIST
+);
+
 const filteredSprites = computed(() => {
   if (activeTab.value === 'all') return slicedSprites.value;
   if (activeTab.value === 'buildings') {
     return slicedSprites.value.filter((s) => s.category === 'building');
   }
   if (activeTab.value === 'props') {
-    return slicedSprites.value.filter(
-      (s) => s.category === 'prop' || s.category === 'tree' || s.category === 'decor'
-    );
+    return slicedSprites.value.filter((s) => PROP_CATEGORIES.has(s.category as PropCategory));
   }
-  return slicedSprites.value.filter(
-    (s) =>
-      s.category === 'water_edge' ||
-      s.category === 'mountain' ||
-      s.category === 'snow' ||
-      s.category === 'path'
-  );
+  return slicedSprites.value.filter((s) => TERRAIN_CATEGORIES.has(s.category as TerrainCategory));
 });
 
 function mapToPrefabCategory(cat: SpriteCategory): PrefabCategory {

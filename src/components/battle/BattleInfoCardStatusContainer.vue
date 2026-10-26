@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import PVTooltip from '@/components/common/PVTooltip.vue';
-import BattleInfoStats from './BattleInfoStats.vue';
+import type { UnifiedStatusItem, AdminStatConfigItem } from '@/types/battle/status';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
-import type { UnifiedStatusItem, AdminStatConfigItem } from '@/types/battle/status';
+import BattleInfoStats from './BattleInfoStats.vue';
 
 defineProps<{
   unifiedStatuses: UnifiedStatusItem[];

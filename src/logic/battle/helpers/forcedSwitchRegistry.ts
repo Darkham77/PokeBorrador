@@ -1,8 +1,10 @@
-import type { BattleEscapeType } from '@/types/battle/battle';
-import { toID } from '@/logic/utils/strings';
-import type { PokemonMoveId } from '@/data/battle/moves';
+import type { DisplayText } from '@francogp/auditor';
+
 import type { AbilityId } from '@/data/battle/abilities';
+import type { PokemonMoveId } from '@/data/battle/moves';
 import type { ItemId } from '@/data/inventory/items';
+import { toID } from '@/logic/utils/strings';
+import type { BattleEscapeType } from '@/types/battle/battle';
 
 export interface ForcedExitConfig {
   readonly escapeType: BattleEscapeType;
@@ -15,7 +17,7 @@ const DEFAULT_FORCED_EXIT_CONFIG: ForcedExitConfig = {
 };
 
 // open-record: Forced switch triggers registry (moves, items, abilities)
-const FORCED_SWITCH_REGISTRY: Record<string, ForcedExitConfig> = {
+const FORCED_SWITCH_REGISTRY: Record<DisplayText, ForcedExitConfig> = {
   whirlwind: {
     escapeType: 'whirlwind',
     getExpulsionLog: (name: string) => `¡${name} fue expulsado por el remolino!`
@@ -89,15 +91,14 @@ export function getForcedExitConfig(
   return FORCED_SWITCH_REGISTRY[cleanId] || DEFAULT_FORCED_EXIT_CONFIG;
 }
 
-const FORCED_SWITCH_MOVES_SET: ReadonlySet<string> = new Set([
-  'whirlwind',
-  'roar',
-  'dragontail',
-  'circlethrow'
-]); // runtime-set: Fast O(1) membership lookup set
+const FORCED_SWITCH_MOVE_VALUES = ['whirlwind', 'roar', 'dragontail', 'circlethrow'] as const;
+type ForcedSwitchMoveValue = (typeof FORCED_SWITCH_MOVE_VALUES)[number];
+const FORCED_SWITCH_MOVES_SET: ReadonlySet<ForcedSwitchMoveValue> = new Set<ForcedSwitchMoveValue>(
+  FORCED_SWITCH_MOVE_VALUES
+);
 
 export function isForcedSwitchMove(moveId?: PokemonMoveId | null): boolean {
   if (!moveId) return false;
   const cleanId = toID(moveId);
-  return FORCED_SWITCH_MOVES_SET.has(cleanId);
+  return FORCED_SWITCH_MOVES_SET.has(cleanId as ForcedSwitchMoveValue);
 }

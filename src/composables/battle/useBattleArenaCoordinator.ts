@@ -1,16 +1,17 @@
 import { watch, toValue, type ComputedRef } from 'vue';
-import { logger } from '@/logic/utils/logger';
-import { useModalStore } from '@/stores/modals';
-import { DEFAULT_MINIGAME_RARITY } from '@/logic/constants/gameplay';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleState } from '@/types/battle/battle';
+
 import {
   isFishingDifficultyKey,
   type FishingDifficultyKey
 } from '@/components/modals/fishingGameHelper';
-import type { useBattleStore } from '@/stores/battle/battle';
 import { getActiveMinigame } from '@/logic/battle/battleMinigames';
 import { postBattleCoordinator } from '@/logic/battle/postBattleSequenceCoordinator';
+import { DEFAULT_MINIGAME_RARITY } from '@/logic/constants/gameplay';
+import { logger } from '@/logic/utils/logger';
+import type { useBattleStore } from '@/stores/battle/battle';
+import { useModalStore } from '@/stores/modals';
+import type { BattleState } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export interface BattleArenaCoordinatorParams {
   battleStore: ReturnType<typeof useBattleStore>;
@@ -92,7 +93,7 @@ async function triggerMinigameModal(
   }
 }
 
-export function useBattleArenaCoordinator(params: BattleArenaCoordinatorParams) {
+export function useBattleArenaCoordinator(params: BattleArenaCoordinatorParams): void {
   const {
     battleStore,
     battle,

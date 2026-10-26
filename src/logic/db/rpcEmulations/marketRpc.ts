@@ -1,19 +1,21 @@
-import { queryLocal, persistSQLite } from '../sqliteEngine.ts';
-import type { SQLiteDatabase } from '../sqliteEngine.ts';
-import type { DBResponse } from '@/types/system/database';
-import type { MarketListingType, MarketAssetType } from '@/logic/economy/market';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality.ts';
-import { isPokemonBusy } from '@/logic/constants/tags.ts';
+import type { DisplayText } from '@francogp/auditor';
 
+import { isItemId } from '@/data/inventory/items';
 import {
   ALPHANUMERIC_RADIX,
   RANDOM_STRING_SUBSTRING_START,
   RANDOM_STRING_SUBSTRING_END
 } from '@/logic/constants/gameplay.ts';
-
-import { isItemId } from '@/data/inventory/items';
+import { isPokemonBusy } from '@/logic/constants/tags.ts';
+import type { MarketListingType, MarketAssetType } from '@/logic/economy/market';
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality.ts';
+import { logger } from '@/logic/utils/logger.ts';
 import type { Inventory } from '@/types/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { DBResponse } from '@/types/system/database';
+
+import { queryLocal, persistSQLite } from '../sqliteEngine.ts';
+import type { SQLiteDatabase } from '../sqliteEngine.ts';
 
 interface OfflineSaveData {
   box?: Record<string, unknown>[];
@@ -25,7 +27,7 @@ interface OfflineSaveData {
 
 interface ClaimAssetPayload {
   type: MarketAssetType;
-  data: Record<string, unknown> | number | string;
+  data: Record<DisplayText, unknown> | number | DisplayText;
 }
 
 const MAX_MARKET_LISTINGS_PER_USER = 10 as const;
@@ -65,7 +67,7 @@ function removeItemFromSave(saveObj: OfflineSaveData, itemName: string, qty: num
   if (currentQty < qty) return false;
 
   inventory[itemName] = currentQty - qty;
-  if (inventory[itemName]! <= 0) {
+  if (inventory[itemName] <= 0) {
     delete inventory[itemName];
   }
   return true;
@@ -123,9 +125,7 @@ export async function emulatePublishListing(
   const saves = await queryLocal('SELECT save_data FROM game_saves WHERE user_id = ?', [userId]);
   if (saves.length === 0) return { data: null, error: { message: 'Save not found' } };
   const saveObj = (
-    typeof saves[0]!.save_data === 'string'
-      ? JSON.parse(saves[0]!.save_data as string)
-      : saves[0]!.save_data
+    typeof saves[0]!.save_data === 'string' ? JSON.parse(saves[0]!.save_data) : saves[0]!.save_data
   ) as OfflineSaveData;
 
   const removeError = removePublishedAssetFromSave(saveObj, p_listing_type, p_asset_data);
@@ -177,7 +177,7 @@ export async function emulateBuyListing(
     seller_id: string;
     listing_type: MarketListingType;
     price: number;
-    data: string | Record<string, unknown>;
+    data: unknown;
   };
   if (listing.seller_id === userId)
     return { data: null, error: { message: 'No puedes comprar tu propia oferta.' } };
@@ -188,7 +188,7 @@ export async function emulateBuyListing(
   if (buyerSaves.length === 0) return { data: null, error: { message: 'Save not found' } };
   const buyerSave = (
     typeof buyerSaves[0]!.save_data === 'string'
-      ? JSON.parse(buyerSaves[0]!.save_data as string)
+      ? JSON.parse(buyerSaves[0]!.save_data)
       : buyerSaves[0]!.save_data
   ) as OfflineSaveData;
 
@@ -208,8 +208,8 @@ export async function emulateBuyListing(
   if (typeof assetDataObj === 'string') {
     try {
       assetDataObj = JSON.parse(assetDataObj) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-    } catch {
-      void 0;
+    } catch (parseErr) {
+      logger.warn('Failed to parse asset data JSON string in market purchase', { cause: parseErr });
     }
   }
 
@@ -281,7 +281,7 @@ export async function emulateCancelListing(
     id: string | number;
     seller_id: string;
     listing_type: MarketListingType;
-    data: string | Record<string, unknown>;
+    data: unknown;
   };
   if (listing.seller_id !== userId) return { data: null, error: { message: 'No autorizado.' } };
 
@@ -289,17 +289,15 @@ export async function emulateCancelListing(
   if (typeof assetDataObj === 'string') {
     try {
       assetDataObj = JSON.parse(assetDataObj) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-    } catch {
-      void 0;
+    } catch (parseErr) {
+      logger.warn('Failed to parse asset data JSON string in market purchase', { cause: parseErr });
     }
   }
 
   const saves = await queryLocal('SELECT save_data FROM game_saves WHERE user_id = ?', [userId]);
   if (saves.length === 0) return { data: null, error: { message: 'Save not found' } };
   const saveObj = (
-    typeof saves[0]!.save_data === 'string'
-      ? JSON.parse(saves[0]!.save_data as string)
-      : saves[0]!.save_data
+    typeof saves[0]!.save_data === 'string' ? JSON.parse(saves[0]!.save_data) : saves[0]!.save_data
   ) as OfflineSaveData;
 
   if (listing.listing_type === 'pokemon') {
@@ -361,11 +359,10 @@ async function resolveClaimUserSave(
   return { userSave, resolvedUserUid };
 }
 
-function parseClaimAssetPayload(
-  rawAssetData: string | ClaimAssetPayload
-): ClaimAssetPayload | null {
+function parseClaimAssetPayload(rawAssetData: unknown): ClaimAssetPayload | null {
+  if (!rawAssetData) return null;
   if (typeof rawAssetData !== 'string') {
-    return rawAssetData;
+    return rawAssetData as ClaimAssetPayload;
   }
   try {
     return JSON.parse(rawAssetData) as ClaimAssetPayload;
@@ -383,7 +380,7 @@ function applyClaimPokemonToSave(userSave: OfflineSaveData, assetPayload: ClaimA
       rawPoke = null;
     }
   } else if (typeof assetPayload.data === 'object' && assetPayload.data !== null) {
-    rawPoke = assetPayload.data as Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    rawPoke = assetPayload.data; // open-record: Generic key-value data dictionary container
   }
   const nowMs = Temporal.Now.instant().epochMilliseconds;
   const poke: Record<string, unknown> = {
@@ -432,7 +429,7 @@ export async function emulateClaimAsset(
 
   const claims = await queryLocal('SELECT * FROM claim_queue WHERE id = ?', [p_claim_id]);
   if (claims.length === 0) return { data: null, error: { message: 'Reclamo no encontrado.' } };
-  const claim = claims[0] as { user_id: string; asset_data: string | ClaimAssetPayload };
+  const claim = claims[0] as { user_id: string; asset_data: unknown };
 
   const resolved = await resolveClaimUserSave(userId, claim.user_id);
   if (!resolved) return { data: null, error: { message: 'Save not found' } };

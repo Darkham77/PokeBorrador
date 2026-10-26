@@ -7,6 +7,7 @@
  */
 
 import { type ShadowEntityCategory } from '@/types/pokemon/spriteShadows';
+
 import {
   VIEW_OPTIONS,
   GENERATION_OPTIONS,
@@ -39,43 +40,43 @@ const emit = defineEmits<{
   (e: 'filterChange'): void;
 }>();
 
-const handleCategoryClick = (cat: ShadowEntityCategory) => {
+const handleCategoryClick = (cat: ShadowEntityCategory): void => {
   emit('update:selectedCategory', cat);
   emit('filterChange');
 };
 
-const handleGenChange = (event: Event) => {
+const handleGenChange = (event: Event): void => {
   const raw = (event.target as HTMLSelectElement).value;
   const val = raw === 'all' ? 'all' : Number(raw);
   emit('update:selectedGen', val as ShadowGenOption);
   emit('filterChange');
 };
 
-const handleGenderChange = (event: Event) => {
+const handleGenderChange = (event: Event): void => {
   emit('update:selectedGender', (event.target as HTMLSelectElement).value as ShadowGenderOption);
   emit('filterChange');
 };
 
-const handleViewChange = (event: Event) => {
+const handleViewChange = (event: Event): void => {
   emit('update:selectedView', (event.target as HTMLSelectElement).value as ShadowViewOption);
   emit('filterChange');
 };
 
-const handleShinyChange = (event: Event) => {
+const handleShinyChange = (event: Event): void => {
   emit('update:isShiny', (event.target as HTMLInputElement).checked);
 };
 
-const handleOnlyModifiedChange = (event: Event) => {
+const handleOnlyModifiedChange = (event: Event): void => {
   emit('update:onlyModified', (event.target as HTMLInputElement).checked);
   emit('filterChange');
 };
 
-const handleSearchInput = (event: Event) => {
+const handleSearchInput = (event: Event): void => {
   emit('update:searchQuery', (event.target as HTMLInputElement).value);
   emit('filterChange');
 };
 
-const handleClearSearch = () => {
+const handleClearSearch = (): void => {
   emit('update:searchQuery', '');
   emit('filterChange');
 };

@@ -1,4 +1,10 @@
 import type { PurePokemon } from '@/logic/battle/battleMath';
+import { DEFAULT_ACCURACY_BASE_STAT } from '@/logic/constants/gameplay';
+import type {
+  ParsedStatusEffectInfo,
+  TooltipStageStatId,
+  TooltipStageStatName
+} from '@/types/battle/tooltip';
 import { SHOWDOWN_BOOST_STAT_KEYS } from '@/types/pokemon/pokemon';
 import type {
   Move,
@@ -6,12 +12,6 @@ import type {
   ShowdownBoostStatKey,
   ShowdownSecondaryEffect
 } from '@/types/pokemon/pokemon';
-import type {
-  ParsedStatusEffectInfo,
-  TooltipStageStatId,
-  TooltipStageStatName
-} from '@/types/battle/tooltip';
-import { DEFAULT_ACCURACY_BASE_STAT } from '@/logic/constants/gameplay';
 
 const STAGE_MATH_BASE_ACCURACY = 3;
 const STAGE_MATH_BASE_REGULAR = 2;
@@ -90,16 +90,35 @@ function isTooltipConditionKey(value: string): value is TooltipConditionKey {
   return value in TOOLTIP_CONDITION_DETAILS;
 }
 
+const CORE_STAGE_STAT_VALUES = [
+  'atk',
+  'def',
+  'spa',
+  'spd',
+  'spe'
+] as const satisfies readonly TooltipStageStatId[];
+type CoreStageStatValue = (typeof CORE_STAGE_STAT_VALUES)[number];
+const CORE_STAGE_STATS: ReadonlySet<CoreStageStatValue> = new Set<CoreStageStatValue>(
+  CORE_STAGE_STAT_VALUES
+);
+
+const SPECIAL_STAGE_STAT_VALUES = ['acc', 'eva', 'all'] as const;
+type SpecialStageStatValue = (typeof SPECIAL_STAGE_STAT_VALUES)[number];
+const SPECIAL_STAGE_STATS: ReadonlySet<string> = new Set<string>(SPECIAL_STAGE_STAT_VALUES);
+
+function isSpecialStageStat(stat: TooltipStageStatId): stat is SpecialStageStatValue {
+  return SPECIAL_STAGE_STATS.has(stat);
+}
+
 function toTooltipStageStatId(stat: ShowdownBoostStatKey): TooltipStageStatId {
   if (stat === 'accuracy') return 'acc';
   if (stat === 'evasion') return 'eva';
-  if (stat === 'atk' || stat === 'def' || stat === 'spa' || stat === 'spd' || stat === 'spe')
-    return stat;
+  if (CORE_STAGE_STATS.has(stat)) return stat;
   throw new Error(`[moveTooltipMath] Unsupported boost stat for tooltip: ${String(stat)}`);
 }
 
 function getPokemonStageBaseStat(pokemon: PurePokemon, stat: TooltipStageStatId): number {
-  if (stat === 'acc' || stat === 'eva' || stat === 'all') return DEFAULT_ACCURACY_BASE_STAT;
+  if (isSpecialStageStat(stat)) return DEFAULT_ACCURACY_BASE_STAT;
   return pokemon[stat] || DEFAULT_ACCURACY_BASE_STAT;
 }
 

@@ -1,5 +1,6 @@
 // src/composables/events/useEventDetailBonuses.ts
 import { computed, type Ref, type ComputedRef } from 'vue';
+
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import {
   resolveEventSubCompetitions,
@@ -9,6 +10,7 @@ import {
   type UpcomingEventOccurrence
 } from '@/logic/events/eventEngine';
 import type { DomainPrizeData } from '@/types/rewards/rewards';
+
 import {
   buildCoreBonuses,
   buildSpeciesBonuses,
@@ -45,13 +47,21 @@ export interface Schedule {
   endHour?: number;
 }
 
+export interface UseEventDetailBonusesReturn {
+  prizes: ComputedRef<{ first?: Prize; second?: Prize; third?: Prize } | null>;
+  subCompetitions: ComputedRef<ResolvedSubCompetition[]>;
+  involvedSpecies: ComputedRef<PokemonSpeciesId[]>;
+  activeBonuses: ComputedRef<BonusItem[]>;
+  scheduleText: ComputedRef<string | null>;
+}
+
 export function useEventDetailBonuses(
   event: GameEvent,
   cfg: Ref<ExtendedEventConfig>,
   targetZdt: ComputedRef<Temporal.ZonedDateTime>,
   effectiveSpeciesString: ComputedRef<string | null>,
   occurrence?: UpcomingEventOccurrence
-) {
+): UseEventDetailBonusesReturn {
   const sched = computed<Schedule>(() => {
     if (typeof event.schedule === 'string') {
       try {
@@ -60,7 +70,7 @@ export function useEventDetailBonuses(
         return {};
       }
     } else if (event.schedule && typeof event.schedule === 'object') {
-      return event.schedule as Schedule;
+      return event.schedule;
     }
     return {};
   });

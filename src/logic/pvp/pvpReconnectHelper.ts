@@ -6,11 +6,11 @@
  * and determines deterministic legal actions on AFK Strike 1 (moves or forced switches).
  */
 
+import { logger } from '@/logic/utils/logger';
 import type { ShowdownPlayerRequest } from '@/types/battle/battle';
 import type { PvPAction } from '@/types/battle/pvp';
 import { PVP_RECONNECT_WINDOW_SEC } from '@/types/battle/pvp';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import { logger } from '@/logic/utils/logger';
 
 export const PVP_ACTIVE_MATCH_STORAGE_KEY = 'pvp_active_match';
 
@@ -28,13 +28,13 @@ export interface PvPActiveSession {
  * Persists an active PvP session into sessionStorage with timestamp.
  */
 export function saveActivePvPSession(session: Omit<PvPActiveSession, 'timestamp'>): void {
-  if (typeof window === 'undefined' || !window.sessionStorage) return;
+  if (typeof globalThis.window === 'undefined' || !globalThis.sessionStorage) return;
   try {
     const payload: PvPActiveSession = {
       ...session,
       timestamp: Temporal.Now.instant().epochMilliseconds
     };
-    window.sessionStorage.setItem(PVP_ACTIVE_MATCH_STORAGE_KEY, JSON.stringify(payload));
+    globalThis.sessionStorage.setItem(PVP_ACTIVE_MATCH_STORAGE_KEY, JSON.stringify(payload));
   } catch (err) {
     console.error('[pvpReconnectHelper] Failed to save active PvP session:', err);
   }
@@ -44,9 +44,9 @@ export function saveActivePvPSession(session: Omit<PvPActiveSession, 'timestamp'
  * Clears any active PvP session from sessionStorage.
  */
 export function clearActivePvPSession(): void {
-  if (typeof window === 'undefined' || !window.sessionStorage) return;
+  if (typeof globalThis.window === 'undefined' || !globalThis.sessionStorage) return;
   try {
-    window.sessionStorage.removeItem(PVP_ACTIVE_MATCH_STORAGE_KEY);
+    globalThis.sessionStorage.removeItem(PVP_ACTIVE_MATCH_STORAGE_KEY);
   } catch (err) {
     logger.warn('[pvpReconnectHelper] Error eliminando sesión activa de sessionStorage:', err);
   }
@@ -58,9 +58,9 @@ export function clearActivePvPSession(): void {
  */
 export function getActivePvPSession(): PvPActiveSession | null {
   // result-ok: Operation result wrapper payload
-  if (typeof window === 'undefined' || !window.sessionStorage) return null;
+  if (typeof globalThis.window === 'undefined' || !globalThis.sessionStorage) return null;
   try {
-    const raw = window.sessionStorage.getItem(PVP_ACTIVE_MATCH_STORAGE_KEY);
+    const raw = globalThis.sessionStorage.getItem(PVP_ACTIVE_MATCH_STORAGE_KEY);
     if (!raw) return null;
 
     const parsed = JSON.parse(raw) as PvPActiveSession;

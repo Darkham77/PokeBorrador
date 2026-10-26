@@ -7,9 +7,10 @@
  */
 
 import { defineBasicLoader } from 'vue-router/experimental';
-import { useMapStore } from '@/stores/map';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+
 import type { MapRouteId } from '@/data/world/map-assets';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { useMapStore } from '@/stores/map';
 
 interface MapLoaderData {
   readonly currentMapId: MapRouteId;

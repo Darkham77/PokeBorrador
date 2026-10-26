@@ -1,14 +1,26 @@
+import type { DisplayText } from '@francogp/auditor';
+
+import { toID } from '@/logic/utils/strings.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { mapToShowdownSet } from './showdownAdapter.ts';
 import { getShowdownNickname } from './showdownUidMapper.ts';
-import { toID } from '@/logic/utils/strings.ts';
+
+export interface SeatPayload {
+  name: string;
+  team: (ReturnType<typeof mapToShowdownSet> & { nickname: string; name: string; uid?: string })[];
+  teamList: Pokemon[];
+  hps: Record<DisplayText, number>;
+  statuses: Record<DisplayText, string>;
+  movesPP: Record<DisplayText, Record<DisplayText, number>>;
+}
 
 export function prepareSeatPayload(
   rawTeam: Pokemon[],
   initialMon?: Pokemon,
   debugSeed?: unknown,
   trainerName: string = 'Player'
-) {
+): SeatPayload {
   const teamList = [...(rawTeam || [])].filter((p): p is Pokemon => !!p);
   if (initialMon) {
     const idx = teamList.findIndex((p) => p.uid === initialMon.uid);
@@ -19,9 +31,9 @@ export function prepareSeatPayload(
   }
 
   const showdownSets = teamList.map((p) => mapToShowdownSet(p));
-  const hps: Record<string, number> = {}; // open-record: Pokémon UID to current HP mapping
-  const statuses: Record<string, string> = {}; // open-record: Pokémon UID to primary status mapping
-  const movesPP: Record<string, Record<string, number>> = {}; // open-record: Pokémon UID to move PP mapping
+  const hps: Record<DisplayText, number> = {}; // open-record: Pokémon UID to current HP mapping
+  const statuses: Record<DisplayText, string> = {}; // open-record: Pokémon UID to primary status mapping
+  const movesPP: Record<DisplayText, Record<DisplayText, number>> = {}; // open-record: Pokémon UID to move PP mapping
 
   teamList.forEach((p) => {
     if (p) {

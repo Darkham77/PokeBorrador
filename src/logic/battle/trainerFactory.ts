@@ -1,10 +1,9 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { MoveCategory } from '@/data/battle/moves';
+import { isItemId } from '@/data/inventory/items';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { isEnabledPokemonId } from '@/data/system/constants';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { toID } from '@/logic/utils/strings.ts';
-import { isItemId } from '@/data/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 /**
  * Applies a competitive set from the library to a Pokémon.
@@ -33,7 +32,7 @@ export async function applyCompetitiveSet(
     type: m.type || 'normal',
     power: m.power || 0,
     acc: m.acc || 100,
-    cat: (m.cat as MoveCategory) || 'physical',
+    cat: m.cat || 'physical',
     priority: m.priority,
     effect: m.effect,
     recoil: m.recoil,

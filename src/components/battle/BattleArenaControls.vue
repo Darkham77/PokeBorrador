@@ -1,24 +1,26 @@
 <script setup lang="ts">
-import { computed, watch, toValue, onWatcherCleanup } from 'vue';
 import { gsap } from 'gsap';
+import { computed, watch, toValue, onWatcherCleanup } from 'vue';
+
 import { AUTO_BATTLE_NPC_DIALOG_DELAY_SEC } from '@/data/system/constants.ts';
-import { useBattleStore } from '@/stores/battle/battle';
-import { useUIStore } from '@/stores/ui';
-import { useGameStore } from '@/stores/game';
-import { useModalStore } from '@/stores/modals';
-import { useLivePvPStore } from '@/stores/livePvP';
-import BattleMovesGrid from './BattleMovesGrid.vue';
-import BattleActionButtons from './BattleActionButtons.vue';
-import BattleQuickTeam from './BattleQuickTeam.vue';
-import BattleQuickBag from './BattleQuickBag.vue';
-import StruggleOverlay from './StruggleOverlay.vue';
-import BattleFinishOverlay from './BattleFinishOverlay.vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils.ts';
 import {
   getActiveCombatTeam,
   getHealthyBenchCombatants
 } from '@/logic/battle/battleTeamCoordinator.ts';
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils.ts';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
+import { useLivePvPStore } from '@/stores/livePvP';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import BattleActionButtons from './BattleActionButtons.vue';
+import BattleFinishOverlay from './BattleFinishOverlay.vue';
+import BattleMovesGrid from './BattleMovesGrid.vue';
+import BattleQuickBag from './BattleQuickBag.vue';
+import BattleQuickTeam from './BattleQuickTeam.vue';
+import StruggleOverlay from './StruggleOverlay.vue';
 
 // Debug tools are now handled by BattleArena sidebar
 
@@ -64,7 +66,7 @@ const isFinishOverlayVisible = computed(() => {
   return isSearchValid || battleStore.isReadyToExit || isRewardsWait.value;
 });
 
-const execShowBattleSwitch = () => {
+const execShowBattleSwitch = (): void => {
   const isForced = uiStore.isBattleSwitchForced;
   uiStore.isBattleSwitchForced = false;
 
@@ -109,7 +111,7 @@ const execShowBattleSwitch = () => {
   });
 };
 
-const execTryCatch = () => {
+const execTryCatch = (): void => {
   const inventory = gs.value.inventory || {};
   const balls = Object.keys(inventory).filter((n) => n.toLowerCase().includes('ball'));
   if (balls.length === 0) {
@@ -123,7 +125,7 @@ const execTryCatch = () => {
   });
 };
 
-const execShowBattleBag = () => {
+const execShowBattleBag = (): void => {
   modalStore.open('Inventory', {
     battleMode: true,
     initialCategory: 'potions'
@@ -137,7 +139,7 @@ watch(
   (val) => {
     if (val) {
       if (battleStore.isProcessing) {
-        const checkReady = () => {
+        const checkReady = (): void => {
           if (!battleStore.isProcessing) {
             execShowBattleSwitch();
           } else {
@@ -233,7 +235,7 @@ const GSAP_ARENA_CONTROLS_INITIAL_Y_OFFSET_PX = 30;
 const GSAP_ARENA_CONTROLS_INITIAL_SCALE = 0.95;
 
 // GSAP Transition Hooks
-const onEnter = (el: Element, done: () => void) => {
+const onEnter = (el: Element, done: () => void): void => {
   gsap.fromTo(
     el,
     {

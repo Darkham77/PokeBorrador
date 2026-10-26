@@ -5,9 +5,9 @@
  */
 
 import { gsap } from 'gsap';
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
 
 import { WEATHER_TILE_SANDSTORM_PX } from '@/logic/constants/visuals';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
 
 export const DUST_LAYER_ONE_DRIFT_X_PX = -WEATHER_TILE_SANDSTORM_PX;
 export const DUST_LAYER_TWO_DRIFT_X_PX = -WEATHER_TILE_SANDSTORM_PX;

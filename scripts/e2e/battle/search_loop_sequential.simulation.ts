@@ -128,13 +128,18 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
         if (!store || store.isProcessing) return false;
         const fsmState = store.currentFsmState;
         const fsmSubState = store.currentSubState;
+        const TERMINAL_STATE_VALUES = ['FIRST_INTRO', 'REWARDS_PHASE', 'EXIT_BATTLE'] as const;
+        type TerminalStateValue = (typeof TERMINAL_STATE_VALUES)[number];
+        const TERMINAL_STATES: ReadonlySet<TerminalStateValue> = new Set<TerminalStateValue>(
+          TERMINAL_STATE_VALUES
+        );
+        const isTerminalState =
+          fsmState !== undefined && TERMINAL_STATES.has(fsmState as TerminalStateValue);
         return (
           (fsmState === 'SEARCH_PHASE' && fsmSubState === 'COMBAT_OR_FLEE') ||
           (fsmState === 'INITIALIZING' && fsmSubState === 'MINIGAME_CHECK') ||
           (fsmState === 'ACTIVE_BATTLE' && fsmSubState === 'WAIT_INPUT') ||
-          fsmState === 'FIRST_INTRO' ||
-          fsmState === 'REWARDS_PHASE' ||
-          fsmState === 'EXIT_BATTLE'
+          isTerminalState
         );
       },
       undefined,
@@ -277,8 +282,8 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
             undefined,
             { timeout: ENCOUNTER_TRANSITION_TIMEOUT_MS }
           );
-        } catch {
-          // catch-ok: Timeout reached or state advanced, continue to isBattle check
+        } catch (err) {
+          err;
         }
 
         const isBattle = await page.evaluate(() => {

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
+import { useGsapTransition } from '@/composables/ui/useGsapTransition';
+import { calculatePoliceBonusLevel } from '@/logic/player/classMath';
+import { useBattleStore } from '@/stores/battle/battle';
 import { usePlayerClassStore } from '@/stores/player/playerClass';
 import { useUIStore } from '@/stores/ui';
-import { useBattleStore } from '@/stores/battle/battle';
-import { calculatePoliceBonusLevel } from '@/logic/player/classMath';
-import { useGsapTransition } from '@/composables/ui/useGsapTransition';
 
 const SLIDE_TRANSITION_OFFSET_PX = 30 as const;
 

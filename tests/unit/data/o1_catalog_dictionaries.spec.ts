@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
+
 import { SHOP_ITEMS, ITEMS_BY_ID, requireItemId, getMaxBuffDuration } from '@/data/inventory/items';
 import {
   NICK_STYLES,

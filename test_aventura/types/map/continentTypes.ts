@@ -6,6 +6,8 @@
  * bidirectional SVG routes, and unsupervised sprite pipelines.
  */
 
+import type { AssetUri, DisplayText, HexColor } from '@francogp/auditor';
+
 export const CONTINENT_BIOMES = [
   'ocean',
   'beach',
@@ -70,19 +72,19 @@ export interface ContinentGenConfig {
 }
 
 export interface ContinentNode {
-  readonly id: string; // domain-ok: dynamic node identifier
-  readonly name: string; // domain-ok: user editable settlement name
+  readonly id: DisplayText;
+  readonly name: DisplayText;
   readonly x: number;
   readonly y: number;
   readonly scale: UrbanScale;
   readonly amenities: readonly ContinentAmenity[];
 }
 
-export type ContinentConnection = readonly [string, string]; // domain-ok: node id pair
+export type ContinentConnection = readonly [DisplayText, DisplayText];
 
 export interface PlacedCustomSprite {
-  readonly id: string; // domain-ok: dynamic instance identifier
-  readonly spriteId: string; // domain-ok: reference to sliced sprite
+  readonly id: DisplayText;
+  readonly spriteId: DisplayText;
   readonly x: number;
   readonly y: number;
   readonly width: number;
@@ -91,31 +93,31 @@ export interface PlacedCustomSprite {
 }
 
 export interface ContinentProject {
-  readonly id: string; // domain-ok: dynamic project identifier
-  readonly name: string; // domain-ok: user project name
+  readonly id: DisplayText;
+  readonly name: DisplayText;
   readonly createdAt: number;
   readonly updatedAt: number;
   readonly config: ContinentGenConfig;
-  readonly nodes: Record<string, ContinentNode>; // open-record: Estructura o identificador procedural de aventura
+  readonly nodes: Record<DisplayText, ContinentNode>;
   readonly connections: readonly ContinentConnection[];
-  readonly customTerrain: Record<string, ContinentBiomeType>; // open-record: Estructura o identificador procedural de aventura
+  readonly customTerrain: Record<DisplayText, ContinentBiomeType>;
   readonly placedSprites: readonly PlacedCustomSprite[];
   readonly schemaVersion?: number;
 }
 
 export interface SvgImportResult {
-  readonly nodes: Record<string, ContinentNode>; // open-record: Estructura o identificador procedural de aventura
+  readonly nodes: Record<DisplayText, ContinentNode>;
   readonly connections: readonly ContinentConnection[];
   readonly dimensions?: { readonly width: number; readonly height: number };
 }
 
 export interface SlicedSpriteMetadata {
-  readonly id: string; // domain-ok: dynamic sprite identifier
-  readonly name: string; // domain-ok: descriptive sprite name
+  readonly id: DisplayText;
+  readonly name: DisplayText;
   readonly category: SpriteCategory;
   readonly biome?: ContinentBiomeType;
   readonly width: number;
   readonly height: number;
-  readonly dataUrl: string; // domain-ok: base64 encoded image uri
-  readonly dominantColors: readonly string[]; // domain-ok: hex color codes
+  readonly dataUrl: AssetUri;
+  readonly dominantColors: readonly HexColor[];
 }

@@ -7,15 +7,16 @@
  * and GTS claim, then redirects cleanly to HOME.
  */
 
+import { isRankedRewardMilestoneId } from '@/data/system/rankedData';
 import { normalizeZonedDateTime } from '@/logic/utils/timeUtils';
+import type { useAuthStore } from '@/stores/auth';
 import type { useEventStore } from '@/stores/events';
 import type { useGameStore } from '@/stores/game';
-import type { useAuthStore } from '@/stores/auth';
-import type { useUIStore } from '@/stores/ui';
-import type { useModalStore } from '@/stores/modals';
 import type { useGTSStore } from '@/stores/gts';
+import type { useModalStore } from '@/stores/modals';
 import type { usePvPStore } from '@/stores/pvp';
-import { isRankedRewardMilestoneId } from '@/data/system/rankedData';
+import type { useUIStore } from '@/stores/ui';
+
 import {
   DEFAULT_RESET_ELO,
   injectSimulatedPastEventAwards,
@@ -145,9 +146,17 @@ export async function clearDebugSimulatedRewards(
     gameStore.db,
     gtsStore
       ? () => {
-          gtsStore.salesHistory = (gtsStore.salesHistory || []).filter(
-            (l) => (l.data as { name?: string })?.name !== 'nugget'
-          );
+          gtsStore.salesHistory = (gtsStore.salesHistory || []).filter((l) => {
+            let itemData = l.data;
+            if (typeof itemData === 'string') {
+              try {
+                itemData = JSON.parse(itemData);
+              } catch (err) {
+                console.warn('[Handled controlled exception]:', err);
+              }
+            }
+            return (itemData as { name?: string })?.name !== 'nugget';
+          });
         }
       : undefined
   );

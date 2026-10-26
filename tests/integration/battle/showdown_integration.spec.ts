@@ -1,14 +1,15 @@
-import { describe, it, expect, vi } from 'vite-plus/test';
+import { Battle } from '@pkmn/sim';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, vi } from 'vite-plus/test';
+import { ref } from 'vue';
+
+import { decideEnemyMove } from '@/logic/battle/ai/battleAI';
 import { mapToShowdownSet, getShowdownFormatId } from '@/logic/battle/showdownAdapter';
 import { parseShowdownLogLine } from '@/logic/battle/showdownBridge';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import type { BattleStages } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
-import { ref } from 'vue';
-import { Battle } from '@pkmn/sim';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import { decideEnemyMove } from '@/logic/battle/ai/battleAI';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Showdown Integration & Adapters', () => {
   setActivePinia(createPinia());

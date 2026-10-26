@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { gsap } from 'gsap';
-import VirtualEntity from './VirtualEntity.vue';
+
 import {
   HUD_TRANSITION_DURATION_SEC,
   DIALOG_ENTER_Y_OFFSET_PX,
   DIALOG_LEAVE_Y_OFFSET_PX,
   DIALOG_LEAVE_DURATION_SEC
 } from '@/logic/constants/animations';
+
+import VirtualEntity from './VirtualEntity.vue';
 
 defineProps<{
   position: { x: number; y: number };
@@ -16,11 +18,11 @@ defineProps<{
   dialogText: string;
 }>();
 
-const onDialogBeforeEnter = (el: Element) => {
+const onDialogBeforeEnter = (el: Element): void => {
   gsap.set(el, { opacity: 0, y: DIALOG_ENTER_Y_OFFSET_PX });
 };
 
-const onDialogEnter = (el: Element, done: () => void) => {
+const onDialogEnter = (el: Element, done: () => void): void => {
   gsap.to(el, {
     opacity: 1,
     y: 0,
@@ -30,7 +32,7 @@ const onDialogEnter = (el: Element, done: () => void) => {
   });
 };
 
-const onDialogLeave = (el: Element, done: () => void) => {
+const onDialogLeave = (el: Element, done: () => void): void => {
   gsap.to(el, {
     opacity: 0,
     y: DIALOG_LEAVE_Y_OFFSET_PX,

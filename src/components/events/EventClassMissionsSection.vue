@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, computed } from 'vue';
 import { gsap } from 'gsap';
-import { useModalStore } from '@/stores/modals';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
-import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { onMounted, onUnmounted, ref, computed } from 'vue';
+
 import {
   CLASS_MISSIONS,
   CLASS_MISSIONS_BY_ID,
@@ -18,8 +15,13 @@ import {
   type DetailedMissionReward
 } from '@/logic/player/classMissionsData';
 import { formatRemainingDuration } from '@/logic/utils/timeUtils';
-import MissionCard from './MissionCard.vue';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { useUIStore } from '@/stores/ui';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import MissionCard from './MissionCard.vue';
 
 const modalStore = useModalStore();
 const gameStore = useGameStore();
@@ -34,7 +36,7 @@ let timer: gsap.core.Tween | null = null;
 
 onMounted(() => {
   const MISSION_TICK_INTERVAL_SEC = 1;
-  const updateTime = () => {
+  const updateTime = (): void => {
     now.value = Temporal.Now.instant().epochMilliseconds;
     timer = gsap.delayedCall(MISSION_TICK_INTERVAL_SEC, updateTime);
   };
@@ -75,21 +77,21 @@ const hasPoisonPokemonAvailable = computed(() => {
   });
 });
 
-const canStartClassMission = (m: (typeof CLASS_MISSIONS)[number]) => {
+const canStartClassMission = (m: (typeof CLASS_MISSIONS)[number]): boolean => {
   if (activeMission.value) return false;
   if (trainerLevel.value < m.reqLv) return false;
   if (classStore.currentClassDef?.id === 'rocket' && !hasPoisonPokemonAvailable.value) return false;
   return true;
 };
 
-const isClassMissionDisabled = (m: (typeof CLASS_MISSIONS)[number]) => {
+const isClassMissionDisabled = (m: (typeof CLASS_MISSIONS)[number]): boolean => {
   if (activeMission.value?.id === m.id) {
     return !isMissionDone.value;
   }
   return !canStartClassMission(m);
 };
 
-const getClassMissionBtnText = (m: (typeof CLASS_MISSIONS)[number]) => {
+const getClassMissionBtnText = (m: (typeof CLASS_MISSIONS)[number]): string => {
   if (activeMission.value?.id === m.id) {
     return isMissionDone.value ? 'COBRAR BOTÍN' : 'EN CURSO';
   }
@@ -100,7 +102,7 @@ const getClassMissionBtnText = (m: (typeof CLASS_MISSIONS)[number]) => {
   return 'DESPLEGAR';
 };
 
-const getClassMissionUnmetText = (m: (typeof CLASS_MISSIONS)[number]) => {
+const getClassMissionUnmetText = (m: (typeof CLASS_MISSIONS)[number]): string => {
   if (activeMission.value?.id === m.id) return '';
   if (activeMission.value) {
     return 'Ya tienes una operación en curso';
@@ -114,7 +116,7 @@ const getClassMissionUnmetText = (m: (typeof CLASS_MISSIONS)[number]) => {
   return '';
 };
 
-const getClassMissionAvailableText = (m: (typeof CLASS_MISSIONS)[number]) => {
+const getClassMissionAvailableText = (m: (typeof CLASS_MISSIONS)[number]): string => {
   if (activeMission.value?.id === m.id) return '';
   if (canStartClassMission(m)) {
     return `Listo para desplegar (Nivel ${m.reqLv} alcanzado)`;
@@ -172,7 +174,7 @@ const getClassMissionRewards = (mId: MissionId): readonly DetailedMissionReward[
 
 const isCollecting = ref(false);
 
-async function collectClassMission() {
+async function collectClassMission(): Promise<void> {
   if (isCollecting.value) return;
   isCollecting.value = true;
   try {
@@ -203,7 +205,7 @@ function getActivePokemonInfoFor(mId: MissionId): string {
   return isCurrentActiveMission(mId) ? activePokemonInfo.value : '';
 }
 
-function handleClassMissionAction(missionId: MissionId) {
+function handleClassMissionAction(missionId: MissionId): void {
   if (activeMission.value?.id === missionId) {
     if (isMissionDone.value) {
       collectClassMission();
@@ -213,7 +215,7 @@ function handleClassMissionAction(missionId: MissionId) {
   startClassMission(missionId);
 }
 
-async function startClassMission(missionId: MissionId) {
+async function startClassMission(missionId: MissionId): Promise<void> {
   if (!isMissionId(missionId)) return;
   const m = CLASS_MISSIONS_BY_ID[missionId];
   if (!m) return;

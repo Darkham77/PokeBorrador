@@ -8,6 +8,7 @@
  */
 
 import { describe, it, expect } from 'vite-plus/test';
+
 import {
   FsmImplementationAuditor,
   FSM_IMPLEMENTATION_RULES,

@@ -1,17 +1,25 @@
-import { computed } from 'vue';
+import { computed, type ComputedRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 function isDevOrTestPath(path: string): boolean {
   return path.startsWith('/dev/') || path.startsWith('/test-');
 }
 
-export function useAppRouteGate() {
+export interface UseAppRouteGateReturn {
+  readonly currentPath: ComputedRef<string>;
+  readonly isLoginPage: ComputedRef<boolean>;
+  readonly isAdventureTestPage: ComputedRef<boolean>;
+  readonly isDevShadowEditorPage: ComputedRef<boolean>;
+  readonly isStandaloneDevPage: ComputedRef<boolean>;
+}
+
+export function useAppRouteGate(): UseAppRouteGateReturn {
   const route = useRoute();
   const router = useRouter();
 
   const currentPath = computed<string>(() => {
-    if (typeof window === 'undefined') return '';
-    return router?.currentRoute?.value?.path || route?.path || window.location?.pathname || '';
+    if (typeof globalThis.window === 'undefined') return '';
+    return router?.currentRoute?.value?.path || route?.path || globalThis.location?.pathname || '';
   });
 
   const isLoginPage = computed<boolean>(() => {

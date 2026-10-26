@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useGameStore } from '@/stores/game';
+
 import BaseRefreshButton from '@/components/common/BaseRefreshButton.vue';
+import { DEFAULT_FEATURED_REPLAYS_LIMIT } from '@/logic/pvp/rankedEngine';
+import { formatBattleCodeInput } from '@/logic/pvp/replayCodeGenerator';
+import { logger } from '@/logic/utils/logger';
+import { useGameStore } from '@/stores/game';
 import { useLivePvPStore } from '@/stores/livePvP';
 import { useModalStore } from '@/stores/modals';
-import { formatBattleCodeInput } from '@/logic/pvp/replayCodeGenerator';
 import { isBattleCode, type BattleReplayRecord } from '@/types/battle/pvp';
+
 import { parseReplayRow } from './socialTheaterHelper';
-import { DEFAULT_FEATURED_REPLAYS_LIMIT } from '@/logic/pvp/rankedEngine';
-import { logger } from '@/logic/utils/logger';
 
 const emit = defineEmits<{
   (e: 'watch-replay', replay: BattleReplayRecord): void;
@@ -24,12 +26,12 @@ const searchError = ref<string | null>(null);
 const featuredReplays = ref<BattleReplayRecord[]>([]);
 const listLoading = ref(false);
 
-function onSearchInput(e: Event) {
+function onSearchInput(e: Event): void {
   const target = e.target as HTMLInputElement;
   searchCodeInput.value = formatBattleCodeInput(target.value);
 }
 
-async function handleSearch() {
+async function handleSearch(): Promise<void> {
   const code = searchCodeInput.value.trim().toUpperCase();
   if (!code) return;
   if (!isBattleCode(code)) {
@@ -64,7 +66,7 @@ async function handleSearch() {
   }
 }
 
-async function fetchFeaturedReplays() {
+async function fetchFeaturedReplays(): Promise<void> {
   if (!gameStore.db) return;
   listLoading.value = true;
 
@@ -89,7 +91,7 @@ async function fetchFeaturedReplays() {
   }
 }
 
-function playReplay(replay: BattleReplayRecord) {
+function playReplay(replay: BattleReplayRecord): void {
   emit('watch-replay', replay);
   modalStore.close('Ranking');
   modalStore.close('Social');

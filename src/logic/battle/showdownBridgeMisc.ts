@@ -1,9 +1,9 @@
 import type { SBCtx } from './showdownBridgeCtx.ts';
+import { handleFailEvent, handleTurnOrUpkeep } from './showdownBridgeFailUpkeep.ts';
+import { handleFeedbackEvent } from './showdownBridgeFeedback.ts';
 import { handleGimmickEvents } from './showdownBridgeGimmicks.ts';
 import { handleItemAndAbilityEvents } from './showdownBridgeItemAbility.ts';
 import { handleSwitchAndDragEvents } from './showdownBridgeSwitchDrag.ts';
-import { handleFeedbackEvent } from './showdownBridgeFeedback.ts';
-import { handleFailEvent, handleTurnOrUpkeep } from './showdownBridgeFailUpkeep.ts';
 
 const IGNORED_PROTOCOL_EVENTS = [
   'gen',

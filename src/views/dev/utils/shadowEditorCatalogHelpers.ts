@@ -1,7 +1,9 @@
+import type { DisplayText } from '@francogp/auditor';
+
+import { NPC_SPRITE_TO_ARCHETYPE_MAP, isNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
+import { POKEMON_SPRITE_IDS, requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { EditorEntity } from '@/types/pokemon/spriteShadows';
 import { parseTrainerSpriteKey } from '@/types/pokemon/spriteShadows';
-import { POKEMON_SPRITE_IDS, requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { NPC_SPRITE_TO_ARCHETYPE_MAP, isNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 
 export interface PrecalculatedFeetResult {
   feetY: number;
@@ -29,7 +31,7 @@ export const SHADOW_EDITOR_VIEWS = ['Front', 'Back'] as const;
 export type ShadowEditorView = (typeof SHADOW_EDITOR_VIEWS)[number];
 
 function resolveAnimPath(
-  pGroup: Record<string, readonly number[]>, // open-record: Asset sprite file paths catalog
+  pGroup: Record<DisplayText, readonly number[]>, // open-record: Asset sprite file paths catalog
   view: ShadowEditorView,
   shinyFolderSuffix: string,
   numVal: number,
@@ -44,7 +46,7 @@ function resolveAnimPath(
 }
 
 function buildPokemonEntities(
-  pGroup: Record<string, readonly number[]>, // open-record: Asset sprite file paths catalog
+  pGroup: Record<DisplayText, readonly number[]>, // open-record: Asset sprite file paths catalog
   isShiny: boolean,
   getPrecalculatedFeet: FeetLookupFn
 ): EditorEntity[] {
@@ -160,7 +162,7 @@ function buildPokemonEntities(
 }
 
 function buildNpcEntities(
-  nGroup: Record<string, readonly number[]>, // open-record: Asset sprite file paths catalog
+  nGroup: Record<DisplayText, readonly number[]>, // open-record: Asset sprite file paths catalog
   getPrecalculatedFeet: FeetLookupFn
 ): EditorEntity[] {
   const list: EditorEntity[] = [];
@@ -190,7 +192,7 @@ function buildNpcEntities(
 }
 
 function buildTrainerEntities(
-  tGroup: Record<string, readonly number[]>, // open-record: Asset sprite file paths catalog
+  tGroup: Record<DisplayText, readonly number[]>, // open-record: Asset sprite file paths catalog
   getPrecalculatedFeet: FeetLookupFn
 ): EditorEntity[] {
   const list: EditorEntity[] = [];
@@ -225,9 +227,9 @@ export function buildFullEditorCatalog(
   isShiny: boolean,
   getPrecalculatedFeet: FeetLookupFn
 ): EditorEntity[] {
-  const pGroup = (feetData.p ?? {}) as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
-  const nGroup = (feetData.n ?? {}) as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
-  const tGroup = (feetData.t ?? {}) as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
+  const pGroup = (feetData.p ?? {}) as Record<DisplayText, readonly number[]>; // open-record: Generic key-value data dictionary container
+  const nGroup = (feetData.n ?? {}) as Record<DisplayText, readonly number[]>; // open-record: Generic key-value data dictionary container
+  const tGroup = (feetData.t ?? {}) as Record<DisplayText, readonly number[]>; // open-record: Generic key-value data dictionary container
 
   const pokes = buildPokemonEntities(pGroup, isShiny, getPrecalculatedFeet);
   const npcs = buildNpcEntities(nGroup, getPrecalculatedFeet);

@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { gsap } from 'gsap';
 /**
  * src/components/map/MapCardSpawnsTrigger.vue
  *
  * Animated Pokéball button triggering the Route Spawns modal.
  */
 import { useTemplateRef } from 'vue';
-import { gsap } from 'gsap';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { useUIStore } from '@/stores/ui';
@@ -21,7 +22,7 @@ const emit = defineEmits<{
 const uiStore = useUIStore();
 const pokeballTriggerRef = useTemplateRef<HTMLElement>('pokeballTriggerRef');
 
-const onMouseEnter = () => {
+const onMouseEnter = (): void => {
   if (uiStore.isLowPowerActive) return;
   if (pokeballTriggerRef.value) {
     gsap.to(pokeballTriggerRef.value, {
@@ -35,7 +36,7 @@ const onMouseEnter = () => {
   }
 };
 
-const onMouseLeave = () => {
+const onMouseLeave = (): void => {
   if (uiStore.isLowPowerActive) {
     if (pokeballTriggerRef.value) {
       gsap.set(pokeballTriggerRef.value, { clearProps: 'transform,x,y,scale' });

@@ -1,13 +1,20 @@
-import { Ref } from 'vue';
-import {
+import type { Ref } from 'vue';
+
+import type { SeatState } from '@/composables/battle/useBattleSeats';
+import type { ItemId } from '@/data/inventory/items';
+import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
+import type { PostBattleSequenceCoordinator } from '@/logic/battle/postBattleSequenceCoordinator';
+import type {
   BattleState,
   BattleStages,
   BattleLog,
-  type BattleSource,
-  type BattleSide
+  BattleSource,
+  BattleSide
 } from '@/types/battle/battle';
-import { Pokemon, Move } from '@/types/pokemon/pokemon';
-import {
+import type { BattleSeatId } from '@/types/battle/battle';
+import type { BattleUiConfig } from '@/types/battle/battleConfig';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+import type {
   GameStore,
   BattleStore,
   UIStore,
@@ -17,13 +24,6 @@ import {
   AudioStore,
   BattleOptions
 } from '@/types/system/stores';
-import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
-import type { ItemId } from '@/data/inventory/items';
-import type { SeatState } from '@/composables/battle/useBattleSeats';
-
-import type { BattleUiConfig } from '@/types/battle/battleConfig';
-import type { PostBattleSequenceCoordinator } from '@/logic/battle/postBattleSequenceCoordinator';
-import type { BattleSeatId } from '@/types/battle/battle';
 
 export type { BattleSeatId };
 

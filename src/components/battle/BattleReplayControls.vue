@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+
 import type { ITacticalReplayEngine } from '@/logic/battle/replay/tacticalReplayEngine';
 
 interface Props {
@@ -23,7 +24,7 @@ const speeds = [1, 2, 4] as const;
 const currentTurn = computed(() => props.engine?.getCurrentTurn() ?? 0);
 const totalTurns = computed(() => props.engine?.getTotalTurns() ?? 0);
 
-const togglePlay = () => {
+const togglePlay = (): void => {
   isPlaying.value = !isPlaying.value;
   if (isPlaying.value) {
     emit('play');
@@ -32,16 +33,16 @@ const togglePlay = () => {
   }
 };
 
-const handleNext = () => {
+const handleNext = (): void => {
   emit('next');
 };
 
-const handleRestart = () => {
+const handleRestart = (): void => {
   isPlaying.value = false;
   emit('restart');
 };
 
-const cycleSpeed = () => {
+const cycleSpeed = (): void => {
   const currentIndex = speeds.indexOf(speed.value as 1 | 2 | 4);
   const nextIndex = (currentIndex + 1) % speeds.length;
   speed.value = speeds[nextIndex] ?? 1;

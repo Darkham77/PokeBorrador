@@ -15,24 +15,6 @@
  *   8. Strict Building Clearance: Enforces >= 1 tile physical clearance (zero face-touching or overlaps).
  */
 
-import type {
-  POINode,
-  UrbanBuildingType,
-  UrbanBuildingPlacement,
-  UrbanPropType,
-  UrbanPropPlacement,
-  SettlementLayoutResult,
-  SettlementCurbPlacement,
-  UrbanRoadMaterial
-} from '../../types/map/poiTypes.ts';
-import type { SettlementTerrainContext } from './cityLayoutEngine.ts';
-import {
-  getBuildingPrefabMeta,
-  getAssetFilename,
-  type BuildingPrefabMeta
-} from './canonicalAssetsRegistry.ts';
-import { computeUrbanCurbs } from './urbanPavingEngine.ts';
-import { synthesizeCityGenes } from './cityGeneSynthesizer.ts';
 import {
   CITY_RNG_PRIME,
   CITY_RNG_MULT,
@@ -164,6 +146,24 @@ import {
   RESIDENTIAL_TIER1_HOUSE2_MARGIN,
   LAMP_LEFT_MIN_HEIGHT
 } from '../../config/cityEngineConfig.ts';
+import type {
+  POINode,
+  UrbanBuildingType,
+  UrbanBuildingPlacement,
+  UrbanPropType,
+  UrbanPropPlacement,
+  SettlementLayoutResult,
+  SettlementCurbPlacement,
+  UrbanRoadMaterial
+} from '../../types/map/poiTypes.ts';
+import {
+  getBuildingPrefabMeta,
+  getAssetFilename,
+  type BuildingPrefabMeta
+} from './canonicalAssetsRegistry.ts';
+import { synthesizeCityGenes } from './cityGeneSynthesizer.ts';
+import type { SettlementTerrainContext } from './cityLayoutEngine.ts';
+import { computeUrbanCurbs } from './urbanPavingEngine.ts';
 
 export type { BuildingPrefabMeta, SettlementCurbPlacement };
 
@@ -184,6 +184,201 @@ const RESIDENTIAL_ROOF_PALETTES = [
   'house_blue',
   'house_orange'
 ] as const;
+
+export interface UrbanTargetCoord {
+  x: number;
+  y: number;
+}
+
+function connectDoorTargetToStreetNetwork(
+  target: UrbanTargetCoord,
+  streetSet: Set<string>,
+  buildingMask: ReadonlySet<string>,
+  isLand: (x: number, y: number) => boolean,
+  internalStreets: UrbanTargetCoord[]
+): void {
+  if (!isLand(target.x, target.y)) return;
+
+  const targetKey = `${target.x}_${target.y}`;
+  if (!streetSet.has(targetKey)) {
+    streetSet.add(targetKey);
+    internalStreets.push(target);
+  }
+
+  const queue: { x: number; y: number }[] = [target];
+  const parent = new Map<string, { x: number; y: number }>();
+  const visited = new Set<string>();
+  visited.add(targetKey);
+  let destination: { x: number; y: number } | null = null;
+
+  while (queue.length > 0) {
+    const curr = queue.shift()!;
+    if (streetSet.has(`${curr.x}_${curr.y}`) && !(curr.x === target.x && curr.y === target.y)) {
+      destination = curr;
+      break;
+    }
+
+    for (const [dx, dy] of BFS_CARDINAL_DIRS) {
+      const nx = curr.x + dx;
+      const ny = curr.y + dy;
+      const key = `${nx}_${ny}`;
+      if (visited.has(key) || !isLand(nx, ny) || (buildingMask.has(key) && !streetSet.has(key)))
+        continue;
+
+      visited.add(key);
+      parent.set(key, curr);
+      queue.push({ x: nx, y: ny });
+    }
+  }
+
+  if (!destination) return;
+  let step: { x: number; y: number } | undefined = destination;
+  while (step) {
+    const key = `${step.x}_${step.y}`;
+    if (!streetSet.has(key)) {
+      streetSet.add(key);
+      internalStreets.push(step);
+    }
+    const p = parent.get(key);
+    if (!p || (p.x === target.x && p.y === target.y)) break;
+    step = p;
+  }
+}
+
+function tryPlaceBuildingInSectorBounds(
+  placeBuildingDirect: (
+    bId: string,
+    type: UrbanBuildingType,
+    x: number,
+    y: number,
+    metaId: string
+  ) => boolean,
+  bId: string,
+  type: UrbanBuildingType,
+  metaId: string,
+  preferredX: number,
+  preferredY: number,
+  maxR: number,
+  bounds: { minX: number; maxX: number; minY: number; maxY: number }
+): boolean {
+  for (let r = 0; r <= maxR; r++) {
+    for (let dy = -r; dy <= r; dy++) {
+      for (let dx = -r; dx <= r; dx++) {
+        if (r !== 0 && Math.abs(dx) !== r && Math.abs(dy) !== r) continue;
+        const candX = preferredX + dx;
+        const candY = preferredY + dy;
+        if (
+          candX < bounds.minX ||
+          candX > bounds.maxX ||
+          candY < bounds.minY ||
+          candY > bounds.maxY
+        )
+          continue;
+        if (placeBuildingDirect(bId, type, candX, candY, metaId)) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+function stampTown10Streets(
+  bx: number,
+  by: number,
+  W: number,
+  H: number,
+  addStreetCell: (x: number, y: number) => void
+): void {
+  for (let y = 0; y < H; y++) {
+    for (let x = TOWN_10_STREET_X1; x <= TOWN_10_STREET_X2; x++) {
+      addStreetCell(bx + x, by + y);
+    }
+  }
+  for (let y = TOWN_10_STREET_Y1; y <= TOWN_10_STREET_Y2; y++) {
+    for (let x = 0; x < W; x++) {
+      addStreetCell(bx + x, by + y);
+    }
+  }
+}
+
+function paveCeladonConcourse(
+  bx: number,
+  by: number,
+  W: number,
+  H: number,
+  avenueKeys: ReadonlySet<string>,
+  isCellLand: (x: number, y: number) => boolean,
+  addPlazaCell: (x: number, y: number) => void
+): void {
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const key = `${bx + x}_${by + y}`;
+      if (!avenueKeys.has(key) && isCellLand(bx + x, by + y)) {
+        addPlazaCell(bx + x, by + y);
+      }
+    }
+  }
+}
+
+function paveMetropolisPlazaAndSidewalks(
+  bx: number,
+  by: number,
+  W: number,
+  H: number,
+  fX: number,
+  fY: number,
+  avenueKeys: ReadonlySet<string>,
+  isCellLand: (x: number, y: number) => boolean,
+  addPlazaCell: (x: number, y: number) => void
+): void {
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const px = bx + x;
+      const py = by + y;
+      if (avenueKeys.has(`${px}_${py}`) || !isCellLand(px, py)) continue;
+
+      const inPlaza =
+        px >= fX - METROPOLIS_PLAZA_RADIUS_X_MIN &&
+        px <= fX + METROPOLIS_PLAZA_RADIUS_X_MAX &&
+        py >= fY - METROPOLIS_PLAZA_RADIUS_Y_MIN &&
+        py <= fY + METROPOLIS_PLAZA_RADIUS_Y_MAX;
+
+      const isSidewalk =
+        avenueKeys.has(`${px - 1}_${py}`) ||
+        avenueKeys.has(`${px + 1}_${py}`) ||
+        avenueKeys.has(`${px}_${py - 1}`) ||
+        avenueKeys.has(`${px}_${py + 1}`);
+
+      if (inPlaza || isSidewalk) {
+        addPlazaCell(px, py);
+      }
+    }
+  }
+}
+
+function paveWaterfrontBoardwalk(
+  bx: number,
+  by: number,
+  W: number,
+  H: number,
+  isCellLand: (x: number, y: number) => boolean,
+  hasAdjacentWater: (x: number, y: number) => boolean,
+  addPlazaCell: (x: number, y: number) => void,
+  addProp: (type: UrbanPropType, x: number, y: number, file: string) => void
+): void {
+  for (let y = by; y < by + H; y++) {
+    for (let x = bx; x < bx + W; x++) {
+      if (!isCellLand(x, y) || !hasAdjacentWater(x, y)) continue;
+      addPlazaCell(x, y);
+      if ((x + y * WATERFRONT_HASH_X) % WATERFRONT_MOD_CRATES === 0) {
+        addProp('crates', x, y, getAssetFilename('poke_port_cargo_crates_stack'));
+      } else if ((x + y * WATERFRONT_HASH_Y) % WATERFRONT_MOD_BENCH === 0) {
+        addProp('bench', x, y, getAssetFilename('poke_bench'));
+      }
+    }
+  }
+}
 
 /**
  * Connects all building entrances to the street network via orthogonal paths strictly on land.
@@ -217,54 +412,7 @@ function connectDoorsToStreets(
     }
 
     for (const target of doorTargets) {
-      if (!isLand(target.x, target.y)) continue;
-
-      if (!streetSet.has(`${target.x}_${target.y}`)) {
-        streetSet.add(`${target.x}_${target.y}`);
-        internalStreets.push(target);
-      }
-
-      // BFS to find the shortest walkable route connecting target to any street in streetSet
-      const queue: { x: number; y: number }[] = [target];
-      const parent = new Map<string, { x: number; y: number }>();
-      const visited = new Set<string>(); // runtime-set: Estructura o identificador procedural de aventura
-      visited.add(`${target.x}_${target.y}`);
-      let destination: { x: number; y: number } | null = null;
-
-      while (queue.length > 0) {
-        const curr = queue.shift()!;
-        if (streetSet.has(`${curr.x}_${curr.y}`) && !(curr.x === target.x && curr.y === target.y)) {
-          destination = curr;
-          break;
-        }
-
-        for (const [dx, dy] of BFS_CARDINAL_DIRS) {
-          const nx = curr.x + dx;
-          const ny = curr.y + dy;
-          const key = `${nx}_${ny}`;
-          if (visited.has(key)) continue;
-          if (!isLand(nx, ny)) continue;
-          if (buildingMask.has(key) && !streetSet.has(key)) continue;
-
-          visited.add(key);
-          parent.set(key, curr);
-          queue.push({ x: nx, y: ny });
-        }
-      }
-
-      if (destination) {
-        let step = destination;
-        while (step) {
-          const key = `${step.x}_${step.y}`;
-          if (!streetSet.has(key)) {
-            streetSet.add(key);
-            internalStreets.push(step);
-          }
-          const p = parent.get(key);
-          if (!p || (p.x === target.x && p.y === target.y)) break;
-          step = p;
-        }
-      }
+      connectDoorTargetToStreetNetwork(target, streetSet, buildingMask, isLand, internalStreets);
     }
   }
 }
@@ -289,6 +437,12 @@ function finalizeSettlementStreets(
   const streetSet = new Set(cleanStreets.map((s) => `${s.x}_${s.y}`));
   return { cleanStreets, streetSet, bMask };
 }
+
+const NON_LAND_TERRAIN_LIST = ['water', 'water_deep', 'sand'] as const;
+type NonLandTerrain = (typeof NON_LAND_TERRAIN_LIST)[number];
+const NON_LAND_TERRAINS: ReadonlySet<NonLandTerrain> = new Set<NonLandTerrain>(
+  NON_LAND_TERRAIN_LIST
+);
 
 /**
  * Master generator for organic heterogeneous settlement layouts.
@@ -318,10 +472,10 @@ export function generateOrganicCityLayout(
 
   let seed: number = rngSeed;
   for (let i = 0; i < node.id.length; i++) {
-    seed = (seed * CITY_RNG_PRIME + node.id.charCodeAt(i)) | 0;
+    seed = Math.trunc(seed * CITY_RNG_PRIME + node.id.charCodeAt(i));
   }
   const nextRng = (): number => {
-    seed = (seed * CITY_RNG_MULT + CITY_RNG_ADD) | 0;
+    seed = Math.trunc(seed * CITY_RNG_MULT + CITY_RNG_ADD);
     return (seed >>> 0) / CITY_RNG_DENOM;
   };
 
@@ -330,7 +484,7 @@ export function generateOrganicCityLayout(
     if (context?.height !== undefined && (y < 0 || y >= context.height)) return false;
     if (context?.terrainMatrix) {
       const t = context.terrainMatrix[y]?.[x];
-      if (t === 'water' || t === 'water_deep' || t === 'sand') return false;
+      if (t && NON_LAND_TERRAINS.has(t as NonLandTerrain)) return false;
     }
     if (context?.occupiedFootCells?.[y]?.[x]) return false;
     if (context?.mountainCellRoles) {
@@ -482,19 +636,19 @@ export function generateOrganicCityLayout(
     for (let r = 1; r <= maxRadius; r++) {
       for (let dy = -r; dy <= r; dy++) {
         for (let dx = -r; dx <= r; dx++) {
-          if (Math.abs(dx) === r || Math.abs(dy) === r) {
-            const candX = preferredX + dx;
-            const candY = preferredY + dy;
-            if (
-              candX >= bx &&
-              candX + meta.width <= bx + W &&
-              candY >= by &&
-              candY + meta.height <= by + H
-            ) {
-              if (placeBuildingDirect(bId, type, candX, candY, metaId)) {
-                return true;
-              }
-            }
+          if (Math.abs(dx) !== r && Math.abs(dy) !== r) continue;
+          const candX = preferredX + dx;
+          const candY = preferredY + dy;
+          if (
+            candX < bx ||
+            candX + meta.width > bx + W ||
+            candY < by ||
+            candY + meta.height > by + H
+          ) {
+            continue;
+          }
+          if (placeBuildingDirect(bId, type, candX, candY, metaId)) {
+            return true;
           }
         }
       }
@@ -564,20 +718,20 @@ export function generateOrganicCityLayout(
     }
 
     // Fallback: search within sector bounds first before full city
-    if (sectorBounds) {
-      for (let r = 0; r <= Math.max(W, H); r++) {
-        for (let dy = -r; dy <= r; dy++) {
-          for (let dx = -r; dx <= r; dx++) {
-            if (r !== 0 && Math.abs(dx) !== r && Math.abs(dy) !== r) continue;
-            const candX = preferredX + dx;
-            const candY = preferredY + dy;
-            if (candX < minX || candX > maxX || candY < minY || candY > maxY) continue;
-            if (placeBuildingDirect(bId, type, candX, candY, metaId)) {
-              return true;
-            }
-          }
-        }
-      }
+    if (
+      sectorBounds &&
+      tryPlaceBuildingInSectorBounds(
+        placeBuildingDirect,
+        bId,
+        type,
+        metaId,
+        preferredX,
+        preferredY,
+        Math.max(W, H),
+        { minX, maxX, minY, maxY }
+      )
+    ) {
+      return true;
     }
 
     // Fallback to local search if no exact street-fronting lot fits
@@ -812,13 +966,7 @@ export function generateOrganicCityLayout(
           'house_orange'
         );
 
-        for (let y = 0; y < H; y++) {
-          for (let x = TOWN_10_STREET_X1; x <= TOWN_10_STREET_X2; x++)
-            addStreetCell(bx + x, by + y);
-        }
-        for (let y = TOWN_10_STREET_Y1; y <= TOWN_10_STREET_Y2; y++) {
-          for (let x = 0; x < W; x++) addStreetCell(bx + x, by + y);
-        }
+        stampTown10Streets(bx, by, W, H, addStreetCell);
 
         addProp('signpost', bx + 2, by + 5, getAssetFilename('poke_signpost'));
         addProp('flower', bx + 0, by + 5, getAssetFilename('poke_flowers_red'));
@@ -1192,50 +1340,18 @@ export function generateOrganicCityLayout(
       }
     }
 
-    const { cleanStreets, streetSet: avenueKeys } = finalizeSettlementStreets(
-      buildings,
-      internalStreets,
-      { bx, by, W, H },
-      isCellLand
-    );
+    const {
+      cleanStreets,
+      streetSet: avenueKeys,
+      bMask
+    } = finalizeSettlementStreets(buildings, internalStreets, { bx, by, W, H }, isCellLand);
 
     // Paved Concourse: For celadon_capital test fixture, full commercial concourse (500-700 cells)
     // For organic metropolises, pave avenues + central civic plaza + sidewalks (preserving green courtyards)
     if (isCeladonTest) {
-      for (let y = 0; y < H; y++) {
-        for (let x = 0; x < W; x++) {
-          const key = `${bx + x}_${by + y}`;
-          if (!avenueKeys.has(key) && isCellLand(bx + x, by + y)) {
-            addPlazaCell(bx + x, by + y);
-          }
-        }
-      }
+      paveCeladonConcourse(bx, by, W, H, avenueKeys, isCellLand, addPlazaCell);
     } else {
-      // Pave 1-tile sidewalk along avenues + 8x8 Central Fountain Plaza
-      for (let y = 0; y < H; y++) {
-        for (let x = 0; x < W; x++) {
-          const px = bx + x;
-          const py = by + y;
-          if (avenueKeys.has(`${px}_${py}`) || !isCellLand(px, py)) continue;
-
-          // Central Fountain Plaza (8x8 around fountain)
-          const inPlaza =
-            px >= fX - METROPOLIS_PLAZA_RADIUS_X_MIN &&
-            px <= fX + METROPOLIS_PLAZA_RADIUS_X_MAX &&
-            py >= fY - METROPOLIS_PLAZA_RADIUS_Y_MIN &&
-            py <= fY + METROPOLIS_PLAZA_RADIUS_Y_MAX;
-          // Sidewalks (adjacent to avenues)
-          const isSidewalk =
-            avenueKeys.has(`${px - 1}_${py}`) ||
-            avenueKeys.has(`${px + 1}_${py}`) ||
-            avenueKeys.has(`${px}_${py - 1}`) ||
-            avenueKeys.has(`${px}_${py + 1}`);
-
-          if (inPlaza || isSidewalk) {
-            addPlazaCell(px, py);
-          }
-        }
-      }
+      paveMetropolisPlazaAndSidewalks(bx, by, W, H, fX, fY, avenueKeys, isCellLand, addPlazaCell);
     }
 
     const cleanPlazas = isCeladonTest
@@ -1553,22 +1669,7 @@ export function generateOrganicCityLayout(
   // Waterfront Boardwalk Promenade (if coastal / waterfront)
   // --------------------------------------------------------------------------
   if (settlementHasWater) {
-    // Find shoreline cells (land cells adjacent to water)
-    for (let y = by; y < by + H; y++) {
-      for (let x = bx; x < bx + W; x++) {
-        if (isCellLand(x, y) && hasAdjacentWater(x, y)) {
-          // Pave as waterfront boardwalk
-          addPlazaCell(x, y);
-
-          // Place cargo crates, barrels or bench along shoreline
-          if ((x + y * WATERFRONT_HASH_X) % WATERFRONT_MOD_CRATES === 0) {
-            addProp('crates', x, y, getAssetFilename('poke_port_cargo_crates_stack'));
-          } else if ((x + y * WATERFRONT_HASH_Y) % WATERFRONT_MOD_BENCH === 0) {
-            addProp('bench', x, y, getAssetFilename('poke_bench'));
-          }
-        }
-      }
-    }
+    paveWaterfrontBoardwalk(bx, by, W, H, isCellLand, hasAdjacentWater, addPlazaCell, addProp);
   }
 
   if (isIslandOrCoastal && !settlementHasWater) {

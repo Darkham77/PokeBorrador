@@ -5,12 +5,13 @@
  * cached cosmetics, friends list, and fetched profile/save data.
  */
 
-import type { RankedSeasonMedal, BattleReplayRecord, BattleCode } from '@/types/battle/pvp.ts';
 import type { SideID } from '@pkmn/sim';
+
 import { isRankedTierId, isSeasonalThemeId } from '@/data/system/rankedData.ts';
+import type { MapRouteId } from '@/data/world/map-assets';
+import type { RankedSeasonMedal, BattleReplayRecord, BattleCode } from '@/types/battle/pvp.ts';
 import { POKEMON_COMPETITION_RANKS, type PokemonCompetitionRank } from '@/types/pokemon/pokemon.ts';
 import { isFactionId, FACTION_LABELS, FACTION_COLORS } from '@/types/system/game';
-import type { MapRouteId } from '@/data/world/map-assets';
 
 export interface ProfileRow {
   id: string;
@@ -279,7 +280,7 @@ function parsePrizeObject(rawPrize: unknown): AwardPrizePayload | null {
       return null;
     }
   }
-  return rawPrize as AwardPrizePayload;
+  return rawPrize;
 }
 
 function parseRankedMedalFromAward(

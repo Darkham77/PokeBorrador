@@ -1,11 +1,13 @@
 import { gsap } from 'gsap';
+
+import { GLOW_GRADIENT_STOP_PERCENT } from '@/logic/constants/visuals.ts';
+
 import {
   is3DButton,
   getElementShadowColorAndDepth,
   resolveCssColor,
   parseToRgba
 } from './hoverHelpers.ts';
-import { GLOW_GRADIENT_STOP_PERCENT } from '@/logic/constants/visuals.ts';
 
 const DEFAULT_HOVER_ENTER_SCALE = 1.03;
 const DEFAULT_HOVER_ENTER_DURATION_SEC = 0.15;

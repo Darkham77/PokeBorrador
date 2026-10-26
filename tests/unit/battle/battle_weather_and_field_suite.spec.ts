@@ -1,13 +1,14 @@
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { ref } from 'vue';
+
+import { useBattleAtmosphere } from '@/composables/battle/useBattleAtmosphere';
 import { mapVisualToOfficialWeather } from '@/logic/weather/weatherGenerationProvider';
 import {
   getLocalizedWeatherName,
   mapOfficialToVisualWeather
 } from '@/logic/weather/weatherVisualMapper';
 import { useMapStore } from '@/stores/map';
-import { useBattleAtmosphere } from '@/composables/battle/useBattleAtmosphere';
 import type { BattleState } from '@/types/battle/battle';
 
 describe('Battle Weather, Field Conditions & Atmosphere Isolation Suite', () => {

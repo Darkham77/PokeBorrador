@@ -10,8 +10,10 @@
  * 5. Anti-duplication prevents enrolling the same Pokemon into multiple slots of the same event.
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
+
 import {
   resolveEventSubCompetitions,
   isPokemonEligibleForSubCompetition,

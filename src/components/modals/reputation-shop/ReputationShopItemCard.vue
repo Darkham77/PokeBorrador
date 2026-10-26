@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
-import { useInventoryStore } from '@/stores/inventory/inventory';
+
+import type { ItemId } from '@/data/inventory/items';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver';
+import { useGameStore } from '@/stores/game';
+import { useInventoryStore } from '@/stores/inventory/inventory';
+import { useUIStore } from '@/stores/ui';
 import type { ItemTier } from '@/types/inventory/items';
-import type { ItemId } from '@/data/inventory/items';
 
 interface ReputationShopItem {
   id: string;
@@ -33,7 +34,7 @@ const reputation = computed(() => {
   return Number(gameStore.state.classData?.reputation) || 0;
 });
 
-const buy = async () => {
+const buy = async (): Promise<void> => {
   if (gameStore.state.playerClass !== 'entrenador') {
     uiStore.notify('Solo los Entrenadores pueden comprar en esta tienda.', '🔒');
     return;
@@ -75,7 +76,7 @@ const buy = async () => {
 const tierLabel = computed(() => getItemTierLabel(props.item.tier));
 const tierColor = computed(() => getItemTierColor(props.item.tier));
 
-const handleImageError = () => {
+const handleImageError = (): void => {
   console.error(`Error al cargar sprite del objeto '${props.item.givesId}': ${props.item.sprite}`);
 };
 </script>

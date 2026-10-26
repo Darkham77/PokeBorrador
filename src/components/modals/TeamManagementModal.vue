@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import gsap from 'gsap';
-import { useUIStore } from '@/stores/ui';
+import { computed } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
-import UnifiedTeamSlot from '@/components/team/UnifiedTeamSlot.vue';
-import TournamentRulesHeader from '@/components/team/TournamentRulesHeader.vue';
 import TeamManagementHeaderTabs from '@/components/team/TeamManagementHeaderTabs.vue';
-import type { TeamManagementTab } from '@/types/battle/pvp';
+import TournamentRulesHeader from '@/components/team/TournamentRulesHeader.vue';
+import UnifiedTeamSlot from '@/components/team/UnifiedTeamSlot.vue';
 import { useTeamManagement } from '@/composables/team/useTeamManagement';
+import { useUIStore } from '@/stores/ui';
+import type { TeamManagementTab } from '@/types/battle/pvp';
 
 interface Props {
   initialTab?: TeamManagementTab;
@@ -20,7 +21,7 @@ const props = withDefaults(defineProps<Props>(), {
 const TAB_TRANSITION_Y_PX = 4;
 const TAB_TRANSITION_DURATION_SEC = 0.3;
 
-const onTabEnter = (el: Element, done: () => void) => {
+const onTabEnter = (el: Element, done: () => void): void => {
   gsap.fromTo(
     el,
     { opacity: 0, y: TAB_TRANSITION_Y_PX },

@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, watch, nextTick, useTemplateRef } from 'vue';
 import { gsap } from 'gsap';
-import { useBodyClass } from '@/composables/ui/useBodyClass';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
-import { useBattleStore } from '@/stores/battle/battle';
-import { useLivePvPStore } from '@/stores/livePvP';
-import { useBreedingStore } from '@/stores/breeding';
-import { useLoadingStore } from '@/stores/loading';
-import { useMainLayout } from '@/composables/ui/useMainLayout';
-import { logger } from '@/logic/utils/logger';
-import { preloadShowdownWorker } from '@/logic/battle/showdownWorkerClient.ts';
-import { HUD_HEIGHT_UPDATE_DELAY_SEC } from '@/logic/constants/animations.ts';
+import { computed, onMounted, onUnmounted, watch, nextTick, useTemplateRef } from 'vue';
 
 // Sub-components
 import TitleScreen from '@/components/game/TitleScreen.vue';
-import ActionButtons from '@/components/ui/ActionButtons.vue';
-import TrainerPanel from '@/components/profile/TrainerPanel.vue';
-import HUD_Navigation from '@/components/ui/HUD_Navigation.vue';
 import InventoryPills from '@/components/inventory/InventoryPills.vue';
-import { defineResilientAsyncComponent } from '@/logic/utils/resilientComponent';
-import CriminalityBar from '@/components/ui/CriminalityBar.vue';
 import BuffsOverlay from '@/components/overlays/BuffsOverlay.vue';
+import TrainerPanel from '@/components/profile/TrainerPanel.vue';
+import ActionButtons from '@/components/ui/ActionButtons.vue';
+import CriminalityBar from '@/components/ui/CriminalityBar.vue';
+import HUD_Navigation from '@/components/ui/HUD_Navigation.vue';
 import HUD_SidebarLeft from '@/components/ui/HUD_SidebarLeft.vue';
+import { useBodyClass } from '@/composables/ui/useBodyClass';
+import { useMainLayout } from '@/composables/ui/useMainLayout';
+import { preloadShowdownWorker } from '@/logic/battle/showdownWorkerClient.ts';
+import { HUD_HEIGHT_UPDATE_DELAY_SEC } from '@/logic/constants/animations.ts';
+import { logger } from '@/logic/utils/logger';
+import { defineResilientAsyncComponent } from '@/logic/utils/resilientComponent';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useBreedingStore } from '@/stores/breeding';
+import { useGameStore } from '@/stores/game';
+import { useLivePvPStore } from '@/stores/livePvP';
+import { useLoadingStore } from '@/stores/loading';
+import { useUIStore } from '@/stores/ui';
 const LocalDebugPanel = defineResilientAsyncComponent(
   () => import('@/components/admin/LocalDebugPanel.vue')
 );
@@ -35,10 +35,10 @@ const GlobalChat = defineResilientAsyncComponent(
 const DirectChatWindow = defineResilientAsyncComponent(
   () => import('@/components/social/DirectChatWindow.vue')
 );
-import { useChatStore } from '@/stores/social/chat';
-import { useAuthStore } from '@/stores/auth';
 import { isLocalEnvironment } from '@/logic/utils/env';
 import { preloadSaveWorker } from '@/logic/workers/saveWorkerClient';
+import { useAuthStore } from '@/stores/auth';
+import { useChatStore } from '@/stores/social/chat';
 
 const gameStore = useGameStore();
 const uiStore = useUIStore();
@@ -124,7 +124,7 @@ watch(
       nextTick(() => {
         const el = document.getElementById('game-screen');
         if (el) {
-          if (typeof window !== 'undefined' && window.__E2E__) {
+          if (typeof globalThis.window !== 'undefined' && globalThis.__E2E__) {
             gsap.set(el, { opacity: 1, y: 0 });
             return;
           }

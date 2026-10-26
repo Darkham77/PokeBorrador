@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
-import { useBreedingStore } from '@/stores/breeding';
-import { useGameStore } from '@/stores/game';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { calculateCloningCost, calculateCloningShinyChance } from '@/logic/minigames/minigameMath';
-import EggSprite from '@/components/common/EggSprite.vue';
 import { gsap } from 'gsap';
+import { ref, computed, watch } from 'vue';
+
+import EggSprite from '@/components/common/EggSprite.vue';
 import { getItemName, type ItemId } from '@/data/inventory/items';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { calculateCloningCost, calculateCloningShinyChance } from '@/logic/minigames/minigameMath';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useBreedingStore } from '@/stores/breeding';
+import { useGameStore } from '@/stores/game';
 
 const breedingStore = useBreedingStore();
 const gameStore = useGameStore();
@@ -53,12 +54,12 @@ const ownedCount = computed(() => {
   return gameStore.state.inventory[activeFossil.value.id] || 0;
 });
 
-const selectFossil = (idx: number) => {
+const selectFossil = (idx: number): void => {
   selectedFossilIndex.value = idx;
   extraSacrifices.value = 0;
 };
 
-const selectSacrifices = (val: number) => {
+const selectSacrifices = (val: number): void => {
   extraSacrifices.value = val;
 };
 
@@ -76,7 +77,7 @@ const showFailureTooltip = ref(false);
 
 const TOOLTIP_HIDE_DELAY_SEC = 3;
 
-const handleClone = () => {
+const handleClone = (): void => {
   if (!canClone.value) return;
   const success = breedingStore.cloneFossil(activeFossil.value.id, extraSacrifices.value);
   if (!success) {
@@ -112,7 +113,7 @@ const CLONING_TIERS = Array.from({ length: 6 }, (_, N) => {
 });
 
 // GSAP Hover Handlers for Fossil Cards
-const onCardMouseEnter = (e: MouseEvent) => {
+const onCardMouseEnter = (e: MouseEvent): void => {
   const el = e.currentTarget as HTMLElement;
   if (!el.classList.contains('active')) {
     gsap.to(el, {
@@ -125,7 +126,7 @@ const onCardMouseEnter = (e: MouseEvent) => {
   }
 };
 
-const onCardMouseLeave = (e: MouseEvent) => {
+const onCardMouseLeave = (e: MouseEvent): void => {
   const el = e.currentTarget as HTMLElement;
   if (!el.classList.contains('active')) {
     gsap.to(el, {
@@ -141,7 +142,7 @@ const onCardMouseLeave = (e: MouseEvent) => {
 const GSAP_HOVER_ROW_DURATION_SEC = 0.15;
 
 // GSAP Hover Handlers for Matrix Rows
-const onRowMouseEnter = (e: MouseEvent) => {
+const onRowMouseEnter = (e: MouseEvent): void => {
   const el = e.currentTarget as HTMLElement;
   if (!el.classList.contains('active') && !el.classList.contains('disabled')) {
     gsap.to(el, {
@@ -152,7 +153,7 @@ const onRowMouseEnter = (e: MouseEvent) => {
   }
 };
 
-const onRowMouseLeave = (e: MouseEvent) => {
+const onRowMouseLeave = (e: MouseEvent): void => {
   const el = e.currentTarget as HTMLElement;
   if (!el.classList.contains('active') && !el.classList.contains('disabled')) {
     gsap.to(el, {

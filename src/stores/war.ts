@@ -1,8 +1,10 @@
+import type { DisplayText } from '@francogp/auditor';
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { useAuthStore } from '@/stores/auth.ts';
-import { useGameStore } from '@/stores/game.ts';
-import { useUIStore } from '@/stores/ui.ts';
+
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
+import { getGMT3Date } from '@/logic/utils/timeUtils';
+import { getGuardianData } from '@/logic/war/guardianEngine';
 import {
   getWeekId,
   getPreviousWeekId,
@@ -10,9 +12,9 @@ import {
   FACTION_CHANGE_COST,
   type WarEventType
 } from '@/logic/war/warEngine';
-import { getGuardianData } from '@/logic/war/guardianEngine';
-
-import type { DominanceInfo } from '@/types/system/stores';
+import { useAuthStore } from '@/stores/auth.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useUIStore } from '@/stores/ui.ts';
 import {
   requireFactionId,
   requireISODateKey,
@@ -20,8 +22,8 @@ import {
   type FactionId,
   type ISODateKey
 } from '@/types/system/game';
-import { getGMT3Date } from '@/logic/utils/timeUtils';
-import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
+import type { DominanceInfo } from '@/types/system/stores';
+
 import {
   calculateWarCoinsAwarded,
   calculateAllowedMapPoints,
@@ -68,7 +70,7 @@ export const useWarStore = defineStore('war', () => {
    * Loads all war-related data for the current session.
    * Handles Global vs Local instance isolation via gameStore.db (DBRouter).
    */
-  async function loadWarData(force = false) {
+  async function loadWarData(force = false): Promise<void> {
     if (!force && isLoaded.value) return;
     if (inFlightPromise) return inFlightPromise;
 
@@ -117,7 +119,7 @@ export const useWarStore = defineStore('war', () => {
     eventType: WarEventType,
     success: boolean,
     customPoints?: number
-  ) {
+  ): Promise<number> {
     const routeId = requireMapRouteId(mapId);
     if (!faction.value || !isDisputeActive.value || !gameStore.db) return 0;
 
@@ -152,11 +154,11 @@ export const useWarStore = defineStore('war', () => {
    * Progressively awards War Coins based on points earned.
    * Cap: 50 coins per day (Legacy Parity).
    */
-  function handleWarCoins(pts: number) {
+  function handleWarCoins(pts: number): void {
     const today = getTodayISODateKey();
     if (!gameStore.state.warDailyCoins) gameStore.state.warDailyCoins = {};
 
-    const dailyCoins = gameStore.state.warDailyCoins as Record<string, number>; // open-record: Generic key-value data dictionary container
+    const dailyCoins = gameStore.state.warDailyCoins as Record<DisplayText, number>; // open-record: Generic key-value data dictionary container
     const currentDailyCoins = dailyCoins[today] ?? 0;
     const currentAccumulator = gameStore.state.warPointsAccumulator || 0;
 
@@ -181,7 +183,7 @@ export const useWarStore = defineStore('war', () => {
    * Assigns or changes the player's faction.
    * Cost: 25k for changes.
    */
-  async function chooseFaction(newFaction: string) {
+  async function chooseFaction(newFaction: string): Promise<boolean> {
     const resolvedFaction = requireFactionId(newFaction);
     if (!authStore.user || !gameStore.db) return false;
 
@@ -226,7 +228,7 @@ export const useWarStore = defineStore('war', () => {
   /**
    * Records a guardian capture or defeat.
    */
-  async function claimGuardian(mapId: MapRouteId, isDefeat = false) {
+  async function claimGuardian(mapId: MapRouteId, isDefeat = false): Promise<void> {
     const routeId = requireMapRouteId(mapId);
     const today = getTodayISODateKey();
 
@@ -261,7 +263,7 @@ export const useWarStore = defineStore('war', () => {
    * Fetches the current dominance state.
    * Local Instances will simulate data if no records exist.
    */
-  async function fetchMapDominance() {
+  async function fetchMapDominance(): Promise<void> {
     if (!gameStore.db) return;
     // 1. Fetch points for the current week
     const { data: points } = await gameStore.db
@@ -287,7 +289,7 @@ export const useWarStore = defineStore('war', () => {
   /**
    * Resolves dominance for the previous week if not already settled.
    */
-  async function resolveWeekIfNeeded() {
+  async function resolveWeekIfNeeded(): Promise<void> {
     if (!gameStore.db) return;
     const prevWeek = getPreviousWeekId();
     await executeResolveWeekDominance(gameStore.db, prevWeek);
@@ -296,7 +298,7 @@ export const useWarStore = defineStore('war', () => {
   /**
    * Distributes weekly reward War Coins based on user's weekly PT milestone + victory bonus.
    */
-  async function distributeWeeklyWarCoins() {
+  async function distributeWeeklyWarCoins(): Promise<void> {
     if (!authStore.user || !gameStore.db || !faction.value) return;
 
     const prevWeek = getPreviousWeekId();

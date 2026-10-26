@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/weather/weatherMath.ts
  *
@@ -9,21 +10,21 @@
  *
  * @module weatherMath
  */
-
 // ── Day Cycle ────────────────────────────────────────────────────────────────
 
-import type { DayPhase } from '../utils/timeUtils.ts';
 import type { MapRouteId } from '@/data/world/map-assets';
-import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
 import type { WeatherSeasonId } from '@/data/world/weather-tables';
+import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
+
+import type { DayPhase } from '../utils/timeUtils.ts';
 export type { DayPhase };
 
+import { DAY_CYCLE_TOTAL_HOURS, DUSK_PHASE_END_HOUR } from '@/logic/constants/gameplay.ts';
 /**
  * Deterministically maps an epoch-millisecond timestamp to a day phase.
  * Cycle is 8 hours: 0-1=morning, 2-3=day, 4-5=dusk, 6-7=night.
  */
 import { ONE_HOUR_MS } from '@/logic/constants/items.ts';
-import { DAY_CYCLE_TOTAL_HOURS, DUSK_PHASE_END_HOUR } from '@/logic/constants/gameplay.ts';
 
 export const PROBABILITY_PERCENT_SCALE = 100;
 const WEATHER_SESSION_SEED_RANGE = 1000;
@@ -56,8 +57,11 @@ export { mulberry32, hashString };
  */
 export type WeatherTable = Record<
   // open-record: Route weather lookup table indexed by map route ID
-  string,
-  Record<string, Record<string, number> | Record<string, Record<string, number>>> // open-record: Nested season and day phase probability map
+  DisplayText,
+  Record<
+    DisplayText,
+    Record<DisplayText, number> | Record<DisplayText, Record<DisplayText, number>>
+  > // open-record: Nested season and day phase probability map
 >;
 
 /**
@@ -79,7 +83,7 @@ export function getRouteWeatherPure(
   if (!routeTables || !routeTables[seasonId]) return 'clear';
 
   const cycle = getDayCyclePure(epochHour * ONE_HOUR_MS);
-  const seasonTable = routeTables[seasonId]!;
+  const seasonTable = routeTables[seasonId];
   const table = seasonTable[cycle] ?? seasonTable;
 
   const mapHash = hashString(mapId);
@@ -92,7 +96,7 @@ export function getRouteWeatherPure(
   const randNum = prng() * PROBABILITY_PERCENT_SCALE;
 
   let cumulative = 0;
-  for (const [weather, prob] of Object.entries(table as Record<string, number>)) {
+  for (const [weather, prob] of Object.entries(table as Record<DisplayText, number>)) {
     // open-record: Generic key-value data dictionary container
     cumulative += prob;
     if (randNum < cumulative) return requireWeatherId(weather);
@@ -115,11 +119,12 @@ function initSessionWeatherSeed(): number {
     return FALLBACK_WEATHER_SESSION_SEED;
   };
 
-  if (typeof window !== 'undefined') {
-    if (window.__WEATHER_SESSION_SEED__ === undefined) {
-      window.__WEATHER_SESSION_SEED__ = getCryptoRandom();
+  const win = typeof globalThis.window !== 'undefined' ? globalThis.window : null;
+  if (win) {
+    if (win.__WEATHER_SESSION_SEED__ === undefined) {
+      win.__WEATHER_SESSION_SEED__ = getCryptoRandom();
     }
-    return window.__WEATHER_SESSION_SEED__;
+    return win.__WEATHER_SESSION_SEED__;
   }
   return getCryptoRandom();
 }
@@ -140,7 +145,7 @@ export function getSessionWeatherSeed(): number {
 const WEATHER_SEED_MODULO_SCALE = 1000;
 
 export function getWeatherAnimSeed(mapId: MapRouteId): number {
-  const mapData = (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[mapId]; // open-record: Generic key-value data dictionary container
+  const mapData = (MAPS_BY_ROUTE_ID as Record<DisplayText, { name: string }>)[mapId]; // open-record: Generic key-value data dictionary container
   const keyString = mapData?.name || mapId;
   const charSum = keyString.split('').reduce((acc, char, i) => {
     return acc + char.charCodeAt(0) * (i + 1);

@@ -16,10 +16,12 @@ import {
   splitSQLStatements
 } from '../../../src/logic/db/sqlTranslator.ts';
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
-import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
+import { BaseAuditor, createRuleCapabilities, getAuditConfig } from '@francogp/auditor';
 import { initTestDatabaseSchema } from './_testDbHelper.ts';
 
 enableCompileCache();
+
+const toMigrationPath = (file: string): string => path.posix.join('database', 'migrations', file);
 
 function isIgnorableSqliteMigrationError(error: unknown): boolean {
   if (!error || typeof error !== 'object') return false;
@@ -61,6 +63,13 @@ export const SQL_MIGRATION_RULES: readonly SqlMigrationRuleId[] = [
 
 export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
   constructor() {
+    const config = getAuditConfig();
+    const migrationsDir = config.paths?.migrationsDir;
+    if (!migrationsDir) {
+      throw new Error('config.paths.migrationsDir is required in audit.config.ts');
+    }
+    const coverageIncludes = [path.posix.join(migrationsDir, '**/*.{sql,sqlite.sql}')];
+
     super({
       ruleCapabilities: createRuleCapabilities(SQL_MIGRATION_RULES, {
         speed: 'heavy',
@@ -84,6 +93,7 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
       ruleIds: SQL_MIGRATION_RULES,
       packageName: 'Migración',
       usesThirdPartyTool: false,
+      requiredPermissions: [],
       ruleDescriptions: {
         'sql-migration-orphan-sqlite': '.sqlite.sql huérfano',
         'sql-migration-invalid-timestamp': 'Timestamp inválido',
@@ -114,9 +124,10 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
         'sql-migration-sqlite-exec-failure':
           'Fix SQL syntax or schema mismatch causing in-memory SQLite execution error'
       },
+      remediationPhase: 'setup',
       requiredFiles: [MIGRATIONS_DIR],
       coverage: {
-        include: ['database/migrations/*.sql']
+        include: coverageIncludes
       }
     });
   }
@@ -129,7 +140,7 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
         this.addViolation({
           ruleId: 'sql-migration-orphan-sqlite',
           severity: 'error',
-          file: `database/migrations/${sqliteFile}`,
+          file: toMigrationPath(sqliteFile),
           line: 1,
           message: `Archivo SQLite huérfano sin archivo PostgreSQL base: ${sqliteFile}`,
           context: sqliteFile
@@ -155,7 +166,7 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
         this.addViolation({
           ruleId: 'sql-migration-sqlite-exec-failure',
           severity: 'error',
-          file: `database/migrations/${migrationId}.sql`,
+          file: toMigrationPath(`${migrationId}.sql`),
           line: 1,
           message: `Migration ${migrationId} failed in-memory SQLite execution: ${(stmtErr as Error).message}`,
           context: stmt.trim().slice(0, 100)
@@ -231,7 +242,7 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
           this.addViolation({
             ruleId: 'sql-migration-invalid-timestamp',
             severity: 'error',
-            file: `database/migrations/${file}`,
+            file: toMigrationPath(file),
             line: 1,
             message: `Formato de timestamp inválido en archivo '${file}'. Debe iniciar con un timestamp de 14 dígitos (YYYYMMDDHHmmss_...).`,
             context: file
@@ -251,7 +262,7 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
           this.addViolation({
             ruleId: 'sql-migration-duplicate-timestamp',
             severity: 'error',
-            file: `database/migrations/${file}`,
+            file: toMigrationPath(file),
             line: 1,
             message: `Timestamp duplicado detectado: '${timestamp}' en archivo '${file}'. Todos los timestamps deben ser estrictamente únicos.`,
             context: timestamp
@@ -272,7 +283,7 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
           this.addViolation({
             ruleId: 'sql-migration-broken-monotonicity',
             severity: 'error',
-            file: `database/migrations/${file}`,
+            file: toMigrationPath(file),
             line: 1,
             message: `Monotonicidad rota: El timestamp '${timestamp}' (${file}) no es estrictamente mayor que el anterior '${lastTimestamp}'.`,
             context: `${lastTimestamp} -> ${timestamp}`
@@ -294,7 +305,7 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
           this.addViolation({
             ruleId: 'sql-migration-missing-dbversion',
             severity: 'error',
-            file: `database/migrations/${file}`,
+            file: toMigrationPath(file),
             line: 1,
             message: `Migración PostgreSQL '${file}' sin sentencia obligatoria de db_version en system_config.`,
             context: file
@@ -315,7 +326,7 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
           this.addViolation({
             ruleId: 'sql-migration-missing-sqlite-companion',
             severity: 'error',
-            file: `database/migrations/${file}`,
+            file: toMigrationPath(file),
             line: 1,
             message: `Migración PostgreSQL '${file}' sin archivo compañero SQLite obligatorio: '${companionSqliteName}'.`,
             context: companionSqliteName
@@ -338,7 +349,7 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
             this.addViolation({
               ruleId: 'sql-migration-sqlite-missing-dbversion',
               severity: 'error',
-              file: `database/migrations/${companionSqliteName}`,
+              file: toMigrationPath(companionSqliteName),
               line: 1,
               message: `Migración SQLite '${companionSqliteName}' sin sentencia obligatoria de db_version en system_config.`,
               context: companionSqliteName
@@ -362,7 +373,7 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
             this.addViolation({
               ruleId: 'sql-migration-dbversion-desync',
               severity: 'error',
-              file: `database/migrations/${file}`,
+              file: toMigrationPath(file),
               line: 1,
               message: `Desincronización de db_version en PostgreSQL '${file}': El SQL declara versión '${sqlVersion}' pero el timestamp del nombre de archivo es '${timestamp}'.`,
               context: `${sqlVersion} !== ${timestamp}`
@@ -380,7 +391,7 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
               this.addViolation({
                 ruleId: 'sql-migration-dbversion-desync',
                 severity: 'error',
-                file: `database/migrations/${companionSqliteName}`,
+                file: toMigrationPath(companionSqliteName),
                 line: 1,
                 message: `Desincronización de db_version en SQLite '${companionSqliteName}': El SQL declara versión '${sqliteVersion}' pero el timestamp del nombre de archivo es '${timestamp}'.`,
                 context: `${sqliteVersion} !== ${timestamp}`
@@ -401,10 +412,4 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (
-  process.argv[1] &&
-  import.meta.filename &&
-  path.basename(process.argv[1]) === path.basename(import.meta.filename)
-) {
-  await BaseAuditor.runCli(new SqlMigrationAuditor());
-}
+await BaseAuditor.runCliIfMain(import.meta.url, new SqlMigrationAuditor());

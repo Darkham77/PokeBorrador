@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { useUIStore } from '@/stores/ui';
 import { onMounted, computed } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
 import EventMissions from '@/components/events/EventMissions.vue';
 import { useBreedingStore } from '@/stores/breeding';
+import { useUIStore } from '@/stores/ui';
 
 interface Props {
   show?: boolean;

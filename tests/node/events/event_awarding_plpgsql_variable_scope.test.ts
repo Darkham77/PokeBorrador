@@ -1,7 +1,8 @@
-import { describe, it, vi, beforeEach, expect } from 'vite-plus/test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
+
+import { describe, it, vi, beforeEach, expect } from 'vite-plus/test';
 
 let memoryDb: DatabaseSync;
 

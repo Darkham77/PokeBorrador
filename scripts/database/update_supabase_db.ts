@@ -1,3 +1,4 @@
+import { isMainModule } from '@francogp/auditor';
 /**
  * @file update_supabase_db.ts
  * @description Script automático para acceder a los servidores Supabase y gestionar la base de datos.
@@ -14,21 +15,22 @@
  */
 
 import fsPromises from 'node:fs/promises';
+import path from 'node:path';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
+import { defineCommand, runMain } from 'citty';
 import postgres from 'postgres';
 import {
   buildDatabaseUrl,
   getValidatedServerConfigs,
-  parseServerArguments
+  resolveServerProfiles
 } from '../lib/supabaseClient.ts';
-import { safeResolve, safeJoin } from '@francogp/auditor';
 
 // Optimizar ejecución en ejecuciones sucesivas
 enableCompileCache();
 
-const MIGRATIONS_DIR = safeResolve(process.cwd(), 'database/migrations');
-const BASELINE_FILE = safeResolve(
+const MIGRATIONS_DIR = path.resolve(process.cwd(), 'database/migrations');
+const BASELINE_FILE = path.resolve(
   process.cwd(),
   'database/migrations/20240416000000_baseline_schema.sql'
 );
@@ -135,7 +137,7 @@ async function applyPendingPostgresMigrations(
     const migrationId = filename.replace('.sql', '');
     if (!appliedIds.has(migrationId)) {
       console.log(styleText('cyan', `📦 Aplicando parche: ${filename}...`));
-      const filePath = safeJoin(MIGRATIONS_DIR, filename);
+      const filePath = path.join(MIGRATIONS_DIR, filename);
       if (await applySinglePostgresPatch(sql, migrationId, filePath)) {
         patchesApplied++;
       }
@@ -167,13 +169,13 @@ async function syncSystemConfigVersions(sql: postgres.Sql, profile: string): Pro
 
   let appVersion = 'v0.5.0';
   try {
-    const verPath = safeResolve(process.cwd(), 'public/version.json');
+    const verPath = path.resolve(process.cwd(), 'public/version.json');
     const verContent = JSON.parse(await fsPromises.readFile(verPath, 'utf-8')) as {
       version?: string;
     };
     if (verContent?.version) appVersion = verContent.version;
-  } catch {
-    // catch-ok: public/version.json may not exist, fallback to base version
+  } catch (err) {
+    err;
   }
 
   console.log(
@@ -263,7 +265,7 @@ async function updateSingleProfileDb(
   }
 }
 
-export async function updateSupabaseDb(): Promise<void> {
+export async function updateSupabaseDb(server?: string, isAll?: boolean): Promise<void> {
   console.log(
     styleText(
       'bold',
@@ -272,10 +274,8 @@ export async function updateSupabaseDb(): Promise<void> {
   );
 
   const { serverConfigs, baseProfiles, allAvailable } = await getValidatedServerConfigs();
-  const args = process.argv.slice(2);
-  const targetProfiles = parseServerArguments(args, baseProfiles, allAvailable);
+  const targetProfiles = resolveServerProfiles({ server, all: isAll }, baseProfiles, allAvailable);
   const serverArg = targetProfiles[0];
-  const isAll = args.includes('--all') || args.includes('all');
 
   if (!serverArg && !isAll) {
     console.log(
@@ -327,15 +327,26 @@ export async function updateSupabaseDb(): Promise<void> {
   }
 }
 
-const isDirectRun =
-  process.argv[1] &&
-  (process.argv[1].endsWith('update_supabase_db.ts') ||
-    process.argv[1].includes('update_supabase_db.ts'));
-
-if (isDirectRun) {
-  updateSupabaseDb().catch((err: unknown) => {
-    const msg = err instanceof Error ? (err as Error).message : String(err);
-    console.error(styleText('red', `❌ Error fatal: ${msg}`));
-    process.exit(1);
-  });
+export const command = defineCommand({
+  meta: {
+    name: 'update-supabase-db',
+    description: 'Actualizador y gestor de migraciones para bases de datos Supabase'
+  },
+  args: {
+    server: {
+      type: 'string',
+      description: 'Nombre del perfil de servidor a actualizar (ej: server_franco)',
+      alias: 's'
+    },
+    all: {
+      type: 'boolean',
+      description: 'Actualizar todos los perfiles de servidor configurados'
+    }
+  },
+  async run({ args }) {
+    await updateSupabaseDb(args.server, Boolean(args.all));
+  }
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
 }

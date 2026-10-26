@@ -32,7 +32,7 @@ export class SaveCoordinator {
   private cloudThrottleMs: number = CLOUD_SAVE_THROTTLE_MS;
   private preLogoutHandler: (() => Promise<void>) | null = null;
 
-  constructor(
+  public constructor(
     delayMs: number = DEFAULT_SAVE_DEBOUNCE_MS,
     cloudThrottleMs: number = CLOUD_SAVE_THROTTLE_MS
   ) {
@@ -61,9 +61,9 @@ export class SaveCoordinator {
   }
 
   private registerUnloadHandler(): void {
-    if (typeof window !== 'undefined' && !this.isUnloadRegistered) {
-      window.addEventListener('beforeunload', () => {
-        void this.flushPendingSave();
+    if (typeof globalThis.window !== 'undefined' && !this.isUnloadRegistered) {
+      globalThis.addEventListener('beforeunload', async () => {
+        await this.flushPendingSave();
       });
       this.isUnloadRegistered = true;
     }
@@ -109,9 +109,9 @@ export class SaveCoordinator {
       const elapsed = this.now() - this.lastCloudSaveTime;
       const remaining = Math.max(0, this.cloudThrottleMs - elapsed);
 
-      this.cloudTimer = setTimeout(() => {
+      this.cloudTimer = setTimeout(async () => {
         this.cloudTimer = null;
-        void this.flushPendingCloudSave();
+        await this.flushPendingCloudSave();
       }, remaining);
     }
   }
@@ -158,9 +158,9 @@ export class SaveCoordinator {
     this.pendingSaveFn = saveFn;
     const resolvedDelayMs = delayMs ?? this.defaultDelayMs;
 
-    this.timer = setTimeout(() => {
+    this.timer = setTimeout(async () => {
       this.timer = null;
-      void this.flushPendingLocalSave();
+      await this.flushPendingLocalSave();
     }, resolvedDelayMs);
   }
 

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { COMPAT_TEXT } from '@/logic/breeding/breedingData';
 import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const props = defineProps<{
   pokemon: Pokemon;

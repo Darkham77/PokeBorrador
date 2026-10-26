@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { handleStageEvents } from '@/logic/battle/showdownBridgeStages';
+
 import type { ShowdownRequestPokemon } from '@/logic/battle/helpers/showdownTeamMapper';
-import { handleMiscEvents } from '@/logic/battle/showdownBridgeMisc';
 import { handleCoreEvents } from '@/logic/battle/showdownBridgeCore';
+import { handleMiscEvents } from '@/logic/battle/showdownBridgeMisc';
+import { handleStageEvents } from '@/logic/battle/showdownBridgeStages';
 
 // --- From test_bug003_accuracy_evasion_stages.spec.ts ---
 describe('Audit Parity - BUG-003: Stat stages include accuracy and evasion', () => {

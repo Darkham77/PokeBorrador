@@ -19,7 +19,6 @@
  *   node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/fsm/validate_combat_invariants.ts
  */
 
-import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import { BaseAuditor, FileScanAuditor, createRuleCapabilities } from '@francogp/auditor';
 
@@ -34,9 +33,9 @@ export const COMBAT_INVARIANTS_RULES: readonly CombatInvariantsRuleId[] = [
   'battle-multi-seat-hardcoding'
 ] as const;
 
-const STATUS_NULL_ASSIGNMENT_REGEX = /(?:\.status\s*=\s*null\b|\bstatus:\s*null\b)/g;
+const STATUS_NULL_ASSIGNMENT_REGEX = /(?:\.status\s*=\s*null\b|\bstatus:\s*null\b)/;
 const BINARY_SEAT_BRANCH_REGEX =
-  /\b(?:seat|sideID|side|targetSide)\s*===\s*['"]p1['"]\s*\?\s*['"]p2['"]\s*:\s*['"]p1['"]/g;
+  /\b(?:seat|sideID|side|targetSide)\s*===\s*['"]p1['"]\s*\?\s*['"]p2['"]\s*:\s*['"]p1['"]/;
 
 export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRuleId> {
   constructor() {
@@ -63,6 +62,7 @@ export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRul
       ruleIds: COMBAT_INVARIANTS_RULES,
       packageName: 'Combate',
       usesThirdPartyTool: false,
+      requiredPermissions: [],
       ruleDescriptions: {
         'showdown-healthy-status-null-prohibition': 'status null en vez de vacío',
         'battle-multi-seat-hardcoding': 'Bifurcación binaria p1/p2'
@@ -73,6 +73,7 @@ export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRul
         'battle-multi-seat-hardcoding':
           'Use dynamic seat helper methods instead of binary p1/p2 ternary expressions'
       },
+      remediationPhase: 'behavior',
       roots: ['src/logic/battle'],
       allowedExtensions: new Set(['.ts', '.vue'])
     });
@@ -89,48 +90,45 @@ export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRul
   }
 
   private auditStatusNull(relPath: string, content: string): void {
-    let match: RegExpExecArray | null;
-    const regex = new RegExp(
-      STATUS_NULL_ASSIGNMENT_REGEX.source,
-      STATUS_NULL_ASSIGNMENT_REGEX.flags
-    );
-
-    while ((match = regex.exec(content)) !== null) {
-      const line = this.getLineNumber(content, match.index);
-      const lineContent = this.getLineAt(content, line);
-
-      if (this.hasEscapeHatch(lineContent, ['status-ok'])) {
+    const lines = content.split(/\r?\n/);
+    for (let i = 0; i < lines.length; i++) {
+      const lineContent = lines[i];
+      if (lineContent === undefined || /\/\/\s*(?:status-ok)\b/.test(lineContent)) {
         continue;
       }
-
-      this.addViolation({
-        ruleId: 'showdown-healthy-status-null-prohibition',
-        severity: 'error',
-        file: relPath,
-        line,
-        message: `Prohibited 'null' status assignment detected. Showdown engine expects an empty string '' for healthy Pokémon; 'null' crashes @pkmn/sim.`,
-        context: lineContent.trim()
-      });
+      if (STATUS_NULL_ASSIGNMENT_REGEX.test(lineContent)) {
+        this.addViolation({
+          ruleId: 'showdown-healthy-status-null-prohibition',
+          severity: 'error',
+          file: relPath,
+          line: i + 1,
+          message: `Prohibited 'null' status assignment detected. Showdown engine expects an empty string '' for healthy Pokémon; 'null' crashes @pkmn/sim.`,
+          context: lineContent.trim()
+        });
+      }
     }
   }
 
   private auditBinarySeats(relPath: string, content: string): void {
-    this.scanRegexMatches(
-      content,
-      BINARY_SEAT_BRANCH_REGEX,
-      relPath,
-      'battle-multi-seat-hardcoding',
-      ['seat-ok'],
-      `Binary seat hardcoding ('p1' ? 'p2' : 'p1') detected. Mandatory 4-Seat Generic Compatibility requires dynamic seat helpers.`
-    );
+    const lines = content.split(/\r?\n/);
+    for (let i = 0; i < lines.length; i++) {
+      const lineContent = lines[i];
+      if (lineContent === undefined || /\/\/\s*(?:seat-ok)\b/.test(lineContent)) {
+        continue;
+      }
+      if (BINARY_SEAT_BRANCH_REGEX.test(lineContent)) {
+        this.addViolation({
+          ruleId: 'battle-multi-seat-hardcoding',
+          severity: 'error',
+          file: relPath,
+          line: i + 1,
+          message: `Binary seat hardcoding ('p1' ? 'p2' : 'p1') detected. Mandatory 4-Seat Generic Compatibility requires dynamic seat helpers.`,
+          context: lineContent.trim()
+        });
+      }
+    }
   }
 }
 
 // Standalone execution support
-if (
-  process.argv[1] &&
-  import.meta.filename &&
-  path.basename(process.argv[1]) === path.basename(import.meta.filename)
-) {
-  await BaseAuditor.runCli(new CombatInvariantsAuditor());
-}
+await BaseAuditor.runCliIfMain(import.meta.url, new CombatInvariantsAuditor());

@@ -11,10 +11,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
-import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
 import { generateRouteLedges } from '../../logic/map/routeLedgeEngine.ts';
+import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
 
 describe('routeLedgeEngine (Phase 4)', () => {
   const continent = generateContinentMap({

@@ -1,10 +1,12 @@
-import { describe, it, expect } from 'vitest';
 import path from 'node:path';
+
 import sharp from 'sharp';
+import { describe, it, expect } from 'vitest';
+
+import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
-import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 
 describe('Urban Boundary Curbs & Asset Integrity (Phase 2)', () => {
   it('guarantees poke_fence_picket.png has 100% alpha transparency (no baked-in green background)', async () => {

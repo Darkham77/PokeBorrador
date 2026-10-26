@@ -12,7 +12,7 @@ export interface MinigameStateCarrier {
  */
 export function isBattleMinigame(state: MinigameStateCarrier | null | undefined): boolean {
   if (!state) return false;
-  return state.minigame != null;
+  return state.minigame !== null && state.minigame !== undefined;
 }
 
 /**

@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { useEventStore } from '@/stores/events';
-import { useGameStore } from '@/stores/game';
-import { useModalStore } from '@/stores/modals';
-import { useUIStore } from '@/stores/ui';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type { CompetitionParticipant } from '@/types/system/stores';
+
+import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import {
   resolveSubCompetitionDirection,
   getSubCompTitle,
@@ -16,12 +12,18 @@ import {
   type SubCompetitionConfig,
   type ResolvedSubCompetition
 } from '@/logic/events/eventEngine';
-import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getServerInstant } from '@/logic/utils/timeUtils';
-import EventCategorySpeciesTabs from './EventCategorySpeciesTabs.vue';
-import EventCategorySlotChip from './EventCategorySlotChip.vue';
+import { useEventStore } from '@/stores/events';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { CompetitionParticipant, CompetitionEntry } from '@/types/system/stores';
+
 import type { SpeciesTabItem } from './eventCardTypes';
+import EventCategorySlotChip from './EventCategorySlotChip.vue';
+import EventCategorySpeciesTabs from './EventCategorySpeciesTabs.vue';
 
 interface Props {
   event: GameEvent;
@@ -39,7 +41,7 @@ const gameStore = useGameStore();
 const modalStore = useModalStore();
 const uiStore = useUIStore();
 
-const getEntryForCategory = (catId: string) => {
+const getEntryForCategory = (catId: string): CompetitionEntry | undefined => {
   return (
     eventStore.userEntries[`${props.event.id}:${catId}`] ||
     (catId === 'ivs' ? eventStore.userEntries[props.event.id] : undefined)
@@ -101,7 +103,7 @@ const getParticipantForCategory = (sub: SubCompetitionConfig): CompetitionPartic
   return null;
 };
 
-const openParticipationModal = (sub: ResolvedSubCompetition | SubCompetitionConfig) => {
+const openParticipationModal = (sub: ResolvedSubCompetition | SubCompetitionConfig): void => {
   const targetSp = 'targetSpecies' in sub && sub.targetSpecies ? sub.targetSpecies : null;
   const allowedSpecies = targetSp
     ? [targetSp]
@@ -158,7 +160,7 @@ const openParticipationModal = (sub: ResolvedSubCompetition | SubCompetitionConf
   });
 };
 
-const handleSlotChipClick = (sub: ResolvedSubCompetition | SubCompetitionConfig) => {
+const handleSlotChipClick = (sub: ResolvedSubCompetition | SubCompetitionConfig): void => {
   const participant = getParticipantForCategory(sub);
   if (participant) {
     modalStore.open('EventSlotAction', {
@@ -179,7 +181,7 @@ const handleSlotChipClick = (sub: ResolvedSubCompetition | SubCompetitionConfig)
 
 const isAutoFilling = ref(false);
 
-const handleAutoFill = async () => {
+const handleAutoFill = async (): Promise<void> => {
   if (isAutoFilling.value) return;
   isAutoFilling.value = true;
   try {
@@ -189,7 +191,7 @@ const handleAutoFill = async () => {
     } else {
       uiStore.notify('No hay mejoras disponibles para inscribir automáticamente.', 'ℹ️');
     }
-  } catch (_err) {
+  } catch {
     uiStore.notify('Error al auto-rellenar inscripciones.', '❌');
   } finally {
     isAutoFilling.value = false;

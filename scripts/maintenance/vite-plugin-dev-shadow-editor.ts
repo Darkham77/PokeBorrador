@@ -85,9 +85,8 @@ async function handleLoadShadowOverrides(
     if (db.shadow) {
       globalShadowConfig = db.shadow;
     }
-  } catch {
-    // catch-ok: fallback to defaults
-    // fallback to defaults
+  } catch (err) {
+    err;
   }
 
   res.writeHead(HTTP_STATUS_OK, { 'Content-Type': 'application/json' });

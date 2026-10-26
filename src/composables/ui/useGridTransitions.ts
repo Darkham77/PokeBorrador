@@ -1,5 +1,5 @@
-import { toValue, type MaybeRefOrGetter } from 'vue';
 import { gsap } from 'gsap';
+import { toValue, type MaybeRefOrGetter } from 'vue';
 
 const ENTRY_OFFSET_Y_PX = 10;
 const ENTER_DURATION_SEC = 0.25;
@@ -10,8 +10,12 @@ const ENTER_DURATION_SEC = 0.25;
  *
  * @param suppressAnimation Reactive reference or getter to skip animations (e.g. during tab switches)
  */
-export function useGridTransitions(suppressAnimation: MaybeRefOrGetter<boolean>) {
-  const onBeforeEnter = (el: Element) => {
+export function useGridTransitions(suppressAnimation: MaybeRefOrGetter<boolean>): {
+  onBeforeEnter: (el: Element) => void;
+  onEnter: (el: Element, done: () => void) => void;
+  onLeave: (el: Element, done: () => void) => void;
+} {
+  const onBeforeEnter = (el: Element): void => {
     if (toValue(suppressAnimation)) return;
     const item = el as HTMLElement;
     gsap.set(item, {
@@ -21,7 +25,7 @@ export function useGridTransitions(suppressAnimation: MaybeRefOrGetter<boolean>)
     });
   };
 
-  const onEnter = (el: Element, done: () => void) => {
+  const onEnter = (el: Element, done: () => void): void => {
     if (toValue(suppressAnimation)) {
       done();
       return;
@@ -37,7 +41,7 @@ export function useGridTransitions(suppressAnimation: MaybeRefOrGetter<boolean>)
     });
   };
 
-  const onLeave = (el: Element, done: () => void) => {
+  const onLeave = (el: Element, done: () => void): void => {
     if (toValue(suppressAnimation)) {
       done();
       return;

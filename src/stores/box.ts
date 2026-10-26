@@ -1,10 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { useGameStore } from '@/stores/game.ts';
-import { calculateRocketSellPrice as calculatePrice } from '@/logic/pokemon/pokemonUtils';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
-import { usePlayerClassStore } from '@/stores/player/playerClass.ts';
+
 import {
   BLACK_MARKET_CRIMINALITY_PER_SALE,
   BOX_BASE_BUY_COST,
@@ -12,6 +8,11 @@ import {
   POKEMON_BOX_SLOT_CAPACITY
 } from '@/logic/constants/gameplay';
 import { isPokemonBusy } from '@/logic/constants/tags';
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
+import { calculateRocketSellPrice as calculatePrice } from '@/logic/pokemon/pokemonUtils';
+import { useGameStore } from '@/stores/game.ts';
+import { usePlayerClassStore } from '@/stores/player/playerClass.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export const useBoxStore = defineStore('box', () => {
   const gameStore = useGameStore();
@@ -24,11 +25,11 @@ export const useBoxStore = defineStore('box', () => {
   const boxRocketSelected = ref<number[]>([]); // Indices
 
   // --- ACTIONS ---
-  function switchBox(index: number) {
+  function switchBox(index: number): void {
     currentBoxIndex.value = index;
   }
 
-  function toggleBoxReleaseMode() {
+  function toggleBoxReleaseMode(): void {
     boxReleaseMode.value = !boxReleaseMode.value;
     boxReleaseSelected.value = [];
     if (boxReleaseMode.value) {
@@ -37,7 +38,7 @@ export const useBoxStore = defineStore('box', () => {
     }
   }
 
-  function toggleBoxReleaseSelect(index: number) {
+  function toggleBoxReleaseSelect(index: number): void {
     const p = gameStore.state.box[index];
     if (p && isPokemonBusy(p)) return;
 
@@ -49,7 +50,7 @@ export const useBoxStore = defineStore('box', () => {
     }
   }
 
-  function doBoxRelease() {
+  function doBoxRelease(): string[] {
     const indices = boxReleaseSelected.value.toSorted((a, b) => b - a);
     const releasedNames: string[] = []; // no-domain: Non-domain utility collection or data structure
 
@@ -70,11 +71,11 @@ export const useBoxStore = defineStore('box', () => {
     boxReleaseMode.value = false;
     boxReleaseSelected.value = [];
     gameStore.autoFillPvpTeam();
-    void gameStore.scheduleSave();
+    gameStore.scheduleSave();
     return releasedNames;
   }
 
-  function toggleBoxRocketMode() {
+  function toggleBoxRocketMode(): void {
     if (gameStore.state.playerClass !== 'rocket') return;
     boxRocketMode.value = !boxRocketMode.value;
     boxRocketSelected.value = [];
@@ -84,7 +85,7 @@ export const useBoxStore = defineStore('box', () => {
     }
   }
 
-  function toggleBoxRocketSelect(index: number) {
+  function toggleBoxRocketSelect(index: number): void {
     const p = gameStore.state.box[index];
     if (!p || isPokemonBusy(p)) return;
     if (p.isIllegal) return;
@@ -103,7 +104,7 @@ export const useBoxStore = defineStore('box', () => {
     }
   }
 
-  function getRocketSellValue() {
+  function getRocketSellValue(): number {
     let total = 0;
     boxRocketSelected.value.forEach((i) => {
       const p = gameStore.state.box[i];
@@ -113,7 +114,7 @@ export const useBoxStore = defineStore('box', () => {
     return total;
   }
 
-  function doBoxRocketSell() {
+  function doBoxRocketSell(): { value: number; count: number } {
     const value = getRocketSellValue();
     const indices = boxRocketSelected.value.toSorted((a, b) => b - a);
     let soldCount = 0;
@@ -142,11 +143,14 @@ export const useBoxStore = defineStore('box', () => {
     boxRocketMode.value = false;
     boxRocketSelected.value = [];
     gameStore.autoFillPvpTeam();
-    void gameStore.scheduleSave();
+    gameStore.scheduleSave();
     return { value, count: soldCount };
   }
 
-  function movePokemonToBox(boxIndex: number, targetBoxIndex: number) {
+  function movePokemonToBox(
+    boxIndex: number,
+    targetBoxIndex: number
+  ): { success: boolean; msg: string } {
     const p = gameStore.state.box[boxIndex];
     if (!p) return { success: false, msg: 'Pokémon no encontrado.' };
 
@@ -160,22 +164,22 @@ export const useBoxStore = defineStore('box', () => {
 
     gameStore.state.box.splice(targetStart, 0, p);
 
-    void gameStore.scheduleSave();
+    gameStore.scheduleSave();
     return { success: true, msg: `¡${p.name} movido a la Caja ${targetBoxIndex + 1}!` };
   }
 
-  function togglePokeTag(boxIndex: number, tag: string) {
+  function togglePokeTag(boxIndex: number, tag: string): void {
     const p = gameStore.state.box[boxIndex];
     if (!p) return;
     if (!p.tags) p.tags = [];
     const idx = p.tags.indexOf(tag);
     if (idx > -1) p.tags.splice(idx, 1);
     else p.tags.push(tag);
-    void gameStore.scheduleSave();
+    gameStore.scheduleSave();
   }
 
   // Helpers
-  function returnHeldItem(pokemon: Pokemon) {
+  function returnHeldItem(pokemon: Pokemon): void {
     if (!pokemon || !pokemon.heldItem) return;
     const item = pokemon.heldItem;
     const inv = gameStore.state.inventory;
@@ -183,7 +187,7 @@ export const useBoxStore = defineStore('box', () => {
     pokemon.heldItem = null;
   }
 
-  function moveBoxToTeam(boxIndex: number) {
+  function moveBoxToTeam(boxIndex: number): { success: boolean; msg: string } {
     const boxPoke = gameStore.state.box[boxIndex];
     if (!boxPoke) return { success: false, msg: 'Pokémon no encontrado.' };
     if (boxPoke.isIllegal)
@@ -209,11 +213,11 @@ export const useBoxStore = defineStore('box', () => {
     gameStore.state.box.splice(boxIndex, 1);
     gameStore.state.team.push(boxPoke);
     gameStore.autoFillPvpTeam();
-    void gameStore.scheduleSave();
+    gameStore.scheduleSave();
     return { success: true, msg: `${boxPoke.name} se unió al equipo.` };
   }
 
-  function swapBoxWithTeam(boxIndex: number, teamIndex: number) {
+  function swapBoxWithTeam(boxIndex: number, teamIndex: number): { success: boolean; msg: string } {
     const boxPoke = gameStore.state.box[boxIndex];
     const teamPoke = gameStore.state.team[teamIndex];
     if (!boxPoke || !teamPoke) return { success: false, msg: 'Pokémon no encontrado.' };
@@ -239,25 +243,27 @@ export const useBoxStore = defineStore('box', () => {
 
     gameStore.state.box.splice(boxIndex, 0, swapped);
     gameStore.autoFillPvpTeam();
-    void gameStore.scheduleSave();
+    gameStore.scheduleSave();
     return { success: true, msg: 'Intercambio realizado.' };
   }
 
-  function getBoxBuyCost() {
+  function getBoxBuyCost(): number {
     const count = gameStore.state.boxCount || 4;
     if (count < 4) return BOX_BASE_BUY_COST;
     if (count === 4) return BOX_BASE_BUY_COST;
     if (count === 5) return BOX_ADVANCED_BUY_COST;
-    return BOX_ADVANCED_BUY_COST * Math.pow(2, count - 5);
+    return BOX_ADVANCED_BUY_COST * 2 ** (count - 5);
   }
 
-  function buyNewBox() {
+  function buyNewBox():
+    | { success: boolean; msg: string; boxNum?: undefined }
+    | { success: boolean; boxNum: number; msg?: undefined } {
     const cost = getBoxBuyCost();
     if (gameStore.state.money < cost) return { success: false, msg: 'Dinero insuficiente.' };
 
     gameStore.state.money -= cost;
     gameStore.state.boxCount = (gameStore.state.boxCount || 4) + 1;
-    void gameStore.scheduleSave();
+    gameStore.scheduleSave();
     return { success: true, boxNum: gameStore.state.boxCount };
   }
 

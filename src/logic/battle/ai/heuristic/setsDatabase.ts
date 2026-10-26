@@ -5,6 +5,7 @@
 // ============================================================
 
 import { toID } from '@/logic/utils/strings.ts';
+
 import type { RandomBattleSetEntry } from './types.ts';
 
 interface RawEntry {
@@ -25,11 +26,11 @@ for (const entry of entries) {
 }
 
 export class SetsDatabase {
-  getSets(species: string): RandomBattleSetEntry[] {
+  public getSets(species: string): RandomBattleSetEntry[] {
     return DB.get(toID(species)) ?? [];
   }
 
-  hasData(species: string): boolean {
+  public hasData(species: string): boolean {
     return DB.has(toID(species));
   }
 }

@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { BattleStages, BattleSeatSpecialState } from '@/types/battle/battle';
-import VirtualEntity from './VirtualEntity.vue';
+
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
+import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
+import type { BattleStages, BattleSeatSpecialState } from '@/types/battle/battle';
+
 import { computeCombatantVolatiles } from './combatantVolatilesHelper.ts';
-import {
-  useCombatantVisualSprite,
-  type CombatantVisualSpriteProps
-} from './useCombatantVisualSprite.ts';
 import { resolveCombatantFeetPoints } from './helpers/combatantFeetHelper.ts';
 import {
   DEFAULT_FX_RADIUS_PX,
@@ -15,7 +13,11 @@ import {
   FX_RADIUS_BOUND_MAX,
   FX_RADIUS_MULTIPLIER
 } from './useBattleCombatantState.ts';
-import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
+import {
+  useCombatantVisualSprite,
+  type CombatantVisualSpriteProps
+} from './useCombatantVisualSprite.ts';
+import VirtualEntity from './VirtualEntity.vue';
 
 const DEFAULT_GROUND_LINE_FALLBACK_PERCENT = '75%';
 const BASE_SIZE_SCALE_DIVISOR = 100;

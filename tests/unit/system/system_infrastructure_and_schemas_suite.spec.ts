@@ -1,3 +1,4 @@
+import { setActivePinia, createPinia } from 'pinia';
 /**
  * tests/unit/system/system_infrastructure_and_schemas_suite.spec.ts
  * Cohesive domain suite consolidating Database Isolation, Server Infrastructure,
@@ -5,18 +6,12 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
-import { createTestDBRouter, cleanupTestDB } from '../../dbTestHelper.ts';
-import { executeAtomicSaveTransaction, queryLocal } from '@/logic/db/sqliteEngine';
+
 import { OFFICIAL_SERVERS, DEFAULT_SERVER } from '@/data/system/official_servers';
-import { getFriendlyErrorMessage } from '@/logic/utils/friendlyErrors';
+import { executeAtomicSaveTransaction, queryLocal } from '@/logic/db/sqliteEngine';
 import { switchServer, supabase } from '@/logic/db/supabase';
-import { setupLocalStorageMock } from './localStorageMock.ts';
-import { useDaycareMissionsStore } from '@/stores/daycareMissions';
-import { useGameStore } from '@/stores/game';
+import { getFriendlyErrorMessage } from '@/logic/utils/friendlyErrors';
 import { logger } from '@/logic/utils/logger';
-import { INITIAL_STATE } from '@/stores/gameInitialState';
-import type { DaycareMission } from '@/types/breeding/breeding';
 import {
   validateUserProfile,
   validateNetworkAction,
@@ -29,6 +24,13 @@ import {
   validateAuthPasswordReset,
   validateSaveData
 } from '@/logic/validation/schemas';
+import { useDaycareMissionsStore } from '@/stores/daycareMissions';
+import { useGameStore } from '@/stores/game';
+import { INITIAL_STATE } from '@/stores/gameInitialState';
+import type { DaycareMission } from '@/types/breeding/breeding';
+
+import { createTestDBRouter, cleanupTestDB } from '../../dbTestHelper.ts';
+import { setupLocalStorageMock } from './localStorageMock.ts';
 
 setupLocalStorageMock();
 

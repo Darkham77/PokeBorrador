@@ -1,7 +1,7 @@
 import { getItemById } from '@/data/inventory/items';
+import type { MarketListing } from '@/logic/economy/market';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import type { ClaimItem } from '@/types/system/game';
-import type { MarketListing } from '@/logic/economy/market';
 
 export interface PokemonAssetData {
   readonly id: number;

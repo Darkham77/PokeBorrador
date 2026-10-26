@@ -1,9 +1,8 @@
+import { DEFAULT_PLAYER_CLASS } from '@/data/player/playerClasses';
 import { BATTLE_CODE_REGEX } from '@/logic/constants/gameplay';
 import { formatChatTimestamp } from '@/logic/utils/timeUtils';
-import type { ChatMessage } from '@/stores/social/chatPrivate';
 import type { ProfileCacheItem } from '@/stores/social/chatCosmetics';
-
-import { DEFAULT_PLAYER_CLASS } from '@/data/player/playerClasses';
+import type { ChatMessage } from '@/stores/social/chatPrivate';
 import { DEFAULT_GENDER, DEFAULT_TRAINER_LEVEL, DEFAULT_TRAINER_NAME } from '@/types/system/game';
 
 export const GLOBAL_CHAT_MIN_LEVEL = 10 as const;

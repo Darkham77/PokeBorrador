@@ -1,19 +1,21 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { Dex } from '@pkmn/sim';
-import { validateSaveData } from '../../../src/logic/validation/schemas.ts';
+import { describe, it } from 'vite-plus/test';
+
+import { upgradeBackup } from '../../../scripts/database/upgrade_backup.ts';
 import { isNatureId } from '../../../src/data/battle/natures.ts';
+import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
 import {
   isEventActiveNow,
   type Event as GameEvent
 } from '../../../src/logic/events/eventEngine.ts';
 import { getUpcomingEventOccurrences } from '../../../src/logic/events/eventSchedules.ts';
-import type { GameState } from '../../../src/types/system/game.ts';
+import { validateSaveData } from '../../../src/logic/validation/schemas.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
-import { upgradeBackup } from '../../../scripts/database/upgrade_backup.ts';
-import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
+import type { GameState } from '../../../src/types/system/game.ts';
 
 interface UpgradedBackupObject {
   metadata: {
@@ -36,7 +38,7 @@ function verifyPhysicalMigrationsRegistered(): void {
     );
 
   for (const physicalFile of physicalSqlFiles) {
-    const migrationId = physicalFile.replace(/\.sql$/, '');
+    const migrationId = path.basename(physicalFile, '.sql');
     const registered = DATABASE_MIGRATIONS.some((m) => m.id === migrationId);
     assert.ok(
       registered,
@@ -340,5 +342,5 @@ describe('Real Backup Upgrade Pipeline & Dynamic Table Sanitization Test', () =>
     } catch {
       // ignore
     }
-  }, 300000);
+  });
 });

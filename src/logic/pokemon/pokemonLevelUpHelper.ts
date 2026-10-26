@@ -1,6 +1,7 @@
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+
 import { getExpNeededPure } from './statsMath.ts';
 
 export function levelUpPokemon(p: Pokemon, recalcStatsFn: (p: Pokemon) => void): Move[] | null {
@@ -31,7 +32,7 @@ export function levelUpPokemon(p: Pokemon, recalcStatsFn: (p: Pokemon) => void):
         if (!m.id)
           throw new Error(`[levelUpPokemon] El movimiento en el learnset no tiene un ID válido.`);
         // Check if already knows the move by ID
-        if (!p.moves.find((em) => em && em.id === m.id)) {
+        if (!p.moves.some((em) => em && em.id === m.id)) {
           const moveData = pokemonDataProvider.getMoveData(m.id);
           if (!moveData)
             throw new Error(

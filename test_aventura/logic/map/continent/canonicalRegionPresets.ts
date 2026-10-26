@@ -8,28 +8,40 @@
  * autotiled coastlines/mountains, and full GBA urban layouts.
  */
 
+import {
+  KANTO_TERRAIN_CONFIG,
+  JOHTO_TERRAIN_CONFIG,
+  ROUTE_WAYPOINTS_CONFIG
+} from '../../../config/canonicalRegionTerrainConfig.ts';
+import {
+  KANTO_BLUEPRINTS,
+  JOHTO_BLUEPRINTS,
+  KANTO_ROUTES,
+  JOHTO_ROUTES,
+  type CanonicalPresetId
+} from '../../../data/map/canonicalRegionData.ts';
+import type { POINode, RouteEdge, RouteWaypoint } from '../../../types/map/poiTypes.ts';
+import { generateSettlementLayout } from '../cityLayoutEngine.ts';
 import type { ContinentMapResult, ContinentCellDetails } from '../continentGenerator.ts';
+import {
+  buildZeroCopyPreviewBuffer,
+  type RegionalGenerationPipelineResult
+} from '../continentGenerator.worker.ts';
+import { clusterMountainMassifs } from '../geologicalClusterEngine.ts';
+import { resolveMacroBiomeAutotile } from '../macroBiomeAutotileEngine.ts';
+import { synthesizeMacroBiomes } from '../macroBiomeSynthesizer.ts';
+import { resolveMountainMapGrid, type MountainStairLocation } from '../mountainAutotileEngine.ts';
+import { SimplexNoise, fbm2D } from '../noise/simplexNoise.ts';
+import { stampPortDockPier } from '../portDockPierEngine.ts';
+import type { ResolvedRouteNetworkResult } from '../routeNetworkEngine.ts';
+import { findPathAStar, computeOceanGrid } from '../routePathfinding.ts';
+import { computeTransitableGrid } from '../transitableGridEngine.ts';
 import {
   resolveWaterCoastGrid,
   type WaterTerrainKind,
   type WaterTerrainMatrix
 } from '../waterAutotileEngine.ts';
-import {
-  resolveMountainMapGrid,
-  type MountainPalette,
-  type MountainStairLocation
-} from '../mountainAutotileEngine.ts';
-import { clusterMountainMassifs } from '../geologicalClusterEngine.ts';
-import { synthesizeMacroBiomes } from '../macroBiomeSynthesizer.ts';
-import { resolveMacroBiomeAutotile } from '../macroBiomeAutotileEngine.ts';
-import { generateSettlementLayout } from '../cityLayoutEngine.ts';
-import { computeTransitableGrid } from '../transitableGridEngine.ts';
 import { generateWildernessLayer } from '../wildernessVegetationEngine.ts';
-import {
-  buildZeroCopyPreviewBuffer,
-  type RegionalGenerationPipelineResult
-} from '../continentGenerator.worker.ts';
-import type { POINode, RouteEdge, RouteWaypoint } from '../../../types/map/poiTypes.ts';
 import {
   sculptOrganicIsland,
   sculptArchipelagoChain,
@@ -41,22 +53,6 @@ import {
   carveRiverSystem,
   stampBridgesOnWaterIntersections
 } from './riverHydrographyEngine.ts';
-import { findPathAStar, computeOceanGrid } from '../routePathfinding.ts';
-import { SimplexNoise, fbm2D } from '../noise/simplexNoise.ts';
-import type { ResolvedRouteNetworkResult } from '../routeNetworkEngine.ts';
-import { stampPortDockPier } from '../portDockPierEngine.ts';
-import {
-  KANTO_BLUEPRINTS,
-  JOHTO_BLUEPRINTS,
-  KANTO_ROUTES,
-  JOHTO_ROUTES,
-  type CanonicalPresetId
-} from '../../../data/map/canonicalRegionData.ts';
-import {
-  KANTO_TERRAIN_CONFIG,
-  JOHTO_TERRAIN_CONFIG,
-  ROUTE_WAYPOINTS_CONFIG
-} from '../../../config/canonicalRegionTerrainConfig.ts';
 
 export type { CanonicalPresetId };
 
@@ -575,7 +571,7 @@ function sculptKantoTerrain(
     }
   }
 
-  return { terrainMatrix: terrain as WaterTerrainMatrix, heightmap };
+  return { terrainMatrix: terrain, heightmap };
 }
 
 // ---------------------------------------------------------------------------
@@ -674,12 +670,55 @@ function sculptJohtoTerrain(
     }
   }
 
-  return { terrainMatrix: terrain as WaterTerrainMatrix, heightmap };
+  return { terrainMatrix: terrain, heightmap };
 }
 
 // ---------------------------------------------------------------------------
 // 4. Master Canonical Region Pipeline Builder
 // ---------------------------------------------------------------------------
+
+function stampPathGrid2x2(
+  cx: number,
+  cy: number,
+  gridW: number,
+  gridH: number,
+  pathGrid: boolean[][]
+): void {
+  for (let py = cy; py <= cy + 1; py++) {
+    if (py < 0 || py >= gridH) continue;
+    for (let px = cx; px <= cx + 1; px++) {
+      if (px >= 0 && px < gridW) pathGrid[py]![px] = true;
+    }
+  }
+}
+
+function stampWaypointsPath(
+  waypoints: readonly { readonly x: number; readonly y: number }[],
+  gridW: number,
+  gridH: number,
+  pathGrid: boolean[][]
+): void {
+  for (let i = 0; i < waypoints.length; i++) {
+    const wp = waypoints[i]!;
+    stampPathGrid2x2(wp.x, wp.y, gridW, gridH, pathGrid);
+
+    if (i < waypoints.length - 1) {
+      const nextWp = waypoints[i + 1]!;
+      let curX = wp.x;
+      let curY = wp.y;
+      const stepX = nextWp.x >= curX ? 1 : -1;
+      while (curX !== nextWp.x) {
+        stampPathGrid2x2(curX, curY, gridW, gridH, pathGrid);
+        curX += stepX;
+      }
+      const stepY = nextWp.y >= curY ? 1 : -1;
+      while (curY !== nextWp.y) {
+        stampPathGrid2x2(curX, curY, gridW, gridH, pathGrid);
+        curY += stepY;
+      }
+    }
+  }
+}
 
 export function buildCanonicalRegionMap(
   presetId: CanonicalPresetId,
@@ -760,7 +799,7 @@ export function buildCanonicalRegionMap(
         terrain,
         elevation: elev,
         macroBiome: macroBiomes.biomeGrid[y]?.[x],
-        mountainPalette: 'brown' as MountainPalette,
+        mountainPalette: 'brown',
         waterRole: waterCell?.role,
         mountainRole: mtnCell?.role,
         isStair: false,
@@ -984,40 +1023,7 @@ export function buildCanonicalRegionMap(
     }
 
     if (!rb.isWaterCrossing && rb.id !== 'kanto_victory_road') {
-      for (let i = 0; i < waypoints.length; i++) {
-        const wp = waypoints[i]!;
-        for (let py = wp.y; py <= wp.y + 1; py++) {
-          for (let px = wp.x; px <= wp.x + 1; px++) {
-            if (py >= 0 && py < H && px >= 0 && px < W) {
-              pathGrid[py]![px] = true;
-            }
-          }
-        }
-        const stamp2x2 = (cx: number, cy: number): void => {
-          for (let py = cy; py <= cy + 1; py++) {
-            if (py < 0 || py >= H) continue;
-            for (let px = cx; px <= cx + 1; px++) {
-              if (px >= 0 && px < W) pathGrid[py]![px] = true;
-            }
-          }
-        };
-
-        if (i < waypoints.length - 1) {
-          const nextWp = waypoints[i + 1]!;
-          let curX = wp.x;
-          let curY = wp.y;
-          const stepX = nextWp.x >= curX ? 1 : -1;
-          while (curX !== nextWp.x) {
-            stamp2x2(curX, curY);
-            curX += stepX;
-          }
-          const stepY = nextWp.y >= curY ? 1 : -1;
-          while (curY !== nextWp.y) {
-            stamp2x2(curX, curY);
-            curY += stepY;
-          }
-        }
-      }
+      stampWaypointsPath(waypoints, W, H, pathGrid);
     }
 
     const dist = waypoints.length > 1 ? waypoints.length : Math.hypot(endX - startX, endY - startY);

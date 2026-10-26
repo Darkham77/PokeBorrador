@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import RouteSpawnsPokemonRow from './RouteSpawnsPokemonRow.vue';
-import type { RouteSpawnMappedItem } from '@/logic/utils/routeSpawnHelpers';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { RouteSpawnMappedItem } from '@/logic/utils/routeSpawnHelpers';
+
+import RouteSpawnsPokemonRow from './RouteSpawnsPokemonRow.vue';
 
 interface Props {
   spawnItems: RouteSpawnMappedItem[];

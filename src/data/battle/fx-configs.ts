@@ -4,6 +4,9 @@
  * 1:1 MIGRATION FROM PVSPRITEFX.VUE
  */
 
+import type { DisplayText } from '@francogp/auditor';
+import { POKEMON_STATUSES } from '@/types/pokemon/pokemon';
+
 export interface ParticleArea {
   x: [number, number];
   y?: [number, number];
@@ -14,7 +17,7 @@ export interface WobbleConfig {
   rotation: number;
   duration: number;
   yoyo?: boolean;
-  ease?: string; // domain-ok: Open dynamic text or non-domain string payload
+  ease?: DisplayText;
 }
 
 export type ParticleShape = 'circle' | 'rect';
@@ -54,7 +57,7 @@ const SHINY_BATTLE_MULT = 0.45 as const;
 const BATTLE_AR_DIVISOR = 1.25 as const;
 const BASE_AR_SCALE_NORM = 40 as const;
 
-const FIELD_EFFECT_KEYS_SET: ReadonlySet<string> = new Set([
+const FIELD_EFFECT_KEY_VALUES = [
   'reflect',
   'lightscreen',
   'safeguard',
@@ -62,30 +65,48 @@ const FIELD_EFFECT_KEYS_SET: ReadonlySet<string> = new Set([
   'spikes',
   'stealthrock',
   'toxicspikes'
-]); // runtime-set: Fast O(1) membership lookup set
-const FEET_EFFECTS_SET: ReadonlySet<string> = new Set([
+] as const;
+const FIELD_EFFECT_KEYS_SET: ReadonlySet<string> = new Set<string>(
+  FIELD_EFFECT_KEY_VALUES
+);
+
+const FEET_EFFECT_VALUES = [
   'seed',
   'trapped',
   'bound',
   'ingrain',
   'seeded',
   'ingrained'
-]); // runtime-set: Fast O(1) membership lookup set
-const HEAD_EFFECTS_SET: ReadonlySet<string> = new Set([
+] as const;
+const FEET_EFFECTS_SET: ReadonlySet<string> = new Set<string>(
+  FEET_EFFECT_VALUES
+);
+
+const HEAD_EFFECT_VALUES = [
   'sleep',
   'confusion',
   'attract',
   'confused',
   'slp',
   'perishsong'
-]); // runtime-set: Fast O(1) membership lookup set
-const PRIMARY_STATUS_SET: ReadonlySet<string> = new Set(['brn', 'frz', 'slp', 'par', 'psn', 'tox']); // runtime-set: Fast O(1) membership lookup set
-const TACTICAL_STATUS_SET: ReadonlySet<string> = new Set([
+] as const;
+const HEAD_EFFECTS_SET: ReadonlySet<string> = new Set<string>(
+  HEAD_EFFECT_VALUES
+);
+
+const PRIMARY_STATUS_SET: ReadonlySet<string> = new Set<string>(
+  POKEMON_STATUSES
+);
+
+const TACTICAL_STATUS_VALUES = [
   'protected',
   'enduring',
   'focus',
   'lockon'
-]); // runtime-set: Fast O(1) membership lookup set
+] as const;
+const TACTICAL_STATUS_SET: ReadonlySet<string> = new Set<string>(
+  TACTICAL_STATUS_VALUES
+);
 
 interface StaticEffectConfig {
   mult: number;
@@ -98,8 +119,41 @@ interface StaticEffectConfig {
   targetOpacity?: number;
 }
 
-const STATIC_EFFECT_CONFIGS: Record<string, StaticEffectConfig> = {
-  // open-record: Generic key-value data dictionary container
+export type FxStatusEffect =
+  | 'brn'
+  | 'frz'
+  | 'slp'
+  | 'par'
+  | 'psn'
+  | 'tox'
+  | 'confusion'
+  | 'confused'
+  | 'taunted'
+  | 'substitute'
+  | 'flinched'
+  | 'disabled'
+  | 'encored'
+  | 'perishsong'
+  | 'attracted'
+  | 'cursed'
+  | 'seeded'
+  | 'seed'
+  | 'trapped'
+  | 'ingrained'
+  | 'protected'
+  | 'enduring'
+  | 'focus'
+  | 'lockon'
+  | 'reflect'
+  | 'safeguard'
+  | 'lightscreen'
+  | 'mist'
+  | 'spikes'
+  | 'stealthrock'
+  | 'toxicspikes'
+  | 'shiny';
+
+const STATIC_EFFECT_CONFIGS: Partial<Record<FxStatusEffect, StaticEffectConfig>> = {
   brn: {
     mult: 1.0,
     baseRange: [12, 18],
@@ -284,7 +338,7 @@ export const resolveEffectSettings = (
   const isHeadEffect = HEAD_EFFECTS_SET.has(typeKey);
 
   const scaleFactor = resolveScaleFactor(typeKey, ar, options);
-  const staticConfig = STATIC_EFFECT_CONFIGS[typeKey] ?? {
+  const staticConfig = STATIC_EFFECT_CONFIGS[typeKey as FxStatusEffect] ?? {
     ...FALLBACK_EFFECT_CONFIG,
     duration: isField ? 3.0 : 1.5
   };

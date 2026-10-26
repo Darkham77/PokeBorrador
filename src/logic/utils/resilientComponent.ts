@@ -1,7 +1,8 @@
-import { defineAsyncComponent, type AsyncComponentLoader, type Component } from 'vue';
 import { gsap } from 'gsap';
-import { gsapSleep } from '@/logic/utils/gsapHelpers.ts';
+import { defineAsyncComponent, type AsyncComponentLoader, type Component } from 'vue';
+
 import { MILLISECONDS_PER_SECOND } from '@/logic/constants/visuals';
+import { gsapSleep } from '@/logic/utils/gsapHelpers.ts';
 
 const RETRY_BACKOFF_BASE_MS = 150;
 
@@ -11,7 +12,7 @@ const RETRY_BACKOFF_BASE_MS = 150;
 export function defineResilientAsyncComponent<T extends Component = Component>(
   loader: AsyncComponentLoader<T>,
   maxRetries = 3
-) {
+): T {
   return defineAsyncComponent({
     loader,
     onError(_error, retry, fail, attempts) {

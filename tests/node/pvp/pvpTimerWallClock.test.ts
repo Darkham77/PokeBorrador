@@ -1,11 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
-import { setupTemporalMock } from '../../helpers/setupTestEnvironment.ts';
+
 import { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper';
 import {
   PVP_TURN_TIMEOUT_SEC,
   PVP_AFK_MAX_STRIKES,
   PVP_RECONNECT_WINDOW_SEC
 } from '@/types/battle/pvp';
+
+import { setupTemporalMock } from '../../helpers/setupTestEnvironment.ts';
 
 describe('PvPTimerManager Wall-Clock & Tab-Minimization Immunity - Unit Tests', () => {
   beforeEach(() => {

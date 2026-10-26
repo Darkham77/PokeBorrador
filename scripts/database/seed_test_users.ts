@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -131,7 +132,7 @@ const entrenadorBox = [
   createMockPokemon('abra', 'Abra', 'psychic', null, 5)
 ];
 
-const mockInventory: Record<string, number> = {
+const mockInventory: Record<DisplayText, number> = {
   pokeball: 99,
   greatball: TEST_INVENTORY_DEFAULT_QTY,
   ultraball: 30,
@@ -341,7 +342,7 @@ try {
   try {
     db.exec('ROLLBACK;');
   } catch {
-    void 0;
+    0;
   }
   console.error(`❌ Error during seeding: ${(err as Error).message}`);
 } finally {

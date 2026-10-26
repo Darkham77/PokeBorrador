@@ -9,15 +9,16 @@ const MILESTONE_LIST_DURATION_SEC = 0.4;
 const MILESTONE_LIST_STAGGER_SEC = 0.05;
 const MILESTONE_HOVER_DURATION_SEC = 0.2;
 const MILESTONE_SPRITE_DURATION_SEC = 0.3;
+import { gsap } from 'gsap';
 import { ref, onMounted, nextTick } from 'vue';
+
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { getItemById, requireItemId, type ItemId } from '@/data/inventory/items';
+import { RANKED_REWARD_MILESTONES, isRankedRewardMilestoneId } from '@/data/system/rankedData';
+import { Z_LAYERS } from '@/logic/constants/visuals';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { usePvPStore } from '@/stores/pvp';
 import { useUIStore } from '@/stores/ui';
-import { RANKED_REWARD_MILESTONES, isRankedRewardMilestoneId } from '@/data/system/rankedData';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { getItemById, requireItemId, type ItemId } from '@/data/inventory/items';
-import PVTooltip from '@/components/common/PVTooltip.vue';
-import { Z_LAYERS } from '@/logic/constants/visuals';
-import { gsap } from 'gsap';
 
 const pvp = usePvPStore();
 const uiStore = useUIStore();
@@ -25,13 +26,13 @@ const listRef = ref<HTMLElement | null>(null);
 const milestones = RANKED_REWARD_MILESTONES;
 const claimingMilestoneId = ref<string | null>(null);
 
-async function handleClaimMilestone(milestoneId: string) {
+async function handleClaimMilestone(milestoneId: string): Promise<void> {
   if (claimingMilestoneId.value) return;
   if (!isRankedRewardMilestoneId(milestoneId)) return;
   claimingMilestoneId.value = milestoneId;
   try {
     await pvp.claimReward(milestoneId);
-  } catch (_err) {
+  } catch {
     uiStore.notify('Error al reclamar la recompensa.', '❌');
   } finally {
     claimingMilestoneId.value = null;
@@ -42,22 +43,22 @@ onMounted(() => {
   animateList();
 });
 
-const getItemDesc = (itemId: ItemId) => {
+const getItemDesc = (itemId: ItemId): string => {
   const item = getItemById(itemId);
   return item.desc || 'Recompensa de la Arena de Batalla.';
 };
 
-const getItemSpriteUrl = (itemId: ItemId) => {
+const getItemSpriteUrl = (itemId: ItemId): string => {
   const item = getItemById(itemId);
   const slug = item.sprite || item.id;
   return getAssetUrl(ASSET_TYPES.ITEM, slug);
 };
 
-function isUnlocked(eloReq: number) {
+function isUnlocked(eloReq: number): boolean {
   return (pvp.maxElo || 0) >= eloReq;
 }
 
-function isClaimed(id: string | number) {
+function isClaimed(id: string | number): boolean {
   return (pvp.rewardsClaimed || []).includes(id.toString());
 }
 
@@ -65,7 +66,7 @@ const GSAP_EASE_OVERSHOOT_LIST = 1.15;
 const GSAP_EASE_OVERSHOOT_SPRITE = 1.275;
 
 // GSAP Stagger Entrance Animations for Milestone Cards
-const animateList = () => {
+const animateList = (): void => {
   nextTick(() => {
     if (!listRef.value) return;
     const cards = listRef.value.querySelectorAll('.milestone-card');
@@ -90,7 +91,7 @@ const animateList = () => {
 
 // ── GSAP HOVER HANDLERS ──────────────────────────────────────────────────────
 
-function handleCardEnter(e: MouseEvent, isLocked: boolean) {
+function handleCardEnter(e: MouseEvent, isLocked: boolean): void {
   if (isLocked) return;
   gsap.to(e.currentTarget, {
     x: MILESTONE_CARD_ENTER_X_PX,
@@ -101,7 +102,7 @@ function handleCardEnter(e: MouseEvent, isLocked: boolean) {
   });
 }
 
-function handleCardLeave(e: MouseEvent, isClaimed: boolean) {
+function handleCardLeave(e: MouseEvent, isClaimed: boolean): void {
   const bg = isClaimed ? 'rgba(34, 197, 94, 0.03)' : 'rgba(255, 255, 255, 0.04)';
   const border = isClaimed ? 'rgba(34, 197, 94, 0.15)' : 'rgba(255, 255, 255, 0.04)';
   gsap.to(e.currentTarget, {
@@ -113,7 +114,7 @@ function handleCardLeave(e: MouseEvent, isClaimed: boolean) {
   });
 }
 
-function handleSpriteEnter(e: MouseEvent) {
+function handleSpriteEnter(e: MouseEvent): void {
   gsap.to(e.currentTarget, {
     y: MILESTONE_SPRITE_ENTER_Y_PX,
     scale: MILESTONE_SPRITE_ENTER_SCALE,
@@ -123,7 +124,7 @@ function handleSpriteEnter(e: MouseEvent) {
   });
 }
 
-function handleSpriteLeave(e: MouseEvent) {
+function handleSpriteLeave(e: MouseEvent): void {
   gsap.to(e.currentTarget, {
     y: 0,
     scale: 1,
@@ -133,7 +134,7 @@ function handleSpriteLeave(e: MouseEvent) {
   });
 }
 
-function handlePillEnter(e: MouseEvent) {
+function handlePillEnter(e: MouseEvent): void {
   gsap.to(e.currentTarget, {
     y: MILESTONE_PILL_ENTER_Y_PX,
     backgroundColor: 'rgba(255, 255, 255, 0.07)',
@@ -145,7 +146,7 @@ function handlePillEnter(e: MouseEvent) {
   });
 }
 
-function handlePillLeave(e: MouseEvent) {
+function handlePillLeave(e: MouseEvent): void {
   gsap.to(e.currentTarget, {
     y: 0,
     backgroundColor: 'rgba(255, 255, 255, 0.03)',

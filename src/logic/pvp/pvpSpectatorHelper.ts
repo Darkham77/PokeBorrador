@@ -1,6 +1,6 @@
 import { cloneReactive } from '@/logic/utils/cloneUtils.ts';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export interface PvpSpectateSyncPayload {
   matchId: string;

@@ -1,6 +1,7 @@
 import { ref } from 'vue';
-import { safeStorage } from '@/logic/utils/storage';
+
 import { logger } from '@/logic/utils/logger';
+import { safeStorage } from '@/logic/utils/storage';
 
 export const HOME_WIDGET_IDS = [
   'pending_rewards',
@@ -74,27 +75,32 @@ function loadInitialState(): Record<HomeWidgetId, boolean> {
 
 const collapsedMap = ref<Record<HomeWidgetId, boolean>>(loadInitialState());
 
-function persistState() {
+function persistState(): void {
   safeStorage.setItem(STORAGE_KEY, JSON.stringify(collapsedMap.value));
 }
 
-export function useHomeWidgetsCollapse() {
+export function useHomeWidgetsCollapse(): {
+  isCollapsed: (id: HomeWidgetId) => boolean;
+  toggleCollapse: (id: HomeWidgetId) => void;
+  setCollapsed: (id: HomeWidgetId, value: boolean) => void;
+  resetCollapseState: () => void;
+} {
   function isCollapsed(id: HomeWidgetId): boolean {
     return collapsedMap.value[id] ?? false;
   }
 
-  function toggleCollapse(id: HomeWidgetId) {
+  function toggleCollapse(id: HomeWidgetId): void {
     const current = isCollapsed(id);
     collapsedMap.value[id] = !current;
     persistState();
   }
 
-  function setCollapsed(id: HomeWidgetId, value: boolean) {
+  function setCollapsed(id: HomeWidgetId, value: boolean): void {
     collapsedMap.value[id] = value;
     persistState();
   }
 
-  function resetCollapseState() {
+  function resetCollapseState(): void {
     collapsedMap.value = { ...DEFAULT_COLLAPSED_STATE };
     persistState();
   }

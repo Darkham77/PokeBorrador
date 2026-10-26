@@ -1,6 +1,7 @@
+import { setActivePinia, createPinia } from 'pinia';
 import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { ref } from 'vue';
-import { setActivePinia, createPinia } from 'pinia';
+
 import { useBattleHud } from '@/composables/battle/useBattleHud';
 import { useGameStore } from '@/stores/game';
 

@@ -1,7 +1,8 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleStages, LogFn } from '@/types/battle/battle';
+import type { DisplayText } from '@francogp/auditor';
 
+import type { BattleStages, LogFn } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export type MoveAction = (
   src: Pokemon,
@@ -12,7 +13,7 @@ export type MoveAction = (
   battleCtx?: BattleContext
 ) => void;
 
-export const STATUS_ACTIONS: Record<string, MoveAction> = {
+export const STATUS_ACTIONS: Record<DisplayText, MoveAction> = {
   // open-record: Status effect dispatch table indexed by move effect string
   burn: (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.status) return;

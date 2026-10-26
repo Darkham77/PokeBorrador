@@ -1,11 +1,12 @@
-import { supabase } from '@/logic/db/supabase.ts';
-import { logger } from '@/logic/utils/logger.ts';
-import { requireGenderId, type GenderId } from '@/types/system/game.ts';
-import { requireUserRole } from '@/types/auth/auth.ts';
 import type { Session } from '@supabase/supabase-js';
-import type { AuthUser } from '@/types/auth/auth';
 import gsap from 'gsap';
+
+import { supabase } from '@/logic/db/supabase.ts';
 import { gsapSleep } from '@/logic/utils/gsapHelpers.ts';
+import { logger } from '@/logic/utils/logger.ts';
+import type { AuthUser } from '@/types/auth/auth';
+import { requireUserRole } from '@/types/auth/auth.ts';
+import { requireGenderId, type GenderId } from '@/types/system/game.ts';
 
 const HTTP_STATUS_UNAUTHORIZED = 401;
 const AUTH_RETRY_DELAY_MS = 1500;

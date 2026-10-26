@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue';
-import { formatCurrency } from '@/logic/utils/formatters';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { getItemById } from '@/data/inventory/items';
-import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils.ts';
 import type { MarketListing } from '@/logic/economy/market';
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils.ts';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { formatCurrency } from '@/logic/utils/formatters';
 
 defineProps<{
   item: MarketListing;

@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/player/classMissionsData.ts
  *
@@ -482,7 +483,7 @@ export function getClassMissionDetails(
 ): ClassMissionDetails {
   if (!isMissionId(missionId)) return DEFAULT_MISSION_DETAILS;
   const classMeta = (
-    CLASS_MISSIONS_METADATA as Record<string, Record<MissionId, ClassMissionDetails>>
+    CLASS_MISSIONS_METADATA as Record<DisplayText, Record<MissionId, ClassMissionDetails>>
   )[classId]; // open-record: Generic key-value data dictionary container
   if (!classMeta) return DEFAULT_MISSION_DETAILS;
   return classMeta[missionId] || DEFAULT_MISSION_DETAILS;

@@ -15,6 +15,9 @@ const HTTP_ERROR_STATUS_THRESHOLD = 400 as const;
 const WORLD_BAKING_SETTLE_TIMEOUT_MS = 1500 as const;
 const PREFAB_THUMB_LOAD_TIMEOUT_MS = 600 as const;
 const SELECTION_CANVAS_RENDER_TIMEOUT_MS = 500 as const;
+const CONTINENT_GENERATION_TIMEOUT_MS = 20000 as const;
+const CANVAS_SAMPLE_SIZE = 50 as const;
+const CANVAS_SAMPLE_OFFSET = 0 as const;
 
 async function clickIdSafely(page: Page, id: string, description: string): Promise<boolean> {
   const locator = page.locator(`#${id}`);
@@ -120,11 +123,57 @@ async function runTestAventuraSuite(): Promise<void> {
     currentTab = 'continent';
     console.log('\n--- 🌍 [2/7] Probando pestaña: Continent Studio (#tab-continent) ---');
     await clickIdSafely(page, 'tab-continent', 'Pestaña Continent Studio');
+    await page.waitForSelector('.regional-studio-container', { timeout: SELECTOR_TIMEOUT_MS });
+
+    console.log('   ⏳ Esperando que el worker finalice la generación continental inicial (400x400)...');
+    await page.waitForFunction(
+      () => {
+        const badge = document.querySelector('#status-continent-generator');
+        return badge && !badge.classList.contains('is-loading');
+      },
+      { timeout: CONTINENT_GENERATION_TIMEOUT_MS }
+    );
+
+    const initialContinentHasContent = await page.evaluate(
+      ({ sampleSize, offset }) => {
+        const canvas = document.querySelector('#canvas-continent-terrain') as HTMLCanvasElement | null;
+        if (!canvas || canvas.width === 0 || canvas.height === 0) return false;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return false;
+        const data = ctx.getImageData(offset, offset, Math.min(canvas.width, sampleSize), Math.min(canvas.height, sampleSize)).data;
+        return data.some((byte) => byte !== 0);
+      },
+      { sampleSize: CANVAS_SAMPLE_SIZE, offset: CANVAS_SAMPLE_OFFSET }
+    );
+
+    if (!initialContinentHasContent) {
+      console.error('🚨 Canvas #canvas-continent-terrain no tiene contenido tras generación continental 400x400.');
+      issues.push({
+        type: 'pageerror',
+        message: 'Canvas #canvas-continent-terrain is empty after initial continental generation',
+        tab: 'continent'
+      });
+    } else {
+      console.log('   ✅ Canvas central de Continent Studio renderizó píxeles correctamente (400x400).');
+    }
+
     await clickIdSafely(page, 'btn-display-hybrid', 'Modo de visualización Híbrido');
     await clickIdSafely(page, 'btn-display-tiles', 'Modo de visualización Tiles GBA');
     await clickIdSafely(page, 'btn-random-seed', 'Generar semilla aleatoria');
     await clickIdSafely(page, 'btn-dim-128', 'Escala 128x128');
+
+    console.log('   ⏳ Esperando que el worker finalice la re-generación (128x128)...');
+    await page.waitForFunction(
+      () => {
+        const badge = document.querySelector('#status-continent-generator');
+        return badge && !badge.classList.contains('is-loading');
+      },
+      { timeout: CONTINENT_GENERATION_TIMEOUT_MS }
+    );
+    await page.waitForTimeout(WORLD_BAKING_SETTLE_TIMEOUT_MS);
+
     await clickIdSafely(page, 'btn-preset-kanto', 'Cargar Preset Canónico Kanto');
+    await page.waitForTimeout(WORLD_BAKING_SETTLE_TIMEOUT_MS);
     await clickIdSafely(page, 'btn-regional-center-view', 'Centrar viewport regional');
 
     // 3. Continental / Map Studio

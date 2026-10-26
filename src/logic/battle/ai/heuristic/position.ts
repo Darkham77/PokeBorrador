@@ -4,15 +4,18 @@
 // Note: BattleState.isTrapped() removed — use snapshot data only
 // ============================================================
 
+import type { SideID } from '@pkmn/sim';
+
+import { logger } from '@/logic/utils/logger';
+import type { BattleConditionKey } from '@/types/battle/battle';
+
+import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type {
   HeuristicBattleSnapshot,
   PositionEvaluation,
   WinCondition,
   HeuristicPokemonState
 } from './types.ts';
-import type { HeuristicDamageCalculator } from './damageCalculator.ts';
-import type { BattleConditionKey } from '@/types/battle/battle';
-import type { SideID } from '@pkmn/sim';
 
 const WEIGHT_POKEMON_ADVANTAGE = 0.2 as const;
 const WEIGHT_HP_ADVANTAGE = 0.15 as const;
@@ -127,8 +130,10 @@ function computeTypeMatchupAdvantage(
         ourBest,
         calc.calcDamage(myActive, oppActive, mv.id, snapshot.field).maxPercent
       );
-    } catch {
-      /* catch-ok: Hypothetical move exploration probe skip */
+    } catch (err) {
+      logger.debug('[Position] Salto de cálculo hipotético de daño', {
+        cause: err instanceof Error ? err.message : String(err)
+      });
     }
   }
   for (const mv of oppActive.knownMoves) {
@@ -137,8 +142,10 @@ function computeTypeMatchupAdvantage(
         theirBest,
         calc.calcDamage(oppActive, myActive, mv, snapshot.field).maxPercent
       );
-    } catch {
-      /* catch-ok: Hypothetical move exploration probe skip */
+    } catch (err) {
+      logger.debug('[Position] Salto de cálculo hipotético de daño', {
+        cause: err instanceof Error ? err.message : String(err)
+      });
     }
   }
   return Math.max(

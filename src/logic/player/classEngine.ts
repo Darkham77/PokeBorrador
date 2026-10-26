@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+
 /**
  * src/logic/player/classEngine.ts
  * Core engine for calculating class modifiers and mission validation.
@@ -56,10 +58,10 @@ export function getClassModifier(
   if (type === 'bcMult') return resolveBcMultiplier(m, playerClass, context.isGym);
   if (type === 'shopDiscount')
     return 'shopDiscount' in m
-      ? ((m as Record<string, number>).shopDiscount ?? DEFAULT_DISCOUNT_MODIFIER)
+      ? ((m as Record<DisplayText, number>).shopDiscount ?? DEFAULT_DISCOUNT_MODIFIER)
       : DEFAULT_DISCOUNT_MODIFIER; // open-record: Class modifier shop discount lookup
 
-  return (m as Record<string, number>)[type] ?? DEFAULT_NEUTRAL_MODIFIER; // open-record: Custom class modifier key lookup
+  return (m as Record<DisplayText, number>)[type] ?? DEFAULT_NEUTRAL_MODIFIER; // open-record: Custom class modifier key lookup
 }
 
 export const STANDARD_MISSION_COST = {
@@ -138,7 +140,7 @@ export function getMissionCostInfo(
   missionId: MissionId,
   playerClass: PlayerClassId
 ): Record<string, unknown> | null {
-  const cls = (PLAYER_CLASSES as Record<string, { id: string }>)[playerClass]; // open-record: Generic key-value data dictionary container
+  const cls = (PLAYER_CLASSES as Record<DisplayText, { id: string }>)[playerClass]; // open-record: Generic key-value data dictionary container
   if (!cls) return null;
 
   if (playerClass === 'cazabichos') {

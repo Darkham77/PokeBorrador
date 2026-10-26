@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vite-plus/test';
+
+import type { HeuristicDamageCalculator } from '@/logic/battle/ai/heuristic/damageCalculator';
 import { evaluatePosition } from '@/logic/battle/ai/heuristic/position';
 import type {
   HeuristicBattleSnapshot,
   WinCondition,
   HeuristicPokemonState
 } from '@/logic/battle/ai/heuristic/types';
-import type { HeuristicDamageCalculator } from '@/logic/battle/ai/heuristic/damageCalculator';
 
 describe('evaluatePosition', () => {
   const dummyCalc: HeuristicDamageCalculator = {

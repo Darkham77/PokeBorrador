@@ -8,14 +8,15 @@
  * Tests PostgREST upsert, RPC awarding, and results selection.
  */
 
-import { it, expect } from 'vite-plus/test';
-import { describeWithDatabase } from '../../dbTestHelper.ts';
 import { createClient } from '@supabase/supabase-js';
+import { it, expect } from 'vite-plus/test';
+
 import {
   createSignedJwt,
   POSTGREST_URL,
   SUPABASE_TEST_ANON_KEY
 } from '../../../scripts/testing/postgres_test_container.ts';
+import { describeWithDatabase } from '../../dbTestHelper.ts';
 
 describeWithDatabase('Magikarp Contest Awarding Parity', (engine) => {
   it('tests client-side upsert, rpc, and awarding via PostgREST', async () => {

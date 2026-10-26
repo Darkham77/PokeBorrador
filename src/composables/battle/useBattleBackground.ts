@@ -1,4 +1,3 @@
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import {
   MAP_ROUTE_MAPPING,
   isBattleMapAssetId,
@@ -6,6 +5,7 @@ import {
   requireMapRouteId,
   type MapRouteId
 } from '@/data/world/map-assets';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 const CYCLE_SUFFIXES = {
   // English keys
@@ -41,7 +41,13 @@ function requireBattleBackgroundCycle(value: string): BattleBackgroundCycle {
   throw new Error(`[useBattleBackground] Invalid battle background cycle: ${value}`);
 }
 
-export function useBattleBackground() {
+export function useBattleBackground(): {
+  getBackgroundUrl: (
+    locationId: BattleBackgroundLocationId,
+    cycle?: string,
+    _isFishing?: boolean
+  ) => { url: string; isBakedIn: boolean };
+} {
   /**
    * Returns the asset URL for a given location and time of day.
    * @param {BattleBackgroundLocationId} locationId
@@ -53,7 +59,7 @@ export function useBattleBackground() {
     locationId: BattleBackgroundLocationId,
     cycle = 'day',
     _isFishing = false
-  ) {
+  ): { url: string; isBakedIn: boolean } {
     const baseName = MAP_ROUTE_MAPPING[requireMapRouteId(locationId)];
 
     const suffix = CYCLE_SUFFIXES[requireBattleBackgroundCycle(cycle.toLowerCase())]; // text-ok: UI text display localization string

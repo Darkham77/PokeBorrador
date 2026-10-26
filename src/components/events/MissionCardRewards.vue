@@ -6,10 +6,11 @@
  */
 
 import { computed } from 'vue';
-import { getItemById, isItemId, type ItemId } from '@/data/inventory/items';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
+import { getItemById, isItemId, type ItemId } from '@/data/inventory/items';
 import type { DetailedMissionReward } from '@/logic/player/classMissionsData';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 interface Props {
   rewardsList?: readonly DetailedMissionReward[];

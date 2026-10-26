@@ -32,7 +32,7 @@ function playNote(
   dur: number,
   vol: number = AUDIO_DEFAULT_NOTE_VOLUME,
   type: OscillatorType = 'square'
-) {
+): void {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
 
@@ -63,7 +63,7 @@ function playGlide(
   dur: number,
   vol: number = AUDIO_DEFAULT_NOTE_VOLUME,
   type: OscillatorType = 'square'
-) {
+): void {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
 
@@ -93,7 +93,7 @@ function playNoise(
   dur: number,
   vol: number = AUDIO_DEFAULT_NOISE_VOLUME,
   filterFreq: number = AUDIO_DEFAULT_NOISE_FILTER_FREQ_HZ
-) {
+): void {
   const bufferSize = ctx.sampleRate * dur;
   const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
   const data = buffer.getChannelData(0);
@@ -123,7 +123,7 @@ function playNoise(
 /**
  * SHINY SOUND
  */
-export function playShinySound(ctx: AudioContext, dest: AudioNode | null) {
+export function playShinySound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const arpNotes = [
     AUDIO_FREQUENCIES_HZ.C5,
@@ -170,7 +170,7 @@ export function playShinySound(ctx: AudioContext, dest: AudioNode | null) {
 /**
  * RIVAL ENCOUNTER SOUND
  */
-export function playRivalEncounterSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playRivalEncounterSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const {
     GLIDE_DURATION_SEC,
@@ -212,7 +212,7 @@ export function playRivalEncounterSound(ctx: AudioContext, dest: AudioNode | nul
 /**
  * LEVEL UP SOUND
  */
-export function playLevelUpSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playLevelUpSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const notes = [
     AUDIO_FREQUENCIES_HZ.G4,
@@ -229,7 +229,7 @@ export function playLevelUpSound(ctx: AudioContext, dest: AudioNode | null) {
 /**
  * CAPTURE SUCCESS
  */
-export function playCaptureSuccessSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playCaptureSuccessSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const { NOTE_DURATION_SEC, NOTE_VOLUME, FINAL_DURATION_SEC, FINAL_VOLUME } =
     AUDIO_SOUND_PARAMS.CAPTURE_SUCCESS;
@@ -266,7 +266,7 @@ export function playCaptureSuccessSound(ctx: AudioContext, dest: AudioNode | nul
 /**
  * POKEBALL HIT/HIT ENERGY
  */
-export function playBallHitSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playBallHitSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const { NOISE_DURATION_SEC, NOISE_VOLUME, GLIDE_DURATION_SEC, GLIDE_VOLUME } =
     AUDIO_SOUND_PARAMS.BALL_HIT;
@@ -286,7 +286,7 @@ export function playBallHitSound(ctx: AudioContext, dest: AudioNode | null) {
 /**
  * POKEBALL WOBBLE SOUND
  */
-export function playWobbleSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playWobbleSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const { NOTE_DURATION_SEC, NOTE_VOLUME } = AUDIO_SOUND_PARAMS.WOBBLE;
   playNote(ctx, dest, AUDIO_FREQUENCIES_HZ.A3, t, NOTE_DURATION_SEC, NOTE_VOLUME, 'square');
@@ -295,7 +295,7 @@ export function playWobbleSound(ctx: AudioContext, dest: AudioNode | null) {
 /**
  * FAINT SOUND
  */
-export function playFaintSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playFaintSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const { GLIDE_DURATION_SEC, GLIDE_VOLUME } = AUDIO_SOUND_PARAMS.FAINT;
   playGlide(
@@ -313,7 +313,7 @@ export function playFaintSound(ctx: AudioContext, dest: AudioNode | null) {
 /**
  * EVOLUTION SOUND
  */
-export function playEvolutionSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playEvolutionSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const { STEP_INTERVAL_SEC, NOTE_DURATION_SEC, NOTE_VOLUME } = AUDIO_SOUND_PARAMS.EVOLUTION;
   for (let i = 0; i < EVOLUTION_SOUND_STEPS; i++) {
@@ -333,7 +333,7 @@ export function playEvolutionSound(ctx: AudioContext, dest: AudioNode | null) {
 /**
  * HEAL SOUND
  */
-export function playHealSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playHealSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const notes = [
     AUDIO_FREQUENCIES_HZ.G4,
@@ -351,7 +351,7 @@ export function playHealSound(ctx: AudioContext, dest: AudioNode | null) {
 /**
  * FLEE SOUND
  */
-export function playFleeSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playFleeSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const { GLIDE_DURATION_SEC, GLIDE_VOLUME } = AUDIO_SOUND_PARAMS.FLEE;
   playGlide(
@@ -369,7 +369,7 @@ export function playFleeSound(ctx: AudioContext, dest: AudioNode | null) {
 /**
  * ITEM PICKUP SOUND
  */
-export function playItemSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playItemSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const { GLIDE_DURATION_SEC, GLIDE_VOLUME } = AUDIO_SOUND_PARAMS.ITEM;
   playGlide(
@@ -387,7 +387,7 @@ export function playItemSound(ctx: AudioContext, dest: AudioNode | null) {
 /**
  * MESSAGE RECEIVED
  */
-export function playMessageReceivedSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playMessageReceivedSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const { E6_DURATION_SEC, E6_VOLUME, G6_OFFSET_SEC, G6_DURATION_SEC, G6_VOLUME } =
     AUDIO_SOUND_PARAMS.MESSAGE_RECEIVED;
@@ -406,7 +406,7 @@ export function playMessageReceivedSound(ctx: AudioContext, dest: AudioNode | nu
 /**
  * MESSAGE SENT
  */
-export function playMessageSentSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playMessageSentSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const { NOTE_DURATION_SEC, NOTE_VOLUME } = AUDIO_SOUND_PARAMS.MESSAGE_SENT;
   playNote(ctx, dest, AUDIO_FREQUENCIES_HZ.D6, t, NOTE_DURATION_SEC, NOTE_VOLUME, 'sine');
@@ -415,7 +415,7 @@ export function playMessageSentSound(ctx: AudioContext, dest: AudioNode | null) 
 /**
  * MONEY SOUND
  */
-export function playMoneySound(ctx: AudioContext, dest: AudioNode | null) {
+export function playMoneySound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const { STEP_INTERVAL_SEC, NOTE_DURATION_SEC, NOTE_VOLUME } = AUDIO_SOUND_PARAMS.MONEY;
   for (let i = 0; i < MONEY_SOUND_STEPS; i++) {
@@ -433,7 +433,7 @@ export function playMoneySound(ctx: AudioContext, dest: AudioNode | null) {
 /**
  * STATUS DAMAGE SOUND (8-bit impact)
  */
-export function playStatusDamageSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playStatusDamageSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const { NOISE_DURATION_SEC, NOISE_VOLUME, GLIDE_DURATION_SEC, GLIDE_VOLUME } =
     AUDIO_SOUND_PARAMS.STATUS_DAMAGE;
@@ -453,7 +453,7 @@ export function playStatusDamageSound(ctx: AudioContext, dest: AudioNode | null)
 /**
  * VICTORY TRAINER SOUND
  */
-export function playVictoryTrainerSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playVictoryTrainerSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const notes = [
     AUDIO_FREQUENCIES_HZ.G4,
@@ -485,7 +485,7 @@ export function playVictoryTrainerSound(ctx: AudioContext, dest: AudioNode | nul
 /**
  * DEFEAT SOUND
  */
-export function playDefeatSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playDefeatSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const notes = [AUDIO_FREQUENCIES_HZ.C5, AUDIO_FREQUENCIES_HZ.GSHARP4, AUDIO_FREQUENCIES_HZ.G4];
   const {
@@ -525,7 +525,7 @@ export function playDefeatSound(ctx: AudioContext, dest: AudioNode | null) {
 /**
  * STEAL SOUND (Retro cartoon sliding/gliding frequency)
  */
-export function playStealSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playStealSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const {
     GLIDE1_DURATION_SEC,
@@ -559,7 +559,7 @@ export function playStealSound(ctx: AudioContext, dest: AudioNode | null) {
 /**
  * SIREN SOUND (Police sirens alternating pitch)
  */
-export function playSirenSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playSirenSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const { SEGMENT_DURATION_SEC, VOLUME } = AUDIO_SOUND_PARAMS.SIREN;
   playGlide(
@@ -607,7 +607,7 @@ export function playSirenSound(ctx: AudioContext, dest: AudioNode | null) {
 /**
  * PVP CHALLENGE FANFARE (Ascending 8-bit battle challenge arpeggio)
  */
-export function playPvPChallengeSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playPvPChallengeSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const notes = [
     AUDIO_FREQUENCIES_HZ.C5,
@@ -640,7 +640,7 @@ export function playPvPChallengeSound(ctx: AudioContext, dest: AudioNode | null)
  * CRITICAL CAPTURE THROW WHISTLE
  * Characteristic ascending high-frequency glide (whistle/chirp)
  */
-export function playCriticalThrowSound(ctx: AudioContext, dest: AudioNode | null) {
+export function playCriticalThrowSound(ctx: AudioContext, dest: AudioNode | null): void {
   const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
   const {
     GLIDE_START_HZ,

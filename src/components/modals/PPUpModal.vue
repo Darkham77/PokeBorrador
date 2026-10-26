@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useUIStore } from '@/stores/ui';
+
+import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue';
+import BaseModal from '@/components/common/BaseModal.vue';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { useGameStore } from '@/stores/game';
 import { useInventoryStore } from '@/stores/inventory/inventory';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import BaseModal from '@/components/common/BaseModal.vue';
-import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue';
+import { useUIStore } from '@/stores/ui';
 import type { Move } from '@/types/pokemon/pokemon';
 
 const uiStore = useUIStore();
@@ -33,7 +34,7 @@ const isMaxed = (move: Move | null): boolean => {
   return move.maxPP >= Math.floor(basePP * 1.6);
 };
 
-const handleApplyPPUp = (moveIndex: number) => {
+const handleApplyPPUp = (moveIndex: number): void => {
   const pokemon = ppPokemon.value;
   if (!pokemon) return;
   const itemId = uiStore.activeItemForPPUp;
@@ -86,7 +87,7 @@ const emit = defineEmits<{
   (e: 'close'): void;
 }>();
 
-const close = () => {
+const close = (): void => {
   emit('close');
   uiStore.isPPUpOpen = false;
   uiStore.activeItemForPPUp = null;

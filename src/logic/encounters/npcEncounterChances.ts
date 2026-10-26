@@ -1,17 +1,18 @@
-import type { MapRouteId } from '@/data/world/map-assets';
-import type { EncounterState, EncounterOptions } from '@/types/pokemon/encounters';
+import { getActivePinia } from 'pinia';
+
 import { GAME_RATIOS } from '@/data/system/constants';
-import { isDisputePhase } from '@/logic/war/warEngine';
-import { getGuardianData } from '@/logic/war/guardianEngine';
+import { GYM_IDS } from '@/data/world/gyms';
+import type { MapRouteId } from '@/data/world/map-assets';
+import { DEBUG_TRAINER_CHANCE_PERCENT } from '@/logic/constants/encounters.ts';
 import {
   GUARDIAN_ENCOUNTER_CHANCE_PERCENT,
   CRIMINALITY_DENOMINATOR_FACTOR,
   PERCENT_BASE_MULTIPLIER
 } from '@/logic/constants/gameplay';
-import { getActivePinia } from 'pinia';
+import { getGuardianData } from '@/logic/war/guardianEngine';
+import { isDisputePhase } from '@/logic/war/warEngine';
 import { useGameStore } from '@/stores/game';
-import { GYM_IDS } from '@/data/world/gyms';
-import { DEBUG_TRAINER_CHANCE_PERCENT } from '@/logic/constants/encounters.ts';
+import type { EncounterState, EncounterOptions } from '@/types/pokemon/encounters';
 
 const CLASS_LEVEL_RIVAL_BOOST_MIN_LEVEL = 20;
 const FACTION_DEFENDER_ENCOUNTER_PCT = 20.0;
@@ -93,7 +94,7 @@ function calculateDefenderEncounterChance(
   const hasDefenderOverride =
     debug?.defenderChancePct !== undefined && debug?.defenderChancePct !== null;
   const finalDefenderChance = hasDefenderOverride
-    ? debug!.defenderChancePct!
+    ? debug.defenderChancePct!
     : hasDefender
       ? FACTION_DEFENDER_ENCOUNTER_PCT
       : 0.0;
@@ -228,10 +229,7 @@ export function getNpcEncounterChances(
   options: EncounterOptions = {},
   allMapIds: readonly MapRouteId[]
 ): NpcChanceInfo[] {
-  const win =
-    typeof window !== 'undefined'
-      ? (window as Window & { __VITE_DEBUG__?: DebugEncounterOverrides })
-      : undefined;
+  const win = typeof globalThis.window !== 'undefined' ? globalThis.window : undefined;
   const debug = win?.__VITE_DEBUG__;
 
   return [

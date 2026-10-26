@@ -1,16 +1,15 @@
-import type { BattleContext } from '@/types/battle/battleContext';
-import type { BattleDifficulty, BattleState } from '@/types/battle/battle';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import { getItemById, requireItemId } from '@/data/inventory/items';
-import { GYMS_BY_ID, requireGymId, type GymId } from '@/data/world/gyms';
-import { incrementRecordKey } from '@/logic/utils/mapUtils';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
-import { getExpNeededPure } from '@/logic/pokemon/statsMath';
-
+import { GYMS_BY_ID, requireGymId, type GymId } from '@/data/world/gyms';
 import {
   GYM_REWARD_BASE_EXP_FACTOR,
   GYM_REWARD_BASE_MONEY_FACTOR
 } from '@/logic/constants/gameplay.ts';
+import { getExpNeededPure } from '@/logic/pokemon/statsMath';
+import { incrementRecordKey } from '@/logic/utils/mapUtils';
+import type { BattleDifficulty, BattleState } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
 const REMATCH_TM_CHANCE_NORMAL = 0.03;
 const REMATCH_TM_CHANCE_HARD = 0.05;
@@ -186,7 +185,7 @@ async function handleGymDifficultyProgression(
       ctx.addLog(`¡Bono de Gimnasio: Recibiste ₽${rewards.moneyReward}!`, 'log-success', 'player');
       ctx.uiStore.notify(`¡Obtuviste ₽${rewards.moneyReward}!`, '💰');
 
-      await distributeGymExpToTeam(ctx, (ctx.gs.state.team || []) as Pokemon[], rewards.expReward);
+      await distributeGymExpToTeam(ctx, ctx.gs.state.team || [], rewards.expReward);
     }
   }
   prog.attempts++;
@@ -199,7 +198,7 @@ export async function processGymBattleRewards(
   if (!active.isGym || !active.gymId) return;
 
   const gid = requireGymId(active.gymId);
-  const diff = (active.difficulty || 'easy') as BattleDifficulty;
+  const diff = active.difficulty || 'easy';
   const isFirstTimeGym = !ctx.gs.state.defeatedGyms.includes(gid);
 
   handleGymBadgeAndTmAward(ctx, active, gid, diff, isFirstTimeGym);

@@ -1,6 +1,5 @@
-import { useBuffsStore } from '@/stores/battle/buffs';
-import type { ItemEffectResult } from '@/types/inventory/items';
-import type { GameState } from '@/types/system/game';
+import type { DisplayText } from '@francogp/auditor';
+
 import {
   BUFF_DURATION_5_MIN_SEC,
   BUFF_DURATION_15_MIN_SEC,
@@ -9,10 +8,13 @@ import {
   BUFF_DURATION_40_MIN_SEC,
   BUFF_DURATION_60_MIN_SEC
 } from '@/logic/constants/items';
+import { useBuffsStore } from '@/stores/battle/buffs';
+import type { ItemEffectResult } from '@/types/inventory/items';
+import type { GameState } from '@/types/system/game';
 
 const stateEffect = (fn: (s: GameState) => ItemEffectResult) => (p: unknown) => fn(p as GameState);
 
-export const GLOBAL_BUFF_EFFECTS: Record<string, (p: unknown) => ItemEffectResult> = {
+export const GLOBAL_BUFF_EFFECTS: Record<DisplayText, (p: unknown) => ItemEffectResult> = {
   // open-record: Generic key-value data dictionary container
   fishingrod: stateEffect((_state) => {
     useBuffsStore().addBuff('fishing-rod', BUFF_DURATION_20_MIN_SEC, 'standard');

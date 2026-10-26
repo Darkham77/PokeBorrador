@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vite-plus/test';
+
 import { certifyBattleCase } from '../../../scripts/e2e/fuzzer/core/certifiedBattleCase.ts';
 import type {
   TestBatch,
   CertifiedBattleHistoryEntry
 } from '../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
-import { ShowdownBattleRunner } from '../../../src/logic/battle/helpers/showdownBattleRunner.ts';
-import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
 import { computeP1Choice } from '../../../src/logic/battle/battleTurnChoiceHelper.ts';
+import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
+import { ShowdownBattleRunner } from '../../../src/logic/battle/helpers/showdownBattleRunner.ts';
 import type { ShowdownPlayerRequest, BattleState } from '../../../src/types/battle/battle.ts';
 import type { Move } from '../../../src/types/pokemon/pokemon.ts';
 

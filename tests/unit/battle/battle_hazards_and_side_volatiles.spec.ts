@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { buildSideFieldVolatiles } from '@/composables/battle/combatantStatusHelpers';
+
 import { computeCombatantVolatiles } from '@/components/battle/combatantVolatilesHelper';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { buildSideFieldVolatiles } from '@/composables/battle/combatantStatusHelpers';
 import type { BattleStages } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Battle Hazards and Side Volatiles Parity (RED -> GREEN)', () => {
   const mockPokemon = {

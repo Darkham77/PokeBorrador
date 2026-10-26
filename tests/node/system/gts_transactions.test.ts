@@ -9,8 +9,10 @@
  * 3. Claiming assets from the claim_queue and updating the player save.
  */
 
-import { it, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { it, beforeEach } from 'vite-plus/test';
+
 import { describeWithDatabase, type TestDatabaseContext } from '../../dbTestHelper.ts';
 
 describeWithDatabase('GTS Transactions Dual Validation', (engine, getDb) => {

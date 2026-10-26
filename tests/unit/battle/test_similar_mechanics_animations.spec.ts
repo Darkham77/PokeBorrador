@@ -1,20 +1,21 @@
+import { gsap } from 'gsap';
+import { setActivePinia, createPinia } from 'pinia';
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import {
   buildFaintTimeline,
   buildAttackTimeline
 } from '@/components/battle/helpers/combatantActionAnims';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import type { BattleCombatantProps } from '@/types/battle/battle';
-import { gameBus } from '@/logic/events/gameBus';
-import { setActivePinia, createPinia } from 'pinia';
-import { gsap } from 'gsap';
 import {
   COMBATANT_FAINT_Y_OFFSET,
   COMBATANT_FAINT_DURATION_SEC,
   SELFKO_EXPLODE_SCALE,
   SELFKO_EXPLODE_UP_DURATION_SEC
 } from '@/logic/constants/animations';
+import { gameBus } from '@/logic/events/gameBus';
+import type { BattleCombatantProps } from '@/types/battle/battle';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
 vi.mock('@/logic/utils/gsapHelpers', () => {
   return {

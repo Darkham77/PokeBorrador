@@ -1,7 +1,9 @@
-import { describe, it, beforeEach, afterEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import { describe, it, beforeEach, afterEach } from 'vite-plus/test';
+
 import {
   loadCheckpointDocument,
   recordMasterSuiteFailure,

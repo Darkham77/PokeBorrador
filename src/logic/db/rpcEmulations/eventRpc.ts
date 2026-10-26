@@ -1,9 +1,3 @@
-import { queryLocal, persistSQLite, type SQLiteDatabase } from '../sqliteEngine.ts';
-import { logger } from '@/logic/utils/logger.ts';
-import { getServerInstant } from '@/logic/utils/timeUtils.ts';
-import type { DBResponse } from '@/types/system/database';
-import type { CompetitionEntryData } from '@/types/system/stores';
-import { POKEMON_COMPETITION_RANKS, type PokemonCompetitionRank } from '@/types/pokemon/pokemon.ts';
 import {
   resolveSubCompetitionDirection,
   resolveEventSubCompetitions,
@@ -13,6 +7,13 @@ import {
   type Event as GameEvent,
   type ResolvedSubCompetitionOrder
 } from '@/logic/events/eventEngine.ts';
+import { logger } from '@/logic/utils/logger.ts';
+import { getServerInstant } from '@/logic/utils/timeUtils.ts';
+import { POKEMON_COMPETITION_RANKS, type PokemonCompetitionRank } from '@/types/pokemon/pokemon.ts';
+import type { DBResponse } from '@/types/system/database';
+import type { CompetitionEntryData } from '@/types/system/stores';
+
+import { queryLocal, persistSQLite, type SQLiteDatabase } from '../sqliteEngine.ts';
 
 const MAX_STORED_COMPETITION_RESULTS = 100;
 const DEFAULT_PRIZE_AMOUNT = 10000 as const;
@@ -33,7 +34,7 @@ interface StoredCompetitionEntry {
   player_id: string;
   player_name: string;
   player_email: string;
-  data: string | CompetitionEntryData;
+  data: unknown;
   pokemon_uid: string;
 }
 
@@ -62,9 +63,7 @@ interface ParsedCompetitionEntry {
   data: CompetitionEntryData;
 }
 
-function parseCompetitionEntryData(
-  raw: string | CompetitionEntryData | undefined
-): CompetitionEntryData {
+function parseCompetitionEntryData(raw: unknown): CompetitionEntryData {
   if (!raw) return {};
   if (typeof raw === 'string') {
     try {
@@ -303,7 +302,7 @@ export async function emulateAwardEventAutomated(
           name?: string;
           description?: string;
           active?: boolean | number;
-          config: string | Record<string, unknown>; // open-record: Generic key-value data dictionary container
+          config: unknown;
           last_awarded_at: string | null;
         }
       | undefined;
@@ -315,7 +314,7 @@ export async function emulateAwardEventAutomated(
     const cfg: EventConfigWithPrizes =
       typeof eventRow.config === 'string'
         ? (JSON.parse(eventRow.config) as EventConfigWithPrizes)
-        : (eventRow.config as EventConfigWithPrizes) || {};
+        : eventRow.config || {};
 
     const gameEvent: GameEvent = {
       id: targetEventId,
@@ -374,7 +373,7 @@ export async function emulateClaimAward(
     const awardRow = awardRows[0] as
       | {
           id: string;
-          prize: string | Record<string, unknown>; // open-record: Generic key-value data dictionary container
+          prize: unknown;
           claimed: number | boolean;
           received_at: string | null;
         }

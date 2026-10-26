@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
+
 import type { WeatherProbData } from '../debugWeatherTypes';
 
 defineProps<{

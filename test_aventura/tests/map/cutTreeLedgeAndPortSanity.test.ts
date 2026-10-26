@@ -8,18 +8,20 @@
  * 4. Coastal Port City invariant: exactly 1 city POI has a port, strictly adjacent to ocean water.
  */
 
-import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+
 import sharp from 'sharp';
-import { generatePokemonContinentalWorld } from '../../logic/map/continent/continentalEngine.ts';
+import { describe, it, expect } from 'vitest';
+
 import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
-import { computeOceanGrid } from '../../logic/map/routePathfinding.ts';
+import { generatePokemonContinentalWorld } from '../../logic/map/continent/continentalEngine.ts';
+import type { ContinentMapResult } from '../../logic/map/continentGenerator.ts';
 import {
   generateProgressionObstacles,
   type GenerateObstaclesOptions
 } from '../../logic/map/progressionObstacleEngine.ts';
-import type { ContinentMapResult } from '../../logic/map/continentGenerator.ts';
+import { computeOceanGrid } from '../../logic/map/routePathfinding.ts';
 
 describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
   it('verifies that the Cut Tree asset is the authentic GBA FireRed sprite with transparent alpha', async () => {

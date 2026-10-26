@@ -1,22 +1,23 @@
 import { describe, it, expect, vi, afterEach } from 'vite-plus/test';
-import { getEncounterPool } from '@/logic/encounters/routeSpawnMath';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type { MapLocation } from '@/types/pokemon/encounters';
-import { getRouteWeather } from '@/logic/weather/weatherUtils';
-import { requireWeatherSeasonId } from '@/data/world/weather-tables';
-import { getDayCycle, getSeason } from '@/logic/utils/timeUtils';
-import { getFinalGroundRates } from '@/logic/encounters/encounters';
+
+import { getWeatherFamily } from '@/data/system/weatherFamilies';
 import { FIRE_RED_MAPS } from '@/data/world/maps';
+import { requireWeatherSeasonId } from '@/data/world/weather-tables';
+import { getFinalGroundRates } from '@/logic/encounters/encounters';
 import { getNpcEncounterChances } from '@/logic/encounters/npcEncounterChances';
-import type { EncounterState } from '@/types/pokemon/encounters';
+import { getEncounterPool } from '@/logic/encounters/routeSpawnMath';
 import {
   checkDebugForcedEncounter,
   checkRivalSpecialEncounter,
   checkDefenderSpecialEncounter
 } from '@/logic/encounters/specialEncounterCheckers';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getDayCycle, getSeason } from '@/logic/utils/timeUtils';
 import * as warEngine from '@/logic/war/warEngine';
-import { getWeatherFamily } from '@/data/system/weatherFamilies';
 import { WEATHER_REGISTRY, type WeatherId } from '@/logic/weather/weatherRegistry';
+import { getRouteWeather } from '@/logic/weather/weatherUtils';
+import type { MapLocation } from '@/types/pokemon/encounters';
+import type { EncounterState } from '@/types/pokemon/encounters';
 
 describe('Encounters & Weather Domain Suite', () => {
   describe('Legendary Tickets Dynamic Spawn Injection', () => {

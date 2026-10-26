@@ -1,19 +1,20 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useGameStore } from '@/stores/game';
-import { useBoxStore } from '@/stores/box';
-import { useUIStore } from '@/stores/ui';
-import { usePlayerClassStore } from '@/stores/player/playerClass';
-import { useBoxFilters } from '@/composables/pokemon/useBoxFilters';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { POKEMON_BOX_SLOT_CAPACITY, DEFAULT_POKEMON_BOX_COUNT } from '@/logic/constants/gameplay';
 
-// Sub-componentes
-import BoxHeader from './BoxHeader.vue';
-import BoxTabs from './BoxTabs.vue';
+import { useBoxFilters } from '@/composables/pokemon/useBoxFilters';
+import { POKEMON_BOX_SLOT_CAPACITY, DEFAULT_POKEMON_BOX_COUNT } from '@/logic/constants/gameplay';
+import { useBoxStore } from '@/stores/box';
+import { useGameStore } from '@/stores/game';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { useUIStore } from '@/stores/ui';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import BoxFilters from './BoxFilters.vue';
 import BoxGrid from './BoxGrid.vue';
+// Sub-componentes
+import BoxHeader from './BoxHeader.vue';
 import BoxModeActionsBar from './BoxModeActionsBar.vue';
+import BoxTabs from './BoxTabs.vue';
 
 const gameStore = useGameStore();
 const boxStore = useBoxStore();
@@ -55,33 +56,36 @@ const displayList = computed(() => {
 
   if (hasActiveFilters.value || isSorted) {
     // Already filtered or sorted list (no nulls if filtered, but let's be safe)
-    return list.filter((item): item is { p: Pokemon; index: number } => item.p != null);
-  } else {
-    const start = currentBoxIndex.value * POKEMON_BOX_SLOT_CAPACITY;
-    const slice = list.slice(start, start + POKEMON_BOX_SLOT_CAPACITY);
-    return slice.filter((item): item is { p: Pokemon; index: number } => item.p != null);
+    return list.filter(
+      (item): item is { p: Pokemon; index: number } => item.p !== null && item.p !== undefined
+    );
   }
+  const start = currentBoxIndex.value * POKEMON_BOX_SLOT_CAPACITY;
+  const slice = list.slice(start, start + POKEMON_BOX_SLOT_CAPACITY);
+  return slice.filter(
+    (item): item is { p: Pokemon; index: number } => item.p !== null && item.p !== undefined
+  );
 });
 
 // ----- ACCIONES -----
-const switchBox = (i: number) => {
+const switchBox = (i: number): void => {
   sortMode.value = 'none';
   boxStore.switchBox(i);
 };
 
-const toggleRocketMode = () => {
+const toggleRocketMode = (): void => {
   boxStore.toggleBoxRocketMode();
 };
 
-const toggleReleaseMode = () => {
+const toggleReleaseMode = (): void => {
   boxStore.toggleBoxReleaseMode();
 };
 
-const getBoxBuyCost = () => boxStore.getBoxBuyCost();
+const getBoxBuyCost = (): number => boxStore.getBoxBuyCost();
 
 const MAX_PURCHASABLE_BOXES_LIMIT = 10;
 
-const buyNewBox = () => {
+const buyNewBox = (): void => {
   const cost = getBoxBuyCost();
   if (gs.value.boxCount >= MAX_PURCHASABLE_BOXES_LIMIT) return;
 
@@ -99,7 +103,7 @@ const buyNewBox = () => {
   });
 };
 
-const handleConfirmRocketSell = () => {
+const handleConfirmRocketSell = (): void => {
   const value = boxStore.getRocketSellValue();
   const count = boxStore.boxRocketSelected.length;
   if (count === 0) return;
@@ -114,7 +118,7 @@ const handleConfirmRocketSell = () => {
   });
 };
 
-const handleConfirmRelease = () => {
+const handleConfirmRelease = (): void => {
   const count = boxStore.boxReleaseSelected.length;
   if (count === 0) return;
 
@@ -128,7 +132,7 @@ const handleConfirmRelease = () => {
   });
 };
 
-const handlePokemonClick = (index: number) => {
+const handlePokemonClick = (index: number): void => {
   const pokemon = gs.value.box[index];
   if (!pokemon) return;
 

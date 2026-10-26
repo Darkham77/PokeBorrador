@@ -17,16 +17,28 @@ const props = withDefaults(defineProps<Props>(), {
   title: undefined
 });
 
+const FEMALE_TRAINER_GENDER_VALUES = ['m', 'mujer', 'f', 'F'] as const;
+const FEMALE_TRAINER_GENDERS: ReadonlySet<string> = new Set<string>(FEMALE_TRAINER_GENDER_VALUES);
+
+const MALE_TRAINER_GENDER_VALUES = ['h', 'hombre'] as const;
+const MALE_TRAINER_GENDERS: ReadonlySet<string> = new Set<string>(MALE_TRAINER_GENDER_VALUES);
+
+const FEMALE_GENDER_VALUES = ['f', 'F', 'female', 'mujer'] as const;
+const FEMALE_GENDERS: ReadonlySet<string> = new Set<string>(FEMALE_GENDER_VALUES);
+
+const MALE_GENDER_VALUES = ['m', 'M', 'male', 'hombre', 'h'] as const;
+const MALE_GENDERS: ReadonlySet<string> = new Set<string>(MALE_GENDER_VALUES);
+
 const resolvedType = computed<'male' | 'female' | null>(() => {
   const g = props.gender;
   if (!g) return null;
   if (props.isTrainer) {
-    if (g === 'm' || g === 'mujer' || g === 'f' || g === 'F') return 'female';
-    if (g === 'h' || g === 'hombre') return 'male';
+    if (FEMALE_TRAINER_GENDERS.has(g)) return 'female';
+    if (MALE_TRAINER_GENDERS.has(g)) return 'male';
     return null;
   }
-  if (g === 'f' || g === 'F' || g === 'female' || g === 'mujer') return 'female';
-  if (g === 'm' || g === 'M' || g === 'male' || g === 'hombre' || g === 'h') return 'male';
+  if (FEMALE_GENDERS.has(g)) return 'female';
+  if (MALE_GENDERS.has(g)) return 'male';
   return null;
 });
 

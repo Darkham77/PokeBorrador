@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
+
 import { KantoRegionalWorldGenerator } from '../../logic/map/kantoRegionalGenerator.ts';
+import { UniversalAutotiler, DynamicCatalogLoader } from '../../logic/map/kantoTileEngine.ts';
 import {
   OccupancyGrid,
   OCCUPANCY_FLAGS,
@@ -7,7 +9,6 @@ import {
   KANTO_GRID_W,
   KANTO_GRID_H
 } from '../../types/map/kantoGridModel.ts';
-import { UniversalAutotiler, DynamicCatalogLoader } from '../../logic/map/kantoTileEngine.ts';
 
 describe('KantoRegionalWorldGenerator & OccupancyGrid', () => {
   it('initializes OccupancyGrid with correct dimensions and bitmasks', () => {
@@ -122,12 +123,14 @@ describe('KantoRegionalWorldGenerator & OccupancyGrid', () => {
 
     // Route flanking trees and copses
     expect(generator.trees.length).toBeGreaterThan(20);
-    const hasGbaTrees = generator.trees.some(
-      (t) =>
-        t.style === 'poke_tree_oak_clean' ||
-        t.style === 'poke_tree_poke' ||
-        t.style === 'poke_tree_pine_small'
-    );
+    const GBA_TREE_STYLE_LIST = [
+      'poke_tree_oak_clean',
+      'poke_tree_poke',
+      'poke_tree_pine_small'
+    ] as const;
+    type GbaTreeStyle = (typeof GBA_TREE_STYLE_LIST)[number];
+    const GBA_TREE_STYLES: ReadonlySet<GbaTreeStyle> = new Set<GbaTreeStyle>(GBA_TREE_STYLE_LIST);
+    const hasGbaTrees = generator.trees.some((t) => GBA_TREE_STYLES.has(t.style as GbaTreeStyle));
     expect(hasGbaTrees).toBe(true);
 
     // Procedural mountain cones & relief

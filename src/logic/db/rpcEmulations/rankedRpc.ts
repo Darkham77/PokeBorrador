@@ -1,6 +1,4 @@
-import { queryLocal, persistSQLite, type SQLiteDatabase } from '../sqliteEngine.ts';
-import { logger } from '@/logic/utils/logger.ts';
-import { getServerInstant } from '@/logic/utils/timeUtils.ts';
+import { ALPHANUMERIC_RADIX } from '@/logic/constants/gameplay.ts';
 import { MIN_INITIAL_ELO, ELO_SOFT_RESET_DIVISOR } from '@/logic/pvp/eloRatingMath.ts';
 import {
   STANDARD_COMPETITIVE_LEVEL,
@@ -9,8 +7,11 @@ import {
   SEASONAL_BATTLE_COINS,
   DEFAULT_FEATURED_REPLAYS_LIMIT
 } from '@/logic/pvp/rankedEngine.ts';
-import { ALPHANUMERIC_RADIX } from '@/logic/constants/gameplay.ts';
+import { logger } from '@/logic/utils/logger.ts';
+import { getServerInstant } from '@/logic/utils/timeUtils.ts';
 import type { DBResponse } from '@/types/system/database';
+
+import { queryLocal, persistSQLite, type SQLiteDatabase } from '../sqliteEngine.ts';
 
 const RECENT_AWARD_LOCKOUT_MS = 600000 as const; // 10 minutes in ms
 const MIN_MATCHES_FOR_RANKED = 5 as const;

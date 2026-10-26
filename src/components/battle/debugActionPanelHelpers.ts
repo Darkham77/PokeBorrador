@@ -1,3 +1,4 @@
+import { hasAnimatedSpriteId } from '@/data/pokemon/animatedSpriteDatabase.ts';
 import {
   PDEX_ORDER,
   GEN2_PDEX_ORDER,
@@ -5,12 +6,11 @@ import {
   requirePokemonSpeciesId,
   type PokemonSpeciesId
 } from '@/data/pokemon/pokedex.ts';
-import { hasPokemonSpriteId, requirePokemonSpriteValue } from '@/data/pokemon/spriteMapping.ts';
-import { hasAnimatedSpriteId } from '@/data/pokemon/animatedSpriteDatabase.ts';
 import { requireFeetPoints } from '@/data/pokemon/pokemonFeetDatabase.ts';
+import { hasPokemonSpriteId, requirePokemonSpriteValue } from '@/data/pokemon/spriteMapping.ts';
+import { RADIX_DECIMAL } from '@/logic/constants/gameplay.ts';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService.ts';
 import type { useBattleStore } from '@/stores/battle/battle.ts';
-import { RADIX_DECIMAL } from '@/logic/constants/gameplay.ts';
 
 export const ALL_PDEX: readonly PokemonSpeciesId[] = [...PDEX_ORDER, ...GEN2_PDEX_ORDER];
 
@@ -32,7 +32,13 @@ const resolveToSpriteNumber = (fullId: string): { numId: string; rest: string[] 
   throw new Error(`[DebugActionPanel] Unknown pokemon id: ${fullId}`);
 };
 
-export const deconstructPokemonId = (fullId: string) => {
+export interface DeconstructedPokemonId {
+  readonly baseId: string;
+  readonly variant: string;
+  readonly gender: string;
+}
+
+export const deconstructPokemonId = (fullId: string): DeconstructedPokemonId => {
   // domain-ok: Debug panel raw identifier parser input
   const { numId, rest } = resolveToSpriteNumber(fullId);
   let variant = '';

@@ -1,13 +1,14 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
-import { BaseBattleSession } from '@/logic/battle/session/baseBattleSession';
-import { PvEBattleSession } from '@/logic/battle/session/pveBattleSession';
-import { GymBattleSession } from '@/logic/battle/session/gymBattleSession';
-import { PvPBattleSession } from '@/logic/battle/session/pvpBattleSession';
-import { SpectatorBattleSession } from '@/logic/battle/session/spectatorBattleSession';
-import { ReplayBattleSession } from '@/logic/battle/session/replayBattleSession';
-import { createBattleSession } from '@/logic/battle/session/battleSessionFactory';
-import type { BattleContext } from '@/types/battle/battleContext';
+
 import type { ITacticalReplayEngine } from '@/logic/battle/replay/tacticalReplayEngine';
+import { BaseBattleSession } from '@/logic/battle/session/baseBattleSession';
+import { createBattleSession } from '@/logic/battle/session/battleSessionFactory';
+import { GymBattleSession } from '@/logic/battle/session/gymBattleSession';
+import { PvEBattleSession } from '@/logic/battle/session/pveBattleSession';
+import { PvPBattleSession } from '@/logic/battle/session/pvpBattleSession';
+import { ReplayBattleSession } from '@/logic/battle/session/replayBattleSession';
+import { SpectatorBattleSession } from '@/logic/battle/session/spectatorBattleSession';
+import type { BattleContext } from '@/types/battle/battleContext';
 
 function createMockBattleContext(): BattleContext {
   const p = { id: '25', uid: 'p1', name: 'Pikachu', hp: 100, maxHp: 100, level: 50, moves: [] };

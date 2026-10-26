@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { resolveTrophyDisplayName } from '@/logic/events/eventEngine';
 import { useEventStore } from '@/stores/events';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { resolveTrophyDisplayData } from './pokemonSummaryHelper.ts';
 
 const props = defineProps<{

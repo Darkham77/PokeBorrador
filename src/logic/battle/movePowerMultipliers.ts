@@ -1,12 +1,13 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { PokemonType } from '@/data/battle/types';
-import { WEATHER_MECHANICAL, type WeatherMechanical } from '@/logic/weather/weatherRegistry';
-import type { PokemonMoveId } from '@/data/battle/moves';
-import type { DayPhase } from '@/logic/utils/timeUtils';
-import { isItemId, type ItemId } from '@/data/inventory/items';
 import type { AbilityId } from '@/data/battle/abilities';
-import type { PureBattleWeather } from './battleMathTypes.ts';
+import type { PokemonMoveId } from '@/data/battle/moves';
+import type { PokemonType } from '@/data/battle/types';
+import { isItemId, type ItemId } from '@/data/inventory/items';
 import { SAND_FORCE_MULTIPLIER, DAY_CYCLE_BOOST_MULTIPLIER } from '@/logic/constants/gameplay.ts';
+import type { DayPhase } from '@/logic/utils/timeUtils';
+import { WEATHER_MECHANICAL, type WeatherMechanical } from '@/logic/weather/weatherRegistry';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import type { PureBattleWeather } from './battleMathTypes.ts';
 
 const BASE_STAB_MULT = 1.5;
 const ADAPTABILITY_STAB_MULTIPLIER = 2;
@@ -119,6 +120,9 @@ export function calculateWeatherAndCyclePowerMultiplier(
   return weatherMult;
 }
 
+const SAND_FORCE_TYPE_VALUES = ['ground', 'rock', 'steel'] as const;
+const SAND_FORCE_TYPES: ReadonlySet<string> = new Set<string>(SAND_FORCE_TYPE_VALUES);
+
 function calculateAttackerAbilityMultiplier(
   moveType: PokemonType,
   movePower: number,
@@ -143,7 +147,7 @@ function calculateAttackerAbilityMultiplier(
     attacker.ability === 'sandforce' &&
     mechWeather === WEATHER_MECHANICAL.SANDSTORM
   ) {
-    if (moveType === 'ground' || moveType === 'rock' || moveType === 'steel') {
+    if (SAND_FORCE_TYPES.has(moveType)) {
       abilMult *= SAND_FORCE_MULTIPLIER;
     }
   }

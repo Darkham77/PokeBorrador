@@ -5,21 +5,23 @@
  * undo/redo stack, collision painter, multitile structure stamper, and test-drive engine.
  */
 
-import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
-import { setActivePinia, createPinia } from 'pinia';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
+
+import { STUDIO_MAX_HISTORY_STEPS } from '../../config/studioConstants.ts';
+import {
+  generateProceduralMap,
+  type GeneratedMap
+} from '../../logic/map/proceduralMapGenerator.ts';
 import {
   TilesRegistryService,
   loadTilesRegistry,
   type TilesRegistryJson
 } from '../../logic/map/tilesRegistry.ts';
-import {
-  generateProceduralMap,
-  type GeneratedMap
-} from '../../logic/map/proceduralMapGenerator.ts';
 import { useMapStudioStore, DEFAULT_GROUND_TILE } from '../../stores/mapStudio.ts';
-import { STUDIO_MAX_HISTORY_STEPS } from '../../config/studioConstants.ts';
 
 describe('Map Studio Pinia Store (useMapStudioStore)', () => {
   let registryService: TilesRegistryService;

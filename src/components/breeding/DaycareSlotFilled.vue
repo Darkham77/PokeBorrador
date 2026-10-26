@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { computed, ref, onUnmounted } from 'vue';
 import { gsap } from 'gsap';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils';
-import PVTooltip from '@/components/common/PVTooltip.vue';
+import { computed, ref, onUnmounted } from 'vue';
+
 import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
 import { NATURE_DATA, isNatureId, getNatureInfo } from '@/data/battle/natures';
+import { getItemById } from '@/data/inventory/items';
+import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { useGameStore } from '@/stores/game';
 import { useInventoryStore } from '@/stores/inventory/inventory';
 import { useUIStore } from '@/stores/ui';
-import { getItemById } from '@/data/inventory/items';
+import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon';
 
 const DAYCARE_SLOT_HOVER_DURATION_SEC = 0.2;
 const DAYCARE_SLOT_PRESS_DURATION_SEC = 0.1;
@@ -38,7 +39,7 @@ const itemStatusRef = ref<HTMLElement | null>(null);
 let itemTween: gsap.core.Tween | null = null;
 const isHoveringItem = ref(false);
 
-const handleItemMouseEnter = () => {
+const handleItemMouseEnter = (): void => {
   isHoveringItem.value = true;
   if (itemTween) itemTween.kill();
   if (itemStatusRef.value) {
@@ -51,7 +52,7 @@ const handleItemMouseEnter = () => {
   }
 };
 
-const handleItemMouseLeave = () => {
+const handleItemMouseLeave = (): void => {
   isHoveringItem.value = false;
   if (itemTween) itemTween.kill();
   if (itemStatusRef.value) {
@@ -64,7 +65,7 @@ const handleItemMouseLeave = () => {
   }
 };
 
-const handleItemMouseDown = () => {
+const handleItemMouseDown = (): void => {
   if (itemTween) itemTween.kill();
   if (itemStatusRef.value) {
     itemTween = gsap.to(itemStatusRef.value, {
@@ -76,7 +77,7 @@ const handleItemMouseDown = () => {
   }
 };
 
-const handleItemMouseUp = () => {
+const handleItemMouseUp = (): void => {
   if (itemTween) itemTween.kill();
   if (itemStatusRef.value) {
     itemTween = gsap.to(itemStatusRef.value, {
@@ -94,7 +95,9 @@ onUnmounted(() => {
   if (itemTween) itemTween.kill();
 });
 
-const findPokemonLocation = (p: Pokemon) => {
+const findPokemonLocation = (
+  p: Pokemon
+): { context: PokemonStorageLocation; index: number } | null => {
   const teamIndex = gameStore.state.team.findIndex((x) => x && x.uid === p.uid);
   if (teamIndex !== -1) {
     return { context: 'team' as const, index: teamIndex };
@@ -106,7 +109,7 @@ const findPokemonLocation = (p: Pokemon) => {
   return null;
 };
 
-const handleItemClick = () => {
+const handleItemClick = (): void => {
   const p = props.pokemon;
   const loc = findPokemonLocation(p);
   if (!loc) {
@@ -123,11 +126,11 @@ const handleItemClick = () => {
   }
 };
 
-const getSprite = (id: string | number, isShiny: boolean) => {
+const getSprite = (id: string | number, isShiny: boolean): string => {
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny });
 };
 
-const getNatureDescription = (natureName: string) => {
+const getNatureDescription = (natureName: string): string => {
   const clean = (natureName || '').toLowerCase().trim();
   return isNatureId(clean) ? NATURE_DATA[clean].desc : 'Sin efecto en estadísticas.';
 };

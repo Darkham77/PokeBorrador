@@ -4,12 +4,14 @@
  * Consolidated Suite for Evolution Logic, Showdown Dex Parity, and Stone/Friendship Evolutions.
  */
 
-import { describe, test, expect } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { Dex } from '@pkmn/sim';
+import { describe, test, expect } from 'vite-plus/test';
+
 import { EVOLUTION_TABLE, TRADE_EVOLUTIONS } from '../../../src/data/pokemon/evolutionData.ts';
 import { checkLevelUpEvolution } from '../../../src/logic/evolution/evolutionLogic.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';

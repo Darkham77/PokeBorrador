@@ -1,5 +1,6 @@
+import type { DisplayText } from '@francogp/auditor';
 import { gsap } from 'gsap';
-import { gameBus } from '@/logic/events/gameBus';
+
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import {
   POKEBALL_SHAKE_DISTANCE_PX,
@@ -44,6 +45,7 @@ import {
   OPACITY_FULL,
   OPACITY_INVISIBLE
 } from '@/logic/constants/animations';
+import { gameBus } from '@/logic/events/gameBus';
 
 const RECOIL_EASE_BACK_OVERSHOOT = 1.7;
 const POKEBALL_SEPIA_SATURATE = 2;
@@ -51,7 +53,7 @@ const HEAL_SATURATION_FULL = 1;
 const HEAL_BRIGHTNESS_FULL = 1;
 const HEAL_SEPIA_NONE = 0;
 
-export const STATUS_FLASH_COLORS: Record<string, string> = {
+export const STATUS_FLASH_COLORS: Record<DisplayText, string> = {
   // open-record: Status flash hex colors palette
   brn: '#ff4500',
   psn: '#9400d3',

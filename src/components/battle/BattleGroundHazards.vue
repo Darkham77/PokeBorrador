@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { gsap } from 'gsap';
+
 import { onGroundPopEnter } from '@/logic/combat/shadowHelpers';
 import type { BattleSide, BattleStages } from '@/types/battle/battle';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -11,7 +12,7 @@ defineProps<{
   localGroundY: string;
 }>();
 
-const onGroundPopLeave = (el: Element, done: () => void) => {
+const onGroundPopLeave = (el: Element, done: () => void): void => {
   gsap.to(el, { scale: 0, opacity: 0, duration: 0.3, onComplete: done });
 };
 </script>

@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { evaluatePokemonForSeason, buildAutoRankedTeam } from '@/logic/pvp/seasonTeamFilter';
+
 import { getSeasonalThemeForMonth } from '@/data/system/rankedData';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { evaluatePokemonForSeason, buildAutoRankedTeam } from '@/logic/pvp/seasonTeamFilter';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('seasonTeamFilter - Frontera Kanto & Johto', () => {
   const createTestPokemon = (overrides: Partial<Pokemon>): Pokemon => {

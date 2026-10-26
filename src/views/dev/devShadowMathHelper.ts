@@ -1,5 +1,5 @@
-import type { GenderName } from '@pkmn/types';
 import { PERCENT_BASE_MULTIPLIER, PERCENT_MAX } from '@/logic/constants/gameplay';
+import type { BinaryGender } from '@/types/pokemon/spriteShadows';
 
 export const DEFAULT_PAGE_SIZE = 50 as const;
 const MIN_PERCENT_VALUE = 0 as const;
@@ -29,7 +29,7 @@ export const GENERATION_OPTIONS = [
 
 export const GENDER_OPTIONS: readonly {
   label: string;
-  value: 'all' | Extract<GenderName, 'M' | 'F'>;
+  value: 'all' | BinaryGender;
 }[] = [
   { label: 'Todos', value: 'all' },
   { label: '♂ Macho (M) / Base', value: 'M' },

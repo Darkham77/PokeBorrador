@@ -6,15 +6,16 @@
  * level-bracketed Pickup loot tables, and post-battle team recoveries.
  */
 
-import { ACTIVE_GENERATION } from '@/data/system/constants';
-import { GALAR_GENERATION_NUM } from '@/logic/constants/gameplay';
 import { ABILITY_TRANSLATIONS_ES, type AbilityId } from '@/data/battle/abilities';
-import type { Pokemon, PokemonGender } from '@/types/pokemon/pokemon';
 import type { NatureId } from '@/data/battle/natures';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { PokemonType } from '@/data/battle/types';
 import type { ItemId } from '@/data/inventory/items';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { ACTIVE_GENERATION } from '@/data/system/constants';
+import { GALAR_GENERATION_NUM } from '@/logic/constants/gameplay';
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import type { Pokemon, PokemonGender } from '@/types/pokemon/pokemon';
+
 import { isSingleGenderSpeciesId } from './pokemonGender.ts';
 
 // --- CONSTANTS ---
@@ -130,7 +131,9 @@ function hasPartyFieldAbility(
   abilityId: AbilityId
 ): boolean {
   if (!team) return false;
-  return team.some((pkmn) => pkmn != null && pkmn.hp > 0 && pkmn.ability === abilityId);
+  return team.some(
+    (pkmn) => pkmn !== null && pkmn !== undefined && pkmn.hp > 0 && pkmn.ability === abilityId
+  );
 }
 
 /**
@@ -242,16 +245,31 @@ export function shouldAvoidLowLevelWild(
 /**
  * Checks whether Pressure, Vital Spirit, or Hustle forces the maximum route level.
  */
+const FORCE_MAX_LEVEL_ABILITIES: ReadonlySet<AbilityId> = new Set<AbilityId>([
+  'pressure',
+  'vitalspirit',
+  'hustle'
+]);
+
+const HIGH_SPAWN_RATE_ABILITIES: ReadonlySet<AbilityId> = new Set<AbilityId>([
+  'arenatrap',
+  'illuminate',
+  'noguard'
+]);
+
+const LOW_SPAWN_RATE_ABILITIES: ReadonlySet<AbilityId> = new Set<AbilityId>([
+  'stench',
+  'whitesmoke',
+  'quickfeet',
+  'infiltrator'
+]);
+
 export function shouldForceMaxRouteLevel(
   leaderAbility: AbilityId | null | undefined,
   randomFn: () => number = Math.random
 ): boolean {
   if (!leaderAbility) return false;
-  if (
-    leaderAbility === 'pressure' ||
-    leaderAbility === 'vitalspirit' ||
-    leaderAbility === 'hustle'
-  ) {
+  if (FORCE_MAX_LEVEL_ABILITIES.has(leaderAbility)) {
     return randomFn() < LEVEL_FILTER_CHANCE;
   }
   return false;
@@ -266,19 +284,10 @@ export function getEncounterRateMultiplier(
 ): number {
   if (!leaderAbility) return SPAWN_RATE_MULTIPLIER_NORMAL;
 
-  if (
-    leaderAbility === 'arenatrap' ||
-    leaderAbility === 'illuminate' ||
-    leaderAbility === 'noguard'
-  ) {
+  if (HIGH_SPAWN_RATE_ABILITIES.has(leaderAbility)) {
     return SPAWN_RATE_MULTIPLIER_HIGH;
   }
-  if (
-    leaderAbility === 'stench' ||
-    leaderAbility === 'whitesmoke' ||
-    leaderAbility === 'quickfeet' ||
-    leaderAbility === 'infiltrator'
-  ) {
+  if (LOW_SPAWN_RATE_ABILITIES.has(leaderAbility)) {
     return SPAWN_RATE_MULTIPLIER_LOW;
   }
   if (leaderAbility === 'sandveil' && weather === 'sandstorm') {

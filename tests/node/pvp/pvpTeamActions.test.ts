@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import { useGameStore } from '@/stores/game';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 

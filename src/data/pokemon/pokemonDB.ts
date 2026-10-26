@@ -34,7 +34,7 @@ interface CompactDbEntry {
   compatMoves?: PokemonMoveId[];
 }
 
-const rawDb = (pokemonDbJson as Record<string, unknown>) as Record<PokemonDbSpeciesId, CompactDbEntry>; // open-record: Generic key-value data dictionary container
+const rawDb = pokemonDbJson as Record<PokemonDbSpeciesId, CompactDbEntry>;
 const cache = new Map<PokemonDbSpeciesId, PokemonBaseData>();
 
 function inflatePokemon(speciesId: PokemonDbSpeciesId): PokemonBaseData | undefined {

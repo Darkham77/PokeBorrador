@@ -1,9 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
-import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
-import path from 'node:path';
 import os from 'node:os';
+import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
+
+import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
+
 import { repairAccountsInDatabase } from '../../../scripts/maintenance/repair_account_legality.ts';
 import { makePokemon } from '../../../src/logic/pokemon/pokemonFactory.ts';
 import type { SaveDataDto } from '../../../src/logic/validation/schemas.ts';

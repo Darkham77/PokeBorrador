@@ -1,34 +1,35 @@
-import { ref, computed } from 'vue';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { useBattleStore } from '@/stores/battle/battle';
-import { useGameStore } from '@/stores/game';
-import { useDebugStore } from '@/stores/debug';
-import {
-  getSpritesForArchetype,
-  type NpcArchetype,
-  type NpcSpriteId
-} from '@/logic/utils/npcSpriteRouter';
-import { ARCHETYPE_SPRITES } from '@/data/pokemon/npcSpriteCatalog';
-import { usePlayerClassStore } from '@/stores/player/playerClass';
-import { pokemonDebugService } from '@/logic/debug/pokemonDebugService';
-import { GYMS, GYMS_BY_ID, isGymId, type GymId } from '@/data/world/gyms';
+import type { JsonObject } from '@francogp/auditor';
+import { ref, computed, type ComputedRef, type Ref } from 'vue';
+
+import type { ItemId } from '@/data/inventory/items';
 import {
   TRAINER_TYPES,
   isTrainerTypeKey,
   requireNpcArchetype,
   getArchetypePool
 } from '@/data/player/trainerTypes';
+import { ARCHETYPE_SPRITES } from '@/data/pokemon/npcSpriteCatalog';
 import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
-import { generateNpcName, type NpcNameOptions } from '@/logic/utils/npcNameGenerator';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleDifficulty, BattleMinigame } from '@/types/battle/battle';
 import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { MapLocation } from '@/types/pokemon/encounters';
+import { GYMS, GYMS_BY_ID, isGymId, type GymId } from '@/data/world/gyms';
 import type { MapRouteId } from '@/data/world/map-assets';
-import type { ItemId } from '@/data/inventory/items';
-import type { BattleOptions } from '@/types/system/stores';
-import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
 import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay';
+import { pokemonDebugService } from '@/logic/debug/pokemonDebugService';
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { generateNpcName, type NpcNameOptions } from '@/logic/utils/npcNameGenerator';
+import {
+  getSpritesForArchetype,
+  type NpcArchetype,
+  type NpcSpriteId
+} from '@/logic/utils/npcSpriteRouter';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useDebugStore } from '@/stores/debug';
+import { useGameStore } from '@/stores/game';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import type { BattleDifficulty, BattleMinigame } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { generateDebugTeamList } from './debugTrainerTeamHelper.ts';
 
 const POLICE_PRESET_AVG_LEVEL_BASE = 30;
@@ -57,7 +58,7 @@ interface ExtendedBattleOptions {
   isDebug?: boolean;
   difficulty?: BattleDifficulty;
   rewardTM?: ItemId;
-  battleOptions?: Record<string, unknown>;
+  battleOptions?: JsonObject;
 }
 
 // TRAINER_SPRITES removed — use ARCHETYPE_SPRITES from npcSpriteCatalog for dynamic selection.
@@ -74,7 +75,42 @@ const ALL_CATALOG_SPRITES: readonly NpcSpriteId[] = (
   Object.values(ARCHETYPE_SPRITES) as ReadonlyArray<readonly NpcSpriteId[]>
 ).flat();
 
-export function useDebugTrainers() {
+export type CombatLocationType = 'map' | 'gym';
+
+export interface UseDebugTrainersReturn {
+  trainerName: Ref<string>;
+  trainerSprite: Ref<NpcSpriteId>;
+  enemyTeam: Ref<Pokemon[]>;
+  selectedPokeIndex: Ref<number | null>;
+  selectedPreset: Ref<string>;
+  combatLocationType: Ref<CombatLocationType>;
+  selectedMapId: Ref<MapRouteId>;
+  selectedGymId: Ref<string>;
+  gymDifficulty: Ref<BattleDifficulty>;
+  genTeamSize: Ref<number>;
+  genMinLevel: Ref<number>;
+  genMaxLevel: Ref<number>;
+  genForceShiny: Ref<boolean>;
+  genGuardianProb: Ref<number>;
+  isRocketClass: ComputedRef<boolean>;
+  criminality: ComputedRef<number>;
+  allMapsList: ComputedRef<Array<{ id: MapRouteId; name: string }>>;
+  gymList: ComputedRef<Array<{ id: string; name: string; leader: string }>>;
+  activePoke: ComputedRef<Pokemon | null>;
+  availableSpriteList: ComputedRef<Array<{ id: string; label: string }>>;
+  randomizeTrainer: () => void;
+  randomizeTrainerName: () => void;
+  randomizeTrainerSprite: () => void;
+  generateRandomTeam: () => void;
+  loadPolicePreset: () => void;
+  addPokemonToTeam: () => void;
+  removePokemonFromTeam: (idx: number) => void;
+  startCombat: () => Promise<void>;
+  validateTeamLegality: () => { valid: boolean; issues: string[] };
+  debugStore: ReturnType<typeof useDebugStore>;
+}
+
+export function useDebugTrainers(): UseDebugTrainersReturn {
   const battleStore = useBattleStore();
   const gameStore = useGameStore();
   const classStore = usePlayerClassStore();
@@ -87,7 +123,7 @@ export function useDebugTrainers() {
   const selectedPokeIndex = ref<number | null>(null);
   const selectedPreset = ref('random');
 
-  const combatLocationType = ref<'map' | 'gym'>('map');
+  const combatLocationType = ref<CombatLocationType>('map');
   const selectedMapId = ref<MapRouteId>('route1');
   const selectedGymId = ref('pewter');
   const gymDifficulty = ref<BattleDifficulty>('normal');
@@ -104,13 +140,13 @@ export function useDebugTrainers() {
     set: (val: number) => {
       if (classStore.classData) {
         classStore.classData.criminality = val;
-        void gameStore.save(false);
+        gameStore.scheduleSave();
       }
     }
   });
 
   const allMapsList = computed(() => {
-    const maps = pokemonDataProvider.getMaps() as MapLocation[]; // domain-ok: Open dynamic text or non-domain string payload
+    const maps = pokemonDataProvider.getMaps(); // domain-ok: Open dynamic text or non-domain string payload
     return maps.map((m) => ({ id: m.id, name: m.name }));
   });
 
@@ -140,12 +176,12 @@ export function useDebugTrainers() {
     });
   }
 
-  function randomizeTrainer() {
+  function randomizeTrainer(): void {
     randomizeTrainerSprite();
     randomizeTrainerName();
   }
 
-  function randomizeTrainerName() {
+  function randomizeTrainerName(): void {
     const opts: NpcNameOptions = {
       spriteId: trainerSprite.value,
       includeTitle: true
@@ -156,7 +192,7 @@ export function useDebugTrainers() {
     trainerName.value = generateNpcName(opts);
   }
 
-  function randomizeTrainerSprite() {
+  function randomizeTrainerSprite(): void {
     if (selectedPreset.value !== 'random') {
       const archetype = requireNpcArchetype(selectedPreset.value);
       const sprites = getSpritesForArchetype(archetype);
@@ -192,7 +228,7 @@ export function useDebugTrainers() {
     return isTrainerTypeKey(archetype) ? getArchetypePool(archetype) : ['rattata'];
   }
 
-  function generateRandomTeam() {
+  function generateRandomTeam(): void {
     let pool: readonly PokemonSpeciesId[];
 
     if (selectedPreset.value === 'random') {
@@ -216,7 +252,7 @@ export function useDebugTrainers() {
     selectedPokeIndex.value = team.length > 0 ? 0 : null;
   }
 
-  function loadPolicePreset() {
+  function loadPolicePreset(): void {
     trainerName.value = 'Oficial de Policía';
     trainerSprite.value = 'policeman';
     trainerArchetype.value = 'policeman';
@@ -262,7 +298,7 @@ export function useDebugTrainers() {
     selectedPokeIndex.value = 0;
   }
 
-  function addPokemonToTeam() {
+  function addPokemonToTeam(): void {
     if (enemyTeam.value.length >= MAX_POKEMON_TEAM_SIZE) return;
     const p = pokemonDebugService.generate({ id: 'rattata', level: DEFAULT_ADD_POKEMON_LEVEL });
     if (p) {
@@ -271,7 +307,7 @@ export function useDebugTrainers() {
     }
   }
 
-  function removePokemonFromTeam(index: number) {
+  function removePokemonFromTeam(index: number): void {
     enemyTeam.value.splice(index, 1);
     if (selectedPokeIndex.value === index) {
       selectedPokeIndex.value = enemyTeam.value.length > 0 ? 0 : null;
@@ -280,7 +316,7 @@ export function useDebugTrainers() {
     }
   }
 
-  async function startCombat() {
+  async function startCombat(): Promise<void> {
     if (enemyTeam.value.length === 0) {
       alert('¡Debes agregar al menos un Pokémon al equipo enemigo!');
       return;
@@ -316,11 +352,11 @@ export function useDebugTrainers() {
       rewardTM: rewardTMVal,
       battleOptions: {
         trainerSprite: trainerSprite.value,
-        trainerArchetype: trainerArchetype.value
+        ...(trainerArchetype.value ? { trainerArchetype: trainerArchetype.value } : {})
       }
     };
 
-    await battleStore.startBattle(firstEnemy, opts as BattleOptions); // domain-ok: Open dynamic text or non-domain string payload
+    await battleStore.startBattle(firstEnemy, opts); // domain-ok: Open dynamic text or non-domain string payload
   }
 
   function validateTeamLegality(): { valid: boolean; issues: string[] } {

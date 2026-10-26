@@ -1,27 +1,27 @@
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
-import { logger } from '@/logic/utils/logger';
-import { useAuthStore } from './auth.ts';
-import { useGameStore } from './game.ts';
-import { useBattleStore } from './battle/battle.ts';
-import { useMapStore } from './map.ts';
-import { pokemonDebugService } from '@/logic/debug/pokemonDebugService';
-import { testResetShowdownWorker } from '@/logic/battle/showdownWorkerClient';
 
-// Section Registrations
-import { registerStatsTools } from './debug/sections/statsTools.ts';
-import { registerMapTools } from './debug/sections/mapTools.ts';
-import { registerPokeTools } from './debug/sections/pokeTools.ts';
-import { registerTimeTools } from './debug/sections/timeTools.ts';
-import { registerItemTools } from './debug/sections/itemTools.ts';
-import { registerSystemTools } from './debug/sections/systemTools.ts';
-import { registerBattleTools } from './debug/sections/battleTools.ts';
+import { testResetShowdownWorker } from '@/logic/battle/showdownWorkerClient';
 import {
   DEBUG_TRAINER_CHANCE_PERCENT,
   DEBUG_GUARDIAN_CHANCE_PERCENT
 } from '@/logic/constants/encounters.ts';
-
+import { pokemonDebugService } from '@/logic/debug/pokemonDebugService';
+import { logger } from '@/logic/utils/logger';
 import type { DebugTool } from '@/types/system/debug.ts';
+
+import { useAuthStore } from './auth.ts';
+import { useBattleStore } from './battle/battle.ts';
+import { registerBattleTools } from './debug/sections/battleTools.ts';
+import { registerItemTools } from './debug/sections/itemTools.ts';
+import { registerMapTools } from './debug/sections/mapTools.ts';
+import { registerPokeTools } from './debug/sections/pokeTools.ts';
+// Section Registrations
+import { registerStatsTools } from './debug/sections/statsTools.ts';
+import { registerSystemTools } from './debug/sections/systemTools.ts';
+import { registerTimeTools } from './debug/sections/timeTools.ts';
+import { useGameStore } from './game.ts';
+import { useMapStore } from './map.ts';
 
 export const useDebugStore = defineStore('debug', () => {
   const auth = useAuthStore();
@@ -30,7 +30,8 @@ export const useDebugStore = defineStore('debug', () => {
   const tools = ref<DebugTool[]>([]);
 
   const isE2E =
-    (typeof window !== 'undefined' && Boolean((window as { __E2E__?: boolean }).__E2E__)) ||
+    (typeof globalThis.window !== 'undefined' &&
+      Boolean((globalThis as { __E2E__?: boolean }).__E2E__)) ||
     (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
 
   const canAccess = computed(() => {
@@ -43,7 +44,7 @@ export const useDebugStore = defineStore('debug', () => {
     return isE2E || auth.sessionMode === 'offline' || auth.user?.role === 'admin';
   });
 
-  function securityCheck() {
+  function securityCheck(): boolean {
     if (isE2E) return true;
     if (auth.sessionMode === 'online' && auth.user?.role !== 'admin') {
       logger.error(
@@ -54,8 +55,7 @@ export const useDebugStore = defineStore('debug', () => {
       if (userId) {
         const db = game.db;
         if (db) {
-          void db
-            .from('profiles')
+          db.from('profiles')
             .update({
               is_banned: true,
               ban_reason: 'Intento de uso indebido de herramientas de debug'
@@ -63,10 +63,15 @@ export const useDebugStore = defineStore('debug', () => {
             .eq('id', userId)
             .then(() => {
               logger.success('SECURITY', 'DB Ban applied.');
+            })
+            .catch((err: unknown) => {
+              logger.error('SECURITY', 'Failed to apply DB ban', err);
             });
         }
       }
-      void auth.logout();
+      auth.logout().catch((err: unknown) => {
+        logger.error('AUTH', 'Failed to logout on security violation', err);
+      });
       return false;
     }
     return true;
@@ -97,7 +102,7 @@ export const useDebugStore = defineStore('debug', () => {
     rival: 1
   });
 
-  function resetSpawnDefaults() {
+  function resetSpawnDefaults(): void {
     forceEncounterType.value = 'none';
     shinyRateOverride.value = null;
     trainerChancePct.value = null;
@@ -113,16 +118,16 @@ export const useDebugStore = defineStore('debug', () => {
     updateGlobalProxy();
   }
 
-  function register(config: DebugTool) {
+  function register(config: DebugTool): void {
     if (tools.value.some((t) => t.id === config.id)) return;
     tools.value.push(config);
     updateGlobalProxy();
   }
 
-  function updateGlobalProxy() {
+  function updateGlobalProxy(): void {
     const globalTarget =
-      typeof window !== 'undefined'
-        ? window
+      typeof globalThis.window !== 'undefined'
+        ? globalThis
         : typeof globalThis !== 'undefined'
           ? globalThis
           : undefined;
@@ -181,17 +186,17 @@ export const useDebugStore = defineStore('debug', () => {
     Reflect.set(globalTarget.__VITE_DEBUG__, 'pokemonDebugService', pokemonDebugService);
 
     tools.value.forEach((tool) => {
-      globalTarget.__VITE_DEBUG__![tool.command] = (...args: unknown[]) => {
+      Reflect.set(globalTarget.__VITE_DEBUG__!, tool.command, (...args: unknown[]) => {
         if (securityCheck()) {
           const fn = tool.action as (...a: unknown[]) => unknown;
           return fn(...args);
         }
         return undefined;
-      };
+      });
     });
   }
 
-  async function init() {
+  function init(): void {
     logger.debug('DEBUG', 'Initializing debug tools (Modular)...');
 
     // Synchronous registrations (fastest availability)
@@ -231,7 +236,7 @@ export const useDebugStore = defineStore('debug', () => {
 
   watch(canAccess, () => updateGlobalProxy());
 
-  void init();
+  init();
 
   return {
     tools,

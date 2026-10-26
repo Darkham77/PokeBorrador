@@ -1,11 +1,11 @@
-import type { Pokemon, PokemonSelectionSource } from '@/types/pokemon/pokemon';
-import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils';
+import { getPokedexOrderIndex, requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import {
   getPokemonPhysicalWeight,
   getPokemonPhysicalHeight
 } from '@/logic/pokemon/physicalDimensionsMath';
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils';
 import { FRIENDSHIP_BOUNDS } from '@/types/pokemon/friendship';
-import { getPokedexOrderIndex, requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { Pokemon, PokemonSelectionSource } from '@/types/pokemon/pokemon';
 
 export type FilterablePokemonItem = {
   pokemon: Pokemon;

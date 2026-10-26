@@ -1,14 +1,14 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { calculateTotalIVs, hasMaxIV } from '@/logic/pokemon/statsMath';
-import { getPokemonTier } from '@/logic/pokemon/tierEngine';
+import { MAX_TOTAL_IVS_STAT_SUM } from '@/logic/constants/gameplay';
 import { hasPokemonTag, isPokemonFilterTagId } from '@/logic/constants/tags';
 import {
   resolveFriendshipSealTier,
   isReadyForFriendshipEvolution
 } from '@/logic/pokemon/friendshipLogic';
-import { FRIENDSHIP_BOUNDS } from '@/types/pokemon/friendship';
 import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils';
-import { MAX_TOTAL_IVS_STAT_SUM } from '@/logic/constants/gameplay';
+import { calculateTotalIVs, hasMaxIV } from '@/logic/pokemon/statsMath';
+import { getPokemonTier } from '@/logic/pokemon/tierEngine';
+import { FRIENDSHIP_BOUNDS } from '@/types/pokemon/friendship';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export interface BoxFilterStateData {
   search: string;

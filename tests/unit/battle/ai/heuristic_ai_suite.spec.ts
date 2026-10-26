@@ -7,19 +7,20 @@
  */
 
 import { describe, it, expect } from 'vite-plus/test';
+
+import { getPreEvolution } from '@/data/pokemon/evolutionData';
+import { VALID_NPC_SPRITES_SET, isNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import {
   evaluatePriorityKOLayer,
   evaluateGuaranteedKOLayer
 } from '@/logic/battle/ai/heuristic/heuristicLayerEvaluators';
+import { HAZARD_REMOVAL_MOVES } from '@/logic/battle/ai/heuristic/sackOrder';
 import type {
   DamageMatchup,
   HeuristicMoveInfo,
   HeuristicPokemonState
 } from '@/logic/battle/ai/heuristic/types';
-import { HAZARD_REMOVAL_MOVES } from '@/logic/battle/ai/heuristic/sackOrder';
 import { SETUP_MOVES, PRIORITY_MOVES } from '@/logic/constants/encounters';
-import { VALID_NPC_SPRITES_SET, isNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
-import { getPreEvolution } from '@/data/pokemon/evolutionData';
 
 describe('Heuristic AI Domain Suite', () => {
   describe('heuristicLayerEvaluators', () => {

@@ -1,5 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
+
+import type { PureBattleWeather } from '@/logic/battle/battleMathTypes';
 import { getCombatEnvState } from '@/logic/battle/moveCalculator';
 import {
   calculateStabMultiplier,
@@ -7,15 +9,14 @@ import {
   calculateAbilityPowerMultiplier,
   calculateItemPowerMultiplier
 } from '@/logic/battle/movePowerMultipliers';
-import { WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { PureBattleWeather } from '@/logic/battle/battleMathTypes';
-import * as timeUtils from '@/logic/utils/timeUtils';
 import { prepareSeatPayload } from '@/logic/battle/orchestratorPayloadHelper.ts';
-import { syncActiveMovesFromRequest } from '@/stores/battle/battleMoveSync.ts';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory.ts';
-import type { BattleState, ShowdownPlayerRequest } from '@/types/battle/battle.ts';
+import * as timeUtils from '@/logic/utils/timeUtils';
+import { WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry';
+import { syncActiveMovesFromRequest } from '@/stores/battle/battleMoveSync.ts';
 import { useGameStore } from '@/stores/game.ts';
+import type { BattleState, ShowdownPlayerRequest } from '@/types/battle/battle.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Move Calculator, Multipliers & PP Domain Suite', () => {
   beforeEach(() => {

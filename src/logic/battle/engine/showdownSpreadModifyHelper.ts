@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/battle/engine/showdownSpreadModifyHelper.ts
  *
@@ -5,12 +6,11 @@
  * Applies custom stat injections directly to Battle.prototype.spreadModify.
  * Exclusively consumed by Web Worker and Showdown Battle Factory.
  */
-
 import { Battle } from '@pkmn/sim';
 import type { PokemonSet, StatsTable } from '@pkmn/sim';
 
 // open-record: Pokémon Showdown custom stats spread map
-export const statsMap = new Map<string, Record<string, number>>();
+export const statsMap = new Map<string, Record<DisplayText, number>>();
 
 const SPREAD_MODIFY_PATCH_MARKER = Symbol.for('pokevicio.showdown.spread-modify-patched');
 
@@ -18,11 +18,11 @@ const MIN_STAT_CLAMP = 1;
 const MAX_STAT_CLAMP = 9999;
 
 // open-record: Dynamic Showdown raw stats dictionary
-function normalizeAndClampStats(rawStats: Record<string, number>): StatsTable {
-  const clampStat = (val: number) =>
+function normalizeAndClampStats(rawStats: Record<DisplayText, number>): StatsTable {
+  const clampStat = (val: number): number =>
     Math.max(MIN_STAT_CLAMP, Math.min(Math.floor(val), MAX_STAT_CLAMP));
   // open-record: Mapped Showdown stats record
-  const mapped: Record<string, number> = { ...rawStats };
+  const mapped: Record<DisplayText, number> = { ...rawStats };
   if (mapped.maxHp !== undefined && mapped.hp === undefined) {
     mapped.hp = mapped.maxHp;
   }
@@ -44,7 +44,7 @@ function resolveCustomSpreadStats(set?: PokemonSet): StatsTable | null {
     }
   }
 
-  const setStats = Reflect.get(set, 'stats') as Record<string, number> | undefined; // open-record: Custom Showdown stats dictionary
+  const setStats = Reflect.get(set, 'stats') as Record<DisplayText, number> | undefined; // open-record: Custom Showdown stats dictionary
   if (setStats) {
     return normalizeAndClampStats(setStats);
   }
@@ -57,11 +57,7 @@ function resolveCustomSpreadStats(set?: PokemonSet): StatsTable | null {
  */
 export function patchShowdownSpreadModify(_getIsE2eMode?: () => boolean): void {
   if (Reflect.get(Battle.prototype, SPREAD_MODIFY_PATCH_MARKER) === true) return;
-  const originalSpreadModify = Reflect.get(Battle.prototype, 'spreadModify') as (
-    this: Battle,
-    baseStats: Parameters<Battle['spreadModify']>[0],
-    set: Parameters<Battle['spreadModify']>[1]
-  ) => ReturnType<Battle['spreadModify']>;
+  const originalSpreadModify = Reflect.get(Battle.prototype, 'spreadModify');
   Battle.prototype.spreadModify = function (baseStats, set) {
     const customStats = resolveCustomSpreadStats(set);
     if (customStats) {

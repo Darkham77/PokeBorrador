@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * Shared @smogon/calc adapter for move damage tooltips.
  * Wraps calculate() with actual game stats, field conditions,
@@ -10,21 +11,21 @@ import {
   Field,
   Side,
   calculate,
-  type GenerationNum,
   type State
 } from '@smogon/calc';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleConditionKey, BattleStages } from '@/types/battle/battle';
-import type { Move } from '@/types/pokemon/pokemon';
-import { isWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry.ts';
-import { ACTIVE_GENERATION } from '@/data/system/constants';
-import { toID } from '@/logic/utils/strings.ts';
-import { requireAbilityId } from '@/data/battle/abilities';
-import { requireItemId } from '@/data/inventory/items';
-import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
-import { CHOICE_ITEM_STAT_MULTIPLIER } from '@/logic/constants/gameplay';
 
-const GEN = Generations.get(ACTIVE_GENERATION as GenerationNum);
+import { requireAbilityId } from '@/data/battle/abilities';
+import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
+import { requireItemId } from '@/data/inventory/items';
+import { ACTIVE_GENERATION } from '@/data/system/constants';
+import { CHOICE_ITEM_STAT_MULTIPLIER } from '@/logic/constants/gameplay';
+import { toID } from '@/logic/utils/strings.ts';
+import { isWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry.ts';
+import type { BattleConditionKey, BattleStages } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { Move } from '@/types/pokemon/pokemon';
+
+const GEN = Generations.get(ACTIVE_GENERATION);
 
 // ── Public result type ────────────────────────────────────────────────────────
 
@@ -91,7 +92,7 @@ function addToCache(key: string, result: SmogonTooltipResult): void {
 /** Map special-case species IDs. Same as AI's damageCalculator. */
 function resolveSpecies(id: string): string {
   // open-record: Special-case Showdown species names normalization map
-  const map: Record<string, string> = {
+  const map: Record<DisplayText, string> = {
     nidoranf: 'Nidoran-F',
     nidoranm: 'Nidoran-M',
     farfetchd: "Farfetch'd",
@@ -103,13 +104,13 @@ function resolveSpecies(id: string): string {
   return map[normalized] ?? id.charAt(0).toUpperCase() + id.slice(1);
 }
 
-import type { PokemonStatus } from '@/types/pokemon/pokemon';
+import { POKEMON_STATUSES, type PokemonStatus } from '@/types/pokemon/pokemon';
+
+const VALID_SMOGON_STATUSES: ReadonlySet<string> = new Set<string>(POKEMON_STATUSES);
 
 function toSmogonStatus(status: string | null | undefined): PokemonStatus {
-  if (!status) return '';
-  const s = status as PokemonStatus;
-  if (s === 'par' || s === 'brn' || s === 'psn' || s === 'slp' || s === 'frz' || s === 'tox') {
-    return s;
+  if (status && VALID_SMOGON_STATUSES.has(status)) {
+    return status as PokemonStatus;
   }
   return '';
 }
@@ -122,7 +123,7 @@ function toSmogonStatus(status: string | null | undefined): PokemonStatus {
 function buildSmogonPokemon(
   p: Pokemon,
   stages: Partial<BattleStages>,
-  isCrit = false
+  _isCrit = false
 ): SmogonPokemon {
   const speciesName = resolveSpecies(p.id);
   let pkmn: SmogonPokemon;
@@ -167,7 +168,7 @@ function buildSmogonPokemon(
   pkmn.originalCurHP = Math.min(p.hp, p.maxHp);
 
   // Override clone() to ensure custom stats are not reset when cloned by the calculator.
-  const customClone = function (this: SmogonPokemon) {
+  const customClone = function (this: SmogonPokemon): SmogonPokemon {
     const c = SmogonPokemon.prototype.clone.call(this);
     c.rawStats = { ...this.rawStats };
     c.stats = { ...this.stats };
@@ -177,7 +178,7 @@ function buildSmogonPokemon(
   };
   pkmn.clone = customClone;
 
-  void isCrit; // crit is handled on the Move object
+  // Note: crit is handled on the Move object in smogonCalc
   return pkmn;
 }
 
@@ -193,7 +194,7 @@ const SHOWDOWN_CALC_WEATHER_MAP: Partial<Record<WeatherId, State.Field['weather'
 };
 
 // open-record: Terrain name display label mapped to Smogon field terrain
-const TERRAIN_MAP: Record<string, State.Field['terrain']> = {
+const TERRAIN_MAP: Record<DisplayText, State.Field['terrain']> = {
   'Electric Terrain': 'Electric',
   'Grassy Terrain': 'Grassy',
   'Misty Terrain': 'Misty',
@@ -354,10 +355,15 @@ function evaluateTerrainReductions(
     atkPkmn.item !== 'airballoon' &&
     atkPkmn.item !== 'Air Balloon';
 
+  const GRASSY_TERRAIN_WEAKENED_MOVE_VALUES = ['earthquake', 'bulldoze', 'magnitude'] as const;
+  const GRASSY_TERRAIN_WEAKENED_MOVES: ReadonlySet<string> = new Set<string>(
+    GRASSY_TERRAIN_WEAKENED_MOVE_VALUES
+  );
+
   if (
     isDefGrounded &&
     normTerrain.includes('grassy') &&
-    (moveId === 'earthquake' || moveId === 'bulldoze' || moveId === 'magnitude')
+    GRASSY_TERRAIN_WEAKENED_MOVES.has(moveId)
   ) {
     terrainReductions.push(
       'Daño de Terremoto/Terratemblor/Magnitud reducido a la mitad por Terreno de Hierba'
@@ -435,7 +441,7 @@ export function calculateDamageForTooltip(
     const [critMinDmg, critMaxDmg] = resultCrit.range();
     const defMaxHp = defender.maxHp;
 
-    const pct = (v: number) => (defMaxHp > 0 ? (v / defMaxHp) * 100 : 0);
+    const pct = (v: number): number => (defMaxHp > 0 ? (v / defMaxHp) * 100 : 0);
 
     const koChance = result.kochance(false);
     const recovery = result.recovery();

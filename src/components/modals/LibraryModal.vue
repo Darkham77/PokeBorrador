@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import type { DisplayText } from '@francogp/auditor';
 import { gsap } from 'gsap';
-import { libraryContent, libraryCategories } from '@/data/system/libraryData';
+import { ref, computed, watch } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
 import { useGsapTransition } from '@/composables/ui/useGsapTransition';
+import { libraryContent, libraryCategories } from '@/data/system/libraryData';
 import { sanitizeHtml } from '@/logic/utils/sanitizeHtml';
 
 interface Props {
@@ -34,14 +36,14 @@ watch(
 
 const currentContent = computed(() => {
   return (
-    (libraryContent as Record<string, string>)[selectedTab.value] || // open-record: Generic dynamic key-value JSON container
+    (libraryContent as Record<DisplayText, string>)[selectedTab.value] || // open-record: Generic dynamic key-value JSON container
     '<h1>Próximamente</h1><p>En construcción.</p>'
   );
 });
 
 const TAB_SWITCH_FADE_DELAY_SEC = 0.15;
 
-const selectTab = (tabId: string) => {
+const selectTab = (tabId: string): void => {
   if (selectedTab.value === tabId) return;
 
   contentFade.value = false;

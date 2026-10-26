@@ -6,7 +6,8 @@
 
 import fsPromises from 'node:fs/promises';
 import path from 'node:path';
-import { styleText, parseArgs } from 'node:util';
+import { styleText } from 'node:util';
+import { parseArgs as parseCittyArgs } from 'citty';
 
 const ENV_FILE = path.resolve(process.cwd(), '.env');
 const DEFAULT_POSTGRES_PORT_TEXT = '5432';
@@ -118,8 +119,8 @@ export async function readAndParseEnv(): Promise<Record<string, ServerConfig>> {
         parseKeyVal(match[1].trim(), match[2].trim());
       }
     }
-  } catch {
-    // catch-ok: .env file not present or unreadable, ignore and proceed to process.env
+  } catch (err) {
+    console.warn('[Handled controlled exception]:', err);
   }
 
   // 2. Parse / overlay from process.env (CI/CD environments, GitHub Actions secrets)
@@ -166,9 +167,9 @@ export function buildDatabaseUrl(conf: ServerConfig, canonicalName: string): str
           );
           dbUrl = `postgres://postgres.${tenant}:${encodeURIComponent(pass)}@${host}:${port}/postgres`;
         }
-      } catch {
-        // catch-ok: URL parsing failure, fallback to empty dbUrl
-      }
+      } catch (err) {
+    console.warn('[Handled controlled exception]:', err);
+  }
     }
   }
   return dbUrl;
@@ -195,7 +196,7 @@ export async function getValidatedServerConfigs(): Promise<{
       baseProfiles.concat(
         Object.values(serverConfigs)
           .map((c) => c.ID)
-          .filter(Boolean) as string[]
+          .filter((id): id is string => typeof id === 'string')
       )
     )
   ); // no-domain: Non-domain utility collection or data structure
@@ -220,20 +221,16 @@ export function parseServerArguments(
   baseProfiles: string[],
   allAvailable: string[]
 ): string[] {
-  const normalized = args.map((a) => (a.includes('=') && !a.startsWith('-') ? `--${a}` : a));
-  const { values, positionals } = parseArgs({
-    args: normalized,
-    options: {
-      server: { type: 'string', short: 's' },
-      all: { type: 'boolean', short: 'a' },
-      help: { type: 'boolean', short: 'h' }
-    },
-    allowPositionals: true,
-    strict: false
+  const parsed = parseCittyArgs(args, {
+    server: { type: 'string', alias: 's' },
+    all: { type: 'boolean', alias: 'a' },
+    help: { type: 'boolean', alias: 'h' }
   });
 
-  const isHelp =
-    values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
+  const positionals = Array.isArray(parsed._)
+    ? parsed._.filter((p): p is string => typeof p === 'string')
+    : [];
+  const isHelp = Boolean(parsed.help || positionals.includes('help'));
   if (isHelp) {
     console.log(
       styleText('cyan', `\n📖 USO: npm run <comando> [server=<perfil> | <perfil> | all]`)
@@ -257,9 +254,9 @@ export function parseServerArguments(
   }
 
   const isAll = Boolean(
-    values.all || values.server === 'all' || positionals.includes('all') || args.includes('all')
+    parsed.all || parsed.server === 'all' || positionals.includes('all')
   );
-  const rawServer = typeof values.server === 'string' ? values.server.replace(/^=/, '') : undefined;
+  const rawServer = typeof parsed['server'] === 'string' ? String(parsed['server']).replace(/^=/, '') : undefined;
   const serverArg =
     (rawServer && rawServer !== 'all' ? rawServer : undefined) ||
     positionals.find((p) => p !== 'all' && (allAvailable.includes(p) || baseProfiles.includes(p)));
@@ -280,4 +277,38 @@ export function parseServerArguments(
   }
 
   return serverArg ? [serverArg] : baseProfiles;
+}
+
+export interface ServerCliOptions {
+  server?: string;
+  all?: boolean;
+}
+
+export function resolveServerProfiles(
+  options: ServerCliOptions,
+  baseProfiles: string[],
+  allAvailable: string[]
+): string[] {
+  if (options.all || options.server === 'all') {
+    return baseProfiles;
+  }
+  if (options.server) {
+    const s = options.server;
+    if (allAvailable.includes(s) || baseProfiles.includes(s)) {
+      return [s];
+    }
+    console.error(
+      styleText('red', `❌ Error: El perfil de servidor "${s}" no existe en el archivo .env.`)
+    );
+    console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
+    process.exit(1);
+  }
+  console.log(
+    styleText(
+      'yellow',
+      '⚠️  Especifica qué servidor deseas seleccionar indicando server=<perfil>, el nombre del servidor o "all".'
+    )
+  );
+  console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
+  process.exit(1);
 }

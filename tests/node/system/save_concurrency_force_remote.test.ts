@@ -6,15 +6,17 @@
  * because the in-flight save's options were used instead.
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
-import { saveGame, resetSaveOperationState } from '../../../src/logic/auth/saveService.ts';
-import { saveCoordinator } from '../../../src/logic/auth/saveCoordinator.ts';
-import { INITIAL_STATE } from '../../../src/stores/gameInitialState.ts';
-import { pokemonDebugService } from '../../../src/logic/debug/pokemonDebugService.ts';
+
+import { describe, it } from 'vite-plus/test';
+
 import { requirePokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
-import type { GameState } from '../../../src/types/system/game.ts';
+import { saveCoordinator } from '../../../src/logic/auth/saveCoordinator.ts';
+import { saveGame, resetSaveOperationState } from '../../../src/logic/auth/saveService.ts';
+import { pokemonDebugService } from '../../../src/logic/debug/pokemonDebugService.ts';
+import { INITIAL_STATE } from '../../../src/stores/gameInitialState.ts';
 import type { AuthUser } from '../../../src/types/auth/auth.ts';
+import type { GameState } from '../../../src/types/system/game.ts';
 
 describe('saveService Concurrency forceRemote Preservation', () => {
   it('preserves forceRemote: true when queued behind an un-forced in-flight save', async () => {

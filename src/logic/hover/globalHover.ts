@@ -1,12 +1,13 @@
 import { gsap } from 'gsap';
+
 import { triggerEnter } from './hoverEnter.ts';
-import { triggerLeave } from './hoverLeave.ts';
 import { is3DButton, getElementShadowColorAndDepth } from './hoverHelpers.ts';
+import { triggerLeave } from './hoverLeave.ts';
 
 const activeHoveredElements = new Set<HTMLElement>();
 
-export function initGlobalHoverSystem() {
-  if (typeof window === 'undefined') return;
+export function initGlobalHoverSystem(): void {
+  if (typeof globalThis.window === 'undefined') return;
 
   const selectors =
     '.pokecenter-banner, .pc-banner, .egg-hud-card, .egg-card, .pokemon-display-card, .box-pokemon-card, .team-swap-card, .pokemon-summary-card, .unified-card, .interactive-pill, .trainer-card, .class-card, .item-node, .pv-tooltip-trigger, .friend-card, .map-row, .hud-pill, .shop-item-card, .bc-shop-item-card, .war-shop-item-card, .hud-nav-btn, .list-item, .market-item-wrapper, .quick-item-card, .gym-card, .pdx-pokemon-card, .inventory-item-card, .trainer-avatar-container, .badge-icon, .main-sprite, .edit-nick-btn, .upd-tab-btn, .info-item, .map-pill, .location-tag, .faction-status-pill, .dom-badge, .btn-catch-ball, button, [role="button"], .btn-confirm, .btn-cancel';

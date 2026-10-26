@@ -1,8 +1,9 @@
-import type { DayPhase } from '@/logic/utils/timeUtils';
 import type { PokemonMoveId } from '@/data/battle/moves';
+import { DAY_CYCLE_BOOST_MULTIPLIER } from '@/logic/constants/gameplay.ts';
+import type { DayPhase } from '@/logic/utils/timeUtils';
+
 import type { PurePokemon, PureMove, PureBattleWeather } from './battleMathTypes.ts';
 import { calculateDeltaStreamTypeEff } from './battleTypeEffectiveness.ts';
-import { DAY_CYCLE_BOOST_MULTIPLIER } from '@/logic/constants/gameplay.ts';
 
 const WEATHER_BOOST_MULTIPLIER = 1.5 as const;
 const WEATHER_REDUCTION_MULTIPLIER = 0.5 as const;
@@ -112,6 +113,15 @@ function calculateWeatherDamageMultiplier(
   return weatherMult * solarPenalty;
 }
 
+const GRASSY_TERRAIN_REDUCED_MOVE_IDS = [
+  'earthquake',
+  'bulldoze',
+  'magnitude'
+] as const satisfies readonly PokemonMoveId[];
+const GRASSY_TERRAIN_REDUCED_MOVES: ReadonlySet<string> = new Set<string>(
+  GRASSY_TERRAIN_REDUCED_MOVE_IDS
+);
+
 function resolveTerrainMultiplier(
   terrain: string | null | undefined,
   moveType: string,
@@ -120,7 +130,7 @@ function resolveTerrainMultiplier(
   if (
     terrain === 'grassyterrain' &&
     moveType === 'ground' &&
-    (cleanMoveId === 'earthquake' || cleanMoveId === 'bulldoze' || cleanMoveId === 'magnitude')
+    GRASSY_TERRAIN_REDUCED_MOVES.has(cleanMoveId)
   ) {
     return TERRAIN_REDUCTION_MULTIPLIER;
   }

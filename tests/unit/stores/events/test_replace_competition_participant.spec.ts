@@ -1,8 +1,9 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
 import { ref } from 'vue';
+
+import type { CompetitionEntry } from '@/logic/events/eventCompetitions';
 import { submitCompetitionEntry } from '@/stores/events/eventEnrollmentActions';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { CompetitionEntry } from '@/logic/events/eventCompetitions';
 
 describe('Tier 1: Participant Replacement in submitCompetitionEntry', () => {
   it('releases onEvent from previous Pokemon when replacing slot with a new Pokemon', async () => {

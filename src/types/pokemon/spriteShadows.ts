@@ -4,12 +4,13 @@
  * Domain contracts for sprite shadow calibration and manual overrides.
  */
 
-import type { GenderName } from '@pkmn/types';
-import type { GenderId, TrainerAssetView } from '@/types/system/game';
-import { TRAINER_ASSET_VIEWS } from '@/types/system/game';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { AssetUri, DisplayText } from '@francogp/auditor';
+
 import { isPlayerClassId, type PlayerClassId } from '@/data/player/playerClasses';
 import type { NpcSpriteId, NpcArchetypeId } from '@/data/pokemon/npcSpriteCatalog';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { GenderId, TrainerAssetView } from '@/types/system/game';
+import { TRAINER_ASSET_VIEWS } from '@/types/system/game';
 
 export interface SpriteShadowOverride {
   readonly feetX: number;
@@ -54,7 +55,7 @@ export const SHADOW_SCALE_STEP = 0.05;
 export const SHADOW_SLIDER_FIELDS = ['x', 'y', 'scale'] as const;
 export type ShadowSliderField = (typeof SHADOW_SLIDER_FIELDS)[number];
 
-export type SpriteShadowOverridesMap = Record<string, SpriteShadowOverride>; // open-record: Generic key-value data dictionary container
+export type SpriteShadowOverridesMap = Record<DisplayText, SpriteShadowOverride>;
 
 export type PackedFeetTuple = readonly [
   feetY: number,
@@ -68,9 +69,9 @@ export type ShadowEntityCategory = (typeof SHADOW_ENTITY_CATEGORIES)[number];
 export type EditorEntityCategory = Exclude<ShadowEntityCategory, 'all'>;
 
 export interface BaseEditorEntity {
-  readonly key: string; // domain-ok: Open dynamic text or non-domain string payload
-  readonly name: string; // domain-ok: Open dynamic text or non-domain string payload
-  readonly spriteUrl: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly key: DisplayText;
+  readonly name: DisplayText;
+  readonly spriteUrl: AssetUri;
   readonly defaultFeetX: number;
   readonly defaultFeetY: number;
   readonly defaultIsFlying: boolean;
@@ -80,12 +81,15 @@ export interface BaseEditorEntity {
 export const SPRITE_SHADOW_VIEWS = ['front', 'back'] as const;
 export type SpriteShadowView = (typeof SPRITE_SHADOW_VIEWS)[number];
 
+const BINARY_GENDERS = ['M', 'F'] as const;
+export type BinaryGender = (typeof BINARY_GENDERS)[number];
+
 export interface PokemonEditorEntity extends BaseEditorEntity {
   readonly category: 'pokemon';
   readonly pokemonSpeciesId: PokemonSpeciesId;
   readonly dexNumber: number;
   readonly gen: number;
-  readonly gender: Extract<GenderName, 'M' | 'F'>;
+  readonly gender: BinaryGender;
   readonly view: SpriteShadowView;
 }
 

@@ -1,3 +1,4 @@
+import { setActivePinia, createPinia } from 'pinia';
 /**
  * tests/unit/system/system_app_lifecycle_and_stores_suite.spec.ts
  * Cohesive domain suite consolidating app loading/session helpers, game store loading,
@@ -5,20 +6,21 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
+
 import {
   resolveAppLoadingInfo,
   shouldShowLoadingOverlay,
   resolveUpdateOverlayMessage
 } from '@/composables/system/appLoadingHelper.ts';
 import { handleGlobalBlockEvent } from '@/composables/system/appSessionHelper.ts';
-import { useErrorStore } from '@/stores/errorStore';
-import { useAudioStore } from '@/stores/audio';
 import * as engine from '@/logic/audio/audioEngine';
-import { useUpdateStore } from '@/stores/update';
-import { useAuthStore } from '@/stores/auth';
-import { formatDisplayDate, formatChatTimestamp } from '@/logic/utils/timeUtils';
 import { loadBestSave } from '@/logic/auth/loadService';
+import { formatDisplayDate, formatChatTimestamp } from '@/logic/utils/timeUtils';
+import { useAudioStore } from '@/stores/audio';
+import { useAuthStore } from '@/stores/auth';
+import { useErrorStore } from '@/stores/errorStore';
+import { useUpdateStore } from '@/stores/update';
+
 import { setupLocalStorageMock } from './localStorageMock.ts';
 
 setupLocalStorageMock();

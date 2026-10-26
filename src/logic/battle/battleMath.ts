@@ -1,8 +1,10 @@
-import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { DisplayText } from '@francogp/auditor';
+
 import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { isStatIdExceptHP } from '@/logic/pokemon/statsMath';
+import type { DayPhase } from '@/logic/utils/timeUtils';
+
 import { getMechanicalWeather } from '../weather/weatherRegistry.ts';
-import { calculateDetailedStatBreakdown } from './statBreakdownHelper.ts';
 import type {
   PurePokemon,
   PureMove,
@@ -11,9 +13,9 @@ import type {
   PureDamageOptions,
   PureDamageResult
 } from './battleMathTypes.ts';
+import { calculateDetailedStatBreakdown } from './statBreakdownHelper.ts';
 export * from './battleMathTypes.ts';
 
-import { getCombinedEff, getEffectivenessPresentation } from './battleTypeEffectiveness.ts';
 import {
   getMoveCategory,
   getAbilityMultiplierPure,
@@ -21,9 +23,9 @@ import {
   calculateStabMultiplier,
   resolveAbilitiesMultiplier
 } from './battleAbilityDamage.ts';
+import { getCombinedEff, getEffectivenessPresentation } from './battleTypeEffectiveness.ts';
 export { getMoveCategory, getAbilityMultiplierPure };
 
-import { resolveEnvironmentModifiers } from './battleEnvironmentModifiers.ts';
 import {
   calculateCritOutcome,
   adjustCritStages,
@@ -33,13 +35,14 @@ import {
   calculateKoChanceText,
   tryGetFixedDamage
 } from './battleDamageRoll.ts';
+import { resolveEnvironmentModifiers } from './battleEnvironmentModifiers.ts';
 
 const DEFAULT_STAT_FALLBACK_VAL = 10 as const;
 const DAMAGE_ROLL_MIN_RATIO = 0.85 as const;
 const DAMAGE_ROLL_MAX_RATIO = 1.0 as const;
 
 // open-record: Numeric stage string multiplier dictionary
-export const STAGE_MULTIPLIERS_STAT: Record<string, number> = {
+export const STAGE_MULTIPLIERS_STAT: Record<DisplayText, number> = {
   '-6': 2 / 8,
   '-5': 2 / 7,
   '-4': 2 / 6,
@@ -56,7 +59,7 @@ export const STAGE_MULTIPLIERS_STAT: Record<string, number> = {
 };
 
 // open-record: Numeric stage string accuracy multiplier dictionary
-export const STAGE_MULTIPLIERS_ACC: Record<string, number> = {
+export const STAGE_MULTIPLIERS_ACC: Record<DisplayText, number> = {
   '-6': 3 / 9,
   '-5': 3 / 8,
   '-4': 3 / 7,

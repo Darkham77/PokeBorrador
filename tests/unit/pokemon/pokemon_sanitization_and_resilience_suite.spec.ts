@@ -1,18 +1,20 @@
+import { setActivePinia, createPinia } from 'pinia';
 /**
  * tests/unit/pokemon/pokemon_sanitization_and_resilience_suite.spec.ts
  * Cohesive domain suite consolidating Pokemon resilience, save sanitization safeguards,
  * disabled/unreleased species purging, stats recalculation, and buff timer clamps.
  */
 import { describe, it, expect, beforeEach } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
-import { checkPokemonLegality, repairPokemonLegality } from '@/logic/pokemon/pokemonLegality';
-import { validateAndSanitize } from '@/logic/auth/saveSanitizer';
-import { filterAndSortPokemon } from '@/logic/pokemon/pokemonSelectionFilter';
-import { auditAndRepairSaveData } from '../../../scripts/maintenance/repair_account_legality.ts';
-import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
+
 import { BUFF_FIELDS, getMaxBuffDuration } from '@/data/inventory/items';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { validateAndSanitize } from '@/logic/auth/saveSanitizer';
+import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
+import { checkPokemonLegality, repairPokemonLegality } from '@/logic/pokemon/pokemonLegality';
+import { filterAndSortPokemon } from '@/logic/pokemon/pokemonSelectionFilter';
 import type { SaveDataDto } from '@/logic/validation/schemas';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import { auditAndRepairSaveData } from '../../../scripts/maintenance/repair_account_legality.ts';
 
 function createTestSave(team: Pokemon[]): SaveDataDto {
   return {

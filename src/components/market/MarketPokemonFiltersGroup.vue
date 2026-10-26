@@ -18,7 +18,7 @@ const emit = defineEmits<{
   (e: 'change-type', val: string): void;
 }>();
 
-const getTypeEmoji = (type: string) => {
+const getTypeEmoji = (type: string): string => {
   const emojis: Record<MarketTypeFilter, string> = {
     fire: '🔥',
     water: '💧',

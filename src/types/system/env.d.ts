@@ -1,3 +1,4 @@
+import type { DisplayText, JsonObject } from '@francogp/auditor';
 import type { SideID } from '@pkmn/sim';
 import type {
   ShowdownPlayerRequest,
@@ -122,7 +123,7 @@ declare global {
     isTransformed?: boolean;
     ability?: string;
     moves?: Array<{ id: string; pp?: number; maxpp?: number } | null>;
-    volatileCounters?: Record<string, unknown> | null; // open-record: Generic key-value data dictionary container
+    volatileCounters?: import('@francogp/auditor').JsonObject | null;
   }
 
   interface BattleLogEntry {
@@ -214,7 +215,10 @@ declare global {
     createPokemon?: (config: unknown) => Promise<void>;
     getSimulatorState?: () => Promise<{ p1: unknown[]; p2: unknown[] }>;
     nextEnemyChoice?: string; // domain-ok: Open dynamic text or non-domain string payload
-    getGameStore?: () => { state: { team: unknown[]; money?: number } } & Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    getGameStore?: () => { state: { team: unknown[]; money?: number } } & import('@francogp/auditor').JsonObject;
+    lastWorkerInitStage?: string;
+    lastWorkerInitError?: string;
+    replayHistoryIdx?: number;
     p1ChoiceIdx?: number;
     p2ChoiceIdx?: number;
     isDeterministicSimulation?: boolean;
@@ -259,21 +263,21 @@ declare global {
     fastRankedDelay?: boolean;
     testResetShowdownWorker?: () => void;
     useBattleStore?: () => {
-      state: Record<string, unknown> | null; // open-record: Generic key-value data dictionary container
+      state: import('@francogp/auditor').JsonObject | null;
       isBattleActive: boolean;
       fsm?: { currentState: string };
       startBattle: (mon: unknown, opts?: unknown) => Promise<void>;
-    } & Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    } & import('@francogp/auditor').JsonObject;
     useGameStore?: () => {
       state: { team: unknown[]; starterChosen: boolean; money?: number };
-    } & Record<string, unknown>; // open-record: Generic key-value data dictionary container
-    useLoadingStore?: () => { isLoading: (key?: string) => boolean } & Record<string, unknown>; // open-record: Generic key-value data dictionary container
-    useMapStore?: () => { setGlobalWeather: (weather: string) => void } & Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    } & import('@francogp/auditor').JsonObject;
+    useLoadingStore?: () => { isLoading: (key?: string) => boolean } & import('@francogp/auditor').JsonObject;
+    useMapStore?: () => { setGlobalWeather: (weather: string) => void } & import('@francogp/auditor').JsonObject;
     useModalStore?: () => {
-      open: (name: string, props?: Record<string, unknown>) => string | null; // open-record: Generic key-value data dictionary container
+      open: (name: string, props?: import('@francogp/auditor').JsonObject) => string | null;
       close: (identifier: string) => void;
       stack?: Array<{ id: string; name: string; closing?: boolean }>;
-    }; // open-record: Generic key-value data dictionary container
+    };
     useUIStore?: () => {
       isBattleSwitchForced: boolean;
       notify: (msg: string, icon?: string) => void;
@@ -282,8 +286,8 @@ declare global {
     certifiedReplayWorkerEnded?: boolean;
     certifiedReplayWorkerFinalState?: unknown;
     history?: unknown[];
-    multipliers?: Record<string, number>; // open-record: Generic key-value data dictionary container
-    triggerAnim?: (type: string, side?: string, options?: Record<string, unknown>) => void; // open-record: Generic key-value data dictionary container
+    multipliers?: Record<DisplayText, number>; // open-record: Generic key-value data dictionary container
+    triggerAnim?: (type: string, side?: string, options?: Record<DisplayText, unknown>) => void;
     playSound?: (id: string) => void;
     setStatus?: (side: string, status: string) => void;
     setSecondaryStatus?: (side: string, type: string) => void;
@@ -294,7 +298,7 @@ declare global {
     advanceBuffSeconds?: (seconds: number) => void;
     setBuffDuration?: (field: string, seconds: number) => void;
     battle?: unknown;
-    [key: string]: unknown; // open-record: Generic key-value data dictionary container
+    history?: import('@/logic/battle/helpers/showdownBattleRunner').CertifiedReplayHistoryEntry[];
   }
 
   interface Window {
@@ -327,8 +331,8 @@ declare global {
     __VITE_DEBUG_GAME_STORE_RESOLVER__?: () => ReturnType<
       typeof import('@/stores/game').useGameStore
     >;
-    showGameError?: (error: Error | string, context?: Record<string, unknown>) => void; // domain-ok: Open dynamic text or non-domain string payload // string-ok: Internal string formatting or DOM token identifier // open-record: Generic key-value data dictionary container
-    __CURRENT_BATTLE_WEATHER__?: string; // domain-ok: Open dynamic text or non-domain string payload
+    showGameError?: (error: unknown, context?: JsonObject) => void;
+    __CURRENT_BATTLE_WEATHER__?: DisplayText;
     __WEATHER_SESSION_SEED__?: number;
     __GET_DB_TIME_OFFSET__?: () => number;
     gsap?: typeof import('gsap').gsap;
@@ -337,7 +341,7 @@ declare global {
   var __VITE_DEBUG__: ViteDebugApi | undefined;
   var __E2E__: boolean | undefined;
   var __E2E_DRIVER__: E2eDatabaseDriver | undefined;
-  var __APP_VERSION__: string;
+  var __APP_VERSION__: DisplayText;
 }
 
 export {};

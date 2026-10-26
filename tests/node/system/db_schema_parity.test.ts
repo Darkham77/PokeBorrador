@@ -1,8 +1,10 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
+
+import { describe, it } from 'vite-plus/test';
+
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
+import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
 import {
   splitSQLStatements,
   translatePostgresToSqlite

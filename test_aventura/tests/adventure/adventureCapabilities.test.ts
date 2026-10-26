@@ -1,12 +1,14 @@
-import { describe, it, beforeEach } from 'vitest';
 import assert from 'node:assert/strict';
+
 import { setActivePinia, createPinia } from 'pinia';
-import { useGameStore } from '../../../src/stores/game.ts';
-import { useAdventureCapabilities } from '../../composables/useAdventureCapabilities.ts';
-import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
-import type { MapNode } from '../../logic/adventure/mapData.ts';
-import { requirePokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
+import { describe, it, beforeEach } from 'vitest';
+
 import { requirePokemonMoveId } from '../../../src/data/battle/moves.ts';
+import { requirePokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
+import { useGameStore } from '../../../src/stores/game.ts';
+import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
+import { useAdventureCapabilities } from '../../composables/useAdventureCapabilities.ts';
+import type { MapNode } from '../../logic/adventure/mapData.ts';
 
 function createMockPokemon(moves: string[], speciesName = 'squirtle'): Pokemon {
   const species = requirePokemonSpeciesId(speciesName);

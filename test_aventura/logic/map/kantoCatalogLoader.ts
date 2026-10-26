@@ -9,20 +9,20 @@ import type { CatalogPrefab, SemanticTileCatalog } from '../../types/map/kantoTi
 import { resolveAssetWebPath } from './assetWebPathResolver.ts';
 
 export class DynamicCatalogLoader {
-  catalog: SemanticTileCatalog | null = null;
-  readonly images = new Map<string, HTMLImageElement>();
+  public catalog: SemanticTileCatalog | null = null;
+  public readonly images = new Map<string, HTMLImageElement>();
   private _isLoaded = false;
 
-  get isLoaded(): boolean {
+  public get isLoaded(): boolean {
     return this._isLoaded;
   }
 
-  reset(): void {
+  public reset(): void {
     this._isLoaded = false;
     this.images.clear();
   }
 
-  async init(_basePath = '/test_aventura/assets/tiles/'): Promise<void> {
+  public async init(_basePath = '/test_aventura/assets/tiles/'): Promise<void> {
     if (this._isLoaded) return;
 
     try {
@@ -76,35 +76,32 @@ export class DynamicCatalogLoader {
       if (!pRes.ok) pRes = await fetch('/assets/studio/kanto/prefabs/manifest.json');
       if (!pRes.ok) return;
       const pData = await pRes.json();
-      if (pData?.autotiles && Array.isArray(pData.autotiles)) {
+      if (Array.isArray(pData?.autotiles)) {
         for (const at of pData.autotiles) sheetFiles.add(at);
       }
-      if (pData?.prefabs && Array.isArray(pData.prefabs)) {
-        for (const item of pData.prefabs) {
-          if (item.file_path) {
-            sheetFiles.add(item.file_path);
-            const pathStr = item.file_path as string;
-            if (pathStr.startsWith('/assets/')) {
-              sheetFiles.add(`/test_aventura${pathStr}`);
-            }
-          }
-          if (item.id) {
-            sheetFiles.add(item.id);
-            sheetFiles.add(`${item.id}.png`);
+      const prefabsList = Array.isArray(pData?.prefabs) ? pData.prefabs : [];
+      for (const item of prefabsList) {
+        if (item.file_path) {
+          sheetFiles.add(item.file_path);
+          const pathStr = item.file_path as string;
+          if (pathStr.startsWith('/assets/')) {
+            sheetFiles.add(`/test_aventura${pathStr}`);
           }
         }
+        if (item.id) {
+          sheetFiles.add(item.id);
+          sheetFiles.add(`${item.id}.png`);
+        }
       }
-    } catch {
-      // catch-ok: Fallback when optional local storage prefabs manifest is unavailable or corrupted
+    } catch (err) {
+      console.warn('Handled controlled exception:', err);
     }
 
-    if (this.catalog.prefabs) {
-      for (const group of Object.values(this.catalog.prefabs)) {
-        for (const prefab of Object.values(group)) {
-          if (!prefab.parts) continue;
-          for (const part of prefab.parts) {
-            if (part.sheet) sheetFiles.add(part.sheet);
-          }
+    const prefabsCatalog = this.catalog.prefabs ?? {};
+    for (const group of Object.values(prefabsCatalog)) {
+      for (const prefab of Object.values(group)) {
+        for (const part of prefab.parts ?? []) {
+          if (part.sheet) sheetFiles.add(part.sheet);
         }
       }
     }
@@ -320,7 +317,7 @@ export class DynamicCatalogLoader {
     this._isLoaded = true;
   }
 
-  getImage(sheetFile: string): HTMLImageElement | undefined {
+  public getImage(sheetFile: string): HTMLImageElement | undefined {
     const clean = sheetFile.replace(/^poke_/, '');
     const noExt = clean.replace(/\.png$/i, '');
     return (
@@ -333,7 +330,7 @@ export class DynamicCatalogLoader {
     );
   }
 
-  getPrefab(category: string, id: string): CatalogPrefab | undefined {
+  public getPrefab(category: string, id: string): CatalogPrefab | undefined {
     return this.catalog?.prefabs?.[category]?.[id];
   }
 }

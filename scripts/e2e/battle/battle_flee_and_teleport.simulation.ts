@@ -123,7 +123,7 @@ test.describe('Battle Flee and Teleport Simulations', () => {
       const e1 = pokemonDebugService.generate({ id: 'abra', level: 20, moves: ['teleport'] });
       const e2 = pokemonDebugService.generate({ id: 'kadabra', level: 20, moves: ['confusion'] });
 
-      void battleStore.startBattle(e1, {
+      battleStore.startBattle(e1, {
         isTrainer: true,
         trainerName: 'Psychic Sabrina',
         trainerSprite: 'sabrina',

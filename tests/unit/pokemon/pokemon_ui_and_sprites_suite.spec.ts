@@ -1,3 +1,5 @@
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
 /**
  * tests/unit/pokemon/pokemon_ui_and_sprites_suite.spec.ts
  * Cohesive domain suite consolidating Pokemon detail UI components (stat bars, tooltips,
@@ -5,12 +7,11 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test';
-import { mount } from '@vue/test-utils';
-import { setActivePinia, createPinia } from 'pinia';
+
+import PVTooltip from '@/components/common/PVTooltip.vue';
 import PokemonStatBar from '@/components/pokemon-detail/PokemonStatBar.vue';
 import PokemonStatusSection from '@/components/pokemon-detail/PokemonStatusSection.vue';
 import FriendshipSealBadge from '@/components/pokemon/FriendshipSealBadge.vue';
-import PVTooltip from '@/components/common/PVTooltip.vue';
 import { getProcessedSprite, getProcessedAura } from '@/logic/utils/spriteOutliner';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 

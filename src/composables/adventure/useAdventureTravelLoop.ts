@@ -1,15 +1,17 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/composables/adventure/useAdventureTravelLoop.ts
  *
  * GSAP Timeline and travel progression loop for adventure map simulations.
  */
-
-import type { Ref } from 'vue';
 import { gsap } from 'gsap';
-import type { AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts';
+import type { Ref } from 'vue';
+
 import { MAPS_BY_ROUTE_ID } from '@/data/world/maps';
-import { CARD_W, CARD_H, isPokemonCenterNodeId } from './helpers/adventureSimulationConstants.ts';
 import type { useShopStore } from '@/stores/inventory/shop';
+
+import type { AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts';
+import { CARD_W, CARD_H, isPokemonCenterNodeId } from './helpers/adventureSimulationConstants.ts';
 import type { ActiveAdventureEvent } from './useAdventureEvents.ts';
 
 const ENCOUNTER_STEP_CHECK_THRESHOLD_PCT = 95;
@@ -50,7 +52,14 @@ export interface UseAdventureTravelLoopParams {
   syncCurrentMapFromAdventureNode: (nodeId: AdventureNodeId) => void;
 }
 
-export function useAdventureTravelLoop(params: UseAdventureTravelLoopParams) {
+export function useAdventureTravelLoop(params: UseAdventureTravelLoopParams): {
+  getTravelTween: () => gsap.core.Tween | null;
+  getMarkerTimeline: () => gsap.core.Timeline | null;
+  startTravel: () => void;
+  finishTravelAtNode: (nodeId: AdventureNodeId) => void;
+  resumeTravelAfterEvent: () => void;
+  cancelTravel: () => void;
+} {
   const {
     calculatedPath,
     originMap,
@@ -88,10 +97,10 @@ export function useAdventureTravelLoop(params: UseAdventureTravelLoopParams) {
   let travelTween: gsap.core.Tween | null = null;
   let markerTimeline: gsap.core.Timeline | null = null;
 
-  const getTravelTween = () => travelTween;
-  const getMarkerTimeline = () => markerTimeline;
+  const getTravelTween = (): gsap.core.Tween | null => travelTween;
+  const getMarkerTimeline = (): gsap.core.Timeline | null => markerTimeline;
 
-  function checkStepEncounter(currentSegmentPct: number) {
+  function checkStepEncounter(currentSegmentPct: number): void {
     const currentStepVal = Math.floor(currentSegmentPct / 5) * 5;
     if (
       currentStepVal <= lastStepPct.value ||
@@ -119,13 +128,13 @@ export function useAdventureTravelLoop(params: UseAdventureTravelLoopParams) {
     }
   }
 
-  function advanceToNextSegment() {
+  function advanceToNextSegment(): void {
     const path = calculatedPath.value;
     const nextSegIdx = currentSegmentIndex.value + 1;
     if (nextSegIdx < path.length) {
       const nextNodeId = path[nextSegIdx]!;
       const nodeName =
-        (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[nextNodeId]?.name || nextNodeId; // open-record: Generic key-value data dictionary container
+        (MAPS_BY_ROUTE_ID as Record<DisplayText, { name: string }>)[nextNodeId]?.name || nextNodeId; // open-record: Generic key-value data dictionary container
       travelLog.value.push(`Entrando a: ${nodeName}`);
 
       if (isPokemonCenterNodeId(nextNodeId)) {
@@ -152,13 +161,13 @@ export function useAdventureTravelLoop(params: UseAdventureTravelLoopParams) {
     resumeTweens();
   }
 
-  function resumeTweens() {
+  function resumeTweens(): void {
     isPaused.value = false;
     travelTween?.resume();
     markerTimeline?.resume();
   }
 
-  const startTravel = () => {
+  const startTravel = (): void => {
     calculateRoute();
     if (calculatedPath.value.length === 0) return;
 
@@ -253,7 +262,7 @@ export function useAdventureTravelLoop(params: UseAdventureTravelLoopParams) {
     });
   };
 
-  const finishTravelAtNode = (nodeId: AdventureNodeId) => {
+  const finishTravelAtNode = (nodeId: AdventureNodeId): void => {
     if (travelTween) {
       travelTween.kill();
       travelTween = null;
@@ -278,14 +287,15 @@ export function useAdventureTravelLoop(params: UseAdventureTravelLoopParams) {
 
     originMap.value = nodeId;
     syncCurrentMapFromAdventureNode(nodeId);
-    const nodeName = (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[nodeId]?.name || nodeId; // open-record: Generic key-value data dictionary container
+    const nodeName =
+      (MAPS_BY_ROUTE_ID as Record<DisplayText, { name: string }>)[nodeId]?.name || nodeId; // open-record: Generic key-value data dictionary container
     travelLog.value.push(
       `📍 Ubicación actual: ${nodeName}. El selector de origen ha sido actualizado.`
     );
     calculateRoute();
   };
 
-  const resumeTravelAfterEvent = () => {
+  const resumeTravelAfterEvent = (): void => {
     if (!activeEvent.value) return;
     travelLog.value.push(`✅ Evento resuelto: ${activeEvent.value.title}`);
     activeEvent.value = null;
@@ -299,7 +309,7 @@ export function useAdventureTravelLoop(params: UseAdventureTravelLoopParams) {
     }
   };
 
-  const cancelTravel = () => {
+  const cancelTravel = (): void => {
     const currentNodeId = calculatedPath.value[currentSegmentIndex.value] || originMap.value;
     if (travelTween) {
       travelTween.kill();
@@ -320,7 +330,8 @@ export function useAdventureTravelLoop(params: UseAdventureTravelLoopParams) {
     syncCurrentMapFromAdventureNode(currentNodeId);
     travelLog.value.push('❌ Viaje cancelado por el usuario.');
     const currName =
-      (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[currentNodeId]?.name || currentNodeId; // open-record: Generic key-value data dictionary container
+      (MAPS_BY_ROUTE_ID as Record<DisplayText, { name: string }>)[currentNodeId]?.name ||
+      currentNodeId; // open-record: Generic key-value data dictionary container
     travelLog.value.push(`📍 Ubicación actual: ${currName}.`);
     calculateRoute();
   };

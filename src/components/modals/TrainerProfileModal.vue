@@ -1,28 +1,30 @@
 <script setup lang="ts">
-import { watch, nextTick, computed } from 'vue';
 import { gsap } from 'gsap';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { FULL_ROTATION_DEG } from '@/logic/constants/animations';
-import { formatCurrency } from '@/logic/utils/formatters';
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
-import { useModalStore } from '@/stores/modals';
+import { watch, nextTick, computed } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
-import ProfileStatsGrid from '@/components/profile/ProfileStatsGrid.vue';
-import ProfileBadgesCard from '@/components/profile/ProfileBadgesCard.vue';
 import ProfileAchievementsGrid from '@/components/profile/ProfileAchievementsGrid.vue';
+import ProfileBadgesCard from '@/components/profile/ProfileBadgesCard.vue';
 import ProfileEventStatsCard from '@/components/profile/ProfileEventStatsCard.vue';
-import ProfileXpCard from '@/components/profile/ProfileXpCard.vue';
-import ProfilePokedexCard from '@/components/profile/ProfilePokedexCard.vue';
-import ProfileFactionWarCard from './ProfileFactionWarCard.vue';
-import ProfileStatsSection from './ProfileStatsSection.vue';
-import ProfileRankedMedalsCard from '@/components/profile/ProfileRankedMedalsCard.vue';
 import ProfilePinnedReplaysCard from '@/components/profile/ProfilePinnedReplaysCard.vue';
-import { useLivePvPStore } from '@/stores/livePvP';
-import type { BattleReplayRecord } from '@/types/battle/pvp';
-import { useTrainerProfile } from './useTrainerProfile.ts';
+import ProfilePokedexCard from '@/components/profile/ProfilePokedexCard.vue';
+import ProfileRankedMedalsCard from '@/components/profile/ProfileRankedMedalsCard.vue';
+import ProfileStatsGrid from '@/components/profile/ProfileStatsGrid.vue';
+import ProfileXpCard from '@/components/profile/ProfileXpCard.vue';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import { useStatHover } from '@/composables/ui/useStatHover';
 import { isPlayerClassId, type PlayerClassId } from '@/data/player/playerClasses';
+import { FULL_ROTATION_DEG } from '@/logic/constants/animations';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { formatCurrency } from '@/logic/utils/formatters';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
+import { useLivePvPStore } from '@/stores/livePvP';
+import { useModalStore } from '@/stores/modals';
+import type { BattleReplayRecord } from '@/types/battle/pvp';
+
+import ProfileFactionWarCard from './ProfileFactionWarCard.vue';
+import ProfileStatsSection from './ProfileStatsSection.vue';
+import { useTrainerProfile } from './useTrainerProfile.ts';
 
 interface Props {
   show?: boolean;
@@ -92,7 +94,7 @@ const {
   fetchData
 } = useTrainerProfile(() => props.userId);
 
-const formatDate = (isoStr: string | null | undefined) => {
+const formatDate = (isoStr: string | null | undefined): string => {
   if (!isoStr) return '---';
   try {
     const inst = Temporal.Instant.from(isoStr);
@@ -101,18 +103,18 @@ const formatDate = (isoStr: string | null | undefined) => {
     const month = String(zdt.month).padStart(2, '0');
     const year = zdt.year;
     return `${day}/${month}/${year}`;
-  } catch (_) {
+  } catch {
     return '---';
   }
 };
 
-const openRename = () => {
+const openRename = (): void => {
   modalStore.open('Rename');
 };
 
-const formatNum = (num: unknown) => formatCurrency(Number(num || 0));
+const formatNum = (num: unknown): string => formatCurrency(Number(num || 0));
 
-const close = () => {
+const close = (): void => {
   emit('close');
 };
 
@@ -165,7 +167,7 @@ const getAssetUrlLocal = getAssetUrl;
 
 const livePvPStore = useLivePvPStore();
 
-const handleWatchReplay = (replay: BattleReplayRecord) => {
+const handleWatchReplay = (replay: BattleReplayRecord): void => {
   livePvPStore.watchReplay(replay);
   close();
 };

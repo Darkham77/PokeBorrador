@@ -1,12 +1,28 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
-import { useContinentStudioStore } from '../../stores/continentStudio';
+
+import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
+
+import {
+  VIEWPORT_ZOOM_IN_STEP,
+  VIEWPORT_ZOOM_OUT_STEP,
+  MIN_PLAZA_CLEARANCE_RADIUS_PX,
+  DEFAULT_PREFAB_FALLBACK_WIDTH,
+  DEFAULT_PREFAB_FALLBACK_HEIGHT
+} from '../../config/studioConstants.ts';
+import { findValidBuildingPlacementSpot } from '../../logic/map/buildingPlacementSolver';
+import { bakeUrbanMaquette } from '../../logic/map/continentalWorldGenerator';
+import { ChunkManager } from '../../logic/map/kantoChunkManager';
+import { KantoRegionalWorldGenerator } from '../../logic/map/kantoRegionalGenerator';
 import {
   DynamicCatalogLoader,
   UniversalAutotiler,
   SemanticPrefabRenderer
 } from '../../logic/map/kantoTileEngine';
-import { ChunkManager } from '../../logic/map/kantoChunkManager';
+import { defaultPrefabsRegistry } from '../../logic/map/prefabsRegistry';
+import { useContinentStudioStore } from '../../stores/continentStudio';
+import type { PlacedCustomSprite, SpriteCategory } from '../../types/map/continentTypes';
 import {
   CELL_BIOME,
   OCCUPANCY_FLAGS,
@@ -17,19 +33,6 @@ import {
   KANTO_GRID_H,
   type CellBiomeType
 } from '../../types/map/kantoGridModel';
-import { KantoRegionalWorldGenerator } from '../../logic/map/kantoRegionalGenerator';
-import { bakeUrbanMaquette } from '../../logic/map/continentalWorldGenerator';
-import { defaultPrefabsRegistry } from '../../logic/map/prefabsRegistry';
-import { findValidBuildingPlacementSpot } from '../../logic/map/buildingPlacementSolver';
-import {
-  VIEWPORT_ZOOM_IN_STEP,
-  VIEWPORT_ZOOM_OUT_STEP,
-  MIN_PLAZA_CLEARANCE_RADIUS_PX,
-  DEFAULT_PREFAB_FALLBACK_WIDTH,
-  DEFAULT_PREFAB_FALLBACK_HEIGHT
-} from '../../config/studioConstants.ts';
-import type { PlacedCustomSprite, SpriteCategory } from '../../types/map/continentTypes';
-import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
 
 const MIN_GEOGRAPHIC_VIEWPORT_ZOOM = 0.15;
 const MOUNTAIN_INFILL_NEIGHBOR_THRESHOLD = 6 as const;
@@ -70,6 +73,232 @@ function checkMountainTier2Margin(
   return true;
 }
 
+function countOrthogonalMountainNeighbors(
+  grid: readonly (ArrayLike<number> | undefined)[],
+  x: number,
+  y: number
+): number {
+  let count = 0;
+  if (grid[y - 1]?.[x] === CELL_BIOME.MOUNTAIN_DIRT) count++;
+  if (grid[y + 1]?.[x] === CELL_BIOME.MOUNTAIN_DIRT) count++;
+  if (grid[y]?.[x - 1] === CELL_BIOME.MOUNTAIN_DIRT) count++;
+  if (grid[y]?.[x + 1] === CELL_BIOME.MOUNTAIN_DIRT) count++;
+  return count;
+}
+
+function isMountainPinch(
+  grid: readonly (ArrayLike<number> | undefined)[],
+  x: number,
+  y: number
+): boolean {
+  const n = grid[y - 1]?.[x] === CELL_BIOME.MOUNTAIN_DIRT;
+  const s = grid[y + 1]?.[x] === CELL_BIOME.MOUNTAIN_DIRT;
+  const w = grid[y]?.[x - 1] === CELL_BIOME.MOUNTAIN_DIRT;
+  const e = grid[y]?.[x + 1] === CELL_BIOME.MOUNTAIN_DIRT;
+  return (!n && !s) || (!w && !e);
+}
+
+function pavePlazaGrid(
+  g: Uint8Array[],
+  occupancy: { set: (x: number, y: number, flag: number) => void },
+  plazaRect: { x: number; y: number; w: number; h: number }
+): void {
+  const pxStart = Math.floor(plazaRect.x / KANTO_TILE_SIZE);
+  const pyStart = Math.floor(plazaRect.y / KANTO_TILE_SIZE);
+  const pw = Math.ceil(plazaRect.w / KANTO_TILE_SIZE);
+  const ph = Math.ceil(plazaRect.h / KANTO_TILE_SIZE);
+  for (let y = pyStart; y < pyStart + ph; y++) {
+    const row = g[y];
+    if (!row || y < 0 || y >= KANTO_GRID_H) continue;
+    for (let x = pxStart; x < pxStart + pw; x++) {
+      if (
+        x < 0 ||
+        x >= KANTO_GRID_W ||
+        row[x] === CELL_BIOME.WATER ||
+        row[x] === CELL_BIOME.MOUNTAIN_DIRT
+      )
+        continue;
+      row[x] = CELL_BIOME.DIRT_PATH;
+      occupancy.set(x, y, OCCUPANCY_FLAGS.ROAD);
+    }
+  }
+}
+
+function clearTreesFromFootprint(
+  g: Uint8Array[],
+  bx: number,
+  by: number,
+  bw: number,
+  bh: number
+): void {
+  for (let y = by; y < by + bh; y++) {
+    const row = g[y];
+    if (!row || y < 0 || y >= KANTO_GRID_H) continue;
+    for (let x = bx; x < bx + bw; x++) {
+      if (x >= 0 && x < KANTO_GRID_W && row[x] === CELL_BIOME.FOREST_WALL) {
+        row[x] = CELL_BIOME.GRASS;
+      }
+    }
+  }
+}
+
+function paveDoorPath(
+  g: Uint8Array[],
+  occupancy: { set: (x: number, y: number, flag: number) => void },
+  doorX: number,
+  doorY: number
+): void {
+  if (doorX < 0 || doorX >= KANTO_GRID_W) return;
+  for (let step = 0; step <= 2; step++) {
+    const cy = doorY + step;
+    if (cy < 0 || cy >= KANTO_GRID_H) continue;
+    const row = g[cy];
+    if (row && row[doorX] !== CELL_BIOME.WATER && row[doorX] !== CELL_BIOME.MOUNTAIN_DIRT) {
+      row[doorX] = CELL_BIOME.DIRT_PATH;
+      occupancy.set(doorX, cy, OCCUPANCY_FLAGS.SIDEWALK);
+    }
+  }
+}
+
+function refineProceduralGeography(
+  gen: KantoRegionalWorldGenerator,
+  biomeGrid: readonly (readonly string[])[],
+  gridWidth: number,
+  gridHeight: number
+): void {
+  const H = KANTO_GRID_H;
+  const W = KANTO_GRID_W;
+
+  // Clear canonical Kanto structures so they do not bleed onto procedural geography
+  gen.buildings = [];
+  gen.props = [];
+  gen.trees = [];
+  gen.occupancy.clearAll();
+
+  // Morphological smoothing for mountains:
+  // 1. Fill 1x1 holes inside mountain massifs (non-mountain cells with >= 6 mountain neighbors)
+  for (let y = 1; y < H - 1; y++) {
+    for (let x = 1; x < W - 1; x++) {
+      const cell = gen.grid[y]?.[x];
+      if (cell === CELL_BIOME.MOUNTAIN_DIRT || cell === CELL_BIOME.WATER) continue;
+      if (countMountainNeighbors(gen.grid, x, y) >= MOUNTAIN_INFILL_NEIGHBOR_THRESHOLD) {
+        gen.grid[y]![x] = CELL_BIOME.MOUNTAIN_DIRT;
+      }
+    }
+  }
+
+  // 2. Clean up 1x1 isolated mountain noise (mountain cells with <= 1 mountain neighbor)
+  for (let y = 1; y < H - 1; y++) {
+    for (let x = 1; x < W - 1; x++) {
+      if (
+        gen.grid[y]?.[x] === CELL_BIOME.MOUNTAIN_DIRT &&
+        countOrthogonalMountainNeighbors(gen.grid, x, y) <= 1
+      ) {
+        gen.grid[y]![x] = CELL_BIOME.GRASS;
+        gen.nature.push({
+          style: 'rock_small_01',
+          x: x * KANTO_TILE_SIZE,
+          y: y * KANTO_TILE_SIZE
+        });
+      }
+    }
+  }
+
+  // 3. Clean up 1-tile thin pinches iteratively until 0 remain
+  let pinchesPruned = true;
+  while (pinchesPruned) {
+    pinchesPruned = false;
+    for (let y = 1; y < H - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        if (gen.grid[y]?.[x] === CELL_BIOME.MOUNTAIN_DIRT && isMountainPinch(gen.grid, x, y)) {
+          gen.grid[y]![x] = CELL_BIOME.GRASS;
+          pinchesPruned = true;
+        }
+      }
+    }
+  }
+
+  if (!gen.elevation || gen.elevation.length !== H) {
+    gen.elevation = Array.from({ length: H }, () => new Uint8Array(W).fill(1));
+  }
+
+  // Base elevation assignment
+  for (let y = 0; y < H; y++) {
+    const row = gen.grid[y];
+    const eRow = gen.elevation[y];
+    if (!row || !eRow) continue;
+    for (let x = 0; x < W; x++) {
+      if (row[x] === CELL_BIOME.MOUNTAIN_DIRT) {
+        eRow[x] = 2; // Tier 1: Mountain on grass
+      } else if (row[x] === CELL_BIOME.WATER) {
+        eRow[x] = 0; // Water
+      } else {
+        eRow[x] = 1; // Ground level
+      }
+    }
+  }
+
+  // Multi-tier promotion for interior mountain cells (solid cohesive upper rock plateaus)
+  const MOUNTAIN_TIER2_SETBACK_RADIUS = 2 as const;
+  const tier2Candidates = new Set<number>();
+  for (let y = 2; y < H - 2; y++) {
+    for (let x = 2; x < W - 2; x++) {
+      if (gen.grid[y]?.[x] !== CELL_BIOME.MOUNTAIN_DIRT) continue;
+      if (checkMountainTier2Margin(gen.grid, x, y, MOUNTAIN_TIER2_SETBACK_RADIUS)) {
+        tier2Candidates.add(y * W + x);
+      }
+    }
+  }
+
+  // Keep only cells that form a cohesive cluster (>= 4 candidate neighbors) to avoid 1-tile spikes
+  for (const key of tier2Candidates) {
+    const cx = key % W;
+    const cy = Math.floor(key / W);
+    let candidateNeighbors = 0;
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if (dx === 0 && dy === 0) continue;
+        if (tier2Candidates.has((cy + dy) * W + (cx + dx))) {
+          candidateNeighbors++;
+        }
+      }
+    }
+    if (candidateNeighbors >= 4) {
+      const eRow = gen.elevation[cy];
+      if (eRow) eRow[cx] = 3; // Tier 2: Mountain on rock
+    }
+  }
+
+  // In procedural mode, replace dense canonical forest wall with trees only in actual 'forest' biomes
+  gen.trees = [];
+  if (biomeGrid.length > 0) {
+    for (let y = 0; y < Math.min(KANTO_GRID_H - 1, gridHeight); y += 2) {
+      const bRow = biomeGrid[y];
+      if (!bRow) continue;
+      for (let x = 0; x < Math.min(KANTO_GRID_W - 1, gridWidth); x += 2) {
+        if (
+          bRow[x] === 'forest' &&
+          gen.grid[y]?.[x] !== CELL_BIOME.MOUNTAIN_DIRT &&
+          gen.grid[y]?.[x] !== CELL_BIOME.WATER
+        ) {
+          gen.trees.push({
+            style: 'tree_viridian_forest',
+            x: x * KANTO_TILE_SIZE,
+            y: y * KANTO_TILE_SIZE
+          });
+        }
+      }
+    }
+  }
+
+  gen.nature = gen.nature.filter((n) => {
+    const gx = Math.floor(n.x / KANTO_TILE_SIZE);
+    const gy = Math.floor(n.y / KANTO_TILE_SIZE);
+    const cell = gen.grid[gy]?.[gx];
+    return cell !== CELL_BIOME.MOUNTAIN_DIRT && cell !== CELL_BIOME.WATER;
+  });
+}
+
 const store = useContinentStudioStore();
 
 const zoomPercentText = computed(() => `${Math.round(store.zoom * PERCENT_BASE_MULTIPLIER)}% Zoom`);
@@ -105,7 +334,7 @@ const transformStyle = computed(() => ({
   transformOrigin: '0 0'
 }));
 
-function screenToWorld(clientX: number, clientY: number) {
+function screenToWorld(clientX: number, clientY: number): { x: number; y: number } {
   if (!viewportRef.value) return { x: 0, y: 0 };
   const rect = viewportRef.value.getBoundingClientRect();
   const x = (clientX - rect.left - store.panX) / store.zoom;
@@ -116,7 +345,7 @@ function screenToWorld(clientX: number, clientY: number) {
   };
 }
 
-function handleWheel(e: WheelEvent) {
+function handleWheel(e: WheelEvent): void {
   e.preventDefault();
   if (!viewportRef.value) return;
   const rect = viewportRef.value.getBoundingClientRect();
@@ -207,19 +436,7 @@ function syncUrbanMaquettes(gen: KantoRegionalWorldGenerator): void {
 
     // Pave central plaza if defined with clean dirt paths
     if (maquette.plazaRect) {
-      const pxStart = Math.floor(maquette.plazaRect.x / KANTO_TILE_SIZE);
-      const pyStart = Math.floor(maquette.plazaRect.y / KANTO_TILE_SIZE);
-      const pw = Math.ceil(maquette.plazaRect.w / KANTO_TILE_SIZE);
-      const ph = Math.ceil(maquette.plazaRect.h / KANTO_TILE_SIZE);
-      for (let y = pyStart; y < pyStart + ph; y++) {
-        for (let x = pxStart; x < pxStart + pw; x++) {
-          if (x < 0 || x >= KANTO_GRID_W || y < 0 || y >= KANTO_GRID_H) continue;
-          const row = g[y];
-          if (!row || row[x] === CELL_BIOME.WATER || row[x] === CELL_BIOME.MOUNTAIN_DIRT) continue;
-          row[x] = CELL_BIOME.DIRT_PATH;
-          gen.occupancy.set(x, y, OCCUPANCY_FLAGS.ROAD);
-        }
-      }
+      pavePlazaGrid(g, gen.occupancy, maquette.plazaRect);
     }
 
     // Place buildings snapped to 32px
@@ -235,16 +452,7 @@ function syncUrbanMaquettes(gen: KantoRegionalWorldGenerator): void {
       const bh = Math.ceil(b.h / KANTO_TILE_SIZE);
 
       // Clear trees from footprint (keeping natural grass base)
-      for (let y = by; y < by + bh; y++) {
-        for (let x = bx; x < bx + bw; x++) {
-          if (x >= 0 && x < KANTO_GRID_W && y >= 0 && y < KANTO_GRID_H) {
-            const row = g[y];
-            if (row && row[x] === CELL_BIOME.FOREST_WALL) {
-              row[x] = CELL_BIOME.GRASS;
-            }
-          }
-        }
-      }
+      clearTreesFromFootprint(g, bx, by, bw, bh);
       gen.buildings.push({ style: b.style, x: snapX, y: snapY, w: b.w, h: b.h });
       if (bx >= 0 && bx + bw < KANTO_GRID_W && by >= 0 && by + bh < KANTO_GRID_H) {
         gen.occupancy.reserveRect(bx, by, bw, bh, OCCUPANCY_FLAGS.BUILDING);
@@ -253,16 +461,7 @@ function syncUrbanMaquettes(gen: KantoRegionalWorldGenerator): void {
       // Pave 1-tile door path downward
       const doorX = bx + Math.floor(bw / 2);
       const doorY = by + bh;
-      for (let step = 0; step <= 2; step++) {
-        const cy = doorY + step;
-        if (cy >= 0 && cy < KANTO_GRID_H && doorX >= 0 && doorX < KANTO_GRID_W) {
-          const row = g[cy];
-          if (row && row[doorX] !== CELL_BIOME.WATER && row[doorX] !== CELL_BIOME.MOUNTAIN_DIRT) {
-            row[doorX] = CELL_BIOME.DIRT_PATH;
-            gen.occupancy.set(doorX, cy, OCCUPANCY_FLAGS.SIDEWALK);
-          }
-        }
-      }
+      paveDoorPath(g, gen.occupancy, doorX, doorY);
     }
 
     for (const p of maquette.props) {
@@ -304,7 +503,6 @@ function biomeToCellType(biome: string): CellBiomeType {
     case 'mountain':
     case 'snow':
       return CELL_BIOME.MOUNTAIN_DIRT;
-    case 'grass':
     default:
       return CELL_BIOME.GRASS;
   }
@@ -321,7 +519,10 @@ async function bakeWorld(): Promise<void> {
     const project = store.activeProject;
 
     // 1. Generate base Kanto layout or procedural continent
-    const kantoNodesRecord: Record<string, { name: string; type: string; x: number; y: number }> = // open-record: Procedural project node coordinates indexed by node id
+    const kantoNodesRecord: Record<
+      DisplayText,
+      { name: string; type: string; x: number; y: number }
+    > = // open-record: Procedural project node coordinates indexed by node id
       {};
     for (const node of Object.values(project.nodes)) {
       kantoNodesRecord[node.id] = {
@@ -363,149 +564,7 @@ async function bakeWorld(): Promise<void> {
 
     // 2.1 Calculate multi-tier elevation and filter obstacles for procedural geography
     if (project.config.presetId !== 'kanto') {
-      const H = KANTO_GRID_H;
-      const W = KANTO_GRID_W;
-
-      // Clear canonical Kanto structures so they do not bleed onto procedural geography
-      gen.buildings = [];
-      gen.props = [];
-      gen.trees = [];
-      gen.occupancy.clearAll();
-
-      // Morphological smoothing for mountains:
-      // 1. Fill 1x1 holes inside mountain massifs (non-mountain cells with >= 6 mountain neighbors)
-      for (let y = 1; y < H - 1; y++) {
-        for (let x = 1; x < W - 1; x++) {
-          const cell = gen.grid[y]?.[x];
-          if (cell === CELL_BIOME.MOUNTAIN_DIRT || cell === CELL_BIOME.WATER) continue;
-          if (countMountainNeighbors(gen.grid, x, y) >= MOUNTAIN_INFILL_NEIGHBOR_THRESHOLD) {
-            gen.grid[y]![x] = CELL_BIOME.MOUNTAIN_DIRT;
-          }
-        }
-      }
-
-      // 2. Clean up 1x1 isolated mountain noise (mountain cells with <= 1 mountain neighbor)
-      for (let y = 1; y < H - 1; y++) {
-        for (let x = 1; x < W - 1; x++) {
-          if (gen.grid[y]?.[x] === CELL_BIOME.MOUNTAIN_DIRT) {
-            let mtNeighbors = 0;
-            if (gen.grid[y - 1]?.[x] === CELL_BIOME.MOUNTAIN_DIRT) mtNeighbors++;
-            if (gen.grid[y + 1]?.[x] === CELL_BIOME.MOUNTAIN_DIRT) mtNeighbors++;
-            if (gen.grid[y]?.[x - 1] === CELL_BIOME.MOUNTAIN_DIRT) mtNeighbors++;
-            if (gen.grid[y]?.[x + 1] === CELL_BIOME.MOUNTAIN_DIRT) mtNeighbors++;
-            if (mtNeighbors <= 1) {
-              gen.grid[y]![x] = CELL_BIOME.GRASS;
-              gen.nature.push({
-                style: 'rock_small_01',
-                x: x * KANTO_TILE_SIZE,
-                y: y * KANTO_TILE_SIZE
-              });
-            }
-          }
-        }
-      }
-
-      // 3. Clean up 1-tile thin pinches iteratively until 0 remain
-      let pinchesPruned = true;
-      while (pinchesPruned) {
-        pinchesPruned = false;
-        for (let y = 1; y < H - 1; y++) {
-          for (let x = 1; x < W - 1; x++) {
-            if (gen.grid[y]?.[x] === CELL_BIOME.MOUNTAIN_DIRT) {
-              const n = gen.grid[y - 1]?.[x] === CELL_BIOME.MOUNTAIN_DIRT;
-              const s = gen.grid[y + 1]?.[x] === CELL_BIOME.MOUNTAIN_DIRT;
-              const w = gen.grid[y]?.[x - 1] === CELL_BIOME.MOUNTAIN_DIRT;
-              const e = gen.grid[y]?.[x + 1] === CELL_BIOME.MOUNTAIN_DIRT;
-              if ((!n && !s) || (!w && !e)) {
-                gen.grid[y]![x] = CELL_BIOME.GRASS;
-                pinchesPruned = true;
-              }
-            }
-          }
-        }
-      }
-
-      if (!gen.elevation || gen.elevation.length !== H) {
-        gen.elevation = Array.from({ length: H }, () => new Uint8Array(W).fill(1));
-      }
-
-      // Base elevation assignment
-      for (let y = 0; y < H; y++) {
-        const row = gen.grid[y];
-        const eRow = gen.elevation[y];
-        if (!row || !eRow) continue;
-        for (let x = 0; x < W; x++) {
-          if (row[x] === CELL_BIOME.MOUNTAIN_DIRT) {
-            eRow[x] = 2; // Tier 1: Mountain on grass
-          } else if (row[x] === CELL_BIOME.WATER) {
-            eRow[x] = 0; // Water
-          } else {
-            eRow[x] = 1; // Ground level
-          }
-        }
-      }
-
-      // Multi-tier promotion for interior mountain cells (solid cohesive upper rock plateaus)
-      // Candidates must have a margin of at least 2 tiles from non-mountain cells to prevent
-      // Tier 2 cliffs from directly abutting lower grass borders.
-      const MOUNTAIN_TIER2_SETBACK_RADIUS = 2 as const;
-      const tier2Candidates = new Set<number>();
-      for (let y = 2; y < H - 2; y++) {
-        for (let x = 2; x < W - 2; x++) {
-          if (gen.grid[y]?.[x] !== CELL_BIOME.MOUNTAIN_DIRT) continue;
-          if (checkMountainTier2Margin(gen.grid, x, y, MOUNTAIN_TIER2_SETBACK_RADIUS)) {
-            tier2Candidates.add(y * W + x);
-          }
-        }
-      }
-
-      // Keep only cells that form a cohesive cluster (>= 4 candidate neighbors) to avoid 1-tile spikes
-      for (const key of tier2Candidates) {
-        const cx = key % W;
-        const cy = Math.floor(key / W);
-        let candidateNeighbors = 0;
-        for (let dy = -1; dy <= 1; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            if (dx === 0 && dy === 0) continue;
-            if (tier2Candidates.has((cy + dy) * W + (cx + dx))) {
-              candidateNeighbors++;
-            }
-          }
-        }
-        if (candidateNeighbors >= 4) {
-          const eRow = gen.elevation[cy];
-          if (eRow) eRow[cx] = 3; // Tier 2: Mountain on rock
-        }
-      }
-
-      // In procedural mode, replace dense canonical forest wall with trees only in actual 'forest' biomes
-      gen.trees = [];
-      if (biomeGrid.length > 0) {
-        for (let y = 0; y < Math.min(KANTO_GRID_H - 1, gridHeight); y += 2) {
-          const bRow = biomeGrid[y];
-          if (!bRow) continue;
-          for (let x = 0; x < Math.min(KANTO_GRID_W - 1, gridWidth); x += 2) {
-            if (
-              bRow[x] === 'forest' &&
-              gen.grid[y]?.[x] !== CELL_BIOME.MOUNTAIN_DIRT &&
-              gen.grid[y]?.[x] !== CELL_BIOME.WATER
-            ) {
-              gen.trees.push({
-                style: 'tree_viridian_forest',
-                x: x * KANTO_TILE_SIZE,
-                y: y * KANTO_TILE_SIZE
-              });
-            }
-          }
-        }
-      }
-
-      gen.nature = gen.nature.filter((n) => {
-        const gx = Math.floor(n.x / KANTO_TILE_SIZE);
-        const gy = Math.floor(n.y / KANTO_TILE_SIZE);
-        const cell = gen.grid[gy]?.[gx];
-        return cell !== CELL_BIOME.MOUNTAIN_DIRT && cell !== CELL_BIOME.WATER;
-      });
+      refineProceduralGeography(gen, biomeGrid, gridWidth, gridHeight);
     }
 
     // 3. Bake cities & structures
@@ -530,20 +589,21 @@ function paintBrushAt(gx: number, gy: number): void {
   const half = Math.floor(size / 2);
 
   for (let dy = -half; dy < -half + size; dy++) {
+    const py = gy + dy;
+    if (py < 0 || py >= KANTO_GRID_H) continue;
+    const row = gen.grid[py];
+    const eRow = gen.elevation?.[py];
     for (let dx = -half; dx < -half + size; dx++) {
       const px = gx + dx;
-      const py = gy + dy;
-      if (px >= 0 && px < KANTO_GRID_W && py >= 0 && py < KANTO_GRID_H) {
-        const row = gen.grid[py];
-        if (row) row[px] = targetBiome;
-        if (gen.elevation?.[py]) {
-          if (targetBiome === CELL_BIOME.MOUNTAIN_DIRT) {
-            gen.elevation[py]![px] = Math.abs(dx) < half && Math.abs(dy) < half && size > 2 ? 3 : 2;
-          } else if (targetBiome === CELL_BIOME.WATER) {
-            gen.elevation[py]![px] = 0;
-          } else {
-            gen.elevation[py]![px] = 1;
-          }
+      if (px < 0 || px >= KANTO_GRID_W) continue;
+      if (row) row[px] = targetBiome;
+      if (eRow) {
+        if (targetBiome === CELL_BIOME.MOUNTAIN_DIRT) {
+          eRow[px] = Math.abs(dx) < half && Math.abs(dy) < half && size > 2 ? 3 : 2;
+        } else if (targetBiome === CELL_BIOME.WATER) {
+          eRow[px] = 0;
+        } else {
+          eRow[px] = 1;
         }
       }
     }
@@ -675,8 +735,8 @@ function handlePointerUp(e: PointerEvent): void {
   }
   try {
     (e.currentTarget as HTMLElement)?.releasePointerCapture(e.pointerId);
-  } catch {
-    // catch-ok: Pointer capture release fails gracefully if pointer was lost
+  } catch (err) {
+    console.warn('Handled controlled exception:', err);
   }
 }
 
@@ -689,14 +749,14 @@ function handleKeyUp(e: KeyboardEvent): void {
 }
 
 onMounted(() => {
-  window.addEventListener('keydown', handleKeyDown);
-  window.addEventListener('keyup', handleKeyUp);
+  globalThis.addEventListener('keydown', handleKeyDown);
+  globalThis.addEventListener('keyup', handleKeyUp);
   bakeWorld();
 });
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeyDown);
-  window.removeEventListener('keyup', handleKeyUp);
+  globalThis.removeEventListener('keydown', handleKeyDown);
+  globalThis.removeEventListener('keyup', handleKeyUp);
 });
 
 watch([() => store.activeProjectId, () => store.activeProject.config.seed], () => {

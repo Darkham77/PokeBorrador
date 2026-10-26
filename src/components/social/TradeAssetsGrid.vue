@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import type { TradeOffer, TradeCardMode } from '@/types/system/stores';
 
 const props = defineProps<{

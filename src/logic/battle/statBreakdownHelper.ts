@@ -1,16 +1,17 @@
-import type { StatIDExceptHP } from '@/logic/pokemon/statsMath';
+import type { AbilityId } from '@/data/battle/abilities';
 import type { PokemonType } from '@/data/battle/types';
 import type { ItemId } from '@/data/inventory/items';
-import type { AbilityId } from '@/data/battle/abilities';
-import type { PurePokemon, PureBattleWeather, PureBattleStages } from './battleMathTypes.ts';
-import type { DayPhase } from '@/logic/utils/timeUtils';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { KALOS_GENERATION_NUM, GUTS_STATUS_ATK_MULTIPLIER } from '@/logic/constants/gameplay';
+import type { StatIDExceptHP } from '@/logic/pokemon/statsMath';
+import type { DayPhase } from '@/logic/utils/timeUtils';
+
 import {
   getMechanicalWeather,
   type WeatherId,
   type WeatherMechanical
 } from '../weather/weatherRegistry.ts';
+import type { PurePokemon, PureBattleWeather, PureBattleStages } from './battleMathTypes.ts';
 
 const DEFAULT_FALLBACK_STAT = 10;
 const SNOW_ICE_DEF_MULTIPLIER = 1.5;

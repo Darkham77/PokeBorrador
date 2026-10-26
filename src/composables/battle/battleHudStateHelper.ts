@@ -1,6 +1,6 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { BATTLE_SEAT_SPECIAL_STATES, type BattleSide } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const INIT_FSM_STATES = ['INITIALIZING', 'CONTEXT_SETUP', 'SEARCH_PHASE', 'FIRST_INTRO'] as const;
 const INIT_FSM_STATES_SET: ReadonlySet<string> = new Set<string>(INIT_FSM_STATES); // runtime-set: Fast O(1) membership lookup set
@@ -163,6 +163,9 @@ export function checkScrambleState(
   return Boolean(subState && SILHOUETTE_FSM_SUBSTATES_SET.has(subState));
 }
 
+const TRAINER_INTRO_STATE_VALUES = ['CONTEXT_SETUP', 'INITIALIZING', 'SEARCH_PHASE'] as const;
+const TRAINER_INTRO_STATES: ReadonlySet<string> = new Set<string>(TRAINER_INTRO_STATE_VALUES);
+
 export function checkEnemyTechnicalHidden(
   subState: string | null | undefined,
   state: string | null | undefined,
@@ -177,8 +180,7 @@ export function checkEnemyTechnicalHidden(
     return true;
   }
   if (isTrainer) {
-    if (state === 'CONTEXT_SETUP' || state === 'INITIALIZING' || state === 'SEARCH_PHASE')
-      return true;
+    if (state && TRAINER_INTRO_STATES.has(state)) return true;
     if (state === 'FIRST_INTRO' && subState !== 'POKEMON_CALL') return true;
   }
   return isTrainer && Boolean(subState && TRAINER_VISIBLE_FSM_SUBSTATES_SET.has(subState));

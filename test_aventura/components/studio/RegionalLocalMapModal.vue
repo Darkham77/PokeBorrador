@@ -9,8 +9,9 @@
  */
 
 import { computed } from 'vue';
-import type { POINode } from '../../types/map/poiTypes.ts';
+
 import { SCALE_DIMENSIONS } from '../../logic/map/nodeLocalMapGenerator.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
 import ProceduralMapViewer from './ProceduralMapViewer.vue';
 
 const props = defineProps<{

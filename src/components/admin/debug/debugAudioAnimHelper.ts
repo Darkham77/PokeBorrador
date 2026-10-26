@@ -1,5 +1,7 @@
-import type { Pokemon, VolatileStatusKey } from '@/types/pokemon/pokemon';
+import type { DisplayText } from '@francogp/auditor';
+
 import { requireBattleConditionKey, type CoreBattleStatKey } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export interface DebugEffectActiveContext {
   poke?: Pokemon | null;
@@ -19,10 +21,9 @@ import { SECONDARY_EFFECT_PREDICATES } from './debugAudioSecondaryPredicates.ts'
 export function isSecondaryEffectActive(poke: Pokemon | null | undefined, type: string): boolean {
   if (!poke) return false;
   const p = poke as Pokemon & Record<string, unknown>; // open-record: Generic key-value data dictionary container
-  const vc = (p.volatileCounters || {}) as Partial<Record<VolatileStatusKey, number>> &
-    Record<string, number | undefined>; // open-record: Generic key-value data dictionary container
+  const vc = p.volatileCounters || {}; // open-record: Generic key-value data dictionary container
 
-  if ((vc[type as VolatileStatusKey] || 0) > 0 || Boolean(p[type])) return true;
+  if ((vc[type] || 0) > 0 || Boolean(p[type])) return true;
 
   const predicate = SECONDARY_EFFECT_PREDICATES[type];
   return predicate ? predicate(p, vc) : false;
@@ -41,7 +42,7 @@ export function isFieldEffectActive(
   const stageKey = key === 'lightscreen' ? 'lightScreen' : key;
   const stageVal =
     stages && stageKey in stages
-      ? (stages as Record<string, number | undefined>)[stageKey]
+      ? (stages as Record<DisplayText, number | undefined>)[stageKey]
       : undefined; // open-record: Debug battle stages lookup
   const isTerrainActive = terrain === key;
   return !!cond || !!sideCond || (stageVal !== undefined && stageVal > 0) || isTerrainActive;

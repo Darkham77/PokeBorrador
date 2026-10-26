@@ -1,4 +1,6 @@
+import { formatBattleLog } from '@/logic/battle/battleLogger';
 import { gsapSleep } from '@/logic/utils/gsapHelpers';
+import { logger } from '@/logic/utils/logger.ts';
 import type {
   BattleLog,
   BattleSource,
@@ -6,7 +8,6 @@ import type {
   BattleSide,
   BattleStages
 } from '@/types/battle/battle';
-import { formatBattleLog } from '@/logic/battle/battleLogger';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const LOG_PROCESSING_POLL_INTERVAL_MS = 100;
@@ -49,13 +50,22 @@ export function createBattleLoggerHelper(
   enemyStages: { value: unknown },
   activeMove: { value: unknown },
   initialStages: BattleStages
-) {
+): {
+  addLog: (
+    msg: string,
+    type?: string,
+    source?: BattleSource | null,
+    sideOverride?: BattleSide | null
+  ) => void;
+  clearLogs: () => void;
+  waitForLogs: () => Promise<void>;
+} {
   const addLog = (
     msg: string,
     type = 'log-info',
     source: BattleSource | null = null,
     sideOverride: BattleSide | null = null
-  ) => {
+  ): void => {
     const ctx = {
       gs,
       activeBattle: activeBattle.value as BattleState | null,
@@ -65,15 +75,19 @@ export function createBattleLoggerHelper(
     const logItem = formatBattleLog(msg, type, source as BattleSource, ctx);
     if (sideOverride) logItem.side = sideOverride;
 
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('battle-log-added', { detail: logItem }));
+    if (typeof globalThis.window !== 'undefined') {
+      globalThis.dispatchEvent(new CustomEvent('battle-log-added', { detail: logItem }));
     }
 
     logQueue.value.push(logItem);
-    if (!isProcessingLogs.value) void processNextLog();
+    if (!isProcessingLogs.value) {
+      processNextLog().catch((err: unknown) => {
+        logger.error('BATTLE_LOG', 'Failed to process battle log', err);
+      });
+    }
   };
 
-  const processNextLog = async () => {
+  const processNextLog = async (): Promise<void> => {
     if (isProcessingLogs.value) return;
     isProcessingLogs.value = true;
 
@@ -86,7 +100,7 @@ export function createBattleLoggerHelper(
     isProcessingLogs.value = false;
   };
 
-  const clearLogs = () => {
+  const clearLogs = (): void => {
     battleLogs.value = [];
     logQueue.value = [];
     isProcessingLogs.value = false;
@@ -96,7 +110,7 @@ export function createBattleLoggerHelper(
     attackerSide.value = null;
   };
 
-  const waitForLogs = async () => {
+  const waitForLogs = async (): Promise<void> => {
     while (isProcessingLogs.value || logQueue.value.length > 0) {
       await gsapSleep(LOG_PROCESSING_POLL_INTERVAL_MS);
     }

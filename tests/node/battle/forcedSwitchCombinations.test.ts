@@ -1,3 +1,5 @@
+import assert from 'node:assert/strict';
+
 /**
  * tests/node/battle/forcedSwitchCombinations.test.ts
  *
@@ -5,16 +7,16 @@
  * double faints, revival blessing, item uses, and seat resolutions in ShowdownBattleEngine.
  */
 import { describe, it } from 'vite-plus/test';
-import assert from 'node:assert/strict';
-import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
-import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
-import { ShowdownLogEnricher } from '../../../src/logic/battle/helpers/showdownLogEnricher.ts';
+
 import { ACTIVE_SHOWDOWN_FORMAT } from '../../../src/data/system/constants.ts';
-import { ShowdownBattleAgent } from '../../../src/logic/battle/helpers/showdownBattleAgent.ts';
+import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
 import {
   classifyRequest,
   requiresAction
 } from '../../../src/logic/battle/helpers/requestHelper.ts';
+import { ShowdownBattleAgent } from '../../../src/logic/battle/helpers/showdownBattleAgent.ts';
+import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
+import { ShowdownLogEnricher } from '../../../src/logic/battle/helpers/showdownLogEnricher.ts';
 
 class TestAgent extends ShowdownBattleAgent {}
 

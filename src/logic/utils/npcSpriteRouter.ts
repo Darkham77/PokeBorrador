@@ -1,3 +1,4 @@
+import type { TrainerTypeKey } from '../../data/player/trainerTypes.ts';
 import {
   ARCHETYPE_SPRITES,
   VALID_NPC_SPRITES,
@@ -5,26 +6,7 @@ import {
 } from '../../data/pokemon/npcSpriteCatalog.ts';
 export type { NpcSpriteId } from '../../data/pokemon/npcSpriteCatalog.ts';
 
-export type NpcArchetype =
-  | 'rival' // Renowned masters / rivals
-  | 'caza_bichos' // Bug Catcher / Bug Maniac
-  | 'ornitologo' // Bird Keeper
-  | 'cientifico' // Scientist / Super Nerd
-  | 'luchador' // Black Belt / Battle Girl
-  | 'pescador' // Fisherman
-  | 'nadador' // Swimmer
-  | 'domador' // Tamer / Roughneck
-  | 'medium' // Psychic / Medium / Channeler
-  | 'motorista' // Biker / Cue Ball / Punk Guy
-  | 'montanero' // Hiker / Ruin Maniac
-  | 'rocket' // Team Rocket Grunts
-  | 'criador' // Pokemon Breeder
-  | 'aristocrata' // Gentleman / Lady / Madame / Rich Boy
-  | 'ranger' // Pokemon Ranger
-  | 'pokefan' // Pokefan
-  | 'policeman' // Police officer
-  | 'artista' // Beauty / Dancer / Model / Artist
-  | 'default'; // Youngster / Lass / Camper / Picnicker
+export type NpcArchetype = TrainerTypeKey;
 
 // Mapping of archetypes to keywords found in sprite filenames or NPC names
 export const ARCHETYPE_KEYWORDS: Record<NpcArchetype, string[]> = {

@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -25,7 +26,7 @@ export interface E2EMasterCheckpoint {
 export interface E2ECheckpointDocument {
   master?: E2EMasterCheckpoint | null;
   passedSuites?: string[];
-  suites: Record<string, E2ESuiteFailureCheckpoint>;
+  suites: Record<DisplayText, E2ESuiteFailureCheckpoint>;
 }
 
 export function getCheckpointFilePath(): string {
@@ -52,9 +53,8 @@ export function loadCheckpointDocument(): E2ECheckpointDocument {
         suites: parsed.suites && typeof parsed.suites === 'object' ? parsed.suites : {}
       };
     }
-  } catch {
-    // catch-ok: ignore corrupt checkpoint and return empty default
-    // Ignore corrupt checkpoint and return empty default
+  } catch (err) {
+    err;
   }
   return {
     master: null,
@@ -71,9 +71,8 @@ export function saveCheckpointDocument(doc: E2ECheckpointDocument): void {
       fs.mkdirSync(dir, { recursive: true });
     }
     fs.writeFileSync(filePath, JSON.stringify(doc, null, 2), 'utf8');
-  } catch {
-    // catch-ok: non-fatal if checkpoint write fails
-    // Non-fatal if checkpoint write fails
+  } catch (err) {
+    err;
   }
 }
 
@@ -209,9 +208,8 @@ export function clearSuiteCheckpoint(suiteName: string): void {
     if (fs.existsSync(progressDir)) {
       try {
         fs.rmSync(progressDir, { recursive: true, force: true });
-      } catch {
-        // catch-ok: ignore directory removal error
-        // Ignore error
+      } catch (err) {
+        err;
       }
     }
   }
@@ -227,25 +225,26 @@ export function clearAllCheckpoints(): void {
     if (fs.existsSync(progressDir)) {
       fs.rmSync(progressDir, { recursive: true, force: true });
     }
-  } catch {
-    // catch-ok: ignore error when clearing checkpoint files
-    // Ignore error
+  } catch (err) {
+    err;
   }
 }
 
-export function isCleanRequested(args: string[] = process.argv): boolean {
+const CLEAN_FLAGS: ReadonlySet<string> = new Set<string>([
+  'clean',
+  'clean=true',
+  'reset',
+  'reset=true',
+  '--clean',
+  '--reset'
+]);
+
+export function isCleanRequested(args: string[] = []): boolean {
   if (process.env.SIM_CLEAN === 'true' || process.env.npm_config_clean === 'true') {
     return true;
   }
   return args.some((arg) => {
     const lower = arg.toLowerCase().trim();
-    return (
-      lower === 'clean' ||
-      lower === 'clean=true' ||
-      lower === 'reset' ||
-      lower === 'reset=true' ||
-      lower === '--clean' ||
-      lower === '--reset'
-    );
+    return CLEAN_FLAGS.has(lower);
   });
 }

@@ -5,12 +5,14 @@
  * 1:1 MIGRATION FROM PVSPRITEFX.VUE
  */
 import { onUnmounted, watch, nextTick, ref } from 'vue';
+
 import {
   useParticleEngine,
   type ParticleSystemOptions
 } from '@/composables/effects/useParticleEngine';
 import { resolveEffectSettings } from '@/data/battle/fx-configs';
 import { Z_LAYERS } from '@/logic/constants/visuals';
+
 import PVStatusOverlayLayer from './PVStatusOverlayLayer.vue';
 import { createStatusParticleTimeline, type FXData } from './statusParticleHelpers';
 
@@ -34,7 +36,7 @@ const engines = new Map<string, ReturnType<typeof useParticleEngine>>();
 const activeUnifiedTypes = new Map<string, number>();
 const activeStatusType = ref<string>('');
 
-const getEngine = (type: string) => {
+const getEngine = (type: string): ReturnType<typeof useParticleEngine> => {
   let engine = engines.get(type);
   if (!engine) {
     engine = useParticleEngine();
@@ -48,7 +50,7 @@ const applyGenericParticleSystem = (
   typeKey: string,
   engineInit: (els: HTMLElement[], options: ParticleSystemOptions) => void,
   options: { isField?: boolean; seed?: number; radius: number }
-) => {
+): void => {
   if (!els || els.length === 0) return;
 
   const settings = resolveEffectSettings(typeKey, options.radius, {
@@ -68,7 +70,7 @@ const applyGenericParticleSystem = (
   });
 };
 
-const initParticleAnim = (container: HTMLElement, force = false) => {
+const initParticleAnim = (container: HTMLElement, force = false): void => {
   if (props.isSimplified) return;
   const statusType = props.activeStatusEffects[0]?.type || '';
 
@@ -90,7 +92,7 @@ const initParticleAnim = (container: HTMLElement, force = false) => {
   }
 };
 
-const syncUnifiedSystems = (container: HTMLElement, forceReset = false) => {
+const syncUnifiedSystems = (container: HTMLElement, forceReset = false): void => {
   if (forceReset) {
     activeUnifiedTypes.forEach((_, type) => getEngine(type).killAll());
     activeUnifiedTypes.clear();
@@ -144,7 +146,7 @@ const syncUnifiedSystems = (container: HTMLElement, forceReset = false) => {
   });
 };
 
-const refreshAll = (forceReset = false) => {
+const refreshAll = (forceReset = false): void => {
   const container = rootRef.value?.closest('.pv-fx-wrapper') as HTMLElement;
   if (!container) return;
   if (forceReset) {

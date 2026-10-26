@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 
@@ -35,9 +36,8 @@ async function downloadFile(url: string, destPath: string): Promise<boolean> {
     if (stat.size > 0) {
       return true;
     }
-  } catch {
-    // catch-ok: file does not exist locally yet, proceed with download
-    // El archivo no existe, proceder con la descarga
+  } catch (err) {
+    err;
   }
 
   try {
@@ -145,7 +145,7 @@ export async function downloadAllSprites(
   delayMs = DEFAULT_FETCH_DELAY_MS
 ): Promise<
   Record<
-    string,
+    DisplayText,
     {
       front: string;
       frontAnimated: boolean;
@@ -161,7 +161,7 @@ export async function downloadAllSprites(
 > {
   await ensureDirsExist();
   const assetMap: Record<
-    string,
+    DisplayText,
     {
       front: string;
       frontAnimated: boolean;

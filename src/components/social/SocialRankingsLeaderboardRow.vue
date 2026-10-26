@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import { getEloTier } from '@/logic/pvp/rankedEngine';
 import type { LeaderboardEntry } from '@/stores/social/social';
-
-import { isFactionId, FACTION_LABELS, FACTION_COLORS, PODIUM_MEDALS } from '@/types/system/game';
+import {
+  isFactionId,
+  FACTION_LABELS,
+  FACTION_COLORS,
+  PODIUM_MEDALS,
+  NIL_FACTION_STRINGS
+} from '@/types/system/game';
 
 const props = defineProps<{
   player: LeaderboardEntry;
@@ -23,21 +29,21 @@ const emit = defineEmits<{
 const DEFAULT_FACTION_COLOR = 'rgba(156, 163, 175, 1)';
 
 const normalizeFactionKey = (faction: string | undefined | null): string => {
-  if (!faction || faction === 'null' || faction === 'NULL' || faction === 'undefined') return '';
+  if (!faction || NIL_FACTION_STRINGS.has(faction)) return '';
   return faction.trim().toLowerCase(); // domain-ok: Open dynamic text or non-domain string payload
 };
 
-const getFactionColor = (faction: string | undefined | null) => {
+const getFactionColor = (faction: string | undefined | null): string => {
   const key = normalizeFactionKey(faction);
   return isFactionId(key) ? FACTION_COLORS[key] : DEFAULT_FACTION_COLOR;
 };
 
-const getFactionLabel = (faction: string | undefined | null) => {
+const getFactionLabel = (faction: string | undefined | null): string => {
   const key = normalizeFactionKey(faction);
   return isFactionId(key) ? FACTION_LABELS[key] : (faction ?? '');
 };
 
-const isFactionValid = (faction: string | undefined | null) => {
+const isFactionValid = (faction: string | undefined | null): boolean => {
   const key = normalizeFactionKey(faction);
   return isFactionId(key);
 };

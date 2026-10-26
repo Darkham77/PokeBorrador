@@ -1,24 +1,26 @@
+import type { DisplayText } from '@francogp/auditor';
 import { ref } from 'vue';
 import type { Ref } from 'vue';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+
+import type { ItemId } from '@/data/inventory/items';
+import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases';
+import { TRAINER_TYPES } from '@/data/player/trainerTypes';
+import { requireNpcSpriteId, type NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { isMapRouteId } from '@/data/world/map-assets';
 import { MAPS_BY_ROUTE_ID } from '@/data/world/maps';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { MapLocation, AdventureEventType } from '@/types/pokemon/encounters';
-import { useGameStore } from '@/stores/game';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { getSpritesForArchetype } from '@/logic/utils/npcSpriteRouter';
 import { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
 import { useInventoryStore } from '@/stores/inventory/inventory';
 import { useShopStore } from '@/stores/inventory/shop';
 import { useMapStore } from '@/stores/map';
-import { isMapRouteId } from '@/data/world/map-assets';
-import type { AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts';
-import { requireNpcSpriteId, type NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
-import type { ItemId } from '@/data/inventory/items';
 import type { BattleMinigame } from '@/types/battle/battle';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { MapLocation, AdventureEventType } from '@/types/pokemon/encounters';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
-import { TRAINER_TYPES } from '@/data/player/trainerTypes';
-import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases';
-import { getSpritesForArchetype } from '@/logic/utils/npcSpriteRouter';
+import type { AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts';
 
 export const ADVENTURE_TRIGGER_TYPES = [
   'combat',
@@ -56,11 +58,11 @@ interface AdventureEventsConfig {
   resumeTravelAfterEvent: () => void;
   cancelTravel: () => void;
   hasHealthyTeam: Ref<boolean>;
-  mapLocationsById: Ref<Record<string, MapLocation>>; // open-record: Map locations indexed by adventure node id
+  mapLocationsById: Ref<Record<DisplayText, MapLocation>>; // open-record: Map locations indexed by adventure node id
   getSpawnPoolForMap: (loc: MapLocation) => {
     generic: PokemonSpeciesId[] | string[];
     specific: PokemonSpeciesId[] | string[];
-    rates: Partial<Record<PokemonSpeciesId, number>> | Record<string, number>; // open-record: Spawn pool rates mapping
+    rates: Partial<Record<PokemonSpeciesId, number>> | Record<DisplayText, number>; // open-record: Spawn pool rates mapping
   };
   getTravelTween: () => gsap.core.Tween | null;
   getMarkerTimeline: () => gsap.core.Timeline | null;
@@ -97,12 +99,28 @@ import {
   resolveAdventureCombatEvent
 } from './adventureEventHelpers.ts';
 
-export function useAdventureEvents(config: AdventureEventsConfig) {
+export interface TrainerEncounterResult {
+  readonly trainerName: string;
+  readonly trainerSprite: NpcSpriteId;
+  readonly enemyTeam: Pokemon[];
+  readonly quote: string;
+}
+
+export interface UseAdventureEventsReturn {
+  readonly activeEvent: Ref<ActiveAdventureEvent | null>;
+  readonly pendingEscapedCombatEvent: Ref<boolean>;
+  readonly triggerRandomEvent: (targetMapId?: AdventureNodeId) => Promise<void>;
+  readonly resolveEvent: () => void;
+  readonly triggerExplore: () => Promise<void>;
+  readonly resolveCombatRouteEvent: (message: string) => void;
+}
+
+export function useAdventureEvents(config: AdventureEventsConfig): UseAdventureEventsReturn {
   const activeEvent = ref<ActiveAdventureEvent | null>(null);
 
   const pendingEscapedCombatEvent = ref(false);
 
-  async function generateTrainerEncounter(mapData: MapLocation) {
+  async function generateTrainerEncounter(mapData: MapLocation): Promise<TrainerEncounterResult> {
     const keys = Object.keys(TRAINER_TYPES) as Array<keyof typeof TRAINER_TYPES>;
     const typeKey = keys[Math.floor(Math.random() * keys.length)] || 'caza_bichos';
     const t = TRAINER_TYPES[typeKey];
@@ -132,7 +150,7 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
     };
   }
 
-  const triggerRandomEvent = async (targetMapId?: AdventureNodeId) => {
+  const triggerRandomEvent = async (targetMapId?: AdventureNodeId): Promise<void> => {
     const travelTween = config.getTravelTween();
     const markerTimeline = config.getMarkerTimeline();
 
@@ -209,11 +227,11 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
     config.travelLog.value.push(`🛑 Evento: ${template.title}`);
   };
 
-  const resolveEvent = () => {
+  const resolveEvent = (): void => {
     if (!activeEvent.value) return;
     const evt = activeEvent.value;
     const isManualExploration = !config.isTraveling.value;
-    const onFinished = () => {
+    const onFinished = (): void => {
       activeEvent.value = null;
     };
 
@@ -261,7 +279,7 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
     config.resumeTravelAfterEvent();
   };
 
-  const triggerExplore = async () => {
+  const triggerExplore = async (): Promise<void> => {
     if (config.isTraveling.value) return;
 
     const mapData = config.mapLocationsById.value[config.originMap.value];
@@ -319,7 +337,7 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
     config.travelLog.value.push(`🌿 ¡Comienza un combate contra ${name} salvaje!`);
   };
 
-  const resolveCombatRouteEvent = (message: string) => {
+  const resolveCombatRouteEvent = (message: string): void => {
     if (activeEvent.value?.type !== 'combat') return;
 
     pendingEscapedCombatEvent.value = false;
@@ -332,7 +350,7 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
       if (isMapRouteId(originNode)) config.mapStore.currentMap = originNode;
       config.shopStore.healAllPokemon(0);
       const originName =
-        (MAPS_BY_ROUTE_ID as Record<string, MapLocation>)[originNode]?.name || originNode; // open-record: Generic key-value data dictionary container
+        (MAPS_BY_ROUTE_ID as Record<DisplayText, MapLocation>)[originNode]?.name || originNode; // open-record: Generic key-value data dictionary container
       config.travelLog.value.push(
         `🏥 Regresaste de inmediato a ${originName}. Tu equipo ha sido curado.`
       );

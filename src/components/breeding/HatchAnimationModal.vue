@@ -29,16 +29,11 @@ const HATCH_RARE_AURA_MIN_OPACITY = 0.3;
 const HATCH_RARE_AURA_MAX_OPACITY = 0.95;
 const HATCH_STATS_CARD_INITIAL_Y_OFFSET = 15;
 const GLOW_RING_EXPAND_SCALE = 1.4;
-import { OPACITY_ZERO } from '@/logic/constants/visuals';
-import { ref, onMounted, onUnmounted, nextTick, watch, provide, computed } from 'vue';
 import { gsap } from 'gsap';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { ref, onMounted, onUnmounted, nextTick, watch, provide, computed } from 'vue';
+
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
-import type { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon';
-import { useGameStore } from '@/stores/game';
 import { getAuraStyles } from '@/logic/breeding/hatchAuras';
-import HatchEggCrackStage from './HatchEggCrackStage.vue';
-import HatchRevealContent from './HatchRevealContent.vue';
 import {
   GSAP_FAST_DURATION_SEC,
   EGG_LEVITATION_Y_OFFSET,
@@ -49,6 +44,13 @@ import {
   HATCH_PARTICLE_MAX_SPREAD_PX,
   MAP_FACTION_PODER_MAX_SCALE
 } from '@/logic/constants/animations';
+import { OPACITY_ZERO } from '@/logic/constants/visuals';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useGameStore } from '@/stores/game';
+import type { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon';
+
+import HatchEggCrackStage from './HatchEggCrackStage.vue';
+import HatchRevealContent from './HatchRevealContent.vue';
 
 interface Props {
   id?: string;
@@ -93,11 +95,11 @@ const flare2Url = getAssetUrl(ASSET_TYPES.FX, 'flare_2');
 const activeTweens: gsap.core.Tween[] = [];
 let idleTimeline: gsap.core.Timeline | null = null;
 
-const playSound = (soundName: string) => {
-  (Reflect.get(window, 'playSound') as ((s: string) => void) | undefined)?.(soundName);
+const playSound = (soundName: string): void => {
+  (Reflect.get(globalThis, 'playSound') as ((s: string) => void) | undefined)?.(soundName);
 };
 
-const getSprite = (id: string | number, isShiny: boolean) => {
+const getSprite = (id: string | number, isShiny: boolean): string => {
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny });
 };
 
@@ -113,13 +115,13 @@ const auraStyles = computed(() => {
 
 const isEggStage = computed(() => stage.value === 'egg' || stage.value === 'shake');
 
-const handleContainerClick = () => {
+const handleContainerClick = (): void => {
   if (stage.value === 'egg') {
     handleEggClick();
   }
 };
 
-const prepareResult = async () => {
+const prepareResult = async (): Promise<void> => {
   if (props.pokemon) {
     resultPokemon.value = props.pokemon;
     return;
@@ -131,8 +133,8 @@ const prepareResult = async () => {
     const rawSpeciesId = props.egg.pokemonId ?? props.egg.id;
     const speciesId = getEggSpecies(rawSpeciesId);
     const isDebugMode =
-      typeof window !== 'undefined' &&
-      Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
+      typeof globalThis.window !== 'undefined' &&
+      Boolean(globalThis.__VITE_DEBUG__ || globalThis.location?.search?.includes('debug'));
     const p = makePokemon(speciesId, 1, {
       isShiny: Boolean(props.egg.isShiny),
       isGuardian: Boolean(props.egg.isGuardian),
@@ -171,7 +173,7 @@ const prepareResult = async () => {
   }
 };
 
-const cleanupAnimations = () => {
+const cleanupAnimations = (): void => {
   if (ctx) {
     ctx.revert();
     ctx = null;
@@ -184,7 +186,7 @@ const cleanupAnimations = () => {
   activeTweens.length = 0;
 };
 
-const initAnimations = async () => {
+const initAnimations = async (): Promise<void> => {
   cleanupAnimations();
 
   stage.value = 'egg';
@@ -235,7 +237,7 @@ const initAnimations = async () => {
   }, modalRef.value ?? undefined);
 };
 
-const handleEggClick = () => {
+const handleEggClick = (): void => {
   if (stage.value !== 'egg') return;
 
   taps.value++;
@@ -469,7 +471,7 @@ const handleEggClick = () => {
   }, modalRef.value ?? undefined);
 };
 
-const handleClose = async () => {
+const handleClose = async (): Promise<void> => {
   cleanupAnimations();
   if (props.egg) {
     await gameStore.executeHatch(props.egg);

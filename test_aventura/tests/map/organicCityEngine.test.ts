@@ -14,8 +14,9 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateOrganicCityLayout } from '../../logic/map/organicCityEngine.ts';
+
 import { synthesizeCityGenes } from '../../logic/map/cityGeneSynthesizer.ts';
+import { generateOrganicCityLayout } from '../../logic/map/organicCityEngine.ts';
 import { type POINode, SETTLEMENT_SCALES } from '../../types/map/poiTypes.ts';
 
 describe('organicCityEngine (100-Seed Fuzzer Suite)', () => {

@@ -1,5 +1,6 @@
-import { toID } from '@/logic/utils/strings.ts';
 import { SINNOH_GENERATION_NUM } from '@/logic/constants/gameplay.ts';
+import { toID } from '@/logic/utils/strings.ts';
+
 import { mapVisualToOfficialWeather } from './weatherGenerationProvider.ts';
 import type { ShowdownWeatherId } from './weatherRegistry.ts';
 

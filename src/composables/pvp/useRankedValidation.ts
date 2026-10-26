@@ -1,15 +1,18 @@
-import { usePvPStore } from '@/stores/pvp';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { PokemonType } from '@/data/battle/types';
 import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { usePvPStore } from '@/stores/pvp';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
-export function useRankedValidation() {
+export function useRankedValidation(): {
+  validatePokemon: (pokemon: Pokemon) => { ok: boolean; reason?: string };
+  validateTeam: (team: Pokemon[]) => { ok: boolean; reason?: string };
+} {
   const rankedStore = usePvPStore();
 
   /**
    * Validates a single Pokémon against current rules.
    */
-  const validatePokemon = (pokemon: Pokemon) => {
+  const validatePokemon = (pokemon: Pokemon): { ok: boolean; reason?: string } => {
     if (!pokemon) return { ok: false, reason: 'Pokémon inválido.' };
 
     const rules = rankedStore.rules;
@@ -29,9 +32,7 @@ export function useRankedValidation() {
 
     // 3. Type Restrictions
     if ((rules.allowedTypes?.length ?? 0) > 0) {
-      const types = Array.isArray(pokemon.type)
-        ? (pokemon.type as PokemonType[])
-        : [pokemon.type as PokemonType];
+      const types = Array.isArray(pokemon.type) ? (pokemon.type as PokemonType[]) : [pokemon.type];
       const hasAllowedType = types.some((t: PokemonType) => rules.allowedTypes!.includes(t));
       if (!hasAllowedType) {
         return { ok: false, reason: `${pokemon.name} no cumple con los tipos permitidos.` };
@@ -44,7 +45,7 @@ export function useRankedValidation() {
   /**
    * Validates a full team.
    */
-  const validateTeam = (team: Pokemon[]) => {
+  const validateTeam = (team: Pokemon[]): { ok: boolean; reason?: string } => {
     if (!team || team.length === 0) {
       return { ok: false, reason: 'El equipo está vacío.' };
     }

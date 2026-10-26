@@ -1,7 +1,7 @@
+import type { Side } from '@pkmn/sim';
+
 import { clearPokemonFromFaintQueue } from './helpers/showdownSyncHelper.ts';
 import { isMatchingUid } from './showdownUidMapper.ts';
-
-import type { Side } from '@pkmn/sim';
 
 export interface CheatPokemon {
   uid?: string;

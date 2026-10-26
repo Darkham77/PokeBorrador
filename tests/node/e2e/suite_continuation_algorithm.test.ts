@@ -1,7 +1,7 @@
-import { describe, it, beforeEach, afterEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+
 import type {
   FullConfig,
   Suite,
@@ -9,7 +9,8 @@ import type {
   TestResult,
   FullResult
 } from '@playwright/test/reporter';
-import PlaywrightFuzzerReporter from '../../../scripts/e2e/logging/playwright_fuzzer_reporter.ts';
+import { describe, it, beforeEach, afterEach } from 'vite-plus/test';
+
 import {
   loadCheckpointDocument,
   recordMasterSuiteFailure,
@@ -19,6 +20,7 @@ import {
   clearAllCheckpoints,
   isCleanRequested
 } from '../../../scripts/e2e/helpers/e2eCheckpointManager.ts';
+import PlaywrightFuzzerReporter from '../../../scripts/e2e/logging/playwright_fuzzer_reporter.ts';
 
 const CHECKPOINT_FILE_PATH = path.resolve(
   process.cwd(),

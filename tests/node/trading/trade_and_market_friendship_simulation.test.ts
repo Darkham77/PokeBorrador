@@ -9,18 +9,19 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { SQLiteDatabase } from '@/logic/db/sqliteEngine.ts';
-import { emulateSendTradeOffer, emulateAcceptTrade } from '@/logic/db/rpcEmulations/tradeRpc.ts';
+
+import { type PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
 import {
   emulatePublishListing,
   emulateBuyListing,
   emulateCancelListing,
   emulateClaimAsset
 } from '@/logic/db/rpcEmulations/marketRpc.ts';
+import { emulateSendTradeOffer, emulateAcceptTrade } from '@/logic/db/rpcEmulations/tradeRpc.ts';
+import type { SQLiteDatabase } from '@/logic/db/sqliteEngine.ts';
 import { queryLocal } from '@/logic/db/sqliteEngine.ts';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider.ts';
-import { type PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 vi.mock('@/logic/db/sqliteEngine.ts', () => ({
   queryLocal: vi.fn(),

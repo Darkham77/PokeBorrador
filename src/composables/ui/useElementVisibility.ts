@@ -1,9 +1,10 @@
-import { ref, type Ref } from 'vue';
 import {
   useIntersectionObserver,
   type MaybeElement,
   type UseIntersectionObserverOptions
 } from '@vueuse/core';
+import { ref, type Ref } from 'vue';
+
 import { logger } from '@/logic/utils/logger';
 
 /**
@@ -13,7 +14,7 @@ import { logger } from '@/logic/utils/logger';
 export function useElementVisibility(
   elementRef: Ref<MaybeElement> | { value: MaybeElement },
   options: UseIntersectionObserverOptions = { threshold: 0.01, rootMargin: '800px 0px 800px 0px' }
-) {
+): { isVisible: Ref<boolean> } {
   const isVisible = ref(true); // Assume visible initially to avoid flicker
 
   const { isSupported } = useIntersectionObserver(
@@ -27,7 +28,7 @@ export function useElementVisibility(
     options
   );
 
-  if (!isSupported.value && typeof window !== 'undefined') {
+  if (!isSupported.value && typeof globalThis.window !== 'undefined') {
     logger.warn('UI', 'IntersectionObserver is not supported in this environment.');
   }
 

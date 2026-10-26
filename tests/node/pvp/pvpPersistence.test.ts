@@ -1,11 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useGameStore } from '@/stores/game';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+import { ref } from 'vue';
+
 import { serializeActiveBattle } from '@/logic/auth/battleSerializerHelper';
 import { restoreBattleState } from '@/logic/battle/orchestratorRestoreHelper';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { useGameStore } from '@/stores/game';
 import type { BattleContext } from '@/types/battle/battleContext';
-import { ref } from 'vue';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('PvP Battle State Persistence & Restoration', () => {
   const createFakePoke = (uid: string, name: string): Pokemon => {

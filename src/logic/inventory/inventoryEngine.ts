@@ -1,6 +1,7 @@
 import { ITEMS_BY_ID, isItemId, type ItemId } from '@/data/inventory/items';
-import { getAssetUrl, ASSET_TYPES } from '../services/assetService.ts';
 import type { Inventory } from '@/types/inventory/items';
+
+import { getAssetUrl, ASSET_TYPES } from '../services/assetService.ts';
 
 /**
  * Inventory logic engine for non-battle interactions.

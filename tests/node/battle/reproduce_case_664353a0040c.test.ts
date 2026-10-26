@@ -1,19 +1,21 @@
-import { describe, it, expect } from 'vite-plus/test';
 import fs from 'node:fs';
 import path from 'node:path';
-import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
-import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
+
+import { describe, it, expect } from 'vite-plus/test';
+
+import type { CertifiedBattleCase } from '../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
 import {
   parseToNumericSeed,
   formatToShowdownSeed
 } from '../../../src/logic/battle/battleSeedManager.ts';
+import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
+import { patchShowdownSpreadModify } from '../../../src/logic/battle/engine/showdownSpreadModifyHelper.ts';
 import { resetDeterministicMathRandom } from '../../../src/logic/battle/helpers/seedInitializer.ts';
+import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
 import {
   ShowdownTeamMapper,
   type CustomPokemonSet
 } from '../../../src/logic/battle/helpers/showdownTeamMapper.ts';
-import { patchShowdownSpreadModify } from '../../../src/logic/battle/engine/showdownSpreadModifyHelper.ts';
-import type { CertifiedBattleCase } from '../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
 
 describe('Reproduce Fuzzer Case 664353a0040c (Lote #20)', () => {
   const casesPath = path.resolve(

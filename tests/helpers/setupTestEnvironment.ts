@@ -1,7 +1,8 @@
 import path from 'node:path';
-import { registerTeamGeneratorHandler } from '@/logic/battle/showdownWorkerClient';
-import { TrainerTeamGenerator, RivalTeamGenerator } from '@/logic/battle/engine/rivalTeamGenerator';
+
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { TrainerTeamGenerator, RivalTeamGenerator } from '@/logic/battle/engine/rivalTeamGenerator';
+import { registerTeamGeneratorHandler } from '@/logic/battle/showdownWorkerClient';
 
 // Ensure active Node binary directory is in process.env.PATH for tests spawning child processes
 if (process.execPath) {

@@ -1,11 +1,12 @@
+import { gsap } from 'gsap';
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { gsap } from 'gsap';
+
+import { gameBus } from '@/logic/events/gameBus';
 import { logger } from '@/logic/utils/logger';
 import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage';
 import { useAuthStore } from '@/stores/auth';
 import { useLoadingStore } from '@/stores/loading';
-import { gameBus } from '@/logic/events/gameBus';
 
 type UpdateStatus =
   | 'up_to_date'
@@ -68,7 +69,7 @@ export const useUpdateStore = defineStore('update', () => {
 
   // Purge outdated code caches while preserving heavy game media
   const purgeCodeCaches = async (): Promise<void> => {
-    if (typeof window === 'undefined' || !('caches' in window)) return;
+    if (typeof globalThis.window === 'undefined' || !('caches' in globalThis)) return;
     try {
       const keys = await caches.keys();
       await Promise.all(
@@ -90,7 +91,7 @@ export const useUpdateStore = defineStore('update', () => {
 
   // Force cache-busting HTTP fetch and redirect strictly to target path (default: 'login')
   const forceCacheBustingReload = async (targetPath = 'login'): Promise<void> => {
-    if (typeof window === 'undefined') return;
+    if (typeof globalThis.window === 'undefined') return;
     if (isReloading) return;
     isReloading = true;
 
@@ -103,13 +104,13 @@ export const useUpdateStore = defineStore('update', () => {
     const cacheBuster = Temporal.Now.instant().epochMilliseconds.toString();
     const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
     const cleanTarget = targetPath.replace(/^\/+/, '');
-    const target = `${window.location.origin}${cleanBase}${cleanTarget}?reload_t=${cacheBuster}`;
+    const target = `${globalThis.location.origin}${cleanBase}${cleanTarget}?reload_t=${cacheBuster}`;
 
     try {
       const mainUrls = [
-        window.location.origin + cleanBase,
-        window.location.origin + cleanBase + 'index.html',
-        window.location.origin + cleanBase + 'version.json'
+        new URL(cleanBase, globalThis.location.origin),
+        new URL(`${cleanBase}index.html`, globalThis.location.origin),
+        new URL(`${cleanBase}version.json`, globalThis.location.origin)
       ];
 
       await Promise.allSettled(
@@ -131,14 +132,14 @@ export const useUpdateStore = defineStore('update', () => {
 
     try {
       // fallow-ignore-next-line security-sink
-      window.location.replace(target);
+      globalThis.location.replace(target);
     } catch {
-      window.location.reload();
+      globalThis.location.reload();
     }
   };
 
   // Notifications of incompatibility
-  function notifyOutdatedClient(info: UpdateVersionInfo) {
+  function notifyOutdatedClient(info: UpdateVersionInfo): void {
     logger.warn(
       'UpdateStore',
       `Client outdated (${info.client}) vs Server (${info.server}). Locking for clean update.`
@@ -156,14 +157,14 @@ export const useUpdateStore = defineStore('update', () => {
     }
   });
 
-  function notifyOutdatedServer(info: UpdateVersionInfo) {
+  function notifyOutdatedServer(info: UpdateVersionInfo): void {
     logger.warn('UpdateStore', `Server outdated (${info.server}) vs Client (${info.client}).`);
     status.value = 'outdated_server';
     modalType.value = 'server_outdated';
     versionInfo.value = info;
   }
 
-  function notifyDbIncompatible(info: UpdateVersionInfo) {
+  function notifyDbIncompatible(info: UpdateVersionInfo): void {
     logger.warn(
       'UpdateStore',
       `Database incompatible: client db ${info.client} vs server db ${info.db || info.server}.`
@@ -173,14 +174,14 @@ export const useUpdateStore = defineStore('update', () => {
     versionInfo.value = info;
   }
 
-  function notifyServiceWorkerUpdate() {
+  function notifyServiceWorkerUpdate(): void {
     if (modalType.value === 'client_update') return;
     logger.info('UpdateStore', 'Service Worker update detected.');
     status.value = 'outdated_client';
     modalType.value = 'client_update';
   }
 
-  function notifyChunkLoadError(err?: unknown) {
+  function notifyChunkLoadError(err?: unknown): void {
     logger.warn('UpdateStore', 'Chunk load or module fetch error caught. Requesting refresh.', err);
     status.value = 'outdated_client';
     modalType.value = 'client_update';
@@ -188,7 +189,7 @@ export const useUpdateStore = defineStore('update', () => {
   }
 
   // Clear modal and reset flags
-  function resetStatus() {
+  function resetStatus(): void {
     isReloading = false;
     if (failsafeTimer) {
       failsafeTimer.kill();
@@ -216,24 +217,26 @@ export const useUpdateStore = defineStore('update', () => {
     }
     const baseUrl = import.meta.env.BASE_URL || '/';
     const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
-    if (typeof window !== 'undefined') {
+    if (typeof globalThis.window !== 'undefined') {
       // security-ok: Same-origin redirect to internal /login route
-      window.location.replace(`${window.location.origin}${cleanBase}login`);
+      globalThis.location.replace(`${globalThis.location.origin}${cleanBase}login`);
     }
   }
 
   // Retry version check by hard reloading
   function retryCheck(): void {
-    if (typeof window !== 'undefined') {
-      window.location.reload();
+    if (typeof globalThis.window !== 'undefined') {
+      globalThis.location.reload();
     }
   }
 
   function terminateShowdownWorker(): void {
-    if (typeof window !== 'undefined' && window.__showdownWorker__) {
+    const win = typeof globalThis.window !== 'undefined' ? globalThis.window : null;
+    const worker = win?.__showdownWorker__;
+    if (worker && win) {
       try {
-        window.__showdownWorker__.terminate();
-        window.__showdownWorker__ = undefined;
+        worker.terminate();
+        delete win.__showdownWorker__;
       } catch (e) {
         logger.warn('UpdateStore', 'Error terminating showdown worker:', e);
       }
@@ -242,7 +245,7 @@ export const useUpdateStore = defineStore('update', () => {
 
   function waitForControllerChange(timeoutSec: number): Promise<void> {
     const controllerPromise = new Promise<void>((resolve) => {
-      const onControllerChange = () => {
+      const onControllerChange = (): void => {
         navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
         resolve();
       };
@@ -351,12 +354,12 @@ export const useUpdateStore = defineStore('update', () => {
     progressText.value = 'Aplicando actualización...';
 
     // Failsafe: force reload to targetDestination if SW doesn't transition in time
-    failsafeTimer = gsap.delayedCall(SW_UPDATE_FAILSAFE_TIMEOUT_SEC, () => {
+    failsafeTimer = gsap.delayedCall(SW_UPDATE_FAILSAFE_TIMEOUT_SEC, async () => {
       logger.warn(
         'UpdateStore',
         'SW update exceeded failsafe timeout. Executing forced clean reload to login.'
       );
-      void forceCacheBustingReload(targetDestination);
+      await forceCacheBustingReload(targetDestination);
     });
 
     try {

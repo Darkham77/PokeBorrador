@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/components/profile/trainerAvatarAnimHelper.ts
  *
@@ -27,7 +28,7 @@ interface SpinConfig {
   rotationDir?: number;
 }
 
-const SPIN_CONFIGS: Record<string, SpinConfig> = {
+const SPIN_CONFIGS: Record<DisplayText, SpinConfig> = {
   // open-record: Trainer avatar class and element spin configs
   fire: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.cazabichos! },
   water: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.criador! },
@@ -61,7 +62,7 @@ export interface ShadowConfig {
   steps?: boolean;
 }
 
-export const SHADOW_CONFIGS: Record<string, ShadowConfig> = {
+export const SHADOW_CONFIGS: Record<DisplayText, ShadowConfig> = {
   // open-record: Trainer avatar class and element shadow configs
   fire: {
     from: '0 0 0 3px #ff4400, 0 0 12px rgba(255, 68, 0, 0.4), inset 0 0 6px rgba(255, 68, 0, 0.2)',
@@ -167,7 +168,7 @@ export function resolveSpinConfig(cleanStyle: string): { duration: number; rotat
   let spinDuration = AVATAR_CLASS_SPIN_DURATIONS_SEC.cazabichos!;
   let rotationDir = FULL_ROTATION_DEG;
 
-  const spinConfig = (SPIN_CONFIGS as Record<string, SpinConfig>)[cleanStyle]; // open-record: Generic key-value data dictionary container
+  const spinConfig = SPIN_CONFIGS[cleanStyle]; // open-record: Generic key-value data dictionary container
   if (spinConfig) {
     spinDuration = spinConfig.duration;
     if (spinConfig.rotationDir !== undefined) {
@@ -177,7 +178,7 @@ export function resolveSpinConfig(cleanStyle: string): { duration: number; rotat
 
   if (cleanStyle.startsWith('type-')) {
     const typeName = cleanStyle.replace('type-', '');
-    const typeSpinDurations = AVATAR_TYPE_SPIN_DURATIONS_SEC as Record<string, number>; // open-record: Elemental type map
+    const typeSpinDurations = AVATAR_TYPE_SPIN_DURATIONS_SEC as Record<DisplayText, number>; // open-record: Elemental type map
     if (typeSpinDurations[typeName] !== undefined) {
       spinDuration = typeSpinDurations[typeName]!;
     }
@@ -188,9 +189,9 @@ export function resolveSpinConfig(cleanStyle: string): { duration: number; rotat
 
 export function resolveShadowConfig(
   cleanStyle: string,
-  elementColors: Record<string, { base: string; light: string; frame: string }> // open-record: Dynamic element colors dictionary
+  elementColors: Record<DisplayText, { base: string; light: string; frame: string }> // open-record: Dynamic element colors dictionary
 ): ShadowConfig | null {
-  const directShadowConfig = (SHADOW_CONFIGS as Record<string, ShadowConfig>)[cleanStyle]; // open-record: Generic key-value data dictionary container
+  const directShadowConfig = SHADOW_CONFIGS[cleanStyle]; // open-record: Generic key-value data dictionary container
   if (directShadowConfig) {
     return directShadowConfig;
   }
@@ -202,7 +203,7 @@ export function resolveShadowConfig(
       return {
         from: `0 0 0 3px ${colors.base}, 0 0 10px rgba(${hexToRgb(colors.base)}, 0.35), inset 0 0 5px rgba(${hexToRgb(colors.base)}, 0.15)`,
         to: `0 0 0 3px ${colors.light}, 0 0 22px rgba(${hexToRgb(colors.base)}, 0.7), inset 0 0 10px rgba(${hexToRgb(colors.base)}, 0.3)`,
-        duration: AVATAR_SHADOW_DURATIONS_SEC[typeName]!
+        duration: AVATAR_SHADOW_DURATIONS_SEC[typeName]
       };
     }
   }

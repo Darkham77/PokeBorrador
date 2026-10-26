@@ -6,17 +6,6 @@
  * spawn resolutions, base layer initialization, and path clearances.
  */
 
-import type { TileCollision, TilesRegistryService } from './tilesRegistry.ts';
-import type {
-  CollisionType,
-  MapCell,
-  MapSpawn,
-  MapType,
-  MapWarp,
-  ProceduralMapOptions
-} from '../../types/map/proceduralMapTypes.ts';
-import type { CanonicalThemeSource } from '../../types/map/adventureWorldTypes.ts';
-import type { ThemeBiomePalette } from './proceduralBiomePalettes.ts';
 import {
   DEFAULT_PROCEDURAL_MAP_MIN_DIMENSION,
   DEFAULT_PROCEDURAL_SEED,
@@ -31,7 +20,18 @@ import {
   ROUTE_TURN_NORTH_RATIO,
   ROUTE_TURN_SOUTH_RATIO
 } from '../../config/proceduralMapConfig.ts';
+import type { CanonicalThemeSource } from '../../types/map/adventureWorldTypes.ts';
+import type {
+  CollisionType,
+  MapCell,
+  MapSpawn,
+  MapType,
+  MapWarp,
+  ProceduralMapOptions
+} from '../../types/map/proceduralMapTypes.ts';
+import type { ThemeBiomePalette } from './proceduralBiomePalettes.ts';
 import { stampStructureInternal, registerStructureEntities } from './structureStamper.ts';
+import type { TileCollision, TilesRegistryService } from './tilesRegistry.ts';
 
 /**
  * Resolves map dimensional bounds and generation flags
@@ -225,7 +225,7 @@ export function carveRouteCorridors(
     Math.min(width - pathWidth - 4, Math.floor((startX + endX) / 2 + (prng() - 0.5) * 6))
   );
 
-  const stampRect = (x0: number, y0: number, x1: number, y1: number) => {
+  const stampRect = (x0: number, y0: number, x1: number, y1: number): void => {
     const minX = Math.max(2, Math.min(x0, x1));
     const maxX = Math.min(width - 3, Math.max(x0, x1));
     const minY = Math.max(0, Math.min(y0, y1));

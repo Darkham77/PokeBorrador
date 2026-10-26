@@ -8,17 +8,19 @@
  *    maintain strict data integrity with 0 schema violations.
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
+
 import { safeParse } from 'valibot';
+import { describe, it } from 'vite-plus/test';
+
+import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
 import {
   saveDataSchema,
   pokemonSchema,
   pokemonCompetitionTrophySchema,
   userProfileSchema
 } from '../../../src/logic/validation/schemas.ts';
-import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
 
 describe('Event Competition Persistence & Valibot Validation Roundtrip', () => {
   it('validates player save data with event medals, stats, and multi-species sub-competition trophies via Valibot', () => {

@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { PokemonType } from '@/data/battle/types';
@@ -5,10 +6,10 @@ import type { ItemId } from '@/data/inventory/items';
 import type { NatureId } from '@/data/battle/natures';
 import type { AbilityId } from '@/data/battle/abilities';
 
-function createDemoPokemon(config: {
-  uid: string; // domain-ok: Open dynamic text or non-domain string payload
+export interface DemoPokemonConfig {
+  uid: DisplayText;
   id: PokemonSpeciesId;
-  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  name: DisplayText;
   level: number;
   hp: number;
   maxHp: number;
@@ -25,7 +26,9 @@ function createDemoPokemon(config: {
   ability: AbilityId;
   friendship?: number;
   moves: (Move | null)[];
-}): Pokemon {
+}
+
+function createDemoPokemon(config: DemoPokemonConfig): Pokemon {
   return {
     uid: config.uid,
     id: config.id,

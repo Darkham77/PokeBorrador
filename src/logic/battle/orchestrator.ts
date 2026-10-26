@@ -1,6 +1,9 @@
-import { logger } from '../utils/logger.ts';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { BattleOptions } from '@/types/system/stores.ts';
+
+import { logger } from '../utils/logger.ts';
+import { initBattleSequence } from './helpers/battleLifecycleInitializer.ts';
 import {
   showdownWorker,
   setShowdownWorker,
@@ -9,8 +12,6 @@ import {
   isPlayerTrappedInWorker,
   testResetShowdownWorker
 } from './showdownWorkerClient.ts';
-import { initBattleSequence } from './helpers/battleLifecycleInitializer.ts';
-import type { BattleOptions } from '@/types/system/stores.ts';
 export type { BattleOptions };
 
 export {
@@ -31,7 +32,6 @@ import {
   buildInitialBattleState,
   generateNpcInventoryForBattle
 } from './orchestratorConfigHelper.ts';
-
 import {
   validatePlayerTeamLegality,
   cleanTeamVolatileStatus,
@@ -52,7 +52,7 @@ export async function startBattleSequence(
   ctx: BattleContext,
   enemyPoke: Pokemon,
   options: BattleOptions = {}
-) {
+): Promise<void> {
   // ATOMIC ENTRY GUARD: Immediately put FSM into CONTEXT_SETUP before any imports or setup
   if (ctx.fsm.currentState.value !== ctx.BATTLE_STATES.CONTEXT_SETUP) {
     await ctx.fsm.transition(ctx.BATTLE_STATES.CONTEXT_SETUP, ctx.BATTLE_SUBSTATES.RECEIVE_CONFIG);
@@ -144,7 +144,7 @@ export async function startBattleSequence(
 
   // Weight Calculation
   await fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.WEIGHT_CALCULATION);
-  const rarity = calculateFishingRarity(cfg.minigame, loc.locationMap, finalEnemyPoke);
+  const rarity = calculateFishingRarity(cfg.minigame || null, loc.locationMap, finalEnemyPoke);
   if (ctx.activeBattle.value) ctx.activeBattle.value.rarity = rarity;
 
   await fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.INJECT_FILTERS);
@@ -164,7 +164,7 @@ export async function startBattleSequence(
 
   if (wasSearching) {
     const { processSearchPhaseSequence } = await import('./orchestratorSearchPhaseHelper.ts');
-    const handled = await processSearchPhaseSequence(ctx, finalEnemyPoke, cfg.minigame, {
+    const handled = await processSearchPhaseSequence(ctx, finalEnemyPoke, cfg.minigame || null, {
       isTrainer: cfg.isTrainer,
       isGym: cfg.isGym
     });

@@ -1,21 +1,23 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { storeToRefs } from 'pinia';
 import { gsap } from 'gsap';
-import { useEventStore } from '@/stores/events';
-import { useModalStore } from '@/stores/modals';
+import { storeToRefs } from 'pinia';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+
+import PVTooltip from '@/components/common/PVTooltip.vue';
 import EventCard from '@/components/modals/EventCard.vue';
 import PastEventsList from '@/components/modals/PastEventsList.vue';
 import WorldEventsUpcomingSchedule from '@/components/modals/WorldEventsUpcomingSchedule.vue';
-import PVTooltip from '@/components/common/PVTooltip.vue';
+import { useHomeWidgetsCollapse } from '@/composables/home/useHomeWidgetsCollapse';
+import { useWindowListener } from '@/composables/ui/useWindowListener';
 import {
   getUpcomingEventOccurrences,
   type Event as GameEvent,
   type UpcomingEventOccurrence
 } from '@/logic/events/eventEngine';
 import { getServerInstant } from '@/logic/utils/timeUtils';
-import { useHomeWidgetsCollapse } from '@/composables/home/useHomeWidgetsCollapse';
-import { useWindowListener } from '@/composables/ui/useWindowListener';
+import { useEventStore } from '@/stores/events';
+import { useModalStore } from '@/stores/modals';
+
 import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
 import HomeWidgetRefreshBtn from './HomeWidgetRefreshBtn.vue';
 
@@ -65,7 +67,7 @@ const activePointerId = ref<number | null>(null);
 const isHorizontalGesture = ref(false);
 
 // Responsive measurement of container width
-const updateLayout = () => {
+const updateLayout = (): void => {
   if (containerRef.value) {
     const w = containerRef.value.getBoundingClientRect().width;
     if (w > 0) {
@@ -126,7 +128,7 @@ const currentPage = computed(() => {
 const _CAROUSEL_SLIDE_DIRECTIONS = ['next', 'prev'] as const;
 type CarouselSlideDirection = (typeof _CAROUSEL_SLIDE_DIRECTIONS)[number];
 
-const animateSlideTransition = (direction: CarouselSlideDirection) => {
+const animateSlideTransition = (direction: CarouselSlideDirection): void => {
   if (!eventsRowRef.value) return;
   const offset = direction === 'next' ? SLIDE_OFFSET_PX : -SLIDE_OFFSET_PX;
 
@@ -143,19 +145,19 @@ const animateSlideTransition = (direction: CarouselSlideDirection) => {
   );
 };
 
-const prevSlide = () => {
+const prevSlide = (): void => {
   if (carouselIndex.value <= 0) return;
   carouselIndex.value = Math.max(0, carouselIndex.value - visibleSlots.value);
   animateSlideTransition('prev');
 };
 
-const nextSlide = () => {
+const nextSlide = (): void => {
   if (carouselIndex.value + visibleSlots.value >= activeEvents.value.length) return;
   carouselIndex.value += visibleSlots.value;
   animateSlideTransition('next');
 };
 
-const goToSlide = (pageIdx: number) => {
+const goToSlide = (pageIdx: number): void => {
   const current = currentPage.value;
   if (pageIdx === current) return;
   const dir = pageIdx > current ? 'next' : 'prev';
@@ -163,7 +165,7 @@ const goToSlide = (pageIdx: number) => {
   animateSlideTransition(dir);
 };
 
-const onPointerDown = (e: PointerEvent) => {
+const onPointerDown = (e: PointerEvent): void => {
   if (!needsCarousel.value) return;
   if (e.button !== 0) return;
 
@@ -175,7 +177,7 @@ const onPointerDown = (e: PointerEvent) => {
   dragOffsetPx.value = 0;
 };
 
-const onPointerMove = (e: PointerEvent) => {
+const onPointerMove = (e: PointerEvent): void => {
   if (!isPointerDown.value || activePointerId.value !== e.pointerId) return;
 
   const deltaX = e.clientX - startPointerX.value;
@@ -202,7 +204,7 @@ const onPointerMove = (e: PointerEvent) => {
   }
 };
 
-const handlePointerEnd = (e: PointerEvent) => {
+const handlePointerEnd = (e: PointerEvent): void => {
   if (!isPointerDown.value || activePointerId.value !== e.pointerId) return;
 
   const deltaX = e.clientX - startPointerX.value;
@@ -228,7 +230,7 @@ const handlePointerEnd = (e: PointerEvent) => {
   }
 };
 
-const handleCardClickCapture = (e: MouseEvent) => {
+const handleCardClickCapture = (e: MouseEvent): void => {
   if (isDragging.value) {
     e.stopPropagation();
     e.preventDefault();
@@ -263,7 +265,7 @@ const upcomingOccurrencesToFill = computed<UpcomingEventOccurrence[]>(() => {
   return unactiveOccurrences.slice(0, emptySlots);
 });
 
-const openEventDetail = (event: GameEvent, occurrence?: UpcomingEventOccurrence) => {
+const openEventDetail = (event: GameEvent, occurrence?: UpcomingEventOccurrence): void => {
   if (isDragging.value) return;
   modalStore.open('EventDetail', { event, occurrence });
 };

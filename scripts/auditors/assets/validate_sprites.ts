@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * scripts/auditors/assets/validate_sprites.ts
  *
@@ -28,7 +29,7 @@ export type SpriteRuleId = 'sprite-missing-asset';
 
 export const SPRITE_RULES: readonly SpriteRuleId[] = ['sprite-missing-asset'] as const;
 
-function buildSpritePaths(num: string): Record<string, string> {
+function buildSpritePaths(num: string): Record<DisplayText, string> {
   const match = num.match(/^(\d+)(.*)$/);
   const baseNum = match ? match[1] : num;
   const suffix = match ? match[2] : '';
@@ -36,27 +37,51 @@ function buildSpritePaths(num: string): Record<string, string> {
 
   return {
     staticFront: path.join(STATIC_SPRITES_DIR, `${num}.webp`),
-    staticFrontShiny: path.join(STATIC_SPRITES_DIR, `shiny/${num}.webp`),
+    staticFrontShiny: path.join(STATIC_SPRITES_DIR, 'shiny', `${num}.webp`),
     animatedFront: path.join(
       process.cwd(),
-      `public/assets/sprites/pokemon/animated/Front/${animFilename}`
+      'public',
+      'assets',
+      'sprites',
+      'pokemon',
+      'animated',
+      'Front',
+      animFilename
     ),
     animatedBack: path.join(
       process.cwd(),
-      `public/assets/sprites/pokemon/animated/Back/${animFilename}`
+      'public',
+      'assets',
+      'sprites',
+      'pokemon',
+      'animated',
+      'Back',
+      animFilename
     ),
     animatedFrontShiny: path.join(
       process.cwd(),
-      `public/assets/sprites/pokemon/animated/Front shiny/${animFilename}`
+      'public',
+      'assets',
+      'sprites',
+      'pokemon',
+      'animated',
+      'Front shiny',
+      animFilename
     ),
     animatedBackShiny: path.join(
       process.cwd(),
-      `public/assets/sprites/pokemon/animated/Back shiny/${animFilename}`
+      'public',
+      'assets',
+      'sprites',
+      'pokemon',
+      'animated',
+      'Back shiny',
+      animFilename
     )
   };
 }
 
-async function checkPathsExist(paths: Record<string, string>): Promise<string[]> {
+async function checkPathsExist(paths: Record<DisplayText, string>): Promise<string[]> {
   const missing: string[] = []; // no-domain: Non-domain utility collection or data structure
   for (const [key, filePath] of Object.entries(paths)) {
     try {
@@ -139,6 +164,7 @@ export class SpriteAuditor extends BaseAuditor<SpriteRuleId> {
       packageName: 'Sprites',
       ruleIds: SPRITE_RULES,
       usesThirdPartyTool: false,
+      requiredPermissions: [],
       ruleDescriptions: {
         'sprite-missing-asset': 'Sprite no encontrado en Pokémon'
       },
@@ -146,6 +172,7 @@ export class SpriteAuditor extends BaseAuditor<SpriteRuleId> {
         'sprite-missing-asset':
           'Add required front/back/shiny sprites in public/assets/sprites/pokemon'
       },
+      remediationPhase: 'contracts',
       requiredFiles: [STATIC_SPRITES_DIR],
       coverage: {
         include: ['public/assets/sprites/pokemon/**']
@@ -171,10 +198,4 @@ export class SpriteAuditor extends BaseAuditor<SpriteRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (
-  process.argv[1] &&
-  import.meta.filename &&
-  path.basename(process.argv[1]) === path.basename(import.meta.filename)
-) {
-  await BaseAuditor.runCli(new SpriteAuditor());
-}
+await BaseAuditor.runCliIfMain(import.meta.url, new SpriteAuditor());

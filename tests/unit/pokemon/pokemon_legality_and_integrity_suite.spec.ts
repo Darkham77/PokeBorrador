@@ -4,16 +4,17 @@
  * database integrity, stat bounds, Spanish translations, and whitelist constraints.
  */
 import { describe, it, expect } from 'vite-plus/test';
+
+import { NATURES } from '@/data/battle/natures';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
+import { ACTIVE_GENERATION } from '@/data/system/constants';
 import {
   checkPokemonLegality,
   repairPokemonLegality,
   hasIllegalPokemon
 } from '@/logic/pokemon/pokemonLegality';
-import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
-import { NATURES } from '@/data/battle/natures';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { ACTIVE_GENERATION } from '@/data/system/constants';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Pokemon Legality & Integrity Domain Suite', () => {

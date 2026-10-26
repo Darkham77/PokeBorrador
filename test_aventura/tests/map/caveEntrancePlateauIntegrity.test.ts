@@ -1,12 +1,14 @@
-import { describe, it, expect } from 'vitest';
 import path from 'node:path';
+
 import sharp from 'sharp';
+import { describe, it, expect } from 'vitest';
+
+import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { extractRealContinentPatches } from '../../logic/map/realContinentPatchExtractor.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
 import { generateWildernessLayer } from '../../logic/map/wildernessVegetationEngine.ts';
-import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
-import { extractRealContinentPatches } from '../../logic/map/realContinentPatchExtractor.ts';
 
 const ROOT_DIR = process.cwd();
 

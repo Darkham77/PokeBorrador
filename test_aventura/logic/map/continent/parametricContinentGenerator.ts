@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/map/continent/parametricContinentGenerator.ts
  *
@@ -10,7 +11,6 @@
  * 5. Road carving across terrain.
  */
 
-import { SimplexNoise, fbm2D, createMulberry32 } from '../noise/simplexNoise.ts';
 import type {
   ContinentGenConfig,
   ContinentDimensions,
@@ -21,18 +21,22 @@ import type {
   ContinentAmenity
 } from '../../../types/map/continentTypes.ts';
 import { URBAN_SCALES } from '../../../types/map/continentTypes.ts';
+import { SimplexNoise, fbm2D, createMulberry32 } from '../noise/simplexNoise.ts';
 
 export interface GeneratedContinentResult {
   readonly dimensions: ContinentDimensions;
   readonly gridWidth: number;
   readonly gridHeight: number;
   readonly biomeGrid: ContinentBiomeType[][];
-  readonly nodes: Record<string, ContinentNode>; // open-record: Continent nodes dictionary indexed by node id
+  readonly nodes: Record<DisplayText, ContinentNode>; // open-record: Continent nodes dictionary indexed by node id
   readonly connections: readonly ContinentConnection[];
   readonly roads: ReadonlySet<string>;
 }
 
 const MAX_REGIONAL_GYMS = 8 as const;
+const MART_SCALE_LIST = ['metropolis', 'city', 'town'] as const;
+type MartScale = (typeof MART_SCALE_LIST)[number];
+const MART_SCALES: ReadonlySet<MartScale> = new Set<MartScale>(MART_SCALE_LIST);
 
 // Canonical Pokémon settlement names pool
 const SETTLEMENT_NAMES = [
@@ -70,7 +74,7 @@ const FOREST_PERCENT_MOISTURE_SCALE = 0.75 as const;
 class UnionFind {
   private readonly parent: Map<string, string> = new Map();
 
-  find(item: string): string {
+  public find(item: string): string {
     if (!this.parent.has(item)) {
       this.parent.set(item, item);
       return item;
@@ -82,7 +86,7 @@ class UnionFind {
     return root;
   }
 
-  union(a: string, b: string): boolean {
+  public union(a: string, b: string): boolean {
     const rootA = this.find(a);
     const rootB = this.find(b);
     if (rootA === rootB) return false;
@@ -94,6 +98,31 @@ class UnionFind {
 /**
  * Generates a full continental world based on parametric configuration.
  */
+interface RoadStampTarget {
+  readonly gridW: number;
+  readonly gridH: number;
+  readonly roads: Set<string>;
+  readonly biomeGrid: ContinentBiomeType[][];
+}
+
+interface RoadPoint {
+  readonly x: number;
+  readonly y: number;
+}
+
+function stampRoadPoint(pt: RoadPoint, roadWidth: number, target: RoadStampTarget): void {
+  for (let ox = 0; ox < roadWidth; ox++) {
+    for (let oy = 0; oy < roadWidth; oy++) {
+      const rx = pt.x + ox;
+      const ry = pt.y + oy;
+      if (rx >= 0 && rx < target.gridW && ry >= 0 && ry < target.gridH) {
+        target.roads.add(`${rx},${ry}`);
+        target.biomeGrid[ry]![rx] = 'path';
+      }
+    }
+  }
+}
+
 export function generateContinent(config: ContinentGenConfig): GeneratedContinentResult {
   const { dimensions, seed, cityCount, biomes } = config;
   const gridW = Math.max(10, Math.floor(dimensions.width / dimensions.tileSize));
@@ -121,7 +150,7 @@ export function generateContinent(config: ContinentGenConfig): GeneratedContinen
       const dx = (x - halfW) / maxRadius;
       const dy = (y - halfH) / maxRadius;
       const distFromCenter = Math.sqrt(dx * dx + dy * dy);
-      const falloff = Math.max(0, 1.0 - Math.pow(distFromCenter, 2.2));
+      const falloff = Math.max(0, 1.0 - distFromCenter ** 2.2);
 
       // Multi-octave simplex noise
       const hNoise = (fbm2D(simplexHeight, x, y, { octaves: 4, scale: 0.05 }) + 1) * 0.5;
@@ -202,7 +231,7 @@ export function generateContinent(config: ContinentGenConfig): GeneratedContinen
     habitableLand.length >= cityCount ? habitableLand : [...habitableLand, ...secondaryLand];
 
   // 4. Place Urban Nodes
-  const nodes: Record<string, ContinentNode> = {}; // open-record: Generated urban continent nodes indexed by node id
+  const nodes: Record<DisplayText, ContinentNode> = {}; // open-record: Generated urban continent nodes indexed by node id
   const placedCoords: { gx: number; gy: number }[] = [];
   const targetCount = Math.min(cityCount, Math.max(2, allCandidateLand.length));
   const minDistance = Math.max(
@@ -262,7 +291,7 @@ export function generateContinent(config: ContinentGenConfig): GeneratedContinen
           : urbanScales[Math.min(urbanScales.length - 1, 2 + (i % 3))]!;
 
     const amenities: ContinentAmenity[] = ['center'];
-    if (scale === 'metropolis' || scale === 'city' || scale === 'town') {
+    if (MART_SCALES.has(scale as MartScale)) {
       amenities.push('mart');
     }
     if (i < MAX_REGIONAL_GYMS && (scale === 'metropolis' || scale === 'city')) {
@@ -367,17 +396,9 @@ export function generateContinent(config: ContinentGenConfig): GeneratedContinen
       }
     }
 
+    const stampTarget: RoadStampTarget = { gridW, gridH, roads, biomeGrid };
     for (const pt of points) {
-      for (let ox = 0; ox < roadWidth; ox++) {
-        for (let oy = 0; oy < roadWidth; oy++) {
-          const rx = pt.x + ox;
-          const ry = pt.y + oy;
-          if (rx >= 0 && rx < gridW && ry >= 0 && ry < gridH) {
-            roads.add(`${rx},${ry}`);
-            biomeGrid[ry]![rx] = 'path';
-          }
-        }
-      }
+      stampRoadPoint(pt, roadWidth, stampTarget);
     }
   }
 

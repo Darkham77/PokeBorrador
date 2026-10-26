@@ -1,18 +1,20 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { gsap } from 'gsap';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
+
 import BaseRefreshButton from '@/components/common/BaseRefreshButton.vue';
-import { useSocialStore } from '@/stores/social/social';
-import { useUIStore } from '@/stores/ui';
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
-import { getEloTier } from '@/logic/pvp/rankedEngine';
 import { resolveFactionColor } from '@/components/modals/trainerProfileResolver';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import {
   useRankCardHover,
   RANK_ANIM_FAST_DURATION_SEC
 } from '@/composables/arena/useRankCardHover';
+import { getEloTier } from '@/logic/pvp/rankedEngine';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useSocialStore } from '@/stores/social/social';
+import { useUIStore } from '@/stores/ui';
 import type { RankingSortKey } from '@/types/system/game';
+
 import {
   isValidFaction,
   resolveCleanPlayerClass,
@@ -27,14 +29,14 @@ const uiStore = useUIStore();
 const activeSort = ref<RankingSortKey>('elo_rating');
 const listRef = ref<HTMLElement | null>(null);
 
-const loadLeaderboard = async () => {
+const loadLeaderboard = async (): Promise<void> => {
   await socialStore.fetchLeaderboard(activeSort.value);
   nextTick(() => {
     animateList();
   });
 };
 
-const animateList = () => {
+const animateList = (): void => {
   if (!listRef.value) return;
   const cards = listRef.value.querySelectorAll('.rank-card');
   if (cards.length === 0) return;
@@ -54,7 +56,7 @@ const animateList = () => {
   );
 };
 
-const openTrainerProfile = (userId: string) => {
+const openTrainerProfile = (userId: string): void => {
   uiStore.open('TrainerProfile', { userId });
 };
 
@@ -80,7 +82,7 @@ const displayPlayers = computed(() => {
 
 const { handleCardEnter, handleCardLeave } = useRankCardHover();
 
-const handleTabEnter = (e: MouseEvent) => {
+const handleTabEnter = (e: MouseEvent): void => {
   const el = e.currentTarget as HTMLElement;
   if (el.classList.contains('active')) return;
   gsap.to(el, {
@@ -91,7 +93,7 @@ const handleTabEnter = (e: MouseEvent) => {
   });
 };
 
-const handleTabLeave = (e: MouseEvent) => {
+const handleTabLeave = (e: MouseEvent): void => {
   const el = e.currentTarget as HTMLElement;
   if (el.classList.contains('active')) return;
   gsap.to(el, {

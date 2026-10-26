@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { gsap } from 'gsap';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 
 const DIG_TILE_SCALE_IN = 0.9;
 const DIG_TILE_ENTRY_DURATION_SEC = 0.15;
@@ -17,8 +17,8 @@ const FAIL_GRID_OPACITY = 0.5 as const;
 const DUST_PARTICLES_COUNT = 6 as const;
 const DUST_DURATION_VARIANCE_SEC = 0.3 as const;
 import BaseModal from '@/components/common/BaseModal.vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const fossilSprite = computed(() => {
   const idStr = String(props.pokemon?.id || '').toLowerCase();
@@ -90,7 +90,7 @@ const gameActive = ref(true);
 const feedback = ref('¡Excavá las rocas con cuidado!');
 const isFailed = ref(false);
 
-function scheduleGameplayDelay(delaySec: number, callback: () => void) {
+function scheduleGameplayDelay(delaySec: number, callback: () => void): gsap.core.Tween {
   const tween = gsap.delayedCall(delaySec, callback);
   const globalScale = gsap.globalTimeline.timeScale();
   if (globalScale > 0) tween.timeScale(1 / globalScale);
@@ -98,7 +98,7 @@ function scheduleGameplayDelay(delaySec: number, callback: () => void) {
 }
 
 // Initialize Game
-function initGame() {
+function initGame(): void {
   const config = ARCHAEOLOGY_DIFFICULTIES[difficulty.value];
   gridSize.value = config.grid;
   maxEnergy.value = config.energy;
@@ -113,7 +113,7 @@ function initGame() {
 }
 
 // Handle Tile Dig
-function handleTileClick(tile: Tile) {
+function handleTileClick(tile: Tile): void {
   if (!gameActive.value || tile.isDug) return;
 
   tile.isDug = true;
@@ -197,7 +197,7 @@ function handleTileClick(tile: Tile) {
 }
 
 // Win sequence
-function win() {
+function win(): void {
   gameActive.value = false;
   feedback.value = '¡FÓSIL EXCAVADO CON ÉXITO!';
 
@@ -216,7 +216,7 @@ function win() {
 }
 
 // Fail sequence
-function fail() {
+function fail(): void {
   gameActive.value = false;
   isFailed.value = true;
   feedback.value = 'El fósil se ha desmoronado...';
@@ -237,7 +237,7 @@ function fail() {
 }
 
 // Sparkle/Dust Generator
-function createDustParticles(target: Element) {
+function createDustParticles(target: Element): void {
   const rect = target.getBoundingClientRect();
   const parent = target.parentElement;
   if (!parent) return;
@@ -286,7 +286,7 @@ onUnmounted(() => {
   gameActive.value = false;
 });
 
-const handleCloseModal = () => {
+const handleCloseModal = (): void => {
   emit('close');
   props.onCloseCallback?.();
 };

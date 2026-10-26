@@ -1,13 +1,15 @@
-import { describe, it, expect } from 'vite-plus/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
+
+import { describe, it, expect } from 'vite-plus/test';
+
+import { initTestDatabaseSchema } from '../../../scripts/auditors/persistence/_testDbHelper.ts';
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
 import {
   splitSQLStatements,
   translatePostgresToSqlite
 } from '../../../src/logic/db/sqlTranslator.ts';
-import { initTestDatabaseSchema } from '../../../scripts/auditors/persistence/_testDbHelper.ts';
 
 describe('Client Migrations Manifest PostgreSQL Purge Specification', () => {
   const migrationsDir = path.resolve('database/migrations');
@@ -23,7 +25,7 @@ describe('Client Migrations Manifest PostgreSQL Purge Specification', () => {
     let fallbackCount = 0;
 
     for (const sqlFile of sqlFiles) {
-      const migrationId = sqlFile.replace(/\.sql$/, '');
+      const migrationId = path.basename(sqlFile, '.sql');
       const sqliteFile = sqlFile.replace(/\.sql$/, '.sqlite.sql');
       const hasCompanion = list.includes(sqliteFile);
 

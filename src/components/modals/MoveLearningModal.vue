@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useUIStore } from '@/stores/ui';
-import BaseModal from '@/components/common/BaseModal.vue';
+
 import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue';
+import BaseModal from '@/components/common/BaseModal.vue';
+import { useUIStore } from '@/stores/ui';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
 interface Props {
@@ -18,7 +19,7 @@ const currentData = computed(() => uiStore.currentMoveToLearn);
 const pokemon = computed(() => currentData.value?.pokemon as Pokemon);
 const newMove = computed(() => currentData.value?.move as Move);
 
-const handleReplace = (slotIndex: number) => {
+const handleReplace = (slotIndex: number): void => {
   if (!pokemon.value || !newMove.value) return;
 
   const oldMove = pokemon.value.moves[slotIndex];
@@ -36,7 +37,7 @@ const handleReplace = (slotIndex: number) => {
   uiStore.finishMoveLearning();
 };
 
-const handleForget = () => {
+const handleForget = (): void => {
   if (!pokemon.value || !newMove.value) return;
   uiStore.notify(`¡${pokemon.value.name} no aprendió ${newMove.value.name}!`, '📖');
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/components/modals/DebugWeatherTablesModal.vue
  *
@@ -7,14 +8,17 @@
  * to maintain 60 FPS rendering.
  */
 import { ref, computed } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
+import type { MapRouteId } from '@/data/world/map-assets';
+import { MAPS_BY_ROUTE_ID } from '@/data/world/maps';
 import {
   isWeatherTableRouteId,
   ROUTE_WEATHER_TABLES,
   WEATHER_SEASON_IDS,
   type WeatherSeasonId
 } from '@/data/world/weather-tables';
-import { MAPS_BY_ROUTE_ID } from '@/data/world/maps';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import {
   getMechanicalWeather,
   requireWeatherId,
@@ -23,9 +27,8 @@ import {
   WEATHER_REGISTRY,
   type WeatherId
 } from '@/logic/weather/weatherRegistry';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import type { MapRouteId } from '@/data/world/map-assets';
 import { DAY_PHASES, type DayPhase } from '@/types/system/time';
+
 import DebugWeatherRouteSection from './DebugWeatherRouteSection.vue';
 import type { PrecomputedRouteData, RegionId, Region } from './debugWeatherTypes.ts';
 
@@ -57,7 +60,7 @@ const seasonLabels: Record<WeatherSeasonId, string> = {
   winter: 'Invierno'
 };
 
-const getWeatherMetadata = (weather: WeatherId) => {
+const getWeatherMetadata = (weather: WeatherId): { icon: string; label: string } => {
   const visual = WEATHER_VISUAL_METADATA[weather];
   if (visual) return visual;
   const mech = getMechanicalWeather(weather);
@@ -89,7 +92,7 @@ const PRECOMPUTED_WEATHER_DATA = (() => {
       const rawRouteData = ROUTE_WEATHER_TABLES[routeId];
       const map = (
         MAPS_BY_ROUTE_ID as Record<
-          string,
+          DisplayText,
           { name: string; weather?: Record<string, unknown>; isCave?: boolean }
         >
       )[routeId]; // open-record: Generic key-value data dictionary container
@@ -183,7 +186,7 @@ const regionTableData = computed(() => {
   return PRECOMPUTED_WEATHER_DATA[activeRegion.value] || [];
 });
 
-const hasWeatherTables = (regionId: RegionId) => {
+const hasWeatherTables = (regionId: RegionId): boolean => {
   const data = PRECOMPUTED_WEATHER_DATA[regionId];
   return data && data.length > 0;
 };
@@ -191,7 +194,7 @@ const hasWeatherTables = (regionId: RegionId) => {
 // Collapsible Route State to avoid rendering 5000+ DOM nodes at the same time
 const expandedRoutes = ref<Partial<Record<MapRouteId, boolean>>>({});
 
-function toggleRoute(routeId: MapRouteId) {
+function toggleRoute(routeId: MapRouteId): void {
   expandedRoutes.value[routeId] = !expandedRoutes.value[routeId];
 }
 </script>

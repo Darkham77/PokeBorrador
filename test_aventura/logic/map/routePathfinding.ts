@@ -6,8 +6,8 @@
  * Modularized from routeNetworkEngine.ts to satisfy the 1000-line SRP architecture limit.
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
 import type { POINode, RouteEdge, RouteWaypoint, RouteType } from '../../types/map/poiTypes.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
 
 const LAKE_BRIDGE_STEP_COST = 1.25;
 const OCEAN_BRIDGE_STEP_COST = 3.5;
@@ -25,19 +25,37 @@ interface PriorityQueueItem {
   readonly priority: number;
 }
 
+function isPointInsideAnyExcludedZone(
+  x: number,
+  y: number,
+  zones: readonly {
+    readonly x1: number;
+    readonly y1: number;
+    readonly x2: number;
+    readonly y2: number;
+  }[]
+): boolean {
+  for (const zone of zones) {
+    if (x >= zone.x1 && x <= zone.x2 && y >= zone.y1 && y <= zone.y2) {
+      return true;
+    }
+  }
+  return false;
+}
+
 class MinPriorityQueue {
   private readonly items: PriorityQueueItem[] = [];
 
-  push(item: PriorityQueueItem): void {
+  public push(item: PriorityQueueItem): void {
     this.items.push(item);
     this.items.sort((a, b) => a.priority - b.priority);
   }
 
-  pop(): PriorityQueueItem | undefined {
+  public pop(): PriorityQueueItem | undefined {
     return this.items.shift();
   }
 
-  get length(): number {
+  public get length(): number {
     return this.items.length;
   }
 }
@@ -145,16 +163,13 @@ export function findPathAStar(
       if (nx < 1 || nx >= W - 1 || ny < 1 || ny >= H - 1) continue;
 
       // Check if target is inside an excluded settlement core (exempting exact start or goal endpoints)
-      let inExcluded = false;
-      if (!(nx === goalX && ny === goalY) && !(nx === startX && ny === startY)) {
-        for (const zone of excludedNodeZones) {
-          if (nx >= zone.x1 && nx <= zone.x2 && ny >= zone.y1 && ny <= zone.y2) {
-            inExcluded = true;
-            break;
-          }
-        }
+      if (
+        !(nx === goalX && ny === goalY) &&
+        !(nx === startX && ny === startY) &&
+        isPointInsideAnyExcludedZone(nx, ny, excludedNodeZones)
+      ) {
+        continue;
       }
-      if (inExcluded) continue;
 
       const cell = continentMap.cells[ny]![nx]!;
       const curCell = continentMap.cells[curr.y]![curr.x]!;
@@ -180,14 +195,12 @@ export function findPathAStar(
         cost = 1.0; // Moving up/down stairs has normal cost
       } else if (!cell.isWalkable && !cell.isStair) {
         // Blocked by cliff foot or steep mountain edge
-        if (cell.terrain === 'water') {
-          if (!allowBridges) continue;
-          const isLake = isOceanGrid ? !isOceanGrid[ny]?.[nx] : false;
-          cost = isLake ? LAKE_BRIDGE_STEP_COST : OCEAN_BRIDGE_STEP_COST; // Inland lake bridges are scenic and cost-effective vs long land detours!
-          hasWaterCrossing = true;
-        } else {
-          continue; // Impassable wall
+        if (cell.terrain !== 'water' || !allowBridges) {
+          continue;
         }
+        const isLake = isOceanGrid ? !isOceanGrid[ny]?.[nx] : false;
+        cost = isLake ? LAKE_BRIDGE_STEP_COST : OCEAN_BRIDGE_STEP_COST; // Inland lake bridges are scenic and cost-effective vs long land detours!
+        hasWaterCrossing = true;
       }
 
       // Entering or exiting water represents building bridge landings / abutments
@@ -204,11 +217,10 @@ export function findPathAStar(
         const prevDy = curr.y - prevY;
         if (prevDx !== dx || prevDy !== dy) {
           // STRICT RECTILINEAR INVARIANT: Turning while on water is heavily penalized (Mandates 1 & 5)
-          if (curCell.terrain === 'water' || cell.terrain === 'water') {
-            cost += WATER_TURN_PENALTY_COST;
-          } else {
-            cost += LAND_TURN_PENALTY_COST;
-          }
+          cost +=
+            curCell.terrain === 'water' || cell.terrain === 'water'
+              ? WATER_TURN_PENALTY_COST
+              : LAND_TURN_PENALTY_COST;
         }
       }
 

@@ -1,30 +1,8 @@
-import { cloneReactive } from '@/logic/utils/cloneUtils.ts';
-import { useGameStore } from '@/stores/game.ts';
-import { useBattleStore } from '@/stores/battle/battle.ts';
-import { useUIStore } from '@/stores/ui.ts';
-import { useEventStore } from '@/stores/events.ts';
-import { useInventoryStore } from '@/stores/inventory/inventory.ts';
-
-import { generateEncounter } from '@/logic/encounters/encounters';
-import { syncServerTime } from '@/logic/auth/timeSync';
-import { getServerTime } from '@/logic/utils/timeUtils';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getItemById } from '@/data/inventory/items.ts';
 import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
-import { logger } from '@/logic/utils/logger';
+import type { MapRouteId } from '@/data/world/map-assets';
+import { syncServerTime } from '@/logic/auth/timeSync';
 import { buildRivalEncounter, buildTrainerEncounter } from '@/logic/battle/trainerSpawner';
-import {
-  calculateArchaeologyWeights,
-  rollArchaeologyCategory,
-  rollArchaeologyReward,
-  getArchaeologyMaxRolls,
-  ARCHAEOLOGY_MULTI_ROLL_CONTINUE_CHANCE
-} from '@/logic/utils/archaeologyHelpers.ts';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { MapLocation } from '@/types/pokemon/encounters';
-
-import type { DominanceInfo } from '@/types/system/stores';
-import type { Event } from '@/logic/events/eventEngine';
 import {
   NAVIGATE_THROTTLE_MS,
   PITY_TIMER_INCREMENT_THRESHOLD_MS,
@@ -32,9 +10,28 @@ import {
   TRAINER_CHANCE_INCREMENT_STEP,
   TRAINER_CHANCE_DEFAULT_PERCENT
 } from '@/logic/constants/gameplay.ts';
-import type { MapRouteId } from '@/data/world/map-assets';
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import { generateEncounter } from '@/logic/encounters/encounters';
+import type { Event } from '@/logic/events/eventEngine';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import {
+  calculateArchaeologyWeights,
+  rollArchaeologyCategory,
+  rollArchaeologyReward,
+  getArchaeologyMaxRolls,
+  ARCHAEOLOGY_MULTI_ROLL_CONTINUE_CHANCE
+} from '@/logic/utils/archaeologyHelpers.ts';
+import { cloneReactive } from '@/logic/utils/cloneUtils.ts';
+import { logger } from '@/logic/utils/logger';
+import { getServerTime } from '@/logic/utils/timeUtils';
 import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import { useBattleStore } from '@/stores/battle/battle.ts';
+import { useEventStore } from '@/stores/events.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useInventoryStore } from '@/stores/inventory/inventory.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { DominanceInfo } from '@/types/system/stores';
 
 const MS_PER_HOUR = 3_600_000;
 const DEFAULT_REWARD_QUANTITY = 1;
@@ -44,7 +41,7 @@ function updateTrainerPityTimer(
   lastIncrementAt: number,
   gs: ReturnType<typeof useGameStore>,
   setLastTrainerChanceIncrementAt: (val: number) => void
-) {
+): void {
   const elapsedPity = now - lastIncrementAt;
   if (elapsedPity < PITY_TIMER_INCREMENT_THRESHOLD_MS) return;
 
@@ -58,8 +55,8 @@ function updateTrainerPityTimer(
   logger.info('MapStore', `PITY: Trainer chance increased to ${gs.state.trainerChance}%`);
 }
 
-function getDebugLoopEncounter(debugLoopPokemon: Pokemon) {
-  const nextPoke = cloneReactive(debugLoopPokemon) as Pokemon;
+function getDebugLoopEncounter(debugLoopPokemon: Pokemon): { type: 'wild'; pokemon: Pokemon } {
+  const nextPoke = cloneReactive(debugLoopPokemon);
   nextPoke.hp = nextPoke.maxHp;
   nextPoke.status = '';
   nextPoke.confused = 0;
@@ -74,13 +71,13 @@ async function handleNavigationTrainerEncounter(
   battleStore: ReturnType<typeof useBattleStore>,
   now: number,
   setLastTrainerChanceIncrementAt: (val: number) => void
-) {
+): Promise<void> {
   setLastTrainerChanceIncrementAt(now);
   const { name, sprite, quote, archetype, enemyTeam } = await buildTrainerEncounter(gsState, locId);
   const lead = enemyTeam[0];
   if (!lead) return;
 
-  void battleStore._startBattle(lead, {
+  await battleStore._startBattle(lead, {
     locationId: locId,
     wasSearching: true,
     isTrainer: true,
@@ -97,12 +94,12 @@ async function handleNavigationRivalEncounter(
   locId: MapRouteId,
   team: Pokemon[],
   battleStore: ReturnType<typeof useBattleStore>
-) {
+): Promise<void> {
   const { name, sprite, enemyTeam, quote } = await buildRivalEncounter(team);
   const lead = enemyTeam[0];
   if (!lead) return;
 
-  void battleStore._startBattle(lead, {
+  await battleStore._startBattle(lead, {
     locationId: locId,
     wasSearching: true,
     isTrainer: true,
@@ -124,11 +121,16 @@ interface EncounterDispatchContext {
   setLastTrainerChanceIncrementAt: (val: number) => void;
 }
 
+const MINIGAME_OR_WILD_ENCOUNTER_TYPE_VALUES = ['wild', 'fishing', 'archaeology'] as const;
+const MINIGAME_OR_WILD_ENCOUNTER_TYPES: ReadonlySet<string> = new Set<string>(
+  MINIGAME_OR_WILD_ENCOUNTER_TYPE_VALUES
+);
+
 async function dispatchNavigationEncounter(
   encounter: NonNullable<Awaited<ReturnType<typeof generateEncounter>>>,
   locId: MapRouteId,
   context: EncounterDispatchContext
-) {
+): Promise<void> {
   const enc = encounter as {
     type: string;
     pokemon: Pokemon;
@@ -136,8 +138,8 @@ async function dispatchNavigationEncounter(
     faction?: string;
     rarity?: number;
   };
-  if (enc.type === 'wild' || enc.type === 'fishing' || enc.type === 'archaeology') {
-    void context.battleStore._startBattle(enc.pokemon, {
+  if (MINIGAME_OR_WILD_ENCOUNTER_TYPES.has(enc.type)) {
+    await context.battleStore._startBattle(enc.pokemon, {
       locationId: locId,
       wasSearching: true,
       minigame: enc.type === 'fishing' || enc.type === 'archaeology' ? enc.type : null
@@ -146,7 +148,7 @@ async function dispatchNavigationEncounter(
   }
   if (enc.type === 'guardian') {
     enc.pokemon.isGuardian = true;
-    void context.battleStore._startBattle(enc.pokemon, {
+    await context.battleStore._startBattle(enc.pokemon, {
       locationId: locId,
       wasSearching: true,
       isGuardian: true,
@@ -169,11 +171,7 @@ async function dispatchNavigationEncounter(
     return;
   }
   if (enc.type === 'rival') {
-    await handleNavigationRivalEncounter(
-      locId,
-      context.gs.state.team as Pokemon[],
-      context.battleStore
-    );
+    await handleNavigationRivalEncounter(locId, context.gs.state.team, context.battleStore);
   }
 }
 
@@ -195,7 +193,7 @@ export async function executeNavigation(
     setLastNavigateTime: (val: number) => void;
     setLastTrainerChanceIncrementAt: (val: number) => void;
   }
-) {
+): Promise<void> {
   const gs = useGameStore();
   const battleStore = useBattleStore();
   const uiStore = useUIStore();
@@ -264,8 +262,8 @@ export async function executeArchaeologyRewards(
   locId: MapRouteId,
   gs: ReturnType<typeof useGameStore>,
   difficulty?: string
-) {
-  const mapsList = pokemonDataProvider.getMaps() as MapLocation[]; // domain-ok: Open dynamic text or non-domain string payload
+): Promise<void> {
+  const mapsList = pokemonDataProvider.getMaps(); // domain-ok: Open dynamic text or non-domain string payload
   const loc = mapsList.find((m) => m.id === locId);
   const inventoryStore = useInventoryStore();
   const uiStore = useUIStore();

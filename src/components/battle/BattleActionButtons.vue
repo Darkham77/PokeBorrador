@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { useBattleStore } from '@/stores/battle/battle';
-import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils';
-import BattleBallPicker from './BattleBallPicker.vue';
-
 import type { ItemId } from '@/data/inventory/items';
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils';
+import { useBattleStore } from '@/stores/battle/battle';
+
+import BattleBallPicker from './BattleBallPicker.vue';
 
 interface Props {
   isFinishing?: boolean;
@@ -21,9 +21,9 @@ const emit = defineEmits<{
 }>();
 
 import { computed } from 'vue';
-import { useLivePvPStore } from '@/stores/livePvP';
 
 import { getHealthyBenchCombatants } from '@/logic/battle/battleTeamCoordinator.ts';
+import { useLivePvPStore } from '@/stores/livePvP';
 
 const battleStore = useBattleStore();
 const livePvP = useLivePvPStore();

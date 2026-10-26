@@ -1,11 +1,14 @@
-import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
+import type { DisplayText } from '@francogp/auditor';
+
 import type { PokemonMoveId } from '@/data/battle/moves';
+import { getSpeciesEggMoves } from '@/data/pokemon/eggMoves.ts';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { BASE_SHINY_DENOMINATOR } from '@/logic/constants/gameplay.ts';
 import { canLearnMove } from '@/logic/pokemon/pokemonLearnset.ts';
-import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon.ts';
 import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils.ts';
-import { getSpeciesEggMoves } from '@/data/pokemon/eggMoves.ts';
+import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
+import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon.ts';
+
 import { BREEDING_CONSTANTS } from './breedingData.ts';
 import { getEggSpecies } from './breedingEngine.ts';
 
@@ -25,7 +28,7 @@ export function calculateInheritance(
   const ivs: PokemonIVs = generateRandomIVs();
 
   // open-record: Power item keys and aliases mapped to Pokemon IV stat keys
-  const powerMap: Record<string, keyof PokemonIVs> = {
+  const powerMap: Record<DisplayText, keyof PokemonIVs> = {
     power_weight: 'hp',
     powerweight: 'hp',
     power_bracer: 'atk',

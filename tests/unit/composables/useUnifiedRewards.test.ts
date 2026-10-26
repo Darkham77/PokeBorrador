@@ -1,12 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { createPinia, setActivePinia } from 'pinia';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import { useUnifiedRewards } from '@/composables/rewards/useUnifiedRewards';
-import { useEventStore } from '@/stores/events';
-import { usePvPStore } from '@/stores/pvp';
-import { usePlayerClassStore } from '@/stores/player/playerClass';
-import { useGameStore } from '@/stores/game';
 import { useBreedingStore } from '@/stores/breeding';
+import { useEventStore } from '@/stores/events';
+import { useGameStore } from '@/stores/game';
 import { useGTSStore } from '@/stores/gts';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { usePvPStore } from '@/stores/pvp';
 
 describe('useUnifiedRewards composable', () => {
   beforeEach(() => {

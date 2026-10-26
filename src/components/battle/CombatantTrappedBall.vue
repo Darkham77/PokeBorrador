@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
 import { ref } from 'vue';
+
+import type { ItemId } from '@/data/inventory/items';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import type { BattleSide, SparkleData } from '@/types/battle/battle';
-import type { ItemId } from '@/data/inventory/items';
+
 import {
   onSparkleEnter,
   onBallEnter,
@@ -15,7 +18,7 @@ const props = defineProps<{
   pokemonKey: string | number;
   isBallVisible: boolean;
   // open-record: Inline CSS coordinate styles dictionary
-  memorizedBallCoords?: Record<string, string | number>;
+  memorizedBallCoords?: Record<DisplayText, string | number>;
   pokeballSize: number;
   internalBallId: ItemId;
   pokeballShadowUrl: string;
@@ -30,13 +33,13 @@ const emit = defineEmits<{
 
 const pokeballImgRef = ref<HTMLImageElement | null>(null);
 
-const handleImgRef = (el: unknown) => {
+const handleImgRef = (el: unknown): void => {
   const imgEl = (el as HTMLImageElement) || null;
   pokeballImgRef.value = imgEl;
   props.setPokeballImgRef?.(imgEl);
 };
 
-const handleBallLeave = (el: Element, done: () => void) => {
+const handleBallLeave = (el: Element, done: () => void): void => {
   onBallLeave(el, props.side, done);
 };
 

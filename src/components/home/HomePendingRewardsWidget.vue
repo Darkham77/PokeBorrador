@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useUnifiedRewards } from '@/composables/rewards/useUnifiedRewards';
-import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
+
 import HomePendingRewardItem from './HomePendingRewardItem.vue';
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
 
 const {
   unifiedRewards,

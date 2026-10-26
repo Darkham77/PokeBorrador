@@ -1,9 +1,11 @@
+import type { DisplayText } from '@francogp/auditor';
 import { describe, it, expect } from 'vitest';
-import { resolveRmxpSubtiles } from '../../logic/map/kantoTileEngine.ts';
-import { CELL_BIOME, type KantoNodeCoordinate } from '../../types/map/kantoGridModel.ts';
-import { KantoRegionalWorldGenerator } from '../../logic/map/kantoRegionalGenerator.ts';
-import { DynamicCatalogLoader } from '../../logic/map/kantoTileEngine.ts';
+
 import { placeProceduralTownArchitectures } from '../../logic/map/kantoProceduralCarver.ts';
+import { KantoRegionalWorldGenerator } from '../../logic/map/kantoRegionalGenerator.ts';
+import { resolveRmxpSubtiles } from '../../logic/map/kantoTileEngine.ts';
+import { DynamicCatalogLoader } from '../../logic/map/kantoTileEngine.ts';
+import { CELL_BIOME, type KantoNodeCoordinate } from '../../types/map/kantoGridModel.ts';
 
 describe('RMXP Cliffs, Water and Procedural Urban Architecture', () => {
   describe('Water Autotile Quadrants', () => {
@@ -75,7 +77,7 @@ describe('RMXP Cliffs, Water and Procedural Urban Architecture', () => {
       gen.grid = Array.from({ length: 128 }, () => new Uint8Array(128).fill(CELL_BIOME.GRASS));
       gen.elevation = Array.from({ length: 128 }, () => new Uint8Array(128).fill(1));
 
-      const nodes: Record<string, KantoNodeCoordinate> = {
+      const nodes: Record<DisplayText, KantoNodeCoordinate> = {
         city_alpha: { id: 'city_alpha', name: 'Metro Alpha', type: 'town', x: 1200, y: 1200 },
         city_beta: { id: 'city_beta', name: 'Bastion Beta', type: 'town', x: 2400, y: 2400 }
       };
@@ -133,7 +135,7 @@ describe('RMXP Cliffs, Water and Procedural Urban Architecture', () => {
         }
       }
 
-      const nodes: Record<string, KantoNodeCoordinate> = {
+      const nodes: Record<DisplayText, KantoNodeCoordinate> = {
         mountain_city: {
           id: 'mountain_city',
           name: 'Cliffview',
@@ -167,7 +169,7 @@ describe('RMXP Cliffs, Water and Procedural Urban Architecture', () => {
       const gen = new KantoRegionalWorldGenerator(loader);
       gen.seed = 42;
 
-      const nodes: Record<string, KantoNodeCoordinate> = {
+      const nodes: Record<DisplayText, KantoNodeCoordinate> = {
         pallet: { id: 'pallet', name: 'Pallet Town', type: 'town', x: 500, y: 1400 },
         viridian: { id: 'viridian', name: 'Viridian City', type: 'town', x: 500, y: 1100 },
         pewter: { id: 'pewter', name: 'Pewter City', type: 'town', x: 500, y: 400 },

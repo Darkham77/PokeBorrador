@@ -1,15 +1,16 @@
 import { shallowRef } from 'vue';
-import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
+
 import {
   ABILITY_TRANSLATIONS_ES,
   ABILITIES_BY_SPANISH_NAME,
   isAbilityId,
   type AbilityId
 } from '@/data/battle/abilities';
-import { GYMS } from '@/data/world/gyms';
-import { FIRE_RED_MAPS } from '@/data/world/maps';
+import { isPokemonMoveId, MOVE_TRANSLATIONS_ES, requirePokemonMoveId } from '@/data/battle/moves';
+import { getStaticMoveData, hasMoveData } from '@/data/battle/movesData';
 import { NATURE_DATA, isNatureId, toNatureId } from '@/data/battle/natures';
-import { SPECIES_METADATA } from '@/data/pokemon/speciesMetadata';
+import { isPokemonType } from '@/data/battle/types';
+import { getEvYieldForSpecies, type EvYield } from '@/data/pokemon/evYields';
 import {
   POKEMON_AESTHETICS,
   POKEMON_SPRITE_IDS,
@@ -17,14 +18,13 @@ import {
   requirePokemonSpeciesId,
   type PokemonSpeciesId
 } from '@/data/pokemon/pokedex';
-import { toID } from '@/logic/utils/strings.ts';
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
+import { SPECIES_METADATA } from '@/data/pokemon/speciesMetadata';
 import { isEnabledPokemonId } from '@/data/system/constants';
-import { isPokemonMoveId, MOVE_TRANSLATIONS_ES, requirePokemonMoveId } from '@/data/battle/moves';
-import { getStaticMoveData, hasMoveData } from '@/data/battle/movesData';
-import { isPokemonType } from '@/data/battle/types';
-
+import { GYMS } from '@/data/world/gyms';
+import { FIRE_RED_MAPS } from '@/data/world/maps';
 import { getSpriteUrl, getBackSpriteUrl } from '@/logic/services/assetService';
-import { getEvYieldForSpecies, type EvYield } from '@/data/pokemon/evYields';
+import { toID } from '@/logic/utils/strings.ts';
 import type {
   PokemonBaseData,
   MoveBaseData,
@@ -84,13 +84,13 @@ export const pokemonDataProvider = {
       throw new Error(`Especie de Pokémon no encontrada: ${id}`);
     }
 
-    const isE2E = typeof globalThis !== 'undefined' && Boolean(Reflect.get(globalThis, '__E2E__'));
+    const isE2E = Boolean(globalThis.__E2E__);
     const isDebug =
       bypassWhitelist ||
       (import.meta.env?.DEV === true && process.env.NODE_ENV !== 'test') ||
       isE2E ||
-      (typeof window !== 'undefined' &&
-        (!!window.__VITE_DEBUG__ || window.location.search.includes('debug')));
+      Boolean(globalThis.__VITE_DEBUG__) ||
+      Boolean(globalThis.location?.search?.includes('debug'));
     if (!isEnabledPokemonId(normalizedId) && !isDebug) {
       throw new Error(`Especie de Pokémon no habilitada por la whitelist global: ${id}`);
     }

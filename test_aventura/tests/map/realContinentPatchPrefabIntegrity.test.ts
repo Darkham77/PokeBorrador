@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import {
   extractRealContinentPatches,
@@ -6,8 +7,8 @@ import {
   findPatchInstructions
 } from '../../logic/map/realContinentPatchExtractor.ts';
 import type { WildernessLayerResult } from '../../logic/map/wildernessVegetationEngine.ts';
-import type { POINode } from '../../types/map/poiTypes.ts';
 import type { TileBlitInstruction } from '../../types/map/autotileStudioTypes.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
 
 describe('realContinentPatchPrefabIntegrity', () => {
   it('extracts real patches with instructions and multi-tile prefab footprint coverage', () => {

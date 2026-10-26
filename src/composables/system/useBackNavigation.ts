@@ -1,7 +1,8 @@
 import { onMounted, onUnmounted, computed } from 'vue';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
+
 import { logger } from '@/logic/utils/logger';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
 
 const MOUSE_BUTTON_BACK = 3;
 const MOUSE_BUTTON_FORWARD = 4;
@@ -11,7 +12,7 @@ const MOUSE_BUTTON_FORWARD = 4;
  * Disables all browser/hardware/gesture back and forward navigation attempts on PC and Mobile.
  * Establishes an immutable history guard trap and captures mouse/keyboard navigation events.
  */
-export function useBackNavigation() {
+export function useBackNavigation(): void {
   const uiStore = useUIStore();
   const modalStore = useModalStore();
 
@@ -46,17 +47,21 @@ export function useBackNavigation() {
   };
 
   // Establishes a permanent state trap in browser history to prevent navigating away
-  const ensureHistoryTrap = () => {
+  const ensureHistoryTrap = (): void => {
     try {
-      const currentState = (window.history.state as Record<string, unknown> | null) || {}; // open-record: Generic key-value data dictionary container
-      window.history.pushState({ ...currentState, pokevicioGuard: true }, '', window.location.href);
+      const currentState = (globalThis.history.state as Record<string, unknown> | null) || {}; // open-record: Generic key-value data dictionary container
+      globalThis.history.pushState(
+        { ...currentState, pokevicioGuard: true },
+        '',
+        globalThis.location.href
+      );
     } catch (err) {
       logger.debug('useBackNavigation', 'Historial restringido en este entorno:', err);
     }
   };
 
   // Intercept hardware mouse navigation buttons (Button 3 = Back, Button 4 = Forward)
-  const handleMouseNavigationButtons = (e: MouseEvent | PointerEvent) => {
+  const handleMouseNavigationButtons = (e: MouseEvent | PointerEvent): void => {
     if (e.button === MOUSE_BUTTON_BACK || e.button === MOUSE_BUTTON_FORWARD) {
       e.preventDefault();
       e.stopPropagation();
@@ -65,7 +70,7 @@ export function useBackNavigation() {
   };
 
   // Intercept keyboard navigation shortcuts
-  const handleKeyboardNavigation = (e: KeyboardEvent) => {
+  const handleKeyboardNavigation = (e: KeyboardEvent): void => {
     const isAltNavigation = e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight');
     const isBrowserNavigation = e.key === 'BrowserBack' || e.key === 'BrowserForward';
 
@@ -87,7 +92,7 @@ export function useBackNavigation() {
   };
 
   // Handle popstate event by re-pushing trap and closing UI if open
-  const handlePopState = () => {
+  const handlePopState = (): void => {
     ensureHistoryTrap();
 
     if (currentUIStackSize.value > 0) {
@@ -102,22 +107,22 @@ export function useBackNavigation() {
   onMounted(() => {
     ensureHistoryTrap();
 
-    window.addEventListener('popstate', handlePopState);
-    window.addEventListener('mousedown', handleMouseNavigationButtons, { capture: true });
-    window.addEventListener('mouseup', handleMouseNavigationButtons, { capture: true });
-    window.addEventListener('auxclick', handleMouseNavigationButtons, { capture: true });
-    window.addEventListener('pointerdown', handleMouseNavigationButtons, { capture: true });
-    window.addEventListener('pointerup', handleMouseNavigationButtons, { capture: true });
-    window.addEventListener('keydown', handleKeyboardNavigation, { capture: true });
+    globalThis.addEventListener('popstate', handlePopState);
+    globalThis.addEventListener('mousedown', handleMouseNavigationButtons, { capture: true });
+    globalThis.addEventListener('mouseup', handleMouseNavigationButtons, { capture: true });
+    globalThis.addEventListener('auxclick', handleMouseNavigationButtons, { capture: true });
+    globalThis.addEventListener('pointerdown', handleMouseNavigationButtons, { capture: true });
+    globalThis.addEventListener('pointerup', handleMouseNavigationButtons, { capture: true });
+    globalThis.addEventListener('keydown', handleKeyboardNavigation, { capture: true });
   });
 
   onUnmounted(() => {
-    window.removeEventListener('popstate', handlePopState);
-    window.removeEventListener('mousedown', handleMouseNavigationButtons, { capture: true });
-    window.removeEventListener('mouseup', handleMouseNavigationButtons, { capture: true });
-    window.removeEventListener('auxclick', handleMouseNavigationButtons, { capture: true });
-    window.removeEventListener('pointerdown', handleMouseNavigationButtons, { capture: true });
-    window.removeEventListener('pointerup', handleMouseNavigationButtons, { capture: true });
-    window.removeEventListener('keydown', handleKeyboardNavigation, { capture: true });
+    globalThis.removeEventListener('popstate', handlePopState);
+    globalThis.removeEventListener('mousedown', handleMouseNavigationButtons, { capture: true });
+    globalThis.removeEventListener('mouseup', handleMouseNavigationButtons, { capture: true });
+    globalThis.removeEventListener('auxclick', handleMouseNavigationButtons, { capture: true });
+    globalThis.removeEventListener('pointerdown', handleMouseNavigationButtons, { capture: true });
+    globalThis.removeEventListener('pointerup', handleMouseNavigationButtons, { capture: true });
+    globalThis.removeEventListener('keydown', handleKeyboardNavigation, { capture: true });
   });
 }

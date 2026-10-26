@@ -1,30 +1,31 @@
-import { loadBestSave } from '@/logic/auth/loadService';
 import { gsap } from 'gsap';
+import { ref, type Ref } from 'vue';
+
+import { loadBestSave } from '@/logic/auth/loadService';
+import { saveCoordinator } from '@/logic/auth/saveCoordinator';
 import {
   saveGame as performSave,
   setLatestCommittedSaveId,
   getLatestCommittedSaveId
 } from '@/logic/auth/saveService';
-import { useLoadingStore } from '@/stores/loading';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
 import { isSaveLocked } from '@/logic/auth/sessionHub';
 import { checkAppVersionCompatibility } from '@/logic/db/dbRouter';
-import { useUpdateStore } from '@/stores/update';
-import { gameBus } from '@/logic/events/gameBus';
-import { requireGenderId, type GameState, type ClaimItem } from '@/types/system/game';
-import type { AuthUser } from '@/types/auth/auth';
-import { ref, type Ref } from 'vue';
-import { logger } from '@/logic/utils/logger';
 import type { DBRouter } from '@/logic/db/dbRouter';
+import { gameBus } from '@/logic/events/gameBus';
+import { logger } from '@/logic/utils/logger';
+import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage';
 import {
   canSaveState,
   updateSessionPlaytime,
   handleSaveRollback,
   saveSandboxLocalState
 } from '@/stores/game/actions/saveActionHelpers';
-import { saveCoordinator } from '@/logic/auth/saveCoordinator';
-import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage';
+import { useLoadingStore } from '@/stores/loading';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import { useUpdateStore } from '@/stores/update';
+import type { AuthUser } from '@/types/auth/auth';
+import { requireGenderId, type GameState, type ClaimItem } from '@/types/system/game';
 
 const LOAD_RETRY_DELAY_SEC = 1.5;
 const MAX_SESSION_LOAD_RETRIES = 9 as const;
@@ -72,26 +73,29 @@ async function fetchSaveWithRetry(
   return { data: null, issues: [], lastSaveId: null, lastError };
 }
 
-function handleOfflineRetry(loadingStore: ReturnType<typeof useLoadingStore>) {
+function handleOfflineRetry(loadingStore: ReturnType<typeof useLoadingStore>): {
+  success: boolean;
+  offline: boolean;
+} {
   loadingStore.setProgress(
     'game_data',
     'Sin conexión a Internet',
     'Esperando señal para reintentar...'
   );
-  window.addEventListener(
+  globalThis.addEventListener(
     'online',
     () => {
-      window.location.reload();
+      globalThis.location.reload();
     },
     { once: true }
   );
   return { success: false, offline: true };
 }
 
-function handleSessionRetry(
+async function handleSessionRetry(
   loadingStore: ReturnType<typeof useLoadingStore>,
   authStore: { logout?: () => Promise<void> }
-) {
+): Promise<{ success: boolean; error?: boolean; reconnecting?: boolean }> {
   const retryCount = parseInt(
     safeSessionStorage.getItem(SESSION_STORAGE_KEYS.LOAD_RETRY_COUNT) || '0',
     10
@@ -104,9 +108,9 @@ function handleSessionRetry(
       'Redireccionando al inicio de sesión...'
     );
     if (authStore.logout) {
-      void authStore.logout();
+      await authStore.logout();
     } else {
-      window.location.reload();
+      globalThis.location.reload();
     }
     return { success: false, error: true };
   }
@@ -115,7 +119,7 @@ function handleSessionRetry(
 
   if (retryCount < 1) {
     loadingStore.setProgress('game_data', 'Red inestable...', 'Reconectando al servidor...');
-    window.location.reload();
+    globalThis.location.reload();
     return { success: false, reconnecting: true };
   }
 
@@ -124,21 +128,21 @@ function handleSessionRetry(
     'Error de conexión',
     'La red no responde. Toca en cualquier lugar para reintentar.'
   );
-  window.addEventListener(
+  globalThis.addEventListener(
     'click',
     () => {
-      window.location.reload();
+      globalThis.location.reload();
     },
     { once: true }
   );
   return { success: false, error: true };
 }
 
-function handleLoadNetworkError(
+async function handleLoadNetworkError(
   lastError: unknown,
   loadingStore: ReturnType<typeof useLoadingStore>,
   authStore: { logout?: () => Promise<void> }
-) {
+): Promise<{ success: boolean; reconnecting?: boolean; offline?: boolean; error?: boolean }> {
   logger.error('LOAD', `Todos los intentos de carga fallaron: ${(lastError as Error).message}`);
   const err = lastError as Error;
   const isTimeout = err.message === 'LOAD_TIMEOUT';
@@ -157,7 +161,7 @@ function handleLoadNetworkError(
     return handleOfflineRetry(loadingStore);
   }
 
-  return handleSessionRetry(loadingStore, authStore);
+  return await handleSessionRetry(loadingStore, authStore);
 }
 
 function applyLoadedSave(
@@ -191,16 +195,44 @@ function applyLoadedSave(
   return sessionStartTime;
 }
 
-function initializeDefaultSave(
+async function initializeDefaultSave(
   user: AuthUser,
   state: GameState,
   saveFn: (showNotif?: boolean) => Promise<unknown>
-): number {
+): Promise<number> {
   state.trainer = user.user_metadata?.username || 'Entrenador';
   state.gender = requireGenderId(user.user_metadata?.gender);
   const sessionStartTime = Temporal.Now.instant().epochMilliseconds;
-  void saveFn(false);
+  await saveFn(false);
   return sessionStartTime;
+}
+
+export interface LoadGameResult {
+  readonly success: boolean;
+  readonly guest?: boolean;
+  readonly corrupted?: boolean;
+  readonly issues?: readonly string[];
+  readonly error?: unknown;
+}
+
+export interface SaveGameResult {
+  readonly success: boolean;
+  readonly error?: string;
+}
+
+export interface UseSaveActionsReturn {
+  loadGame: () => Promise<LoadGameResult>;
+  save: (
+    showNotif?: boolean,
+    immediate?: boolean,
+    forceRemote?: boolean
+  ) => Promise<SaveGameResult>;
+  scheduleSave: (delayMs?: number, forceRemote?: boolean) => void;
+  withBatchSave: <T>(operation: () => Promise<T>, showNotifOnEnd?: boolean) => Promise<T>;
+  claimAsset: (claimId: string | number) => Promise<boolean>;
+  fetchClaimQueue: () => Promise<void>;
+  saveBlocked: Ref<boolean>;
+  validationErrorDetails: Ref<string[] | null>;
 }
 
 export function useSaveActions(
@@ -209,14 +241,14 @@ export function useSaveActions(
   db: Ref<DBRouter>,
   updateState: (data: GameState) => void,
   isSandboxActive: Ref<boolean>
-) {
+): UseSaveActionsReturn {
   const uiStore = useUIStore();
   const loadingStore = useLoadingStore();
   const saveBlocked = ref(false);
   const validationErrorDetails = ref<string[] | null>(null);
   let sessionStartTime: number | null = null;
 
-  async function loadGame() {
+  async function loadGame(): Promise<LoadGameResult> {
     loadingStore.start('game_data', 'Cargando datos...', 'Leyendo partida guardada', false, '📂');
 
     if (isSandboxActive.value) {
@@ -235,7 +267,7 @@ export function useSaveActions(
     );
 
     if (!data && lastError) {
-      return handleLoadNetworkError(lastError, loadingStore, authStore);
+      return await handleLoadNetworkError(lastError, loadingStore, authStore);
     }
 
     if (data && authStore.user) {
@@ -249,7 +281,7 @@ export function useSaveActions(
         uiStore
       );
     } else if (!data && authStore.user) {
-      sessionStartTime = initializeDefaultSave(authStore.user, state, save);
+      sessionStartTime = await initializeDefaultSave(authStore.user, state, save);
     }
 
     loadingStore.finish('game_data');
@@ -326,7 +358,11 @@ export function useSaveActions(
     }
   }
 
-  async function save(showNotif = true, immediate = true, forceRemote = false) {
+  async function save(
+    showNotif = true,
+    immediate = true,
+    forceRemote = false
+  ): Promise<SaveGameResult> {
     if (saveCoordinator.isBatchActive() && !immediate) {
       saveCoordinator.schedule(async () => {
         await save(showNotif, true, forceRemote);
@@ -379,7 +415,7 @@ export function useSaveActions(
     return result || { success: false };
   }
 
-  async function scheduleSave(delayMs?: number, forceRemote = false) {
+  function scheduleSave(delayMs?: number, forceRemote = false): void {
     saveCoordinator.schedule(async () => {
       await save(false, true, forceRemote);
     }, delayMs);
@@ -434,7 +470,7 @@ export function useSaveActions(
     }
   }
 
-  async function claimAsset(claimId: string | number) {
+  async function claimAsset(claimId: string | number): Promise<boolean> {
     if (isSandboxActive.value) return false;
     if (!authStore.user || !db.value) return false;
     try {
@@ -466,7 +502,7 @@ export function useSaveActions(
     return false;
   }
 
-  async function fetchClaimQueue() {
+  async function fetchClaimQueue(): Promise<void> {
     if (isSandboxActive.value) return;
     if (!authStore.user || !db.value) return;
     const claimRes = await db.value

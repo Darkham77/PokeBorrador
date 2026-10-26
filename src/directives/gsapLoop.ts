@@ -1,8 +1,9 @@
-import type { Directive } from 'vue';
+import type { DisplayText } from '@francogp/auditor';
 import gsap from 'gsap';
+import type { Directive } from 'vue';
 
-import { SCALE_DEFAULT_BASE_FACTOR } from '@/logic/constants/visuals';
 import { FULL_ROTATION_DEG } from '@/logic/constants/animations';
+import { SCALE_DEFAULT_BASE_FACTOR } from '@/logic/constants/visuals';
 
 // Map to keep track of animations for cleanup
 const activeAnimations = new Map<HTMLElement, gsap.core.Tween | gsap.core.Timeline>();
@@ -36,7 +37,7 @@ const observer = new IntersectionObserver(
  */
 export const gsapLoop: Directive = {
   mounted(el: HTMLElement, binding) {
-    applyAnimation(el, binding.value as string | GsapLoopOptions);
+    applyAnimation(el, binding.value as GsapLoopValue);
   },
   updated(el: HTMLElement, binding) {
     // Basic comparison of configuration values
@@ -44,7 +45,7 @@ export const gsapLoop: Directive = {
     const oldValString = JSON.stringify(binding.oldValue);
     if (valString !== oldValString) {
       cleanupAnimation(el);
-      applyAnimation(el, binding.value as string | GsapLoopOptions);
+      applyAnimation(el, binding.value as GsapLoopValue);
     }
   },
   unmounted(el: HTMLElement) {
@@ -52,7 +53,7 @@ export const gsapLoop: Directive = {
   }
 };
 
-function cleanupAnimation(el: HTMLElement) {
+function cleanupAnimation(el: HTMLElement): void {
   observer.unobserve(el);
   const anim = activeAnimations.get(el);
   if (anim) {
@@ -70,8 +71,11 @@ const DEFAULT_FLOAT_DURATION_SEC = 3 as const;
 const DEFAULT_BLINK_DIM_COLOR = '#888888' as const;
 const DEFAULT_FALLBACK_TEXT_COLOR = '#ffffff' as const;
 
+export type GsapLoopEffect = 'spin' | 'pulse' | 'blink' | 'blink-red' | 'bounce' | 'float';
+export type GsapLoopValue = GsapLoopEffect | GsapLoopOptions;
+
 interface GsapLoopOptions {
-  effect: string;
+  effect: GsapLoopEffect | DisplayText;
   duration?: number;
   ease?: string;
   active?: boolean;
@@ -84,7 +88,7 @@ interface GsapLoopOptions {
   [key: string]: string | number | boolean | undefined;
 }
 
-type AnimationExtraVars = Record<string, string | number | boolean | undefined>; // open-record: Dynamic GSAP tween variables configuration
+type AnimationExtraVars = Record<DisplayText, string | number | boolean | undefined>; // open-record: Dynamic GSAP tween variables configuration
 
 function extractExtraVars(optObj: GsapLoopOptions): AnimationExtraVars {
   const extraVars: AnimationExtraVars = { ...optObj };
@@ -101,13 +105,17 @@ function extractExtraVars(optObj: GsapLoopOptions): AnimationExtraVars {
   return extraVars;
 }
 
-function isTransformEffect(effect: string): boolean {
-  return effect === 'spin' || effect === 'pulse' || effect === 'bounce' || effect === 'float';
+const TRANSFORM_EFFECTS = ['spin', 'pulse', 'bounce', 'float'] as const;
+type TransformEffect = (typeof TRANSFORM_EFFECTS)[number];
+const TRANSFORM_EFFECT_SET: ReadonlySet<string> = new Set<string>(TRANSFORM_EFFECTS);
+
+function isTransformEffect(effect: string): effect is TransformEffect {
+  return TRANSFORM_EFFECT_SET.has(effect);
 }
 
 function ensureInlineBlockDisplay(el: HTMLElement, effect: string): void {
   if (isTransformEffect(effect)) {
-    const computedStyle = window.getComputedStyle(el);
+    const computedStyle = globalThis.getComputedStyle(el);
     if (computedStyle.display === 'inline') {
       el.style.display = 'inline-block';
     }
@@ -179,7 +187,7 @@ function buildBlinkAnimation(
 ): gsap.core.Tween {
   const hasText = el.innerText && el.innerText.trim().length > 0;
   if (hasText) {
-    const origColor = window.getComputedStyle(el).color || DEFAULT_FALLBACK_TEXT_COLOR;
+    const origColor = globalThis.getComputedStyle(el).color || DEFAULT_FALLBACK_TEXT_COLOR;
     return gsap.fromTo(
       el,
       { color: origColor },
@@ -292,7 +300,7 @@ function createLoopAnimation(
   }
 }
 
-function applyAnimation(el: HTMLElement, options: string | GsapLoopOptions) {
+function applyAnimation(el: HTMLElement, options: GsapLoopValue): void {
   if (!options) return;
 
   const optObj = typeof options === 'string' ? { effect: options } : options;

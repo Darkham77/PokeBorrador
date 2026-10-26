@@ -1,23 +1,24 @@
 /**
  * Styles for nickname and avatar customization.
  */
+import type { DisplayText, CssClassName } from '@francogp/auditor';
 import type { PlayerClassId } from '@/data/player/playerClasses';
 import type { FactionId } from '@/types/system/game';
 
 export interface NickStyle {
-  readonly id: string; // domain-ok: Open dynamic text or non-domain string payload
-  readonly name: string; // domain-ok: Open dynamic text or non-domain string payload
-  readonly class: string; // domain-ok: Open dynamic text or non-domain string payload
-  readonly requiredRole?: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly id: DisplayText;
+  readonly name: DisplayText;
+  readonly class: CssClassName;
+  readonly requiredRole?: DisplayText;
   readonly requiredClass?: PlayerClassId;
   readonly requiredFaction?: FactionId;
 }
 
 export interface AvatarStyle {
-  readonly id: string; // domain-ok: Open dynamic text or non-domain string payload
-  readonly name: string; // domain-ok: Open dynamic text or non-domain string payload
-  readonly class: string; // domain-ok: Open dynamic text or non-domain string payload
-  readonly requiredRole?: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly id: DisplayText;
+  readonly name: DisplayText;
+  readonly class: CssClassName;
+  readonly requiredRole?: DisplayText;
   readonly requiredClass?: PlayerClassId;
   readonly requiredFaction?: FactionId;
 }

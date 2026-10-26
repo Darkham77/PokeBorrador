@@ -1,7 +1,10 @@
 import { isPokemonType, TYPE_CHART } from '../../data/battle/types.ts';
 import type { PurePokemon } from './battleMathTypes.ts';
 
-const DELTA_STREAM_WEAKNESS_SET: ReadonlySet<string> = new Set(['electric', 'ice', 'rock']); // runtime-set: Fast O(1) membership lookup set
+const DELTA_STREAM_WEAKNESS_VALUES = ['electric', 'ice', 'rock'] as const;
+const DELTA_STREAM_WEAKNESS_SET: ReadonlySet<string> = new Set<string>(
+  DELTA_STREAM_WEAKNESS_VALUES
+);
 
 function getTypeEff(
   moveType: string | undefined,

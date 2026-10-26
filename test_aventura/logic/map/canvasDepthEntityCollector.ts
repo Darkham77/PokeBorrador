@@ -14,13 +14,17 @@
  *   6e: Strict North-to-South Trees (Wilderness + Dungeon Forests)
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
-import type { POINode } from '../../types/map/poiTypes.ts';
-import type { WildernessLayerResult } from './wildernessVegetationEngine.ts';
-import type { BuildMapBlitOptions } from './canvasTileRenderer.ts';
-import { resolvePoiLandmarksAndBuildings } from './canvasLandmarkRenderer.ts';
 import { CANVAS_RENDERER } from '../../config/canvasRendererConfig.ts';
 import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
+import { resolvePoiLandmarksAndBuildings } from './canvasLandmarkRenderer.ts';
+import type { BuildMapBlitOptions } from './canvasTileRenderer.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
+import {
+  type WildernessLayerResult,
+  WILDERNESS_PROP_TYPES,
+  type WildernessPropType
+} from './wildernessVegetationEngine.ts';
 
 export interface StampedStandingEntity {
   readonly file: string;
@@ -38,6 +42,57 @@ export interface DepthEntityCollectorContext {
   readonly bridgeGrid?: readonly (readonly boolean[])[];
   readonly wilderness?: WildernessLayerResult | null;
   readonly options?: BuildMapBlitOptions;
+}
+
+const STANDING_PROP_TYPES: ReadonlySet<WildernessPropType> = new Set<WildernessPropType>(
+  WILDERNESS_PROP_TYPES
+);
+
+function resolveVignettePropHeight(prefabFile: string): number {
+  if (prefabFile === 'poke_fountain.png' || prefabFile === 'poke_street_lamp.png') {
+    return CANVAS_RENDERER.HEIGHT_SPAN_FOUNTAIN;
+  }
+  if (prefabFile === 'poke_port_cargo_crates_stack.png') {
+    return CANVAS_RENDERER.HEIGHT_SPAN_CARGO;
+  }
+  return 1;
+}
+
+interface TreePlacementCheckContext {
+  readonly W: number;
+  readonly H: number;
+  readonly buildingFootprintMask: readonly (readonly boolean[])[];
+  readonly wilderness?: WildernessLayerResult | null;
+  readonly continent: ContinentMapResult;
+  readonly unifiedPathGrid: readonly (readonly boolean[])[];
+}
+
+function isTreeCellClear(cx: number, cy: number, ctx: TreePlacementCheckContext): boolean {
+  if (cx < 0 || cx >= ctx.W || cy < 0 || cy >= ctx.H) return false;
+  if (ctx.buildingFootprintMask[cy]?.[cx]) return false;
+  if (ctx.wilderness?.tallGrassGrid?.[cy]?.[cx]) return false;
+  if (ctx.continent.terrainMatrix[cy]?.[cx] !== 'grass') return false;
+  if ((ctx.continent.heightmap[cy]?.[cx] ?? 0) !== 0) return false;
+  if (ctx.continent.resolvedMountain.occupiedFootCells[cy]?.[cx]) return false;
+  if (ctx.unifiedPathGrid[cy]?.[cx]) return false;
+  return true;
+}
+
+function canPlaceTreeFootprint(
+  tx: number,
+  ty: number,
+  width: number,
+  canopyOverhang: number,
+  ctx: TreePlacementCheckContext
+): boolean {
+  for (let dy = -canopyOverhang; dy <= 1; dy++) {
+    for (let dx = 0; dx < width; dx++) {
+      if (!isTreeCellClear(tx + dx, ty + dy, ctx)) {
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 /**
@@ -94,16 +149,7 @@ export function collectStandingDepthEntities(
         continue;
       }
 
-      if (
-        prop.type === 'flower' ||
-        prop.type === 'bush' ||
-        prop.type === 'sapling' ||
-        prop.type === 'boulder' ||
-        prop.type === 'fence_h' ||
-        prop.type === 'fence_v' ||
-        prop.type === 'signpost' ||
-        prop.type === 'log'
-      ) {
+      if (STANDING_PROP_TYPES.has(prop.type)) {
         standingEntities.push({
           file: prop.prefabFile,
           px,
@@ -159,15 +205,7 @@ export function collectStandingDepthEntities(
     for (const vig of options.microVignettes) {
       for (const prop of vig.props) {
         if (!buildingFootprintMask[prop.y]?.[prop.x]) {
-          let propH = 1;
-          if (
-            prop.prefabFile === 'poke_fountain.png' ||
-            prop.prefabFile === 'poke_street_lamp.png'
-          ) {
-            propH = CANVAS_RENDERER.HEIGHT_SPAN_FOUNTAIN;
-          } else if (prop.prefabFile === 'poke_port_cargo_crates_stack.png') {
-            propH = CANVAS_RENDERER.HEIGHT_SPAN_CARGO;
-          }
+          const propH = resolveVignettePropHeight(prop.prefabFile);
           standingEntities.push({
             file: prop.prefabFile,
             px: prop.x * CANVAS_TILE_SIZE,
@@ -285,35 +323,20 @@ export function collectStandingDepthEntities(
     }
   }
 
+  const treeCtx: TreePlacementCheckContext = {
+    W,
+    H,
+    buildingFootprintMask,
+    wilderness,
+    continent,
+    unifiedPathGrid
+  };
+
   // 6e. Strict North-to-South Trees (Wilderness + Dungeon Forests)
   if (wilderness?.trees) {
     for (const t of wilderness.trees) {
-      let canPlace = true;
       const canopyOverhang = t.height - 2;
-
-      for (let dy = -canopyOverhang; dy <= 1; dy++) {
-        for (let dx = 0; dx < t.width; dx++) {
-          const cy = t.y + dy;
-          const cx = t.x + dx;
-          if (
-            cy < 0 ||
-            cy >= H ||
-            cx < 0 ||
-            cx >= W ||
-            buildingFootprintMask[cy]?.[cx] ||
-            wilderness?.tallGrassGrid?.[cy]?.[cx] ||
-            continent.terrainMatrix[cy]?.[cx] !== 'grass' ||
-            (continent.heightmap[cy]?.[cx] ?? 0) !== 0 ||
-            continent.resolvedMountain.occupiedFootCells[cy]?.[cx] ||
-            unifiedPathGrid[cy]?.[cx]
-          ) {
-            canPlace = false;
-            break;
-          }
-        }
-        if (!canPlace) break;
-      }
-      if (canPlace) {
+      if (canPlaceTreeFootprint(t.x, t.y, t.width, canopyOverhang, treeCtx)) {
         const drawPy = (t.y - (t.height - 2)) * CANVAS_TILE_SIZE;
         standingEntities.push({
           file: t.prefabFile,
@@ -328,43 +351,20 @@ export function collectStandingDepthEntities(
 
   // Dungeon Forest Dense Infill
   for (const poi of pois) {
-    if (poi.type === 'dungeon_forest') {
-      for (let dy = 0; dy < poi.footprint.height; dy += 2) {
-        for (let dx = 0; dx < poi.footprint.width; dx += 2) {
-          const tx = poi.gridX + dx;
-          const ty = poi.gridY + dy;
-          let canPlace = true;
-          for (let fdy = -1; fdy <= 1; fdy++) {
-            for (let fdx = 0; fdx < 2; fdx++) {
-              const cy = ty + fdy;
-              const cx = tx + fdx;
-              if (
-                cy < 0 ||
-                cy >= H ||
-                cx < 0 ||
-                cx >= W ||
-                buildingFootprintMask[cy]?.[cx] ||
-                wilderness?.tallGrassGrid?.[cy]?.[cx] ||
-                continent.terrainMatrix[cy]?.[cx] !== 'grass' ||
-                (continent.heightmap[cy]?.[cx] ?? 0) !== 0 ||
-                continent.resolvedMountain.occupiedFootCells[cy]?.[cx] ||
-                unifiedPathGrid[cy]?.[cx]
-              ) {
-                canPlace = false;
-                break;
-              }
-            }
-            if (!canPlace) break;
-          }
-          if (canPlace) {
-            standingEntities.push({
-              file: 'tree_viridian_forest.png',
-              px: tx * CANVAS_TILE_SIZE,
-              py: (ty - 1) * CANVAS_TILE_SIZE,
-              ySort: (ty + 2) * CANVAS_TILE_SIZE,
-              zPriority: CANVAS_RENDERER.Z_PRIORITY_LOWEST
-            });
-          }
+    if (poi.type !== 'dungeon_forest') continue;
+
+    for (let dy = 0; dy < poi.footprint.height; dy += 2) {
+      for (let dx = 0; dx < poi.footprint.width; dx += 2) {
+        const tx = poi.gridX + dx;
+        const ty = poi.gridY + dy;
+        if (canPlaceTreeFootprint(tx, ty, 2, 1, treeCtx)) {
+          standingEntities.push({
+            file: 'tree_viridian_forest.png',
+            px: tx * CANVAS_TILE_SIZE,
+            py: (ty - 1) * CANVAS_TILE_SIZE,
+            ySort: (ty + 2) * CANVAS_TILE_SIZE,
+            zPriority: CANVAS_RENDERER.Z_PRIORITY_LOWEST
+          });
         }
       }
     }

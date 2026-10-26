@@ -7,10 +7,11 @@
  * grid snapping, and JSON snippet synthesis for canonical_assets_manifest.json.
  */
 
-import { ref, computed } from 'vue';
-import type { CanonicalAssetEntry } from '../../logic/map/canonicalAssetsRegistry.ts';
-import { CANONICAL_ASSETS_MANIFEST as manifestJson } from '../../data/map/canonicalAssetsManifest.ts';
+import { ref, computed, type ComputedRef, type Ref } from 'vue';
+
 import { STUDIO_TILE_SIZE, CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+import { CANONICAL_ASSETS_MANIFEST as manifestJson } from '../../data/map/canonicalAssetsManifest.ts';
+import type { CanonicalAssetEntry } from '../../logic/map/canonicalAssetsRegistry.ts';
 
 export interface SheetGridLayout {
   readonly tileSize: number;
@@ -165,7 +166,29 @@ export interface SelectionRect {
   readonly h: number;
 }
 
-export function useAssetAtlas() {
+export interface UseAssetAtlasReturn {
+  activeSheetId: Ref<string>;
+  activeSheet: ComputedRef<MasterSheetMeta>;
+  activeSheetUrl: ComputedRef<string>;
+  currentGrid: Ref<SheetGridLayout>;
+  showGrid: Ref<boolean>;
+  selectedRect: Ref<SelectionRect | null>;
+  selectedAssetId: Ref<string | null>;
+  availableSheets: readonly MasterSheetMeta[];
+  allManifestEntries: ComputedRef<readonly CanonicalAssetEntry[]>;
+  currentSheetEntries: ComputedRef<readonly CanonicalAssetEntry[]>;
+  selectSheet: (sheetId: string) => void;
+  setSelection: (rect: SelectionRect | null) => void;
+  selectRegisteredAsset: (asset: CanonicalAssetEntry) => void;
+  generateManifestSnippet: (
+    id: string,
+    category: string,
+    name: string,
+    rect: SelectionRect
+  ) => string;
+}
+
+export function useAssetAtlas(): UseAssetAtlasReturn {
   const activeSheetId = ref<string>('firered_pewter_city');
 
   const activeSheet = computed<MasterSheetMeta>(() => {

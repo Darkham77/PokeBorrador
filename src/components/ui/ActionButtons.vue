@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
-import PVHUDButton from '@/components/common/PVHUDButton.vue';
 
+import PVHUDButton from '@/components/common/PVHUDButton.vue';
 import { logger } from '@/logic/utils/logger';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
 
 const uiStore = useUIStore();
 const modalStore = useModalStore();
 
-const preloadHudModals = () => {
+const preloadHudModals = (): void => {
   import('@/components/modals/ProfileModal.vue').catch((err: unknown) => {
     logger.debug('ActionButtons', 'Prefetch ProfileModal omitido:', err);
   });
@@ -22,8 +22,8 @@ const preloadHudModals = () => {
 };
 
 onMounted(() => {
-  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-    window.requestIdleCallback(preloadHudModals);
+  if (typeof globalThis.window !== 'undefined' && 'requestIdleCallback' in globalThis) {
+    globalThis.requestIdleCallback(preloadHudModals);
   } else {
     preloadHudModals();
   }

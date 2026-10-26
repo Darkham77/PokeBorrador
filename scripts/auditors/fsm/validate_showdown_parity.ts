@@ -25,7 +25,8 @@ import {
   BaseAuditor,
   SharedAstContext,
   normalizePosixPath,
-  createRuleCapabilities
+  createRuleCapabilities,
+  getAuditConfig
 } from '@francogp/auditor';
 
 enableCompileCache();
@@ -140,6 +141,9 @@ export const CANONICAL_SHOWDOWN_PROTOCOL_TOKENS = {
 
 export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
   constructor() {
+    const config = getAuditConfig();
+    const battleRoot = path.posix.join(config.paths?.logicRoots?.[0] ?? 'src/logic', 'battle');
+
     super({
       ruleCapabilities: createRuleCapabilities(SHOWDOWN_PARITY_RULES, {
         speed: 'heavy',
@@ -163,6 +167,7 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
       ruleIds: SHOWDOWN_PARITY_RULES,
       packageName: 'Showdown',
       usesThirdPartyTool: false,
+      requiredPermissions: [],
       ruleDescriptions: {
         'missing-protocol-token': 'Token de protocolo sin handler'
       },
@@ -170,9 +175,10 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
         'missing-protocol-token':
           'Add protocol token handler in showdownBridge or register token in ignore list'
       },
+      remediationPhase: 'behavior',
       requiresAst: true,
       coverage: {
-        include: ['src/logic/battle/showdownBridge*.ts']
+        include: [path.posix.join(battleRoot, '**/*.ts')]
       }
     });
   }
@@ -268,10 +274,4 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
 }
 
 // Canonical CLI Entrypoint
-if (
-  process.argv[1] &&
-  import.meta.filename &&
-  path.basename(process.argv[1]) === path.basename(import.meta.filename)
-) {
-  await BaseAuditor.runCli(new ShowdownParityAuditor());
-}
+await BaseAuditor.runCliIfMain(import.meta.url, new ShowdownParityAuditor());

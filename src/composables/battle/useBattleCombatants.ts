@@ -1,6 +1,7 @@
 import { computed, unref, type ComputedRef } from 'vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import type { useBattleStore } from '@/stores/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 function collectActiveCombatants(
   exiting: Pokemon | null | undefined,
@@ -45,7 +46,7 @@ export function useBattleCombatants(
   battleStore: ReturnType<typeof useBattleStore>,
   player: ComputedRef<Pokemon | null | undefined>,
   enemy: ComputedRef<Pokemon | null | undefined>
-) {
+): { playerCombatants: ComputedRef<Pokemon[]>; enemyCombatants: ComputedRef<Pokemon[]> } {
   const playerCombatants = computed(() => {
     const fsmState = unref(battleStore.currentFsmState);
     if (fsmState === 'CONTEXT_SETUP') {

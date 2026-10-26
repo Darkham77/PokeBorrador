@@ -1,21 +1,30 @@
+import type { DisplayText } from '@francogp/auditor';
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { logger } from '@/logic/utils/logger';
-import { useAuthStore } from '@/stores/auth.ts';
-import { useUIStore } from '@/stores/ui.ts';
-import { useGameStore } from '@/stores/game.ts';
-import { gameBus } from '@/logic/events/gameBus.ts';
-import { setEventExpMultiplier } from '@/logic/events/eventMultipliers.ts';
+
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import {
+  evaluateCapturedPokemonForEvents,
+  computeOptimalAutoFillAssignments
+} from '@/logic/events/eventAutoEnrollHelper';
 import {
   isEventActiveNow,
   getGlobalMultipliers,
   getSpeciesBoosts,
   type Event as GameEvent
 } from '@/logic/events/eventEngine';
-import type { PendingAward, CompetitionEntry, PastEventHistoryItem } from '@/types/system/stores';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { getServerTime } from '@/logic/utils/timeUtils';
+import { setEventExpMultiplier } from '@/logic/events/eventMultipliers.ts';
+import { gameBus } from '@/logic/events/gameBus.ts';
 import { healStuckEventPokemon } from '@/logic/player/eventRecovery';
+import { logger } from '@/logic/utils/logger';
+import { getServerTime } from '@/logic/utils/timeUtils';
+import { useAuthStore } from '@/stores/auth.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { PendingAward, CompetitionEntry, PastEventHistoryItem } from '@/types/system/stores';
+
 import {
   fetchPastEvents as fetchPastEventsAction,
   checkPendingAwards as checkPendingAwardsAction,
@@ -30,12 +39,6 @@ import {
   removeCompetitionEntry as removeCompetitionEntryAction,
   type EventEnrollmentContext
 } from './events/eventEnrollmentActions.ts';
-import { useModalStore } from '@/stores/modals';
-import {
-  evaluateCapturedPokemonForEvents,
-  computeOptimalAutoFillAssignments
-} from '@/logic/events/eventAutoEnrollHelper';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export const useEventStore = defineStore('events', () => {
   const gameStore = useGameStore();
@@ -46,16 +49,16 @@ export const useEventStore = defineStore('events', () => {
   const activeEvents = ref<GameEvent[]>([]);
   const pastEvents = ref<PastEventHistoryItem[]>([]);
   const pendingAwards = ref<PendingAward[]>([]);
-  const userEntries = ref<Record<string, CompetitionEntry>>({}); // open-record: Composite event_id:catId index
+  const userEntries = ref<Record<DisplayText, CompetitionEntry>>({}); // open-record: Composite event_id:catId index
   const isLoading = ref(false);
   const isLoaded = ref(false);
   const simEventsEnabled = ref(true);
   let inFlightPromise: Promise<void> | null = null;
 
   // Watch for game cycle ticks to re-evaluate active events
-  const handleGameCycleTick = () => {
+  const handleGameCycleTick = async (): Promise<void> => {
     logger.info('Events', 'Game cycle ticked. Refreshing active events...');
-    void fetchEvents(true);
+    await fetchEvents(true);
   };
   gameBus.on('GAME_CYCLE_TICK', handleGameCycleTick);
 
@@ -87,9 +90,12 @@ export const useEventStore = defineStore('events', () => {
   /**
    * Fetches the full event configuration and filters based on Engine logic.
    */
-  async function fetchEvents(force = false) {
+  async function fetchEvents(force = false): Promise<void> {
     if (!force && isLoaded.value) return;
-    if (inFlightPromise) return inFlightPromise;
+    if (inFlightPromise) {
+      await inFlightPromise;
+      return;
+    }
 
     isLoading.value = true;
 
@@ -133,7 +139,7 @@ export const useEventStore = defineStore('events', () => {
         );
         if (healed) {
           logger.info('Events', 'Rehabilitated Pokémon stuck in concluded event(s).');
-          void gameStore.scheduleSave();
+          gameStore.scheduleSave();
         }
         isLoaded.value = true;
       } catch (e) {
@@ -154,7 +160,7 @@ export const useEventStore = defineStore('events', () => {
     return activeEventIdsSet.value.has(eventId);
   }
 
-  async function fetchUserEntries() {
+  async function fetchUserEntries(): Promise<void> {
     return fetchUserEntriesAction(enrollmentContext.value);
   }
 
@@ -162,7 +168,7 @@ export const useEventStore = defineStore('events', () => {
     eventId: string,
     categoryIdOrUid: string,
     maybeUid?: string
-  ) {
+  ): Promise<void> {
     return submitCompetitionEntryAction(
       enrollmentContext.value,
       eventId,
@@ -175,11 +181,11 @@ export const useEventStore = defineStore('events', () => {
     return removeCompetitionEntryAction(enrollmentContext.value, eventId, categoryId);
   }
 
-  async function checkPendingAwards(notifyOnPending = false) {
+  async function checkPendingAwards(notifyOnPending = false): Promise<void> {
     return checkPendingAwardsAction(awardsContext.value, notifyOnPending);
   }
 
-  async function fetchPastEvents() {
+  async function fetchPastEvents(): Promise<void> {
     return fetchPastEventsAction(awardsContext.value);
   }
 
@@ -200,7 +206,7 @@ export const useEventStore = defineStore('events', () => {
     return discardAwardAction(awardsContext.value, awardId);
   }
 
-  function getSpeciesBonuses(speciesId: PokemonSpeciesId) {
+  function getSpeciesBonuses(speciesId: PokemonSpeciesId): { rate: number; shiny: number } {
     return getSpeciesBoosts(activeEvents.value, speciesId);
   }
 
@@ -266,10 +272,10 @@ export const useEventStore = defineStore('events', () => {
   }
 
   // Listen for time-sync updates from DBRouter (Debug mode)
-  if (typeof window !== 'undefined') {
-    window.addEventListener('time-sync-update', () => {
+  if (typeof globalThis.window !== 'undefined') {
+    globalThis.addEventListener('time-sync-update', async () => {
       logger.info('Events', 'Time sync update received, refreshing events...');
-      void fetchEvents();
+      await fetchEvents();
     });
   }
 
@@ -285,13 +291,11 @@ export const useEventStore = defineStore('events', () => {
     globalMultipliers,
     fetchEvents,
     fetchPastEvents,
-    // fallow-ignore-next-line unused-store-member
     fetchUserEntries,
     submitCompetitionEntry,
     removeCompetitionEntry,
     checkPendingAwards,
     claimAward,
-    // fallow-ignore-next-line unused-store-member
     claimAllEventAwards,
     discardAward,
     getSpeciesBonuses,

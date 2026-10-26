@@ -1,3 +1,5 @@
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
 /**
  * tests/unit/pokemon/pokemon_box_and_storage_suite.spec.ts
  * Cohesive domain suite consolidating Box storage, Team management,
@@ -5,19 +7,18 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
-import { mount } from '@vue/test-utils';
-import { setActivePinia, createPinia } from 'pinia';
-import { useBoxStore } from '@/stores/box';
-import { useGameStore } from '@/stores/game';
+
 import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue';
 import PokemonSelectionModal from '@/components/modals/PokemonSelectionModal.vue';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { ResolvedSubCompetition } from '@/logic/events/eventEngine';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import {
   filterAndSortPokemon,
   type PokemonFilterCriteria
 } from '@/logic/pokemon/pokemonSelectionFilter';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { ResolvedSubCompetition } from '@/logic/events/eventEngine';
+import { useBoxStore } from '@/stores/box';
+import { useGameStore } from '@/stores/game';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 interface SelectionModalInstance {

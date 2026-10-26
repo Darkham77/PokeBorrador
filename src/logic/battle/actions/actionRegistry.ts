@@ -1,3 +1,9 @@
+import type { DisplayText } from '@francogp/auditor';
+
+import { MIN_BATTLE_STAT_STAGE, MAX_BATTLE_STAT_STAGE } from '@/logic/constants/gameplay';
+import { logger } from '@/logic/utils/logger';
+import type { BattleStageKey, BattleStages, LogFn } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
 import { SHOWDOWN_BOOST_STAT_KEYS } from '@/types/pokemon/pokemon';
 import type {
   Pokemon,
@@ -7,16 +13,13 @@ import type {
   ShowdownHitEffect,
   ShowdownSecondaryEffect
 } from '@/types/pokemon/pokemon';
-import type { BattleStages, LogFn } from '@/types/battle/battle';
-import type { BattleContext } from '@/types/battle/battleContext';
-import { MIN_BATTLE_STAT_STAGE, MAX_BATTLE_STAT_STAGE } from '@/logic/constants/gameplay';
-import { STATUS_ACTIONS } from './statusActions.ts';
-import { HEALING_ACTIONS } from './healingActions.ts';
-import { FIELD_ACTIONS } from './fieldActions.ts';
-import { SPECIAL_ACTIONS } from './specialActions.ts';
-import { logger } from '@/logic/utils/logger';
 
-type StageKey = keyof Pick<BattleStages, 'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'acc' | 'eva'>;
+import { FIELD_ACTIONS } from './fieldActions.ts';
+import { HEALING_ACTIONS } from './healingActions.ts';
+import { SPECIAL_ACTIONS } from './specialActions.ts';
+import { STATUS_ACTIONS } from './statusActions.ts';
+
+type StageKey = BattleStageKey;
 
 function toStageKey(stat: ShowdownBoostStatKey): StageKey {
   switch (stat) {
@@ -34,7 +37,7 @@ function applyBoosts(
   targetStages: BattleStages,
   target: Pokemon,
   addLogFn: LogFn
-) {
+): void {
   if (!boosts) return;
   for (const rawStat of SHOWDOWN_BOOST_STAT_KEYS) {
     const amount = boosts[rawStat];
@@ -50,7 +53,7 @@ function applyBoosts(
 
 // open-record: Showdown primary status condition action dispatch table
 const STATUS_ACTION_MAP: Record<
-  string,
+  DisplayText,
   (
     src: Pokemon,
     tgt: Pokemon,
@@ -74,7 +77,7 @@ function applyStatus(
   srcStages: BattleStages,
   tgtStages: BattleStages,
   addLogFn: LogFn
-) {
+): void {
   if (status && STATUS_ACTION_MAP[status]) {
     STATUS_ACTION_MAP[status](src, tgt, srcStages, tgtStages, addLogFn);
   }
@@ -82,7 +85,7 @@ function applyStatus(
 
 // open-record: Showdown volatile status condition action dispatch table
 const VOLATILE_ACTION_MAP: Record<
-  string,
+  DisplayText,
   (
     src: Pokemon,
     tgt: Pokemon,
@@ -120,7 +123,7 @@ function applyVolatileStatus(
   srcStages: BattleStages,
   tgtStages: BattleStages,
   addLogFn: LogFn
-) {
+): void {
   if (volatileStatus && VOLATILE_ACTION_MAP[volatileStatus]) {
     VOLATILE_ACTION_MAP[volatileStatus](src, tgt, srcStages, tgtStages, addLogFn);
   }
@@ -128,7 +131,7 @@ function applyVolatileStatus(
 
 // open-record: Showdown side condition effect dispatch table
 const SIDE_CONDITION_MAP: Record<
-  string,
+  DisplayText,
   (
     src: Pokemon,
     tgt: Pokemon,
@@ -155,7 +158,7 @@ function applySideCondition(
   tgtStages: BattleStages,
   addLogFn: LogFn,
   battleCtx: BattleContext
-) {
+): void {
   if (sideCondition && SIDE_CONDITION_MAP[sideCondition]) {
     SIDE_CONDITION_MAP[sideCondition](src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
   }
@@ -163,7 +166,7 @@ function applySideCondition(
 
 // open-record: Showdown weather condition action dispatch table
 const WEATHER_ACTION_MAP: Record<
-  string,
+  DisplayText,
   (
     src: Pokemon,
     tgt: Pokemon,
@@ -188,7 +191,7 @@ function applyWeather(
   tgtStages: BattleStages,
   addLogFn: LogFn,
   battleCtx: BattleContext
-) {
+): void {
   if (weather && WEATHER_ACTION_MAP[weather]) {
     WEATHER_ACTION_MAP[weather](src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
   }
@@ -204,7 +207,7 @@ type MoveActionHandler = (
 ) => void | Promise<void>;
 
 // open-record: Showdown move ID effect handler dispatch table
-const MOVE_ACTION_HANDLERS: Record<string, MoveActionHandler> = {
+const MOVE_ACTION_HANDLERS: Record<DisplayText, MoveActionHandler> = {
   recover: (s, t, ss, ts, l, c) => HEALING_ACTIONS.heal_50?.(s, t, ss, ts, l, c),
   slackoff: (s, t, ss, ts, l, c) => HEALING_ACTIONS.heal_50?.(s, t, ss, ts, l, c),
   softboiled: (s, t, ss, ts, l, c) => HEALING_ACTIONS.heal_50?.(s, t, ss, ts, l, c),
@@ -275,7 +278,7 @@ async function applyMoveId(
   tgtStages: BattleStages,
   addLogFn: LogFn,
   battleCtx: BattleContext
-) {
+): Promise<void> {
   const handler = move.id ? MOVE_ACTION_HANDLERS[move.id] : undefined;
   if (handler) {
     await handler(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
@@ -291,7 +294,7 @@ async function applyHitEffect(
   addLogFn: LogFn,
   battleCtx: BattleContext,
   isSelf = false
-) {
+): Promise<void> {
   const effectTarget = isSelf ? src : tgt;
   const effectStages = isSelf ? srcStages : tgtStages;
   applyStatus(effect.status, src, effectTarget, srcStages, effectStages, addLogFn);
@@ -312,7 +315,7 @@ export async function dispatchMoveEffect(
   tgtStages: BattleStages,
   addLogFn: LogFn,
   battleCtx: BattleContext
-) {
+): Promise<void> {
   try {
     await applyMoveId(move, src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
     await applyHitEffect(move, src, tgt, srcStages, tgtStages, addLogFn, battleCtx);

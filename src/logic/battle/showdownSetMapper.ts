@@ -1,9 +1,12 @@
+import type { DisplayText } from '@francogp/auditor';
 import type { PokemonSet } from '@pkmn/sim';
+
 import { toID } from '@/logic/utils/strings.ts';
-import type { Pokemon as GamePokemon, PokemonStatKey } from '../../types/pokemon/pokemon.ts';
-import { POKEMON_SPRITE_IDS } from '../../data/pokemon/spriteMapping.ts';
-import { getShowdownNickname } from './showdownUidMapper.ts';
+
 import { hasMoveData } from '../../data/battle/movesData.ts';
+import { POKEMON_SPRITE_IDS } from '../../data/pokemon/spriteMapping.ts';
+import type { Pokemon as GamePokemon, PokemonStatKey } from '../../types/pokemon/pokemon.ts';
+import { getShowdownNickname } from './showdownUidMapper.ts';
 
 const DEFAULT_HAPPINESS = 255 as const;
 const DEFAULT_PERFECT_IV = 31 as const;
@@ -11,7 +14,7 @@ const DEFAULT_ZERO_EV = 0 as const;
 
 // Inverse map: number → Showdown name (built once)
 // open-record: Sprite index string mapped to Showdown species name
-const _numericToSpecies: Record<string, string> = Object.fromEntries(
+const _numericToSpecies: Record<DisplayText, string> = Object.fromEntries(
   Object.entries(POKEMON_SPRITE_IDS).map(([name, num]) => [String(num), name])
 );
 
@@ -43,7 +46,7 @@ function resolveValidShowdownMoves(poke: GamePokemon): string[] {
   return moves;
 }
 
-function mapShowdownIvs(poke: GamePokemon) {
+function mapShowdownIvs(poke: GamePokemon): Record<PokemonStatKey, number> {
   return {
     hp: poke.ivs?.hp ?? DEFAULT_PERFECT_IV,
     atk: poke.ivs?.atk ?? DEFAULT_PERFECT_IV,
@@ -54,7 +57,7 @@ function mapShowdownIvs(poke: GamePokemon) {
   };
 }
 
-function mapShowdownEvs(poke: GamePokemon) {
+function mapShowdownEvs(poke: GamePokemon): Record<PokemonStatKey, number> {
   return {
     hp: poke.evs?.hp ?? DEFAULT_ZERO_EV,
     atk: poke.evs?.atk ?? DEFAULT_ZERO_EV,

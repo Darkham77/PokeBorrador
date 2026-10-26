@@ -1,11 +1,12 @@
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { createPinia, setActivePinia } from 'pinia';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+import { ref } from 'vue';
+
 import { serializeActiveBattle } from '@/logic/auth/battleSerializerHelper';
 import { restoreBattleState } from '@/logic/battle/orchestratorRestoreHelper';
-import type { GameState } from '@/types/system/game';
 import type { BattleState } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
-import { ref } from 'vue';
+import type { GameState } from '@/types/system/game';
 
 describe('Battle Searching Mode Persistence & Serialization Parity', () => {
   beforeEach(() => {

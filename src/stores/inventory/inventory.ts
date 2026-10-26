@@ -1,21 +1,10 @@
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
-import { useGameStore } from '@/stores/game.ts';
-import { useUIStore } from '@/stores/ui.ts';
-import { safeStorage } from '@/logic/utils/storage';
+
 import { getItemById, type ItemId } from '@/data/inventory/items';
 import { isGlobalItem } from '@/logic/providers/itemProvider.ts';
-import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon';
-import type { BagMainTab, ItemDiscardAction, ItemTier } from '@/types/inventory/items';
-import type { SortOrder, ItemSortKey } from '@/types/system/game';
-import { executeUseItem } from '@/stores/inventory/inventoryUseAction.ts';
-import {
-  isEquippableHeldItem,
-  isItemUsableOn as helperIsItemUsableOn,
-  mapInventoryToItems,
-  isItemUsableOutsideCombat,
-  type Item
-} from '@/stores/inventory/inventoryHelpers.ts';
+import { safeStorage } from '@/logic/utils/storage';
+import { useGameStore } from '@/stores/game.ts';
 import {
   calculateBagSellTotalGain,
   confirmBagSellAction,
@@ -26,6 +15,18 @@ import {
   equipItemAction,
   unequipItemAction
 } from '@/stores/inventory/inventoryActionHelpers.ts';
+import {
+  isEquippableHeldItem,
+  isItemUsableOn as helperIsItemUsableOn,
+  mapInventoryToItems,
+  isItemUsableOutsideCombat,
+  type Item
+} from '@/stores/inventory/inventoryHelpers.ts';
+import { executeUseItem } from '@/stores/inventory/inventoryUseAction.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import type { BagMainTab, ItemDiscardAction, ItemTier } from '@/types/inventory/items';
+import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon';
+import type { SortOrder, ItemSortKey } from '@/types/system/game';
 
 export type { Item };
 export { isItemUsableOutsideCombat };
@@ -123,12 +124,12 @@ export const useInventoryStore = defineStore('inventory', () => {
   });
 
   // --- BAG ACTIONS ---
-  function toggleBagSellMode() {
+  function toggleBagSellMode(): void {
     bagSellMode.value = !bagSellMode.value;
     bagSellSelected.value = {};
   }
 
-  function toggleBagSellItem(itemId: ItemId, maxQty: number) {
+  function toggleBagSellItem(itemId: ItemId, maxQty: number): void {
     if (bagSellSelected.value[itemId]) {
       delete bagSellSelected.value[itemId];
     } else {
@@ -136,18 +137,18 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
   }
 
-  function updateBagSellQty(itemId: ItemId, qty: number | string, maxQty: number) {
-    let q = typeof qty === 'string' ? parseInt(qty) : qty;
+  function updateBagSellQty(itemId: ItemId, qty: number | string, maxQty: number): void {
+    let q = typeof qty === 'string' ? parseInt(qty, 10) : qty;
     if (isNaN(q) || q < 1) q = 1;
     if (q > maxQty) q = maxQty;
     bagSellSelected.value[itemId] = q;
   }
 
-  function getBagSellTotalGain() {
+  function getBagSellTotalGain(): number {
     return calculateBagSellTotalGain(bagSellSelected.value);
   }
 
-  function confirmBagSell() {
+  function confirmBagSell(): number | false {
     const result = confirmBagSellAction(gameStore, bagSellSelected.value);
     if (result !== false) {
       toggleBagSellMode();
@@ -155,29 +156,32 @@ export const useInventoryStore = defineStore('inventory', () => {
     return result;
   }
 
-  function removeItem(itemId: ItemId, qty: number = 1) {
+  function removeItem(itemId: ItemId, qty: number = 1): void {
     removeItemAction(gameStore, itemId, qty);
   }
 
-  function addItem(itemId: ItemId, qty: number = 1) {
+  function addItem(itemId: ItemId, qty: number = 1): void {
     addItemAction(gameStore, itemId, qty);
   }
 
-  function sellItem(itemId: ItemId, qty: number = 1) {
+  function sellItem(itemId: ItemId, qty: number = 1): void {
     sellItemAction(gameStore, itemId, qty);
   }
 
-  async function processBatchAction(itemMap: Map<ItemId, number>, mode: ItemDiscardAction) {
+  async function processBatchAction(
+    itemMap: Map<ItemId, number>,
+    mode: ItemDiscardAction
+  ): Promise<number> {
     return processBatchActionHandler(gameStore, itemMap, mode);
   }
 
   // --- ITEM ACTIONS ---
 
-  function equipItem(itemId: ItemId, context: PokemonStorageLocation, index: number) {
+  function equipItem(itemId: ItemId, context: PokemonStorageLocation, index: number): boolean {
     return equipItemAction(gameStore, itemId, context, index);
   }
 
-  function unequipItem(context: PokemonStorageLocation, index: number) {
+  function unequipItem(context: PokemonStorageLocation, index: number): ItemId | false {
     return unequipItemAction(gameStore, context, index);
   }
 

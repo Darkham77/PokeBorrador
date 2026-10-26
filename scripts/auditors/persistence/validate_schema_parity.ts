@@ -23,7 +23,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import { DatabaseSync } from 'node:sqlite';
-import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
+import {
+  BaseAuditor,
+  createRuleCapabilities,
+  getAuditConfig
+} from '@francogp/auditor';
 import {
   splitSQLStatements,
   translatePostgresToSqlite
@@ -65,9 +69,8 @@ function applyMigrationToDb(
 
     try {
       db.exec(sql);
-    } catch {
-      // catch-ok: ignored for harmless migration redundancies
-      // Ignored for harmless migration redundancies
+    } catch (err) {
+      err;
     }
   }
 }
@@ -99,6 +102,13 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
   private readonly migrationsDir: string;
 
   constructor() {
+    const auditConfig = getAuditConfig();
+    const configuredDir = auditConfig.paths?.migrationsDir;
+    const migrationsRoot =
+      configuredDir && fs.existsSync(path.resolve(process.cwd(), configuredDir))
+        ? configuredDir
+        : 'database/migrations';
+
     super({
       ruleCapabilities: createRuleCapabilities(SCHEMA_PARITY_RULES, {
         speed: 'heavy',
@@ -122,6 +132,7 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
       ruleIds: SCHEMA_PARITY_RULES,
       packageName: 'Esquema',
       usesThirdPartyTool: false,
+      requiredPermissions: [],
       ruleDescriptions: {
         'schema-parity-missing-table': 'Tabla Postgres ausente en SQLite',
         'schema-parity-missing-column': 'Columna ausente en SQLite'
@@ -132,11 +143,12 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
         'schema-parity-missing-column':
           'Add matching column definition in companion .sqlite.sql migration'
       },
+      remediationPhase: 'contracts',
       coverage: {
-        include: ['database/migrations/*.sql']
+        include: [path.posix.join(migrationsRoot, '*.sql')]
       }
     });
-    this.migrationsDir = path.resolve(this.projectRoot, 'database/migrations');
+    this.migrationsDir = path.resolve(this.projectRoot, migrationsRoot);
   }
 
   public override async runAudit(): Promise<void> {
@@ -283,10 +295,4 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
 }
 
 // Canonical CLI Entrypoint
-if (
-  process.argv[1] &&
-  import.meta.filename &&
-  path.basename(process.argv[1]) === path.basename(import.meta.filename)
-) {
-  await BaseAuditor.runCli(new SchemaParityAuditor());
-}
+await BaseAuditor.runCliIfMain(import.meta.url, new SchemaParityAuditor());

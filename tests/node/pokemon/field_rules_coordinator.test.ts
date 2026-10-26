@@ -1,13 +1,15 @@
-import { describe, test } from 'vite-plus/test';
 import assert from 'node:assert';
+
+import { describe, test } from 'vite-plus/test';
+
+import { requirePokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
 import {
   resolveFieldEncounterModifiers,
   resolveFieldBreedingModifiers,
   resolveFieldBattleRewards
 } from '../../../src/logic/rules/fieldRulesCoordinator.ts';
-import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
-import { requirePokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
 import type { MapLocation } from '../../../src/types/pokemon/encounters.ts';
+import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 
 function createMockPokemon(partial: Partial<Pokemon> = {}): Pokemon {
   return {

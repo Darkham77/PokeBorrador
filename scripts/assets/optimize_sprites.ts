@@ -1,16 +1,16 @@
+import { isMainModule } from '@francogp/auditor';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { parseArgs } from 'node:util';
+import { defineCommand, runMain } from 'citty';
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
-import { safeResolve, safeJoin } from '@francogp/auditor';
 
 const __filename = fileURLToPath(import.meta.url);
 
-const RAW_ASSETS_DIR = safeResolve(process.cwd(), '_raw-assets');
-const FRONT_DIR = safeJoin(
+const RAW_ASSETS_DIR = path.resolve(process.cwd(), '_raw-assets');
+const FRONT_DIR = path.join(
   RAW_ASSETS_DIR,
   'public',
   'assets',
@@ -19,7 +19,7 @@ const FRONT_DIR = safeJoin(
   'animated',
   'Front'
 );
-const SCRATCH_DIR = safeResolve(process.cwd(), 'scratch');
+const SCRATCH_DIR = path.resolve(process.cwd(), 'scratch');
 const DB_SYNC_BATCH_CHUNK_SIZE = 32;
 
 import { analyzeVariantImage } from './variantImageAnalyzer.ts';
@@ -238,19 +238,8 @@ interface PokemonAnimData {
   variation: string | null;
 }
 
-interface OptimizationCliOptions {
-  values: {
-    all?: boolean;
-    id?: string;
-    file?: string;
-    dir?: string;
-    range?: string;
-    'remove-original'?: boolean;
-  };
-  positionals: string[];
-}
 
-if (isMainThread) {
+if (isMainThread && isMainModule(import.meta.url)) {
   const extraAnimationsReport: ExtraAnimationReportItem[] = [];
   const warningsReport: WarningReportItem[] = [];
 
@@ -340,60 +329,13 @@ if (isMainThread) {
     await fs.writeFile(jsDataPath, jsContent, 'utf-8');
   };
 
-  function parseCliArguments(): OptimizationCliOptions {
-    const args = process.argv.slice(2);
-    const normalized = args.map((a) =>
-      a.includes('=') && !a.startsWith('-')
-        ? `--${a}`
-        : ['all', 'remove-original'].includes(a)
-          ? `--${a}`
-          : a
-    );
-    const parsed = parseArgs({
-      args: normalized,
-      options: {
-        all: { type: 'boolean', default: false },
-        id: { type: 'string' },
-        file: { type: 'string' },
-        dir: { type: 'string' },
-        range: { type: 'string' },
-        'remove-original': { type: 'boolean', default: true }
-      },
-      allowPositionals: true,
-      strict: false
-    });
-    return {
-      values: parsed.values as OptimizationCliOptions['values'],
-      positionals: parsed.positionals
-    };
-  }
-
   function filterTargetFiles(
     targetFiles: string[],
-    values: OptimizationCliOptions['values'],
-    positionals: string[]
+    filters: { file?: string; id?: string; range?: string }
   ): string[] {
-    const fileFilter =
-      typeof values.file === 'string'
-        ? values.file
-        : positionals[0]?.endsWith('.png')
-          ? positionals[0]
-          : undefined;
-    const idFilter =
-      typeof values.id === 'string'
-        ? values.id
-        : positionals[0] &&
-            !positionals[0].includes('-') &&
-            !positionals[0].endsWith('.png') &&
-            positionals[0] !== 'all'
-          ? positionals[0]
-          : undefined;
-    const rangeFilter =
-      typeof values.range === 'string'
-        ? values.range
-        : positionals[0]?.includes('-')
-          ? positionals[0]
-          : undefined;
+    const fileFilter = filters.file;
+    const idFilter = filters.id;
+    const rangeFilter = filters.range;
 
     if (fileFilter) {
       const filtered = targetFiles.filter(
@@ -424,7 +366,7 @@ if (isMainThread) {
         return pid >= start && pid <= end;
       });
       console.log(
-        `🎯 Filtrado por Rango "${values.range}": ${filtered.length} archivo(s) encontrado(s).`
+        `🎯 Filtrado por Rango "${rangeFilter}": ${filtered.length} archivo(s) encontrado(s).`
       );
       return filtered;
     }
@@ -533,46 +475,60 @@ if (isMainThread) {
     });
   }
 
-  const main = async () => {
-    const { values, positionals } = parseCliArguments();
-    try {
-      const targetDir =
-        typeof values.dir === 'string' ? safeResolve(process.cwd(), values.dir) : FRONT_DIR;
-      const files = await fs.readdir(targetDir);
-      const targetFiles = files.filter((file) => {
-        if (!file.endsWith('.png')) return false;
-        const match = path.parse(file).name.match(/^(\d+)(.*)$/);
-        return match && match[1] !== '0';
-      });
+  const command = defineCommand({
+    meta: {
+      name: 'optimize-sprites',
+      description: 'Optimiza sprites recortando transparencia y convirtiendo a WebP'
+    },
+    args: {
+      all: { type: 'boolean', default: false, description: 'Procesar todos los sprites' },
+      id: { type: 'string', description: 'ID de la especie' },
+      file: { type: 'string', description: 'Nombre de archivo PNG específico' },
+      dir: { type: 'string', description: 'Directorio objetivo' },
+      range: { type: 'string', description: 'Rango de IDs (ej: 1-151)' },
+      removeOriginal: { type: 'boolean', default: true, description: 'Eliminar PNGs originales' }
+    },
+    async run({ args }) {
+      try {
+        const targetDir =
+          typeof args.dir === 'string' ? path.resolve(process.cwd(), args.dir) : FRONT_DIR;
+        const files = await fs.readdir(targetDir);
+        const targetFiles = files.filter((file) => {
+          if (!file.endsWith('.png')) return false;
+          const match = path.parse(file).name.match(/^(\d+)(.*)$/);
+          return match && match[1] !== '0';
+        });
 
-      const filteredFiles = filterTargetFiles(targetFiles, values, positionals);
-      if (filteredFiles.length === 0) {
-        console.log(`❌ No se encontraron archivos para procesar.`);
-        process.exit(0);
-      }
+        const filteredFiles = filterTargetFiles(targetFiles, {
+          file: typeof args.file === 'string' ? args.file : undefined,
+          id: typeof args.id === 'string' ? args.id : undefined,
+          range: typeof args.range === 'string' ? args.range : undefined
+        });
+        if (filteredFiles.length === 0) {
+          console.log(`❌ No se encontraron archivos para procesar.`);
+          process.exit(0);
+        }
 
-      if (!values.all && !values.id && !values.range && !values.file) {
+        if (!args.all && !args.id && !args.range && !args.file) {
+          console.log(
+            'Debes ejecutar con --all para procesamiento masivo, --file <nombre.png> para uno específico, --id <id>, o --range <inicio>-<fin>.'
+          );
+          process.exit(0);
+        }
+
+        const numCPUs = os.cpus().length || 4;
+        const workerPoolLimit = args.id ? 1 : numCPUs;
         console.log(
-          'Debes ejecutar con --all para procesamiento masivo, --file <nombre.png> para uno específico, --id <id>, o --range <inicio>-<fin>.'
+          `🚀 Iniciando Worker Pool con límites de concurrencia: ${workerPoolLimit} hilo(s).`
         );
-        process.exit(0);
+
+        await runWorkerPool(filteredFiles, args.removeOriginal ?? true, workerPoolLimit);
+      } catch (err) {
+        console.error('❌ Error general durante el procesamiento masivo:', err);
+        process.exit(1);
       }
-
-      const numCPUs = os.cpus().length || 4;
-      const workerPoolLimit = values.id ? 1 : numCPUs;
-      console.log(
-        `🚀 Iniciando Worker Pool con límites de concurrencia: ${workerPoolLimit} hilo(s).`
-      );
-
-      await runWorkerPool(filteredFiles, values['remove-original'] ?? true, workerPoolLimit);
-    } catch (err) {
-      console.error('❌ Error general durante el procesamiento masivo:', err);
-      process.exit(1);
     }
-  };
-
-  main().catch((err) => {
-    console.error('❌ Error crítico en main:', err);
-    process.exit(1);
   });
+
+  await runMain(command);
 }

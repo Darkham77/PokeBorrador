@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+
 import {
   MODAL_ANIM_INITIAL_SCALE_MIN,
   MODAL_ANIM_INITIAL_Y_OFFSET
@@ -28,7 +30,7 @@ const STUCK_POSITION_TYPES = [
 ] as const;
 const STUCK_POSITION_SET: ReadonlySet<string> = new Set(STUCK_POSITION_TYPES);
 
-const TYPE_CORNERS_MAP: Record<string, string> = {
+const TYPE_CORNERS_MAP: Record<DisplayText, DisplayText> = {
   // open-record: Modal position to corner style mapping
   center: 'all',
   top: 'bottom',
@@ -81,13 +83,16 @@ export function resolveModalCorners(
   return TYPE_CORNERS_MAP[type] || 'none';
 }
 
-export function resolveModalCardStyles(options: ModalCardStyleOptions): Record<string, string> {
+export function resolveModalCardStyles(
+  options: ModalCardStyleOptions
+): Record<DisplayText, DisplayText> {
   // open-record: Dynamic CSS inline styles
   if (options.type === 'fullscreen') return {};
 
   const zoomFactor = options.disableZoom ? 1 : options.appZoom || 1;
   const winHeight =
-    options.windowInnerHeight ?? (typeof window !== 'undefined' ? window.innerHeight : 0);
+    options.windowInnerHeight ??
+    (typeof globalThis.window !== 'undefined' ? globalThis.window.innerHeight : 0);
   const isLargeModal = isLargeModalEligible(options.id, options.maxWidth, options.disableAutoGrow);
   const useLargeScreenRules = isLargeModal && winHeight >= LARGE_SCREEN_HEIGHT_MIN_PX;
 
@@ -99,7 +104,7 @@ export function resolveModalCardStyles(options: ModalCardStyleOptions): Record<s
     : options.maxHeight;
   const resolvedMaxWidth = useLargeScreenRules ? '1100px' : options.maxWidth;
 
-  const styles: Record<string, string> = {
+  const styles: Record<DisplayText, DisplayText> = {
     // open-record: Dynamic CSS inline styles
     width: '100%',
     maxWidth: `min(${resolvedMaxWidth}, ${VIEWPORT_CLAMP_MAX_PCT / zoomFactor}dvw)`,
@@ -119,6 +124,9 @@ export function resolveModalCardStyles(options: ModalCardStyleOptions): Record<s
   return styles;
 }
 
+const RIGHT_MODAL_TYPE_VALUES = ['right', 'side-right', 'side'] as const;
+const RIGHT_MODAL_TYPES: ReadonlySet<string> = new Set<string>(RIGHT_MODAL_TYPE_VALUES);
+
 export function getModalTweenPosition(
   type: string,
   _isEnter: boolean
@@ -126,7 +134,7 @@ export function getModalTweenPosition(
   if (type === 'down') return { y: '100%' };
   if (type === 'top') return { y: '-100%' };
   if (type === 'left' || type === 'side-left') return { x: '-100%' };
-  if (type === 'right' || type === 'side-right' || type === 'side') return { x: '100%' };
+  if (RIGHT_MODAL_TYPES.has(type)) return { x: '100%' };
 
   return {
     scale: MODAL_ANIM_INITIAL_SCALE_MIN,

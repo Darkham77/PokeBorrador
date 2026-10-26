@@ -1,3 +1,4 @@
+import { logger } from '@/logic/utils/logger.ts';
 const LEAF_ANIM_FULL_ROTATION_DEG = 360;
 const LEAF_ANIM_SPIN_ROTATION_DEG = 1080;
 const LEAF_SPAWN_CYCLE_MODULO = 2;
@@ -41,6 +42,7 @@ const LEAF_SEED_MOD_FACTOR = 0.4;
 
 import { gsap } from 'gsap';
 import { nextTick, type Ref } from 'vue';
+
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
 
 type LeafWeatherId = 'wind' | 'strong_winds' | 'storm';
@@ -50,8 +52,10 @@ const LEAF_WEATHER_IDS = [
   'storm'
 ] as const satisfies readonly LeafWeatherId[];
 
+const LEAF_WEATHER_SET: ReadonlySet<string> = new Set(LEAF_WEATHER_IDS);
+
 export function isLeafWeatherId(value: WeatherId): value is LeafWeatherId {
-  return value === 'wind' || value === 'strong_winds' || value === 'storm';
+  return LEAF_WEATHER_SET.has(value);
 }
 
 function resolveLeafDurationAndVariation(weather: LeafWeatherId): {
@@ -92,13 +96,17 @@ export function useAtmosphereLeafAnim(
     animSeed: number;
     isVisible: boolean;
   }
-) {
+): {
+  leafTypes: readonly ['wind', 'strong_winds', 'storm'];
+  isLeafWeatherId: (value: WeatherId) => value is LeafWeatherId;
+  initLeafAnim: (ctxVal: gsap.Context) => void;
+} {
   const isFast = props.isFastMode ?? props.isPerformanceMode ?? false;
 
-  const initLeafAnim = (ctxVal: gsap.Context) => {
+  const initLeafAnim = (ctxVal: gsap.Context): void => {
     if (!isLeafWeatherId(props.weather) || isFast || !ctxVal) return;
 
-    const runLeafAnimation = () => {
+    const runLeafAnimation = (): void => {
       if (ctxVal.reverted || !props.isVisible || isFast || !isLeafWeatherId(props.weather)) return;
 
       const leafNodes = containerRef.value?.querySelectorAll('.leaf-element');
@@ -117,7 +125,7 @@ export function useAtmosphereLeafAnim(
           });
         });
 
-        const animateLeaf = () => {
+        const animateLeaf = (): void => {
           const leafWeather = props.weather;
           if (ctxVal.reverted || !props.isVisible || isFast || !isLeafWeatherId(leafWeather))
             return;
@@ -187,8 +195,10 @@ export function useAtmosphereLeafAnim(
 
     const leafNodes = containerRef.value?.querySelectorAll('.leaf-element');
     if (!leafNodes || leafNodes.length === 0) {
-      void nextTick(() => {
+      nextTick(() => {
         if (!ctxVal.reverted) runLeafAnimation();
+      }).catch((err) => {
+        logger.warn('Handled promise rejection:', { cause: err });
       });
     } else {
       runLeafAnimation();

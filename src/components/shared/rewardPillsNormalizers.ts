@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/components/shared/rewardPillsNormalizers.ts
  *
@@ -5,10 +6,10 @@
  * Decouples raw prize payloads, item lookups, and direct pills into unified NormalizedReward items.
  */
 
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { getItemById, getItemName } from '@/data/inventory/items';
-import type { EventRewardType } from '@/types/system/stores';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import type { UnifiedRewardPill, DomainPrizeData } from '@/types/rewards/rewards';
+import type { EventRewardType } from '@/types/system/stores';
 
 export type RawPrizeData = DomainPrizeData;
 
@@ -75,7 +76,7 @@ function normalizeDirectPills(pills: readonly UnifiedRewardPill[]): NormalizedRe
   });
 }
 
-function normalizeRewardsMap(rewards: Record<string, number>): NormalizedReward[] {
+function normalizeRewardsMap(rewards: Record<DisplayText, number>): NormalizedReward[] {
   // open-record: Generic rewards map
   const list: NormalizedReward[] = [];
   for (const [key, qty] of Object.entries(rewards)) {
@@ -215,7 +216,7 @@ function normalizePokemonReward(p: RawPrizeData): NormalizedReward | null {
     id: `reward-poke-${sp}`,
     type: 'pokemon',
     title: `${sp.toUpperCase()}${shiny ? ' ✨ SHINY' : ''}`, // domain-ok: Open dynamic text or non-domain string payload
-    label: `${sp.toUpperCase()}`, // domain-ok: Open dynamic text or non-domain string payload
+    label: sp.toUpperCase(), // domain-ok: Open dynamic text or non-domain string payload
     qtyText: lv || (shiny ? '✨' : undefined),
     spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, sp, { isShiny: shiny }),
     description: `Ejemplar Pokémon especial ${shiny ? 'Variocolor (Shiny)' : ''} listo para sumarse a tu equipo.`,
@@ -225,7 +226,7 @@ function normalizePokemonReward(p: RawPrizeData): NormalizedReward | null {
 
 export function normalizeAllRewards(
   pills: readonly UnifiedRewardPill[] | null | undefined,
-  rewards: Record<string, number> | null | undefined, // open-record: Generic rewards map
+  rewards: Record<DisplayText, number> | null | undefined, // open-record: Generic rewards map
   prize: RawPrizeData | Record<string, unknown> | null | undefined
 ): NormalizedReward[] {
   if (pills && pills.length > 0) {
@@ -238,7 +239,7 @@ export function normalizeAllRewards(
 
   if (!prize) return [];
 
-  const rawPrize = prize as RawPrizeData;
+  const rawPrize = prize;
   const list: NormalizedReward[] = [];
 
   const money = normalizeMoneyReward(rawPrize);

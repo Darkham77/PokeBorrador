@@ -8,6 +8,8 @@
  * typed dictionary lookups, eliminating naked filenames and hardcoded paths.
  */
 
+import type { DisplayText } from '@francogp/auditor';
+
 import { CANONICAL_ASSETS_MANIFEST as manifestJson } from '../../data/map/canonicalAssetsManifest.ts';
 
 const _CANONICAL_ASSET_CATEGORIES = [
@@ -71,21 +73,18 @@ export interface BuildingPrefabMeta {
 // O(1) typed registries derived from the canonical manifest
 const RAW_MANIFEST = manifestJson as readonly CanonicalAssetEntry[];
 
-export const CANONICAL_ASSETS_BY_ID: Record<string, CanonicalAssetEntry> = Object.freeze(
-  // open-record: Canonical GBA asset entries indexed by asset id
-  RAW_MANIFEST.reduce<Record<string, CanonicalAssetEntry>>((acc, entry) => {
-    // open-record: Canonical GBA asset entries indexed by asset id
-    acc[entry.id] = entry;
+export const CANONICAL_ASSETS_BY_ID: Record<DisplayText, CanonicalAssetEntry> = Object.freeze(
+  RAW_MANIFEST.reduce<Record<DisplayText, CanonicalAssetEntry>>((acc, entry) => {
+    acc[entry.id as DisplayText] = entry;
     return acc;
   }, {})
 );
 
-export const CANONICAL_BUILDINGS: Record<string, CanonicalAssetEntry> = Object.freeze(
-  // open-record: Canonical GBA building entries indexed by building id
+export const CANONICAL_BUILDINGS: Record<DisplayText, CanonicalAssetEntry> = Object.freeze(
   RAW_MANIFEST.filter((e) => e.category === 'buildings').reduce<
-    Record<string, CanonicalAssetEntry> // open-record: Canonical GBA building entries indexed by building id
+    Record<DisplayText, CanonicalAssetEntry>
   >((acc, entry) => {
-    acc[entry.id] = entry;
+    acc[entry.id as DisplayText] = entry;
     return acc;
   }, {})
 );

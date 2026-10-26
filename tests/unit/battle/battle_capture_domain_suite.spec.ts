@@ -1,22 +1,23 @@
+import { setActivePinia, createPinia } from 'pinia';
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { ref } from 'vue';
-import { setActivePinia, createPinia } from 'pinia';
-import { cleanCapturedPokemonForStorage } from '@/logic/battle/battleCatchProcessor';
-import { makePokemon, validatePokemon } from '@/logic/pokemon/pokemonFactory';
-import { calculateCatchRatePure } from '@/logic/battle/battleCatchMath';
-import { handleItemUsage } from '@/logic/battle/battleItems';
+
 import { useBattleCaptureAnimations } from '@/composables/battle/useBattleCaptureAnimations';
-import { useGameStore } from '@/stores/game';
 import { validateAndSanitize } from '@/logic/auth/saveSanitizer';
-import { gameBus } from '@/logic/events/gameBus';
+import { calculateCatchRatePure } from '@/logic/battle/battleCatchMath';
+import { cleanCapturedPokemonForStorage } from '@/logic/battle/battleCatchProcessor';
+import { handleItemUsage } from '@/logic/battle/battleItems';
+import type { PurePokemon } from '@/logic/battle/battleMathTypes';
 import {
   BUG_SYNERGY_BONUS_PER_BUG,
   BUG_SYNERGY_MAX_BONUS,
   TRAINER_IV_PENALTY_RATE
 } from '@/logic/constants/gameplay';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { gameBus } from '@/logic/events/gameBus';
+import { makePokemon, validatePokemon } from '@/logic/pokemon/pokemonFactory';
+import { useGameStore } from '@/stores/game';
 import type { BattleContext } from '@/types/battle/battleContext';
-import type { PurePokemon } from '@/logic/battle/battleMathTypes';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const mockCalculateCatchRate = vi.fn((_mon: unknown, ballType: string = 'pokeball') => {
   if (ballType === 'masterball') {

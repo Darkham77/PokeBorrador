@@ -5,13 +5,15 @@
  */
 
 import { ref } from 'vue';
-import type { useGTSStore } from '@/stores/gts';
-import type { useGameStore } from '@/stores/game';
-import { logger } from '@/logic/utils/logger';
-import { buildRewardPills } from './rewardsPillExtractor.ts';
-import type { UnifiedRewardItem } from '@/types/rewards/rewards';
+
 import type { MarketListing } from '@/logic/economy/market';
+import { logger } from '@/logic/utils/logger';
+import type { useGameStore } from '@/stores/game';
+import type { useGTSStore } from '@/stores/gts';
+import type { UnifiedRewardItem } from '@/types/rewards/rewards';
 import type { ClaimItem } from '@/types/system/game';
+
+import { buildRewardPills } from './rewardsPillExtractor.ts';
 
 const DEFAULT_ITEM_QTY = 1 as const;
 
@@ -146,7 +148,9 @@ function resolveGtsMoneyDetails(
   const matchingSale = findMatchingListing(sourceId, salesHistory, myListings);
 
   if (!matchingSale && !asset.sold_item && !asset.sold_pokemon && sourceId && gameStore.db) {
-    void fetchMissingGtsListing(sourceId, gameStore);
+    fetchMissingGtsListing(sourceId, gameStore).catch((err) => {
+      logger.warn('Handled promise rejection:', { cause: err });
+    });
   }
 
   const { soldItem, soldPokemon } = extractSoldAssets(asset, matchingSale);

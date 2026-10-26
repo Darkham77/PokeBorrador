@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
 import { useTrainerProfile } from '@/components/modals/useTrainerProfile';
-import { useGameStore } from '@/stores/game';
 import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
 
 describe('useTrainerProfile helpers & reactivity', () => {
   beforeEach(() => {

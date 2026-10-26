@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+
 import { parseShowdownLogLine } from '@/logic/battle/showdownBridge.ts';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider.ts';
 import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils.ts';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider.ts';
 import type { BattleState } from '@/types/battle/battle';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
 describe('Exhaustive Locked & Forced Moves Unit Tests (Tier 1)', () => {
   beforeEach(() => {

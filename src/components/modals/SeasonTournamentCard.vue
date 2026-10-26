@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
 import type { PokemonType } from '@/data/battle/types';
 import type { SeasonalThemeConfig } from '@/data/system/rankedData';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 interface Props {
   currentTheme: SeasonalThemeConfig;
@@ -21,7 +21,7 @@ const emit = defineEmits<{
   (e: 'click'): void;
 }>();
 
-const getPokemonRewardSprite = (species: string, isShiny: boolean = false) => {
+const getPokemonRewardSprite = (species: string, isShiny: boolean = false): string => {
   return getAssetUrl(ASSET_TYPES.POKEMON, species, {
     shiny: isShiny,
     form: 'front'

@@ -1,6 +1,7 @@
+import { mount } from '@vue/test-utils';
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vite-plus/test';
-import { mount } from '@vue/test-utils';
+
 import PokemonSelectionFilters from '@/components/modals/PokemonSelectionFilters.vue';
 import PokemonSortBar from '@/components/pokemon/PokemonSortBar.vue';
 

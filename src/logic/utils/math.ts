@@ -21,7 +21,8 @@ const DJB2_INITIAL_HASH_SEED = 5381;
 
 export function mulberry32(a: number): () => number {
   return function () {
-    let t = (a += 0x6d2b79f5);
+    a += 0x6d2b79f5;
+    let t = a;
     t = Math.imul(t ^ (t >>> MULBERRY32_PRIMARY_SHIFT_BITS), t | 1);
     t ^= t + Math.imul(t ^ (t >>> MULBERRY32_TERTIARY_SHIFT_BITS), t | MULBERRY32_BITWISE_OR_MASK);
     return ((t ^ (t >>> MULBERRY32_SECONDARY_SHIFT_BITS)) >>> 0) / MULBERRY32_SCALE_DENOMINATOR;

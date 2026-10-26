@@ -1,9 +1,11 @@
-import { describe, it, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
 import { Dex } from '@pkmn/sim';
+import { describe, it, beforeEach } from 'vite-plus/test';
+
+import { requirePokemonMoveId } from '../../../src/data/battle/moves.ts';
 import { HeuristicDamageCalculator } from '../../../src/logic/battle/ai/heuristic/damageCalculator.ts';
 import type { HeuristicBattleSnapshot } from '../../../src/logic/battle/ai/heuristic/types.ts';
-import { requirePokemonMoveId } from '../../../src/data/battle/moves.ts';
 
 describe('HeuristicAI - Damage Parity Checks (@pkmn/sim vs @smogon/calc)', () => {
   let calc: HeuristicDamageCalculator;

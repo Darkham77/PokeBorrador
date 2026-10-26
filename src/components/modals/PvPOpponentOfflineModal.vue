@@ -17,7 +17,7 @@ const emit = defineEmits<{
   (e: 'close'): void;
 }>();
 
-function handleClose() {
+function handleClose(): void {
   emit('close');
 }
 </script>

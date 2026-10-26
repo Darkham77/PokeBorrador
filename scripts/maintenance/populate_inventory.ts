@@ -1,4 +1,4 @@
-import type { ItemId } from '../../../../src/types/inventory/items.ts';
+import type { ItemId } from '../../src/data/inventory/items.ts';
 
 /**
  * POPULATE TESTER INVENTORY
@@ -8,19 +8,21 @@ import type { ItemId } from '../../../../src/types/inventory/items.ts';
  * Usage: npm run test:populate-inventory
  */
 
-const TEST_INVENTORY: Record<ItemId, number> = {
+const SEPARATOR_WIDTH = 70;
+
+const TEST_INVENTORY: Partial<Record<ItemId, number>> = {
   potion: 99,
   superpotion: 99,
   hyperpotion: 99,
   maxpotion: 99,
   revive: 99,
-  maxrevive: 99,
+  revivemax: 99,
   antidote: 99,
   burnheal: 99,
   awakening: 99,
   fullheal: 99,
   ether: 99,
-  maxelixir: 99,
+  elixirmax: 99,
   firestone: 10,
   waterstone: 10,
   thunderstone: 10,
@@ -36,9 +38,9 @@ const TEST_INVENTORY: Record<ItemId, number> = {
 };
 
 function generatePopulateSnippet(): void {
-  console.log('='.repeat(70));
+  console.log('='.repeat(SEPARATOR_WIDTH));
   console.log('  POKÉ VICIO - TESTER INVENTORY GENERATOR');
-  console.log('='.repeat(70));
+  console.log('='.repeat(SEPARATOR_WIDTH));
   console.log(
     `Generated canonical testing payload for ${Object.keys(TEST_INVENTORY).length} item types.`
   );
@@ -68,7 +70,7 @@ function generatePopulateSnippet(): void {
 })();`;
 
   console.log(snippet);
-  console.log('\n' + '='.repeat(70) + '\n');
+  console.log('\n' + '='.repeat(SEPARATOR_WIDTH) + '\n');
 }
 
 generatePopulateSnippet();

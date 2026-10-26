@@ -14,6 +14,7 @@
 
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+
 import { useRegionalContinentStudioStore } from '../../stores/continentStudioStore.ts';
 
 defineProps<{
@@ -32,7 +33,7 @@ const svgInputRef = ref<HTMLInputElement | null>(null);
 const jsonInputRef = ref<HTMLInputElement | null>(null);
 
 function handleNewProject(): void {
-  const name = window.prompt('Nombre del nuevo mapa regional:', 'Nueva Región');
+  const name = globalThis.prompt('Nombre del nuevo mapa regional:', 'Nueva Región');
   if (name?.trim()) {
     store.createBlankProject(name.trim());
   }
@@ -40,7 +41,7 @@ function handleNewProject(): void {
 
 function handleSaveProject(): void {
   store.saveCurrentProject();
-  window.alert(`¡Proyecto "${store.projectName}" guardado con éxito!`);
+  globalThis.alert(`¡Proyecto "${store.projectName}" guardado con éxito!`);
 }
 
 function handleProfileChange(e: Event): void {
@@ -74,9 +75,9 @@ function handleSvgImport(e: Event): void {
     reader.onload = (ev) => {
       const content = ev.target?.result as string;
       if (store.importSvg(content)) {
-        window.alert('¡Rutas SVG importadas con éxito! El mapa se adaptó a la red.');
+        globalThis.alert('¡Rutas SVG importadas con éxito! El mapa se adaptó a la red.');
       } else {
-        window.alert('Error: No se pudieron extraer rutas o POIs válidos del SVG.');
+        globalThis.alert('Error: No se pudieron extraer rutas o POIs válidos del SVG.');
       }
     };
     reader.readAsText(file);
@@ -103,9 +104,9 @@ function handleJsonImport(e: Event): void {
     reader.onload = (ev) => {
       const content = ev.target?.result as string;
       if (store.importProjectJson(content)) {
-        window.alert('¡Proyecto cargado con éxito desde el archivo JSON!');
+        globalThis.alert('¡Proyecto cargado con éxito desde el archivo JSON!');
       } else {
-        window.alert('Error: Archivo de proyecto JSON inválido.');
+        globalThis.alert('Error: Archivo de proyecto JSON inválido.');
       }
     };
     reader.readAsText(file);

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
-import { useUIStore } from '@/stores/ui';
 import { getItemById } from '@/data/inventory/items';
 import { isItemUsableOutsideCombat } from '@/stores/inventory/inventory';
-import { isEquippableHeldItem } from '@/stores/inventory/inventoryHelpers';
 import type { Item } from '@/stores/inventory/inventory';
+import { isEquippableHeldItem } from '@/stores/inventory/inventoryHelpers';
+import { useUIStore } from '@/stores/ui';
 import type { ItemMenuAction } from '@/types/inventory/items';
 
 interface Props {
@@ -39,7 +40,7 @@ const isItemHeld = computed(() => {
   return isEquippableHeldItem(dbItem);
 });
 
-const handleSelect = (actionType: ItemMenuAction) => {
+const handleSelect = (actionType: ItemMenuAction): void => {
   emit('action', actionType);
 };
 </script>

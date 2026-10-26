@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+
 import {
   isPokemonSpeciesId,
   requirePokemonSpeciesId,
@@ -5,19 +7,6 @@ import {
   isLegendaryPokemonSpeciesId
 } from '@/data/pokemon/pokedex';
 import { getWeatherFamily } from '@/data/system/weatherFamilies.ts';
-import { redistributeWeatherSpawns } from '@/logic/utils/routeSpawnHelpers';
-import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
-import { getGMT3Date } from '@/logic/utils/timeUtils';
-import { DAY_PHASES, type DayPhase } from '@/types/system/time';
-import type { MapLocation } from '@/types/pokemon/encounters';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import {
-  resolveWeeklyRotation,
-  safeParse,
-  type Event as GameEvent,
-  type EventConfig
-} from '@/logic/events/eventEngine';
-import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
 import {
   DEFAULT_EXCLUSIVE_SPAWN_WEIGHT,
   DEFAULT_VISITOR_SPAWN_WEIGHT,
@@ -25,11 +14,24 @@ import {
   DEFAULT_SPAWN_RATE_WEIGHT,
   DEFAULT_WEATHER_MULTIPLIER_NORMAL
 } from '@/logic/constants/encounters';
+import {
+  resolveWeeklyRotation,
+  safeParse,
+  type Event as GameEvent,
+  type EventConfig
+} from '@/logic/events/eventEngine';
+import { redistributeWeatherSpawns } from '@/logic/utils/routeSpawnHelpers';
+import { getGMT3Date } from '@/logic/utils/timeUtils';
+import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
+import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
+import type { MapLocation, MapLocationWeatherConfig } from '@/types/pokemon/encounters';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { DAY_PHASES, type DayPhase } from '@/types/system/time';
 
 export type WeightedSpeciesSource =
   | PokemonSpeciesId[]
   | Partial<Record<PokemonSpeciesId, number>>
-  | Record<string, number>; // open-record: Flexible raw species weight mapping
+  | Record<DisplayText, number>; // open-record: Flexible raw species weight mapping
 
 export function getSpeciesEntries(
   source: WeightedSpeciesSource
@@ -70,7 +72,10 @@ function populateBaseSpawns(
   });
 }
 
-function resolveWeatherConfig(loc: MapLocation, weather: WeatherId) {
+function resolveWeatherConfig(
+  loc: MapLocation,
+  weather: WeatherId
+): MapLocationWeatherConfig | undefined {
   if (weather === 'clear') return undefined;
   let wConfig = loc.weather?.[weather];
   if (!wConfig) {

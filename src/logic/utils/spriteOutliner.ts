@@ -22,7 +22,11 @@ const pendingJobs = new Map<
  * Instantiates the Web Worker lazily and configures message handling.
  */
 function obtainWorkerInstance(): Worker | null {
-  if (typeof window === 'undefined' || !window.Worker || !window.OffscreenCanvas) {
+  if (
+    typeof globalThis.window === 'undefined' ||
+    !globalThis.Worker ||
+    !globalThis.OffscreenCanvas
+  ) {
     return null;
   }
 

@@ -6,9 +6,9 @@
  * Decoupled from canvasTileRenderer.ts to comply with the 1000-line SRP architecture limit.
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
-import type { POINode, CardinalDirection } from '../../types/map/poiTypes.ts';
 import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+import type { POINode, CardinalDirection } from '../../types/map/poiTypes.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
 
 /**
  * Resolves the orientation-specific canonical Vermilion Port Gate asset.
@@ -24,7 +24,6 @@ export function resolvePortGateAsset(facing: CardinalDirection, baseFile?: strin
       return 'poke_port_vermilion_gate_west.png';
     case 'east':
       return 'poke_port_vermilion_gate_east.png';
-    case 'south':
     default:
       return 'poke_port_vermilion_gate.png';
   }
@@ -43,7 +42,6 @@ export function resolvePortFerryAsset(facing: CardinalDirection): string {
       return 'poke_ship_seagallop_east.png';
     case 'west':
       return 'poke_ship_seagallop_west.png';
-    case 'south':
     default:
       return 'poke_ship_ferry_docked.png';
   }
@@ -226,7 +224,7 @@ export function resolvePoiLandmarksAndBuildings(
           });
         }
       } else if (poi.type === 'port_dock') {
-        const renderPortDockLandmark = () => {
+        const renderPortDockLandmark = (): void => {
           const facing = poi.facing ?? 'south';
           const gx = poi.gridX;
           const gy = poi.gridY;
@@ -647,7 +645,7 @@ export function resolvePoiLandmarksAndBuildings(
         });
 
         // Dressing for islet sanctuary/cottage: signpost and flowers
-        const dressWaterLandmark = () => {
+        const dressWaterLandmark = (): void => {
           if (file === 'poke_port_lighthouse_beacon.png') return;
           const signGx = poi.gridX + 1;
           const signGy = poi.gridY + poi.footprint.height - 1;

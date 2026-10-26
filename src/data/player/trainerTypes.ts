@@ -1,7 +1,6 @@
 /**
  * Global registry of trainer archetype definitions, sprites, and spawn pools.
  */
-import type { NpcArchetype } from '../../logic/utils/npcSpriteRouter.ts';
 import type { NpcSpriteId } from '../pokemon/npcSpriteCatalog.ts';
 import type { PokemonSpeciesId } from '../pokemon/pokedex.ts';
 import type { PokemonType } from '../battle/types.ts';
@@ -45,7 +44,7 @@ export type TrainerTypeMatchMode = (typeof TRAINER_TYPE_MATCH_MODES)[number];
 export interface TrainerTypeDefinition {
   readonly name: string; // domain-ok: Open dynamic text or non-domain string payload
   readonly sprite: NpcSpriteId;
-  readonly archetype: NpcArchetype;
+  readonly archetype: TrainerTypeKey;
   readonly aiPreset: AIPresetKey;
   readonly types?: readonly PokemonType[];
   readonly matchMode?: TrainerTypeMatchMode;
@@ -57,7 +56,7 @@ export interface TrainerTypeDefinition {
 export interface TrainerTypeRawConfig {
   readonly name: string; // domain-ok: Open dynamic text or non-domain string payload
   readonly sprite: NpcSpriteId;
-  readonly archetype: NpcArchetype;
+  readonly archetype: TrainerTypeKey;
   readonly aiPreset: AIPresetKey;
   readonly types?: readonly PokemonType[];
   readonly matchMode?: TrainerTypeMatchMode;
@@ -85,7 +84,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   caza_bichos: {
     name: 'Caza Bichos',
     sprite: 'bugcatcher',
-    archetype: 'caza_bichos' as NpcArchetype,
+    archetype: 'caza_bichos' as TrainerTypeKey,
     aiPreset: 'novice',
     types: ['bug'],
     matchMode: 'any_type'
@@ -93,7 +92,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   ornitologo: {
     name: 'Ornitólogo',
     sprite: 'birdkeeper',
-    archetype: 'ornitologo' as NpcArchetype,
+    archetype: 'ornitologo' as TrainerTypeKey,
     aiPreset: 'intermediate',
     types: ['flying'],
     matchMode: 'any_type'
@@ -101,7 +100,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   cientifico: {
     name: 'Científico',
     sprite: 'scientist',
-    archetype: 'cientifico' as NpcArchetype,
+    archetype: 'cientifico' as TrainerTypeKey,
     aiPreset: 'tactical',
     types: ['electric', 'poison', 'steel'],
     extraPool: ['porygon', 'ditto', 'voltorb', 'electrode']
@@ -109,7 +108,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   luchador: {
     name: 'Luchador',
     sprite: 'blackbelt',
-    archetype: 'luchador' as NpcArchetype,
+    archetype: 'luchador' as TrainerTypeKey,
     aiPreset: 'tactical',
     types: ['fighting'],
     matchMode: 'any_type'
@@ -117,7 +116,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   pescador: {
     name: 'Pescador',
     sprite: 'fisherman',
-    archetype: 'pescador' as NpcArchetype,
+    archetype: 'pescador' as TrainerTypeKey,
     aiPreset: 'novice',
     types: ['water'],
     matchMode: 'any_type'
@@ -125,7 +124,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   nadador: {
     name: 'Nadador',
     sprite: 'swimmer',
-    archetype: 'nadador' as NpcArchetype,
+    archetype: 'nadador' as TrainerTypeKey,
     aiPreset: 'intermediate',
     types: ['water'],
     matchMode: 'any_type'
@@ -133,7 +132,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   domador: {
     name: 'Domador',
     sprite: 'tamer-gen3',
-    archetype: 'domador' as NpcArchetype,
+    archetype: 'domador' as TrainerTypeKey,
     aiPreset: 'tactical',
     types: ['fire', 'dragon'],
     extraPool: [
@@ -151,7 +150,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   medium: {
     name: 'Médium',
     sprite: 'psychic',
-    archetype: 'medium' as NpcArchetype,
+    archetype: 'medium' as TrainerTypeKey,
     aiPreset: 'tactical',
     types: ['psychic', 'ghost'],
     matchMode: 'any_type'
@@ -159,7 +158,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   motorista: {
     name: 'Motorista',
     sprite: 'biker',
-    archetype: 'motorista' as NpcArchetype,
+    archetype: 'motorista' as TrainerTypeKey,
     aiPreset: 'intermediate',
     types: ['poison', 'fire'],
     extraPool: ['electabuzz', 'magmar', 'koffing', 'weezing', 'grimer', 'muk', 'ekans', 'arbok']
@@ -167,7 +166,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   montanero: {
     name: 'Montañero',
     sprite: 'hiker',
-    archetype: 'montanero' as NpcArchetype,
+    archetype: 'montanero' as TrainerTypeKey,
     aiPreset: 'intermediate',
     types: ['rock', 'ground'],
     matchMode: 'any_type'
@@ -175,7 +174,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   rocket: {
     name: 'Recluta Rocket',
     sprite: 'rocketgrunt',
-    archetype: 'rocket' as NpcArchetype,
+    archetype: 'rocket' as TrainerTypeKey,
     aiPreset: 'elite',
     types: ['poison', 'dark'],
     extraPool: [
@@ -200,7 +199,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   criador: {
     name: 'Criador Pokémon',
     sprite: 'pokemonbreeder',
-    archetype: 'criador' as NpcArchetype,
+    archetype: 'criador' as TrainerTypeKey,
     aiPreset: 'intermediate',
     types: ['normal', 'fairy', 'grass'],
     extraPool: [
@@ -225,7 +224,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   aristocrata: {
     name: 'Aristócrata',
     sprite: 'gentleman',
-    archetype: 'aristocrata' as NpcArchetype,
+    archetype: 'aristocrata' as TrainerTypeKey,
     aiPreset: 'elite',
     extraPool: [
       'meowth',
@@ -248,7 +247,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   ranger: {
     name: 'Ranger Pokémon',
     sprite: 'pokemonranger',
-    archetype: 'ranger' as NpcArchetype,
+    archetype: 'ranger' as TrainerTypeKey,
     aiPreset: 'tactical',
     types: ['grass', 'ground', 'bug'],
     matchMode: 'any_type'
@@ -256,7 +255,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   pokefan: {
     name: 'Pokéfan',
     sprite: 'pokefan',
-    archetype: 'pokefan' as NpcArchetype,
+    archetype: 'pokefan' as TrainerTypeKey,
     aiPreset: 'novice',
     extraPool: [
       'pikachu',
@@ -276,7 +275,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   policeman: {
     name: 'Oficial de Policía',
     sprite: 'policeman',
-    archetype: 'policeman' as NpcArchetype,
+    archetype: 'policeman' as TrainerTypeKey,
     aiPreset: 'elite',
     extraPool: [
       'growlithe',
@@ -292,7 +291,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   artista: {
     name: 'Artista',
     sprite: 'artist',
-    archetype: 'artista' as NpcArchetype,
+    archetype: 'artista' as TrainerTypeKey,
     aiPreset: 'intermediate',
     types: ['grass', 'fairy'],
     extraPool: [
@@ -313,14 +312,14 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   rival: {
     name: 'Entrenador Élite',
     sprite: 'youngster-masters',
-    archetype: 'rival' as NpcArchetype,
+    archetype: 'rival' as TrainerTypeKey,
     aiPreset: 'rival',
     pool: ['dragonite', 'charizard', 'alakazam', 'machamp', 'gengar', 'lapras']
   },
   default: {
     name: 'Joven',
     sprite: 'youngster',
-    archetype: 'default' as NpcArchetype,
+    archetype: 'default' as TrainerTypeKey,
     aiPreset: 'novice',
     types: ['normal', 'flying', 'bug'],
     extraPool: ['rattata', 'pidgey', 'spearow', 'ekans', 'sandshrew', 'zubat']
@@ -428,7 +427,7 @@ function computeTrainerTypes(): Record<TrainerTypeKey, TrainerTypeDefinition> {
 
 export const TRAINER_TYPES: Record<TrainerTypeKey, TrainerTypeDefinition> = computeTrainerTypes();
 
-export function requireNpcArchetype(raw: string): NpcArchetype {
+export function requireNpcArchetype(raw: string): TrainerTypeKey {
   if (isTrainerTypeKey(raw)) {
     return TRAINER_TYPES[raw].archetype;
   }

@@ -34,12 +34,12 @@ Supabase (tablas nuevas)
   └── guardian_captures    → registro del Guardián capturado hoy por mapa
 
 JS nuevo
-  └── src/legacy/js/21_dominance.js   → toda la lógica del sistema
+  └── legacy/js/21_dominance.js   → toda la lógica del sistema
 
 Archivos modificados
-  ├── src/legacy/js/06_encounters.js  → hook en goLocation() y en resolución de encuentros
-  ├── src/legacy/js/01_auth.js        → guardar/cargar bando del jugador, monedas de guerra
-  ├── src/legacy/js/04_state.js       → agregar campos al estado (bando, monedas de guerra)
+  ├── legacy/js/06_encounters.js  → hook en goLocation() y en resolución de encuentros
+  ├── legacy/js/01_auth.js        → guardar/cargar bando del jugador, monedas de guerra
+  ├── legacy/js/04_state.js       → agregar campos al estado (bando, monedas de guerra)
   ├── index.html           → nuevas secciones de UI (panel de guerra, tienda, selector de bando)
   └── style.css            → estilos del sistema
 ```
@@ -135,7 +135,7 @@ CREATE POLICY "Update propio monedas" ON war_coins FOR UPDATE USING (auth.uid() 
 
 ## Paso 2 — Agregar campos al estado del juego
 
-**Archivo:** `src/legacy/js/04_state.js`
+**Archivo:** `legacy/js/04_state.js`
 
 Dentro del objeto `DEFAULT_STATE` (o donde se define el estado inicial), agregar:
 
@@ -149,11 +149,11 @@ activeBonuses: {},      // bonos de dominancia activos
 ```
 
 Estos campos deben incluirse también en las funciones `serializeState()` y `deserializeState()`
-en `src/legacy/js/01_auth.js` para que se guarden y carguen correctamente con el guardado existente.
+en `legacy/js/01_auth.js` para que se guarden y carguen correctamente con el guardado existente.
 
 ---
 
-## Paso 3 — Crear `src/legacy/js/21_dominance.js`
+## Paso 3 — Crear `legacy/js/21_dominance.js`
 
 Este archivo contiene toda la lógica del sistema. Crearlo desde cero con las siguientes funciones:
 
@@ -603,7 +603,7 @@ function getExpMultiplier(mapId) {
 
 ---
 
-## Paso 4 — Modificar `src/legacy/js/06_encounters.js`
+## Paso 4 — Modificar `legacy/js/06_encounters.js`
 
 ### 4.1 Hook en `goLocation(locId)`
 
@@ -682,7 +682,7 @@ const expGained = Math.floor(baseExp * getExpMultiplier(currentMapId));
 
 ### 4.5 Hook en el combate del Guardián (captura)
 
-Dentro del flujo de combate (`src/legacy/js/07_battle.js`), donde se confirma que una captura
+Dentro del flujo de combate (`legacy/js/07_battle.js`), donde se confirma que una captura
 fue exitosa, verificar si era el Guardián y desviar a `claimGuardianCapture()`:
 
 ```js
@@ -699,7 +699,7 @@ if (battleState.isGuardian) {
 
 ---
 
-## Paso 5 — Modificar `src/legacy/js/01_auth.js`
+## Paso 5 — Modificar `legacy/js/01_auth.js`
 
 ### 5.1 Incluir nuevos campos en `serializeState()`
 
@@ -771,7 +771,7 @@ Puede ser un modal o una pantalla de onboarding que aparece después del login.
 </div>
 ```
 
-**En `src/legacy/js/21_dominance.js`**, agregar:
+**En `legacy/js/21_dominance.js`**, agregar:
 
 ```js
 function renderFactionModal() {
@@ -794,7 +794,7 @@ function renderFactionUI() {
 
 ## Paso 7 — UI: Indicador de Dominancia en Mapas
 
-**En `src/legacy/js/05_render.js`** (o donde se renderizan las Location Cards), agregar
+**En `legacy/js/05_render.js`** (o donde se renderizan las Location Cards), agregar
 un indicador visual sobre cada mapa.
 
 Al renderizar cada mapa (`renderMaps()` o equivalente), agregar:
@@ -866,7 +866,7 @@ Agregar una nueva pestaña en el menú principal (al lado de Pokémon, Mochila, 
 </div>
 ```
 
-**En `src/legacy/js/21_dominance.js`**, agregar `renderWarPanel()`:
+**En `legacy/js/21_dominance.js`**, agregar `renderWarPanel()`:
 
 ```js
 async function renderWarPanel() {
@@ -922,7 +922,7 @@ async function renderWarPanel() {
 </div>
 ```
 
-**En `src/legacy/js/21_dominance.js`**, definir el catálogo y renderizarlo:
+**En `legacy/js/21_dominance.js`**, definir el catálogo y renderizarlo:
 
 ```js
 const WAR_SHOP_ITEMS = [
@@ -1189,7 +1189,7 @@ Agregar al final del archivo los estilos necesarios:
 ## Paso 11 — Inicialización al cargar el juego
 
 En el punto de entrada del juego (después de login exitoso y carga del estado),
-agregar en `src/legacy/js/21_dominance.js` una función `initDominanceSystem()`:
+agregar en `legacy/js/21_dominance.js` una función `initDominanceSystem()`:
 
 ```js
 async function initDominanceSystem() {
@@ -1212,7 +1212,7 @@ Y llamarla desde donde se inicializa el resto del juego después del login.
 ## Orden de implementación recomendado
 
 1. **Crear las tablas en Supabase** (Paso 1) — sin esto nada funciona
-2. **Crear `src/legacy/js/21_dominance.js`** con todas las funciones (Paso 3)
+2. **Crear `legacy/js/21_dominance.js`** con todas las funciones (Paso 3)
 3. **Actualizar estado** en `04_state.js` y `01_auth.js` (Pasos 2 y 5)
 4. **Agregar hooks** en `06_encounters.js` y `07_battle.js` (Paso 4)
 5. **UI básica**: modal de bando + indicadores en mapas (Pasos 6 y 7)

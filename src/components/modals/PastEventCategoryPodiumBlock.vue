@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { CategoryGroup } from '@/composables/events/usePastEventAwards';
 import type { PendingAward } from '@/types/system/stores';
-import PastEventWinnerItem from './PastEventWinnerItem.vue';
+
 import PastEventAwardRow from './PastEventAwardRow.vue';
+import PastEventWinnerItem from './PastEventWinnerItem.vue';
 
 interface Props {
   catGroup: CategoryGroup;

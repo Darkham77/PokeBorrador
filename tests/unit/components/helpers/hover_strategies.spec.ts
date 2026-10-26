@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
 import { getHoverEnterStrategy, getHoverLeaveStrategy } from '@/logic/hover/hoverStrategies';
 
 describe('Hover Strategies Domain Suite (Tier 1)', () => {

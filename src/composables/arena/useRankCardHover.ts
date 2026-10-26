@@ -3,8 +3,13 @@ import { gsap } from 'gsap';
 const RANK_CARD_HOVER_X_OFFSET = 4;
 export const RANK_ANIM_FAST_DURATION_SEC = 0.2;
 
-export function useRankCardHover() {
-  const handleCardEnter = (e: MouseEvent) => {
+export interface UseRankCardHoverReturn {
+  readonly handleCardEnter: (e: MouseEvent) => void;
+  readonly handleCardLeave: (e: MouseEvent) => void;
+}
+
+export function useRankCardHover(): UseRankCardHoverReturn {
+  const handleCardEnter = (e: MouseEvent): void => {
     const el = e.currentTarget as HTMLElement;
     gsap.to(el, {
       x: RANK_CARD_HOVER_X_OFFSET,
@@ -15,7 +20,7 @@ export function useRankCardHover() {
     });
   };
 
-  const handleCardLeave = (e: MouseEvent) => {
+  const handleCardLeave = (e: MouseEvent): void => {
     const el = e.currentTarget as HTMLElement;
     let baseBorderColor = 'rgba(255, 255, 255, 0.05)';
     let baseBackground = 'rgba(255, 255, 255, 0.02)';

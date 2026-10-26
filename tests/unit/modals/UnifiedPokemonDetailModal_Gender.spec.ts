@@ -1,9 +1,10 @@
-/** @vitest-environment jsdom */
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
-import UnifiedPokemonDetailModal from '@/components/modals/UnifiedPokemonDetailModal.vue';
+/** @vitest-environment jsdom */
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
+import UnifiedPokemonDetailModal from '@/components/modals/UnifiedPokemonDetailModal.vue';
 import { useGameStore } from '@/stores/game';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 

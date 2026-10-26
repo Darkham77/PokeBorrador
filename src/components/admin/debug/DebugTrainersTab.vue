@@ -1,13 +1,16 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
 import { computed, onMounted, ref } from 'vue';
+
 import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { POKEMON_SPRITE_IDS } from '@/logic/services/assetService';
-import IndividualPokemonEditor from './IndividualPokemonEditor.vue';
+
 import DebugIllegalModal from './DebugIllegalModal.vue';
+import DebugTrainerBattleLauncher from './DebugTrainerBattleLauncher.vue';
 import DebugTrainerGenSettings from './DebugTrainerGenSettings.vue';
 import DebugTrainerMetaCard from './DebugTrainerMetaCard.vue';
-import DebugTrainerBattleLauncher from './DebugTrainerBattleLauncher.vue';
+import IndividualPokemonEditor from './IndividualPokemonEditor.vue';
 import { useDebugTrainers } from './useDebugTrainers.ts';
 
 const emit = defineEmits<{
@@ -51,7 +54,7 @@ const {
 
 const canAddMorePokemon = computed(() => enemyTeam.value.length < MAX_POKEMON_TEAM_SIZE);
 
-async function startCombat() {
+async function startCombat(): Promise<void> {
   const validation = validateTeamLegality();
   if (!validation.valid) {
     illegalIssues.value = validation.issues;
@@ -62,14 +65,14 @@ async function startCombat() {
   await startDebugCombat();
 }
 
-function handleSpriteError(e: Event, id: string, isShiny = false) {
+function handleSpriteError(e: Event, id: string, isShiny = false): void {
   const target = e.target as HTMLImageElement;
-  const num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[id.toLowerCase()] || 1; // open-record: Generic key-value data dictionary container
+  const num = (POKEMON_SPRITE_IDS as Record<DisplayText, number | string>)[id.toLowerCase()] || 1; // open-record: Generic key-value data dictionary container
   const folder = isShiny ? 'shiny/' : '';
   target.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${folder}${num}.png`;
 }
 
-function getPokeSpriteUrl(id: string, isShiny?: boolean) {
+function getPokeSpriteUrl(id: string, isShiny?: boolean): string {
   return pokemonDataProvider.getSpriteUrl(id, isShiny);
 }
 

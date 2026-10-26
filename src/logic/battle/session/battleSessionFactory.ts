@@ -1,15 +1,17 @@
-import type { BattleContext } from '@/types/battle/battleContext';
-import type { BattleMode, BattleUiConfig } from '@/types/battle/battleConfig';
-import { BaseBattleSession } from './baseBattleSession.ts';
-import { PvEBattleSession } from './pveBattleSession.ts';
-import { GymBattleSession } from './gymBattleSession.ts';
-import { PvPBattleSession } from './pvpBattleSession.ts';
-import { SpectatorBattleSession } from './spectatorBattleSession.ts';
-import { ReplayBattleSession } from './replayBattleSession.ts';
-import { requireGymId, type GymId } from '@/data/world/gyms';
-import type { ItemId } from '@/data/inventory/items';
 import type { RealtimeChannel } from '@supabase/supabase-js';
+
+import type { ItemId } from '@/data/inventory/items';
+import { requireGymId, type GymId } from '@/data/world/gyms';
+import type { BattleMode, BattleUiConfig } from '@/types/battle/battleConfig';
+import type { BattleContext } from '@/types/battle/battleContext';
+
 import type { ITacticalReplayEngine } from '../replay/tacticalReplayEngine.ts';
+import { BaseBattleSession } from './baseBattleSession.ts';
+import { GymBattleSession } from './gymBattleSession.ts';
+import { PvEBattleSession } from './pveBattleSession.ts';
+import { PvPBattleSession } from './pvpBattleSession.ts';
+import { ReplayBattleSession } from './replayBattleSession.ts';
+import { SpectatorBattleSession } from './spectatorBattleSession.ts';
 
 export interface BattleSessionCreationOptions {
   gymId?: GymId;
@@ -59,9 +61,6 @@ export function createBattleSession(
       return new ReplayBattleSession(context, {
         engine: options.engine as ITacticalReplayEngine
       });
-    case 'wild':
-    case 'trainer':
-    case 'faction_war':
     default:
       return new PvEBattleSession(mode, context, options.uiOverrides);
   }

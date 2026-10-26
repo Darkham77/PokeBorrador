@@ -9,13 +9,14 @@
  */
 
 import localServersData from './servers.local.json' with { type: 'json' };
+import type { DisplayText, AssetUri } from '@francogp/auditor';
 
 export interface OfficialServer {
-  id: string; // domain-ok: Open dynamic text or non-domain string payload
-  name: string; // domain-ok: Open dynamic text or non-domain string payload
-  region: string; // domain-ok: Open dynamic text or non-domain string payload
-  url: string; // domain-ok: Open dynamic text or non-domain string payload
-  anonKey: string; // domain-ok: Open dynamic text or non-domain string payload
+  id: DisplayText;
+  name: DisplayText;
+  region: DisplayText;
+  url: AssetUri;
+  anonKey: DisplayText;
   isDefault?: boolean;
 }
 

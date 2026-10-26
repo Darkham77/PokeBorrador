@@ -5,8 +5,8 @@
  * Modular award banner for past event category awards and unmatched prizes.
  */
 
-import type { PendingAward } from '@/types/system/stores.ts';
 import RewardPillsGroup from '@/components/shared/RewardPillsGroup.vue';
+import type { PendingAward } from '@/types/system/stores.ts';
 
 defineProps<{
   award: PendingAward;

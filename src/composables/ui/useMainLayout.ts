@@ -1,17 +1,25 @@
-import { ref, computed, onMounted, type Ref, type ComponentPublicInstance } from 'vue';
 import { useResizeObserver } from '@vueuse/core';
-import { useUIStore } from '@/stores/ui';
-import { useGameStore } from '@/stores/game';
+import { ref, computed, onMounted, type Ref, type ComponentPublicInstance } from 'vue';
+
 import { useWindowListener, useDocumentListener } from '@/composables/ui/useWindowListener';
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
 
 const DEFAULT_TOP_HUD_HEIGHT_PX = 110 as const;
 const DEFAULT_BOTTOM_HUD_HEIGHT_PX = 80 as const;
+
+export interface UseMainLayoutReturn {
+  readonly hudHeight: Ref<number>;
+  readonly hudBottomHeight: Ref<number>;
+  readonly isHudHidden: Ref<boolean>;
+  readonly updateHudHeight: () => void;
+}
 
 export function useMainLayout(
   hudRef: Ref<HTMLElement | null>,
   hudBottomRef: Ref<HTMLElement | ComponentPublicInstance | null>,
   innerHudRef: Ref<HTMLElement | null>
-) {
+): UseMainLayoutReturn {
   const uiStore = useUIStore();
   const gameStore = useGameStore();
 
@@ -22,15 +30,13 @@ export function useMainLayout(
   const isHudHidden = ref(false);
 
   // 1. Outside Click logic
-  function handleOutsideClick(e: MouseEvent) {
+  function handleOutsideClick(e: MouseEvent): void {
     if (!uiStore.openHudGroup) return;
 
     const isInsideTopHud = hudRef.value?.contains(e.target as Node);
     const bottomValue = hudBottomRef.value;
     const bottomEl =
-      bottomValue && '$el' in bottomValue
-        ? (bottomValue.$el as HTMLElement)
-        : (bottomValue as HTMLElement | null);
+      bottomValue && '$el' in bottomValue ? (bottomValue.$el as HTMLElement) : bottomValue;
     const isInsideBottomHud = bottomEl ? bottomEl.contains(e.target as Node) : false;
 
     if (!isInsideTopHud && !isInsideBottomHud) {
@@ -40,7 +46,7 @@ export function useMainLayout(
 
   // 2. Height calculation logic
   let isUpdatingHeight = false;
-  function updateHudHeight() {
+  function updateHudHeight(): void {
     if (isUpdatingHeight) return;
     isUpdatingHeight = true;
 
@@ -63,9 +69,7 @@ export function useMainLayout(
 
       const bottomValue = hudBottomRef.value;
       const bottomEl =
-        bottomValue && '$el' in bottomValue
-          ? (bottomValue.$el as HTMLElement)
-          : (bottomValue as HTMLElement | null);
+        bottomValue && '$el' in bottomValue ? (bottomValue.$el as HTMLElement) : bottomValue;
       const newBottomHeight = bottomEl ? bottomEl.offsetHeight : 0;
       if (Math.abs(hudBottomHeight.value - newBottomHeight) > 2) {
         hudBottomHeight.value = newBottomHeight;
@@ -77,7 +81,7 @@ export function useMainLayout(
 
   const bottomElement = computed(() => {
     const val = hudBottomRef.value;
-    return val && '$el' in val ? (val.$el as HTMLElement) : (val as HTMLElement | null);
+    return val && '$el' in val ? (val.$el as HTMLElement) : val;
   });
 
   // ResizeObserver to detect layout shifts and dynamically recalculate heights

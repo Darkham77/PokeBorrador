@@ -1,35 +1,39 @@
 <script setup lang="ts">
+import { gsap } from 'gsap';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import { gsap } from 'gsap';
-import { LOGIN_LOGO_FLOAT_Y_PX, LOGIN_CARD_ENTER_Y_PX } from '@/logic/constants/animations.ts';
-import { useAuthStore } from '@/stores/auth';
+
+import AuthLocalLogin from '@/components/auth/AuthLocalLogin.vue';
+import AuthLocalSignup from '@/components/auth/AuthLocalSignup.vue';
+import AuthOnlineLogin from '@/components/auth/AuthOnlineLogin.vue';
+import AuthOnlineSignup from '@/components/auth/AuthOnlineSignup.vue';
+import AuthServerSelector from '@/components/auth/AuthServerSelector.vue';
+import LoginExpiredNotice from '@/components/auth/LoginExpiredNotice.vue';
+import LoginPwaUpdateBanner from '@/components/auth/LoginPwaUpdateBanner.vue';
 import { usePWA } from '@/composables/system/usePWA';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { logger } from '@/logic/utils/logger';
 import { OFFICIAL_SERVERS, DEFAULT_SERVER } from '@/data/system/official_servers';
+import { LOGIN_LOGO_FLOAT_Y_PX, LOGIN_CARD_ENTER_Y_PX } from '@/logic/constants/animations.ts';
 import { switchServer } from '@/logic/db/supabase';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { getFriendlyErrorMessage } from '@/logic/utils/friendlyErrors';
+import { logger } from '@/logic/utils/logger';
 import {
   safeStorage,
   safeSessionStorage,
   LOCAL_STORAGE_KEYS,
   SESSION_STORAGE_KEYS
 } from '@/logic/utils/storage';
-import { getFriendlyErrorMessage } from '@/logic/utils/friendlyErrors';
-import { useLoginHandlers } from '@/views/auth/useLoginHandlers';
+import { useAuthStore } from '@/stores/auth';
 import {
   resolveActiveAuthForm,
   parseBanStatus,
   resolveStandardErrorMessage
 } from '@/views/auth/authFormHelper';
-
-import AuthServerSelector from '@/components/auth/AuthServerSelector.vue';
-import AuthOnlineLogin from '@/components/auth/AuthOnlineLogin.vue';
-import AuthOnlineSignup from '@/components/auth/AuthOnlineSignup.vue';
-import AuthLocalLogin from '@/components/auth/AuthLocalLogin.vue';
-import AuthLocalSignup from '@/components/auth/AuthLocalSignup.vue';
-import LoginExpiredNotice from '@/components/auth/LoginExpiredNotice.vue';
-import LoginPwaUpdateBanner from '@/components/auth/LoginPwaUpdateBanner.vue';
+import {
+  useLoginHandlers,
+  type AuthGender,
+  type AuthServerStatus
+} from '@/views/auth/useLoginHandlers';
 
 const wallpaperUrl = computed(() => `url('${getAssetUrl(ASSET_TYPES.UI, '../fondo/WALLPAPER')}')`);
 const logoUrl = computed(() => getAssetUrl(ASSET_TYPES.UI, '../fondo/logo 1'));
@@ -42,18 +46,18 @@ const serverMode = ref('online'); // 'online' | 'local'
 const { canInstall, installApp, needRefresh, isUpdating, progress, progressText, handleUpdate } =
   usePWA();
 
-const handleInstallApp = async () => {
+const handleInstallApp = async (): Promise<void> => {
   await installApp();
 };
 
 const username = ref('');
 const email = ref('');
 const password = ref('');
-const gender = ref<'h' | 'm'>('h');
+const gender = ref<AuthGender>('h');
 const error = ref<string | null>(null);
 const success = ref<string | null>(null);
 const loading = ref(false);
-const serverStatus = ref<'checking' | 'online' | 'offline'>('checking');
+const serverStatus = ref<AuthServerStatus>('checking');
 const serverStatusDetail = ref('');
 const selectedServerId = ref('');
 const isOnline = computed(() => authStore.isOnline);
@@ -64,7 +68,7 @@ const standardError = computed(() => resolveStandardErrorMessage(error.value));
 
 const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'v0.6.0';
 
-const switchAuthTab = (tab: string) => {
+const switchAuthTab = (tab: string): void => {
   authTab.value = tab;
   error.value = null;
   success.value = null;
@@ -118,7 +122,7 @@ onMounted(() => {
     authStore.logout();
   }
 
-  if (typeof window !== 'undefined' && window.__E2E__) {
+  if (typeof globalThis.window !== 'undefined' && globalThis.__E2E__) {
     // Skip intro animations in E2E to prevent elements from staying at opacity:0
     // under high CPU congestion when requestAnimationFrame is throttled by Chromium.
     return;
@@ -158,7 +162,7 @@ onMounted(() => {
   }
 });
 
-function handleTabEnter(e: MouseEvent) {
+function handleTabEnter(e: MouseEvent): void {
   const tab = e.currentTarget as HTMLElement;
   if (!tab.classList.contains('active')) {
     gsap.to(tab, {
@@ -168,7 +172,7 @@ function handleTabEnter(e: MouseEvent) {
   }
 }
 
-function handleTabLeave(e: MouseEvent) {
+function handleTabLeave(e: MouseEvent): void {
   const tab = e.currentTarget as HTMLElement;
   if (!tab.classList.contains('active')) {
     gsap.to(tab, {
@@ -261,7 +265,7 @@ watch(progress, (newVal) => {
   });
 });
 
-const handleServerChange = () => {
+const handleServerChange = (): void => {
   switchServer(selectedServerId.value);
   checkServerHealth();
 };

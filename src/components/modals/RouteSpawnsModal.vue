@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
-import RouteSpawnsWeatherEffectsCard from './spawns/RouteSpawnsWeatherEffectsCard.vue';
+import { useRoutePerks } from '@/composables/modals/useRoutePerks';
+import { useRouteSpawnsCalculation } from '@/composables/modals/useRouteSpawnsCalculation';
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
 import { useModalStore } from '@/stores/modals';
 import type { MapLocation } from '@/types/pokemon/encounters';
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
-import type { DayPhase } from '@/logic/utils/timeUtils';
-import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { useRouteSpawnsCalculation } from '@/composables/modals/useRouteSpawnsCalculation';
-import { useRoutePerks } from '@/composables/modals/useRoutePerks';
+
 import RouteSpawnsTable from './RouteSpawnsTable.vue';
+import RouteSpawnsWeatherEffectsCard from './spawns/RouteSpawnsWeatherEffectsCard.vue';
 
 interface Props {
   show?: boolean;
@@ -42,7 +44,7 @@ const {
   toggleOfficialRoute
 } = useRoutePerks({ map: mapRef });
 
-const openPokemonDetail = (speciesId: PokemonSpeciesId, isSeen: boolean) => {
+const openPokemonDetail = (speciesId: PokemonSpeciesId, isSeen: boolean): void => {
   if (!isSeen) return;
   modalStore.open('PokemonDetail', {
     speciesId: requirePokemonSpeciesId(speciesId),

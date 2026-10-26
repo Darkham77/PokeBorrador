@@ -1,10 +1,11 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
 import EventPendingAwardsBanner from '@/components/events/EventPendingAwardsBanner.vue';
-import { useEventStore } from '@/stores/events';
 import type { Event as GameEvent } from '@/logic/events/eventEngine';
+import { useEventStore } from '@/stores/events';
 import type { PendingAward } from '@/types/system/stores';
 
 describe('EventPendingAwardsBanner.vue', () => {

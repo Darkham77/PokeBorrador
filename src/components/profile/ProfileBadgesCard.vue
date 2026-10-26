@@ -5,8 +5,8 @@
  * Gym badge showcase shelf for trainer profile modal.
  */
 
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService.ts';
 import type { GymId } from '@/data/world/gyms.ts';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService.ts';
 
 const GYM_BADGES = [
   { id: 'pewter', name: 'Roca' },

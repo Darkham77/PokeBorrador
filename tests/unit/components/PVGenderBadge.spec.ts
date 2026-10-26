@@ -1,8 +1,9 @@
+import { mount } from '@vue/test-utils';
 /**
  * @vitest-environment jsdom
  */
 import { describe, it, expect } from 'vite-plus/test';
-import { mount } from '@vue/test-utils';
+
 import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
 
 describe('PVGenderBadge', () => {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 interface Props {

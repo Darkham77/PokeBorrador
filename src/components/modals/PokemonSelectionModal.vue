@@ -1,37 +1,37 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { useUIStore } from '@/stores/ui';
-import { useGameStore } from '@/stores/game';
-import { useBattleStore } from '@/stores/battle/battle';
 
-import { useModalStore } from '@/stores/modals';
-import { safeStorage } from '@/logic/utils/storage';
 import BaseModal from '@/components/common/BaseModal.vue';
-import { logger } from '@/logic/utils/logger';
-import { useBreedingStore } from '@/stores/breeding';
-import { checkCompatibility } from '@/logic/breeding/breedingEngine';
-import PokemonSelectionItem from './PokemonSelectionItem.vue';
-import PokemonSelectionFilters from './PokemonSelectionFilters.vue';
-import type {
-  Pokemon,
-  PokemonStorageLocation,
-  PokemonSelectionSource
-} from '@/types/pokemon/pokemon';
-import type {
-  ResolvedSubCompetition,
-  SubCompetitionConfig
-} from '@/logic/events/eventCompetitions';
 import {
   isBabyPokemonSpeciesId,
   isFossilPokemonSpeciesId,
   isLegendaryPokemonSpeciesId,
   requirePokemonSpeciesId
 } from '@/data/pokemon/pokedex';
-import { getMaxVigor } from '@/logic/pokemon/pokemonUtils';
-
+import { checkCompatibility } from '@/logic/breeding/breedingEngine';
 import { isPokemonFilterTagId, type PokemonFilterTagId } from '@/logic/constants/tags';
+import type {
+  ResolvedSubCompetition,
+  SubCompetitionConfig
+} from '@/logic/events/eventCompetitions';
 import { filterAndSortPokemon } from '@/logic/pokemon/pokemonSelectionFilter.ts';
+import { getMaxVigor } from '@/logic/pokemon/pokemonUtils';
 import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils.ts';
+import { logger } from '@/logic/utils/logger';
+import { safeStorage } from '@/logic/utils/storage';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useBreedingStore } from '@/stores/breeding';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import type {
+  Pokemon,
+  PokemonStorageLocation,
+  PokemonSelectionSource
+} from '@/types/pokemon/pokemon';
+
+import PokemonSelectionFilters from './PokemonSelectionFilters.vue';
+import PokemonSelectionItem from './PokemonSelectionItem.vue';
 
 const uiStore = useUIStore();
 const gameStore = useGameStore();
@@ -124,7 +124,9 @@ const loadSavedFilters = (key: string): SavedFilters => {
 
 const initialFilters = loadSavedFilters(storageKey.value);
 
-const getInitialSortForSubComp = (sub: ResolvedSubCompetition | SubCompetitionConfig) => {
+const getInitialSortForSubComp = (
+  sub: ResolvedSubCompetition | SubCompetitionConfig
+): { sortBy: string; sortOrder: string } => {
   const sortDir = sub.order === 'min' ? 'asc' : 'desc';
   if (sub.metric === 'weight') return { sortBy: 'weight', sortOrder: sortDir };
   if (sub.metric === 'height') return { sortBy: 'height', sortOrder: sortDir };
@@ -218,7 +220,7 @@ const availablePokemon = computed<
       .filter((p): p is Pokemon => p !== null)
       .map((p, i) => ({ pokemon: p, _source: 'team' as const, index: i }));
   } else if (props.battleMode === 'pvp') {
-    const pvpUids = (gameStore.state.pvpTeam || []) as string[]; // no-domain: Non-domain utility collection or data structure
+    const pvpUids = gameStore.state.pvpTeam ?? [];
     sourceList = pvpUids
       .map((uid, index) => {
         const p = gameStore.getPokemonByUid(uid);
@@ -234,7 +236,7 @@ const availablePokemon = computed<
           item !== null
       );
   } else if (props.battleMode === 'war') {
-    const warUids = (gameStore.state.warTeam || []) as string[]; // no-domain: Non-domain utility collection or data structure
+    const warUids = gameStore.state.warTeam ?? [];
     sourceList = warUids
       .map((uid, index) => {
         const p = gameStore.getPokemonByUid(uid);
@@ -315,7 +317,7 @@ interface PokemonSelectionItemEntry {
   index: number;
 }
 
-function toggleSelection(item: PokemonSelectionItemEntry) {
+function toggleSelection(item: PokemonSelectionItemEntry): void {
   const uid = item.pokemon.uid;
   const sIdx = selectedUids.value.indexOf(uid);
   if (sIdx > -1) {
@@ -334,7 +336,7 @@ function toggleSelection(item: PokemonSelectionItemEntry) {
   }
 }
 
-function confirm() {
+function confirm(): void {
   const minSelect = props.minSelect || 1;
   if (selectedUids.value.length < minSelect) return;
 
@@ -352,18 +354,18 @@ function confirm() {
   forceClose();
 }
 
-function close() {
+function close(): void {
   if (props.preventClose) return;
   forceClose();
 }
 
-function forceClose() {
+function forceClose(): void {
   useModalStore().close('BattleSwitch');
   useModalStore().close('PokemonSelection');
 }
 
-if (typeof window !== 'undefined') {
-  Reflect.set(window, '_openPokemonSelectionModal', (opts: Record<string, unknown>) => {
+if (typeof globalThis.window !== 'undefined') {
+  Reflect.set(globalThis, '_openPokemonSelectionModal', (opts: Record<string, unknown>) => {
     // open-record: Generic key-value data dictionary container
     uiStore.open('PokemonSelection', {
       title: '⚡ SELECCIONAR POKÉMON',
@@ -376,7 +378,7 @@ if (typeof window !== 'undefined') {
   });
 }
 
-function openDetail(item: PokemonSelectionItemEntry) {
+function openDetail(item: PokemonSelectionItemEntry): void {
   uiStore.openPokemonDetail(item.pokemon, item.index, item._source, { source: 'selection' });
 }
 </script>

@@ -1,18 +1,19 @@
-import { BaseBattleSession } from './baseBattleSession.ts';
 import type { BattleContext } from '@/types/battle/battleContext';
+
+import { parseLogsWithSkip } from '../battleTurnLogHelper.ts';
 import type { ITacticalReplayEngine } from '../replay/tacticalReplayEngine.ts';
 import { filterShowdownLogs } from '../showdownBridge.ts';
-import { parseLogsWithSkip } from '../battleTurnLogHelper.ts';
 import { syncTeamsFromLastWorkerState } from '../showdownWorkerClient.ts';
+import { BaseBattleSession } from './baseBattleSession.ts';
 
 export interface ReplaySessionOptions {
   engine: ITacticalReplayEngine;
 }
 
 export class ReplayBattleSession extends BaseBattleSession {
-  readonly engine: ITacticalReplayEngine;
+  public readonly engine: ITacticalReplayEngine;
 
-  constructor(context: BattleContext, options: ReplaySessionOptions) {
+  public constructor(context: BattleContext, options: ReplaySessionOptions) {
     super('replay', context, {
       showTurnTimer: false,
       allowBag: false,
@@ -25,11 +26,7 @@ export class ReplayBattleSession extends BaseBattleSession {
     this.engine = options.engine;
   }
 
-  async resolveOpponentChoice(_playerChoice: string): Promise<string> {
-    return 'pass';
-  }
-
-  async stepNext(): Promise<boolean> {
+  public async stepNext(): Promise<boolean> {
     const hasNext = this.engine.nextTurn();
     if (!hasNext) return false;
 
@@ -45,7 +42,7 @@ export class ReplayBattleSession extends BaseBattleSession {
     return true;
   }
 
-  async processRewards(_won: boolean): Promise<void> {
+  public async processRewards(_won: boolean): Promise<void> {
     // Replay viewing does not award exp or rank
   }
 }

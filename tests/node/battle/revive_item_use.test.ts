@@ -1,6 +1,8 @@
-import { describe, it, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
 import { createPinia, setActivePinia } from 'pinia';
+import { describe, it, beforeEach } from 'vite-plus/test';
+
 import { handleItemUsage } from '../../../src/logic/battle/battleItems.ts';
 import { pokemonDebugService } from '../../../src/logic/debug/pokemonDebugService.ts';
 

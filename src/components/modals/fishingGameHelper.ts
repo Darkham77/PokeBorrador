@@ -6,11 +6,11 @@
  * human-accessible rhythm speeds, note counts, and battle bonuses.
  */
 
-import { POKEMON_STAT_KEYS, type Pokemon } from '@/types/pokemon/pokemon';
-import type { MinigameDifficulty } from '@/types/battle/battle';
-import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
-import { generateIvPure } from '@/logic/pokemon/generationMath';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
+import { generateIvPure } from '@/logic/pokemon/generationMath';
+import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
+import type { MinigameDifficulty } from '@/types/battle/battle';
+import { POKEMON_STAT_KEYS, type Pokemon } from '@/types/pokemon/pokemon';
 
 const FISHING_SPEED = {
   EASY: 910,

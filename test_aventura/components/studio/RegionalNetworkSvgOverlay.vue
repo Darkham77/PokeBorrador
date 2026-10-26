@@ -11,11 +11,13 @@
  *      dispatches targeted incident A* recomputation only on pointerup.
  */
 
+import type { DisplayText } from '@francogp/auditor';
 import { ref, computed } from 'vue';
-import { useRegionalContinentStudioStore } from '../../stores/continentStudioStore.ts';
+
 import { CANVAS_TILE_SIZE, STUDIO_TILE_SIZE } from '../../config/studioConstants.ts';
-import type { POINode, RouteEdge } from '../../types/map/poiTypes.ts';
 import { screenToSvgCoords as transformScreenToSvg } from '../../logic/utils/svgCoordinateUtils.ts';
+import { useRegionalContinentStudioStore } from '../../stores/continentStudioStore.ts';
+import type { POINode, RouteEdge } from '../../types/map/poiTypes.ts';
 
 const SCHEMATIC_CURVE_BOW_FACTOR = 0.08;
 const DEFAULT_CONTINENT_GRID_DIMENSION = 128;
@@ -74,7 +76,8 @@ function getRoutePathD(edge: RouteEdge): string {
   }
 
   // Hybrid mode: Path follows A* waypoints in pixel coordinates
-  const pts: string[] = [`M ${centerA.x.toFixed(1)} ${centerA.y.toFixed(1)}`]; // no-domain: Estructura o identificador procedural de aventura
+  const pts: DisplayText[] = [];
+  pts.push(`M ${centerA.x.toFixed(1)} ${centerA.y.toFixed(1)}` as DisplayText);
   for (const wp of edge.waypoints) {
     pts.push(
       `L ${(wp.x * CANVAS_TILE_SIZE + STUDIO_TILE_SIZE).toFixed(1)} ${(wp.y * CANVAS_TILE_SIZE + STUDIO_TILE_SIZE).toFixed(1)}`
@@ -157,8 +160,8 @@ function handlePointerUp(poi: POINode, e: PointerEvent): void {
   if (!isDragging.value || activeDragNodeId.value !== poi.id) return;
   try {
     (e.target as Element).releasePointerCapture(e.pointerId);
-  } catch {
-    // catch-ok: Pointer capture release fails gracefully if pointer was already lost
+  } catch (err) {
+    console.warn('Handled controlled exception:', err);
   }
 
   isDragging.value = false;

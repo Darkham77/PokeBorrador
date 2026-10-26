@@ -1,5 +1,5 @@
-import type { ResolvedSubCompetition, SubCompetitionConfig } from '@/logic/events/eventEngine';
 import { getSubCompTitle as getCanonicalSubCompTitle } from '@/logic/events/eventCompetitions';
+import type { ResolvedSubCompetition, SubCompetitionConfig } from '@/logic/events/eventEngine';
 
 export function getSubCompDefaultIcon(catId: string): string {
   if (catId.startsWith('ivs')) return '🧬';
@@ -20,5 +20,5 @@ export function getSubCompTitle(
   if ('description' in sub && sub.description) {
     return sub.description;
   }
-  return getCanonicalSubCompTitle(eventId, sub as SubCompetitionConfig);
+  return getCanonicalSubCompTitle(eventId, sub);
 }

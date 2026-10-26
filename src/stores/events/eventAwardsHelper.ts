@@ -1,8 +1,9 @@
 import type { Ref } from 'vue';
-import type { PendingAward, PastEventHistoryItem } from '@/types/system/stores';
-import type { PokemonCompetitionTrophy, PokemonCompetitionRank } from '@/types/pokemon/pokemon';
+
 import type { Event as GameEvent } from '@/logic/events/eventEngine';
+import type { PokemonCompetitionTrophy, PokemonCompetitionRank } from '@/types/pokemon/pokemon';
 import type { GameStatKey } from '@/types/system/game';
+import type { PendingAward, PastEventHistoryItem } from '@/types/system/stores';
 
 const MEDAL_STAT_KEYS: Record<PokemonCompetitionRank, GameStatKey> = {
   first: 'eventMedalsFirst',

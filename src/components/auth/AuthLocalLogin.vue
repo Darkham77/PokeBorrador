@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+
 import { useInputAnimations } from '@/composables/ui/useInputAnimations';
 import { queryLocal } from '@/logic/db/sqliteEngine';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';

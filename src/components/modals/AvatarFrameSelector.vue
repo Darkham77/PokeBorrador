@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useUIStore } from '@/stores/ui';
-import { useCosmeticsStore } from '@/stores/player/cosmetics';
-import { useGameStore } from '@/stores/game';
-import { useAuthStore } from '@/stores/auth';
-import AvatarFrameCard from './AvatarFrameCard.vue';
 
+import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { useCosmeticsStore } from '@/stores/player/cosmetics';
+import { useUIStore } from '@/stores/ui';
+
+import AvatarFrameCard from './AvatarFrameCard.vue';
 import {
   isCosmeticStyleLocked,
   resolveCosmeticLockNotification,
@@ -28,7 +29,7 @@ const filteredAvatarStyles = computed(() => {
 });
 
 const isLocal = computed(() => {
-  const hn = typeof window !== 'undefined' ? window.location.hostname : undefined;
+  const hn = typeof globalThis.window !== 'undefined' ? globalThis.location.hostname : undefined;
   return checkIsLocalEnvironment(import.meta.env.DEV, hn);
 });
 
@@ -44,11 +45,11 @@ const playerContext = computed<CosmeticPlayerContext>(() => ({
   isAdmin: isAdmin.value
 }));
 
-const isAvatarLocked = (style: LockableCosmeticStyle) => {
+const isAvatarLocked = (style: LockableCosmeticStyle): boolean => {
   return isCosmeticStyleLocked(style, playerContext.value);
 };
 
-const selectAvatar = (style: LockableCosmeticStyle) => {
+const selectAvatar = (style: LockableCosmeticStyle): void => {
   const lockNotice = resolveCosmeticLockNotification(style, 'marco', playerContext.value);
   if (lockNotice) {
     uiStore.notify(lockNotice, '🔒');

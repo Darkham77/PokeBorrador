@@ -1,5 +1,6 @@
-import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vitest';
 
 function resolveDirectionFromDelta(dx: number, dy: number): 'down' | 'up' | 'left' | 'right' {
   const angle = Math.atan2(dy, dx) * (180 / Math.PI);

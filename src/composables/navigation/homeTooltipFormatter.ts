@@ -22,7 +22,17 @@ export interface HomeRewardItem {
   prize?: { money?: number; [key: string]: unknown } | null;
 }
 
-export function categorizeHomeRewards(allRewards: readonly HomeRewardItem[]) {
+export function categorizeHomeRewards(allRewards: readonly HomeRewardItem[]): {
+  eventsAndRanked: number;
+  legacyToDiscard: number;
+  classLoot: number;
+  gtsSales: number;
+  gtsPurchases: number;
+  gtsReturns: number;
+  gtsTrades: number;
+  gtsOther: number;
+  allRewardsCount: number;
+} {
   const claimables = allRewards.filter((r) => r.isClaimable);
   const discardables = allRewards.filter((r) => r.isLegacy);
 
@@ -71,7 +81,7 @@ export function categorizeHomeRewards(allRewards: readonly HomeRewardItem[]) {
   };
 }
 
-function appendCountLine(lines: string[], count: number, singular: string, plural: string) {
+function appendCountLine(lines: string[], count: number, singular: string, plural: string): void {
   if (count > 0) {
     lines.push(`• ${count} ${count === 1 ? singular : plural}`);
   }

@@ -30,11 +30,16 @@ export { resolveRmxpSubtiles, UniversalAutotiler } from './universalAutotiler.ts
 export class SemanticPrefabRenderer {
   private readonly loader: DynamicCatalogLoader;
 
-  constructor(loader: DynamicCatalogLoader) {
+  public constructor(loader: DynamicCatalogLoader) {
     this.loader = loader;
   }
 
-  drawPrefab(ctx: CanvasRenderingContext2D, prefab: CatalogPrefab, x: number, y: number): void {
+  public drawPrefab(
+    ctx: CanvasRenderingContext2D,
+    prefab: CatalogPrefab,
+    x: number,
+    y: number
+  ): void {
     if (!prefab?.parts) return;
     const parts = [...prefab.parts].sort(
       (a, b) => ((a.layerIndex ?? a.zIndex) || 0) - ((b.layerIndex ?? b.zIndex) || 0)
@@ -58,7 +63,7 @@ export class SemanticPrefabRenderer {
     }
   }
 
-  drawBuilding(ctx: CanvasRenderingContext2D, style: string, x: number, y: number): void {
+  public drawBuilding(ctx: CanvasRenderingContext2D, style: string, x: number, y: number): void {
     const directImg =
       this.loader.getImage(style) ||
       this.loader.getImage(`${style}.png`) ||
@@ -73,7 +78,7 @@ export class SemanticPrefabRenderer {
     }
   }
 
-  drawBridge(ctx: CanvasRenderingContext2D, type: string, x: number, y: number): void {
+  public drawBridge(ctx: CanvasRenderingContext2D, type: string, x: number, y: number): void {
     const directImg = this.loader.getImage(type);
     if (directImg) {
       ctx.drawImage(
@@ -116,7 +121,7 @@ export class SemanticPrefabRenderer {
     }
   }
 
-  drawNature(ctx: CanvasRenderingContext2D, type: string, x: number, y: number): void {
+  public drawNature(ctx: CanvasRenderingContext2D, type: string, x: number, y: number): void {
     const directImg =
       this.loader.getImage(type) ||
       this.loader.getImage(`${type}.png`) ||
@@ -132,7 +137,7 @@ export class SemanticPrefabRenderer {
     }
   }
 
-  drawTree(ctx: CanvasRenderingContext2D, type: string, x: number, y: number): void {
+  public drawTree(ctx: CanvasRenderingContext2D, type: string, x: number, y: number): void {
     const cleanType = type.replace(/^poke_/, '').replace(/\.png$/i, '');
     const isPine = type === 'pine' || cleanType === 'tree_pine_small';
     const treeImg =
@@ -158,7 +163,7 @@ export class SemanticPrefabRenderer {
     }
   }
 
-  drawProp(ctx: CanvasRenderingContext2D, type: string, x: number, y: number): void {
+  public drawProp(ctx: CanvasRenderingContext2D, type: string, x: number, y: number): void {
     const cleanType = type.replace(/^poke_/, '').replace(/\.png$/i, '');
     const directImg =
       this.loader.getImage(type) ||

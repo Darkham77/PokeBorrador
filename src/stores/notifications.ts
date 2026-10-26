@@ -1,8 +1,9 @@
+import { gsap } from 'gsap';
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { gsap } from 'gsap';
-import { gameBus } from '@/logic/events/gameBus';
+
 import { NOTIFICATION_DISMISS_DELAY_SEC } from '@/logic/constants/animations.ts';
+import { gameBus } from '@/logic/events/gameBus';
 
 export interface UINotification {
   id: string | number;
@@ -13,7 +14,7 @@ export interface UINotification {
 export const useNotificationStore = defineStore('notifications', () => {
   const notifications = ref<UINotification[]>([]);
 
-  function notify(msg: string, icon: string = '🔔') {
+  function notify(msg: string, icon: string = '🔔'): void {
     const id = crypto.randomUUID();
     notifications.value.push({ id, msg, icon });
 
@@ -35,7 +36,7 @@ export const useNotificationStore = defineStore('notifications', () => {
       });
     }
 
-    const isE2E = typeof window !== 'undefined' && Boolean(window.__E2E__);
+    const isE2E = typeof globalThis.window !== 'undefined' && Boolean(globalThis.__E2E__);
     const dismissDelay = isE2E
       ? NOTIFICATION_DISMISS_DELAY_SEC * 100
       : NOTIFICATION_DISMISS_DELAY_SEC;

@@ -1,3 +1,6 @@
+import type { ItemId } from '@/data/inventory/items';
+import { isStatIdExceptHP, type StatIDExceptHP } from '@/logic/pokemon/statsMath';
+import type { DayPhase } from '@/logic/utils/timeUtils';
 /**
  * Battle Formulas Central Manager
  * Bridges the UI-friendly types with the Pure Math Core (battleMath.ts).
@@ -5,29 +8,26 @@
  * Refer to `@/project-standards/references/core/game_formulas_manual.md` for logic details.
  */
 import { getDayCycle } from '@/logic/utils/timeUtils.ts';
-
-import {
-  getEffectiveStatPure as pureGetEffectiveStat,
-  calculateDamagePure,
-  type PurePokemon,
-  type PureMove,
-  type PureBattleWeather,
-  type PureBattleStages
-} from './battleMath.ts';
-import {
-  calculateCatchRatePure as pureCalculateCatchRate,
-  calculateEscapeChancePure as pureCalculateEscapeChance
-} from './battleCatchMath.ts';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type {
   BattleStages,
   BattleWeather,
   BattleConditionKey,
   BattleTimedCondition
 } from '@/types/battle/battle';
-import type { DayPhase } from '@/logic/utils/timeUtils';
-import type { ItemId } from '@/data/inventory/items';
-import { isStatIdExceptHP, type StatIDExceptHP } from '@/logic/pokemon/statsMath';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+
+import {
+  calculateCatchRatePure as pureCalculateCatchRate,
+  calculateEscapeChancePure as pureCalculateEscapeChance
+} from './battleCatchMath.ts';
+import {
+  getEffectiveStatPure as pureGetEffectiveStat,
+  calculateDamagePure,
+  type PurePokemon,
+  type PureMove,
+  type PureBattleWeather
+} from './battleMath.ts';
+import type { CatchRateResult } from './battleMathTypes.ts';
 
 export interface BattleFormulasContext {
   isGym?: boolean;
@@ -84,7 +84,7 @@ export interface EscapeOptions {
 // ── Bridge Helpers ──────────────────────────────────────────────────────────
 
 function toPurePoke(p: Pokemon): PurePokemon {
-  return p as PurePokemon; // domain-ok: Open dynamic text or non-domain string payload
+  return p; // domain-ok: Open dynamic text or non-domain string payload
 }
 
 function toPureMove(m: Partial<Move>): PureMove {
@@ -108,7 +108,7 @@ export function getEffectiveStat(
   statKey: keyof Pokemon,
   stages: Partial<BattleStages>,
   weather: BattleWeather | null
-) {
+): number {
   let activeWeather = weather;
   let isGym = false;
   const ambient = getAmbientBattleContext();
@@ -128,7 +128,7 @@ export function getEffectiveStat(
   return pureGetEffectiveStat(
     toPurePoke(pokemon),
     statKey as keyof PurePokemon,
-    stages as PureBattleStages,
+    stages,
     toPureWeather(activeWeather),
     getDayCycle(),
     isGym
@@ -142,7 +142,7 @@ export function getStatBreakdown(
   statKey: StatIDExceptHP | keyof Pokemon,
   stages: Partial<BattleStages>,
   weather: BattleWeather | null
-) {
+): Omit<ReturnType<typeof calculateDetailedStatBreakdown>, 'statKey'> {
   let activeWeather = weather;
   let isGym = false;
   let fieldConditions: Record<string, unknown> = {};
@@ -169,7 +169,7 @@ export function getStatBreakdown(
   const breakdown = calculateDetailedStatBreakdown(
     toPurePoke(pokemon),
     validStatKey,
-    stages as PureBattleStages,
+    stages,
     toPureWeather(activeWeather),
     {
       isGym,
@@ -199,7 +199,7 @@ export function calculateDamage(
   defender: Pokemon,
   move: Partial<Move>,
   ctx: DamageOptions = {}
-) {
+): ReturnType<typeof calculateDamagePure> & { dmg: number; isNoEffect: boolean } {
   let activeWeather = ctx.weather;
   let isGym = ctx.isGym ?? false;
   const ambient = getAmbientBattleContext();
@@ -233,7 +233,7 @@ export function calculateCatchRate(
   rawBallType: ItemId = 'pokeball',
   eventCatchMult = 1,
   ctx: CatchOptions = {}
-) {
+): CatchRateResult {
   let activeWeather = ctx.weather;
   const ambient = getAmbientBattleContext();
   if (ambient?.isGym) {
@@ -258,7 +258,7 @@ export function calculateEscapeChance(
   wildPoke: Pokemon,
   attempts: number,
   ctx: EscapeOptions = {}
-) {
+): boolean {
   let activeWeather = ctx.weather;
   const ambient = getAmbientBattleContext();
   if (ambient?.isGym) {
@@ -276,7 +276,11 @@ export function calculateEscapeChance(
 }
 
 // Legacy exports for compatibility
-export function getAbilityMultiplier(_attacker: Pokemon, _defender: Pokemon, _move: Partial<Move>) {
+export function getAbilityMultiplier(
+  _attacker: Pokemon,
+  _defender: Pokemon,
+  _move: Partial<Move>
+): { mult: number; triggeredAbility: string | null } {
   return { mult: 1, triggeredAbility: null }; // Simplified, logic is now in battleMath
 }
 

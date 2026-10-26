@@ -1,7 +1,8 @@
-// @vitest-environment jsdom
-import { describe, it, expect } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
+// @vitest-environment jsdom
+import { describe, it, expect } from 'vite-plus/test';
+
 import MapGrid from '@/components/map/MapGrid.vue';
 import type { MapLocation } from '@/types/pokemon/encounters';
 

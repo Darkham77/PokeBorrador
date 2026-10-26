@@ -15,13 +15,14 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
+
 import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 import { generateSettlementLayout } from '../../logic/map/cityLayoutEngine.ts';
 import type { ContinentMapResult } from '../../logic/map/continentGenerator.ts';
-import type { POINode } from '../../types/map/poiTypes.ts';
 import type { WaterTerrainKind } from '../../logic/map/waterAutotileEngine.ts';
 import type { WildernessLayerResult } from '../../logic/map/wildernessVegetationEngine.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
 
 function createMockContinent(W = 32, H = 32): ContinentMapResult {
   const terrainMatrix: WaterTerrainKind[][] = Array.from({ length: H }, () =>

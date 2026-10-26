@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
-import { useWarStore } from '@/stores/war';
+
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useWarStore } from '@/stores/war';
+
 import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
 
 const warStore = useWarStore();
@@ -25,7 +27,7 @@ const globalScore = computed(() => {
 });
 
 onMounted(() => {
-  void warStore.loadWarData();
+  warStore.loadWarData();
 });
 </script>
 

@@ -6,9 +6,10 @@
  */
 
 import { computed } from 'vue';
-import type { RouteSpawnMappedItem } from '@/logic/utils/routeSpawnHelpers.ts';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 import { PROBABILITY_BAR_SCALE_FACTOR } from '@/logic/constants/encounters';
+import type { RouteSpawnMappedItem } from '@/logic/utils/routeSpawnHelpers.ts';
 
 const props = defineProps<{
   poke: RouteSpawnMappedItem;

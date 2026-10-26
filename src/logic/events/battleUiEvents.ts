@@ -5,7 +5,7 @@ import {
 } from '@/types/battle/battleEvents';
 
 export function emitBattleFlowCompleted(destination: BattleFlowDestination): void {
-  if (typeof window === 'undefined') return;
+  if (typeof globalThis.window === 'undefined') return;
   const detail: BattleFlowCompletedDetail = { destination };
-  window.dispatchEvent(new CustomEvent(BATTLE_UI_EVENTS.FLOW_COMPLETED, { detail }));
+  globalThis.dispatchEvent(new CustomEvent(BATTLE_UI_EVENTS.FLOW_COMPLETED, { detail }));
 }

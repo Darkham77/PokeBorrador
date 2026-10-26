@@ -8,13 +8,11 @@
  * Adheres strictly to @/project-standards (pure functions, low complexity, 0 Vue/Pinia dependencies).
  */
 
-import type { PlayerClassId, MissionId } from '@/data/player/playerClasses';
-import { POKEMON_STAT_KEYS, type Pokemon, type PokemonStatKey } from '@/types/pokemon/pokemon';
 import type { ItemId } from '@/data/inventory/itemIds';
-import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
+import type { PlayerClassId, MissionId } from '@/data/player/playerClasses';
 import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
 import { FIRE_RED_MAPS } from '@/data/world/maps';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import {
   MAX_SINGLE_STAT_IV,
   CAZABICHOS_STREAK_SHINY_STEP,
@@ -26,6 +24,8 @@ import {
   BUG_IV_FLOORS_MAP,
   BUG_SHINY_DIVISORS_MAP
 } from '@/logic/player/classEngine';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { POKEMON_STAT_KEYS, type Pokemon, type PokemonStatKey } from '@/types/pokemon/pokemon';
 
 const CAZABICHOS_KIT_UNLOCK_LEVEL = 10;
 const CAZABICHOS_KIT_CAPTURES_THRESHOLD = 10;

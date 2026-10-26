@@ -1,13 +1,16 @@
+import type { DisplayText } from '@francogp/auditor';
+
 import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping';
 export { POKEMON_SPRITE_IDS };
-import { resolveAsset } from '../utils/assetResolver.ts';
-import { isMapWithCycleId, type MapRouteId } from '@/data/world/map-assets';
 import { getItemById, type ItemId } from '@/data/inventory/items';
 import { isPlayerClassId, type PlayerClassId } from '@/data/player/playerClasses';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
-import type { GymId } from '@/data/world/gyms';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { RankedTierId } from '@/data/system/rankedData';
+import type { GymId } from '@/data/world/gyms';
+import { isMapWithCycleId, type MapRouteId } from '@/data/world/map-assets';
+
+import { resolveAsset } from '../utils/assetResolver.ts';
 
 /**
  * POKEAPI_BASE: Now local paths for downloaded sprites.
@@ -36,8 +39,9 @@ export const ASSET_TYPES = {
   BADGE: 'badge'
 } as const;
 
-import type { DayPhase } from '../utils/timeUtils.ts';
 import type { TrainerAssetView, GenderId } from '@/types/system/game';
+
+import type { DayPhase } from '../utils/timeUtils.ts';
 
 export type AssetType = (typeof ASSET_TYPES)[keyof typeof ASSET_TYPES];
 
@@ -74,7 +78,7 @@ function resolvePokemonAsset(
   if (typeof id === 'string' && id.toLowerCase().startsWith('egg'))
     return resolveAsset(`/assets/sprites/egg${extension}`); // text-ok: UI text display localization string
 
-  const num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[stringId] ?? id; // open-record: Generic key-value data dictionary container
+  const num = (POKEMON_SPRITE_IDS as Record<DisplayText, number | string>)[stringId] ?? id; // open-record: Generic key-value data dictionary container
 
   if (options.isAnimated || options.animated) {
     const sideDir = isBack ? 'Back' : 'Front';
@@ -107,7 +111,7 @@ function resolveMapAsset(id: string | number, options: AssetOptions, extension: 
   return resolveAsset(`/assets/maps/${finalId}${extension}`);
 }
 
-const TRAINER_LEGACY_MAPPING: Record<string, string> = {
+const TRAINER_LEGACY_MAPPING: Record<DisplayText, string> = {
   // open-record: Legacy trainer class alias mapping dictionary
   caza_bichos: 'cazabichos',
   ornitologo: 'entrenador',
@@ -123,7 +127,7 @@ const TRAINER_LEGACY_MAPPING: Record<string, string> = {
   cazador: 'cazabichos'
 };
 
-const TRAINER_NPC_MAPPING: Record<string, string> = {
+const TRAINER_NPC_MAPPING: Record<DisplayText, string> = {
   // open-record: Gym leader and special NPC trainer sprite identifier mapping
   brock: 'brock',
   misty: 'misty',
@@ -335,14 +339,14 @@ export function getAssetUrl(
   });
 }
 
-export function useAssets() {
+export function useAssets(): { getAssetUrl: typeof getAssetUrl; ASSET_TYPES: typeof ASSET_TYPES } {
   return { getAssetUrl, ASSET_TYPES };
 }
 
 /**
  * Gets the PokeAPI sprite URL for a given species ID.
  */
-export function getSpriteUrl(id: string, isShiny = false) {
+export function getSpriteUrl(id: string, isShiny = false): string {
   if (
     id &&
     (id.toLowerCase() === 'egg' ||
@@ -358,6 +362,6 @@ export function getSpriteUrl(id: string, isShiny = false) {
 /**
  * Gets the PokeAPI back sprite URL for a given species ID.
  */
-export function getBackSpriteUrl(id: string, isShiny = false) {
+export function getBackSpriteUrl(id: string, isShiny = false): string {
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny, isBack: true });
 }

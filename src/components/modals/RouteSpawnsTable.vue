@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import RouteSpawnsTableHeader from './spawns/RouteSpawnsTableHeader.vue';
-import RouteSpawnsPokemonRows from './spawns/RouteSpawnsPokemonRows.vue';
-import RouteSpawnsNpcRows from './spawns/RouteSpawnsNpcRows.vue';
-import RouteSpawnsItemRows from './spawns/RouteSpawnsItemRows.vue';
-import type { NpcChanceInfo } from '@/logic/weather/weatherUtils';
-import type { RouteSpawnMappedItem } from '@/logic/utils/routeSpawnHelpers';
+
 import type { ArchaeologyRewardData } from '@/composables/modals/useRouteSpawnsArchaeology';
-import type { RouteSpawnTab } from '@/types/pokemon/encounters';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { RouteSpawnMappedItem } from '@/logic/utils/routeSpawnHelpers';
+import type { NpcChanceInfo } from '@/logic/weather/weatherUtils';
+import type { RouteSpawnTab } from '@/types/pokemon/encounters';
+
+import RouteSpawnsItemRows from './spawns/RouteSpawnsItemRows.vue';
+import RouteSpawnsNpcRows from './spawns/RouteSpawnsNpcRows.vue';
+import RouteSpawnsPokemonRows from './spawns/RouteSpawnsPokemonRows.vue';
+import RouteSpawnsTableHeader from './spawns/RouteSpawnsTableHeader.vue';
 
 type SpawnTableItem = RouteSpawnMappedItem | NpcChanceInfo | ArchaeologyRewardData;
 

@@ -1,11 +1,13 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/events/eventValidators.ts
  *
  * Pure validator helpers for event awards and legacy detection.
  */
 
-import type { PendingAward, EventRewardType } from '@/types/system/stores';
 import type { Event as GameEvent } from '@/logic/events/eventEngine';
+import type { PendingAward, EventRewardType } from '@/types/system/stores';
+
 import { safeParse } from './eventSchedules.ts';
 
 export interface ParsedAwardPrize {
@@ -15,12 +17,12 @@ export interface ParsedAwardPrize {
   money?: number;
   battleCoins?: number;
   item?: string;
-  items?: Record<string, number>; // open-record: Dynamic event reward item mapping payload
+  items?: Record<DisplayText, number>; // open-record: Dynamic event reward item mapping payload
   species?: string;
   shiny?: boolean;
   level?: number;
   nature?: string;
-  ivs?: Record<string, number>; // open-record: Event Pokémon stat IV dictionary payload
+  ivs?: Record<DisplayText, number>; // open-record: Event Pokémon stat IV dictionary payload
   tier?: string;
   season?: string;
   tournamentName?: string;
@@ -42,7 +44,7 @@ export function parseAwardPrize(rawPrize: unknown): ParsedAwardPrize | null {
     }
   }
   if (typeof rawPrize === 'object') {
-    return rawPrize as ParsedAwardPrize;
+    return rawPrize;
   }
   return null;
 }
@@ -158,20 +160,20 @@ function checkSpeciesMatch(
   return awardPrize.species === configuredPrize.species;
 }
 
+const VALID_PRIZE_TYPE_VALUES = ['ranked_medal', 'pokemon', 'bc', 'item'] as const;
+const VALID_PRIZE_TYPES: ReadonlySet<string> = new Set<string>(VALID_PRIZE_TYPE_VALUES);
+
 function isValidRankedSeasonPrize(award: PendingAward): boolean {
   const prize = parseAwardPrize(award.prize);
   if (!prize) return false;
   return Boolean(
-    prize.type === 'ranked_medal' ||
+    (prize.type && VALID_PRIZE_TYPES.has(prize.type)) ||
     prize.tier ||
     prize.money ||
     prize.battleCoins ||
     prize.item ||
     prize.items ||
-    prize.species ||
-    prize.type === 'pokemon' ||
-    prize.type === 'bc' ||
-    prize.type === 'item'
+    prize.species
   );
 }
 

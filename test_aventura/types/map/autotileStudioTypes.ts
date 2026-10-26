@@ -5,6 +5,8 @@
  * Adheres to @/domain-type-first with zero-any and immutable readonly data models.
  */
 
+import type { AssetUri, DisplayText, IsoDateString } from '@francogp/auditor';
+
 export const AUTOTILE_ENGINE_IDS = ['water', 'path', 'macro_biome', 'mountain'] as const;
 export type AutotileEngineId = (typeof AUTOTILE_ENGINE_IDS)[number];
 
@@ -43,18 +45,18 @@ export type RealPatchCategory = (typeof REAL_PATCH_CATEGORIES)[number];
 export interface CanonicalBitmaskCase {
   readonly bitmask: number;
   readonly category: BitmaskRoleCategory;
-  readonly label: string; // domain-ok: human readable case description
+  readonly label: DisplayText;
   readonly grid3x3: readonly (readonly boolean[])[];
 }
 
 export interface ResolvedPatchCell {
   readonly x?: number;
   readonly y?: number;
-  readonly filename: string; // domain-ok: primary asset filename on disk
-  readonly layerStack: readonly string[]; // domain-ok: ordered composite layer stack
+  readonly filename: AssetUri;
+  readonly layerStack: readonly AssetUri[];
   readonly isCenter: boolean;
-  readonly roleName?: string; // domain-ok: descriptive role identifier
-  readonly terrainKind?: string; // domain-ok: terrain descriptor
+  readonly roleName?: DisplayText;
+  readonly terrainKind?: DisplayText;
   readonly elevation?: number;
 }
 
@@ -62,25 +64,25 @@ export interface ResolvedPatch {
   readonly bitmaskCase: CanonicalBitmaskCase;
   readonly engineId: AutotileEngineId;
   readonly cells: readonly (readonly ResolvedPatchCell[])[];
-  readonly centerRole: string; // domain-ok: resolved role identifier
-  readonly centerTile: string; // domain-ok: primary tile filename
-  readonly centerLayerStack: readonly string[]; // domain-ok: layer stack filenames
+  readonly centerRole: DisplayText;
+  readonly centerTile: AssetUri;
+  readonly centerLayerStack: readonly AssetUri[];
 }
 
 export interface TileBlitInstruction {
-  readonly filename: string; // domain-ok: canonical asset filename
+  readonly filename: AssetUri;
   readonly px: number;
   readonly py: number;
 }
 
 export interface RealContinentPatch {
-  readonly id: string; // domain-ok: unique patch identifier
+  readonly id: DisplayText;
   readonly seed: number;
   readonly centerX: number;
   readonly centerY: number;
   readonly category: ContinentTransitionCategory;
-  readonly title: string; // domain-ok: human readable patch title
-  readonly description: string; // domain-ok: geographic feature description
+  readonly title: DisplayText;
+  readonly description: DisplayText;
   readonly cells: readonly (readonly ResolvedPatchCell[])[];
   readonly centerCell: ResolvedPatchCell;
   readonly radius: number;
@@ -97,29 +99,29 @@ export interface NeighborCellSummary {
   readonly dir: NeighborDirection;
   readonly x: number;
   readonly y: number;
-  readonly terrain: string; // domain-ok: base terrain or void
-  readonly tile: string; // domain-ok: top tile filename
+  readonly terrain: DisplayText;
+  readonly tile: AssetUri;
   readonly elevation?: number;
 }
 
 export interface CellNeighborhood {
   readonly cells: readonly (readonly NeighborCellSummary[])[]; // 3x3 grid
-  readonly asciiGrid: string; // domain-ok: formatted 3x3 ASCII text block
+  readonly asciiGrid: DisplayText;
 }
 
 export interface AutotileErrorReport {
-  readonly id: string; // domain-ok: composite report id
+  readonly id: DisplayText;
   readonly seed: number;
   readonly patchCenterX: number;
   readonly patchCenterY: number;
   readonly tileX: number;
   readonly tileY: number;
-  readonly category: string; // domain-ok: feature category
-  readonly currentTile: string; // domain-ok: current tile filename
-  readonly currentRole?: string; // domain-ok: current role identifier
-  readonly layerStack: readonly string[]; // domain-ok: current layer stack
+  readonly category: DisplayText;
+  readonly currentTile: AssetUri;
+  readonly currentRole?: DisplayText;
+  readonly layerStack: readonly AssetUri[];
   readonly neighborhood?: CellNeighborhood;
-  readonly note?: string; // domain-ok: user note describing the bug
-  readonly expectedRoleOrTile?: string; // domain-ok: user expected tile or role
-  readonly timestamp: string; // domain-ok: ISO 8601 timestamp
+  readonly note?: DisplayText;
+  readonly expectedRoleOrTile?: DisplayText;
+  readonly timestamp: IsoDateString;
 }

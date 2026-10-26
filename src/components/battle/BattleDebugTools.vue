@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import PVTooltip from '@/components/common/PVTooltip.vue';
+
 import DebugAudioAnimTab from '@/components/admin/debug/DebugAudioAnimTab.vue';
-import TimeDebugControls from '@/components/admin/debug/shared/TimeDebugControls.vue';
 import SpawnDebugControls from '@/components/admin/debug/shared/SpawnDebugControls.vue';
+import TimeDebugControls from '@/components/admin/debug/shared/TimeDebugControls.vue';
 import DebugActionPanel from '@/components/battle/DebugActionPanel.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
 
 const isOpen = ref(false);
 const isEffectsOpen = ref(false);
 const isTimeOpen = ref(false);
 const isSpawnOpen = ref(false);
 
-const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_DEBUG__);
+const isDebug = computed(
+  () => typeof globalThis.window !== 'undefined' && !!globalThis.__VITE_DEBUG__
+);
 </script>
 
 <template>

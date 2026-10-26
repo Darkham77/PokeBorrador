@@ -3,10 +3,11 @@
 // Adapted from external/pokemon-showdown-ai/src/types.ts
 // ============================================================
 
+import type { SideID } from '@pkmn/sim';
+
+import type { PokemonMoveId } from '@/data/battle/moves';
 import type { BattleConditionKey, BattleActionType } from '@/types/battle/battle';
 import type { PokemonStatus } from '@/types/pokemon/pokemon';
-import type { PokemonMoveId } from '@/data/battle/moves';
-import type { SideID } from '@pkmn/sim';
 
 const _HEURISTIC_VOLATILE_KEYS = [
   'choicelock',

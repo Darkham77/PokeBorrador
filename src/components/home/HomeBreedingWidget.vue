@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
-import { useGameStore } from '@/stores/game';
-import { useBreedingStore } from '@/stores/breeding';
-import { useModalStore } from '@/stores/modals';
+
 import EggSprite from '@/components/common/EggSprite.vue';
+import { useBreedingStore } from '@/stores/breeding';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
 import type { PokemonEgg } from '@/types/pokemon/pokemon';
+
 import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
 
 interface Props {
@@ -43,11 +45,11 @@ function isReady(egg: PokemonEgg): boolean {
   return egg.ready === true || egg.steps <= 0;
 }
 
-const openDaycare = () => {
+const openDaycare = (): void => {
   modalStore.open('Daycare');
 };
 
-const handleEggClick = (egg: PokemonEgg) => {
+const handleEggClick = (egg: PokemonEgg): void => {
   if (isReady(egg)) {
     modalStore.open('HatchAnimation', { egg });
   } else {

@@ -1,20 +1,29 @@
-import type { RealtimeChannel } from '@supabase/supabase-js';
-import type { ShowdownPlayerRequest } from '@/types/battle/battle';
-import type { PvPAction, PvpTurnStreamPayload, PvpChallengeConfig } from '@/types/battle/pvp';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { PvPTimerManager } from './pvpTimerHelper.ts';
+import type { DisplayText } from '@francogp/auditor';
+
+import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine.ts';
 import { ShowdownPerspectiveAdapter } from '@/logic/battle/helpers/showdownPerspectiveAdapter.ts';
 import { determineLegalAutoPick } from '@/logic/pvp/pvpReconnectHelper';
+import { logger } from '@/logic/utils/logger.ts';
 import type { useBattleStore } from '@/stores/battle/battle.ts';
 import type { useUIStore } from '@/stores/ui.ts';
-import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine.ts';
+import type { ShowdownPlayerRequest } from '@/types/battle/battle';
+import type {
+  PvPAction,
+  PvpTurnStreamPayload,
+  PvpChallengeConfig,
+  LiveChannelHandle,
+  PvPBattlePhase
+} from '@/types/battle/pvp';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import type { PvPTimerManager } from './pvpTimerHelper.ts';
 
 export interface TurnExecutionBattleStateLike {
   isHost: boolean;
-  phase: string;
+  phase: PvPBattlePhase;
   myPick: PvPAction | null;
   enemyPick: PvPAction | null;
-  ch?: Pick<RealtimeChannel, 'send' | 'unsubscribe'> | null;
+  ch?: LiveChannelHandle | null;
   config?: PvpChallengeConfig;
   logs: string[];
 }
@@ -41,7 +50,7 @@ interface TurnRequestsResultLike {
 interface BattleStoreStateLike {
   winnerResult?: string;
   // open-record: Map of dynamic player names to battle side identifiers
-  playerNames?: Partial<Record<string, string>>;
+  playerNames?: Partial<Record<DisplayText, string>>;
 }
 
 interface TurnPostTransitionContext {
@@ -59,7 +68,7 @@ function formatPvpChoice(pick: PvPAction | null): string {
 }
 
 function broadcastHostTurnStream(
-  ch: Pick<RealtimeChannel, 'send' | 'unsubscribe'> | null | undefined,
+  ch: LiveChannelHandle | null | undefined,
   turnRes: TurnStreamPayloadSource,
   turnCount: number
 ): void {
@@ -67,17 +76,21 @@ function broadcastHostTurnStream(
   const resolvedWinnerSide =
     turnRes.winnerSide ||
     (turnRes.winner === 'p1' || turnRes.winner === 'Player' ? 'p1' : turnRes.winner ? 'p2' : null);
-  void ch.send({
-    type: 'broadcast',
-    event: 'pvp_turn_stream',
-    payload: {
-      streamLines: turnRes.logs,
-      turnNumber: turnCount,
-      turn: turnCount,
-      over: turnRes.isOver,
-      winnerSide: resolvedWinnerSide,
-      request: turnRes.p2Request
-    }
+  Promise.resolve(
+    ch.send({
+      type: 'broadcast',
+      event: 'pvp_turn_stream',
+      payload: {
+        streamLines: turnRes.logs,
+        turnNumber: turnCount,
+        turn: turnCount,
+        over: turnRes.isOver,
+        winnerSide: resolvedWinnerSide,
+        request: turnRes.p2Request
+      }
+    })
+  ).catch((err: unknown) => {
+    logger.warn('Handled promise rejection:', { cause: err });
   });
 }
 
@@ -293,11 +306,15 @@ export function executeCheckReadyToResolve(
     const p1Ready = !p1NeedsSwitch || Boolean(battleState.myPick);
     const p2Ready = !p2NeedsSwitch || Boolean(battleState.enemyPick);
     if (p1Ready && p2Ready) {
-      void resolveTurn();
+      resolveTurn().catch((err) => {
+        logger.warn('Handled promise rejection:', { cause: err });
+      });
     }
   } else {
     if (battleState.myPick && battleState.enemyPick) {
-      void resolveTurn();
+      resolveTurn().catch((err) => {
+        logger.warn('Handled promise rejection:', { cause: err });
+      });
     }
   }
 }
@@ -333,7 +350,7 @@ export async function executeCommitPick(
     executeCheckReadyToResolve(ctx.battleState, ctx.battleStore, ctx.resolveTurn);
   } else {
     if (ctx.battleState.ch) {
-      void ctx.battleState.ch.send({ type: 'broadcast', event: 'pvp_pick', payload: pick });
+      await ctx.battleState.ch.send({ type: 'broadcast', event: 'pvp_pick', payload: pick });
     }
   }
 }
@@ -344,7 +361,7 @@ export interface CheckPostTurnContext {
     enemyHp: number[];
     myActiveIdx: number;
     enemyActiveIdx: number;
-    phase: string;
+    phase: PvPBattlePhase;
     myPick: PvPAction | null;
     enemyPick: PvPAction | null;
   };
@@ -378,7 +395,9 @@ export function executeCheckPostTurn(ctx: CheckPostTurnContext): void {
   const enHp = ctx.battleState.enemyHp[ctx.battleState.enemyActiveIdx] || 0;
   if (myHp <= 0) {
     if (!ctx.battleState.myHp.some((h) => h > 0)) {
-      void ctx.endBattle(false, '¡Has sido derrotado!');
+      ctx.endBattle(false, '¡Has sido derrotado!').catch((err) => {
+        logger.warn('Handled promise rejection:', { cause: err });
+      });
     } else {
       ctx.battleState.phase = 'faint_switch';
       ctx.uiStore.isBattleSwitchForced = true;
@@ -386,7 +405,9 @@ export function executeCheckPostTurn(ctx: CheckPostTurnContext): void {
     }
   } else if (enHp <= 0) {
     if (!ctx.battleState.enemyHp.some((h) => h > 0)) {
-      void ctx.endBattle(true, '¡Has ganado la batalla!');
+      ctx.endBattle(true, '¡Has ganado la batalla!').catch((err) => {
+        logger.warn('Handled promise rejection:', { cause: err });
+      });
     } else {
       ctx.battleState.phase = 'waiting';
     }

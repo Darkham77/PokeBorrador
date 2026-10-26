@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+import { isMainModule } from '@francogp/auditor';
 /**
  * @file restore_supabase_db.ts
  * @description Script automático para restaurar un respaldo completo (backup) en formato JSON
@@ -15,23 +17,24 @@
  */
 
 import fsPromises from 'node:fs/promises';
-import { parseArgs, styleText } from 'node:util';
+import path from 'node:path';
+import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import postgres from 'postgres';
+import { defineCommand, runMain } from 'citty';
 import {
   buildDatabaseUrl,
   getValidatedServerConfigs,
-  parseServerArguments
+  resolveServerProfiles
 } from '../lib/supabaseClient.ts';
-import { safeResolve, safeJoin } from '@francogp/auditor';
 
 // Optimizar ejecución en ejecuciones sucesivas
 enableCompileCache();
 
-const BACKUPS_DIR = safeResolve(process.cwd(), 'database/backups');
+const BACKUPS_DIR = path.resolve(process.cwd(), 'database/backups');
 const RESTORE_TARGET_NODE_VERSION_LABEL = '26';
 
-export async function restoreSupabaseDb() {
+export async function restoreSupabaseDb(options: { server?: string; file?: string } = {}) {
   console.log(
     styleText(
       'bold',
@@ -41,22 +44,9 @@ export async function restoreSupabaseDb() {
 
   const { serverConfigs, baseProfiles, allAvailable } = await getValidatedServerConfigs();
 
-  const args = process.argv.slice(2);
-  const normalized = args.map((a) => (a.includes('=') && !a.startsWith('-') ? `--${a}` : a));
-  const { values, positionals } = parseArgs({
-    args: normalized,
-    options: {
-      server: { type: 'string', short: 's' },
-      file: { type: 'string', short: 'f' }
-    },
-    allowPositionals: true,
-    strict: false
-  });
-
-  const targetProfiles = parseServerArguments(args, baseProfiles, allAvailable);
+  const targetProfiles = resolveServerProfiles(options, baseProfiles, allAvailable);
   const serverArg = targetProfiles[0];
-  const fileArg =
-    typeof values.file === 'string' ? values.file : positionals.find((p) => p.endsWith('.json'));
+  const fileArg = options.file;
 
   if (!serverArg) {
     console.log(
@@ -198,8 +188,8 @@ export async function restoreSupabaseDb() {
     );
     try {
       await sql.end();
-    } catch {
-      // catch-ok: Connection cleanup after rollback is best-effort
+    } catch (err) {
+      err;
     }
     process.exit(1);
   }
@@ -207,7 +197,7 @@ export async function restoreSupabaseDb() {
 
 interface BackupObject {
   metadata?: { profile?: string; timestamp?: string; totalTables?: number; totalRows?: number };
-  data?: Record<string, Record<string, unknown>[]>;
+  data?: Record<DisplayText, Record<string, unknown>[]>;
   auth?: {
     users?: Record<string, unknown>[];
     identities?: Record<string, unknown>[];
@@ -223,10 +213,10 @@ interface DestinationDbMetadata {
 async function resolveTargetBackupPath(canonicalName: string, fileArg?: string): Promise<string> {
   if (fileArg) {
     console.log(styleText('green', `🏷️  Archivo de respaldo especificado manualmente: ${fileArg}`));
-    return safeResolve(process.cwd(), fileArg);
+    return path.resolve(process.cwd(), fileArg);
   }
 
-  const serverBackupDir = safeJoin(BACKUPS_DIR, canonicalName);
+  const serverBackupDir = path.join(BACKUPS_DIR, canonicalName);
   console.log(
     styleText(
       'cyan',
@@ -248,7 +238,7 @@ async function resolveTargetBackupPath(canonicalName: string, fileArg?: string):
     console.log(
       styleText('green', `🏷️  Archivo de respaldo detectado automáticamente: ${matching[0]}`)
     );
-    return safeJoin(serverBackupDir, matching[0]);
+    return path.join(serverBackupDir, matching[0]);
   } catch (rErr: unknown) {
     console.error(
       styleText(
@@ -335,7 +325,7 @@ const USER_ID_KEYS = [
 ] as const;
 
 function collectBackupUserIds(
-  backupData: Record<string, Record<string, unknown>[]>,
+  backupData: Record<DisplayText, Record<string, unknown>[]>,
   tableNames: readonly string[]
 ): Map<string, string> {
   const backupUserIds = new Map<string, string>();
@@ -576,7 +566,7 @@ async function restoreAuthIdentities(
 async function restoreTableData(
   tx: postgres.TransactionSql,
   orderedTables: readonly string[],
-  backupData: Record<string, Record<string, unknown>[]>,
+  backupData: Record<DisplayText, Record<string, unknown>[]>,
   existingTables: ReadonlySet<string>,
   tableColumns: Map<string, Set<string>>
 ): Promise<number> {
@@ -678,15 +668,30 @@ async function restoreRolePrivileges(tx: postgres.TransactionSql): Promise<void>
   console.log(styleText('green', `   ✔️ Privilegios restablecidos correctamente.`));
 }
 
-// Permitir ejecución directa
-const isDirectRun =
-  process.argv[1] &&
-  (process.argv[1].endsWith('restore_supabase_db.ts') ||
-    process.argv[1].includes('restore_supabase_db.ts'));
-
-if (isDirectRun) {
-  restoreSupabaseDb().catch((err) => {
-    console.error(styleText('red', `❌ Error fatal: ${(err as Error).message}`));
-    process.exit(1);
-  });
+export const command = defineCommand({
+  meta: {
+    name: 'restore-supabase-db',
+    description: 'Restaura un respaldo JSON en la base de datos Supabase'
+  },
+  args: {
+    server: {
+      type: 'string',
+      alias: 's',
+      description: 'Nombre del perfil de servidor objetivo'
+    },
+    file: {
+      type: 'string',
+      alias: 'f',
+      description: 'Ruta del archivo de backup JSON'
+    }
+  },
+  async run({ args }) {
+    await restoreSupabaseDb({
+      server: typeof args.server === 'string' ? args.server : undefined,
+      file: typeof args.file === 'string' ? args.file : undefined
+    });
+  }
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
 }

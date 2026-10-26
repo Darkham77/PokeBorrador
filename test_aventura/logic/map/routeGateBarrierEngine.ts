@@ -7,10 +7,10 @@
  * - Mathematically verifies and enforces anti-bypass closure via local BFS flood-fill.
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
-import type { TreePlacement, WildernessPropPlacement } from './wildernessVegetationEngine.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
 import { isCellAdjacentToMountainStairs } from './continentMountainEngine.ts';
+import type { TreePlacement, WildernessPropPlacement } from './wildernessVegetationEngine.ts';
 
 export interface RouteGateBarrierParams {
   readonly continent: ContinentMapResult;
@@ -256,6 +256,44 @@ function isCellImpassable(
   }
 
   return false;
+}
+
+interface BfsBounds {
+  readonly minX: number;
+  readonly maxX: number;
+  readonly minY: number;
+  readonly maxY: number;
+}
+
+export interface BfsCoord {
+  x: number;
+  y: number;
+}
+
+function expandBfsNeighbors(
+  cur: BfsCoord,
+  bounds: BfsBounds,
+  cameFrom: Map<string, BfsCoord | null>,
+  queue: BfsCoord[],
+  continent: ContinentMapResult,
+  trees: readonly TreePlacement[],
+  props: readonly WildernessPropPlacement[],
+  gate: POINode
+): void {
+  const DX = [0, 0, 1, -1] as const;
+  const DY = [1, -1, 0, 0] as const;
+  for (let d = 0; d < 4; d++) {
+    const nx = cur.x + DX[d]!;
+    const ny = cur.y + DY[d]!;
+    if (nx < bounds.minX || nx > bounds.maxX || ny < bounds.minY || ny > bounds.maxY) continue;
+
+    const key = `${nx}_${ny}`;
+    if (cameFrom.has(key)) continue;
+    if (isCellImpassable(nx, ny, continent, trees, props, gate)) continue;
+
+    cameFrom.set(key, cur);
+    queue.push({ x: nx, y: ny });
+  }
 }
 
 /**
@@ -513,9 +551,6 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
     const westX = Math.max(0, bx - 6);
     const eastX = Math.min(W - 1, bx + bw + 6);
 
-    const DX = [0, 0, 1, -1] as const;
-    const DY = [1, -1, 0, 0] as const;
-
     for (let iteration = 0; iteration < MAX_BFS_SEAL_ITERATIONS; iteration++) {
       const queue: { x: number; y: number }[] = [];
       const cameFrom = new Map<string, { x: number; y: number } | null>();
@@ -534,18 +569,16 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
           reachedEastCell = cur;
           break;
         }
-        for (let d = 0; d < 4; d++) {
-          const nx = cur.x + DX[d]!;
-          const ny = cur.y + DY[d]!;
-          if (nx < westX || nx > eastX || ny < minY || ny > maxY) continue;
-
-          const key = `${nx}_${ny}`;
-          if (cameFrom.has(key)) continue;
-          if (isCellImpassable(nx, ny, continent, trees, props, gate)) continue;
-
-          cameFrom.set(key, cur);
-          queue.push({ x: nx, y: ny });
-        }
+        expandBfsNeighbors(
+          cur,
+          { minX: westX, maxX: eastX, minY, maxY },
+          cameFrom,
+          queue,
+          continent,
+          trees,
+          props,
+          gate
+        );
       }
 
       if (!reachedEastCell) break; // 100% Hermetic!
@@ -707,9 +740,6 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
     const northY = Math.max(0, by - 6);
     const southY = Math.min(H - 1, by + bh + 6);
 
-    const DX = [0, 0, 1, -1] as const;
-    const DY = [1, -1, 0, 0] as const;
-
     for (let iteration = 0; iteration < MAX_BFS_SEAL_ITERATIONS; iteration++) {
       const queue: { x: number; y: number }[] = [];
       const cameFrom = new Map<string, { x: number; y: number } | null>();
@@ -728,18 +758,16 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
           reachedSouthCell = cur;
           break;
         }
-        for (let d = 0; d < 4; d++) {
-          const nx = cur.x + DX[d]!;
-          const ny = cur.y + DY[d]!;
-          if (nx < minX || nx > maxX || ny < northY || ny > southY) continue;
-
-          const key = `${nx}_${ny}`;
-          if (cameFrom.has(key)) continue;
-          if (isCellImpassable(nx, ny, continent, trees, props, gate)) continue;
-
-          cameFrom.set(key, cur);
-          queue.push({ x: nx, y: ny });
-        }
+        expandBfsNeighbors(
+          cur,
+          { minX, maxX, minY: northY, maxY: southY },
+          cameFrom,
+          queue,
+          continent,
+          trees,
+          props,
+          gate
+        );
       }
 
       if (!reachedSouthCell) break; // 100% Hermetic!

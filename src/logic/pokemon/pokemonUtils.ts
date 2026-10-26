@@ -1,12 +1,12 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 export { getPokemonTier } from '@/logic/pokemon/tierEngine';
-import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
+import { calculateEvBonusIvs } from '@/logic/pokemon/evMath';
 import {
   calculateTotalBaseStats,
   calculateTotalIVs,
   calculateRocketSellPriceRaw
 } from '@/logic/pokemon/statsMath';
-import { calculateEvBonusIvs } from '@/logic/pokemon/evMath';
+import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
 
 export {
   DEFAULT_MAX_VIGOR,

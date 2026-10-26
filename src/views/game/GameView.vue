@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { gsap } from 'gsap';
+
 import { GSAP_FAST_DURATION_SEC } from '@/logic/constants/animations.ts';
 import { useUIStore } from '@/stores/ui.ts';
 
 const GAME_VIEW_TRANSITION_Y_PX = 10;
 const uiStore = useUIStore();
 
-const onBeforeEnter = (el: Element) => {
+const onBeforeEnter = (el: Element): void => {
   gsap.set(el, { opacity: 0, y: GAME_VIEW_TRANSITION_Y_PX });
 };
 
-const onEnter = (el: Element, done: () => void) => {
+const onEnter = (el: Element, done: () => void): void => {
   gsap.to(el, {
     opacity: 1,
     y: 0,
@@ -20,7 +21,7 @@ const onEnter = (el: Element, done: () => void) => {
   });
 };
 
-const onLeave = (el: Element, done: () => void) => {
+const onLeave = (el: Element, done: () => void): void => {
   gsap.to(el, {
     opacity: 0,
     y: GAME_VIEW_TRANSITION_Y_PX,
@@ -30,7 +31,7 @@ const onLeave = (el: Element, done: () => void) => {
   });
 };
 
-const onNavItemMouseEnter = (event: MouseEvent) => {
+const onNavItemMouseEnter = (event: MouseEvent): void => {
   const target = event.currentTarget as HTMLElement;
   gsap.to(target, {
     backgroundColor: 'Rgba(255, 255, 255, 0.05)',
@@ -40,7 +41,7 @@ const onNavItemMouseEnter = (event: MouseEvent) => {
   });
 };
 
-const onNavItemMouseLeave = (event: MouseEvent) => {
+const onNavItemMouseLeave = (event: MouseEvent): void => {
   const target = event.currentTarget as HTMLElement;
   const isActive = target.classList.contains('active');
 

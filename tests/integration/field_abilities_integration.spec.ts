@@ -1,11 +1,13 @@
-import { describe, test, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert';
+
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, test, beforeEach } from 'vite-plus/test';
+
+import { requirePokemonSpeciesId } from '../../src/data/pokemon/pokedex.ts';
 import { generateEncounter } from '../../src/logic/encounters/encounters.ts';
+import { makePokemon } from '../../src/logic/pokemon/pokemonFactory.ts';
 import { useBreedingStore } from '../../src/stores/breeding.ts';
 import { useGameStore } from '../../src/stores/game.ts';
-import { makePokemon } from '../../src/logic/pokemon/pokemonFactory.ts';
-import { requirePokemonSpeciesId } from '../../src/data/pokemon/pokedex.ts';
 import type { EncounterState } from '../../src/types/pokemon/encounters.ts';
 
 describe('field_abilities_integration.spec - Cross-Boundary System Tests', () => {

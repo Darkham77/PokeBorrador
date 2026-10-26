@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
 import {
   getSubCompTitle,
   type Event as GameEvent,
   type SubCompetitionConfig,
   type ResolvedSubCompetition
 } from '@/logic/events/eventEngine';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import type { CompetitionParticipant } from '@/types/system/stores';
-import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 interface Props {
   show?: boolean;
@@ -41,11 +42,11 @@ const pokemonSpriteUrl = computed(() => {
   return '';
 });
 
-const handleClose = () => {
+const handleClose = (): void => {
   emit('close');
 };
 
-const handleChange = () => {
+const handleChange = (): void => {
   if (props.onChange) {
     props.onChange();
   } else {
@@ -54,7 +55,7 @@ const handleChange = () => {
   emit('close');
 };
 
-const handleWithdraw = () => {
+const handleWithdraw = (): void => {
   if (props.onWithdraw) {
     props.onWithdraw();
   } else {

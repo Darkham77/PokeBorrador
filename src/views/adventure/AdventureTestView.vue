@@ -1,26 +1,29 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
 import { onMounted, computed } from 'vue';
-import { useAdventureSimulation } from '@/composables/adventure/useAdventureSimulation';
-import { gsapHover as vGsapHover } from '@/directives/gsapHover';
-import { gsapLoop as vGsapLoop } from '@/directives/gsapLoop';
+
+import AdventureDirectionPad from '@/components/adventure/AdventureDirectionPad.vue';
+import AdventureEventModal from '@/components/adventure/AdventureEventModal.vue';
+import AdventureManualSidebar from '@/components/adventure/AdventureManualSidebar.vue';
+import PreTravelModal from '@/components/adventure/PreTravelModal.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
 import MapCard from '@/components/map/MapCard.vue';
 import ArchaeologyModal from '@/components/modals/ArchaeologyModal.vue';
 import FishingModal from '@/components/modals/FishingModal.vue';
-import PreTravelModal from '@/components/adventure/PreTravelModal.vue';
-import AdventureManualSidebar from '@/components/adventure/AdventureManualSidebar.vue';
-import AdventureDirectionPad from '@/components/adventure/AdventureDirectionPad.vue';
-import AdventureEventModal from '@/components/adventure/AdventureEventModal.vue';
-import type { MapLocation } from '@/types/pokemon/encounters';
-import type {
-  GraphEdge,
-  AdventureNodeId
-} from '../../../test_aventura/logic/adventure/kantoGraph.ts';
-import PVTooltip from '@/components/common/PVTooltip.vue';
 import {
   CARD_W,
   CARD_H,
   type AdventureMoType
 } from '@/composables/adventure/helpers/adventureSimulationConstants.ts';
+import { useAdventureSimulation } from '@/composables/adventure/useAdventureSimulation';
+import { gsapHover as vGsapHover } from '@/directives/gsapHover';
+import { gsapLoop as vGsapLoop } from '@/directives/gsapLoop';
+import type { MapLocation } from '@/types/pokemon/encounters';
+
+import type {
+  GraphEdge,
+  AdventureNodeId
+} from '../../../test_aventura/logic/adventure/kantoGraph.ts';
 
 const CARD_HALF_W = CARD_W / 2;
 const CARD_HALF_H = CARD_H / 2;
@@ -96,7 +99,7 @@ const {
 const edgeEndpointsMap = computed(() => {
   const map: Record<
     // open-record: Edge composite key string (from-to) to geometry mapping
-    string,
+    DisplayText,
     { x1: number; y1: number; x2: number; y2: number; midLeft: string; midTop: string }
   > = {};
   for (const edge of graphEdges.value) {
@@ -116,7 +119,7 @@ const edgeEndpointsMap = computed(() => {
   return map;
 });
 
-const getZoomCenter = () => {
+const getZoomCenter = (): undefined | { x: number; y: number } => {
   const vp = viewportRef.value;
   if (!vp) return undefined;
   const cx = cameraX.value;
@@ -127,15 +130,15 @@ const getZoomCenter = () => {
   return { x, y };
 };
 
-const handleZoomIn = () => {
+const handleZoomIn = (): void => {
   zoomIn(getZoomCenter);
 };
 
-const handleZoomOut = () => {
+const handleZoomOut = (): void => {
   zoomOut(getZoomCenter);
 };
 
-const centerOnActiveNode = () => {
+const centerOnActiveNode = (): void => {
   const originPos = nodePositions.value[originMap.value];
   if (originPos) {
     jumpToPoint(originPos.x + CARD_W / 2, originPos.y + CARD_H / 2);
@@ -160,12 +163,12 @@ const MO_EMOJI_MAP: Record<AdventureMoType, string> = {
 };
 
 function getMoEmoji(mo?: string): string {
-  return (mo && (MO_EMOJI_MAP as Record<string, string>)[mo]) || '🔑'; // open-record: MO emoji lookup table
+  return (mo && (MO_EMOJI_MAP as Record<DisplayText, string>)[mo]) || '🔑'; // open-record: MO emoji lookup table
 }
 
 function getMoTooltipTitle(mo: string): string {
   // domain-ok: UI display label for MO
-  const label = (moLabels as Record<string, string>)[mo] || mo; // open-record: MO labels dictionary
+  const label = (moLabels as Record<DisplayText, string>)[mo] || mo; // open-record: MO labels dictionary
   return `Requisito: MO ${mo.toUpperCase()} (${label})`;
 }
 

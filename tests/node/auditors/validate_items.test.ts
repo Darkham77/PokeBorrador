@@ -8,6 +8,7 @@
  */
 
 import { describe, it, expect } from 'vite-plus/test';
+
 import {
   ItemAuditor,
   ITEM_RULES,

@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vite-plus/test';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import { describe, it, expect } from 'vite-plus/test';
 
 describe('Supabase Schema Queries Integrity (Anti-400 Regression)', () => {
   const PROFILES_SQL_COLUMNS = new Set([

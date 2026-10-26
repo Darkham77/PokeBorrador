@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import type { ActiveMoveDetails } from '@/composables/battle/useMoveTooltip';
 
 const props = defineProps<{

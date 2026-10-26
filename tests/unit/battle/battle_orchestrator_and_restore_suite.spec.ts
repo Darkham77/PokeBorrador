@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { ref } from 'vue';
+
+import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
 import { restoreBattleState } from '@/logic/battle/orchestratorRestoreHelper';
 import * as searchLoop from '@/logic/battle/searchLoop';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
-import { BATTLE_UI_EVENTS, type BattleFlowCompletedDetail } from '@/types/battle/battleEvents';
-import type { BattleContext } from '@/types/battle/battleContext';
 import type { BattleState, BattleStages } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
+import { BATTLE_UI_EVENTS, type BattleFlowCompletedDetail } from '@/types/battle/battleEvents';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 vi.mock('@/logic/battle/orchestratorWorkerInitHelper', () => ({
@@ -342,6 +343,7 @@ describe('Battle Orchestrator & F5 State Restoration Suite', () => {
     it('syncAndPersist when battle.over = true must clear activeBattle and persist respecting 60s rule', async () => {
       const { syncAndPersist } = await import('@/logic/battle/battleStateSync');
       const saveMock = vi.fn();
+      const scheduleSaveMock = vi.fn();
       const activeBattleRef = ref<BattleState>({
         over: true,
         player: null,
@@ -353,13 +355,14 @@ describe('Battle Orchestrator & F5 State Restoration Suite', () => {
         activeBattle: activeBattleRef,
         gs: {
           state: { activeBattle: activeBattleRef.value, team: [] },
-          save: saveMock
+          save: saveMock,
+          scheduleSave: scheduleSaveMock
         }
       } as unknown as BattleContext;
 
       syncAndPersist(ctx);
       expect(ctx.gs.state.activeBattle).toBeNull();
-      expect(saveMock).toHaveBeenCalledWith(false);
+      expect(scheduleSaveMock).toHaveBeenCalled();
     });
 
     it('restoreBattleState must NOT restore when all enemyTeam Pokemon are fainted', async () => {

@@ -11,10 +11,15 @@
  * 7. Dual-engine persistence parity across SQLite and PostgreSQL (describeWithDatabase).
  */
 
-import { it, expect, beforeEach } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
 import crypto from 'node:crypto';
-import { describeWithDatabase } from '../../dbTestHelper.ts';
+
+import { setActivePinia, createPinia } from 'pinia';
+import { it, expect, beforeEach } from 'vite-plus/test';
+
+import { requirePokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
+import { deserializePokemonTeam } from '../../../src/logic/auth/savePokemonSerializer.ts';
+import { validateAndSanitize } from '../../../src/logic/auth/saveSanitizer.ts';
+import { serializeState } from '../../../src/logic/auth/saveSerializer.ts';
 import {
   FRIENDSHIP_WALK_CONSTANTS,
   calculateWalkingFriendshipGain,
@@ -22,16 +27,13 @@ import {
   processWalkingFriendshipStepAccumulation
 } from '../../../src/logic/pokemon/friendshipLogic.ts';
 import { makePokemon } from '../../../src/logic/pokemon/pokemonFactory.ts';
-import { requirePokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
-import { useGameStore } from '../../../src/stores/game.ts';
 import { useBreedingStore } from '../../../src/stores/breeding.ts';
-import { useNotificationStore } from '../../../src/stores/notifications.ts';
-import { serializeState } from '../../../src/logic/auth/saveSerializer.ts';
-import { deserializePokemonTeam } from '../../../src/logic/auth/savePokemonSerializer.ts';
-import { validateAndSanitize } from '../../../src/logic/auth/saveSanitizer.ts';
+import { useGameStore } from '../../../src/stores/game.ts';
 import { INITIAL_STATE } from '../../../src/stores/gameInitialState.ts';
+import { useNotificationStore } from '../../../src/stores/notifications.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 import type { GameState } from '../../../src/types/system/game.ts';
+import { describeWithDatabase } from '../../dbTestHelper.ts';
 
 describeWithDatabase('Walking Friendship Canonical System Suite', (_engine, getDb) => {
   beforeEach(() => {

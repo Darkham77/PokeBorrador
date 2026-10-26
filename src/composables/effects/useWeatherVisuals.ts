@@ -1,4 +1,6 @@
-import { computed, type MaybeRefOrGetter, toValue } from 'vue';
+import type { DisplayText } from '@francogp/auditor';
+import { computed, type MaybeRefOrGetter, toValue, type ComputedRef } from 'vue';
+
 import {
   WEATHER_ATMOSPHERE_FILTERS,
   MIN_NIGHT_BRIGHTNESS_CAP,
@@ -29,7 +31,7 @@ const DEFAULT_MODIFIERS: Readonly<VisualModifiers> = {
   hue: 0
 };
 
-const STATIC_WEATHER_MODIFIERS: Readonly<Record<string, VisualModifiers>> = {
+const STATIC_WEATHER_MODIFIERS: Readonly<Record<DisplayText, VisualModifiers>> = {
   // open-record: Weather and terrain visual filter presets dictionary
   electricterrain: {
     brightness: WEATHER_EFFECT_PRESETS.ELECTRIC_TERRAIN.BRIGHTNESS,
@@ -280,7 +282,7 @@ function resolveSunModifiers(cleanWeather: string): VisualModifiers {
 }
 
 const WEATHER_DYNAMIC_HANDLERS: Readonly<
-  Record<string, (weather: string, options: WeatherCycleLightingOptions) => VisualModifiers> // open-record: Weather dynamic procedural filter handlers dictionary
+  Record<DisplayText, (weather: string, options: WeatherCycleLightingOptions) => VisualModifiers> // open-record: Weather dynamic procedural filter handlers dictionary
 > = {
   storm: resolveStormModifiers,
   thunderstorm: resolveStormModifiers,
@@ -337,12 +339,17 @@ function calculateAtmosphereFilter(cycle: string, weather: string, weatherOnly: 
   return `brightness(${finalBrightness}) contrast(${finalContrast}) saturate(${finalSaturate}) hue-rotate(${finalHue}deg)`;
 }
 
+export interface UseWeatherVisualsReturn {
+  readonly atmosphereFilter: ComputedRef<string>;
+  readonly weatherOnlyFilter: ComputedRef<string>;
+}
+
 /**
  * useWeatherVisuals
  * Reuses the exact atmospheric filter logic from the Map system to ensure visual parity
  * in the Battle Arena and other UI components.
  */
-export function useWeatherVisuals(options: WeatherVisualOptions) {
+export function useWeatherVisuals(options: WeatherVisualOptions): UseWeatherVisualsReturn {
   const atmosphereFilter = computed(() => {
     return calculateAtmosphereFilter(toValue(options.cycle), toValue(options.weather), false);
   });

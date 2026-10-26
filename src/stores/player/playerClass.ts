@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed, watch } from 'vue';
-import { useGameStore } from '@/stores/game.ts';
-import { useUIStore } from '@/stores/ui.ts';
-import { gameBus } from '@/logic/events/gameBus.ts';
+
+import { AVATAR_STYLES_BY_ID, isAvatarStyleId } from '@/data/player/cosmeticsData';
 import {
   PLAYER_CLASSES,
   CLASS_MISSIONS_BY_ID,
@@ -12,28 +11,30 @@ import {
   type MissionId,
   type PlayerClassDefinition
 } from '@/data/player/playerClasses';
-import { supabase } from '@/logic/db/supabase';
-import { useInventoryStore } from '@/stores/inventory/inventory';
-import { getClassModifier } from '@/logic/player/classEngine';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import {
-  getXPNeededForClassLevel,
-  MAX_PLAYER_CLASS_LEVEL,
-  CLASS_CHANGE_COST_BATTLE_COINS,
-  MAX_CRIMINALITY_LEVEL
-} from '@/logic/player/classMath';
-import { requireFactionId, type FactionId } from '@/types/system/game';
 import { ONE_HOUR_MS } from '@/logic/constants/items.ts';
-import { FACTION_CHANGE_COST } from '@/logic/war/warEngine.ts';
+import { supabase } from '@/logic/db/supabase';
+import { gameBus } from '@/logic/events/gameBus.ts';
 import {
   getDeploymentCost,
   resolveDeploymentRewards,
   calculateCazabichosStreak,
   getInitialProjectedRewards
 } from '@/logic/player/classDeploymentEngine';
-
-import { AVATAR_STYLES_BY_ID, isAvatarStyleId } from '@/data/player/cosmeticsData';
+import { getClassModifier } from '@/logic/player/classEngine';
+import {
+  getXPNeededForClassLevel,
+  MAX_PLAYER_CLASS_LEVEL,
+  CLASS_CHANGE_COST_BATTLE_COINS,
+  MAX_CRIMINALITY_LEVEL
+} from '@/logic/player/classMath';
+import { FACTION_CHANGE_COST } from '@/logic/war/warEngine.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useInventoryStore } from '@/stores/inventory/inventory';
+import { useUIStore } from '@/stores/ui.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { requireFactionId, type FactionId } from '@/types/system/game';
 import type { ActiveMission, PlayerClassState } from '@/types/system/game.ts';
+
 import {
   resolveNewClassAvatarStyle,
   releasePokemonFromMissions,
@@ -72,7 +73,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
    * Retrieves class modifiers for battle or economy.
    * Centralizes legacy getClassModifier() logic.
    */
-  function getModifier(type: string, context: Record<string, unknown> = {}) {
+  function getModifier(type: string, context: Record<string, unknown> = {}): number {
     const cls = playerClass.value;
     if (!cls) return type === 'shopDiscount' ? 0 : 1.0;
     return getClassModifier(cls, type, {
@@ -84,7 +85,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   /**
    * Synchronizes global CSS variables with active class theme.
    */
-  function syncTheme() {
+  function syncTheme(): void {
     if (typeof document === 'undefined') return;
     const root = document.documentElement;
     const cls = currentClassDef.value;
@@ -106,7 +107,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   /**
    * Selects or changes the player's class.
    */
-  async function selectClass(classId: PlayerClassId) {
+  async function selectClass(classId: PlayerClassId): Promise<{ success: boolean; msg?: string }> {
     const resolvedClassId = requirePlayerClassId(classId);
     const cls = PLAYER_CLASSES[resolvedClassId];
     if (!cls) return { success: false, msg: 'Clase no válida' };
@@ -165,7 +166,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   /**
    * Sets player faction (Union or Power).
    */
-  async function setFaction(factionId: FactionId) {
+  async function setFaction(factionId: FactionId): Promise<{ success: boolean }> {
     const resolvedFactionId = requireFactionId(factionId);
 
     const currentFaction = gameStore.state.faction;
@@ -196,7 +197,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   /**
    * Increments class XP and handles level ups.
    */
-  function addXP(amount: number) {
+  function addXP(amount: number): void {
     if (!playerClass.value || amount <= 0) return;
 
     gameStore.state.classXP = (gameStore.state.classXP || 0) + amount;
@@ -219,7 +220,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   /**
    * Manages Rocket criminality level.
    */
-  function addCriminality(amount: number) {
+  function addCriminality(amount: number): void {
     if (playerClass.value !== 'rocket' || amount <= 0) return;
     const currentData = gameStore.state.classData;
     const prev = currentData.criminality || 0;
@@ -274,7 +275,10 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   /**
    * Starts an idle mission with server time validation and cost deduction.
    */
-  async function startMission(missionId: MissionId, extraData: Record<string, unknown> = {}) {
+  async function startMission(
+    missionId: MissionId,
+    extraData: Record<string, unknown> = {}
+  ): Promise<void> {
     if (!isMissionId(missionId)) return;
     const m = CLASS_MISSIONS_BY_ID[missionId];
     if (!m) return;
@@ -303,8 +307,8 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
 
     currentData.activeMission = {
       id: missionId,
-      startedAt: now as number,
-      endsAt: (now as number) + m.durationHs * ONE_HOUR_MS,
+      startedAt: now,
+      endsAt: now + m.durationHs * ONE_HOUR_MS,
       ...extraData
     };
 
@@ -374,7 +378,9 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   /**
    * Finaliza y cobra una misión.
    */
-  async function collectMission(options: { autoSave?: boolean; silent?: boolean } = {}) {
+  async function collectMission(
+    options: { autoSave?: boolean; silent?: boolean } = {}
+  ): Promise<void> {
     const autoSave = options.autoSave ?? true;
     const silent = options.silent ?? false;
 
@@ -382,7 +388,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     if (!mission) return;
 
     const now = await db.getServerTime();
-    if ((now as number) < mission.endsAt) {
+    if (now < mission.endsAt) {
       if (!silent) uiStore.notify('La misión aún no ha terminado.', '⏳');
       return;
     }
@@ -393,8 +399,8 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
 
     // Buscar Pokémon por UID o índice
     let p: Pokemon | null = null;
-    const targetUid = mission.targetPokemonUid as string | undefined;
-    const targetIdx = mission.targetPokemonIdx as number | undefined;
+    const targetUid = mission.targetPokemonUid;
+    const targetIdx = mission.targetPokemonIdx;
 
     if (targetUid) {
       p = gameStore.getPokemonByUid(targetUid);
@@ -435,7 +441,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     }
   }
 
-  function onCaptureSuccess() {
+  function onCaptureSuccess(): void {
     if (playerClass.value !== 'cazabichos') return;
     const currentData = gameStore.state.classData;
     const res = calculateCazabichosStreak(
@@ -458,7 +464,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     uiStore.notify(`¡Racha de Capturas x${res.streak}!`, '⚡');
   }
 
-  function onCaptureFail() {
+  function onCaptureFail(): void {
     if (playerClass.value !== 'cazabichos') return;
     const currentData = gameStore.state.classData;
     if ((currentData.captureStreak || 0) > 0) {
@@ -467,7 +473,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     }
   }
 
-  const handleTrainerExpGained = (e: Event) => {
+  const handleTrainerExpGained = (e: Event): void => {
     const detail = (e as CustomEvent<{ amount?: number }>).detail;
     if (detail?.amount) {
       addXP(detail.amount);
@@ -491,9 +497,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     addCriminality,
     startMission,
     collectMission,
-    // fallow-ignore-next-line unused-store-member
     onCaptureSuccess,
-    // fallow-ignore-next-line unused-store-member
     onCaptureFail,
     setFaction
   };

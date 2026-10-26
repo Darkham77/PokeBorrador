@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { gsap } from 'gsap';
-import { usePvPStore } from '@/stores/pvp';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
+import { computed, onMounted, onBeforeUnmount, watch } from 'vue';
+
 import BoxPokemonCard from '@/components/box/BoxPokemonCard.vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import { DEFENSE_TOGGLE_BTN_HOVER_DURATION_SEC } from '@/logic/constants/animations';
-import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
-import PassiveDefenseHistoryRow from './PassiveDefenseHistoryRow.vue';
 import { resolveDefendingTeam } from '@/logic/pvp/pvpTeamHelper';
 import { evaluatePokemonForSeason } from '@/logic/pvp/seasonTeamFilter';
+import { useGameStore } from '@/stores/game';
+import { usePvPStore } from '@/stores/pvp';
+import { useUIStore } from '@/stores/ui';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
+import PassiveDefenseHistoryRow from './PassiveDefenseHistoryRow.vue';
 
 interface Props {
   inModal?: boolean;
@@ -68,14 +70,14 @@ watch(
 );
 
 onMounted(() => {
-  void pvp.loadPvPData();
+  pvp.loadPvPData();
 });
 
 onBeforeUnmount(() => {
-  void pvp.flushPendingDefenseSnapshotSync();
+  pvp.flushPendingDefenseSnapshotSync();
 });
 
-function handleToggleBtnEnter(e: MouseEvent) {
+function handleToggleBtnEnter(e: MouseEvent): void {
   gsap.to(e.currentTarget, {
     scale: TOGGLE_BTN_HOVER_SCALE,
     duration: DEFENSE_TOGGLE_BTN_HOVER_DURATION_SEC,
@@ -83,7 +85,7 @@ function handleToggleBtnEnter(e: MouseEvent) {
   });
 }
 
-function handleToggleBtnLeave(e: MouseEvent) {
+function handleToggleBtnLeave(e: MouseEvent): void {
   gsap.to(e.currentTarget, {
     scale: 1,
     duration: DEFENSE_TOGGLE_BTN_HOVER_DURATION_SEC,
@@ -91,11 +93,11 @@ function handleToggleBtnLeave(e: MouseEvent) {
   });
 }
 
-function handlePokemonClick(pokemon: Pokemon, index: number) {
+function handlePokemonClick(pokemon: Pokemon, index: number): void {
   uiStore.openPokemonDetail(pokemon, index, 'defense');
 }
 
-function openTeamManagement() {
+function openTeamManagement(): void {
   uiStore.toggleTeamManagement('pvp6');
 }
 </script>

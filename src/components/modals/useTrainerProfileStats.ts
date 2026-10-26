@@ -1,7 +1,8 @@
 import { computed, type ComputedRef, type Ref } from 'vue';
-import { useGameStore } from '@/stores/game';
-import type { GameStatKey } from '@/types/system/game';
+
 import type { GymId } from '@/data/world/gyms';
+import { useGameStore } from '@/stores/game';
+
 import {
   resolveStatField,
   computeShiniesCount,
@@ -13,6 +14,42 @@ import {
 const DEFAULT_ELO_RATING_BASE = 1000;
 const SECONDS_PER_HOUR_FACTOR = 3600;
 
+export interface UseTrainerProfileStatsReturn {
+  readonly badgesCount: ComputedRef<number>;
+  readonly pokedexCaught: ComputedRef<number>;
+  readonly pokedexSeen: ComputedRef<number>;
+  readonly trainersDefeated: ComputedRef<number>;
+  readonly wildWins: ComputedRef<number>;
+  readonly pvpWins: ComputedRef<number>;
+  readonly pvpLosses: ComputedRef<number>;
+  readonly eloRating: ComputedRef<number>;
+  readonly warCoins: ComputedRef<number>;
+  readonly criminality: ComputedRef<number>;
+  readonly reputation: ComputedRef<number>;
+  readonly captureStreak: ComputedRef<number>;
+  readonly totalWarPoints: ComputedRef<number>;
+  readonly isGymDefeated: (gymId: GymId) => boolean;
+  readonly playtimeHours: ComputedRef<number>;
+  readonly rankedMaxElo: ComputedRef<number>;
+  readonly boxCount: ComputedRef<number>;
+  readonly pvpDraws: ComputedRef<number>;
+  readonly longestStreak: ComputedRef<number>;
+  readonly shinyCount: ComputedRef<number>;
+  readonly maxDamage: ComputedRef<number>;
+  readonly totalBattles: ComputedRef<number>;
+  readonly tradeVolume: ComputedRef<number>;
+  readonly captureAttempts: ComputedRef<number>;
+  readonly captureSuccesses: ComputedRef<number>;
+  readonly captureEfficiency: ComputedRef<number>;
+  readonly money: ComputedRef<number>;
+  readonly battleCoinsCount: ComputedRef<number>;
+  readonly eventMedalsFirst: ComputedRef<number>;
+  readonly eventMedalsSecond: ComputedRef<number>;
+  readonly eventMedalsThird: ComputedRef<number>;
+  readonly eventMedalsTotal: ComputedRef<number>;
+  readonly eventParticipations: ComputedRef<number>;
+}
+
 export function useTrainerProfileStats(
   isOwnProfile: ComputedRef<boolean>,
   profile: Ref<ProfileRow | null>,
@@ -21,7 +58,7 @@ export function useTrainerProfileStats(
   eventMedalsFirstDb: Ref<number>,
   eventMedalsSecondDb: Ref<number>,
   eventMedalsThirdDb: Ref<number>
-) {
+): UseTrainerProfileStatsReturn {
   const gameStore = useGameStore();
 
   const badgesCount = computed(() => {
@@ -113,11 +150,11 @@ export function useTrainerProfileStats(
       ? gameStore.state.warMyPtsLocal
       : saveState.value?.warMyPtsLocal;
     if (!warMap) return 0;
-    const points = Object.values(warMap) as number[];
+    const points = Object.values(warMap);
     return points.reduce((a: number, b: number) => Number(a) + Number(b), 0);
   });
 
-  const isGymDefeated = (gymId: GymId) => {
+  const isGymDefeated = (gymId: GymId): boolean => {
     if (isOwnProfile.value) {
       return (gameStore.state.defeatedGyms || []).includes(gymId);
     }
@@ -251,9 +288,7 @@ export function useTrainerProfileStats(
   const eventMedalCounts = computed(() => {
     const team = isOwnProfile.value ? gameStore.state.team : saveState.value?.team;
     const box = isOwnProfile.value ? gameStore.state.box : saveState.value?.box;
-    const savedStats = (isOwnProfile.value ? gameStore.state.stats : saveState.value?.stats) as
-      | Partial<Record<GameStatKey, number>>
-      | undefined;
+    const savedStats = isOwnProfile.value ? gameStore.state.stats : saveState.value?.stats;
     return computeEventTrophyCounts(
       team,
       box,
@@ -272,9 +307,7 @@ export function useTrainerProfileStats(
   const eventMedalsTotal = computed(() => eventMedalCounts.value.total);
 
   const eventParticipations = computed(() => {
-    const savedStats = (isOwnProfile.value ? gameStore.state.stats : saveState.value?.stats) as
-      | Partial<Record<GameStatKey, number>>
-      | undefined;
+    const savedStats = isOwnProfile.value ? gameStore.state.stats : saveState.value?.stats;
     const fromSaved = savedStats?.eventParticipations ?? 0;
     return Math.max(eventParticipationsDb.value, fromSaved, eventMedalsTotal.value);
   });

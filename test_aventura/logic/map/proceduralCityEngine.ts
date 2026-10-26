@@ -13,8 +13,8 @@ import type {
   SettlementLayoutResult,
   SettlementCurbPlacement
 } from '../../types/map/poiTypes.ts';
-import type { SettlementTerrainContext } from './cityLayoutEngine.ts';
 import type { BuildingPrefabMeta } from './canonicalAssetsRegistry.ts';
+import type { SettlementTerrainContext } from './cityLayoutEngine.ts';
 import { generateOrganicCityLayout } from './organicCityEngine.ts';
 
 export type { BuildingPrefabMeta, SettlementCurbPlacement };

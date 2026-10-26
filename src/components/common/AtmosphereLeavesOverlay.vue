@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
-import { isLeafWeatherId } from './useAtmosphereLeafAnim';
+
 import { calculateLeafCount } from './atmosphereParticleHelper';
+import { isLeafWeatherId } from './useAtmosphereLeafAnim';
 
 const props = withDefaults(
   defineProps<{

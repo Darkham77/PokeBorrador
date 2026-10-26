@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { useUIStore } from '@/stores/ui';
 import { gsap } from 'gsap';
+
 import PvPChallengeToast from '@/components/social/PvPChallengeToast.vue';
+import { useUIStore } from '@/stores/ui';
 
 const uiStore = useUIStore();
 
@@ -10,7 +11,7 @@ const TOAST_LEAVE_X_OFFSET = 30;
 const TOAST_LEAVE_SCALE = 0.9;
 const UI_TOAST_EASE_OVERSHOOT = 1.72;
 
-function onEnter(el: Element, done: () => void) {
+function onEnter(el: Element, done: () => void): void {
   gsap.fromTo(
     el,
     { opacity: 0, x: TOAST_ENTER_X_OFFSET },
@@ -24,7 +25,7 @@ function onEnter(el: Element, done: () => void) {
   );
 }
 
-function onLeave(el: Element, done: () => void) {
+function onLeave(el: Element, done: () => void): void {
   gsap.to(el, {
     opacity: 0,
     x: TOAST_LEAVE_X_OFFSET,

@@ -1,5 +1,8 @@
 import type { Ref } from 'vue';
+
+import { WEATHER_TILE_HAIL_L1_PX, WEATHER_TILE_HAIL_L2_PX } from '@/logic/constants/visuals';
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
+
 import {
   computeSnowLayer1Config,
   computeSnowLayer2Config,
@@ -7,8 +10,6 @@ import {
   computeHailLayer2Config,
   applySnowLayerAnimation
 } from './atmosphereSnowHelper.ts';
-
-import { WEATHER_TILE_HAIL_L1_PX, WEATHER_TILE_HAIL_L2_PX } from '@/logic/constants/visuals';
 
 type GsapTimeline = ReturnType<typeof import('gsap').gsap.timeline>;
 
@@ -27,7 +28,17 @@ export function useAtmosphereSnowAnim(
   layer1Ref: Ref<HTMLElement | null>,
   layer2Ref: Ref<HTMLElement | null>,
   _applyParallaxLayer?: unknown
-) {
+): {
+  initSnowAnim: (
+    w: WeatherId,
+    seed1: number,
+    seed2: number,
+    animSeed: number,
+    isLowPower: boolean,
+    speedVar: number,
+    weatherTimeline: GsapTimeline | null
+  ) => void;
+} {
   function handleSnowLayers(
     weatherTimeline: GsapTimeline,
     seed1: number,
@@ -100,7 +111,7 @@ export function useAtmosphereSnowAnim(
     isLowPower: boolean,
     speedVar: number,
     weatherTimeline: GsapTimeline | null
-  ) => {
+  ): void => {
     if (!SNOW_ATMOSPHERE_WEATHER_IDS_SET.has(w) || !weatherTimeline) return;
 
     if (w !== 'hail') {

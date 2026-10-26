@@ -7,15 +7,15 @@
  * with flat walkable grass approaches, lateral wall flanks, and deep massif backings.
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
-import type { POINode } from '../../types/map/poiTypes.ts';
-import type { RegionalPOITemplate } from './regionalPoiCatalog.ts';
 import {
   COMPACT_MAP_THRESHOLD,
   COMPACT_MIN_CAVE_DIST,
   STANDARD_MIN_CAVE_DIST,
   CAVE_SEARCH_MARGIN_BOTTOM_RIGHT
 } from '../../config/poiPlacementConfig.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
+import type { RegionalPOITemplate } from './regionalPoiCatalog.ts';
 
 export interface CavePlacementContext {
   readonly continentMap: ContinentMapResult;
@@ -24,6 +24,34 @@ export interface CavePlacementContext {
   readonly isAreaFree: (x: number, y: number, w: number, h: number, margin?: number) => boolean;
   readonly markAreaOccupied: (x: number, y: number, w: number, h: number) => void;
   readonly getMinDistanceToPlaced: (x: number, y: number) => number;
+}
+
+function isCaveFootFlat(
+  x: number,
+  y: number,
+  terrainMatrix: readonly (readonly (string | undefined)[])[],
+  heightmap: readonly (readonly number[])[]
+): boolean {
+  for (let dx = -1; dx <= 1; dx++) {
+    if (terrainMatrix[y + 1]?.[x + dx] !== 'grass') return false;
+    if ((heightmap[y + 1]?.[x + dx] ?? 0) !== 0) return false;
+  }
+  return true;
+}
+
+function hasDeepMountainBacking(
+  x: number,
+  y: number,
+  minElev: number,
+  heightmap: readonly (readonly number[])[],
+  depth = 3
+): boolean {
+  for (let dy = 1; dy <= depth; dy++) {
+    if ((heightmap[y - dy]?.[x] ?? 0) < minElev) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /**
@@ -62,11 +90,7 @@ export function placeCaveEntrances(ctx: CavePlacementContext): void {
           leftCell?.role === 'edge_south_top' && rightCell?.role === 'edge_south_top';
 
         // Ground across foot and flanks must be flat grass at elevation 0
-        let flatFoot = true;
-        for (let dx = -1; dx <= 1; dx++) {
-          if (continentMap.terrainMatrix[y + 1]?.[x + dx] !== 'grass') flatFoot = false;
-          if ((continentMap.heightmap[y + 1]?.[x + dx] ?? 0) !== 0) flatFoot = false;
-        }
+        const flatFoot = isCaveFootFlat(x, y, continentMap.terrainMatrix, continentMap.heightmap);
 
         // Avoid placing caves right next to a jutting south cliff corner (x +- 2)
         const noJuttingCorner =
@@ -74,13 +98,13 @@ export function placeCaveEntrances(ctx: CavePlacementContext): void {
           (continentMap.heightmap[y + 1]?.[x + 2] ?? 0) === 0;
 
         // Deep solid mountain backing behind entrance (depth >= 3 tiles into massif)
-        let hasDeepBacking = true;
-        for (let dy = 1; dy <= 3; dy++) {
-          if ((continentMap.heightmap[y - dy]?.[x] ?? 0) < cell.elevation) {
-            hasDeepBacking = false;
-            break;
-          }
-        }
+        const hasDeepBacking = hasDeepMountainBacking(
+          x,
+          y,
+          cell.elevation,
+          continentMap.heightmap,
+          3
+        );
 
         if (flatFoot && hasFlanks && noJuttingCorner && hasDeepBacking) {
           caveCandidates.push({ x, y, elev: cell.elevation });

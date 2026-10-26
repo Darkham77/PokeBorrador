@@ -1,20 +1,23 @@
+import type { DisplayText } from '@francogp/auditor';
+
+import { toID } from '@/logic/utils/strings.ts';
+import { requireBattleConditionKey, type BattleConditionKey } from '@/types/battle/battle.ts';
+
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
+import { CANONICAL_TERRAINS } from '../constants/gameplay.ts';
+import { isWeatherId, requireWeatherId } from '../weather/weatherRegistry.ts';
 import {
   getLocalizedWeatherName,
   mapOfficialToVisualWeather
 } from '../weather/weatherVisualMapper.ts';
-import { toID } from '@/logic/utils/strings.ts';
 import type { SBCtx } from './showdownBridgeCtx.ts';
-import { isWeatherId, requireWeatherId } from '../weather/weatherRegistry.ts';
-import { requireBattleConditionKey, type BattleConditionKey } from '@/types/battle/battle.ts';
-import { CANONICAL_TERRAINS } from '../constants/gameplay.ts';
 import { handleStartVolatileEvent, handleEndVolatileEvent } from './showdownBridgeVolatiles.ts';
 
 const CANONICAL_TERRAINS_SET: ReadonlySet<BattleConditionKey> = new Set<BattleConditionKey>(
   CANONICAL_TERRAINS
 );
 
-const WEATHER_EMOJIS: Record<string, string> = {
+const WEATHER_EMOJIS: Record<DisplayText, string> = {
   // open-record: Showdown weather condition emoji map
   Sandstorm: '🌀',
   RainDance: '🌧️',
@@ -24,7 +27,7 @@ const WEATHER_EMOJIS: Record<string, string> = {
   none: '🌤️'
 };
 
-const FIELD_START_MESSAGES: Record<string, string> = {
+const FIELD_START_MESSAGES: Record<DisplayText, string> = {
   // open-record: Showdown field condition start message map
   'Trick Room': '¡Espacio Raro distorsionó el tiempo!',
   Gravity: '¡La gravedad se intensificó!',
@@ -40,7 +43,7 @@ const FIELD_START_MESSAGES: Record<string, string> = {
   psychicterrain: '¡Un terreno psíquico envolvió el campo!'
 };
 
-const FIELD_END_MESSAGES: Record<string, string> = {
+const FIELD_END_MESSAGES: Record<DisplayText, string> = {
   // open-record: Showdown field condition end message map
   'Trick Room': '¡Espacio Raro volvió a la normalidad!',
   Gravity: '¡La gravedad volvió a la normalidad!',

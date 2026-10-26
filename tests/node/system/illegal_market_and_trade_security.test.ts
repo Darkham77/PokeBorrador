@@ -8,8 +8,8 @@
  * selling, trading, or team swapping.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { ref } from 'vue';
 
 vi.mock('@/logic/db/sqliteEngine.ts', () => ({
@@ -17,19 +17,19 @@ vi.mock('@/logic/db/sqliteEngine.ts', () => ({
   persistSQLite: vi.fn(async () => {})
 }));
 
-import { useBoxStore } from '@/stores/box.ts';
-import { useGameStore } from '@/stores/game.ts';
-import { useGTSStore } from '@/stores/gts.ts';
-import { useTradeStore } from '@/stores/trade.ts';
 import { useMarketPublishPokemon } from '@/components/market/useMarketPublishPokemon.ts';
-import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality.ts';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider.ts';
 import { requireItemId } from '@/data/inventory/items.ts';
+import { type PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
 import { emulatePublishListing } from '@/logic/db/rpcEmulations/marketRpc.ts';
 import { emulateSendTradeOffer, emulateAcceptTrade } from '@/logic/db/rpcEmulations/tradeRpc.ts';
 import { queryLocal } from '@/logic/db/sqliteEngine.ts';
 import type { SQLiteDatabase } from '@/logic/db/sqliteEngine.ts';
-import { type PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality.ts';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider.ts';
+import { useBoxStore } from '@/stores/box.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useGTSStore } from '@/stores/gts.ts';
+import { useTradeStore } from '@/stores/trade.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 function createLegalPokemon(

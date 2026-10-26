@@ -1,36 +1,35 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useAuthStore } from '@/stores/auth';
-import { GAME_UI_EVENTS } from '@/types/system/gameEvents.ts';
-import { useWindowListener } from '@/composables/ui/useWindowListener';
-
-// Sub-components
-import LocalDebugTabContent from './LocalDebugTabContent.vue';
-import { DEBUG_PANEL_CATEGORIES } from './debug/debugPanelCategories.ts';
 
 import BaseModal from '@/components/common/BaseModal.vue';
 import PVTooltip from '@/components/common/PVTooltip.vue';
-
+import { useWindowListener } from '@/composables/ui/useWindowListener';
+import { useAuthStore } from '@/stores/auth';
 import { useDebugStore } from '@/stores/debug';
+import { GAME_UI_EVENTS } from '@/types/system/gameEvents.ts';
+
+import { DEBUG_PANEL_CATEGORIES, type DebugPanelCategoryId } from './debug/debugPanelCategories.ts';
+// Sub-components
+import LocalDebugTabContent from './LocalDebugTabContent.vue';
 
 const auth = useAuthStore();
 const debugStore = useDebugStore();
 const canAccess = computed(() => debugStore.canAccess);
 
 const isOpen = ref(false);
-const selectedCategory = ref('stats');
+const selectedCategory = ref<DebugPanelCategoryId>('stats');
 
-const openShadowEditor = () => {
+const openShadowEditor = (): void => {
   isOpen.value = false;
   window.open('/dev/shadow-editor', '_blank');
 };
 
-const openAdventureSuite = () => {
+const openAdventureSuite = (): void => {
   isOpen.value = false;
   window.open('/test_aventura/index.html', '_blank');
 };
 
-const closeForBattleEntry = () => {
+const closeForBattleEntry = (): void => {
   isOpen.value = false;
 };
 

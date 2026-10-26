@@ -1,9 +1,11 @@
+import type { DisplayText } from '@francogp/auditor';
 import { defineStore } from 'pinia';
 import { ref, watch } from 'vue';
+
+import { supabase } from '@/logic/db/supabase';
+import { logger } from '@/logic/utils/logger';
 import { useAuthStore } from '@/stores/auth.ts';
 import { useGameStore } from '@/stores/game.ts';
-import { logger } from '@/logic/utils/logger';
-import { supabase } from '@/logic/db/supabase';
 
 export interface ProfileCacheItem {
   username?: string;
@@ -18,7 +20,7 @@ export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
   const authStore = useAuthStore();
   const gameStore = useGameStore();
 
-  const profileCosmetics = ref<Record<string, ProfileCacheItem>>({}); // open-record: User UUID to profile cosmetics cache dictionary
+  const profileCosmetics = ref<Record<DisplayText, ProfileCacheItem>>({}); // open-record: User UUID to profile cosmetics cache dictionary
 
   // Sychronize trainer's own cosmetics reactively
   watch(
@@ -33,10 +35,7 @@ export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
     () => {
       if (!authStore.user) return;
       profileCosmetics.value[authStore.user.id] = {
-        username:
-          gameStore.state.trainer ||
-          (authStore.user.user_metadata?.username as string) ||
-          'Entrenador',
+        username: gameStore.state.trainer || authStore.user.user_metadata?.username || 'Entrenador',
         player_class: gameStore.state.playerClass || 'entrenador',
         trainer_level: gameStore.state.trainerLevel || 1,
         avatar_style: gameStore.state.avatar_style || '',
@@ -47,16 +46,13 @@ export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
     { immediate: true }
   );
 
-  async function fetchMissingCosmetics(targetIds: string[] = []) {
+  async function fetchMissingCosmetics(targetIds: string[] = []): Promise<void> {
     if (!authStore.user) return;
     const db = supabase;
 
     if (!profileCosmetics.value[authStore.user.id]) {
       profileCosmetics.value[authStore.user.id] = {
-        username:
-          gameStore.state.trainer ||
-          (authStore.user.user_metadata?.username as string) ||
-          'Entrenador',
+        username: gameStore.state.trainer || authStore.user.user_metadata?.username || 'Entrenador',
         player_class: gameStore.state.playerClass || 'entrenador',
         trainer_level: gameStore.state.trainerLevel || 1,
         avatar_style: gameStore.state.avatar_style || '',

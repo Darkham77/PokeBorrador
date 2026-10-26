@@ -4,13 +4,13 @@
  * SRP Helpers for save state validation, playtime tracking, and rollback handling.
  */
 
-import type { GameState } from '@/types/system/game';
-import type { AuthUser } from '@/types/auth/auth';
 import type { DBRouter } from '@/logic/db/dbRouter';
 import { compress } from '@/logic/utils/compression';
-import { writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';
+import { writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage';
+import type { AuthUser } from '@/types/auth/auth';
+import type { GameState } from '@/types/system/game';
 
 export interface SaveRollbackPayload {
   serverData?: GameState;
@@ -24,9 +24,7 @@ export function canSaveState(
 ): { allowed: boolean; error?: string } {
   const pokemonCount = (state.team?.length || 0) + (state.box?.length || 0);
   const isGtsSimulation =
-    typeof window !== 'undefined' &&
-    '__GTS_SIMULATION__' in window &&
-    Boolean((window as Window & { __GTS_SIMULATION__?: boolean }).__GTS_SIMULATION__);
+    typeof globalThis.window !== 'undefined' && Boolean(globalThis.window.__GTS_SIMULATION__);
 
   if (!isGtsSimulation && (pokemonCount === 0 || !state.starterChosen)) {
     logger.debug(
@@ -118,7 +116,7 @@ export async function handleSaveRollback(
       const { resetSaveOperationState } = await import('@/logic/auth/saveService.ts');
       resetSaveOperationState();
       await Promise.resolve();
-      if (typeof window !== 'undefined') window.location.reload();
+      if (typeof globalThis.window !== 'undefined') globalThis.location.reload();
     }
   }
 }

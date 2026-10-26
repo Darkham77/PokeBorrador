@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import type { ActiveMoveDetails } from '@/composables/battle/useMoveTooltip';
+
 import MoveTooltipCombatStatBox from './MoveTooltipCombatStatBox.vue';
 import MoveTooltipPowerAccuracyBox from './MoveTooltipPowerAccuracyBox.vue';
 import {

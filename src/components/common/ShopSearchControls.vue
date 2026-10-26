@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import SortControls from '@/components/common/SortControls.vue';
 import type { SortOrder, ItemSortKey } from '@/types/system/game';
 

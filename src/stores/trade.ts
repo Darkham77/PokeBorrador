@@ -1,21 +1,21 @@
 import { defineStore } from 'pinia';
 import { ref, reactive, computed } from 'vue';
-import { useAuthStore } from '@/stores/auth.ts';
-import { useGameStore } from '@/stores/game.ts';
-import { useUIStore } from '@/stores/ui.ts';
-import { useSocialStore } from '@/stores/social/social.ts';
-import { useAudioStore } from '@/stores/audio.ts';
-import { useLoadingStore } from '@/stores/loading.ts';
-import { logger } from '@/logic/utils/logger';
-import { validateTradeOffer } from '@/logic/validation/schemas';
-import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
-import type { TradeOffer } from '@/types/system/stores';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { GameState } from '@/types/system/game';
 
 import type { ItemId } from '@/data/inventory/itemIds.ts';
 import { isItemId } from '@/data/inventory/items.ts';
 import { isPokemonBusy } from '@/logic/constants/tags';
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
+import { logger } from '@/logic/utils/logger';
+import { validateTradeOffer } from '@/logic/validation/schemas';
+import { useAudioStore } from '@/stores/audio.ts';
+import { useAuthStore } from '@/stores/auth.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useLoadingStore } from '@/stores/loading.ts';
+import { useSocialStore } from '@/stores/social/social.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { GameState } from '@/types/system/game';
+import type { TradeOffer } from '@/types/system/stores';
 
 export const useTradeStore = defineStore('trade', () => {
   const authStore = useAuthStore();
@@ -41,7 +41,7 @@ export const useTradeStore = defineStore('trade', () => {
     'id, sender_id, receiver_id, offer_pokemon, offer_items, offer_money, request_pokemon, request_items, request_money, message, status, created_at';
   const TRADE_QUERY_LIMIT = 100;
 
-  async function refreshPendingTrades() {
+  async function refreshPendingTrades(): Promise<void> {
     if (!authStore.user) return;
 
     const db = gameStore.db;
@@ -90,7 +90,7 @@ export const useTradeStore = defineStore('trade', () => {
     await socialStore.refreshNotificationCount();
   }
 
-  async function openTradeModal(friendId: string, friendUsername: string) {
+  async function openTradeModal(friendId: string, friendUsername: string): Promise<void> {
     tradeTarget.value = { id: friendId, username: friendUsername };
     tradeOfferPoke.value = null;
     tradeRequestPoke.value = null;
@@ -212,7 +212,7 @@ export const useTradeStore = defineStore('trade', () => {
     offerMoney: number;
     requestMoney: number;
     message: string;
-  }) {
+  }): Promise<boolean> {
     if (!tradeTarget.value) return false;
 
     const validation = validateTradeOfferInputs(
@@ -250,9 +250,9 @@ export const useTradeStore = defineStore('trade', () => {
 
     if (!error && tradeId) {
       uiStore.notify(`¡Oferta enviada a ${tradeTarget.value.username}!`, '🔄');
-      void audioStore.play('sentMsg');
+      await audioStore.play('sentMsg');
       await gameStore.loadGame(); // <-- MANDATORY: Refresh client post-escrow
-      void refreshPendingTrades();
+      await refreshPendingTrades();
       return true;
     }
 
@@ -263,7 +263,7 @@ export const useTradeStore = defineStore('trade', () => {
     return false;
   }
 
-  async function acceptTrade(tradeId: string | number) {
+  async function acceptTrade(tradeId: string | number): Promise<boolean> {
     try {
       loadingStore.start(
         'accept_trade',
@@ -314,7 +314,7 @@ export const useTradeStore = defineStore('trade', () => {
     }
   }
 
-  async function rejectTrade(tradeId: string | number) {
+  async function rejectTrade(tradeId: string | number): Promise<void> {
     try {
       loadingStore.start(
         'reject_trade',
@@ -346,7 +346,7 @@ export const useTradeStore = defineStore('trade', () => {
     }
   }
 
-  async function claimTrade(tradeId: string | number) {
+  async function claimTrade(tradeId: string | number): Promise<void> {
     try {
       const { error } = await gameStore.db
         .from('trade_offers')

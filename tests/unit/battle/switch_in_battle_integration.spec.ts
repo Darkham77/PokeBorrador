@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
+import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { useBattleStore } from '@/stores/battle/battle';
 import { useGameStore } from '@/stores/game';
-import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
 
 const mockWorker = vi.hoisted(() => ({
   postMessage: vi.fn(),

@@ -1,14 +1,15 @@
 import { computed, ref, type ComputedRef } from 'vue';
+
 import { type HomeWidgetId } from '@/composables/home/useHomeWidgetsCollapse';
 import { useUnifiedRewards } from '@/composables/rewards/useUnifiedRewards';
-import { useGameStore } from '@/stores/game';
-import { useEventStore } from '@/stores/events';
 import { useBuffsStore } from '@/stores/battle/buffs';
+import { useEventStore } from '@/stores/events';
+import { useGameStore } from '@/stores/game';
 import { useGTSStore } from '@/stores/gts';
-import { usePvPStore } from '@/stores/pvp';
-import { usePlayerClassStore } from '@/stores/player/playerClass';
-import { useWarStore } from '@/stores/war';
 import { useGymsStore } from '@/stores/gyms';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { usePvPStore } from '@/stores/pvp';
+import { useWarStore } from '@/stores/war';
 
 export type WidgetBadgeValue = number | string | undefined;
 export type WidgetBadgeProvider = () => WidgetBadgeValue;
@@ -24,7 +25,25 @@ export function unregisterWidgetBadge(widgetId: HomeWidgetId): void {
   customBadgeProviders.value.delete(widgetId);
 }
 
-export function useHomeWidgetBadges() {
+export function useHomeWidgetBadges(): {
+  getWidgetBadge: (widgetId: HomeWidgetId) => WidgetBadgeValue;
+  registerWidgetBadge: (widgetId: HomeWidgetId, provider: WidgetBadgeProvider) => void;
+  unregisterWidgetBadge: (widgetId: HomeWidgetId) => void;
+  pendingRewardsBadge: ComputedRef<WidgetBadgeValue>;
+  buffsBadge: ComputedRef<WidgetBadgeValue>;
+  breedingBadge: ComputedRef<WidgetBadgeValue>;
+  readyEggsCount: ComputedRef<number>;
+  eventsBadge: ComputedRef<WidgetBadgeValue>;
+  missionsBadge: ComputedRef<WidgetBadgeValue>;
+  economyBadge: ComputedRef<WidgetBadgeValue>;
+  blackMarketBadge: ComputedRef<WidgetBadgeValue>;
+  factionBadge: ComputedRef<WidgetBadgeValue>;
+  gymsBadge: ComputedRef<WidgetBadgeValue>;
+  rankedBadge: ComputedRef<WidgetBadgeValue>;
+  defenseBadge: ComputedRef<WidgetBadgeValue>;
+  classBadge: ComputedRef<WidgetBadgeValue>;
+  notificationsBadge: ComputedRef<WidgetBadgeValue>;
+} {
   const { totalActionableMissions, isClassMissionReadyToDeploy, unifiedRewards } =
     useUnifiedRewards();
   const gameStore = useGameStore();

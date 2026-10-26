@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/map/continent/svgRouteAdapter.ts
  *
@@ -13,20 +14,20 @@ import type {
   SvgImportResult,
   UrbanScale
 } from '../../../types/map/continentTypes.ts';
-import {
-  generateContinent,
-  type GeneratedContinentResult
-} from './parametricContinentGenerator.ts';
 import type {
   EmbeddedTopologyGraph,
   EnrichedCorridorProperties
 } from '../../../types/map/pokemonGraphTypes.ts';
 import type { ProgressionResult } from '../progressionBarrierEngine.ts';
+import {
+  generateContinent,
+  type GeneratedContinentResult
+} from './parametricContinentGenerator.ts';
 
 export interface ExportSvgOptions {
   readonly width: number;
   readonly height: number;
-  readonly nodes: Record<string, ContinentNode>; // open-record: Continent nodes dictionary indexed by node id
+  readonly nodes: Record<DisplayText, ContinentNode>; // open-record: Continent nodes dictionary indexed by node id
   readonly connections: readonly ContinentConnection[];
 }
 
@@ -109,7 +110,7 @@ export function importRoutesFromSvg(svgContent: string): SvgImportResult {
     if (heightMatch?.[1]) height = parseFloat(heightMatch[1]);
   }
 
-  const nodes: Record<string, ContinentNode> = {}; // open-record: Extracted continent nodes dictionary indexed by node id
+  const nodes: Record<DisplayText, ContinentNode> = {}; // open-record: Extracted continent nodes dictionary indexed by node id
 
   // 2. Extract Cities / Nodes
   // Strategy A: Look for <g class="city-node" ...> or <g id="..." data-name="...">

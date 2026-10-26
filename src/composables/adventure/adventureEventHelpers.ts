@@ -1,10 +1,11 @@
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { MapLocation } from '@/types/pokemon/encounters';
+import type { ItemId } from '@/data/inventory/items';
 import { requireMapRouteId } from '@/data/world/map-assets';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import type { MapLocation } from '@/types/pokemon/encounters';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import type { AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts';
 import type { AdventureTriggerType, ActiveAdventureEvent } from './useAdventureEvents.ts';
-import type { ItemId } from '@/data/inventory/items';
 
 export function determineAvailableEventTypes(
   mapId: AdventureNodeId,
@@ -47,11 +48,27 @@ export function pickRandomAdventureType(
   return 'combat';
 }
 
+export interface AdventureEventTemplateItem {
+  readonly title: string;
+  readonly desc: string;
+  readonly moRequired?: string;
+}
+
+export type AdventureEventTemplates = Record<
+  'combat' | 'obstacle_cut' | 'obstacle_strength' | 'obstacle_rock_smash' | 'fishing',
+  AdventureEventTemplateItem
+>;
+
+export interface WildAdventureEncounterResult {
+  readonly wildPoke: Pokemon;
+  readonly combatDesc: string;
+}
+
 export function buildAdventureEventTemplates(
   mapId: AdventureNodeId,
   mapData: MapLocation,
   targetMapId?: AdventureNodeId
-) {
+): AdventureEventTemplates {
   const isCaveOrMountain =
     mapData.isMountain ||
     mapId.includes('cave') ||
@@ -101,7 +118,7 @@ export function generateWildAdventureEncounter(
   spawns: string[],
   typeFocus: string | null,
   shinyMultiplier: number
-) {
+): WildAdventureEncounterResult | null {
   if (spawns.length === 0) return null;
 
   let chosenSpawn = spawns[Math.floor(Math.random() * spawns.length)]!;
@@ -119,7 +136,7 @@ export function generateWildAdventureEncounter(
   const generated = makePokemon(chosenSpawn, level, { shinyMultiplier });
   if (!generated) return null;
 
-  const wildPoke = generated as Pokemon;
+  const wildPoke = generated;
   const combatDesc = wildPoke.isShiny
     ? `✨ ¡Un ${pokemonName} VARIOPINTO (Shiny) salvaje apareció brillando en el sendero! (Tasa Shiny: x${shinyMultiplier.toFixed(1)})`
     : `¡Un ${pokemonName} salvaje apareció en el sendero y te desafía a un combate!`;
@@ -139,7 +156,7 @@ export function resolveAdventureObstacleCut(
   config: ObstacleEventConfig,
   isManualExploration: boolean,
   onFinished: () => void
-) {
+): void {
   config.inventoryStore.addItem('berrybronze', 2);
   config.injectedItems.value.add('berrybronze');
   config.inventoryStore.addItem('berrysilver', 1);
@@ -162,7 +179,7 @@ export function resolveAdventureObstacleStrength(
   config: ObstacleEventConfig,
   isManualExploration: boolean,
   onFinished: () => void
-) {
+): void {
   config.inventoryStore.addItem('nugget', 1);
   config.injectedItems.value.add('nugget');
   config.travelLog.value.push('💪 ¡Empujas la roca con MO Fuerza y descubres un cofre oculto!');
@@ -188,7 +205,10 @@ export interface CombatEventConfig {
   battleStore: { startBattle: (p: Pokemon, options?: Record<string, unknown>) => void };
 }
 
-export function resolveAdventureCombatEvent(config: CombatEventConfig, evt: ActiveAdventureEvent) {
+export function resolveAdventureCombatEvent(
+  config: CombatEventConfig,
+  evt: ActiveAdventureEvent
+): void {
   const healthy = (config.gameStore.state.team || []).some((p: Pokemon) => p && p.hp > 0);
   if (!healthy) {
     config.travelLog.value.push(
@@ -225,7 +245,7 @@ export function resolveAdventureCombatEvent(config: CombatEventConfig, evt: Acti
     config.travelLog.value.push(
       `💥 Iniciando combate de pruebas contra ${wild?.name} (Nivel ${wild?.level})...`
     );
-    config.battleStore.startBattle(wild!, {
+    config.battleStore.startBattle(wild, {
       locationId: requireMapRouteId(config.currentMapId.value),
       wasSearching: !config.isTraveling.value,
       persistenceMode: config.isTraveling.value ? 'local' : undefined,

@@ -11,11 +11,11 @@
  *   5. Strict Y-Sorting: Tree instances are sorted strictly North-to-South (Y ascending) so lower canopies overlap upper bases correctly.
  */
 
-import { SimplexNoise } from './noise/simplexNoise.ts';
-import type { ContinentMapResult } from './continentGenerator.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
-import { sealRouteGateFlankBarriers } from './routeGateBarrierEngine.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
+import { SimplexNoise } from './noise/simplexNoise.ts';
 import { placeRoadsideProps } from './roadsidePropsEngine.ts';
+import { sealRouteGateFlankBarriers } from './routeGateBarrierEngine.ts';
 import { placeTallGrassPatches } from './tallGrassPlacementEngine.ts';
 import { placeTreeMasses } from './treeMassPlacementEngine.ts';
 import { buildWildernessOccupancyMasks } from './wildernessOccupancyMaskEngine.ts';
@@ -35,15 +35,18 @@ export interface TreePlacement {
   readonly prefabFile: string;
 }
 
-export type WildernessPropType =
-  | 'flower'
-  | 'fence_h'
-  | 'fence_v'
-  | 'boulder'
-  | 'bush'
-  | 'log'
-  | 'sapling'
-  | 'signpost';
+export const WILDERNESS_PROP_TYPES = [
+  'flower',
+  'fence_h',
+  'fence_v',
+  'boulder',
+  'bush',
+  'log',
+  'sapling',
+  'signpost'
+] as const;
+
+export type WildernessPropType = (typeof WILDERNESS_PROP_TYPES)[number];
 
 export interface WildernessPropPlacement {
   readonly type: WildernessPropType;
@@ -73,6 +76,26 @@ import {
   TALL_GRASS_MAX_PATCHES,
   TALL_GRASS_DENSITY_DIVISOR
 } from '../../config/wildernessConfig.ts';
+
+function blockTallGrassForForestDungeons(
+  pois: readonly POINode[],
+  tallGrassBlocked: boolean[][],
+  W: number,
+  H: number
+): void {
+  for (const poi of pois) {
+    if (poi.type !== 'dungeon_forest') continue;
+    for (let dy = 0; dy < poi.footprint.height; dy++) {
+      for (let dx = 0; dx < poi.footprint.width; dx++) {
+        const cy = poi.gridY + dy;
+        const cx = poi.gridX + dx;
+        if (cy >= 0 && cy < H && cx >= 0 && cx < W) {
+          tallGrassBlocked[cy]![cx] = true;
+        }
+      }
+    }
+  }
+}
 
 /**
  * Generates wilderness vegetation, tall grass encounter zones, and roadside framing.
@@ -110,19 +133,7 @@ export function generateWildernessLayer(
       Math.min(Math.floor((W * H) / TALL_GRASS_DENSITY_DIVISOR), TALL_GRASS_MAX_PATCHES)
     );
   const tallGrassBlocked: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
-  for (const poi of pois) {
-    if (poi.type === 'dungeon_forest') {
-      for (let dy = 0; dy < poi.footprint.height; dy++) {
-        for (let dx = 0; dx < poi.footprint.width; dx++) {
-          const cy = poi.gridY + dy;
-          const cx = poi.gridX + dx;
-          if (cy >= 0 && cy < H && cx >= 0 && cx < W) {
-            tallGrassBlocked[cy]![cx] = true;
-          }
-        }
-      }
-    }
-  }
+  blockTallGrassForForestDungeons(pois, tallGrassBlocked, W, H);
 
   placeTallGrassPatches({
     H,

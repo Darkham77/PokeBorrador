@@ -1,29 +1,31 @@
-import { initSQLite, type SQLiteDatabase } from './sqliteEngine.ts';
-import { logger } from '../utils/logger.ts';
-import { safeStorage } from '../utils/storage.ts';
+import type { DisplayText } from '@francogp/auditor';
+
 import type { DBResponse } from '@/types/system/database';
 
-// Import sub-modules for offline RPC emulations
-import { emulateChangeUsername } from './rpcEmulations/profileRpc.ts';
-import { emulateSaveGameTrusted, emulateReportPassiveBattle } from './rpcEmulations/saveRpc.ts';
+import { logger } from '../utils/logger.ts';
+import { safeStorage } from '../utils/storage.ts';
+import { emulateAwardEventAutomated, emulateClaimAward } from './rpcEmulations/eventRpc.ts';
 import {
   emulatePublishListing,
   emulateBuyListing,
   emulateCancelListing,
   emulateClaimAsset
 } from './rpcEmulations/marketRpc.ts';
-import {
-  emulateSendTradeOffer,
-  emulateAcceptTrade,
-  emulateRejectTrade
-} from './rpcEmulations/tradeRpc.ts';
-import { emulateAwardEventAutomated, emulateClaimAward } from './rpcEmulations/eventRpc.ts';
+// Import sub-modules for offline RPC emulations
+import { emulateChangeUsername } from './rpcEmulations/profileRpc.ts';
 import {
   emulateAwardRankedSeasonAutomated,
   emulateRecordPassiveBattleResult,
   emulatePublishBattleReplay,
   emulateGetFeaturedReplays
 } from './rpcEmulations/rankedRpc.ts';
+import { emulateSaveGameTrusted, emulateReportPassiveBattle } from './rpcEmulations/saveRpc.ts';
+import {
+  emulateSendTradeOffer,
+  emulateAcceptTrade,
+  emulateRejectTrade
+} from './rpcEmulations/tradeRpc.ts';
+import { initSQLite, type SQLiteDatabase } from './sqliteEngine.ts';
 
 /**
  * Emulates Supabase RPC calls on local SQLite database in offline mode.
@@ -55,7 +57,7 @@ export async function emulateOfflineRpc(
     ctx: { userId: string; username: string }
   ) => Promise<DBResponse>;
 
-  const RPC_DISPATCH_TABLE: Readonly<Record<string, RpcHandler>> = {
+  const RPC_DISPATCH_TABLE: Readonly<Record<DisplayText, RpcHandler>> = {
     // open-record: Dynamic RPC procedure dispatch table
     change_username: (db, p, ctx) => emulateChangeUsername(db, p, ctx),
     save_game_trusted: (db, p, ctx) => emulateSaveGameTrusted(db, p, ctx),

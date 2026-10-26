@@ -1,5 +1,32 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { resolveClassSurcharge, resolveHealButtonState } from '@/components/modals/healModalHelper';
+
+import {
+  isLargeModalEligible,
+  resolveModalPositionMode,
+  resolveModalCorners,
+  resolveModalCardStyles,
+  getModalTweenPosition
+} from '@/components/common/baseModalHelper';
+import {
+  getPokemonTypeIcon,
+  formatDifficultyLabel,
+  resolveGymButtonGradient,
+  resolveGymButtonShadow,
+  resolveGymHeaderGradient
+} from '@/components/gyms/gymCardHelper';
+import {
+  isValidFaction,
+  resolveCleanPlayerClass,
+  resolveLeaderboardRankBadge,
+  resolveLeaderboardScore,
+  resolveLeaderboardFactionLabel
+} from '@/components/modals/arenaLeaderboardHelper';
+import {
+  formatWinRate,
+  resolveSearchMessage,
+  resolveRankedTierDisplay,
+  resolveRankedStatsDisplay
+} from '@/components/modals/arenaRankedOverviewHelper';
 import {
   resolveCosmeticLockNotification,
   filterAvatarStylesByShape,
@@ -18,48 +45,22 @@ import {
   resolveEventCardClasses,
   EVENT_BANNER_FALLBACKS
 } from '@/components/modals/eventCardHelper';
-import type {
-  Event as GameEvent,
-  UpcomingEventOccurrence,
-  SubCompetitionConfig
-} from '@/logic/events/eventEngine';
 import { getSubCompDefaultIcon, getSubCompTitle } from '@/components/modals/eventSubCompHelper';
-import {
-  isLargeModalEligible,
-  resolveModalPositionMode,
-  resolveModalCorners,
-  resolveModalCardStyles,
-  getModalTweenPosition
-} from '@/components/common/baseModalHelper';
-import {
-  MODAL_ANIM_INITIAL_SCALE_MIN,
-  MODAL_ANIM_INITIAL_Y_OFFSET
-} from '@/logic/constants/animations';
-import {
-  formatWinRate,
-  resolveSearchMessage,
-  resolveRankedTierDisplay,
-  resolveRankedStatsDisplay
-} from '@/components/modals/arenaRankedOverviewHelper';
-import {
-  isValidFaction,
-  resolveCleanPlayerClass,
-  resolveLeaderboardRankBadge,
-  resolveLeaderboardScore,
-  resolveLeaderboardFactionLabel
-} from '@/components/modals/arenaLeaderboardHelper';
-import {
-  getPokemonTypeIcon,
-  formatDifficultyLabel,
-  resolveGymButtonGradient,
-  resolveGymButtonShadow,
-  resolveGymHeaderGradient
-} from '@/components/gyms/gymCardHelper';
+import { resolveClassSurcharge, resolveHealButtonState } from '@/components/modals/healModalHelper';
 import {
   formatWinnerMetric,
   getRankMedal,
   getRankLabel
 } from '@/components/modals/pastEventMetricFormatter';
+import {
+  MODAL_ANIM_INITIAL_SCALE_MIN,
+  MODAL_ANIM_INITIAL_Y_OFFSET
+} from '@/logic/constants/animations';
+import type {
+  Event as GameEvent,
+  UpcomingEventOccurrence,
+  SubCompetitionConfig
+} from '@/logic/events/eventEngine';
 import type { PastCompetitionWinner } from '@/types/system/stores';
 
 describe('Modal & Card Helpers Domain Suite', () => {

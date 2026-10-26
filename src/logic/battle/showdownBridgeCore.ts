@@ -1,19 +1,22 @@
+import type { DisplayText } from '@francogp/auditor';
+
+import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
+import { RADIX_DECIMAL } from '@/logic/constants/gameplay.ts';
 import { toID } from '@/logic/utils/strings.ts';
-import type { SBCtx } from './showdownBridgeCtx.ts';
+
+import type { BattleSide, BattleWinnerResult } from '../../types/battle/battle.ts';
+import type { BattleContext } from '../../types/battle/battleContext.ts';
 import {
   isPokemonStatus,
   type Move,
   type Pokemon,
   type PokemonStatus
 } from '../../types/pokemon/pokemon.ts';
-import { requirePokemonMoveId, type MoveCategory, type PokemonMoveId } from '@/data/battle/moves';
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
+import type { SBCtx } from './showdownBridgeCtx.ts';
 import { isMatchingUid } from './showdownUidMapper.ts';
-import type { BattleContext } from '../../types/battle/battleContext.ts';
-import type { BattleSide, BattleWinnerResult } from '../../types/battle/battle.ts';
-import { RADIX_DECIMAL } from '@/logic/constants/gameplay.ts';
 
-function syncMatchingPokemon(team: (Pokemon | null)[] | undefined, target: Pokemon) {
+function syncMatchingPokemon(team: (Pokemon | null)[] | undefined, target: Pokemon): void {
   if (!team) return;
   const match = team.find((p: Pokemon | null) => p && isMatchingUid(p.uid, target.uid));
   if (match && match !== target) {
@@ -23,7 +26,7 @@ function syncMatchingPokemon(team: (Pokemon | null)[] | undefined, target: Pokem
   }
 }
 
-function syncCombatantToTeam(store: BattleContext, target: Pokemon | null) {
+function syncCombatantToTeam(store: BattleContext, target: Pokemon | null): void {
   if (!store || !target?.uid) return;
   const active = store.activeBattle.value;
   if (!active) return;
@@ -249,7 +252,7 @@ async function playMoveAnimationSequence(
       id: cleanMoveId,
       name: translatedName,
       type: moveData?.type || 'normal',
-      cat: (moveData?.cat || 'physical') as MoveCategory,
+      cat: moveData?.cat || 'physical',
       power: moveData?.power,
       acc: moveData?.acc,
       pp: 0,
@@ -272,9 +275,10 @@ async function handleMoveToken(ctx: SBCtx): Promise<boolean> {
   const { store, parts, line, p, getPoke, getSide, turnLogs } = ctx;
   const side = getSide(parts[2] || '');
   const attacker = getPoke(parts[2] || '');
-  const moveId = parts[3] || 'Movimiento';
-  const moveData = pokemonDataProvider.getMoveData(moveId);
-  const translatedName = moveData?.name || moveId; // text-ok: UI display label fallback
+  const rawMove = parts[3] ? parts[3] : 'Movimiento';
+  const cleanMoveId = requirePokemonMoveId(toID(rawMove));
+  const moveData = pokemonDataProvider.getMoveData(cleanMoveId);
+  const translatedName = moveData ? moveData.name : rawMove;
   const isFromEffect = line.includes('[from]');
   const isMissed = line.includes('[miss]') || line.includes('[notarget]');
 
@@ -285,7 +289,6 @@ async function handleMoveToken(ctx: SBCtx): Promise<boolean> {
       style,
       attacker
     );
-    const cleanMoveId = requirePokemonMoveId(toID(moveId));
 
     updateAttackerMoveVolatiles(
       attacker,
@@ -307,14 +310,15 @@ async function handleMoveToken(ctx: SBCtx): Promise<boolean> {
 function handlePrepareToken(ctx: SBCtx): boolean {
   const { store, parts, line, p, getPoke } = ctx;
   const attacker = getPoke(parts[2] ?? '');
-  const moveId = parts[3] || 'Movimiento';
-  const moveData = pokemonDataProvider.getMoveData(moveId);
-  const translatedName = moveData?.name || moveId; // text-ok: UI display label fallback
+  const rawMove = parts[3] ? parts[3] : 'Movimiento';
+  const cleanMoveId = requirePokemonMoveId(toID(rawMove));
+  const moveData = pokemonDataProvider.getMoveData(cleanMoveId);
+  const translatedName = moveData ? moveData.name : rawMove;
   if (attacker) {
     if (!attacker.volatileCounters) attacker.volatileCounters = {};
     attacker.volatileCounters['twoturnmove'] = 1;
     const prepareMoveObj: Move = {
-      id: requirePokemonMoveId(toID(moveId)),
+      id: cleanMoveId,
       name: translatedName,
       pp: 0,
       maxPP: 0,
@@ -411,7 +415,7 @@ function handleWinTieToken(ctx: SBCtx): boolean {
   return true;
 }
 
-const CORE_EVENT_DISPATCHER: Record<string, (ctx: SBCtx) => Promise<boolean> | boolean> = {
+const CORE_EVENT_DISPATCHER: Record<DisplayText, (ctx: SBCtx) => Promise<boolean> | boolean> = {
   // open-record: Showdown core protocol event dispatch table
   move: handleMoveToken,
   '-prepare': handlePrepareToken,

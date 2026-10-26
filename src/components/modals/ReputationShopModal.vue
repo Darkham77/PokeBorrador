@@ -3,16 +3,19 @@ const GSAP_ANIM_Y_OFFSET_PX = 15;
 const GSAP_ANIM_SCALE_START = 0.95;
 const GSAP_ANIM_GRID_DURATION_SEC = 0.4;
 const GSAP_ANIM_GRID_STAGGER_SEC = 0.04;
-import { ref, computed, watch, nextTick } from 'vue';
 import { gsap } from 'gsap';
+import { ref, computed, watch, nextTick } from 'vue';
+
+import BaseModal from '@/components/common/BaseModal.vue';
+import ShopSearchControls from '@/components/common/ShopSearchControls.vue';
+import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue';
+import { getItemById, type ItemId } from '@/data/inventory/items';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
-import BaseModal from '@/components/common/BaseModal.vue';
-import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue';
-import ShopSearchControls from '@/components/common/ShopSearchControls.vue';
-import ReputationShopItemCard from './reputation-shop/ReputationShopItemCard.vue';
-import { getItemById, type ItemId } from '@/data/inventory/items';
 import type { ItemTier } from '@/types/inventory/items';
+import type { ItemSortKey } from '@/types/system/game';
+
+import ReputationShopItemCard from './reputation-shop/ReputationShopItemCard.vue';
 
 interface Props {
   show?: boolean;
@@ -129,7 +132,7 @@ const reputation = computed(() => {
 
 const activeTab = ref('todos');
 const search = ref('');
-const sortKey = ref<'name' | 'price' | 'rarity'>('name');
+const sortKey = ref<ItemSortKey>('name');
 const sortOrder = ref<'asc' | 'desc'>('asc');
 const gridRef = ref<HTMLElement | null>(null);
 
@@ -172,7 +175,7 @@ const availableCategories = computed<string[]>(() => {
   return Array.from(cats);
 });
 
-const animateGrid = () => {
+const animateGrid = (): void => {
   nextTick(() => {
     if (!gridRef.value) return;
     const cards = gridRef.value.querySelectorAll('.rep-shop-item-card');
@@ -210,7 +213,7 @@ watch(
   }
 );
 
-const close = () => {
+const close = (): void => {
   emit('close');
 };
 </script>

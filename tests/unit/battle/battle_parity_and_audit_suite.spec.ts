@@ -1,18 +1,19 @@
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
+import { PRNG, Battle, type ID } from '@pkmn/sim';
 import { createPinia, setActivePinia } from 'pinia';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { ACTIVE_SHOWDOWN_FORMAT } from '@/data/system/constants';
+import { isEnabledPokemonId } from '@/data/system/constants';
 import { calculateEscapeChancePure, calculateCatchRatePure } from '@/logic/battle/battleCatchMath';
 import { STAGE_MULTIPLIERS_STAT, STAGE_MULTIPLIERS_ACC } from '@/logic/battle/battleMath';
 import type { PurePokemon } from '@/logic/battle/battleMathTypes';
-import { PRNG, Battle, type ID } from '@pkmn/sim';
-import { executeBattleTurn } from '@/logic/battle/helpers/showdownExecutor';
-import { ACTIVE_SHOWDOWN_FORMAT } from '@/data/system/constants';
-import { executeTurnInWorker, setShowdownWorker } from '@/logic/battle/showdownWorkerClient';
-import type { ShowdownRequest } from '@/logic/battle/helpers/showdownTeamMapper';
 import { canExecuteScriptedReplayAction } from '@/logic/battle/helpers/scriptedReplayReadiness';
+import { executeBattleTurn } from '@/logic/battle/helpers/showdownExecutor';
+import type { ShowdownRequest } from '@/logic/battle/helpers/showdownTeamMapper';
+import { executeTurnInWorker, setShowdownWorker } from '@/logic/battle/showdownWorkerClient';
 import { buildTrainerTeam } from '@/logic/battle/trainerFactory';
 import { buildRivalEncounter, buildTrainerEncounter } from '@/logic/battle/trainerSpawner';
-import { isEnabledPokemonId } from '@/data/system/constants';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 class ImmediateTurnWorker {

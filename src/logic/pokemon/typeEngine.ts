@@ -1,6 +1,6 @@
-import { TYPE_CHART, type PokemonType } from '../../data/battle/types.ts';
-
 import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import { TYPE_CHART, type PokemonType } from '../../data/battle/types.ts';
 
 /**
  * Get type effectiveness multiplier

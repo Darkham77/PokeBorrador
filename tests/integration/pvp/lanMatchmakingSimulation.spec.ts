@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
 import { createServer, type Server } from 'node:http';
-import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
-import { WebSocketServer, WebSocket } from 'ws';
 import type { AddressInfo } from 'node:net';
+import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
+
+import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
+import { WebSocketServer, WebSocket } from 'ws';
 
 describe('LAN PvP & Matchmaking Integration Simulation', () => {
   let server: Server;

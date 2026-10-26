@@ -1,25 +1,25 @@
 <script setup lang="ts">
 import { ref, inject, computed, type ComputedRef } from 'vue';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
 import PVTooltip from '@/components/common/PVTooltip.vue';
-import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
-import PokemonTypePills from '@/components/shared/PokemonTypePills.vue';
-import PokemonDisplayTopRow from '@/components/pokemon/PokemonDisplayTopRow.vue';
 import PokemonDisplayActionFooter from '@/components/pokemon/PokemonDisplayActionFooter.vue';
-import { useUIStore } from '@/stores/ui';
-import { useElementVisibility } from '@/composables/ui/useElementVisibility';
-import { getPokemonTier } from '@/logic/pokemon/tierEngine';
-import { getPokemonVisualBadges, type PokemonTagId } from '@/logic/constants/tags';
-import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils';
-import { getFieldPassiveBadges } from '@/logic/pokemon/pokemonFieldAbilities';
 import {
   calculateHpData,
   resolveCardStatusIndicators,
   resolveVisibleCardActions,
   resolvePokemonCardClasses
 } from '@/components/pokemon/pokemonDisplayCardHelper';
-
+import PokemonDisplayTopRow from '@/components/pokemon/PokemonDisplayTopRow.vue';
+import PokemonTypePills from '@/components/shared/PokemonTypePills.vue';
+import { useElementVisibility } from '@/composables/ui/useElementVisibility';
+import { getPokemonVisualBadges, type PokemonTagId } from '@/logic/constants/tags';
+import { getFieldPassiveBadges } from '@/logic/pokemon/pokemonFieldAbilities';
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils';
+import { getPokemonTier } from '@/logic/pokemon/tierEngine';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useUIStore } from '@/stores/ui';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 interface Props {
@@ -129,7 +129,7 @@ const isSpeciesName = computed(() => !props.pokemon.nickname);
 const displayName = computed(() => props.pokemon.nickname || props.pokemon.name);
 const typePillsSize = computed(() => (props.pokemon.type2 ? 'ssm' : 'sm'));
 
-function handleCardClick() {
+function handleCardClick(): void {
   if (!props.disableCardClick) {
     emit('openDetail', props.index);
   }

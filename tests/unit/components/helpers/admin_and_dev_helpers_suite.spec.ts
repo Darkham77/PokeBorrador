@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
+
 import {
   isStatusEffectActive,
   isSecondaryEffectActive,
@@ -13,6 +14,9 @@ import {
   MIN_DEBUG_TEAM_SIZE,
   MAX_DEBUG_TEAM_SIZE
 } from '@/components/admin/debug/debugTrainerTeamHelper';
+import { useDebugPokemonCreator } from '@/components/admin/debug/useDebugPokemonCreator';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 import {
   resolveActiveAuthForm,
   parseBanStatus,
@@ -25,9 +29,6 @@ import {
   isRebuildProgressActive,
   resolveSaveButtonState
 } from '@/views/dev/devShadowMathHelper';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { useDebugPokemonCreator } from '@/components/admin/debug/useDebugPokemonCreator';
 
 describe('Admin & Dev Views Helpers Domain Suite', () => {
   describe('debugAudioAnimHelper', () => {

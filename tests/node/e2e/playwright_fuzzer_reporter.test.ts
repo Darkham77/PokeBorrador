@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
 import type { FullConfig, Suite, TestCase, TestResult } from '@playwright/test/reporter';
+import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
+
 import PlaywrightFuzzerReporter from '../../../scripts/e2e/logging/playwright_fuzzer_reporter.ts';
 
 describe('PlaywrightFuzzerReporter Progress Tracking', () => {

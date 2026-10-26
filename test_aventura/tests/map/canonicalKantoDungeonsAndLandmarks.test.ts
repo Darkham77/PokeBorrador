@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { buildCanonicalRegionMap } from '../../logic/map/continent/canonicalRegionPresets.ts';
 
 describe('Canonical Kanto Dungeons and Landmarks Architecture', () => {

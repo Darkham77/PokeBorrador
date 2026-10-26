@@ -1,17 +1,22 @@
-import { BaseBattleSession } from './baseBattleSession.ts';
-import type { BattleContext } from '@/types/battle/battleContext';
 import type { BattleMode, BattleUiConfig } from '@/types/battle/battleConfig';
+import type { BattleContext } from '@/types/battle/battleContext';
+
 import { decideEnemyMove, evaluateAndUseNPCItem } from '../ai/battleAI.ts';
+import { BaseBattleSession } from './baseBattleSession.ts';
 
 export class PvEBattleSession extends BaseBattleSession {
-  readonly isWild: boolean;
+  public readonly isWild: boolean;
 
-  constructor(mode: BattleMode, context: BattleContext, uiOverrides?: Partial<BattleUiConfig>) {
+  public constructor(
+    mode: BattleMode,
+    context: BattleContext,
+    uiOverrides?: Partial<BattleUiConfig>
+  ) {
     super(mode, context, uiOverrides);
     this.isWild = mode === 'wild';
   }
 
-  async resolveOpponentChoice(_playerChoice: string): Promise<string> {
+  public override async resolveOpponentChoice(_playerChoice: string): Promise<string> {
     const store = this.context;
     const p = store.activeBattle.value?.player;
     const e = store.activeBattle.value?.enemy;
@@ -35,7 +40,7 @@ export class PvEBattleSession extends BaseBattleSession {
     return eMove ? `move ${eMove.id}` : 'pass';
   }
 
-  async processRewards(won: boolean): Promise<void> {
+  public async processRewards(won: boolean): Promise<void> {
     if (won && this.context.processBattleEndRewards) {
       await this.context.processBattleEndRewards();
     }

@@ -1,14 +1,13 @@
-import type { DebugSystem } from '@/types/system/debug.ts';
-
-import { useMapStore } from '@/stores/map';
-import { useUIStore } from '@/stores/ui';
-import type { DominanceInfo } from '@/types/system/stores';
-import { requireFactionId } from '@/types/system/game';
 import type { MapRouteId } from '@/data/world/map-assets';
 import { requireMapRouteId } from '@/data/world/map-assets';
-import { requireWeatherId } from '@/logic/weather/weatherRegistry';
 import type { DayPhase } from '@/logic/utils/timeUtils';
-export function registerMapTools(debug: DebugSystem) {
+import { requireWeatherId } from '@/logic/weather/weatherRegistry';
+import { useMapStore } from '@/stores/map';
+import { useUIStore } from '@/stores/ui';
+import type { DebugSystem } from '@/types/system/debug.ts';
+import { requireFactionId } from '@/types/system/game';
+import type { DominanceInfo } from '@/types/system/stores';
+export function registerMapTools(debug: DebugSystem): void {
   const map = useMapStore();
   const ui = useUIStore();
 

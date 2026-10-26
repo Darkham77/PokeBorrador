@@ -6,11 +6,13 @@
  * cleanly even on clean clones where servers.local.json has not yet been generated.
  */
 
-import { describe, it, expect } from 'vite-plus/test';
+import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+
 import ts from 'typescript';
-import { execSync } from 'node:child_process';
+import { describe, it, expect } from 'vite-plus/test';
+
 import {
   OFFICIAL_SERVERS,
   DEFAULT_SERVER,

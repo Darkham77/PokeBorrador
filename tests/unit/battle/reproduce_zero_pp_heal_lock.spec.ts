@@ -1,12 +1,13 @@
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useGameStore } from '@/stores/game.ts';
-import { useShopStore } from '@/stores/inventory/shop.ts';
-import { syncActiveMovesFromRequest } from '@/stores/battle/battleMoveSync.ts';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
 import {
   type ShowdownPlayerRequest,
   isBattleMoveDisabled
 } from '@/components/battle/battleMoveSlotHelpers.ts';
+import { syncActiveMovesFromRequest } from '@/stores/battle/battleMoveSync.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useShopStore } from '@/stores/inventory/shop.ts';
 import type { BattleState } from '@/types/battle/battle';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 

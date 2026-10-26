@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, onUnmounted, watch } from 'vue';
 import { gsap } from 'gsap';
+import { ref, onUnmounted, watch } from 'vue';
+
 import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import DaycareSlotFilled from './DaycareSlotFilled.vue';
 
 const GSAP_ANIM_DURATION_SEC = 0.3;
@@ -30,7 +32,7 @@ let slotBorderTween: gsap.core.Tween | null = null;
 let plusIconTween: gsap.core.Tween | null = null;
 let spriteBoxTween: gsap.core.Tween | null = null;
 
-const handleSlotMouseEnter = () => {
+const handleSlotMouseEnter = (): void => {
   if (!props.pokemon) {
     if (slotBorderTween) slotBorderTween.kill();
     if (slotRef.value) {
@@ -73,7 +75,7 @@ const handleSlotMouseEnter = () => {
   }
 };
 
-const handleSlotMouseLeave = () => {
+const handleSlotMouseLeave = (): void => {
   if (slotBorderTween) slotBorderTween.kill();
   if (slotRef.value) {
     slotBorderTween = gsap.to(slotRef.value, {

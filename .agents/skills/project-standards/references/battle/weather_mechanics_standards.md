@@ -57,9 +57,9 @@ In addition to standard weather multipliers, the engine supports specialized wea
 
 The legendary weather-altering abilities of Kyogre, Groudon, and Rayquaza operate under supreme priority:
 
-- **Desolate Land (Tierra del Fin - Primal Groudon)**: Creates Extremely Harsh Sunlight. Water-type moves evaporate and fail completely. Traditional weather moves (Rain Dance, Sunny Day, Hail, Sandstorm) and abilities (Drizzle, Drought, Sand Stream, Snow Warning) fail to activate.
-- **Primordial Sea (Mar del Albor - Primal Kyogre)**: Creates Heavy Rain. Fire-type moves fail completely. Traditional weather moves and abilities fail to activate.
-- **Delta Stream (Ráfaga Delta - Mega Rayquaza)**: Creates Strong Winds. Eliminates all weaknesses of the Flying type (attacks of Electric, Ice, and Rock type deal neutral damage instead of super-effective). Traditional weather moves and abilities fail to activate.
+- **Desolate Land (Primal Groudon)**: Creates Extremely Harsh Sunlight. Water-type moves evaporate and fail completely. Traditional weather moves (Rain Dance, Sunny Day, Hail, Sandstorm) and abilities (Drizzle, Drought, Sand Stream, Snow Warning) fail to activate.
+- **Primordial Sea (Primal Kyogre)**: Creates Heavy Rain. Fire-type moves fail completely. Traditional weather moves and abilities fail to activate.
+- **Delta Stream (Mega Rayquaza)**: Creates Strong Winds. Eliminates all weaknesses of the Flying type (attacks of Electric, Ice, and Rock type deal neutral damage instead of super-effective). Traditional weather moves and abilities fail to activate.
 - **Dispel Protocol**: These extreme weather conditions expire immediately when the invoking Pokémon is switched out, recalled, or fainted.
 - **Air Lock / Cloud Nine**: Rayquaza's base Ability overrides and ignores active field weather effects (but does not dispel them).
 

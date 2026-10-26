@@ -1,5 +1,7 @@
 import type { PokemonSet } from '@pkmn/sim';
+
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+
 import { getShowdownWorker, preloadShowdownWorker } from './showdownWorkerInstance.ts';
 
 export interface RequestTrainerTeamOptions {
@@ -58,7 +60,7 @@ function requestWorkerTeam(
   const worker = getOrInitShowdownWorker();
   const requestId = `${idPrefix}_${Math.floor(performance.now())}_${Math.random().toString(36).slice(2, 8)}`;
   return new Promise((resolve, reject) => {
-    const handler = (event: MessageEvent) => {
+    const handler = (event: MessageEvent): void => {
       const data = event.data as {
         type: string;
         payload?: { requestId: string; team: PokemonSet[]; message?: string };

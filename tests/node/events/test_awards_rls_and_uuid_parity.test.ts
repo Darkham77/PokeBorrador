@@ -6,10 +6,11 @@
  * and claim_queue items in PostgreSQL without RLS or permission violations.
  */
 
-import { it, describe, beforeAll } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
+import { it, describe, beforeAll } from 'vite-plus/test';
 
 describe('Public Awards and Claim Queue RLS and Privileges Parity', () => {
   const testUserId = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';

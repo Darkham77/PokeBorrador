@@ -104,6 +104,7 @@ export class FsmFlowParityAuditor extends BaseAuditor<FsmFlowParityRuleId> {
       ruleIds: FSM_FLOW_PARITY_RULES,
       packageName: 'FSM',
       usesThirdPartyTool: false,
+      requiredPermissions: [],
       ruleDescriptions: {
         'fsm-flow-sequence-missing': 'Secuencia FSM ausente en código'
       },
@@ -111,6 +112,7 @@ export class FsmFlowParityAuditor extends BaseAuditor<FsmFlowParityRuleId> {
         'fsm-flow-sequence-missing':
           'Align battle execution sequence order with documented Mermaid sequence in manual'
       },
+      remediationPhase: 'behavior',
       requiredFiles: [PARITY_MANUAL_PATH],
       coverage: {
         include: [
@@ -179,10 +181,4 @@ export class FsmFlowParityAuditor extends BaseAuditor<FsmFlowParityRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (
-  process.argv[1] &&
-  import.meta.filename &&
-  path.basename(process.argv[1]) === path.basename(import.meta.filename)
-) {
-  await BaseAuditor.runCli(new FsmFlowParityAuditor());
-}
+await BaseAuditor.runCliIfMain(import.meta.url, new FsmFlowParityAuditor());

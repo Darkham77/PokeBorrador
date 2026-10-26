@@ -1,13 +1,13 @@
+import type { PokemonType } from '@/data/battle/types.ts';
+import type { BattleWeather, BattleSide } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import {
   getMechanicalWeather,
   WEATHER_MECHANICAL,
   WEATHER_REGISTRY
 } from '../weather/weatherRegistry.ts';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleWeather, BattleSide } from '@/types/battle/battle';
-import type { BattleContext } from '@/types/battle/battleContext';
-
-import type { PokemonType } from '@/data/battle/types.ts';
 
 const SAND_IMMUNE_TYPES = ['rock', 'ground', 'steel'] as const satisfies readonly PokemonType[];
 const SAND_IMMUNE_TYPES_SET: ReadonlySet<PokemonType> = new Set<PokemonType>(SAND_IMMUNE_TYPES); // runtime-set: Fast O(1) membership lookup set

@@ -1,17 +1,24 @@
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import type { PokemonType } from '@/data/battle/types';
+import type { ItemId } from '@/data/inventory/items';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { GAME_RATIOS } from '@/data/system/constants';
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
+import { getMapLocationById } from '@/data/world/maps';
+import type { Event as GameEvent } from '@/logic/events/eventEngine';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getDayCycle, requireDayPhase } from '@/logic/utils/timeUtils';
 import { applyEncounterBonuses } from '@/logic/war/bonusEngine';
+import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
 import { useEventStore } from '@/stores/events';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import type {
   MapLocation,
   Encounter,
   EncounterOptions,
   EncounterState
 } from '@/types/pokemon/encounters';
-import type { Event as GameEvent } from '@/logic/events/eventEngine';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import {
   getEncounterPool,
   selectFromPool,
@@ -25,14 +32,7 @@ import {
   applyAtmosphericStatus,
   hasMapEncounterSpawns
 } from './encounterHelpers.ts';
-
 import { generateFishingEncounter } from './fishingEncounterHelper.ts';
-import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
-import { getMapLocationById } from '@/data/world/maps';
-import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { ItemId } from '@/data/inventory/items';
-import type { PokemonType } from '@/data/battle/types';
 
 export {
   getEncounterPool,

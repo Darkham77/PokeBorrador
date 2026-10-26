@@ -1,7 +1,7 @@
-import type { Pokemon } from '../../types/pokemon/pokemon.ts';
 import type { ShowdownPlayerRequest } from '../../types/battle/battle.ts';
-import { isMatchingUid } from './showdownUidMapper.ts';
+import type { Pokemon } from '../../types/pokemon/pokemon.ts';
 import { ShowdownSlotResolver } from './showdownSlotResolver.ts';
+import { isMatchingUid } from './showdownUidMapper.ts';
 
 interface RequestPokemonWithUid {
   ident: string;
@@ -15,7 +15,7 @@ export class ShowdownTeamResolver {
   /**
    * Resolves current Pokémon order according to Showdown (active first).
    */
-  static getShowdownOrder(
+  public static getShowdownOrder(
     team: Pokemon[],
     request: ShowdownPlayerRequest | null | undefined
   ): Pokemon[] {
@@ -45,7 +45,7 @@ export class ShowdownTeamResolver {
   /**
    * Finds a Pokémon in the reactive team by its UID.
    */
-  static getPokemonByUid(team: Pokemon[], uid: string): Pokemon | null {
+  public static getPokemonByUid(team: Pokemon[], uid: string): Pokemon | null {
     if (!uid) return null;
     const found = team.find((p) => p && isMatchingUid(p.uid, uid));
     if (!found) {
@@ -59,7 +59,7 @@ export class ShowdownTeamResolver {
   /**
    * Finds a Pokémon in the reactive team by its Showdown list index (1-based).
    */
-  static getPokemonByShowdownSlot(
+  public static getPokemonByShowdownSlot(
     team: Pokemon[],
     request: ShowdownPlayerRequest | null | undefined,
     slotNum: number
@@ -72,7 +72,7 @@ export class ShowdownTeamResolver {
   /**
    * Gets the Showdown slot (1-based index) for a Pokémon by its UID.
    */
-  static getShowdownSlotForUid(
+  public static getShowdownSlotForUid(
     request: ShowdownPlayerRequest | null | undefined,
     uid: string
   ): number {

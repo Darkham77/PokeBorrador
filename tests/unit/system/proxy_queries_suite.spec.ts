@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+
 import { DBRouter, checkAppVersionCompatibility } from '@/logic/db/dbRouter.ts';
 import { ProxyQuery } from '@/logic/db/proxyQuery';
 import { queryLocal } from '@/logic/db/sqliteEngine';

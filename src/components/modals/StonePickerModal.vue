@@ -4,15 +4,16 @@
  * Standardized modal for using evolution stones.
  */
 import { ref, computed, watch } from 'vue';
+
+import BaseModal from '@/components/common/BaseModal.vue';
+import { getItemById, type ItemId, isItemId } from '@/data/inventory/items';
+import { STONE_EVOLUTIONS, isStoneEvolutionKey } from '@/data/pokemon/evolutionData';
+import { type PokemonSpeciesId, isPokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useEvolutionStore } from '@/stores/evolution';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
-import { useEvolutionStore } from '@/stores/evolution';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { STONE_EVOLUTIONS, isStoneEvolutionKey } from '@/data/pokemon/evolutionData';
-import { getItemById, type ItemId, isItemId } from '@/data/inventory/items';
-import { type PokemonSpeciesId, isPokemonSpeciesId } from '@/data/pokemon/pokedex';
-import BaseModal from '@/components/common/BaseModal.vue';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 interface Props {
   show?: boolean;
@@ -56,11 +57,11 @@ const options = computed<StoneOption[]>(() => {
   return [];
 });
 
-const close = () => {
+const close = (): void => {
   emit('close');
 };
 
-const useStone = (stoneId: ItemId, toId: PokemonSpeciesId) => {
+const useStone = (stoneId: ItemId, toId: PokemonSpeciesId): void => {
   if (!pokemon.value) return;
   const currentQty = gameStore.state.inventory[stoneId];
   if (!currentQty || currentQty <= 0) return;
@@ -79,9 +80,9 @@ const useStone = (stoneId: ItemId, toId: PokemonSpeciesId) => {
 
 const imageErrors = ref<Partial<Record<ItemId, boolean>>>({});
 
-const stoneHasError = (stoneId: ItemId) => !!imageErrors.value[stoneId];
+const stoneHasError = (stoneId: ItemId): boolean => !!imageErrors.value[stoneId];
 
-const handleImageError = (stoneId: ItemId) => {
+const handleImageError = (stoneId: ItemId): void => {
   imageErrors.value[stoneId] = true;
 };
 
@@ -89,7 +90,7 @@ watch(options, () => {
   imageErrors.value = {};
 });
 
-const getStoneInfo = (name: string) => {
+const getStoneInfo = (name: string): NonNullable<ReturnType<typeof getItemById>> => {
   const item = getItemById(name);
   if (!item) {
     throw new Error(`[StonePickerModal] Item de evolución no encontrado: "${name}"`);
@@ -97,7 +98,7 @@ const getStoneInfo = (name: string) => {
   return item;
 };
 
-const getPokemonName = (id: string) => {
+const getPokemonName = (id: string): string => {
   return pokemonDataProvider.resolveSpeciesName(id);
 };
 </script>

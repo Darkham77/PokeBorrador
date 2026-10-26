@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
-import type { SpeciesSummaryData } from './pokemonSummaryTypes.ts';
+
 import {
   getCategoryDescription,
   resolveDimensionTooltipTitle,
@@ -9,6 +10,7 @@ import {
   resolveDimensionDisplayValue,
   type PhysicalData
 } from './pokemonSummaryHelper.ts';
+import type { SpeciesSummaryData } from './pokemonSummaryTypes.ts';
 
 const props = defineProps<{
   species: SpeciesSummaryData;

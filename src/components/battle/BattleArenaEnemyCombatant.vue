@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import type { MoveCategory } from '@/data/battle/moves';
+import type { ItemId } from '@/data/inventory/items';
 import type {
   SparkleData,
   BattleStages,
   BattleSide,
   BattleSeatSpecialState
 } from '@/types/battle/battle';
-import type { MoveCategory } from '@/data/battle/moves';
-import type { ItemId } from '@/data/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import BattleCombatant from './BattleCombatant.vue';
 
 const props = withDefaults(

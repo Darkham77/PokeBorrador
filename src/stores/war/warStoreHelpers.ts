@@ -4,6 +4,9 @@
  * Modular helper functions and pure domain calculations for the War Store.
  */
 
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets.ts';
+import type { DBRouter } from '@/logic/db/dbRouter.ts';
+import { logger } from '@/logic/utils/logger.ts';
 import {
   DAILY_MAP_CAP,
   DAILY_COIN_CAP,
@@ -14,11 +17,9 @@ import {
   getPointReward,
   type WarEventType
 } from '@/logic/war/warEngine.ts';
-import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets.ts';
 import { requireFactionId, type FactionId, type ISODateKey } from '@/types/system/game.ts';
 import type { DominanceInfo } from '@/types/system/stores.ts';
-import type { DBRouter } from '@/logic/db/dbRouter.ts';
-import { logger } from '@/logic/utils/logger.ts';
+
 import type { WarWinnerFaction } from '../war.ts';
 
 interface GuardianCaptureEntry {
@@ -134,7 +135,7 @@ function computeWeeklyMapDominanceRows(
     const routeId = requireMapRouteId(row.map_id);
     const factionId = requireFactionId(row.faction);
     if (!mapTotals[routeId]) mapTotals[routeId] = { union: 0, poder: 0 };
-    mapTotals[routeId]![factionId] += row.points;
+    mapTotals[routeId][factionId] += row.points;
   }
 
   return Object.entries(mapTotals).map(([map_id, totals]) => {
@@ -158,7 +159,7 @@ export function calculateAllowedMapPoints(
   maxDailyMapCap: number = DAILY_MAP_CAP
 ): number {
   if (!dailyCap[today]) dailyCap[today] = {};
-  const currentMapPts = dailyCap[today]![routeId] || 0;
+  const currentMapPts = dailyCap[today][routeId] || 0;
   if (currentMapPts >= maxDailyMapCap) return 0;
   return Math.min(pts, maxDailyMapCap - currentMapPts);
 }
@@ -237,7 +238,7 @@ export function parsePointsToDominance(
     const routeId = requireMapRouteId(row.map_id);
     const factionId = requireFactionId(row.faction);
     if (!newDom[routeId]) newDom[routeId] = { union: 0, poder: 0, winner: null };
-    newDom[routeId]![factionId] = row.points;
+    newDom[routeId][factionId] = row.points;
   }
   return newDom;
 }
@@ -250,7 +251,7 @@ export function mergeSettledWinners(
   for (const row of domRecords) {
     const routeId = requireMapRouteId(row.map_id);
     if (!domMap[routeId]) domMap[routeId] = { union: 0, poder: 0, winner: null };
-    domMap[routeId]!.winner =
+    domMap[routeId].winner =
       !row.winner_faction || row.winner_faction === 'tie'
         ? null
         : requireFactionId(row.winner_faction);

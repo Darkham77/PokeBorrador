@@ -1,18 +1,20 @@
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from 'vue';
 import { gsap } from 'gsap';
-import { useGameStore } from '@/stores/game';
-import { useShopStore } from '@/stores/inventory/shop';
-import { useUIStore } from '@/stores/ui';
+import { computed, ref, watch, nextTick } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
-import BlackMarketHeader from './BlackMarketHeader.vue';
-import BlackMarketCard from './BlackMarketCard.vue';
 import { isItemId, type ItemId } from '@/data/inventory/items';
 import { PLAYER_CLASSES } from '@/data/player/playerClasses';
 import {
   BLACK_MARKET_BC_TO_MONEY_RATE,
   ROCKET_SHOP_DISCOUNT_RATIO
 } from '@/logic/constants/gameplay';
+import { useGameStore } from '@/stores/game';
+import { useShopStore } from '@/stores/inventory/shop';
+import { useUIStore } from '@/stores/ui';
+
+import BlackMarketCard from './BlackMarketCard.vue';
+import BlackMarketHeader from './BlackMarketHeader.vue';
 
 interface Props {
   show?: boolean;
@@ -53,13 +55,13 @@ const purchasedItemIds = computed<ReadonlySet<ItemId>>(() => {
   return new Set(list.filter(isItemId));
 });
 
-function handleBuy(itemId: ItemId) {
+function handleBuy(itemId: ItemId): void {
   shopStore.buyBlackMarketItem(itemId);
 }
 
 const gridRef = ref<HTMLElement | null>(null);
 
-const animateGrid = () => {
+const animateGrid = (): void => {
   nextTick(() => {
     if (!gridRef.value) return;
     const cards = gridRef.value.querySelectorAll('.bm-card');
@@ -91,7 +93,7 @@ watch(
   }
 );
 
-const close = () => {
+const close = (): void => {
   emit('close');
 };
 </script>

@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/events/eventAutoEnrollHelper.ts
  *
@@ -6,9 +7,10 @@
  * and computes optimal greedy assignment for one-click auto-fill in Home.
  */
 
+import { isPokemonBusy } from '@/logic/constants/tags.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { CompetitionEntry } from '@/types/system/stores';
-import { isPokemonBusy } from '@/logic/constants/tags.ts';
+
 import {
   resolveEventSubCompetitions,
   resolveSubCompetitionDirection,
@@ -87,7 +89,7 @@ function evaluateSubCompCandidate(
   event: GameEvent,
   subComp: ResolvedSubCompetition,
   pokemon: Pokemon,
-  userEntries: Readonly<Record<string, CompetitionEntry>>, // open-record: Composite event_id:catId index
+  userEntries: Readonly<Record<DisplayText, CompetitionEntry>>, // open-record: Composite event_id:catId index
   serverInstant: Temporal.Instant
 ): AutoEnrollCandidateCategory | null {
   const eligibility = isPokemonEligibleForSubCompetition(event, subComp, pokemon, serverInstant);
@@ -139,7 +141,7 @@ function evaluateSubCompCandidate(
 export function evaluateCapturedPokemonForEvents(
   pokemon: Pokemon,
   activeEvents: readonly GameEvent[],
-  userEntries: Readonly<Record<string, CompetitionEntry>>, // open-record: Composite event_id:catId index
+  userEntries: Readonly<Record<DisplayText, CompetitionEntry>>, // open-record: Composite event_id:catId index
   serverInstant: Temporal.Instant = Temporal.Now.instant()
 ): AutoEnrollCandidateCategory[] {
   if (!pokemon || !Array.isArray(activeEvents) || activeEvents.length === 0) {
@@ -261,7 +263,7 @@ function selectNonOverlappingAssignments(
 export function computeOptimalAutoFillAssignments(
   event: GameEvent,
   availablePokemon: readonly Pokemon[],
-  existingEntries: Readonly<Record<string, CompetitionEntry>>, // open-record: Composite event_id:catId index
+  existingEntries: Readonly<Record<DisplayText, CompetitionEntry>>, // open-record: Composite event_id:catId index
   serverInstant: Temporal.Instant = Temporal.Now.instant()
 ): OptimalAutoFillAssignment[] {
   if (event.type !== 'competition' || !availablePokemon.length) {

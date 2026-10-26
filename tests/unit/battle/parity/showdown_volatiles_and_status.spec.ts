@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vite-plus/test';
+
 import { handleCoreEvents } from '@/logic/battle/showdownBridgeCore';
-import { handleMiscEvents } from '@/logic/battle/showdownBridgeMisc';
 import { handleFieldEvents } from '@/logic/battle/showdownBridgeField';
+import { handleMiscEvents } from '@/logic/battle/showdownBridgeMisc';
 
 // --- From test_bug021_heal_status_injection.spec.ts ---
 describe('Audit Parity - BUG-021: -heal silently applies appended status', () => {

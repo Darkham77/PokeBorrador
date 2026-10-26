@@ -1,27 +1,27 @@
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
-import { logger } from '@/logic/utils/logger.ts';
-import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage.ts';
-import { incrementRecordKey } from '@/logic/utils/mapUtils';
 
-import { useAuthStore } from '@/stores/auth.ts';
-import { useGameStore } from '@/stores/game.ts';
-import { useUIStore } from '@/stores/ui.ts';
-import { useModalStore } from '@/stores/modals';
-import { checkAndResolveSeasonEnd } from '@/logic/pvp/rankedSeasonRewardEngine';
 import {
   RANKED_REWARD_MILESTONES,
   RANKED_REWARD_MILESTONES_BY_ID,
   isRankedRewardMilestoneId,
   type RankedRewardMilestoneId
 } from '@/data/system/rankedData';
+import { checkAndResolveSeasonEnd } from '@/logic/pvp/rankedSeasonRewardEngine';
+import { logger } from '@/logic/utils/logger.ts';
+import { incrementRecordKey } from '@/logic/utils/mapUtils';
+import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage.ts';
+import { useAuthStore } from '@/stores/auth.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui.ts';
 export { RANKED_REWARD_MILESTONES };
-import { getEloTier } from '@/logic/pvp/rankedEngine';
-import { GAME_TIMEZONE, parseZonedTime } from '@/logic/utils/timeUtils';
 import { DEFAULT_INITIAL_ELO, SEASON_DURATION_MONTHS } from '@/logic/constants/gameplay.ts';
 import { calculateEloDelta, applyEloDelta } from '@/logic/pvp/eloRatingMath.ts';
 import { resolveDefendingTeam, createPassiveTeamSnapshot } from '@/logic/pvp/pvpTeamHelper';
+import { getEloTier } from '@/logic/pvp/rankedEngine';
 import { evaluatePokemonForSeason } from '@/logic/pvp/seasonTeamFilter';
+import { GAME_TIMEZONE, parseZonedTime } from '@/logic/utils/timeUtils';
 
 const PVP_WIN_BATTLE_COINS = 15 as const;
 const PVP_LOSS_BATTLE_COINS = 5 as const;
@@ -34,14 +34,15 @@ export const RANKED_REWARD_TIER_MARKS = [
   { name: 'Maestro', elo: 3400, color: '#FFD700' }
 ];
 
+import { fetchAndFormatDefenseReports } from '@/logic/pvp/pvpDefenseReportsHelper';
+import { recordLocalMatch } from '@/logic/pvp/pvpMatchHistoryHelper';
 import type {
   PersonalPvPMatchSummary,
   PassiveBattleReport,
   PvPStats,
   SeasonRules
 } from '@/types/battle/pvp';
-import { recordLocalMatch } from '@/logic/pvp/pvpMatchHistoryHelper';
-import { fetchAndFormatDefenseReports } from '@/logic/pvp/pvpDefenseReportsHelper';
+
 import {
   fetchProfilePvPData,
   fetchActiveSeasonRules,
@@ -146,7 +147,7 @@ export const usePvPStore = defineStore('pvp', () => {
           currentSeasonRules.value = rules;
         }
 
-        maxElo.value = (gameStore.state.rankedMaxElo as number) || elo.value;
+        maxElo.value = gameStore.state.rankedMaxElo || elo.value;
         rewardsClaimed.value = gameStore.state.rankedRewardsClaimed ?? [];
 
         const { data: passive } = (await gameStore.db
@@ -190,7 +191,9 @@ export const usePvPStore = defineStore('pvp', () => {
     return inFlightPromise;
   }
 
-  async function checkSeasonRollover() {
+  async function checkSeasonRollover(): Promise<ReturnType<
+    typeof checkAndResolveSeasonEnd
+  > | null> {
     try {
       const now = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE);
       const prevResolvedId = gameStore.state.lastResolvedSeasonId;
@@ -200,17 +203,17 @@ export const usePvPStore = defineStore('pvp', () => {
           elo.value = resolution.newElo;
         }
         if (passiveTeamActive.value) {
-          void deactivatePassiveDefense(
+          await deactivatePassiveDefense(
             'Defensa Pasiva desactivada por finalización de temporada.'
           );
         } else if (gameStore.db && authStore.user) {
-          void gameStore.db
+          await gameStore.db
             .from('passive_teams')
             .update({ is_active: false })
             .eq('user_id', authStore.user.id);
         }
         if (gameStore.db && authStore.user && resolution.newElo !== undefined) {
-          void gameStore.db
+          await gameStore.db
             .from('profiles')
             .update({ elo_rating: resolution.newElo })
             .eq('id', authStore.user.id);
@@ -257,7 +260,7 @@ export const usePvPStore = defineStore('pvp', () => {
     }
   }
 
-  async function fetchDefenseReports() {
+  async function fetchDefenseReports(): Promise<void> {
     if (!gameStore.db || !authStore.user) return;
     defenseReports.value = await fetchAndFormatDefenseReports(
       gameStore.db,
@@ -270,19 +273,19 @@ export const usePvPStore = defineStore('pvp', () => {
 
   let defenseSnapshotTimer: ReturnType<typeof setTimeout> | null = null; // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
 
-  function scheduleDefenseSnapshotSync(delayMs = DEFENSE_SNAPSHOT_DEBOUNCE_MS) {
+  function scheduleDefenseSnapshotSync(delayMs = DEFENSE_SNAPSHOT_DEBOUNCE_MS): void {
     if (defenseSnapshotTimer) {
       clearTimeout(defenseSnapshotTimer); // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
       defenseSnapshotTimer = null;
     }
-    defenseSnapshotTimer = setTimeout(() => {
+    defenseSnapshotTimer = setTimeout(async () => {
       // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
       defenseSnapshotTimer = null;
-      void syncDefendingTeamSnapshot();
+      await syncDefendingTeamSnapshot();
     }, delayMs);
   }
 
-  async function flushPendingDefenseSnapshotSync() {
+  async function flushPendingDefenseSnapshotSync(): Promise<void> {
     if (defenseSnapshotTimer) {
       clearTimeout(defenseSnapshotTimer); // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
       defenseSnapshotTimer = null;
@@ -290,7 +293,7 @@ export const usePvPStore = defineStore('pvp', () => {
     }
   }
 
-  async function deactivatePassiveDefense(reason?: string) {
+  async function deactivatePassiveDefense(reason?: string): Promise<void> {
     if (defenseSnapshotTimer) {
       clearTimeout(defenseSnapshotTimer); // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
       defenseSnapshotTimer = null;
@@ -306,14 +309,14 @@ export const usePvPStore = defineStore('pvp', () => {
     }
     passiveTeamActive.value = false;
     gameStore.state.passiveTeamActive = false;
-    void gameStore.scheduleSave();
+    gameStore.scheduleSave();
     if (reason) {
       uiStore.notify(reason, '⚠️');
     }
     safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING);
   }
 
-  async function syncDefendingTeamSnapshot() {
+  async function syncDefendingTeamSnapshot(): Promise<void> {
     if (!passiveTeamActive.value || !gameStore.db || !authStore.user) return;
     const defendingTeam = resolveDefendingTeam(gameStore.state);
     if (defendingTeam.length === 0) return;
@@ -338,7 +341,7 @@ export const usePvPStore = defineStore('pvp', () => {
     }
   }
 
-  async function togglePassiveTeam() {
+  async function togglePassiveTeam(): Promise<void> {
     const newState = !passiveTeamActive.value;
 
     if (newState) {
@@ -375,7 +378,7 @@ export const usePvPStore = defineStore('pvp', () => {
       if (!error) {
         passiveTeamActive.value = true;
         gameStore.state.passiveTeamActive = true;
-        void gameStore.scheduleSave();
+        gameStore.scheduleSave();
         uiStore.notify('Equipo de Defensa Pasiva activado.', '🛡️');
       }
     } else {
@@ -387,7 +390,7 @@ export const usePvPStore = defineStore('pvp', () => {
   async function claimReward(
     milestoneId: RankedRewardMilestoneId,
     options: { autoSave?: boolean; silent?: boolean } = {}
-  ) {
+  ): Promise<void> {
     const autoSave = options.autoSave ?? true;
     const silent = options.silent ?? false;
 
@@ -441,7 +444,10 @@ export const usePvPStore = defineStore('pvp', () => {
     };
   });
 
-  async function updateElo(won: boolean, opponentElo: number = DEFAULT_INITIAL_ELO) {
+  async function updateElo(
+    won: boolean,
+    opponentElo: number = DEFAULT_INITIAL_ELO
+  ): Promise<number> {
     if (!authStore.user || !gameStore.db) return 0;
 
     const delta = calculateEloDelta(elo.value, opponentElo, won);
@@ -473,15 +479,15 @@ export const usePvPStore = defineStore('pvp', () => {
       })
       .eq('id', authStore.user.id);
 
-    void gameStore.save(false);
+    await gameStore.save(false);
     return delta;
   }
 
   const personalMatchHistory = computed<PersonalPvPMatchSummary[]>(() => {
-    return (gameStore.state.pvpMatchHistory || []) as PersonalPvPMatchSummary[];
+    return gameStore.state.pvpMatchHistory || [];
   });
 
-  function recordMatchResult(match: PersonalPvPMatchSummary) {
+  function recordMatchResult(match: PersonalPvPMatchSummary): void {
     recordLocalMatch(gameStore, match);
   }
 
@@ -492,7 +498,6 @@ export const usePvPStore = defineStore('pvp', () => {
     eloTier,
     rewardsClaimed,
     personalMatchHistory,
-    // fallow-ignore-next-line unused-store-member
     recordMatchResult,
     passiveTeamActive,
     defenseReports,
@@ -504,7 +509,6 @@ export const usePvPStore = defineStore('pvp', () => {
     scheduleDefenseSnapshotSync,
     flushPendingDefenseSnapshotSync,
     claimReward,
-    // fallow-ignore-next-line unused-store-member
     updateElo,
     rules: currentSeasonRules,
     currentTier: getEloTier

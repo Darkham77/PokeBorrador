@@ -82,6 +82,18 @@ function nodeDistance(a: POINode, b: POINode): number {
   return Math.hypot(ax - bx, ay - by);
 }
 
+function reverseSubsequence<T>(array: T[], startIndex: number, endIndex: number): void {
+  let left = startIndex;
+  let right = endIndex;
+  while (left < right) {
+    const tmp = array[left]!;
+    array[left] = array[right]!;
+    array[right] = tmp;
+    left++;
+    right--;
+  }
+}
+
 /**
  * TSP Nearest Neighbor + 2-opt refinement for linear chain ordering.
  * Starts from the southernmost primary node (canonical starting town position).
@@ -152,16 +164,7 @@ function solveTSPChain(
         const newDist = nodeDistance(a, c) + (d ? nodeDistance(b, d) : 0);
 
         if (newDist < currentDist - TWO_OPT_IMPROVEMENT_EPSILON) {
-          // Reverse the sub-sequence [i+1 ... j]
-          let left = i + 1;
-          let right = j;
-          while (left < right) {
-            const tmp = order[left]!;
-            order[left] = order[right]!;
-            order[right] = tmp;
-            left++;
-            right--;
-          }
+          reverseSubsequence(order, i + 1, j);
           improved = true;
         }
       }

@@ -1,10 +1,10 @@
-import type { BattleContext } from '@/types/battle/battleContext';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { isPlayerTrappedInWorker } from '@/logic/battle/showdownWorkerClient.ts';
 import { executeSwitch as switchAction } from '@/logic/battle/actions/switchAction.ts';
+import { isPlayerTrappedInWorker } from '@/logic/battle/showdownWorkerClient.ts';
+import { gameBus } from '@/logic/events/gameBus.ts';
 import { logger } from '@/logic/utils/logger.ts';
 import { useErrorStore } from '@/stores/errorStore.ts';
-import { gameBus } from '@/logic/events/gameBus.ts';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 function isTrappedSynchronous(ctx: BattleContext): boolean {
   if (ctx.isPlayerTrapped?.value) return true;

@@ -5,6 +5,7 @@
  * Atomic row component rendering a single NPC chance entry in the route spawns table.
  */
 import { computed } from 'vue';
+
 import type { NpcChanceInfo } from '@/logic/weather/weatherUtils';
 
 const MAX_PROBABILITY_BAR_PERCENT = 100;

@@ -15,10 +15,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
-import { generateProceduralPOICatalog } from '../../logic/map/regionalPoiCatalog.ts';
-import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+
 import { generateSettlementLayout } from '../../logic/map/cityLayoutEngine.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateProceduralPOICatalog } from '../../logic/map/regionalPoiCatalog.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
 
 describe.skip('Canonical Progression and Urban Tiers', () => {

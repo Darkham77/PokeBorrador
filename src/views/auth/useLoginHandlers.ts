@@ -6,16 +6,22 @@
 
 import { type Ref } from 'vue';
 import type { Router } from 'vue-router';
+
+import { OFFICIAL_SERVERS_BY_ID } from '@/data/system/official_servers';
+import { logger } from '@/logic/utils/logger';
 import {
   validateAuthLogin,
   validateAuthRegister,
   validateTrainerName
 } from '@/logic/validation/schemas';
-import { OFFICIAL_SERVERS_BY_ID } from '@/data/system/official_servers';
 import type { useAuthStore } from '@/stores/auth';
-import { logger } from '@/logic/utils/logger';
+import type { ServerConnectionStatus } from '@/types/auth/auth';
+import type { GenderId } from '@/types/system/game';
 
 const SERVER_HEALTH_TIMEOUT_MS = 3000;
+
+export type AuthGender = GenderId;
+export type AuthServerStatus = ServerConnectionStatus;
 
 export interface UseLoginHandlersParams {
   authStore: ReturnType<typeof useAuthStore>;
@@ -23,9 +29,9 @@ export interface UseLoginHandlersParams {
   email: Ref<string>;
   password: Ref<string>;
   username: Ref<string>;
-  gender: Ref<'h' | 'm'>;
+  gender: Ref<AuthGender>;
   selectedServerId: Ref<string>;
-  serverStatus: Ref<'checking' | 'online' | 'offline'>;
+  serverStatus: Ref<AuthServerStatus>;
   serverStatusDetail: Ref<string>;
   error: Ref<string | null>;
   success: Ref<string | null>;
@@ -34,7 +40,13 @@ export interface UseLoginHandlersParams {
   getFriendlyErrorMessage: (err: unknown) => string;
 }
 
-export function useLoginHandlers(params: UseLoginHandlersParams) {
+export function useLoginHandlers(params: UseLoginHandlersParams): {
+  handleLogin: () => Promise<void>;
+  handleSignup: () => Promise<void>;
+  handleLocalLogin: () => Promise<void>;
+  handleLocalSignup: () => Promise<void>;
+  checkServerHealth: () => Promise<void>;
+} {
   const {
     authStore,
     router,
@@ -52,7 +64,7 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
     getFriendlyErrorMessage
   } = params;
 
-  const handleLogin = async () => {
+  const handleLogin = async (): Promise<void> => {
     if (serverStatus.value !== 'online') return;
     const validRes = validateAuthLogin({ email: email.value, password: password.value });
     if (!validRes.success) {
@@ -72,7 +84,7 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
     }
   };
 
-  const handleSignup = async () => {
+  const handleSignup = async (): Promise<void> => {
     const validRes = validateAuthRegister({
       email: email.value,
       password: password.value,
@@ -102,7 +114,7 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
     }
   };
 
-  const handleLocalLogin = async () => {
+  const handleLocalLogin = async (): Promise<void> => {
     const validName = validateTrainerName(username.value);
     if (!validName.success) {
       error.value = validName.issues[0]?.message || 'Ingresa un nickname válido';
@@ -121,7 +133,7 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
     }
   };
 
-  const handleLocalSignup = async () => {
+  const handleLocalSignup = async (): Promise<void> => {
     const validName = validateTrainerName(username.value);
     if (!validName.success) {
       error.value = validName.issues[0]?.message || 'Ingresa un nickname válido';
@@ -131,9 +143,9 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
     error.value = null;
     try {
       await authStore.localLogin(validName.output, gender.value);
-      const targetUrl = new URL(import.meta.env.BASE_URL, window.location.origin);
+      const targetUrl = new URL(import.meta.env.BASE_URL, globalThis.location.origin);
       // fallow-ignore-next-line security-sink
-      window.location.replace(targetUrl.href);
+      globalThis.location.replace(targetUrl.href);
     } catch (err) {
       logger.error('Auth', 'Error técnico al crear partida local (handleLocalSignup):', err);
       error.value = 'Error al crear partida local';
@@ -142,12 +154,8 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
     }
   };
 
-  const checkServerHealth = async () => {
-    if (
-      typeof window !== 'undefined' &&
-      '__E2E__' in window &&
-      Boolean((window as Window & { __E2E__?: boolean }).__E2E__)
-    ) {
+  const checkServerHealth = async (): Promise<void> => {
+    if (typeof globalThis.window !== 'undefined' && Boolean(globalThis.window.__E2E__)) {
       serverStatus.value = 'offline';
       serverStatusDetail.value = 'Offline E2E session';
       return;

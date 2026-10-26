@@ -1,6 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { emulateOfflineRpc } from './sqliteRpcEmulation.ts';
+
 import type { SessionMode, DBResponse } from '@/types/system/database';
+
+import { emulateOfflineRpc } from './sqliteRpcEmulation.ts';
 
 export async function executeRouterRpc(
   mode: SessionMode,
@@ -23,8 +25,8 @@ export async function executeRouterRpc(
       errMsg.includes('network') ||
       errMsg.includes('failed to fetch')
     ) {
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('db-connection-error'));
+      if (typeof globalThis.window !== 'undefined') {
+        globalThis.dispatchEvent(new CustomEvent('db-connection-error'));
       }
     }
     throw err;

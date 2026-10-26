@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vite-plus/test';
+
 import {
   resolveForcedMoveIndex,
   CONTROLS_DISABLED_STATES,
   AUTO_BATTLE_SUBSTATES,
   FINISH_OVERLAY_SEARCH_SUBSTATES
 } from '@/components/battle/battleArenaControlsHelper';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import {
   hasExceededTouchThreshold,
   resolveDropSlotIndex
@@ -40,6 +40,11 @@ import {
   HAIL_L1_BASE_DUR_SEC
 } from '@/components/common/atmosphereSnowHelper';
 import {
+  resolveActivityTerrainFeature,
+  resolveSpecialRouteBonus,
+  resolveClassRouteAction
+} from '@/components/modals/spawns/routeSpawnsTerrainHelper';
+import {
   computeActiveWeights,
   parseWeatherDescription,
   formatTerrainTags,
@@ -52,11 +57,7 @@ import {
   BASE_GROUND_WEIGHT
 } from '@/composables/modals/routeSpawnsCalculationHelper';
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
-import {
-  resolveActivityTerrainFeature,
-  resolveSpecialRouteBonus,
-  resolveClassRouteAction
-} from '@/components/modals/spawns/routeSpawnsTerrainHelper';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 function createMockPokemon(overrides: Partial<Pokemon> = {}): Pokemon {
   return {

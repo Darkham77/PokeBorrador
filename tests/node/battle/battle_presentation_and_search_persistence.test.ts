@@ -5,22 +5,24 @@
  * and wild search mode persistence / anti-cheat restoration.
  */
 
-import { describe, it, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
-import { ref } from 'vue';
+
 import { createPinia, setActivePinia } from 'pinia';
+import { describe, it, beforeEach } from 'vite-plus/test';
+import { ref } from 'vue';
+
+import type { PokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
 import { serializeState } from '../../../src/logic/auth/saveSerializer.ts';
-import { restoreBattleState } from '../../../src/logic/battle/orchestratorRestoreHelper.ts';
 import {
   createBattleStateMachine,
   BATTLE_STATES,
   BATTLE_SUBSTATES
 } from '../../../src/logic/battle/battleStateMachine.ts';
-import type { BattleContext } from '../../../src/types/battle/battleContext.ts';
-import type { GameState } from '../../../src/types/system/game.ts';
-import type { Pokemon, Move } from '../../../src/types/pokemon/pokemon.ts';
+import { restoreBattleState } from '../../../src/logic/battle/orchestratorRestoreHelper.ts';
 import type { BattleState } from '../../../src/types/battle/battle.ts';
-import type { PokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
+import type { BattleContext } from '../../../src/types/battle/battleContext.ts';
+import type { Pokemon, Move } from '../../../src/types/pokemon/pokemon.ts';
+import type { GameState } from '../../../src/types/system/game.ts';
 
 function createMockPokemon(uid: string, id: PokemonSpeciesId, name: string, hp = 100): Pokemon {
   const mockMove: Move = {

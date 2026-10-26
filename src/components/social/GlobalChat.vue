@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick, computed, watch } from 'vue';
 import { gsap } from 'gsap';
-import { useDocumentListener } from '@/composables/ui/useWindowListener';
-import { useChatStore } from '@/stores/social/chat';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+import { ref, onMounted, nextTick, computed, watch } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
-import ChatBattleCodeBadge from './ChatBattleCodeBadge.vue';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+import { useDocumentListener } from '@/composables/ui/useWindowListener';
 import { MESSAGE_ANIM_DURATION_SEC, MESSAGE_ANIM_OVERSHOOT } from '@/logic/constants/visuals';
+import { useGameStore } from '@/stores/game';
+import { useChatStore } from '@/stores/social/chat';
+import { useUIStore } from '@/stores/ui';
+
+import ChatBattleCodeBadge from './ChatBattleCodeBadge.vue';
 import {
   GLOBAL_CHAT_MIN_LEVEL,
   GLOBAL_CHAT_MAX_CHARS,
@@ -42,7 +44,7 @@ const displayMessages = computed(() => {
   }));
 });
 
-function toggleChat() {
+function toggleChat(): void {
   isOpen.value = !isOpen.value;
   if (isOpen.value) {
     nextTick(() => {
@@ -52,7 +54,7 @@ function toggleChat() {
   }
 }
 
-async function handleSendMessage() {
+async function handleSendMessage(): Promise<void> {
   const text = newMessage.value.trim();
   if (!text || !canWrite.value) return;
 
@@ -61,7 +63,7 @@ async function handleSendMessage() {
   scrollToBottom();
 }
 
-function scrollToBottom() {
+function scrollToBottom(): void {
   if (messagesContainer.value) {
     messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
   }
@@ -78,7 +80,7 @@ watch(
   }
 );
 
-function handleOutsideClick(e: Event) {
+function handleOutsideClick(e: Event): void {
   if (!isOpen.value || !chatPanelRef.value) return;
 
   const target = e.target as Node;
@@ -92,12 +94,12 @@ function handleOutsideClick(e: Event) {
   }
 }
 
-function openTrainerProfile(userId?: string) {
+function openTrainerProfile(userId?: string): void {
   if (!userId) return;
   uiStore.open('TrainerProfile', { userId });
 }
 
-const onMessageEnter = (el: Element, done: () => void) => {
+const onMessageEnter = (el: Element, done: () => void): void => {
   gsap.fromTo(
     el,
     { scale: 0.9, opacity: 0 },

@@ -9,8 +9,10 @@
  */
 
 const isWebWorker =
-  typeof window === 'undefined' && typeof self !== 'undefined' && 'importScripts' in self;
-const isBrowser = typeof window !== 'undefined' || isWebWorker;
+  typeof globalThis.window === 'undefined' &&
+  typeof globalThis.self !== 'undefined' &&
+  'importScripts' in globalThis;
+const isBrowser = typeof globalThis.window !== 'undefined' || isWebWorker;
 const isNode = !isBrowser && typeof process !== 'undefined' && Boolean(process.versions?.node);
 
 // Use Vite's built-in env variable for production detection
@@ -37,9 +39,9 @@ if (isNode) {
     const nodeUtil = 'node:util';
     const util = (await import(/* @vite-ignore */ nodeUtil)) as { styleText: StyleTextFn };
     styleText = util.styleText;
-  } catch {
-    // catch-ok: Fallback when node:util is unavailable in non-node runtimes
-    // Graceful fallback without crashing
+  } catch (err) {
+    // console-ok: fallback initialization
+    console.debug('[logger] Fallback de estilo sin color para entorno sin node:util', err);
   }
 }
 

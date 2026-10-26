@@ -1,8 +1,9 @@
+import { mount } from '@vue/test-utils';
+import { gsap } from 'gsap';
+import { createPinia, setActivePinia } from 'pinia';
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
-import { mount } from '@vue/test-utils';
-import { createPinia, setActivePinia } from 'pinia';
-import { gsap } from 'gsap';
+
 import HomeBreedingWidget from '@/components/home/HomeBreedingWidget.vue';
 import HomeCollapsibleWidget from '@/components/home/HomeCollapsibleWidget.vue';
 import HomeFactionWar from '@/components/home/HomeFactionWar.vue';
@@ -11,12 +12,12 @@ import HomeNotificationsFeed from '@/components/home/HomeNotificationsFeed.vue';
 import HomePendingRewardsWidget from '@/components/home/HomePendingRewardsWidget.vue';
 import HomeWidgetMinimizeBtn from '@/components/home/HomeWidgetMinimizeBtn.vue';
 import HomeWidgetRefreshBtn from '@/components/home/HomeWidgetRefreshBtn.vue';
+import { useEventStore } from '@/stores/events';
 import { useGameStore } from '@/stores/game';
 import { useModalStore } from '@/stores/modals';
-import { useWarStore } from '@/stores/war';
-import { useUIStore } from '@/stores/ui';
-import { useEventStore } from '@/stores/events';
 import { usePvPStore } from '@/stores/pvp';
+import { useUIStore } from '@/stores/ui';
+import { useWarStore } from '@/stores/war';
 import type { PokemonEgg } from '@/types/pokemon/pokemon';
 
 const mockIsCollapsed = vi.fn();

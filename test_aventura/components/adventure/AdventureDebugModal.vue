@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import AdventureModal from './AdventureModal.vue';
 import { useMapLensStore } from '../../stores/mapLens.ts';
 import { MAP_LENSES } from '../../types/map/mapLenses.ts';
+import AdventureModal from './AdventureModal.vue';
 
 const props = defineProps<{
   show: boolean;

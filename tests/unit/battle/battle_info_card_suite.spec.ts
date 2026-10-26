@@ -7,9 +7,10 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import BattleInfoCard from '@/components/battle/BattleInfoCard.vue';
 import BattleInfoCardHeader from '@/components/battle/BattleInfoCardHeader.vue';
 import type { Pokemon } from '@/types/pokemon/pokemon';

@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { logger } from '@/logic/utils/logger';
+
 import { gameBus } from '@/logic/events/gameBus';
+import { logger } from '@/logic/utils/logger';
 
 export const useErrorStore = defineStore('error', () => {
   interface ErrorData {
@@ -25,7 +26,7 @@ export const useErrorStore = defineStore('error', () => {
     colno?: number;
   }
 
-  function setError(error: unknown, context: ErrorContext = {}) {
+  function setError(error: unknown, context: ErrorContext = {}): void {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
     const isUpdateOrNetwork =
@@ -87,7 +88,7 @@ export const useErrorStore = defineStore('error', () => {
     });
   }
 
-  function clearError() {
+  function clearError(): void {
     errors.value = [];
   }
 

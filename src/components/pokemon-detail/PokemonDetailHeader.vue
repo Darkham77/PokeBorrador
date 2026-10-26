@@ -2,6 +2,7 @@
 import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import type { DetailSpeciesHeaderData } from './pokemonSummaryTypes.ts';
 
 const NATIONAL_ID_PADDING_LENGTH = 3;
@@ -22,7 +23,9 @@ const emit = defineEmits<{
 <template>
   <header class="pdex-custom-header">
     <div class="poke-identity" :class="{ 'has-nickname': targetPokemon?.nickname }">
-      <span class="p-id">#{{ species.nationalId.padStart(NATIONAL_ID_PADDING_LENGTH, '0') }}</span>
+      <span class="p-id"
+        >#{{ (species.nationalId || '').padStart(NATIONAL_ID_PADDING_LENGTH, '0') }}</span
+      >
       <div class="name-with-edit" style="display: flex; align-items: center; gap: $spacing-sm">
         <button
           v-if="isInstance"
@@ -53,7 +56,12 @@ const emit = defineEmits<{
 
     <div class="header-right">
       <div class="p-types">
-        <PokemonTypeTag v-for="t in species.type" :key="t" :type="t" size="md" />
+        <PokemonTypeTag
+          v-for="t in Array.isArray(species.type) ? species.type : [species.type]"
+          :key="t"
+          :type="t"
+          size="md"
+        />
       </div>
     </div>
   </header>

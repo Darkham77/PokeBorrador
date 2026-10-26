@@ -1,8 +1,11 @@
-import { CLIENT_DB_VERSION } from './migrations_version.ts';
-import { logger } from '../utils/logger.ts';
-import { isE2EEnvironment } from '../utils/env.ts';
-import type { DBRouter } from './dbRouter.ts';
+import type { DisplayText } from '@francogp/auditor';
+
 import type { DBCompatibilityResponse } from '@/types/system/database';
+
+import { isE2EEnvironment } from '../utils/env.ts';
+import { logger } from '../utils/logger.ts';
+import type { DBRouter } from './dbRouter.ts';
+import { CLIENT_DB_VERSION } from './migrations_version.ts';
 import type { LoadingStore } from './sqliteEngine.ts';
 
 /**
@@ -12,7 +15,7 @@ import type { LoadingStore } from './sqliteEngine.ts';
 
 async function getOptionalLoadingStore(): Promise<LoadingStore | null> {
   try {
-    if (typeof window !== 'undefined') {
+    if (typeof globalThis.window !== 'undefined') {
       const { useLoadingStore } = await import('../../stores/loading.ts');
       return useLoadingStore();
     }
@@ -36,8 +39,8 @@ function parseDbVersionValue(rawValue: unknown): number {
   const valObj = parsedRaw as Record<string, unknown> | null; // open-record: Generic key-value data dictionary container
   const parsed =
     typeof parsedRaw === 'object' && valObj !== null && 'db_version' in valObj
-      ? parseInt((valObj.db_version as string | number) + '' || '0')
-      : parseInt((parsedRaw as string | number) + '' || '0');
+      ? parseInt((valObj.db_version as string | number) + '' || '0', 10)
+      : parseInt((parsedRaw as string | number) + '' || '0', 10);
   return isNaN(parsed) ? 0 : parsed;
 }
 
@@ -120,7 +123,7 @@ export function parseAppVersion(val: unknown): string {
     const parsed: unknown = typeof val === 'string' ? JSON.parse(val) : val;
     if (typeof parsed === 'string') return parsed;
     if (parsed && typeof parsed === 'object') {
-      return (parsed as Record<string, string>).app_version || ''; // open-record: Generic key-value data dictionary container
+      return (parsed as Record<DisplayText, string>).app_version || ''; // open-record: Generic key-value data dictionary container
     }
     return '';
   } catch {

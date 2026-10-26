@@ -1,5 +1,6 @@
 // scripts/battle-tester/fuzzer-ability-scenarios.ts
 import type { Battle, PokemonSet } from '@pkmn/sim';
+import { isAbilityId, type AbilityId } from '../../../../src/data/battle/abilities.ts';
 
 export interface ScriptedScenario {
   name: string;
@@ -698,7 +699,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     validate: (sim) => {
       // Como son pasivas de boost silenciosas, validamos que el Pokémon las tenga cargadas en la batalla
-      const abilitiesSet = new Set([
+      const abilitiesSet = new Set<AbilityId>([
         'toughclaws',
         'ironfist',
         'reckless',
@@ -712,7 +713,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
         'strongjaw',
         'punkrock'
       ]); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -770,7 +771,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 4' } // Close Combat → FurCoat
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set([
+      const abilitiesSet = new Set<AbilityId>([
         'filter',
         'solidrock',
         'multiscale',
@@ -784,7 +785,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
         'wonderskin',
         'purifyingsalt'
       ]); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -1308,8 +1309,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     validate: (sim) => {
       // Validamos que Contrary, Defiant y Competitive estén en el equipo de combate
-      const abilitiesSet = new Set(['contrary', 'defiant', 'competitive']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['contrary', 'defiant', 'competitive']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -1363,7 +1364,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 2' } // Rival usa Double-Edge
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set([
+      const abilitiesSet = new Set<AbilityId>([
         'aftermath',
         'roughskin',
         'ironbarbs',
@@ -1375,7 +1376,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
         'mummy',
         'gooey'
       ]); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -1431,7 +1432,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 3' } // Blissey intenta dormir -> Insomnia/VitalSpirit bloquea
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set([
+      const abilitiesSet = new Set<AbilityId>([
         'bulletproof',
         'soundproof',
         'limber',
@@ -1444,7 +1445,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
         'clearbody',
         'whitesmoke'
       ]); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -1453,7 +1454,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
   // -------------------------------------------------------------------------
   {
     name: 'On-Hit Boost Reactives',
-    abilities: ['stamina', 'weakarmor', 'justified', 'rattled', 'steamedengine'],
+    abilities: ['stamina', 'weakarmor', 'justified', 'rattled', 'steamengine'],
     playerTeam: [
       {
         name: 'P-HitBoost',
@@ -1484,18 +1485,18 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Blissey usa Tackle -> Stamina +1 Def / WeakArmor +Spe -Def
-      { p1: 'move 1', p2: 'move 2' }, // Blissey usa Flamethrower -> SteamedEngine +6 Spe
+      { p1: 'move 1', p2: 'move 2' }, // Blissey usa Flamethrower -> SteamEngine +6 Spe
       { p1: 'move 1', p2: 'move 4' } // Blissey usa Crunch (Siniestro) -> Justified +1 Atk / Rattled +1 Spe
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set([
+      const abilitiesSet = new Set<AbilityId>([
         'stamina',
         'weakarmor',
         'justified',
         'rattled',
-        'steamedengine'
+        'steamengine'
       ]); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -1508,7 +1509,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       'solarpower',
       'dryskin',
       'watercompaction',
-      'grassypelt',
+      'grasspelt',
       'sandforce',
       'sandrush',
       'sandveil',
@@ -1550,11 +1551,11 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 3' } // Blissey activa campo de hierba -> Grassy Pelt sube defensa
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set([
+      const abilitiesSet = new Set<AbilityId>([
         'solarpower',
         'dryskin',
         'watercompaction',
-        'grassypelt',
+        'grasspelt',
         'sandforce',
         'sandrush',
         'sandveil',
@@ -1562,7 +1563,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
         'snowcloak',
         'icebody'
       ]); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -1617,7 +1618,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'switch 2', p2: 'move 1' } // Cambia a Mew Frisk -> cachea la Sitrus Berry del rival
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set([
+      const abilitiesSet = new Set<AbilityId>([
         'intimidate',
         'download',
         'trace',
@@ -1625,7 +1626,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
         'anticipation',
         'forewarn'
       ]); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -1667,8 +1668,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Blissey usa Fake Out -> Inner Focus inmune a retroceder
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['innerfocus', 'steadfast', 'shielddust']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['innerfocus', 'steadfast', 'shielddust']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -1711,7 +1712,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 2' } // Blissey usa Zap Cannon -> No Guard / Compound Eyes aciertan
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set([
+      const abilitiesSet = new Set<AbilityId>([
         'battlearmor',
         'shellarmor',
         'compoundeyes',
@@ -1719,7 +1720,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
         'keeneye',
         'hypercutter'
       ]); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -1770,7 +1771,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Blissey envenena a Mew -> Synchronize envenena de vuelta a Blissey
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set([
+      const abilitiesSet = new Set<AbilityId>([
         'synchronize',
         'shedskin',
         'earlybird',
@@ -1780,7 +1781,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
         'flareboost',
         'marvelscale'
       ]); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -1822,8 +1823,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Blissey ataca -> consume 2 PP de Pound por Pressure
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['pressure', 'cursedbody']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['pressure', 'cursedbody']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -1873,7 +1874,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 2' } // Blissey usa Flamethrower -> Well Baked Body absorbe / Thermal Exchange se activa
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set([
+      const abilitiesSet = new Set<AbilityId>([
         'eartheater',
         'wellbakedbody',
         'thermalexchange',
@@ -1881,7 +1882,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
         'transistor',
         'rockypayload'
       ]); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -1936,8 +1937,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'switch 2', p2: 'move 1' } // Cambia a Eiscue -> Ice Face bloquea primer golpe físico
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['disguise', 'iceface', 'forecast', 'emergencyexit', 'wimpout']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['disguise', 'iceface', 'forecast', 'emergencyexit', 'wimpout']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -1980,8 +1981,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 2' } // Blissey usa Leer -> bloqueado por Big Pecks
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['fullmetalbody', 'bigpecks', 'heavymetal', 'lightmetal']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['fullmetalbody', 'bigpecks', 'heavymetal', 'lightmetal']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2024,8 +2025,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 2', p2: 'move 2' } // Mew usa Hurricane (prioridad por Galewings al 100% HP)
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['chlorophyll', 'galewings']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['chlorophyll', 'galewings']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2079,8 +2080,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Mew (P1) con Shadow Tag atrapa al oponente en el terreno de combate
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['arenatrap', 'shadowtag', 'magnetpull']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['arenatrap', 'shadowtag', 'magnetpull']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2123,8 +2124,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 2' } // Blissey intenta Mofa -> bloqueado por Oblivious / Good as Gold
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['goodasgold', 'magicguard', 'magicbounce', 'oblivious']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['goodasgold', 'magicguard', 'magicbounce', 'oblivious']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2179,8 +2180,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'switch 2', p2: 'move 1' } // Cambia a Corviknight -> Blissey usa Growl -> se le devuelve por Mirror Armor
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['illusion', 'mirrorarmor']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['illusion', 'mirrorarmor']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2223,8 +2224,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 2' } // T2: Poison Heal cura en lugar de dañar
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['hydration', 'poisonheal']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['hydration', 'poisonheal']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2266,8 +2267,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Tackle potenciado por Huge Power
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['hugepower', 'purepower', 'hustle', 'defeatist', 'analytic']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['hugepower', 'purepower', 'hustle', 'defeatist', 'analytic']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2310,8 +2311,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 2' } // Blissey intenta Self-Destruct -> Damp lo bloquea
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['liquidooze', 'innardsout', 'damp']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['liquidooze', 'innardsout', 'damp']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2354,8 +2355,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 2' } // Blissey usa Substitute -> Infiltrator ataca a través de él
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['levitate', 'infiltrator']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['levitate', 'infiltrator']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2397,8 +2398,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Blissey ataca -> Mew cae a < 50% HP -> Gluttony activa Sitrus Berry anticipadamente
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['klutz', 'gluttony', 'harvest']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['klutz', 'gluttony', 'harvest']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2440,8 +2441,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Mew usa Hyper Voice -> tipo Agua por Liquid Voice, envenena al oponente -> asegura golpe crítico por Merciless, roba baya por Magician
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['magician', 'liquidvoice', 'merciless', 'longreach']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['magician', 'liquidvoice', 'merciless', 'longreach']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2483,8 +2484,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Mew debilita a Blissey de un golpe -> Moxie se activa (sube Atk)
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['moxie', 'beastboost', 'chillingneigh', 'grimneigh']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['moxie', 'beastboost', 'chillingneigh', 'grimneigh']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2526,8 +2527,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Blissey usa Fake Out -> bloqueado por Armor Tail / Queenly Majesty
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['armortail', 'queenlymajesty']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['armortail', 'queenlymajesty']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2569,8 +2570,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Blissey usa Double-Edge -> Mew cae a < 33% HP -> activa Overgrow (potencia tipo planta)
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['overgrow', 'blaze', 'torrent', 'swarm']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['overgrow', 'blaze', 'torrent', 'swarm']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2612,8 +2613,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Mew usa Thunderbolt -> tipo Normal por Normalize, Blissey usa Calm Mind -> Mew copia subida si tiene Opportunist
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['myceliummight', 'normalize', 'opportunist']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['myceliummight', 'normalize', 'opportunist']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2655,8 +2656,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Blissey intenta envenenar -> bloqueado por Pastel Veil
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['pastelveil', 'leafguard']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['pastelveil', 'leafguard']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2698,8 +2699,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Mew usa Toxic -> actúa primero por Prankster, usa Hyper Voice -> convertido a Hada por Pixilate
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['prankster', 'pixilate']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['prankster', 'pixilate']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2741,8 +2742,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Mew usa Toxic -> envenena al tipo Acero gracias a Corrosion
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['corrosion', 'poisontouch', 'poisonpuppeteer']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['corrosion', 'poisontouch', 'poisonpuppeteer']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2784,8 +2785,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Blissey usa Tackle (contacto) -> Mew le roba la Sitrus Berry por Pickpocket
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['pickpocket']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['pickpocket']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2828,8 +2829,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 2' } // Blissey activa campo eléctrico -> Quark Drive se activa
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['protosynthesis', 'quarkdrive']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['protosynthesis', 'quarkdrive']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2872,8 +2873,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 2' }
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['raindish', 'overcoat']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['raindish', 'overcoat']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2928,8 +2929,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'switch 2', p2: 'move 2' } // Entra Mew Receiver y hereda la habilidad Rough Skin del aliado debilitado
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['receiver', 'powerofalchemy']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['receiver', 'powerofalchemy']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -2984,8 +2985,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'switch 2', p2: 'move 2' } // Al retirarse, Mew se cura 33% de vida gracias a Regenerator
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['regenerator']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['regenerator']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3027,8 +3028,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Mew usa Double-Edge -> Rock Head previene daño de retroceso
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['rockhead', 'rkssystem', 'multitype', 'mimicry']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['rockhead', 'rkssystem', 'multitype', 'mimicry']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3070,8 +3071,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Mew usa Tackle -> daño potenciado por Rivalry (mismo género)
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['rivalry']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['rivalry']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3113,8 +3114,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Mew usa Tackle -> golpea a Gholdengo (Fantasma)
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['scrappy', 'mindseye']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['scrappy', 'mindseye']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3169,8 +3170,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'switch 2', p2: 'move 2' } // Cambia a Screen Cleaner -> elimina la Light Screen activa de Blissey
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['screencleaner', 'sharpness', 'serenegrace', 'gorillatactics']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['screencleaner', 'sharpness', 'serenegrace', 'gorillatactics']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3212,8 +3213,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Blissey usa Tackle -> Seed Sower se activa y crea Grassy Terrain
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['seedsower', 'sandspit', 'electromorphosis']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['seedsower', 'sandspit', 'electromorphosis']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3255,8 +3256,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Slow Start se activa en T1
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['slowstart', 'stall']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['slowstart', 'stall']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3298,8 +3299,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Blissey usa Growl -> Mew con Simple reduce Atk -2
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['simple', 'skilllink']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['simple', 'skilllink']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3341,8 +3342,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Al final del turno T1 se activa Speed Boost
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['soulheart', 'speedboost']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['soulheart', 'speedboost']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3384,8 +3385,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Blissey usa Knock Off -> Mew retiene Sitrus Berry por Sticky Hold
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['stickyhold', 'stakeout', 'stench']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['stickyhold', 'stakeout', 'stench']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3427,8 +3428,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Blissey usa Water Pulse -> Storm Drain absorbe y sube SpA
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['stormdrain', 'steamengine', 'steelworker', 'steelyspirit']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['stormdrain', 'steamengine', 'steelworker', 'steelyspirit']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3470,8 +3471,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Blissey ataca a Wishiwashi -> cae a < 25% HP -> rompe forma Banco
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['schooling', 'shieldsdown']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['schooling', 'shieldsdown']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3514,8 +3515,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 2' } // Blissey usa Roar -> bloqueado si tuviese Ventosas
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['sturdy', 'suctioncups']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['sturdy', 'suctioncups']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3557,8 +3558,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Blissey activa lluvia -> Swift Swim dobla la velocidad
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['swiftswim', 'surgesurfer']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['swiftswim', 'surgesurfer']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3613,8 +3614,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'switch 2', p2: 'move 2' } // Kingambit entra con boost de Atk/SpA por Supreme Overlord
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['superluck', 'supremeoverlord']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['superluck', 'supremeoverlord']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3656,14 +3657,14 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Mew usa Tackle -> daño transmutado y potenciado
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set([
+      const abilitiesSet = new Set<AbilityId>([
         'aerilate',
         'galvanize',
         'refrigerate',
         'waterbubble',
         'parentalbond'
       ]); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3717,7 +3718,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 2' } // Blissey usa Flamethrower -> golpe súper eficaz
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set([
+      const abilitiesSet = new Set<AbilityId>([
         'flowergift',
         'grasspelt',
         'tabletsofruin',
@@ -3729,7 +3730,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
         'runaway',
         'illuminate'
       ]); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3784,7 +3785,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 2' } // Blissey usa Hurricane -> Wind Power / Wind Rider se activan
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set([
+      const abilitiesSet = new Set<AbilityId>([
         'angerpoint',
         'windpower',
         'windrider',
@@ -3797,7 +3798,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
         'tangledfeet',
         'tanglinghair'
       ]); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3854,7 +3855,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Blissey ataca -> Mew consume baya, Cud Chew la vuelve a comer en el sig. turno
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set([
+      const abilitiesSet = new Set<AbilityId>([
         'cudchew',
         'unburden',
         'symbiosis',
@@ -3870,7 +3871,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
         'pastelveil',
         'windrider'
       ]); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
 
@@ -3912,8 +3913,8 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 2', p2: 'move 1' } // Mew usa Soft-Boiled -> prioridad aumentada por Triage
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['triage', 'turboblaze', 'victorystar', 'wanderingspirit']); // runtime-set: Fast O(1) membership lookup set
-      return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
+      const abilitiesSet = new Set<AbilityId>(['triage', 'turboblaze', 'victorystar', 'wanderingspirit']); // runtime-set: Fast O(1) membership lookup set
+      return sim.p1.pokemon.some((p) => isAbilityId(p.ability) && abilitiesSet.has(p.ability));
     }
   },
   {

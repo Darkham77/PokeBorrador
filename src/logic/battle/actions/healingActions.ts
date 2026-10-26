@@ -1,4 +1,7 @@
+import type { DisplayText } from '@francogp/auditor';
+
 import type { MoveAction } from '@/types/battle/battle';
+
 import {
   getMechanicalWeather,
   WEATHER_MECHANICAL,
@@ -16,7 +19,7 @@ const BAD_HEAL_WEATHERS: readonly WeatherMechanical[] = [
 const HEAL_WEATHER_SUN_PCT = 0.66;
 const HEAL_WEATHER_BAD_PCT = 0.25;
 
-export const HEALING_ACTIONS: Record<string, MoveAction> = {
+export const HEALING_ACTIONS: Record<DisplayText, MoveAction> = {
   // open-record: Healing move effect dispatch table indexed by move effect string
   heal_50: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     if (src.hp >= src.maxHp) {
@@ -38,7 +41,7 @@ export const HEALING_ACTIONS: Record<string, MoveAction> = {
     // Prioridad 1: Clima (Mecánicas oficiales)
     if (mechWeather === WEATHER_MECHANICAL.SUN) {
       healPct = HEAL_WEATHER_SUN_PCT;
-    } else if (BAD_HEAL_WEATHERS.includes(mechWeather as WeatherMechanical)) {
+    } else if (BAD_HEAL_WEATHERS.includes(mechWeather)) {
       healPct = HEAL_WEATHER_BAD_PCT;
     } else {
       // Clear weather (Default)

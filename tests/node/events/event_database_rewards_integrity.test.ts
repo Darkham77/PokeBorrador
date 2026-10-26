@@ -12,18 +12,20 @@
  * Enforces Zero Error Suppression: Fails loudly if ANY item or species is mistyped.
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
+
+import { describe, it } from 'vite-plus/test';
+
+import { getItemById, getItemName } from '../../../src/data/inventory/items.ts';
+import { isEnabledPokemonId } from '../../../src/data/system/constants.ts';
+import { FIRE_RED_MAPS } from '../../../src/data/world/maps.ts';
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
+import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
 import {
   splitSQLStatements,
   translatePostgresToSqlite
 } from '../../../src/logic/db/sqlTranslator.ts';
-import { getItemById, getItemName } from '../../../src/data/inventory/items.ts';
-import { isEnabledPokemonId } from '../../../src/data/system/constants.ts';
-import { FIRE_RED_MAPS } from '../../../src/data/world/maps.ts';
 import { getFinalGroundRates } from '../../../src/logic/encounters/encounters.ts';
 import {
   getGlobalMultipliers,

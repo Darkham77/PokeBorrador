@@ -1,12 +1,14 @@
-import { awaitAnimation } from '@/logic/utils/gsapHelpers';
 import gsap from 'gsap';
-import { useItemOnPokemon } from '../providers/itemProvider.ts';
+
+import { getItemName, type ItemId } from '@/data/inventory/items';
 import { gameBus } from '@/logic/events/gameBus';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { AudioStore } from '@/types/system/stores';
+import { awaitAnimation } from '@/logic/utils/gsapHelpers';
 import type { LogFn } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
-import { getItemName, type ItemId } from '@/data/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { AudioStore } from '@/types/system/stores';
+
+import { useItemOnPokemon } from '../providers/itemProvider.ts';
 
 const HEAL_ANIMATION_FALLBACK_DELAY_SEC = 0.6;
 
@@ -45,7 +47,7 @@ export async function executeHealingItemUsage(
         await awaitAnimation(gsap.delayedCall(HEAL_ANIMATION_FALLBACK_DELAY_SEC, () => {}));
       }
     } else {
-      void audio.play('heal');
+      await audio.play('heal');
     }
 
     return { action: 'heal', pokemon: res.pokemon };

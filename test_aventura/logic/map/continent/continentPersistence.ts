@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/map/continent/continentPersistence.ts
  *
@@ -23,35 +24,35 @@ const LEGACY_STORAGE_KEY_PROFILES = 'pokevicio_continent_projects_v2';
 const memoryStore = new Map<string, string>();
 
 function getStorageItem(key: string): string | null {
-  if (typeof window !== 'undefined' && window.localStorage) {
+  if (typeof globalThis.window !== 'undefined' && globalThis.localStorage) {
     try {
-      return window.localStorage.getItem(key);
-    } catch {
-      // catch-ok: Fallback to memoryStore when localStorage is unavailable or blocked in private mode
+      return globalThis.localStorage.getItem(key);
+    } catch (err) {
+      console.warn('Handled controlled exception:', err);
     }
   }
   return memoryStore.get(key) ?? null;
 }
 
 function setStorageItem(key: string, value: string): void {
-  if (typeof window !== 'undefined' && window.localStorage) {
+  if (typeof globalThis.window !== 'undefined' && globalThis.localStorage) {
     try {
-      window.localStorage.setItem(key, value);
+      globalThis.localStorage.setItem(key, value);
       return;
-    } catch {
-      // catch-ok: Fallback to memoryStore when localStorage quota is exceeded or storage is blocked
+    } catch (err) {
+      console.warn('Handled controlled exception:', err);
     }
   }
   memoryStore.set(key, value);
 }
 
 function removeStorageItem(key: string): void {
-  if (typeof window !== 'undefined' && window.localStorage) {
+  if (typeof globalThis.window !== 'undefined' && globalThis.localStorage) {
     try {
-      window.localStorage.removeItem(key);
+      globalThis.localStorage.removeItem(key);
       return;
-    } catch {
-      // catch-ok: Fallback to memoryStore when localStorage removal is restricted
+    } catch (err) {
+      console.warn('Handled controlled exception:', err);
     }
   }
   memoryStore.delete(key);
@@ -98,7 +99,7 @@ export function createBlankProject(
   };
 }
 
-const CANONICAL_KANTO_NODES: Record<string, ContinentNode> = {
+const CANONICAL_KANTO_NODES: Record<DisplayText, ContinentNode> = {
   // open-record: Canonical Kanto nodes dictionary indexed by node id
   pallet: {
     id: 'pallet',
@@ -294,7 +295,7 @@ export function clearAllProfilesForTesting(): void {
   memoryStore.clear();
 }
 
-function getAllStoredProjects(): Record<string, ContinentProject> {
+function getAllStoredProjects(): Record<DisplayText, ContinentProject> {
   // open-record: Stored continent projects dictionary indexed by project id
   const raw = getStorageItem(STORAGE_KEY_PROFILES);
   if (!raw) {
@@ -305,8 +306,8 @@ function getAllStoredProjects(): Record<string, ContinentProject> {
     return {};
   }
   try {
-    const parsed = JSON.parse(raw) as Record<string, ContinentProject>; // open-record: Estructura o identificador procedural de aventura
-    const migrated: Record<string, ContinentProject> = {}; // open-record: Migrated continent projects dictionary indexed by project id
+    const parsed = JSON.parse(raw) as Record<DisplayText, ContinentProject>; // open-record: Estructura o identificador procedural de aventura
+    const migrated: Record<DisplayText, ContinentProject> = {}; // open-record: Migrated continent projects dictionary indexed by project id
     let needsSave = false;
 
     for (const [id, p] of Object.entries(parsed)) {

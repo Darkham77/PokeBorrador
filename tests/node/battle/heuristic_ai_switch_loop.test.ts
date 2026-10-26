@@ -1,5 +1,7 @@
-import { describe, it, vi, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it, vi, beforeEach } from 'vite-plus/test';
+
 import { HeuristicAI } from '../../../src/logic/battle/ai/heuristicAI.ts';
 import type { BattleContext } from '../../../src/types/battle/battleContext.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';

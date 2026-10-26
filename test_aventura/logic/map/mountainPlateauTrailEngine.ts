@@ -8,8 +8,8 @@
  * cave entrances to nearest road paths or stair landings.
  */
 
-import type { ContinentMapResult, MountainStairLocation } from './continentGenerator.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
+import type { ContinentMapResult, MountainStairLocation } from './continentGenerator.ts';
 import {
   findPathAStar,
   MAX_STAIR_LINK_DISTANCE,
@@ -86,6 +86,46 @@ function findNearestGroundTarget(
   return bestTarget;
 }
 
+function findNearestElevationZeroPathPoint(
+  lowerX: number,
+  lowerY: number,
+  W: number,
+  H: number,
+  pathGrid: readonly (readonly boolean[])[],
+  heightmap: readonly (readonly number[])[],
+  maxDist: number
+): { x: number; y: number } | null {
+  let nearest: { x: number; y: number } | null = null;
+  let minPathDist = Infinity;
+
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      if (!pathGrid[y]![x] || (heightmap[y]?.[x] ?? 0) !== 0) continue;
+      if (Math.abs(x - lowerX) <= 1 && Math.abs(y - lowerY) <= 1) continue;
+      const d = Math.hypot(x - lowerX, y - lowerY);
+      if (d < minPathDist && d <= maxDist) {
+        minPathDist = d;
+        nearest = { x, y };
+      }
+    }
+  }
+  return nearest;
+}
+
+function connectStairPair(
+  s1: MountainStairLocation,
+  s2: MountainStairLocation,
+  continentMap: ContinentMapResult,
+  pathGrid: boolean[][]
+): void {
+  const d = Math.hypot(s1.x - s2.x, s1.y - s2.y);
+  if (d > MAX_PLATEAU_STAIR_PAIR_DISTANCE) return;
+  const trail = findPathAStar(continentMap, s1.x, s1.y - 1, s2.x, s2.y - 1, pathGrid, false, []);
+  if (trail && trail.path.length > 0) {
+    stampPath(trail.path, pathGrid);
+  }
+}
+
 /**
  * Traces mountain stairs access paths, plateau inter-stair trails, and cave entrance trails.
  */
@@ -109,21 +149,15 @@ export function connectMountainPlateauTrails(ctx: MountainPlateauTrailsContext):
     // Connect lower landing (stair.y + 2) to the nearest regional trunk route on elevation 0
     const lowerX = stair.x;
     const lowerY = Math.min(H - 1, stair.y + 2);
-    let nearestPathPoint: { x: number; y: number } | null = null;
-    let minPathDist = Infinity;
-
-    for (let y = 0; y < H; y++) {
-      for (let x = 0; x < W; x++) {
-        if (pathGrid[y]![x] && (continentMap.heightmap[y]?.[x] ?? 0) === 0) {
-          if (Math.abs(x - lowerX) <= 1 && Math.abs(y - lowerY) <= 1) continue;
-          const d = Math.hypot(x - lowerX, y - lowerY);
-          if (d < minPathDist && d <= MAX_STAIR_LINK_DISTANCE) {
-            minPathDist = d;
-            nearestPathPoint = { x, y };
-          }
-        }
-      }
-    }
+    const nearestPathPoint = findNearestElevationZeroPathPoint(
+      lowerX,
+      lowerY,
+      W,
+      H,
+      pathGrid,
+      continentMap.heightmap,
+      MAX_STAIR_LINK_DISTANCE
+    );
 
     if (nearestPathPoint) {
       const link = findPathAStar(
@@ -137,9 +171,7 @@ export function connectMountainPlateauTrails(ctx: MountainPlateauTrailsContext):
         []
       );
       if (link && link.path.length > 0) {
-        for (const pt of link.path) {
-          pathGrid[pt.y]![pt.x] = true;
-        }
+        stampPath(link.path, pathGrid);
       }
     }
   }
@@ -147,26 +179,7 @@ export function connectMountainPlateauTrails(ctx: MountainPlateauTrailsContext):
   // Connect pairs of stairs across the mountain plateau
   for (let i = 0; i < stairs.length; i++) {
     for (let j = i + 1; j < stairs.length; j++) {
-      const s1 = stairs[i]!;
-      const s2 = stairs[j]!;
-      const d = Math.hypot(s1.x - s2.x, s1.y - s2.y);
-      if (d <= MAX_PLATEAU_STAIR_PAIR_DISTANCE) {
-        const trail = findPathAStar(
-          continentMap,
-          s1.x,
-          s1.y - 1,
-          s2.x,
-          s2.y - 1,
-          pathGrid,
-          false,
-          []
-        );
-        if (trail && trail.path.length > 0) {
-          for (const pt of trail.path) {
-            pathGrid[pt.y]![pt.x] = true;
-          }
-        }
-      }
+      connectStairPair(stairs[i]!, stairs[j]!, continentMap, pathGrid);
     }
   }
 

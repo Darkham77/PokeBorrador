@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useClipboard } from '@vueuse/core';
-import { usePvPStore } from '@/stores/pvp';
-import { useLivePvPStore } from '@/stores/livePvP';
-import { useUIStore } from '@/stores/ui';
-import { useGameStore } from '@/stores/game';
+import { computed } from 'vue';
+
 import { parseBattleReplayRecord } from '@/logic/pvp/replayCodeGenerator';
+import { useGameStore } from '@/stores/game';
+import { useLivePvPStore } from '@/stores/livePvP';
+import { usePvPStore } from '@/stores/pvp';
+import { useUIStore } from '@/stores/ui';
 import type { PersonalPvPMatchSummary } from '@/types/battle/pvp';
+
 import ArenaMatchHistoryCard from './ArenaMatchHistoryCard.vue';
 
 const pvpStore = usePvPStore();
@@ -17,12 +19,12 @@ const { copy } = useClipboard();
 
 const history = computed(() => pvpStore.personalMatchHistory);
 
-async function copyBattleCode(code: string) {
+async function copyBattleCode(code: string): Promise<void> {
   await copy(code);
   uiStore.notify(`Código ${code} copiado al portapapeles.`, '📋');
 }
 
-async function watchReplay(match: PersonalPvPMatchSummary) {
+async function watchReplay(match: PersonalPvPMatchSummary): Promise<void> {
   if (!gameStore.db) {
     uiStore.notify('Base de datos no disponible.', '⚠️');
     return;

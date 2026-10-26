@@ -17,13 +17,12 @@
  *   npm run validate:battle-ui
  */
 
-import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import {
   BaseAuditor,
   FileScanAuditor,
   parseVueSfc,
-  hasLineSuppression,
+  hasPrecedingComment,
   createRuleCapabilities
 } from '@francogp/auditor';
 
@@ -76,6 +75,7 @@ export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingR
       icon: '⚔️',
       family: 'architecture',
       usesThirdPartyTool: false,
+      requiredPermissions: [],
       ruleIds: BATTLE_UI_BRANCHING_RULES,
       packageName: 'Combate',
       ruleDescriptions: {
@@ -88,6 +88,7 @@ export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingR
         'ui-branching-escape':
           'Reemplaza cannotEscape por la propiedad declarativa uiConfig.allowFlee.'
       },
+      remediationPhase: 'behavior',
       roots,
       allowedExtensions: new Set(['.vue'])
     });
@@ -137,15 +138,9 @@ export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingR
 
   private hasSuppression(lines: readonly string[], lineIndex: number): boolean {
     const suppressionRegex = /<!--\s*ui-branching-ok:\s*\S+.*-->/i;
-    return hasLineSuppression(lines, lineIndex, suppressionRegex, 3);
+    return hasPrecedingComment(lines, lineIndex, suppressionRegex, { maxLookbackLines: 3 });
   }
 }
 
 // Canonical CLI Entrypoint
-if (
-  process.argv[1] &&
-  import.meta.filename &&
-  path.basename(process.argv[1]) === path.basename(import.meta.filename)
-) {
-  await BaseAuditor.runCli(new BattleUiBranchingAuditor());
-}
+await BaseAuditor.runCliIfMain(import.meta.url, new BattleUiBranchingAuditor());

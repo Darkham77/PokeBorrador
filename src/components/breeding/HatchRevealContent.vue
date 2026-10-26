@@ -5,6 +5,7 @@
  * Reveal information wrapper with splash text, stats card, and continue button.
  */
 import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import HatchStatsCard from './HatchStatsCard.vue';
 
 interface Props {

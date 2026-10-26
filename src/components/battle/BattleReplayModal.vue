@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, shallowRef, computed, watch } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
-import BattleTacticalReplayer from './BattleTacticalReplayer.vue';
-import BattleReplayCombatantPod from './BattleReplayCombatantPod.vue';
 import { TacticalReplayEngine } from '@/logic/battle/replay/tacticalReplayEngine.ts';
 import { useLivePvPStore } from '@/stores/livePvP.ts';
 import { useModalStore } from '@/stores/modals.ts';
 import type { BattleReplayRecord } from '@/types/battle/pvp.ts';
+
+import BattleReplayCombatantPod from './BattleReplayCombatantPod.vue';
+import BattleTacticalReplayer from './BattleTacticalReplayer.vue';
 
 interface Props {
   show?: boolean;
@@ -43,7 +45,7 @@ watch(
   { immediate: true }
 );
 
-function onTurnChange(turn: number) {
+function onTurnChange(turn: number): void {
   currentTurn.value = turn;
 }
 
@@ -58,7 +60,7 @@ const winnerText = computed(() => {
   return `¡VICTORIA PARA ${name || 'JUGADOR'}!`;
 });
 
-function handleClose() {
+function handleClose(): void {
   livePvPStore.activeReplay = null;
   emit('close');
   modalStore.close('BattleReplay');

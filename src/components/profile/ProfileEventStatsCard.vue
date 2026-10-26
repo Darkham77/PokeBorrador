@@ -21,7 +21,7 @@ withDefaults(defineProps<Props>(), {
   handleStatLeave: undefined
 });
 
-const formatNum = (num: number) => formatCurrency(num);
+const formatNum = (num: number): string => formatCurrency(num);
 </script>
 
 <template>

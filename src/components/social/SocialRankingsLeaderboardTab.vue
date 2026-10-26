@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useSocialStore } from '@/stores/social/social';
-import { useModalStore } from '@/stores/modals';
 import SocialRankingsLeaderboardRow from '@/components/social/SocialRankingsLeaderboardRow.vue';
+import { useModalStore } from '@/stores/modals';
+import { useSocialStore } from '@/stores/social/social';
 import type { LeaderboardEntry } from '@/stores/social/social';
 
 defineProps<{
@@ -11,7 +11,7 @@ defineProps<{
 const socialStore = useSocialStore();
 const modalStore = useModalStore();
 
-function handleChallengePlayer(player: LeaderboardEntry) {
+function handleChallengePlayer(player: LeaderboardEntry): void {
   modalStore.open('PvPChallenge', {
     opponentId: player.id,
     opponentName: player.username,

@@ -10,11 +10,14 @@
  * - Zero unhandled rotation numbers or broken configurations
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
+
+import { describe, it } from 'vite-plus/test';
+
+import { isEnabledPokemonId } from '../../../src/data/system/constants.ts';
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
+import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
 import {
   splitSQLStatements,
   translatePostgresToSqlite
@@ -24,7 +27,6 @@ import {
   resolveWeeklyRotation,
   type EventConfig
 } from '../../../src/logic/events/eventEngine.ts';
-import { isEnabledPokemonId } from '../../../src/data/system/constants.ts';
 
 function executeMigrationStatement(db: DatabaseSync, sql: string, migrationId: string): void {
   try {

@@ -5,10 +5,12 @@
  * box instances, eggs, and persistent gender encodings.
  */
 
-import type { Pokemon, PokemonEgg, PokemonGender } from '@/types/pokemon/pokemon';
-import type { SaveDataDto } from '@/logic/validation/schemas';
 import type { GenderName } from '@pkmn/sim';
+
 import { cloneReactive } from '@/logic/utils/cloneUtils.ts';
+import type { SaveDataDto } from '@/logic/validation/schemas';
+import type { Pokemon, PokemonEgg, PokemonGender } from '@/types/pokemon/pokemon';
+
 import type { ActiveBattleSerialized } from './battleSerializerHelper.ts';
 
 export type PersistedPokemon = Omit<Pokemon, 'gender'> & { gender: GenderName };
@@ -134,9 +136,7 @@ function serializeActiveBattleGenderCodes(activeBattle: unknown): unknown {
   if (!battle.enemyTeam) return activeBattle;
   return {
     ...battle,
-    enemyTeam: battle.enemyTeam.map((enemy) =>
-      enemy ? withPersistedPokemonGender(enemy as Pokemon) : null
-    )
+    enemyTeam: battle.enemyTeam.map((enemy) => (enemy ? withPersistedPokemonGender(enemy) : null))
   };
 }
 

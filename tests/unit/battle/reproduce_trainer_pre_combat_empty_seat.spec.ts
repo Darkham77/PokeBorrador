@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vite-plus/test';
 import { ref, computed } from 'vue';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { useBattleCombatants } from '@/composables/battle/useBattleCombatants';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import type { useBattleStore } from '@/stores/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('NPC Trainer Pre-Combat Empty Seat Contract (Tier 1 RED Reproduction)', () => {
   it('suppresses enemy combatants in CONTEXT_SETUP when battling an NPC trainer', () => {

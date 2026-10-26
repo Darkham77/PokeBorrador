@@ -11,9 +11,11 @@
  */
 
 import { computed } from 'vue';
-import { useRegionalContinentStudioStore } from '../../stores/continentStudioStore.ts';
-import { SLIDER_DEBOUNCE_DELAY_MS } from '../../config/studioConstants.ts';
+
 import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
+
+import { SLIDER_DEBOUNCE_DELAY_MS } from '../../config/studioConstants.ts';
+import { useRegionalContinentStudioStore } from '../../stores/continentStudioStore.ts';
 
 const store = useRegionalContinentStudioStore();
 

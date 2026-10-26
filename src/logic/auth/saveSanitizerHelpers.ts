@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+
 import type { SaveDataDto } from '@/logic/validation/schemas';
 
 export function sanitizeNumericFields(sanitizedData: SaveDataDto, issues: string[]): void {
@@ -16,7 +18,7 @@ export function sanitizeNumericFields(sanitizedData: SaveDataDto, issues: string
 }
 
 export function sanitizeInventoryQuantities(
-  inventory: Record<string, number> | undefined, // open-record: Unsanitized raw save inventory payload with dynamic item IDs
+  inventory: Record<DisplayText, number> | undefined, // open-record: Unsanitized raw save inventory payload with dynamic item IDs
   issues: string[]
 ): void {
   if (!inventory) return;

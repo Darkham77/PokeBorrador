@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import gsap from 'gsap';
 import { computed } from 'vue';
-import { useUIStore } from '@/stores/ui';
+
+import BaseModal from '@/components/common/BaseModal.vue';
+import { NATURES, NATURE_DATA, toNatureId, type NatureId } from '@/data/battle/natures';
 import { useGameStore } from '@/stores/game';
 import { useInventoryStore } from '@/stores/inventory/inventory';
-import { NATURES, NATURE_DATA, toNatureId, type NatureId } from '@/data/battle/natures';
-import BaseModal from '@/components/common/BaseModal.vue';
-import gsap from 'gsap';
+import { useUIStore } from '@/stores/ui';
 
 const uiStore = useUIStore();
 const gameStore = useGameStore();
@@ -19,7 +20,7 @@ const naturePokemon = computed(() => {
 });
 const sortedNatures = NATURES.toSorted();
 
-const handleApplyNature = (nature: NatureId) => {
+const handleApplyNature = (nature: NatureId): void => {
   if (!naturePokemon.value) return;
   naturePokemon.value.nature = nature;
 
@@ -42,7 +43,7 @@ const handleApplyNature = (nature: NatureId) => {
 
 const HOVER_SCALE_BTN_ENTER = 1.02;
 
-const onBtnEnter = (event: MouseEvent) => {
+const onBtnEnter = (event: MouseEvent): void => {
   const el = event.currentTarget as HTMLElement;
   gsap.to(el, {
     y: -4,
@@ -55,7 +56,7 @@ const onBtnEnter = (event: MouseEvent) => {
   });
 };
 
-const onBtnLeave = (event: MouseEvent, isActive: boolean) => {
+const onBtnLeave = (event: MouseEvent, isActive: boolean): void => {
   const el = event.currentTarget as HTMLElement;
   gsap.to(el, {
     y: 0,
@@ -82,7 +83,7 @@ const emit = defineEmits<{
   (e: 'close'): void;
 }>();
 
-const close = () => {
+const close = (): void => {
   emit('close');
   uiStore.isNaturePatchOpen = false;
   uiStore.activePokemonForNature = null;

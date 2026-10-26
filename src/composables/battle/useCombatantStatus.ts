@@ -1,16 +1,20 @@
-import { computed, toValue, type MaybeRefOrGetter } from 'vue';
-import type { useBattleStore } from '@/stores/battle/battle';
+import type { DisplayText } from '@francogp/auditor';
+import { computed, toValue, type ComputedRef, type MaybeRefOrGetter } from 'vue';
+
+import { getStatMultiplier } from '@/logic/battle/battleEngine';
 import {
   STATUS_TOOLTIP_MAP,
   STAT_EMOJI_MAP,
   STATUS_EMOJI_MAP,
   STATUS_NAME_MAP
 } from '@/logic/battle/battleUiUtils';
-import { getStatMultiplier } from '@/logic/battle/battleEngine';
-import type { Pokemon, PokemonStatus } from '@/types/pokemon/pokemon';
+import { supabase } from '@/logic/db/supabase';
+import type { useBattleStore } from '@/stores/battle/battle';
 import { useGameStore } from '@/stores/game';
 import { useProfileStore } from '@/stores/player/profile';
-import { supabase } from '@/logic/db/supabase';
+import { BATTLE_STAGE_KEYS } from '@/types/battle/battle';
+import type { Pokemon, PokemonStatus } from '@/types/pokemon/pokemon';
+
 import {
   buildAbilityVolatileItem,
   buildEnemyInventoryVolatileItem,
@@ -32,22 +36,17 @@ interface UnifiedStatus {
   isAdminOnly?: boolean;
 }
 
-type ShowdownStatKey = 'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'acc' | 'eva';
-const SHOWDOWN_STAGE_KEYS = [
-  'atk',
-  'def',
-  'spa',
-  'spd',
-  'spe',
-  'acc',
-  'eva'
-] as const satisfies readonly ShowdownStatKey[];
+export interface UseCombatantStatusReturn {
+  activeStages: ComputedRef<Array<{ key: string; val: number; icon: string; text: string }>>;
+  volatileStatuses: ComputedRef<VolatileStatusItem[]>;
+  unifiedStatuses: ComputedRef<UnifiedStatus[]>;
+}
 
 export function useCombatantStatus(
   pokemonRef: MaybeRefOrGetter<Pokemon | null | undefined>,
   battleStore: ReturnType<typeof useBattleStore>,
   isPlayer: MaybeRefOrGetter<boolean>
-) {
+): UseCombatantStatusReturn {
   const p = computed(() => toValue(pokemonRef));
   const isPlayerVal = computed(() => toValue(isPlayer));
   const gameStore = useGameStore();
@@ -60,7 +59,8 @@ export function useCombatantStatus(
   const isAdmin = computed(() => {
     return (
       profileStore.profileData.isAdmin ||
-      (typeof window !== 'undefined' && Boolean(Reflect.get(window, '__ADMIN_DEBUG__'))) ||
+      (typeof globalThis.window !== 'undefined' &&
+        Boolean(Reflect.get(globalThis, '__ADMIN_DEBUG__'))) ||
       supabase.isLocal
     );
   });
@@ -70,8 +70,8 @@ export function useCombatantStatus(
     if (!s) return [];
 
     const results = [];
-    for (const key of SHOWDOWN_STAGE_KEYS) {
-      const val = (s as Record<string, number | undefined>)[key] || 0; // open-record: Generic key-value data dictionary container
+    for (const key of BATTLE_STAGE_KEYS) {
+      const val = (s as Record<DisplayText, number | undefined>)[key] || 0; // open-record: Generic key-value data dictionary container
       if (val !== 0) {
         const config = STAT_EMOJI_MAP[key] || {
           icon: '❓',
@@ -142,9 +142,9 @@ export function useCombatantStatus(
     // 1. Estado Primario
     if (target.status) {
       const s = target.status as PokemonStatus;
-      const emoji = (STATUS_EMOJI_MAP as Record<string, string>)[s]; // open-record: Generic key-value data dictionary container
-      const title = (STATUS_NAME_MAP as Record<string, string>)[s]; // open-record: Generic key-value data dictionary container
-      const description = (STATUS_TOOLTIP_MAP as Record<string, string>)[s]; // open-record: Generic key-value data dictionary container
+      const emoji = (STATUS_EMOJI_MAP as Record<DisplayText, string>)[s]; // open-record: Generic key-value data dictionary container
+      const title = (STATUS_NAME_MAP as Record<DisplayText, string>)[s]; // open-record: Generic key-value data dictionary container
+      const description = (STATUS_TOOLTIP_MAP as Record<DisplayText, string>)[s]; // open-record: Generic key-value data dictionary container
 
       if (!emoji || !title || !description) {
         throw new Error(
@@ -176,7 +176,7 @@ export function useCombatantStatus(
         class: 'volatile',
         count: vs.count,
         isBoosted: vs.isBoosted,
-        isAdminOnly: (vs as VolatileStatusItem).isAdminOnly
+        isAdminOnly: vs.isAdminOnly
       });
     });
 

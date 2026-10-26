@@ -13,16 +13,16 @@
  *   3. Synchronizable with SVG route adapters and macroscopic region maps.
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
-import type { WaterTerrainKind } from './waterAutotileEngine.ts';
-import { stampPortDockPier } from './portDockPierEngine.ts';
 import type { POINode, RouteEdge, RouteWaypoint, RouteType } from '../../types/map/poiTypes.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
+import { stampPortDockPier } from './portDockPierEngine.ts';
 import { computeOceanGrid, findPathAStar, getBestGateway } from './routePathfinding.ts';
+import type { WaterTerrainKind } from './waterAutotileEngine.ts';
 export { computeOceanGrid };
 import { buildRouteChain } from './routeChainTopology.ts';
 export { buildRouteChain };
-import { traceWaterSpansAndBridges } from './routeBridgeTracer.ts';
 import { connectMountainPlateauTrails } from './mountainPlateauTrailEngine.ts';
+import { traceWaterSpansAndBridges } from './routeBridgeTracer.ts';
 import { finalizeRouteGrids } from './routeGridFinalizer.ts';
 
 export interface RouteNetworkOptions {

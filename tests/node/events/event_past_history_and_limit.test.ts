@@ -6,14 +6,16 @@
  * and that fetchEvents calls and populates pastEvents.
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
 import { ref } from 'vue';
+
+import type { Event as GameEvent } from '../../../src/logic/events/eventEngine.ts';
 import {
   fetchPastEvents,
   type EventAwardsContext
 } from '../../../src/stores/events/eventAwardsActions.ts';
-import type { Event as GameEvent } from '../../../src/logic/events/eventEngine.ts';
 import type {
   PastEventHistoryItem,
   PendingAward,

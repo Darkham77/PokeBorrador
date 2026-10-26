@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
-import { useBreedingStore } from '@/stores/breeding';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import BaseModal from '@/components/common/BaseModal.vue';
-import DaycareSlot from '@/components/breeding/DaycareSlot.vue';
+
 import BreedingSummary from '@/components/breeding/BreedingSummary.vue';
+import DaycareSlot from '@/components/breeding/DaycareSlot.vue';
 import EggWarehouse from '@/components/breeding/EggWarehouse.vue';
-import IncubatingEggs from '@/components/breeding/IncubatingEggs.vue';
 import FossilCloning from '@/components/breeding/FossilCloning.vue';
+import IncubatingEggs from '@/components/breeding/IncubatingEggs.vue';
+import BaseModal from '@/components/common/BaseModal.vue';
+import { useBreedingStore } from '@/stores/breeding';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 interface Props {
   show?: boolean;
@@ -29,7 +30,7 @@ const modalStore = useModalStore();
 
 const isSmallScreen = computed(() => uiStore.isSmallScreen);
 
-const openPicker = (slotIdx: number) => {
+const openPicker = (slotIdx: number): void => {
   modalStore.open('PokemonSelection', {
     title: `SELECCIONAR POKÉMON SLOT ${slotIdx + 1}`,
     isDaycareContext: true,
@@ -44,7 +45,7 @@ const openPicker = (slotIdx: number) => {
   });
 };
 
-const withdraw = (slotIdx: number) => {
+const withdraw = (slotIdx: number): void => {
   const pokemon = breedingStore.slots[slotIdx]?.pokemon;
   if (!pokemon) return;
 

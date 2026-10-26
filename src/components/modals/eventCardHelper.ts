@@ -1,15 +1,17 @@
+import type { DisplayText } from '@francogp/auditor';
+
+import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { SECONDS_PER_MINUTE, SECONDS_PER_HOUR } from '@/logic/constants/gameplay';
 import type {
   Event as GameEvent,
   EventConfig,
   UpcomingEventOccurrence
 } from '@/logic/events/eventEngine';
 import { getEventCurrentWindow } from '@/logic/events/eventEngine';
-import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { SECONDS_PER_MINUTE, SECONDS_PER_HOUR } from '@/logic/constants/gameplay';
 
 const MILLIS_PER_SECOND = 1000 as const;
 
-export const EVENT_BANNER_FALLBACKS: Record<string, string> = {
+export const EVENT_BANNER_FALLBACKS: Record<DisplayText, string> = {
   // open-record: Event identifier to banner asset filename mapping
   dia_pesca: 'dia_pesca_full',
   torneo_pesca: 'pesca_exotica_full',
@@ -34,7 +36,7 @@ export function parseEventConfig(rawConfig: unknown): EventConfig {
     }
   }
   if (rawConfig && typeof rawConfig === 'object') {
-    return rawConfig as EventConfig;
+    return rawConfig;
   }
   return {};
 }
@@ -127,7 +129,9 @@ export interface EventCardClassesOptions {
   isUpcoming: boolean;
 }
 
-export function resolveEventCardClasses(options: EventCardClassesOptions): Record<string, boolean> {
+export function resolveEventCardClasses(
+  options: EventCardClassesOptions
+): Record<DisplayText, boolean> {
   // open-record: CSS class boolean toggle map
   const { hasBanner, isUpcoming } = options;
   return {

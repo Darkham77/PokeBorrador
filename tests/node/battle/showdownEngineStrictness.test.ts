@@ -1,11 +1,13 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
-import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
-import { ShowdownBattleRunner } from '../../../src/logic/battle/helpers/showdownBattleRunner.ts';
+
+import { describe, it } from 'vite-plus/test';
+
 import type { CertifiedBattleHistoryEntry } from '../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
-import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
-import { ShowdownLogEnricher } from '../../../src/logic/battle/helpers/showdownLogEnricher.ts';
 import { ACTIVE_SHOWDOWN_FORMAT } from '../../../src/data/system/constants.ts';
+import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
+import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
+import { ShowdownBattleRunner } from '../../../src/logic/battle/helpers/showdownBattleRunner.ts';
+import { ShowdownLogEnricher } from '../../../src/logic/battle/helpers/showdownLogEnricher.ts';
 
 const LOW_HP = 1;
 const CERTIFIED_HEAL_TURN = 2;

@@ -1,6 +1,6 @@
+import type { DisplayText } from '@francogp/auditor';
 import { gsap } from 'gsap';
-import type { PillFxType } from '@/types/system/game';
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
+
 import {
   FULL_ROTATION_DEG,
   MAP_WEATHER_DRIFT_OFFSET_PX,
@@ -10,6 +10,8 @@ import {
   MAP_FACTION_PODER_MAX_SCALE,
   MAP_CARD_ANIMATIONS
 } from '@/logic/constants/animations';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import type { PillFxType } from '@/types/system/game';
 
 const MAP_WEATHER_GLOW_DURATION_SEC = 1.5;
 const MAP_WEATHER_DRIFT_DURATION_SEC = 2.0;
@@ -42,7 +44,7 @@ const WEATHER_PILL_FX: Partial<Record<WeatherId, PillFxType>> = {
 
 function resolveWeatherPillFx(weather: string): PillFxType {
   // open-record: Weather FX map
-  return (WEATHER_PILL_FX as Record<string, PillFxType | undefined>)[weather] || '';
+  return (WEATHER_PILL_FX as Record<DisplayText, PillFxType | undefined>)[weather] || '';
 }
 
 export function animateWeatherTag(weatherEl: HTMLElement, weather: string, seed: number): void {

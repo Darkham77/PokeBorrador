@@ -3,11 +3,12 @@
  * @description Unified test database helper supporting both in-memory SQLite and isolated PostgreSQL schemas.
  */
 
-import { vi, describe, beforeAll, afterAll } from 'vite-plus/test';
-import { DBRouter } from '@/logic/db/dbRouter.ts';
-import { resetSQLite } from '@/logic/db/sqliteEngine.ts';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import postgres from 'postgres';
+import { vi, describe, beforeAll, afterAll } from 'vite-plus/test';
+
+import { DBRouter } from '@/logic/db/dbRouter.ts';
+import { resetSQLite } from '@/logic/db/sqliteEngine.ts';
 
 export type DBEngine = 'sqlite' | 'postgres';
 

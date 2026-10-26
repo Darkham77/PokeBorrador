@@ -1,6 +1,6 @@
+import type { DisplayText } from '@francogp/auditor';
 import type { Ref } from 'vue';
-import { logger } from '@/logic/utils/logger';
-import { useErrorStore } from '@/stores/errorStore.ts';
+
 import {
   resolveEventSubCompetitions,
   evaluatePokemonForSubCompetition,
@@ -8,27 +8,29 @@ import {
   isPokemonEnrolledInOtherSubCompetition,
   type Event as GameEvent
 } from '@/logic/events/eventEngine';
-import { getServerTime } from '@/logic/utils/timeUtils';
 import {
   getPokemonPhysicalHeight,
   getPokemonPhysicalWeight
 } from '@/logic/pokemon/physicalDimensionsMath';
 import { calculateTotalIVs } from '@/logic/pokemon/statsMath';
+import { logger } from '@/logic/utils/logger';
+import { getServerTime } from '@/logic/utils/timeUtils';
+import type { useAuthStore } from '@/stores/auth.ts';
+import { useErrorStore } from '@/stores/errorStore.ts';
+import type { useGameStore } from '@/stores/game.ts';
+import type { useUIStore } from '@/stores/ui.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { CompetitionEntry } from '@/types/system/stores';
-import type { useGameStore } from '@/stores/game.ts';
-import type { useAuthStore } from '@/stores/auth.ts';
-import type { useUIStore } from '@/stores/ui.ts';
 
 export interface EventEnrollmentContext {
   gameStore: ReturnType<typeof useGameStore>;
   authStore: ReturnType<typeof useAuthStore>;
   uiStore: ReturnType<typeof useUIStore>;
   allEvents: Ref<GameEvent[]>;
-  userEntries: Ref<Record<string, CompetitionEntry>>; // open-record: Composite event_id:catId index
+  userEntries: Ref<Record<DisplayText, CompetitionEntry>>; // open-record: Composite event_id:catId index
 }
 
-export async function fetchUserEntries(ctx: EventEnrollmentContext) {
+export async function fetchUserEntries(ctx: EventEnrollmentContext): Promise<void> {
   const { authStore, gameStore, userEntries } = ctx;
   if (!authStore.user || !gameStore.db) return;
 
@@ -41,7 +43,7 @@ export async function fetchUserEntries(ctx: EventEnrollmentContext) {
     .limit(100);
 
   if (!error && entries) {
-    const map: Record<string, CompetitionEntry> = {}; // open-record: Composite event_id:catId index
+    const map: Record<DisplayText, CompetitionEntry> = {}; // open-record: Composite event_id:catId index
     for (const e of entries as CompetitionEntry[]) {
       const catId = e.category_id || 'ivs';
       map[`${e.event_id}:${catId}`] = e;
@@ -225,7 +227,7 @@ async function applyEnrollmentSuccess(
     Number(gameStore.state.stats.eventParticipations || 0),
     activeUserEventIds.size
   );
-  await gameStore.scheduleSave();
+  gameStore.scheduleSave();
   uiStore.notify('¡Inscripción al evento guardada con éxito!', '🏆');
 }
 
@@ -234,7 +236,7 @@ export async function submitCompetitionEntry(
   eventId: string,
   categoryIdOrUid: string,
   maybeUid?: string
-) {
+): Promise<void> {
   const categoryId = typeof maybeUid === 'string' ? categoryIdOrUid : 'ivs';
   const pokemonUid = typeof maybeUid === 'string' ? maybeUid : categoryIdOrUid;
 
@@ -363,7 +365,7 @@ export async function removeCompetitionEntry(
       }
     }
 
-    await gameStore.scheduleSave();
+    gameStore.scheduleSave();
     uiStore.notify('Inscripción cancelada. Pokémon liberado.', '✅');
     return true;
   } catch (e) {

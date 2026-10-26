@@ -74,10 +74,10 @@ async function main() {
 
     // Set canonical sprite path in items.json
     if (existsSync(targetWebpPath) || existsSync(targetRawPath)) {
-      item.sprite = `${tierFolder}/${item.id}`;
+      item.sprite = path.posix.join(tierFolder, item.id);
       updatedJson++;
     } else if (!item.sprite) {
-      item.sprite = `${tierFolder}/${item.id}`;
+      item.sprite = path.posix.join(tierFolder, item.id);
     }
   }
 

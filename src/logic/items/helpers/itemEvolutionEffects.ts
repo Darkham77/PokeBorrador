@@ -1,6 +1,7 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { ItemEffectResult } from '@/types/inventory/items';
 import type { ItemId } from '@/data/inventory/items';
+import type { ItemEffectResult } from '@/types/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { handleStone } from '../itemEffectHandlers.ts';
 
 const pokeEffect = (fn: (p: Pokemon) => ItemEffectResult) => (p: unknown) => fn(p as Pokemon);

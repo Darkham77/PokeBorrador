@@ -16,6 +16,59 @@ const STAIR_ENDPOINT_PRESERVE_LATERAL = 2 as const;
 const STAIR_ENDPOINT_PRESERVE_SOUTH = 3 as const;
 const MAX_PRUNE_PASSES = 5 as const;
 
+function isCellNearPoiFootprint(x: number, y: number, nodes: readonly POINode[]): boolean {
+  for (const poi of nodes) {
+    if (
+      x >= poi.gridX - 1 &&
+      x <= poi.gridX + poi.footprint.width &&
+      y >= poi.gridY - 1 &&
+      y <= poi.gridY + poi.footprint.height
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function isCellAdjacentToBridge(
+  x: number,
+  y: number,
+  bridgeGrid: readonly (readonly boolean[])[]
+): boolean {
+  return Boolean(
+    bridgeGrid[y + 1]?.[x] ||
+    bridgeGrid[y - 1]?.[x] ||
+    bridgeGrid[y]?.[x + 1] ||
+    bridgeGrid[y]?.[x - 1]
+  );
+}
+
+function countTransitableNeighbors(
+  x: number,
+  y: number,
+  W: number,
+  H: number,
+  pathGrid: readonly (readonly boolean[])[],
+  bridgeGrid: readonly (readonly boolean[])[]
+): number {
+  let count = 0;
+  for (const [dx, dy] of [
+    [0, 1],
+    [0, -1],
+    [1, 0],
+    [-1, 0]
+  ]) {
+    const nx = x + dx!;
+    const ny = y + dy!;
+    if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
+      if (pathGrid[ny]![nx] || bridgeGrid[ny]?.[nx]) {
+        count++;
+      }
+    }
+  }
+  return count;
+}
+
 /**
  * Prunes orphan path fragments not connected to any POI or bridge.
  */
@@ -33,32 +86,8 @@ export function pruneOrphanPathFragments(
     for (let x = 0; x < W; x++) {
       if (!pathGrid[y]![x]) continue;
 
-      let nearSeed = false;
-      for (const poi of nodes) {
-        if (
-          x >= poi.gridX - 1 &&
-          x <= poi.gridX + poi.footprint.width &&
-          y >= poi.gridY - 1 &&
-          y <= poi.gridY + poi.footprint.height
-        ) {
-          nearSeed = true;
-          break;
-        }
-      }
-
-      if (!nearSeed) {
-        for (const [dx, dy] of [
-          [0, 1],
-          [0, -1],
-          [1, 0],
-          [-1, 0]
-        ]) {
-          if (bridgeGrid[y + dy!]?.[x + dx!]) {
-            nearSeed = true;
-            break;
-          }
-        }
-      }
+      const nearSeed =
+        isCellNearPoiFootprint(x, y, nodes) || isCellAdjacentToBridge(x, y, bridgeGrid);
 
       if (nearSeed) {
         visitedPath[y]![x] = true;
@@ -123,22 +152,7 @@ export function pruneDeadEndStubs(
         if (!pathGrid[y]![x]) continue;
         if (preservedEndpoints.has(`${x}_${y}`)) continue;
 
-        let neighborCount = 0;
-        for (const [dx, dy] of [
-          [0, 1],
-          [0, -1],
-          [1, 0],
-          [-1, 0]
-        ]) {
-          const nx = x + dx!;
-          const ny = y + dy!;
-          if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
-            if (pathGrid[ny]![nx] || bridgeGrid[ny]?.[nx]) {
-              neighborCount++;
-            }
-          }
-        }
-
+        const neighborCount = countTransitableNeighbors(x, y, W, H, pathGrid, bridgeGrid);
         if (neighborCount <= 1) {
           pathGrid[y]![x] = false;
           prunedAny = true;

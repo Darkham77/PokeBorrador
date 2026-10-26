@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useMapStudioStore, type StudioTool } from '../../stores/mapStudio';
-import { defaultTilesRegistry } from '../../logic/map/tilesRegistry';
+
 import type { CollisionType } from '../../logic/map/proceduralMapGenerator';
+import { defaultTilesRegistry } from '../../logic/map/tilesRegistry';
+import { useMapStudioStore, type StudioTool } from '../../stores/mapStudio';
 
 const TOOL_LABELS: Record<StudioTool, string> = {
   pointer: 'PUNTERO',

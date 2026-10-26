@@ -1,9 +1,10 @@
-import type { BattleContext } from '@/types/battle/battleContext';
 import type { ShowdownPlayerRequest, WinnerSide } from '@/types/battle/battle';
-import { executeTurnInWorker, syncTeamsFromLastWorkerState } from '../showdownWorkerClient.ts';
-import { filterShowdownLogs } from '../showdownBridge.ts';
-import { resolvePostTurnSwitchesAndFaints } from './turnActionResolver.ts';
+import type { BattleContext } from '@/types/battle/battleContext';
+
 import { parseLogsWithSkip } from '../battleTurnLogHelper.ts';
+import { filterShowdownLogs } from '../showdownBridge.ts';
+import { executeTurnInWorker, syncTeamsFromLastWorkerState } from '../showdownWorkerClient.ts';
+import { resolvePostTurnSwitchesAndFaints } from './turnActionResolver.ts';
 
 export interface CanonicalTurnResult {
   logs: string[];
@@ -43,12 +44,12 @@ export async function executeCanonicalTurn(
   }
 
   if (onTurnResult) {
-    onTurnResult(result as CanonicalTurnResult);
+    onTurnResult(result);
   }
 
-  if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+  if (typeof globalThis.window !== 'undefined' && globalThis.__VITE_DEBUG__?.isScriptedReplayMode) {
     const { ShowdownBattleRunner } = await import('./showdownBattleRunner.ts');
-    ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__);
+    ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(globalThis.__VITE_DEBUG__);
   }
 
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE);
@@ -76,5 +77,5 @@ export async function executeCanonicalTurn(
     store.persistBattle();
   }
 
-  return result as CanonicalTurnResult;
+  return result;
 }

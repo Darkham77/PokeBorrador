@@ -1,7 +1,6 @@
 import { gsap } from 'gsap';
-import { gameBus } from '@/logic/events/gameBus';
+
 import { WORLD_CONSTANTS, getCombatantPosition } from '@/logic/combat/spatialCoordinator';
-import type { BattleCombatantProps } from '@/types/battle/battle';
 import {
   COMBATANT_FAINT_Y_OFFSET,
   COMBATANT_FAINT_DURATION_SEC,
@@ -34,6 +33,8 @@ import {
   ATTACK_DEFAULT_NY_PLAYER,
   ATTACK_DEFAULT_NY_ENEMY
 } from '@/logic/constants/animations';
+import { gameBus } from '@/logic/events/gameBus';
+import type { BattleCombatantProps } from '@/types/battle/battle';
 
 const FAINT_BLINK_INTERVAL_SEC = 0.08;
 const FAINT_BLINK_INITIAL_DELAY_SEC = 0.05;

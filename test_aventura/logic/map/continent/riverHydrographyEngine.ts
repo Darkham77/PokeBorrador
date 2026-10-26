@@ -7,12 +7,11 @@
  * and automatic bridge detection when paths intersect river channels.
  */
 
-import { SimplexNoise, fbm2D } from '../noise/simplexNoise.ts';
-import type { WaterTerrainKind } from '../waterAutotileEngine.ts';
-import type { SettlementExclusionZone } from '../continentGenerator.ts';
-
 import { RIVER_HYDRO } from '../../../config/riverHydrographyConfig.ts';
 import { computeGridDistanceField, type GridBfsQueueItem } from '../../utils/gridBfsUtils.ts';
+import type { SettlementExclusionZone } from '../continentGenerator.ts';
+import { SimplexNoise, fbm2D } from '../noise/simplexNoise.ts';
+import type { WaterTerrainKind } from '../waterAutotileEngine.ts';
 
 export interface RiverWaypoint {
   readonly x: number;
@@ -77,6 +76,28 @@ export function carveOrganicLake(
   }
 }
 
+function carveRiverDisk(
+  riverCenterX: number,
+  riverCenterY: number,
+  halfWidth: number,
+  W: number,
+  H: number,
+  matrix: WaterTerrainKind[][]
+): void {
+  const rCeil = Math.ceil(halfWidth);
+  for (let cy = -rCeil; cy <= rCeil; cy++) {
+    for (let cx = -rCeil; cx <= rCeil; cx++) {
+      if (Math.hypot(cx, cy) <= halfWidth + RIVER_HYDRO.RIVER_DISK_MARGIN) {
+        const rx = Math.round(riverCenterX + cx);
+        const ry = Math.round(riverCenterY + cy);
+        if (rx >= 0 && rx < W && ry >= 0 && ry < H) {
+          matrix[ry]![rx] = 'water';
+        }
+      }
+    }
+  }
+}
+
 /**
  * Carves a meandering river channel connecting a sequence of waypoints.
  */
@@ -128,18 +149,7 @@ export function carveRiverSystem(
       const riverCenterY = by + ny * totalOffset;
 
       // Carve disk along river path
-      const rCeil = Math.ceil(halfWidth);
-      for (let cy = -rCeil; cy <= rCeil; cy++) {
-        for (let cx = -rCeil; cx <= rCeil; cx++) {
-          if (Math.hypot(cx, cy) <= halfWidth + RIVER_HYDRO.RIVER_DISK_MARGIN) {
-            const rx = Math.round(riverCenterX + cx);
-            const ry = Math.round(riverCenterY + cy);
-            if (rx >= 0 && rx < W && ry >= 0 && ry < H) {
-              matrix[ry]![rx] = 'water';
-            }
-          }
-        }
-      }
+      carveRiverDisk(riverCenterX, riverCenterY, halfWidth, W, H, matrix);
     }
   }
 }
@@ -179,6 +189,53 @@ export interface ProceduralRiverDrainageResult {
   readonly riverGrid?: readonly (readonly boolean[])[];
 }
 
+interface LakeDiscoveryState {
+  maxElev: number;
+  hasElevGe1: boolean;
+}
+
+function expandOceanWaterNeighbor(
+  nx: number,
+  ny: number,
+  W: number,
+  H: number,
+  visitedOcean: boolean[][],
+  terrainMatrix: readonly (readonly WaterTerrainKind[])[],
+  oceanWaterQ: { x: number; y: number }[]
+): void {
+  if (nx < 0 || nx >= W || ny < 0 || ny >= H) return;
+  if (
+    !visitedOcean[ny]![nx] &&
+    (terrainMatrix[ny]![nx] === 'water' || terrainMatrix[ny]![nx] === 'water_deep')
+  ) {
+    visitedOcean[ny]![nx] = true;
+    oceanWaterQ.push({ x: nx, y: ny });
+  }
+}
+
+function expandLakeCellNeighbor(
+  nx: number,
+  ny: number,
+  W: number,
+  H: number,
+  heightmap: readonly (readonly number[])[],
+  visitedOcean: readonly (readonly boolean[])[],
+  lakeVisited: boolean[][],
+  terrainMatrix: readonly (readonly WaterTerrainKind[])[],
+  lq: { x: number; y: number }[],
+  state: LakeDiscoveryState
+): void {
+  if (nx < 0 || nx >= W || ny < 0 || ny >= H) return;
+  const neighborElev = heightmap[ny]?.[nx] ?? 0;
+  if (neighborElev > state.maxElev) state.maxElev = neighborElev;
+  if (neighborElev >= 1) state.hasElevGe1 = true;
+
+  if (!visitedOcean[ny]![nx] && !lakeVisited[ny]![nx] && terrainMatrix[ny]![nx] === 'water') {
+    lakeVisited[ny]![nx] = true;
+    lq.push({ x: nx, y: ny });
+  }
+}
+
 /**
  * Procedural River Drainage Engine:
  * Simulates downhill gradient descent drainage from inland/mountain freshwater lakes to the ocean.
@@ -186,6 +243,41 @@ export interface ProceduralRiverDrainageResult {
  * ocean coast, carving a uniform 2-cell wide water channel with riverbed heightmap adjustment.
  * If no interior lakes exist, safely omits without error.
  */
+interface RiverbedCarveContext {
+  readonly W: number;
+  readonly H: number;
+  readonly settlementMask: readonly (readonly boolean[])[];
+  readonly riverGrid: boolean[][];
+  readonly terrainMatrix: WaterTerrainKind[][];
+  readonly heightmap: number[][];
+  readonly currentRiverElev: number;
+}
+
+export interface RiverPoint {
+  readonly x: number;
+  readonly y: number;
+}
+
+function stampRiverbed2x2(pt: RiverPoint, ctx: RiverbedCarveContext): number {
+  let newlyCarved = 0;
+  for (let dy = 0; dy <= 1; dy++) {
+    for (let dx = 0; dx <= 1; dx++) {
+      const cx = pt.x + dx;
+      const cy = pt.y + dy;
+      if (cx >= 1 && cx < ctx.W - 1 && cy >= 1 && cy < ctx.H - 1) {
+        if (ctx.settlementMask[cy]?.[cx]) continue;
+        ctx.riverGrid[cy]![cx] = true;
+        if (ctx.terrainMatrix[cy]![cx] !== 'water' && ctx.terrainMatrix[cy]![cx] !== 'water_deep') {
+          ctx.terrainMatrix[cy]![cx] = 'water';
+          newlyCarved++;
+        }
+        ctx.heightmap[cy]![cx] = Math.min(ctx.heightmap[cy]![cx]!, ctx.currentRiverElev);
+      }
+    }
+  }
+  return newlyCarved;
+}
+
 export function generateProceduralRiverDrainage(
   terrainMatrix: WaterTerrainKind[][],
   heightmap: number[][],
@@ -231,24 +323,10 @@ export function generateProceduralRiverDrainage(
   let owHead = 0;
   while (owHead < oceanWaterQ.length) {
     const cur = oceanWaterQ[owHead++]!;
-    for (const [dx, dy] of [
-      [0, 1],
-      [0, -1],
-      [1, 0],
-      [-1, 0]
-    ]) {
-      const nx = cur.x + dx!;
-      const ny = cur.y + dy!;
-      if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
-        if (
-          !visitedOcean[ny]![nx] &&
-          (terrainMatrix[ny]![nx] === 'water' || terrainMatrix[ny]![nx] === 'water_deep')
-        ) {
-          visitedOcean[ny]![nx] = true;
-          oceanWaterQ.push({ x: nx, y: ny });
-        }
-      }
-    }
+    expandOceanWaterNeighbor(cur.x, cur.y + 1, W, H, visitedOcean, terrainMatrix, oceanWaterQ);
+    expandOceanWaterNeighbor(cur.x, cur.y - 1, W, H, visitedOcean, terrainMatrix, oceanWaterQ);
+    expandOceanWaterNeighbor(cur.x + 1, cur.y, W, H, visitedOcean, terrainMatrix, oceanWaterQ);
+    expandOceanWaterNeighbor(cur.x - 1, cur.y, W, H, visitedOcean, terrainMatrix, oceanWaterQ);
   }
 
   // 2. Identify interior lakes (freshwater bodies not connected to the ocean border)
@@ -267,42 +345,67 @@ export function generateProceduralRiverDrainage(
       const lq: { x: number; y: number }[] = [{ x, y }];
       lakeVisited[y]![x] = true;
       let lHead = 0;
-      let hasElevGe1 = false;
-      let maxElev = 0;
+      const state: LakeDiscoveryState = { maxElev: 0, hasElevGe1: false };
 
       while (lHead < lq.length) {
         const pt = lq[lHead++]!;
         cells.push(pt);
         const ptElev = heightmap[pt.y]?.[pt.x] ?? 0;
-        if (ptElev > maxElev) maxElev = ptElev;
-        if (ptElev >= 1) hasElevGe1 = true;
+        if (ptElev > state.maxElev) state.maxElev = ptElev;
+        if (ptElev >= 1) state.hasElevGe1 = true;
 
-        for (const [dx, dy] of [
-          [0, 1],
-          [0, -1],
-          [1, 0],
-          [-1, 0]
-        ]) {
-          const nx = pt.x + dx!;
-          const ny = pt.y + dy!;
-          if (nx < 0 || nx >= W || ny < 0 || ny >= H) continue;
-          const neighborElev = heightmap[ny]?.[nx] ?? 0;
-          if (neighborElev > maxElev) maxElev = neighborElev;
-          if (neighborElev >= 1) hasElevGe1 = true;
-
-          if (
-            !visitedOcean[ny]![nx] &&
-            !lakeVisited[ny]![nx] &&
-            terrainMatrix[ny]![nx] === 'water'
-          ) {
-            lakeVisited[ny]![nx] = true;
-            lq.push({ x: nx, y: ny });
-          }
-        }
+        expandLakeCellNeighbor(
+          pt.x,
+          pt.y + 1,
+          W,
+          H,
+          heightmap,
+          visitedOcean,
+          lakeVisited,
+          terrainMatrix,
+          lq,
+          state
+        );
+        expandLakeCellNeighbor(
+          pt.x,
+          pt.y - 1,
+          W,
+          H,
+          heightmap,
+          visitedOcean,
+          lakeVisited,
+          terrainMatrix,
+          lq,
+          state
+        );
+        expandLakeCellNeighbor(
+          pt.x + 1,
+          pt.y,
+          W,
+          H,
+          heightmap,
+          visitedOcean,
+          lakeVisited,
+          terrainMatrix,
+          lq,
+          state
+        );
+        expandLakeCellNeighbor(
+          pt.x - 1,
+          pt.y,
+          W,
+          H,
+          heightmap,
+          visitedOcean,
+          lakeVisited,
+          terrainMatrix,
+          lq,
+          state
+        );
       }
 
       if (cells.length >= minLakeSize) {
-        lakes.push({ cells, hasElevGe1, maxElevation: maxElev });
+        lakes.push({ cells, hasElevGe1: state.hasElevGe1, maxElevation: state.maxElev });
       }
     }
   }
@@ -431,7 +534,7 @@ export function generateProceduralRiverDrainage(
   }
   class RiverMinHeap {
     private data: PQItem[] = [];
-    push(item: PQItem): void {
+    public push(item: PQItem): void {
       this.data.push(item);
       let idx = this.data.length - 1;
       while (idx > 0) {
@@ -446,7 +549,7 @@ export function generateProceduralRiverDrainage(
         }
       }
     }
-    pop(): PQItem | undefined {
+    public pop(): PQItem | undefined {
       if (this.data.length === 0) return undefined;
       const top = this.data[0]!;
       const bottom = this.data.pop()!;
@@ -476,7 +579,7 @@ export function generateProceduralRiverDrainage(
       }
       return top;
     }
-    get length(): number {
+    public get length(): number {
       return this.data.length;
     }
   }
@@ -628,24 +731,15 @@ export function generateProceduralRiverDrainage(
 
   for (const pt of riverPath) {
     currentRiverElev = Math.min(currentRiverElev, heightmap[pt.y]?.[pt.x] ?? 0);
-
-    // 2x2 stamp around the path waypoint guarantees uniform >= 2 cells width without 1-cell necking
-    for (let dy = 0; dy <= 1; dy++) {
-      for (let dx = 0; dx <= 1; dx++) {
-        const cx = pt.x + dx;
-        const cy = pt.y + dy;
-        if (cx >= 1 && cx < W - 1 && cy >= 1 && cy < H - 1) {
-          if (settlementMask[cy]?.[cx]) continue;
-          riverGrid[cy]![cx] = true;
-          if (terrainMatrix[cy]![cx] !== 'water' && terrainMatrix[cy]![cx] !== 'water_deep') {
-            terrainMatrix[cy]![cx] = 'water';
-            carvedCellsCount++;
-          }
-          // Riverbed water level adjustment
-          heightmap[cy]![cx] = Math.min(heightmap[cy]![cx]!, currentRiverElev);
-        }
-      }
-    }
+    carvedCellsCount += stampRiverbed2x2(pt, {
+      W,
+      H,
+      settlementMask,
+      riverGrid,
+      terrainMatrix,
+      heightmap,
+      currentRiverElev
+    });
   }
 
   return {

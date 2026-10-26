@@ -4,10 +4,10 @@
  * Helpers for resolving arena lighting cycles, field condition visuals, and weather tiers.
  */
 
-import type { DayPhase } from '@/types/system/time';
 import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
-import { getRouteWeather } from '@/logic/weather/weatherUtils';
 import { requireWeatherSeasonId, type WeatherSeasonId } from '@/data/world/weather-tables';
+import { getRouteWeather } from '@/logic/weather/weatherUtils';
+import type { DayPhase } from '@/types/system/time';
 
 const FIELD_TERRAIN_KEYS = [
   'electricterrain',

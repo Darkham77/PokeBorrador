@@ -5,22 +5,22 @@
 import initSqlJs from 'sql.js';
 
 function getSqlWasmUrl(): string | undefined {
-  if (typeof window === 'undefined') return undefined;
+  if (typeof globalThis.window === 'undefined') return undefined;
   try {
     if (typeof import.meta !== 'undefined' && import.meta.url) {
       return new URL('sql.js/dist/sql-wasm.wasm', import.meta.url).href;
     }
-  } catch {
-    // catch-ok: Fallback if import.meta.url is not a valid base URL in test environment
-    // Fallback in environments without import.meta.url
+  } catch (err) {
+    logger.debug('[sqliteEngine] No se pudo resolver URL de sql-wasm mediante import.meta', {
+      cause: err instanceof Error ? err.message : String(err)
+    });
   }
   return undefined;
 }
 
 const sqlWasmUrl = getSqlWasmUrl();
-import { getFromIDB, setToIDB } from './idbHelper.ts';
-import { saveToOPFS, loadFromOPFS } from './opfsHelper.ts';
-import { TABLES_SCHEMA } from './schema.ts';
+import type { SQLiteResult, SQLiteDatabase } from '@/types/database/sqlite.ts';
+
 import { logger } from '../utils/logger.ts';
 import {
   safeStorage,
@@ -28,9 +28,11 @@ import {
   LOCAL_STORAGE_KEYS,
   SESSION_STORAGE_KEYS
 } from '../utils/storage.ts';
+import { getFromIDB, setToIDB } from './idbHelper.ts';
+import { saveToOPFS, loadFromOPFS } from './opfsHelper.ts';
+import { TABLES_SCHEMA } from './schema.ts';
 import { ensureSchemaIntegrity } from './sqliteSchemaIntegrity.ts';
 import { splitSQLStatements, translatePostgresToSqlite } from './sqlTranslator.ts';
-import type { SQLiteResult, SQLiteDatabase } from '@/types/database/sqlite.ts';
 export type { SQLiteResult, SQLiteDatabase };
 
 export interface LoadingStore {
@@ -44,16 +46,8 @@ export interface LoadingStore {
   finish: (id: string) => void;
 }
 
-declare global {
-  interface Window {
-    initSqlJs?: (o?: {
-      locateFile?: (file: string) => string;
-    }) => Promise<{ Database: new (data?: Uint8Array) => SQLiteDatabase }>;
-  }
-}
-
-if (typeof window !== 'undefined') {
-  window.initSqlJs = initSqlJs as never;
+if (typeof globalThis.window !== 'undefined') {
+  Reflect.set(globalThis, 'initSqlJs', initSqlJs);
 }
 
 let _sqliteDb: SQLiteDatabase | null = null;
@@ -67,7 +61,11 @@ export interface DatabaseBridgeFlags {
 }
 
 export function canUseDevDatabaseBridge({ isDevelopment }: DatabaseBridgeFlags): boolean {
-  return isDevelopment && typeof window !== 'undefined' && window.__GTS_SIMULATION__ === true;
+  return (
+    isDevelopment &&
+    typeof globalThis.window !== 'undefined' &&
+    globalThis.window.__GTS_SIMULATION__ === true
+  );
 }
 
 export function canRefreshCleanDatabaseTemplate({
@@ -78,7 +76,7 @@ export function canRefreshCleanDatabaseTemplate({
 }
 
 async function getLoadingStore(): Promise<LoadingStore | null> {
-  if (typeof window === 'undefined') return null;
+  if (typeof globalThis.window === 'undefined') return null;
   try {
     const { useLoadingStore } = await import('@/stores/loading.ts');
     return useLoadingStore();
@@ -159,7 +157,7 @@ export async function persistSQLite(): Promise<void> {
       logger.success('SQLite', `Persistence successful (OPFS + IndexedDB)`);
     }
 
-    const isE2E = typeof window !== 'undefined' && window.__E2E__ === true;
+    const isE2E = typeof globalThis.window !== 'undefined' && globalThis.__E2E__ === true;
     if (canUseDevDatabaseBridge({ isDevelopment: import.meta.env.DEV, isE2E })) {
       try {
         await devFetch('/api/dev-export-db', _sqliteKey, {
@@ -197,9 +195,10 @@ export async function executeAtomicSaveTransaction(
   } catch (err) {
     try {
       _sqliteDb.run('ROLLBACK');
-    } catch {
-      // catch-ok: Ignore rollback errors if transaction was already aborted
-      // Transaction already closed
+    } catch (rollbackErr) {
+      logger.debug('[sqliteEngine] Error de rollback secundario ignorado', {
+        cause: rollbackErr instanceof Error ? rollbackErr.message : String(rollbackErr)
+      });
     }
     throw new Error(`[sqliteEngine] Atomic save transaction failed: ${(err as Error).message}`, {
       cause: err
@@ -221,10 +220,11 @@ function resolveTargetKey(options: { sqliteKey?: string }): string {
 type SqlJsStatic = Awaited<ReturnType<typeof initSqlJs>>;
 
 async function resolveSqlJsInstance(): Promise<SqlJsStatic> {
-  const hasWindowInit = typeof window !== 'undefined' && typeof window.initSqlJs === 'function';
+  const hasWindowInit =
+    typeof globalThis.window !== 'undefined' && typeof globalThis.initSqlJs === 'function';
   const isNode = typeof process !== 'undefined' && Boolean(process.versions?.node);
-  const initFn = hasWindowInit ? window.initSqlJs! : initSqlJs;
-  return initFn({
+  const initFn = (hasWindowInit ? globalThis.initSqlJs : initSqlJs) as typeof initSqlJs;
+  return await initFn({
     locateFile: (file: string) => {
       if (isNode) return `./node_modules/sql.js/dist/${file}`;
       return sqlWasmUrl || `./node_modules/sql.js/dist/${file}`;
@@ -255,9 +255,13 @@ async function tryLoadSimulationDb(
       await ensureSchemaIntegrity(db, persistSQLite);
       _sqliteDb = db;
       await runMigrations();
-      if (typeof window === 'undefined' || !window.__GTS_SIMULATION__) {
+      if (typeof globalThis.window === 'undefined' || !globalThis.window.__GTS_SIMULATION__) {
         await devFetch('/api/dev-sim-db-cleanup', sqliteKey, { method: 'POST' }).catch(
-          () => void 0
+          (cleanupErr) => {
+            logger.debug('SQLite', 'Dev simulation DB cleanup call failed non-fatally', {
+              cause: cleanupErr
+            });
+          }
         );
       }
       return db;
@@ -406,10 +410,13 @@ async function tryHandleManualDevImport(sqliteKey: string): Promise<boolean> {
     });
 
     safeSessionStorage.setItem(SESSION_STORAGE_KEYS.IMPORT_RELOAD, 'true');
-    safeSessionStorage.setItem(SESSION_STORAGE_KEYS.IMPORT_ORIGINAL_PATH, window.location.pathname);
+    safeSessionStorage.setItem(
+      SESSION_STORAGE_KEYS.IMPORT_ORIGINAL_PATH,
+      globalThis.location.pathname
+    );
 
     await new Promise((resolve) => setTimeout(resolve, IMPORT_RELOAD_DELAY_MS)); // timer-ok: Browser manual database import page reload delay with IMPORT_RELOAD_DELAY_MS
-    window.location.reload();
+    globalThis.location.reload();
     return true;
   } catch (err) {
     logger.debug('SQLite', `No manual backup import found: ${(err as Error).message}`);
@@ -441,7 +448,7 @@ async function loadPersistedDatabase(SQL: SqlJsStatic, sqliteKey: string): Promi
 export async function initSQLite(
   options: { sqliteKey?: string; inMemory?: boolean; forceReload?: boolean } = {}
 ): Promise<SQLiteDatabase | null> {
-  const isE2E = typeof window !== 'undefined' && window.__E2E__ === true;
+  const isE2E = typeof globalThis.window !== 'undefined' && globalThis.__E2E__ === true;
   if (options.inMemory === true || isE2E) {
     _isInMemory = true;
   }
@@ -569,8 +576,10 @@ async function runMigrations(): Promise<boolean> {
     } catch (e: unknown) {
       try {
         _sqliteDb.run('ROLLBACK');
-      } catch {
-        // catch-ok: rollback safety
+      } catch (rollbackErr) {
+        logger.debug('[sqliteEngine] Fallo de rollback en migración ya abortada', {
+          cause: rollbackErr instanceof Error ? rollbackErr.message : String(rollbackErr)
+        });
       }
       if (loadingStore) loadingStore.finish('db_migration');
       const msg = (e as Error).message || String(e);
@@ -587,7 +596,7 @@ async function runMigrations(): Promise<boolean> {
   }
 
   if (lastSuccessfulMigrationId) {
-    const version = parseInt(lastSuccessfulMigrationId.split('_')[0] || '0');
+    const version = parseInt(lastSuccessfulMigrationId.split('_')[0] || '0', 10);
     if (version > 0) {
       logger.info('SQLite', `Updating system_config.db_version to ${version}`);
       _sqliteDb.run(
@@ -620,7 +629,9 @@ export const db: {
   run: (sql: string, params: unknown[] = []) => {
     if (!_sqliteDb) return;
     _sqliteDb.run(sql, params);
-    void persistSQLite();
+    persistSQLite().catch((err) => {
+      logger.error('SQLiteEngine', 'Failed to persist sqlite db after run', err);
+    });
   },
   exec: (sql: string, params: unknown[] = []) => {
     if (!_sqliteDb) return [];

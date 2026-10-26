@@ -1,18 +1,19 @@
+import type { RealtimeChannel } from '@supabase/supabase-js';
 /**
  * src/logic/pvp/livePvPReconnectionHandler.ts
  *
  * Helper for live PvP match reconnection and spectator synchronization.
  * Handles rehydration of ongoing battles and spectator channel events.
  */
-
 import { gsap } from 'gsap';
-import type { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper.ts';
-import type { PvpReconnectPayload } from '@/types/battle/pvp';
+
 import {
   buildSpectateSyncPayload,
   type PvpSpectateSyncPayload
 } from '@/logic/pvp/pvpSpectatorHelper';
-import type { RealtimeChannel } from '@supabase/supabase-js';
+import type { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper.ts';
+import { logger } from '@/logic/utils/logger.ts';
+import type { PvpReconnectPayload } from '@/types/battle/pvp';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { BattleOptions } from '@/types/system/stores';
 
@@ -160,15 +161,19 @@ export function executeHandleSpectateSync(
   if (!isSpectator) return;
   const enemyLeader = payload.guestTeam[0];
   if (enemyLeader) {
-    void battleStore.startBattle(enemyLeader, {
-      isPvP: true,
-      pvpMatchId: payload.matchId,
-      isTrainer: true,
-      trainerName: payload.guestTrainerName,
-      playerTeam: payload.hostTeam,
-      enemyTeam: payload.guestTeam,
-      locationId: 'stadium'
-    });
+    battleStore
+      .startBattle(enemyLeader, {
+        isPvP: true,
+        pvpMatchId: payload.matchId,
+        isTrainer: true,
+        trainerName: payload.guestTrainerName,
+        playerTeam: payload.hostTeam,
+        enemyTeam: payload.guestTeam,
+        locationId: 'stadium'
+      })
+      .catch((err) => {
+        logger.warn('Handled promise rejection:', { cause: err });
+      });
     if (battleStore.state) {
       battleStore.state.turnCount = payload.turnCount;
     }

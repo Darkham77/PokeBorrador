@@ -13,26 +13,6 @@
  */
 
 import {
-  generateContinentMap,
-  type ContinentMapResult,
-  type ContinentGeneratorOptions
-} from './continentGenerator.ts';
-import { computeTransitableGrid } from './transitableGridEngine.ts';
-import { placeRegionalPOIs, type POIPlacementOptions } from './poiPlacementEngine.ts';
-import { generatePokemonContinentalWorld } from './continent/continentalEngine.ts';
-import {
-  generateRouteNetwork,
-  type RouteNetworkOptions,
-  type ResolvedRouteNetworkResult
-} from './routeNetworkEngine.ts';
-import { rerouteIncidentEdges } from './routePathfinding.ts';
-import {
-  generateWildernessLayer,
-  type WildernessOptions,
-  type WildernessLayerResult
-} from './wildernessVegetationEngine.ts';
-import type { POINode, RouteEdge } from '../../types/map/poiTypes.ts';
-import {
   RGBA_ALPHA_OPAQUE,
   PATH_PREVIEW_RGBA,
   WATER_PREVIEW_RGBA,
@@ -54,6 +34,26 @@ import {
   BIOME_VIRIDIAN_FOREST_PREVIEW_RGB,
   BIOME_DEFAULT_PLAIN_PREVIEW_RGB
 } from '../../config/continentWorkerConfig.ts';
+import type { POINode, RouteEdge } from '../../types/map/poiTypes.ts';
+import { generatePokemonContinentalWorld } from './continent/continentalEngine.ts';
+import {
+  generateContinentMap,
+  type ContinentMapResult,
+  type ContinentGeneratorOptions
+} from './continentGenerator.ts';
+import { placeRegionalPOIs, type POIPlacementOptions } from './poiPlacementEngine.ts';
+import {
+  generateRouteNetwork,
+  type RouteNetworkOptions,
+  type ResolvedRouteNetworkResult
+} from './routeNetworkEngine.ts';
+import { rerouteIncidentEdges } from './routePathfinding.ts';
+import { computeTransitableGrid } from './transitableGridEngine.ts';
+import {
+  generateWildernessLayer,
+  type WildernessOptions,
+  type WildernessLayerResult
+} from './wildernessVegetationEngine.ts';
 
 export interface RegionalGenerationOptions
   extends ContinentGeneratorOptions, POIPlacementOptions, RouteNetworkOptions, WildernessOptions {}
@@ -289,8 +289,8 @@ interface DedicatedWorkerScope {
 }
 
 const workerScope: DedicatedWorkerScope | null =
-  typeof self !== 'undefined' && typeof self.postMessage === 'function'
-    ? (self as DedicatedWorkerScope)
+  typeof globalThis.self !== 'undefined' && typeof globalThis.postMessage === 'function'
+    ? (globalThis as DedicatedWorkerScope)
     : null;
 
 if (workerScope) {

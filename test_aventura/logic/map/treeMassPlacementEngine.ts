@@ -8,9 +8,6 @@
  * species isolation, and roots separation.
  */
 
-import { SimplexNoise } from './noise/simplexNoise.ts';
-import type { ContinentMapResult } from './continentGenerator.ts';
-import type { TreePlacement } from './wildernessVegetationEngine.ts';
 import {
   GROVE_NOISE_SCALE,
   GROVE_THRESHOLD_NEAR_PATH,
@@ -31,6 +28,9 @@ import {
   SUBTRACTIVE_WILDERNESS_BASE_THRESHOLD,
   SUBTRACTIVE_WILDERNESS_PATH_THRESHOLD
 } from '../../config/wildernessConfig.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
+import { SimplexNoise } from './noise/simplexNoise.ts';
+import type { TreePlacement } from './wildernessVegetationEngine.ts';
 
 const ROUTE_FRAME_RADIUS = 3 as const;
 
@@ -46,6 +46,189 @@ export interface TreeMassPlacementContext {
   readonly tallGrassGrid: readonly (readonly boolean[])[];
   readonly prng: SimplexNoise;
   readonly rawTrees: TreePlacement[];
+}
+
+function isCellNearRouteCorridor(
+  x: number,
+  y: number,
+  radius: number,
+  pathGrid: readonly (readonly boolean[])[]
+): boolean {
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) continue;
+      if (pathGrid[y + dy]?.[x + dx]) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function countForestMaskNeighbors(
+  forestMask: readonly (readonly boolean[])[],
+  x: number,
+  y: number
+): number {
+  let count = 0;
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      if (dx === 0 && dy === 0) continue;
+      if (forestMask[y + dy]?.[x + dx]) count++;
+    }
+  }
+  return count;
+}
+
+export interface ForestCASurvivalContext {
+  readonly isForest: boolean;
+  readonly neighbors: number;
+  readonly isBlocked: boolean;
+}
+
+function evaluateForestCASurvival(context: ForestCASurvivalContext): boolean {
+  const { isForest, neighbors, isBlocked } = context;
+  if (isForest) {
+    return neighbors >= FOREST_CA_SURVIVE_MIN;
+  }
+  return neighbors >= FOREST_CA_BORN_MIN && !isBlocked;
+}
+
+function isNearPathFrame(
+  x: number,
+  y: number,
+  radius: number,
+  pathGrid: readonly (readonly boolean[])[]
+): boolean {
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) continue;
+      if (pathGrid[y + dy]?.[x + dx]) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function hasWaterClearanceForTree(
+  x: number,
+  y: number,
+  treeWidth: number,
+  canopyOverhang: number,
+  W: number,
+  H: number,
+  continent: ContinentMapResult
+): boolean {
+  for (let dy = -canopyOverhang - 1; dy <= 2; dy++) {
+    for (let dx = -1; dx <= treeWidth; dx++) {
+      const cy = y + dy;
+      const cx = x + dx;
+      if (cy < 0 || cy >= H || cx < 0 || cx >= W) return false;
+      const t = continent.terrainMatrix[cy]?.[cx];
+      if (t === 'water' || t === 'water_deep') return false;
+    }
+  }
+  return true;
+}
+
+function hasGroundFootprintClearance(
+  x: number,
+  y: number,
+  treeWidth: number,
+  trunkHeight: number,
+  treeBlocked: readonly (readonly boolean[])[],
+  treeOccupied: readonly (readonly boolean[])[],
+  continent: ContinentMapResult
+): boolean {
+  for (let dy = 0; dy < trunkHeight; dy++) {
+    for (let dx = 0; dx < treeWidth; dx++) {
+      const cy = y + dy;
+      const cx = x + dx;
+      if (treeBlocked[cy]?.[cx] || treeOccupied[cy]?.[cx]) return false;
+      if (
+        continent.terrainMatrix[cy]?.[cx] !== 'grass' ||
+        (continent.heightmap[cy]?.[cx] ?? 0) !== 0
+      ) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function hasTallGrassCanopyClearance(
+  x: number,
+  y: number,
+  treeWidth: number,
+  canopyOverhang: number,
+  tallGrassGrid: readonly (readonly boolean[])[]
+): boolean {
+  for (let dy = -canopyOverhang; dy <= 1; dy++) {
+    for (let dx = 0; dx < treeWidth; dx++) {
+      const cy = y + dy;
+      const cx = x + dx;
+      if (tallGrassGrid[cy]?.[cx]) return false;
+    }
+  }
+  return true;
+}
+
+function hasCanopyOverheadClearance(
+  x: number,
+  y: number,
+  treeWidth: number,
+  canopyOverhang: number,
+  W: number,
+  H: number,
+  urbanBlocked: readonly (readonly boolean[])[],
+  stairBlocked: readonly (readonly boolean[])[],
+  continent: ContinentMapResult
+): boolean {
+  for (let dy = -canopyOverhang; dy < 0; dy++) {
+    for (let dx = 0; dx < treeWidth; dx++) {
+      const cy = y + dy;
+      const cx = x + dx;
+      if (
+        cy < 0 ||
+        cy >= H ||
+        cx < 0 ||
+        cx >= W ||
+        urbanBlocked[cy]?.[cx] ||
+        stairBlocked[cy]?.[cx] ||
+        (continent.heightmap[cy]?.[cx] ?? 0) !== 0 ||
+        continent.resolvedMountain.occupiedFootCells[cy]?.[cx]
+      ) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function isSpeciesTooClose(
+  x: number,
+  y: number,
+  opposingSpecies: string,
+  W: number,
+  H: number,
+  treeSpeciesGrid: readonly (readonly (string | null)[])[]
+): boolean {
+  for (let dy = -TREE_SPECIES_ISOLATION_DISTANCE; dy <= TREE_SPECIES_ISOLATION_DISTANCE; dy++) {
+    const cy = y + dy;
+    if (cy < 0 || cy >= H) continue;
+    for (let dx = -TREE_SPECIES_ISOLATION_DISTANCE; dx <= TREE_SPECIES_ISOLATION_DISTANCE; dx++) {
+      const cx = x + dx;
+      if (cx < 0 || cx >= W) continue;
+      if (
+        treeSpeciesGrid[cy]![cx] === opposingSpecies &&
+        Math.hypot(dx, dy) < TREE_SPECIES_ISOLATION_DISTANCE
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 /**
@@ -79,16 +262,7 @@ export function placeTreeMasses(ctx: TreeMassPlacementContext): void {
       const isNonTransitable = transitableGrid && !transitableGrid[y]?.[x];
       const groveNoise = prng.noise2D(x * GROVE_NOISE_SCALE, y * GROVE_NOISE_SCALE);
 
-      let nearCorridor = false;
-      for (let dy = -ROUTE_FRAME_RADIUS; dy <= ROUTE_FRAME_RADIUS && !nearCorridor; dy++) {
-        for (let dx = -ROUTE_FRAME_RADIUS; dx <= ROUTE_FRAME_RADIUS; dx++) {
-          if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) continue;
-          if (pathGrid[y + dy]?.[x + dx]) {
-            nearCorridor = true;
-            break;
-          }
-        }
-      }
+      const nearCorridor = isCellNearRouteCorridor(x, y, ROUTE_FRAME_RADIUS, pathGrid);
 
       const threshold = nearCorridor ? GROVE_THRESHOLD_NEAR_PATH : GROVE_THRESHOLD_DEFAULT;
       if (isNonTransitable || groveNoise >= threshold) {
@@ -106,23 +280,13 @@ export function placeTreeMasses(ctx: TreeMassPlacementContext): void {
           continue;
         }
 
-        let neighbors = 0;
-        for (let dy = -1; dy <= 1; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            if (dx === 0 && dy === 0) continue;
-            if (forestMask[y + dy]?.[x + dx]) neighbors++;
-          }
-        }
-
-        if (forestMask[y]![x]) {
-          if (neighbors < FOREST_CA_SURVIVE_MIN) {
-            nextMask[y]![x] = false;
-          }
-        } else {
-          if (neighbors >= FOREST_CA_BORN_MIN && !treeBlocked[y]?.[x]) {
-            nextMask[y]![x] = true;
-          }
-        }
+        const neighbors = countForestMaskNeighbors(forestMask, x, y);
+        const isBlocked = Boolean(treeBlocked[y]?.[x]);
+        nextMask[y]![x] = evaluateForestCASurvival({
+          isForest: Boolean(forestMask[y]![x]),
+          neighbors,
+          isBlocked
+        });
       }
     }
     forestMask = nextMask;
@@ -184,17 +348,7 @@ export function placeTreeMasses(ctx: TreeMassPlacementContext): void {
         }
       }
 
-      let nearPath = false;
-      for (let dy = -ROUTE_FRAME_RADIUS; dy <= ROUTE_FRAME_RADIUS; dy++) {
-        for (let dx = -ROUTE_FRAME_RADIUS; dx <= ROUTE_FRAME_RADIUS; dx++) {
-          if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) continue;
-          if (pathGrid[y + dy]?.[x + dx]) {
-            nearPath = true;
-            break;
-          }
-        }
-        if (nearPath) break;
-      }
+      const nearPath = isNearPathFrame(x, y, ROUTE_FRAME_RADIUS, pathGrid);
 
       const baseThreshold = SUBTRACTIVE_WILDERNESS_BASE_THRESHOLD;
       const threshold = nearPath ? SUBTRACTIVE_WILDERNESS_PATH_THRESHOLD : baseThreshold;
@@ -203,61 +357,27 @@ export function placeTreeMasses(ctx: TreeMassPlacementContext): void {
       if (!forceDenseTree && groveNoise < threshold) continue;
 
       const canopyOverhang = treeHeight - TREE_TRUNK_HEIGHT;
-      let fits = true;
 
       // 1. Water clearance
-      for (let dy = -canopyOverhang - 1; dy <= 2; dy++) {
-        for (let dx = -1; dx <= treeWidth; dx++) {
-          const cy = y + dy;
-          const cx = x + dx;
-          if (cy < 0 || cy >= H || cx < 0 || cx >= W) {
-            fits = false;
-            break;
-          }
-          const t = continent.terrainMatrix[cy]?.[cx];
-          if (t === 'water' || t === 'water_deep') {
-            fits = false;
-            break;
-          }
-        }
-        if (!fits) break;
-      }
-      if (!fits) continue;
+      if (!hasWaterClearanceForTree(x, y, treeWidth, canopyOverhang, W, H, continent)) continue;
 
       // 2. Ground footprint clearance
-      for (let dy = 0; dy < TREE_TRUNK_HEIGHT; dy++) {
-        for (let dx = 0; dx < treeWidth; dx++) {
-          const cy = y + dy;
-          const cx = x + dx;
-          if (treeBlocked[cy]?.[cx] || treeOccupied[cy]?.[cx]) {
-            fits = false;
-            break;
-          }
-          if (
-            continent.terrainMatrix[cy]?.[cx] !== 'grass' ||
-            (continent.heightmap[cy]?.[cx] ?? 0) !== 0
-          ) {
-            fits = false;
-            break;
-          }
-        }
-        if (!fits) break;
+      if (
+        !hasGroundFootprintClearance(
+          x,
+          y,
+          treeWidth,
+          TREE_TRUNK_HEIGHT,
+          treeBlocked,
+          treeOccupied,
+          continent
+        )
+      ) {
+        continue;
       }
-      if (!fits) continue;
 
       // 2b. Strict Tall Grass Canopy & Footprint Clearance
-      for (let dy = -canopyOverhang; dy <= 1; dy++) {
-        for (let dx = 0; dx < treeWidth; dx++) {
-          const cy = y + dy;
-          const cx = x + dx;
-          if (tallGrassGrid[cy]?.[cx]) {
-            fits = false;
-            break;
-          }
-        }
-        if (!fits) break;
-      }
-      if (!fits) continue;
+      if (!hasTallGrassCanopyClearance(x, y, treeWidth, canopyOverhang, tallGrassGrid)) continue;
 
       // Enforce strict root clearance
       let overlapsRoots = false;
@@ -275,27 +395,21 @@ export function placeTreeMasses(ctx: TreeMassPlacementContext): void {
       if (overlapsRoots) continue;
 
       // 3. Canopy overhead clearance
-      for (let dy = -canopyOverhang; dy < 0; dy++) {
-        for (let dx = 0; dx < treeWidth; dx++) {
-          const cy = y + dy;
-          const cx = x + dx;
-          if (
-            cy < 0 ||
-            cy >= H ||
-            cx < 0 ||
-            cx >= W ||
-            urbanBlocked[cy]?.[cx] ||
-            stairBlocked[cy]?.[cx] ||
-            (continent.heightmap[cy]?.[cx] ?? 0) !== 0 ||
-            continent.resolvedMountain.occupiedFootCells[cy]?.[cx]
-          ) {
-            fits = false;
-            break;
-          }
-        }
-        if (!fits) break;
+      if (
+        !hasCanopyOverheadClearance(
+          x,
+          y,
+          treeWidth,
+          canopyOverhang,
+          W,
+          H,
+          urbanBlocked,
+          stairBlocked,
+          continent
+        )
+      ) {
+        continue;
       }
-      if (!fits) continue;
 
       // Check species isolation
       if (
@@ -306,32 +420,9 @@ export function placeTreeMasses(ctx: TreeMassPlacementContext): void {
           prefabFile === 'poke_tree_oak_yellow.png'
             ? 'poke_tree_oak_clean.png'
             : 'poke_tree_oak_yellow.png';
-        let tooClose = false;
-        for (
-          let dy = -TREE_SPECIES_ISOLATION_DISTANCE;
-          dy <= TREE_SPECIES_ISOLATION_DISTANCE;
-          dy++
-        ) {
-          const cy = y + dy;
-          if (cy < 0 || cy >= H) continue;
-          for (
-            let dx = -TREE_SPECIES_ISOLATION_DISTANCE;
-            dx <= TREE_SPECIES_ISOLATION_DISTANCE;
-            dx++
-          ) {
-            const cx = x + dx;
-            if (cx < 0 || cx >= W) continue;
-            if (
-              treeSpeciesGrid[cy]![cx] === opposingSpecies &&
-              Math.hypot(dx, dy) < TREE_SPECIES_ISOLATION_DISTANCE
-            ) {
-              tooClose = true;
-              break;
-            }
-          }
-          if (tooClose) break;
+        if (isSpeciesTooClose(x, y, opposingSpecies, W, H, treeSpeciesGrid)) {
+          continue;
         }
-        if (tooClose) continue;
       }
 
       rawTrees.push({

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
 import PVTooltip from '@/components/common/PVTooltip.vue';
 import FriendshipSealBadge from '@/components/pokemon/FriendshipSealBadge.vue';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 interface Props {
   pokemon: Pokemon;

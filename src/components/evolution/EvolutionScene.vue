@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick, computed } from 'vue';
-import { useEvolutionStore } from '@/stores/evolution';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { gsap } from 'gsap';
+import { ref, onMounted, nextTick, computed } from 'vue';
+
 import { gameBus } from '@/logic/events/gameBus';
-import type { EvolutionStep } from './evolutionTypes';
-import EvolutionSpriteStage from './EvolutionSpriteStage.vue';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useEvolutionStore } from '@/stores/evolution';
+
 import EvolutionDialogInfo from './EvolutionDialogInfo.vue';
+import EvolutionSpriteStage from './EvolutionSpriteStage.vue';
+import type { EvolutionStep } from './evolutionTypes';
 
 defineOptions({
   inheritAttrs: false
@@ -75,7 +77,7 @@ const auraStyles = computed(() => {
   };
 });
 
-const cleanupTweens = () => {
+const cleanupTweens = (): void => {
   if (ctx) {
     ctx.revert();
     ctx = null;
@@ -84,7 +86,7 @@ const cleanupTweens = () => {
   activeTweens.length = 0;
 };
 
-const initEvolution = () => {
+const initEvolution = (): void => {
   if (!evolutionStore.sourcePokemon || !evolutionStore.targetId) return;
 
   const toData = pokemonDataProvider.getPokemonData(evolutionStore.targetId);
@@ -139,7 +141,7 @@ onUnmounted(() => {
   }
 });
 
-const startSequence = () => {
+const startSequence = (): void => {
   if (ctx) ctx.revert();
   ctx = gsap.context(() => {
     timeline = gsap.timeline({
@@ -279,7 +281,7 @@ const startSequence = () => {
   }, containerRef.value ?? undefined);
 };
 
-const cancelEvolution = () => {
+const cancelEvolution = (): void => {
   if (ctx) {
     ctx.revert();
     ctx = null;
@@ -291,7 +293,7 @@ const cancelEvolution = () => {
   currentShowingSprite.value = 'from';
 };
 
-const close = () => {
+const close = (): void => {
   evolutionStore.finishEvolution();
 };
 </script>

@@ -5,6 +5,7 @@
  */
 
 import { gsap } from 'gsap';
+
 import type { EffectSettings, WobbleConfig } from '@/data/battle/fx-configs';
 import { OPACITY_ZERO } from '@/logic/constants/visuals';
 
@@ -29,7 +30,10 @@ const OFFSET_PERCENT_MARGIN = '10%' as const;
 const CENTER_PERCENT_OFFSET = -50 as const;
 const STAGGER_INITIAL_DELAY_NONE = 0 as const;
 
-function resolveParticleDurations(settings: EffectSettings) {
+function resolveParticleDurations(settings: EffectSettings): {
+  growDur: number | (() => number);
+  shrinkDur: number | (() => number);
+} {
   const totalDur = settings.duration || DEFAULT_PARTICLE_DURATION_SEC;
   const baseGrowDur = settings.growDuration || totalDur / PARTICLE_HALF_DURATION_DIVISOR;
   const baseShrinkDur = totalDur - baseGrowDur;
@@ -52,7 +56,7 @@ function resolveParticleDurations(settings: EffectSettings) {
   };
 }
 
-function resolveGrowScale(settings: EffectSettings, spriteScale: number) {
+function resolveGrowScale(settings: EffectSettings, spriteScale: number): number | (() => number) {
   const maxScale = spriteScale * settings.mult;
   if (!settings.randomizeVars) {
     return maxScale;

@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * tests/node/map/svgRouteAdapter.test.ts
  *
@@ -5,13 +6,13 @@
  * Verifies clean SVG export, lossless SVG import (roundtrip),
  * and adaptive geography regeneration from vector graph anchors.
  */
-
 import { describe, it, expect } from 'vitest';
+
 import {
   exportRoutesToSvg,
   importRoutesFromSvg,
   regenerateGeographyFromGraph
-} from '../../logic/map/continent/svgRouteAdapter';
+} from '../../logic/map/continent/svgRouteAdapter.ts';
 import type {
   ContinentNode,
   ContinentConnection,
@@ -19,7 +20,7 @@ import type {
 } from '../../types/map/continentTypes.ts';
 
 describe('svgRouteAdapter', () => {
-  const sampleNodes: Record<string, ContinentNode> = {
+  const sampleNodes: Record<DisplayText, ContinentNode> = {
     city_1: {
       id: 'city_1',
       name: 'Pueblo Paleta',

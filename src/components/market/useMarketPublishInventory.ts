@@ -1,10 +1,12 @@
-import { computed, type Ref } from 'vue';
+import type { DisplayText } from '@francogp/auditor';
+import { computed, type ComputedRef, type Ref } from 'vue';
+
 import { getItemById, isItemId, type ItemId } from '@/data/inventory/items';
+import type { MarketListing } from '@/logic/economy/market';
 import type { useGameStore } from '@/stores/game';
 import type { useGTSStore } from '@/stores/gts';
-import type { MarketListing } from '@/logic/economy/market';
-import type { SortOrder, ItemSortKey } from '@/types/system/game';
 import type { ItemTier } from '@/types/inventory/items';
+import type { SortOrder, ItemSortKey } from '@/types/system/game';
 
 export interface InventoryItem {
   id: ItemId;
@@ -15,15 +17,21 @@ export interface InventoryItem {
   tier: ItemTier;
 }
 
+export interface UseMarketPublishInventoryReturn {
+  inventory: ComputedRef<InventoryItem[]>;
+  gtsStatsMap: ComputedRef<Partial<Record<ItemId, { min: number; max: number; avg: number }>>>;
+  filteredAndSortedInventory: ComputedRef<InventoryItem[]>;
+}
+
 export function useMarketPublishInventory(
   game: ReturnType<typeof useGameStore>,
   gtsStore: ReturnType<typeof useGTSStore>,
   itemSearchQuery: Ref<string>,
   itemSortKey: Ref<ItemSortKey>,
   itemSortOrder: Ref<SortOrder>
-) {
+): UseMarketPublishInventoryReturn {
   const inventory = computed<InventoryItem[]>(() => {
-    return Object.entries(game.state.inventory as Record<string, number>) // open-record: Generic key-value data dictionary container
+    return Object.entries(game.state.inventory as Record<DisplayText, number>) // open-record: Generic key-value data dictionary container
       .filter(([_id, qty]) => qty > 0)
       .map(([id, qty]) => {
         const dbItem = getItemById(id);

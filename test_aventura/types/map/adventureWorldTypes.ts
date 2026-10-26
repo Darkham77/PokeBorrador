@@ -1,9 +1,11 @@
+import type { AssetUri, DisplayText, IsoDateString } from '@francogp/auditor';
+
 import type { CellBiomeType } from './kantoGridModel.ts';
 import type { PlacedStructure } from './kantoTileEngineTypes.ts';
 import type { GeneratedMap } from './proceduralMapTypes.ts';
 export type { GeneratedMap };
-import type { TileMetadata } from '../../logic/map/tilesRegistry.ts';
 import type { StructureTemplate } from '../../config/mapStructures.ts';
+import type { TileMetadata } from '../../logic/map/tilesRegistry.ts';
 import type { UrbanScale } from './continentTypes.ts';
 export type { UrbanScale };
 
@@ -40,17 +42,17 @@ export interface ProceduralGenerationConfig {
 }
 
 export interface AdventureProjectNode {
-  id: string; // domain-ok: Identificador o estructura procedural de aventura
-  name: string; // domain-ok: Identificador o estructura procedural de aventura
-  type: string; // domain-ok: Identificador o estructura procedural de aventura
+  id: DisplayText;
+  name: DisplayText;
+  type: DisplayText;
   x: number;
   y: number;
   hasCenter?: boolean;
   farm?: { t: number; w: number; m: number; f: number };
-  requiresMO?: string; // domain-ok: Identificador o estructura procedural de aventura
-  blockMsg?: string; // domain-ok: Identificador o estructura procedural de aventura
+  requiresMO?: DisplayText;
+  blockMsg?: DisplayText;
   hasEvent?: boolean;
-  weather?: string; // domain-ok: Identificador o estructura procedural de aventura
+  weather?: DisplayText;
   urbanScale?: UrbanScale;
   localMap?: GeneratedMap;
   cityConfig?: CityGenerationConfig;
@@ -59,41 +61,41 @@ export interface AdventureProjectNode {
 export type MapNode = AdventureProjectNode;
 
 export interface ContinentalRoutesExportBundle {
-  readonly version: string; // domain-ok: Identificador o estructura procedural de aventura
+  readonly version: DisplayText;
   readonly archetype: RegionArchetype;
   readonly seed: number;
   readonly worldWidth: number;
   readonly worldHeight: number;
-  readonly nodes: Record<string, AdventureProjectNode>; // open-record: Estructura o identificador procedural de aventura
-  readonly connections: [string, string][];
-  readonly svgPathData: string; // domain-ok: Identificador o estructura procedural de aventura
-  readonly exportedAt: string; // domain-ok: Identificador o estructura procedural de aventura
+  readonly nodes: Record<DisplayText, AdventureProjectNode>;
+  readonly connections: [DisplayText, DisplayText][];
+  readonly svgPathData: DisplayText;
+  readonly exportedAt: IsoDateString;
 }
 
 export interface AdventureProject {
-  id: string; // domain-ok: Identificador o estructura procedural de aventura
-  name: string; // domain-ok: Identificador o estructura procedural de aventura
+  id: DisplayText;
+  name: DisplayText;
   archetype: RegionArchetype;
   seed: number;
   config: ProceduralGenerationConfig;
-  nodes: Record<string, AdventureProjectNode>; // open-record: Estructura o identificador procedural de aventura
-  connections: [string, string][];
-  customTerrain?: Record<string, CellBiomeType>; // open-record: Estructura o identificador procedural de aventura - sparse tile key `${gx}_${gy}`
+  nodes: Record<DisplayText, AdventureProjectNode>;
+  connections: [DisplayText, DisplayText][];
+  customTerrain?: Record<DisplayText, CellBiomeType>;
   customBuildings?: PlacedStructure[];
   customProps?: PlacedStructure[];
   customTiles?: readonly TileMetadata[];
   customStructures?: readonly StructureTemplate[];
-  updatedAt: string; // domain-ok: Identificador o estructura procedural de aventura
+  updatedAt: IsoDateString;
 }
 
 export type PrefabCategory = 'buildings' | 'vegetation' | 'props' | 'elevation' | 'infrastructure';
 
 export interface StampingPrefabDefinition {
-  id: string; // domain-ok: Identificador o estructura procedural de aventura
-  name: string; // domain-ok: Identificador o estructura procedural de aventura
+  id: DisplayText;
+  name: DisplayText;
   category: PrefabCategory;
-  style: string; // domain-ok: Identificador o estructura procedural de aventura
+  style: DisplayText;
   width: number;
   height: number;
-  file_path?: string; // domain-ok: Identificador o estructura procedural de aventura
+  file_path?: AssetUri;
 }

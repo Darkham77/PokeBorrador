@@ -1,7 +1,8 @@
-/** @vitest-environment jsdom */
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount, flushPromises } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
+/** @vitest-environment jsdom */
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import ChatBattleCodeBadge from '@/components/social/ChatBattleCodeBadge.vue';
 import { useGameStore } from '@/stores/game';
 import { useLivePvPStore } from '@/stores/livePvP';

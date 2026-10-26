@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
+import { useHomeWidgetBadges } from '@/composables/home/useHomeWidgetBadges';
 import {
   useHomeWidgetsCollapse,
   type HomeWidgetId
 } from '@/composables/home/useHomeWidgetsCollapse';
-import { useHomeWidgetBadges } from '@/composables/home/useHomeWidgetBadges';
 
 interface Props {
   widgetId: HomeWidgetId;
@@ -27,7 +28,7 @@ const resolvedBadge = computed(() => {
   return getWidgetBadge(props.widgetId);
 });
 
-const toggle = () => {
+const toggle = (): void => {
   toggleCollapse(props.widgetId);
 };
 </script>

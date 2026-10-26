@@ -23,14 +23,15 @@ const FULL_OPACITY = 1;
 const ZERO_OPACITY = 0;
 const BUSH_TRANSFORM_ORIGIN_BOTTOM_CENTER = 'bottom center';
 
-import { computed, ref, onUnmounted } from 'vue';
 import { gsap } from 'gsap';
+import { computed, ref, onUnmounted } from 'vue';
+
+import type { MapRouteId } from '@/data/world/map-assets';
 import {
   GSAP_FAST_DURATION_SEC,
   COMBATANT_EMERGE_SPARKLE_FADE_DURATION_SEC,
   SCALE_FULL
 } from '@/logic/constants/animations';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import {
   getActiveBushesForMap,
   type ResolvedBushConfig,
@@ -38,7 +39,7 @@ import {
   type BushFamily,
   type BushLayerDepth
 } from '@/logic/environment/bushLibrary';
-import type { MapRouteId } from '@/data/world/map-assets';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 interface Props {
   locationId?: MapRouteId;
@@ -62,7 +63,7 @@ const props = withDefaults(defineProps<Props>(), {
   hideInstant: false
 });
 
-const handleImageError = (e: Event, family: string) => {
+const handleImageError = (e: Event, family: string): void => {
   const target = e.target as HTMLImageElement;
   const familyAssets = BUSH_FAMILIES[family as BushFamily];
   const fallback =
@@ -191,7 +192,7 @@ const activeBushes = computed<ResolvedBushConfig[]>(() => {
 const bushRefs = ref<HTMLElement[]>([]);
 const wiggleTweens: gsap.core.Tween[] = [];
 
-const onEnter = (el: Element, done: () => void) => {
+const onEnter = (el: Element, done: () => void): void => {
   if (props.instant) {
     gsap.set(el, { opacity: FULL_OPACITY, scale: SCALE_FULL });
     done();
@@ -215,7 +216,7 @@ const onEnter = (el: Element, done: () => void) => {
   );
 };
 
-const onLeave = (el: Element, done: () => void) => {
+const onLeave = (el: Element, done: () => void): void => {
   stopWiggles();
   if (props.hideInstant) {
     gsap.set(el, { opacity: ZERO_OPACITY });
@@ -230,7 +231,7 @@ const onLeave = (el: Element, done: () => void) => {
   });
 };
 
-const startWiggles = () => {
+const startWiggles = (): void => {
   stopWiggles();
 
   bushRefs.value.forEach((el, i) => {
@@ -275,7 +276,7 @@ const startWiggles = () => {
   });
 };
 
-const stopWiggles = () => {
+const stopWiggles = (): void => {
   wiggleTweens.forEach((t) => t.kill());
   wiggleTweens.length = 0;
 };

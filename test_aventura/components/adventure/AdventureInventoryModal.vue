@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
+
 import AdventureModal from './AdventureModal.vue';
 
 const props = defineProps<{
   show: boolean;
   activeCompanion: string;
-  playerInventory: Record<string, boolean>; // open-record: Adventure inventory items and HMs state
+  playerInventory: Record<DisplayText, boolean>; // open-record: Adventure inventory items and HMs state
 }>();
 
 const emit = defineEmits<{
@@ -13,7 +15,7 @@ const emit = defineEmits<{
   (e: 'close'): void;
 }>();
 
-const activeCompanionBtn = (comp: string) => {
+const activeCompanionBtn = (comp: string): string => {
   return props.activeCompanion === comp
     ? 'ring-4 ring-blue-500 scale-110'
     : comp === 'none'

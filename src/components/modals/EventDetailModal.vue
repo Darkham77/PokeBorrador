@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useModalStore } from '@/stores/modals';
+
 import BaseModal from '@/components/common/BaseModal.vue';
-import EventDetailShowcase from './EventDetailShowcase.vue';
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import {
+  useEventDetailBonuses,
+  type ExtendedEventConfig
+} from '@/composables/events/useEventDetailBonuses';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { normalizeZonedDateTime, getGMT3Date } from '@/logic/utils/timeUtils';
-import { logger } from '@/logic/utils/logger';
 import {
   resolveWeeklyRotation,
   getEventDisplayName,
@@ -15,12 +16,13 @@ import {
   type WeeklyRotationEntry,
   type UpcomingEventOccurrence
 } from '@/logic/events/eventEngine';
-import {
-  useEventDetailBonuses,
-  type ExtendedEventConfig
-} from '@/composables/events/useEventDetailBonuses';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { logger } from '@/logic/utils/logger';
+import { normalizeZonedDateTime, getGMT3Date } from '@/logic/utils/timeUtils';
+import { useModalStore } from '@/stores/modals';
+
+import EventDetailShowcase from './EventDetailShowcase.vue';
 import EventSubCompetitionsSection from './EventSubCompetitionsSection.vue';
-import PVTooltip from '@/components/common/PVTooltip.vue';
 
 interface Props {
   show?: boolean;
@@ -97,7 +99,7 @@ const bannerUrl = computed<string | null>(() => {
 
 const modalStore = useModalStore();
 
-const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
+const openSpeciesDetail = (speciesId: PokemonSpeciesId): void => {
   modalStore.open('PokedexDetail', {
     speciesId,
     context: 'pokedex'

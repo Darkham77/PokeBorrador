@@ -64,9 +64,10 @@ export function parseToNumericSeed(raw: unknown): NumericSeed {
  * Safely injects a seed into the global debugging environment.
  */
 export function injectDebugSeed(seed: NumericSeed): void {
-  if (typeof window !== 'undefined') {
-    const debugObj = (window as { __VITE_DEBUG__?: Record<string, unknown> }).__VITE_DEBUG__ || {};
-    (window as { __VITE_DEBUG__?: Record<string, unknown> }).__VITE_DEBUG__ = debugObj;
+  if (typeof globalThis.window !== 'undefined') {
+    const debugObj =
+      (globalThis as { __VITE_DEBUG__?: Record<string, unknown> }).__VITE_DEBUG__ || {};
+    (globalThis as { __VITE_DEBUG__?: Record<string, unknown> }).__VITE_DEBUG__ = debugObj;
     debugObj.battleSeed = seed;
   }
 }

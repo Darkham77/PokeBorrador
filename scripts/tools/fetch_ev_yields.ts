@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * scripts/tools/fetch_ev_yields.ts
  *
@@ -217,7 +218,7 @@ function resolveSpeciesEvYield(
 export async function generateEvYields() {
   const { pdbData, bulbaData } = await loadScrapedEvDatasets();
   const allSpeciesKeys = Object.keys(metadataJson);
-  const result: Record<string, EvYield> = {};
+  const result: Record<DisplayText, EvYield> = {};
 
   let matched = 0;
   let fallbackToBase = 0;

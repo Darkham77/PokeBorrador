@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
 import { gsap } from 'gsap';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 interface Props {
   cardTimerLabel: string;

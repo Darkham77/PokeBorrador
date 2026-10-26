@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useInputAnimations } from '@/composables/ui/useInputAnimations';
-import type { ServerConnectionStatus } from '@/types/auth/auth';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import type { ServerConnectionStatus } from '@/types/auth/auth';
 
 interface Server {
   id: string;
@@ -35,7 +35,7 @@ const emit = defineEmits<{
 const { handleInputEnter, handleInputLeave, handleInputFocus, handleInputBlur } =
   useInputAnimations();
 
-const handleServerSelect = (e: Event) => {
+const handleServerSelect = (e: Event): void => {
   const target = e.target as HTMLSelectElement;
   emit('update:selectedServerId', target.value);
   emit('serverChange');

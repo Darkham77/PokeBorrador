@@ -1,11 +1,13 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert';
 import fs from 'node:fs';
+
+import { describe, it } from 'vite-plus/test';
+
 import { ShowdownBattleEngine } from '@/logic/battle/engine/showdownBattleEngine.ts';
-import { createShowdownBattle } from '@/logic/battle/helpers/showdownBattleFactory.ts';
-import { ShowdownTeamResolver } from '@/logic/battle/showdownTeamResolver.ts';
-import { ShowdownTeamMapper } from '@/logic/battle/helpers/showdownTeamMapper.ts';
 import { patchShowdownSpreadModify } from '@/logic/battle/engine/showdownSpreadModifyHelper.ts';
+import { createShowdownBattle } from '@/logic/battle/helpers/showdownBattleFactory.ts';
+import { ShowdownTeamMapper } from '@/logic/battle/helpers/showdownTeamMapper.ts';
+import { ShowdownTeamResolver } from '@/logic/battle/showdownTeamResolver.ts';
 import type { ShowdownPlayerRequest } from '@/types/battle/battle';
 
 describe('Reproduce Fuzzer Case 2241566f57e4 (Turn 53-58 Faint & Switch Chains)', () => {

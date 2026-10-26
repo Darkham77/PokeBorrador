@@ -4,33 +4,35 @@
  * Consolidated Suite for Item Effects, Friendship Bonuses, Time Buffs, Matrix, and Multi-Step Flows.
  */
 
-import { describe, test, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { mockLocalStorage } from '../../helpers/debugSetup.ts';
+import { describe, test, expect, beforeEach } from 'vite-plus/test';
+
+import { requireAbilityId } from '@/data/battle/abilities.ts';
+import type { ItemId } from '@/data/inventory/items.ts';
+import { getPreEvolution } from '@/data/pokemon/evolutionData.ts';
+import { isPokemonSpeciesId, requirePokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB.ts';
+import { isValidTarget } from '@/logic/items/helpers/itemTargetValidator.ts';
+import { itemEffects } from '@/logic/items/itemEffects.ts';
+import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory.ts';
+import { isGlobalItem } from '@/logic/providers/itemProvider.ts';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider.ts';
+import { useBuffsStore } from '@/stores/battle/buffs.ts';
+import { useDebugStore } from '@/stores/debug.ts';
+import { registerTimeTools } from '@/stores/debug/sections/timeTools.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useInventoryStore } from '@/stores/inventory/inventory.ts';
+import { executeUseItem } from '@/stores/inventory/inventoryUseAction.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon.ts';
+
 import {
   handleEvBerry,
   handleVitamin,
   handleFeather
 } from '../../../src/logic/items/itemEffectHandlers.ts';
 import { ITEM_FAMILIES_MATRIX } from '../../fixtures/items/itemFamiliesMatrix.ts';
-import { isValidTarget } from '@/logic/items/helpers/itemTargetValidator.ts';
-import { itemEffects } from '@/logic/items/itemEffects.ts';
-import { isGlobalItem } from '@/logic/providers/itemProvider.ts';
-import { useGameStore } from '@/stores/game.ts';
-import { useBuffsStore } from '@/stores/battle/buffs.ts';
-import { useDebugStore } from '@/stores/debug.ts';
-import { registerTimeTools } from '@/stores/debug/sections/timeTools.ts';
-import { useUIStore } from '@/stores/ui.ts';
-import { useInventoryStore } from '@/stores/inventory/inventory.ts';
-import { executeUseItem } from '@/stores/inventory/inventoryUseAction.ts';
-import { getPreEvolution } from '@/data/pokemon/evolutionData.ts';
-import { POKEMON_DB } from '@/data/pokemon/pokemonDB.ts';
-import { isPokemonSpeciesId, requirePokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider.ts';
-import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory.ts';
-import { requireAbilityId } from '@/data/battle/abilities.ts';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon.ts';
-import type { ItemId } from '@/data/inventory/items.ts';
+import { mockLocalStorage } from '../../helpers/debugSetup.ts';
 
 function createMockFriendshipPokemon(partial: Partial<Pokemon>): Pokemon {
   return {

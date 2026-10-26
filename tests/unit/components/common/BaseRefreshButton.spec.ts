@@ -1,7 +1,8 @@
-// @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { gsap } from 'gsap';
+// @vitest-environment jsdom
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+
 import BaseRefreshButton from '@/components/common/BaseRefreshButton.vue';
 
 describe('BaseRefreshButton.vue', () => {

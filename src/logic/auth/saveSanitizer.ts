@@ -5,13 +5,13 @@
  * Protects trust boundaries against corrupted fields and UID duplicates.
  */
 
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { GameState } from '@/types/system/game';
-import { validateSaveData, type SaveDataDto } from '@/logic/validation/schemas';
+import { normalizeRuntimePokemonGender } from '@/logic/auth/savePokemonSerializer.ts';
 import { validatePokemon } from '@/logic/pokemon/pokemonFactory';
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
 import { logger } from '@/logic/utils/logger';
-import { normalizeRuntimePokemonGender } from '@/logic/auth/savePokemonSerializer.ts';
+import { validateSaveData, type SaveDataDto } from '@/logic/validation/schemas';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { GameState } from '@/types/system/game';
 
 interface ValidationCache {
   lastBoxHash: string;
@@ -38,7 +38,9 @@ import {
   sanitizeMarketSoldIds
 } from './saveSanitizerHelpers.ts';
 
-function validateCachedSaveData(data: GameState | SaveDataDto | Record<string, unknown>) {
+function validateCachedSaveData(
+  data: GameState | SaveDataDto | Record<string, unknown>
+): ReturnType<typeof validateSaveData> {
   const rawData =
     typeof data === 'object' && data !== null ? (data as { box?: (Pokemon | null)[] }) : {};
   const rawBox = Array.isArray(rawData.box) ? rawData.box : [];
@@ -126,7 +128,7 @@ export function validateAndSanitize(
     };
   }
 
-  const sanitizedData = parsedResult.output as SaveDataDto;
+  const sanitizedData = parsedResult.output;
   sanitizedData.team?.forEach(normalizeRuntimePokemonGender);
   sanitizedData.box?.forEach((p) => {
     if (p) normalizeRuntimePokemonGender(p);
@@ -139,8 +141,8 @@ export function validateAndSanitize(
   const uids = new Set<string>();
   const duplicateUids = new Set<string>();
   const isDebugMode =
-    (typeof window !== 'undefined' &&
-      Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'))) ||
+    (typeof globalThis.window !== 'undefined' &&
+      Boolean(globalThis.__VITE_DEBUG__ || globalThis.location?.search?.includes('debug'))) ||
     (typeof import.meta !== 'undefined' && Boolean(import.meta.env?.DEV));
 
   try {

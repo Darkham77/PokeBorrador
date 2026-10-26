@@ -1,7 +1,10 @@
-import { ref } from 'vue';
+import type { DisplayText } from '@francogp/auditor';
 import { gsap } from 'gsap';
-import { logger } from '../utils/logger.ts';
+import { ref, type Ref } from 'vue';
+
 import { MILLISECONDS_PER_SECOND } from '@/logic/constants/visuals';
+
+import { logger } from '../utils/logger.ts';
 
 export const BATTLE_STATES = {
   CONTEXT_SETUP: 'CONTEXT_SETUP',
@@ -49,7 +52,7 @@ export const BATTLE_SUBSTATES = {
   APPLY_MOVE: 'APPLY_MOVE',
   FLEE_ATTEMPT: 'FLEE_ATTEMPT',
   EVAL_HP: 'EVAL_HP',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   EVAL_CONTINUE: 'EVAL_CONTINUE',
   ENEMY_DEFEAT: 'ENEMY_DEFEAT',
   TYPE_CHECK: 'TYPE_CHECK',
@@ -78,11 +81,11 @@ export const BATTLE_SUBSTATES = {
   SWITCHING: 'SWITCHING',
   POKEMON_RECALL: 'POKEMON_RECALL',
   RENDER_BALL: 'RENDER_BALL',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   ENERGY_RECALL: 'ENERGY_RECALL',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   ENERGY_RELEASE: 'ENERGY_RELEASE',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   POKEMON_APPEAR: 'POKEMON_APPEAR',
   VACATE_SEAT: 'VACATE_SEAT',
   FADEOUT_BALL: 'FADEOUT_BALL',
@@ -90,25 +93,25 @@ export const BATTLE_SUBSTATES = {
   ENCOUNTER_TYPE_CHECK: 'ENCOUNTER_TYPE_CHECK',
   WILD_ENTRY: 'WILD_ENTRY',
   TRAINER_ENTRY: 'TRAINER_ENTRY',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   PARALLEL_ENTRY: 'PARALLEL_ENTRY',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   T_VISUAL: 'T_VISUAL',
   WILD_ENCOUNTER: 'WILD_ENCOUNTER',
   TRAINER_ENCOUNTER: 'TRAINER_ENCOUNTER',
   RETREAT_AND_FADEOUT: 'RETREAT_AND_FADEOUT',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   DIALOG_FADEOUT: 'DIALOG_FADEOUT',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   T_RETREAT: 'T_RETREAT',
   CHECK_BINOCULARS: 'CHECK_BINOCULARS',
   PARALLEL_JUMP: 'PARALLEL_JUMP',
   JUMP_SHADOW: 'JUMP_SHADOW',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   JUMP_COLOR: 'JUMP_COLOR',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   BUSH_FADE: 'BUSH_FADE',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   REVEAL_COLORS: 'REVEAL_COLORS',
   ENTRY_CHECK: 'ENTRY_CHECK',
   DEFEAT_WAIT: 'DEFEAT_WAIT',
@@ -131,83 +134,83 @@ export const BATTLE_SUBSTATES = {
   SET_SEARCH_FLAG: 'SET_SEARCH_FLAG',
   FIND_HEALTHY: 'FIND_HEALTHY',
   CHECK_ACTIVE_SEAT: 'CHECK_ACTIVE_SEAT',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   WAIT_TIMER: 'WAIT_TIMER',
   SHOW_DIALOGS: 'SHOW_DIALOGS',
   AUTO_BATTLE_CHECK: 'AUTO_BATTLE_CHECK',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   RESET_STALE_VARIABLES: 'RESET_STALE_VARIABLES',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   PLAY_MINIGAME: 'PLAY_MINIGAME',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   MINIGAME_MODAL: 'MINIGAME_MODAL',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   MINIGAME_RESULT: 'MINIGAME_RESULT',
   PREPARATION: 'PREPARATION',
   REORDER_TEAM: 'REORDER_TEAM',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   COLLECT_CHOICES: 'COLLECT_CHOICES',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   SEND_TO_WORKER: 'SEND_TO_WORKER',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   EXECUTE_TURN_SIMULATOR: 'EXECUTE_TURN_SIMULATOR',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   RETURN_LOGS: 'RETURN_LOGS',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   PLAYBACK_LOGS: 'PLAYBACK_LOGS',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   POP_LOG_LINE: 'POP_LOG_LINE',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   PARSE_LINE: 'PARSE_LINE',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   PLAY_ANIMATION: 'PLAY_ANIMATION',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   CALC_ESCAPE_CHANCE: 'CALC_ESCAPE_CHANCE',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   ESCAPE_FAILED: 'ESCAPE_FAILED',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   DELEGATE_WORKER: 'DELEGATE_WORKER',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   FILTER_RECOIL_LOGS: 'FILTER_RECOIL_LOGS',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   PLAY_ENEMY_COUNTERATTACK: 'PLAY_ENEMY_COUNTERATTACK',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   PARALLEL_ESCAPE_EXECUTION: 'PARALLEL_ESCAPE_EXECUTION',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   FORCED_SWITCH_SEQ: 'FORCED_SWITCH_SEQ',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   DETECT_TRIGGER: 'DETECT_TRIGGER',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   PHAZING_EJECTION: 'PHAZING_EJECTION',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   VOLUNTARY_WITHDRAW: 'VOLUNTARY_WITHDRAW',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   RESOLVE_MOVE_ANIM: 'RESOLVE_MOVE_ANIM',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   PLAY_EXPULSION_ANIM: 'PLAY_EXPULSION_ANIM',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   AWAIT_EXPULSION_TWEEN: 'AWAIT_EXPULSION_TWEEN',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   AWAIT_RECALL_TWEEN: 'AWAIT_RECALL_TWEEN',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   VACATE_SEAT_VOLUNTARY: 'VACATE_SEAT_VOLUNTARY',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   INCOMING_POKEMON_CALL: 'INCOMING_POKEMON_CALL',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   CHECK_SEAT_OWNER: 'CHECK_SEAT_OWNER',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   TRAINER_OR_DRAG_CALL: 'TRAINER_OR_DRAG_CALL',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   PLAYER_MANUAL_MENU: 'PLAYER_MANUAL_MENU',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   LOG_ENTRANCE: 'LOG_ENTRANCE',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   HANDLE_RELEASE_ANIM: 'HANDLE_RELEASE_ANIM',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   AWAIT_RELEASE_TWEEN: 'AWAIT_RELEASE_TWEEN',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   APPLY_HAZARDS: 'APPLY_HAZARDS',
-  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
+  // fsm-unused-ok: Mermaid documentation substate for flowchart micro-step
   OPEN_SWITCH_MENU: 'OPEN_SWITCH_MENU'
 } as const;
 
@@ -218,14 +221,26 @@ export function isBattleSubStateName(val: string): val is BattleSubStateName {
   return BATTLE_SUBSTATES_SET.has(val);
 }
 
-export function createBattleStateMachine() {
+export interface BattleStateMachine {
+  currentState: Ref<BattleStateName>;
+  currentSubState: Ref<BattleSubStateName | null>;
+  transition: (
+    newState: BattleStateName | BattleSubStateName,
+    newSubState?: BattleSubStateName | null,
+    delayMs?: number
+  ) => Promise<void>;
+  isState: (state: string) => boolean;
+  isSubState: (subState: string | null) => boolean;
+}
+
+export function createBattleStateMachine(): BattleStateMachine {
   const currentState = ref<BattleStateName>(BATTLE_STATES.EXIT_BATTLE);
   const currentSubState = ref<BattleSubStateName | null>(null);
   let transitionCall: gsap.core.Animation | null = null;
 
   // Simple strict transitions check based on the Mermaid diagram.
   // open-record: FSM state transition validation lookup table
-  const validTransitions: Record<string, ReadonlySet<string>> = {
+  const validTransitions: Record<DisplayText, ReadonlySet<string>> = {
     [BATTLE_STATES.CONTEXT_SETUP]: new Set([BATTLE_STATES.INITIALIZING]),
     [BATTLE_STATES.INITIALIZING]: new Set([
       BATTLE_STATES.CONTEXT_SETUP,
@@ -309,7 +324,7 @@ export function createBattleStateMachine() {
     const resolvers = Promise.withResolvers<void>();
     pendingResolvers = resolvers;
 
-    const executeTransition = () => {
+    const executeTransition = (): void => {
       pendingResolvers = null;
       // Validation check (can be expanded for strict enforcement)
       if (newState && isBattleStateName(newState)) {
@@ -351,8 +366,8 @@ export function createBattleStateMachine() {
     return resolvers.promise;
   };
 
-  const isState = (state: string) => currentState.value === state;
-  const isSubState = (subState: string | null) => currentSubState.value === subState;
+  const isState = (state: string): boolean => currentState.value === state;
+  const isSubState = (subState: string | null): boolean => currentSubState.value === subState;
 
   return {
     currentState,

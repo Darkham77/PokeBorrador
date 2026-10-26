@@ -5,15 +5,16 @@
  * volatile status cleanup and stat stage reset on switch.
  */
 
+import { setActivePinia, createPinia } from 'pinia';
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { ref } from 'vue';
-import { setActivePinia, createPinia } from 'pinia';
+
 import { executeSwitch } from '@/logic/battle/actions/switchAction';
 import { clearVolatileStatus } from '@/logic/battle/battleStatus';
 import { useGameStore } from '@/stores/game';
+import type { BattleStages } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleStages } from '@/types/battle/battle';
 
 const mockWorker = vi.hoisted(() => ({
   postMessage: vi.fn(),

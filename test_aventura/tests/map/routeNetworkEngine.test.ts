@@ -13,14 +13,15 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import {
   generateContinentMap,
   removeOrphanTiles,
   type ContinentMapResult
 } from '../../logic/map/continentGenerator.ts';
+import { resolvePathGrid, CANONICAL_DIRT_PATH_BRUSH } from '../../logic/map/pathAutotileEngine.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { buildRouteChain, generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
-import { resolvePathGrid, CANONICAL_DIRT_PATH_BRUSH } from '../../logic/map/pathAutotileEngine.ts';
 import type { WaterTerrainKind } from '../../logic/map/waterAutotileEngine.ts';
 
 describe('routeNetworkEngine & POI systems', () => {
@@ -159,12 +160,13 @@ describe('routeNetworkEngine & POI systems', () => {
       const { chain, stubs, loops } = buildRouteChain(pois);
 
       // Chain must form a linear path: exactly N-1 edges for N primary nodes
-      const primaryCount = pois.filter(
-        (p) =>
-          p.type === 'metropolis' ||
-          p.type === 'city' ||
-          p.type === 'town' ||
-          p.type === 'pokemon_league'
+      const PRIMARY_POI_TYPE_LIST = ['metropolis', 'city', 'town', 'pokemon_league'] as const;
+      type PrimaryPoiType = (typeof PRIMARY_POI_TYPE_LIST)[number];
+      const PRIMARY_POI_TYPES: ReadonlySet<PrimaryPoiType> = new Set<PrimaryPoiType>(
+        PRIMARY_POI_TYPE_LIST
+      );
+      const primaryCount = pois.filter((p) =>
+        PRIMARY_POI_TYPES.has(p.type as PrimaryPoiType)
       ).length;
       expect(chain.length).toBe(primaryCount - 1);
 

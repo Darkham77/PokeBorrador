@@ -1,16 +1,17 @@
+import { gsap } from 'gsap';
+import { setActivePinia, createPinia } from 'pinia';
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+import { ref } from 'vue';
+
 import { buildFaintTimeline } from '@/components/battle/helpers/combatantActionAnims';
 import { useBattleCaptureAnimations } from '@/composables/battle/useBattleCaptureAnimations';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { gameBus } from '@/logic/events/gameBus';
-import { setActivePinia, createPinia } from 'pinia';
-import { ref } from 'vue';
-import { gsap } from 'gsap';
 import {
   COMBATANT_FAINT_Y_OFFSET,
   COMBATANT_FAINT_DURATION_SEC
 } from '@/logic/constants/animations';
+import { gameBus } from '@/logic/events/gameBus';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 vi.mock('@/logic/utils/gsapHelpers', () => {
   return {

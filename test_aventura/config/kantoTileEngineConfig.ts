@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * test_aventura/config/kantoTileEngineConfig.ts
  *
@@ -58,7 +59,7 @@ export const REGIONAL_MASSIF_BOUNDS = {
   hashMask: 0x7fffffff
 } as const;
 
-export const LPC_PIECE_SLICES: Record<string, { sx: number; sy: number }> = {
+export const LPC_PIECE_SLICES: Record<DisplayText, { sx: number; sy: number }> = {
   // open-record: Autotile piece slice identifiers mapped to sprite coordinates
   TL: { sx: 0, sy: 64 },
   T: { sx: 32, sy: 64 },

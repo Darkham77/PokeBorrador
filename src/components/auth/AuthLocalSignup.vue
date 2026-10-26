@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useInputAnimations } from '@/composables/ui/useInputAnimations';
 import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
-import type { GenderId } from '@/types/system/game';
+import { useInputAnimations } from '@/composables/ui/useInputAnimations';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import type { GenderId } from '@/types/system/game';
 
 interface Props {
   loading: boolean;

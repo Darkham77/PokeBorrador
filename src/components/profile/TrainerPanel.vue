@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
-import { usePlayerClassStore } from '@/stores/player/playerClass';
-import { useModalStore } from '@/stores/modals';
-import { useAuthStore } from '@/stores/auth';
-import { useTradeStore } from '@/stores/trade';
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { useTradeStore } from '@/stores/trade';
+import { useUIStore } from '@/stores/ui';
 
 const gameStore = useGameStore();
 const uiStore = useUIStore();
@@ -28,7 +29,7 @@ const trainerExpPct = computed(() => {
   return Math.min(100, (gs.value.trainerExp / gs.value.trainerExpNeeded) * 100);
 });
 
-const handlePanelClick = (event: Event) => {
+const handlePanelClick = (event: Event): void => {
   // If clicking specifically the avatar area, handle class logic
   const isAvatar = (event.target as HTMLElement).closest('#hud-class-avatar');
 

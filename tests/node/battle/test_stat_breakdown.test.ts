@@ -1,7 +1,9 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
-import { calculateDetailedStatBreakdown } from '../../../src/logic/battle/statBreakdownHelper.ts';
+
+import { describe, it } from 'vite-plus/test';
+
 import type { PurePokemon } from '../../../src/logic/battle/battleMathTypes.ts';
+import { calculateDetailedStatBreakdown } from '../../../src/logic/battle/statBreakdownHelper.ts';
 
 describe('calculateDetailedStatBreakdown', () => {
   const baseLapras: PurePokemon = {

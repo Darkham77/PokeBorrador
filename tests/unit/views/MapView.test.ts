@@ -1,9 +1,10 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
-import MapView from '@/views/game/MapView.vue';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import { useGameStore } from '@/stores/game';
+import MapView from '@/views/game/MapView.vue';
 
 describe('MapView.vue', () => {
   beforeEach(() => {

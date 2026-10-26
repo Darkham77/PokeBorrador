@@ -5,8 +5,8 @@
  * Part of the specialized Pokemon Logic context.
  */
 
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import { calculateTotalIVs, hasMaxIV } from '@/logic/pokemon/statsMath.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export interface TierConfig {
   min: number;
@@ -98,7 +98,9 @@ export function getTierFromTotalIvs(total: number): TierConfig & { tier: string;
  * @param {Object} pokemon - The pokemon object containing IVs.
  * @returns {Object} Tier information includes { tier, total, color, bg, label }.
  */
-export function getPokemonTier(pokemon: Partial<Pokemon> | null) {
+export function getPokemonTier(
+  pokemon: Partial<Pokemon> | null
+): TierConfig & { tier: string; total: number } {
   if (!pokemon) return getTierFromTotalIvs(0);
   const total = calculateTotalIVs(pokemon.ivs);
   return getTierFromTotalIvs(total);

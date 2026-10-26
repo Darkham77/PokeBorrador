@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue';
+
 import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
 
 interface Props {

@@ -8,8 +8,9 @@
  * 4. Box & Selector Filtering / Sorting: Friendship sorting (asc/desc), friendship-evo and friendship-max tag filters.
  */
 
-import { describe, it, test, expect, vi } from 'vite-plus/test';
 import { safeParse } from 'valibot';
+import { describe, it, test, expect, vi } from 'vite-plus/test';
+
 import {
   clampFriendship,
   resolveFriendshipSeal,
@@ -24,19 +25,19 @@ import {
   applyFriendshipDelta
 } from '../../../src/logic/pokemon/friendshipLogic.ts';
 import {
-  isFriendshipSealTier,
-  requireFriendshipSealTier,
-  FRIENDSHIP_BOUNDS,
-  FRIENDSHIP_SEAL_TIERS
-} from '../../../src/types/pokemon/friendship.ts';
+  filterAndSortPokemon,
+  type PokemonFilterCriteria
+} from '../../../src/logic/pokemon/pokemonSelectionFilter.ts';
 import {
   pokemonSchema,
   friendshipSealTierSchema
 } from '../../../src/logic/validation/subschemas/pokemonSchemas.ts';
 import {
-  filterAndSortPokemon,
-  type PokemonFilterCriteria
-} from '../../../src/logic/pokemon/pokemonSelectionFilter.ts';
+  isFriendshipSealTier,
+  requireFriendshipSealTier,
+  FRIENDSHIP_BOUNDS,
+  FRIENDSHIP_SEAL_TIERS
+} from '../../../src/types/pokemon/friendship.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 
 function createMockPokemon(uid: string, name: string, friendship: number, id = 'pikachu'): Pokemon {

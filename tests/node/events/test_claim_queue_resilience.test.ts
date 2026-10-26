@@ -6,8 +6,9 @@
  * a JSON string (e.g., from JSON.stringify) or JSON object, without throwing 'case not found'.
  */
 
-import { it, describe } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { it, describe } from 'vite-plus/test';
 
 describe('claim_asset_v2 JSON resilience and parity', () => {
   const testUserId = 'e57ac10b-58cc-4372-a567-0e02b2c3d479';

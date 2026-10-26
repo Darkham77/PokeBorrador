@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { CombatLocationType } from './useDebugTrainers.ts';
+
 interface MapItem {
   id: string;
   name: string;
@@ -17,7 +19,9 @@ interface Props {
 
 defineProps<Props>();
 
-const combatLocationType = defineModel<'map' | 'gym'>('combatLocationType', { required: true });
+const combatLocationType = defineModel<CombatLocationType>('combatLocationType', {
+  required: true
+});
 const selectedMapId = defineModel<string>('selectedMapId', { required: true });
 const selectedGymId = defineModel<string>('selectedGymId', { required: true });
 const gymDifficulty = defineModel<'easy' | 'normal' | 'hard'>('gymDifficulty', { required: true });

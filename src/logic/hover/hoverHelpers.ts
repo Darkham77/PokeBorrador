@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 const HOVER_VISUAL_BORDER_CLASSES = [
   'hud-nav-btn',
   'pc-banner',
@@ -55,7 +56,7 @@ export function hasVisualBorders(el: HTMLElement): boolean {
 const DEFAULT_FALLBACK_COLOR = '#0a84ff';
 
 // open-record: CSS color variable fallback hex mapping
-const FALLBACK_CSS_COLORS: Record<string, string> = {
+const FALLBACK_CSS_COLORS: Record<DisplayText, string> = {
   'var(--blue)': '#0a84ff',
   'var(--red)': '#ff453a',
   'var(--yellow)': '#ffd60a',
@@ -93,9 +94,9 @@ function extractVarName(color: string): string | null {
 }
 
 function queryDomCssVariable(varName: string, element?: HTMLElement): string {
-  if (typeof window === 'undefined') return '';
+  if (typeof globalThis.window === 'undefined') return '';
   const target = element ?? document.documentElement;
-  return window.getComputedStyle(target).getPropertyValue(varName).trim();
+  return globalThis.getComputedStyle(target).getPropertyValue(varName).trim();
 }
 
 /**
@@ -180,7 +181,8 @@ export function getElementShadowColorAndDepth(el: HTMLElement): {
     };
   }
 
-  const computed = typeof window !== 'undefined' ? window.getComputedStyle(el).boxShadow : '';
+  const computed =
+    typeof globalThis.window !== 'undefined' ? globalThis.getComputedStyle(el).boxShadow : '';
   if (!computed || computed === 'none') {
     const defaultVal = { color: 'rgba(0,0,0,0)', depth: 0, blur: '1.5px' };
     el.dataset.baseShadowColor = defaultVal.color;

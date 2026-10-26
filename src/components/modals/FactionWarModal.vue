@@ -1,19 +1,20 @@
 <script setup lang="ts">
-import { useUIStore } from '@/stores/ui';
-import { computed, onMounted, watch } from 'vue';
 import gsap from 'gsap';
+import { computed, onMounted, watch } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
-import { useWarStore } from '@/stores/war';
-import { useGameStore } from '@/stores/game';
-import { useModalStore } from '@/stores/modals';
 import WarDashboard from '@/components/war/WarDashboard.vue';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import { useWarStore } from '@/stores/war';
 import { isFactionId } from '@/types/system/game';
 
 // Expose to template
 const getAssetUrlLocal = getAssetUrl;
 
-const handleImgError = (e: Event) => {
+const handleImgError = (e: Event): void => {
   (e.target as HTMLImageElement).style.display = 'none';
 };
 
@@ -56,7 +57,7 @@ const accentColor = computed(() => {
   return 'var(--yellow)';
 });
 
-const openFactionChoice = () => {
+const openFactionChoice = (): void => {
   modalStore.open('FactionChoice');
 };
 

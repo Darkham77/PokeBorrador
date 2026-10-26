@@ -12,6 +12,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 
 describe('Procedural Multi-Tier Mountains (1 to 4 Floors)', () => {

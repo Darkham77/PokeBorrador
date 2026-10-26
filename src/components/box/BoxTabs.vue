@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import { MAX_POKEMON_BOX_PAGES_LIMIT } from '@/logic/constants/gameplay';
 
 const props = withDefaults(

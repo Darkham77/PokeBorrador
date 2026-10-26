@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+import { isMainModule } from '@francogp/auditor';
 /**
  * scripts/e2e/run_sequential_simulations.ts
  * Sequential E2E Simulation Orchestrator.
@@ -7,9 +9,8 @@
 import { execSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { parseArgs } from 'node:util';
+import { defineCommand, runMain } from 'citty';
 import {
-  isCleanRequested,
   clearAllCheckpoints,
   clearSuiteCheckpoint,
   getMasterCheckpoint,
@@ -73,12 +74,11 @@ function buildTarget(fullPath: string, caseCount = 1): SimulationTarget {
   };
 }
 
-function discoverPlaywrightTargets(): SimulationTarget[] {
+function discoverPlaywrightTargets(isClean = false): SimulationTarget[] {
   const allFiles = findSimulationFiles(path.resolve(process.cwd(), 'scripts/e2e'));
   const countMap = new Map<string, number>();
 
   try {
-    const isClean = isCleanRequested(process.argv);
     const output = execSync('npx playwright test --list --reporter=json', {
       encoding: 'utf8',
       stdio: ['pipe', 'pipe', 'ignore'],
@@ -92,14 +92,13 @@ function discoverPlaywrightTargets(): SimulationTarget[] {
 
     for (const topSuite of parsed.suites || []) {
       if (topSuite.file) {
-        const normFile = topSuite.file.split('\\').join('/');
+        const normFile = topSuite.file.replaceAll(path.win32.sep, path.posix.sep);
         const resolvedPath = path.resolve(process.cwd(), 'scripts/e2e', normFile);
         countMap.set(resolvedPath, (countMap.get(resolvedPath) || 0) + countSpecs(topSuite));
       }
     }
-  } catch {
-    // catch-ok: fallback to default count 1 if spec listing fails
-    // Fallback to default count 1
+  } catch (err) {
+    err;
   }
 
   return allFiles
@@ -174,94 +173,71 @@ function getFuzzerSummary(): { elementCount: number; batchCount: number } {
   }
 }
 
-const targets: SimulationTarget[] = discoverPlaywrightTargets();
+let targets: SimulationTarget[] = [];
+let activeTargets: SimulationTarget[] = [];
+let selectedDriver: 'dual' | 'sqlite' | 'postgres' = 'dual';
+let rawFilter: string | undefined;
+let rawFrom: string | undefined;
+let isClean = false;
 
-const args = process.argv.slice(2);
-const normalized = args.map((a) =>
-  a.includes('=') && !a.startsWith('-')
-    ? `--${a}`
-    : ['table', 'list', 'json', 'list-markdown', 'help'].includes(a)
-      ? `--${a}`
-      : a
-);
+interface SimulationCliOptions {
+  table?: boolean;
+  list?: boolean;
+  json?: boolean;
+  'list-markdown'?: boolean;
+  filter?: string;
+  from?: string;
+  driver?: string;
+  clean?: boolean;
+  reset?: boolean;
+}
 
-const { values, positionals } = parseArgs({
-  args: normalized,
-  options: {
-    table: { type: 'boolean', short: 't' },
-    list: { type: 'boolean', short: 'l' },
-    json: { type: 'boolean', short: 'j' },
-    'list-markdown': { type: 'boolean' },
-    filter: { type: 'string', short: 'f' },
-    from: { type: 'string' },
-    driver: { type: 'string', short: 'd' },
-    clean: { type: 'boolean', short: 'c' },
-    reset: { type: 'boolean' },
-    help: { type: 'boolean', short: 'h' }
-  },
-  allowPositionals: true,
-  strict: false
-});
+const VALID_SIM_DRIVERS = ['sqlite', 'postgres', 'dual'] as const;
+type ValidSimDriver = (typeof VALID_SIM_DRIVERS)[number];
+const VALID_SIM_DRIVER_SET: ReadonlySet<string> = new Set<string>(VALID_SIM_DRIVERS);
 
-const rawDriver =
-  (values.driver as string) || args.find((a) => a.startsWith('driver='))?.split('=')[1];
-const selectedDriver: 'dual' | 'sqlite' | 'postgres' =
-  rawDriver === 'sqlite' || rawDriver === 'postgres' || rawDriver === 'dual'
-    ? rawDriver
-    : process.env.SIM_DB_DRIVER === 'postgres'
-      ? 'postgres'
-      : process.env.SIM_DB_DRIVER === 'sqlite'
-        ? 'sqlite'
-        : 'dual';
+function initSimulationConfig(options: SimulationCliOptions): boolean {
+  isClean = Boolean(options.clean || options.reset);
+  rawFilter = options.filter;
+  rawFrom = options.from;
 
-const rawFilter =
-  (values.filter as string) || args.find((a) => a.startsWith('filter='))?.split('=')[1];
-const rawFrom = (values.from as string) || args.find((a) => a.startsWith('from='))?.split('=')[1];
+  const rawDriver = options.driver;
+  selectedDriver =
+    rawDriver && VALID_SIM_DRIVER_SET.has(rawDriver)
+      ? (rawDriver as ValidSimDriver)
+      : process.env.SIM_DB_DRIVER === 'postgres'
+        ? 'postgres'
+        : process.env.SIM_DB_DRIVER === 'sqlite'
+          ? 'sqlite'
+          : 'dual';
 
-const isClean = isCleanRequested(args) || values.clean === true || values.reset === true;
-if (isClean) {
-  if (rawFilter) {
-    clearSuiteCheckpoint(rawFilter);
-    console.log(
-      `🧹 [CHECKPOINT] Checkpoint individual limpiado para suite "${rawFilter}". Cursor maestro preservado.\n`
-    );
-  } else {
-    clearAllCheckpoints();
-    console.log(
-      '🧹 [CHECKPOINT] Checkpoints limpiados: se ejecutará desde el inicio ignorando fallos previos.\n'
-    );
+  if (isClean) {
+    if (rawFilter) {
+      clearSuiteCheckpoint(rawFilter);
+      console.log(
+        `🧹 [CHECKPOINT] Checkpoint individual limpiado para suite "${rawFilter}". Cursor maestro preservado.\n`
+      );
+    } else {
+      clearAllCheckpoints();
+      console.log(
+        '🧹 [CHECKPOINT] Checkpoints limpiados: se ejecutará desde el inicio ignorando fallos previos.\n'
+      );
+    }
   }
+
+  targets = discoverPlaywrightTargets(isClean);
+  activeTargets = rawFilter
+    ? targets.filter(
+        (t) =>
+          t.name.toLowerCase().includes(rawFilter!.toLowerCase()) ||
+          t.relativePath.toLowerCase().includes(rawFilter!.toLowerCase())
+      )
+    : targets;
+
+  return isClean;
 }
 
-const activeTargets: SimulationTarget[] = rawFilter
-  ? targets.filter(
-      (t) =>
-        t.name.toLowerCase().includes(rawFilter.toLowerCase()) ||
-        t.relativePath.toLowerCase().includes(rawFilter.toLowerCase())
-    )
-  : targets;
-
-const isHelp =
-  values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
-if (isHelp) {
-  console.log(`
-Uso:
-  npm run sim:e2e [table | list | json | filter=<nombre> | driver=dual|sqlite|postgres | clean]
-
-Opciones:
-  table                Muestra la tabla Markdown de progreso E2E.
-  list                 Lista todas las suites E2E detectadas y sus comandos.
-  json                 Emite la estructura de suites en formato JSON.
-  filter=<str>         Ejecuta únicamente las suites que contengan el filtro.
-  driver=<mode>        Modo de base de datos: 'dual' (default: SQLite + PostgreSQL suite por suite), 'sqlite' o 'postgres'.
-  clean / reset        Ignora cualquier checkpoint previo e inicia desde el principio.
-  help                 Muestra esta ayuda.
-`);
-  process.exit(0);
-}
-
-// Support dynamic documentation flags: --table, --list, --json
-if (values.table || values['list-markdown'] || positionals.includes('table')) {
+function renderTable(): void {
   const fuzzerSummary = getFuzzerSummary();
   const totalPlaywrightTests = activeTargets.reduce((sum, t) => sum + t.caseCount, 0);
 
@@ -280,15 +256,13 @@ if (values.table || values['list-markdown'] || positionals.includes('table')) {
   console.log(
     `| **Final** | \`scripts/e2e/run_sequential_simulations.ts\` | **${totalPlaywrightTests} tests totales** en ${activeTargets.length} suites | \`npm run sim:e2e driver=sqlite\` | \`npm run sim:e2e driver=postgres\` | ⏳ Pendiente tras validación individual |`
   );
-  process.exit(0);
 }
 
-if (values.json || positionals.includes('json')) {
+function renderJson(): void {
   console.log(JSON.stringify({ fuzzer: getFuzzerSummary(), targets: activeTargets }, null, 2));
-  process.exit(0);
 }
 
-if (values.list || positionals.includes('list')) {
+function renderList(): void {
   const fuzzerSummary = getFuzzerSummary();
   console.log(
     `📋 Total de suites E2E detectadas: ${activeTargets.length} suites (${activeTargets.reduce((sum, t) => sum + t.caseCount, 0)} tests Playwright + ${fuzzerSummary.elementCount} elementos en Fuzzer)`
@@ -298,7 +272,6 @@ if (values.list || positionals.includes('list')) {
       `  ${index + 1}. [${target.name}] (${target.caseCount} tests) -> ${target.command}`
     );
   });
-  process.exit(0);
 }
 
 import { spawn, type ChildProcess } from 'node:child_process';
@@ -307,7 +280,6 @@ import { SimulationRunnerLogger } from './logging/simulation_runner_logger.ts';
 import { formatExecutionTimestamp } from './logging/base_runner_logger.ts';
 
 const logger = new SimulationRunnerLogger();
-logger.startIntercepting();
 
 const VITE_PORT = 5174;
 const VITE_URL = `https://localhost:${VITE_PORT}`;
@@ -383,7 +355,7 @@ function stopPersistentViteServer(viteProcess: ChildProcess | null): void {
   }
 }
 
-function runCommandStreamed(command: string, extraEnv: Record<string, string> = {}): Promise<void> {
+function runCommandStreamed(command: string, extraEnv: Record<DisplayText, string> = {}): Promise<void> {
   return new Promise((resolve, reject) => {
     let executable = process.execPath;
     let cmdArgs: string[];
@@ -522,8 +494,8 @@ async function initSequentialEnvironment(isPostgresNeeded: boolean): Promise<Chi
           ],
           { stdio: 'ignore' }
         );
-      } catch {
-        // catch-ok: ignore failure when stopping docker test containers on exit
+      } catch (err) {
+        err;
       }
     }
   };
@@ -860,6 +832,7 @@ async function runAllSequentialSuites(): Promise<void> {
   const isPostgresNeeded = selectedDriver === 'postgres' || selectedDriver === 'dual';
 
   try {
+    logger.startIntercepting();
     persistentVite = await initSequentialEnvironment(isPostgresNeeded);
     const { startSuiteIndex, startingDriverForFirstSuite } = resolveStartingCheckpoint();
     let passedCount = startSuiteIndex;
@@ -914,12 +887,108 @@ async function runAllSequentialSuites(): Promise<void> {
       try {
         const { stopPostgresTestContainer } = await import('../testing/postgres_test_container.ts');
         stopPostgresTestContainer();
-      } catch {
-        // catch-ok: ignore failure when stopping postgres container in finally block
+      } catch (err) {
+        err;
       }
     }
     logger.stopIntercepting();
   }
 }
 
-void runAllSequentialSuites();
+const tableCommand = defineCommand({
+  meta: { name: 'table', description: 'Muestra la tabla Markdown de progreso E2E' },
+  run() {
+    initSimulationConfig({ table: true });
+    renderTable();
+  }
+});
+
+const listCommand = defineCommand({
+  meta: { name: 'list', description: 'Lista todas las suites E2E detectadas y sus comandos' },
+  run() {
+    initSimulationConfig({ list: true });
+    renderList();
+  }
+});
+
+const jsonCommand = defineCommand({
+  meta: { name: 'json', description: 'Emite la estructura de suites en formato JSON' },
+  run() {
+    initSimulationConfig({ json: true });
+    renderJson();
+  }
+});
+
+export const command = defineCommand({
+  meta: {
+    name: 'run-sequential-simulations',
+    description: 'Orquestador secuencial de simulaciones E2E'
+  },
+  subCommands: {
+    table: tableCommand,
+    list: listCommand,
+    json: jsonCommand
+  },
+  args: {
+    table: {
+      type: 'boolean',
+      short: 't',
+      description: 'Muestra la tabla Markdown de progreso E2E'
+    },
+    list: {
+      type: 'boolean',
+      short: 'l',
+      description: 'Lista todas las suites E2E detectadas y sus comandos'
+    },
+    json: {
+      type: 'boolean',
+      short: 'j',
+      description: 'Emite la estructura de suites en formato JSON'
+    },
+    'list-markdown': {
+      type: 'boolean'
+    },
+    filter: {
+      type: 'string',
+      short: 'f',
+      description: 'Ejecuta únicamente las suites que contengan el filtro'
+    },
+    from: {
+      type: 'string',
+      description: 'Iniciar desde la suite especificada'
+    },
+    driver: {
+      type: 'string',
+      short: 'd',
+      description: "Modo de base de datos: 'dual', 'sqlite' o 'postgres'"
+    },
+    clean: {
+      type: 'boolean',
+      short: 'c',
+      description: 'Ignora cualquier checkpoint previo e inicia desde el principio'
+    },
+    reset: {
+      type: 'boolean',
+      description: 'Ignora cualquier checkpoint previo e inicia desde el principio'
+    }
+  },
+  async run({ args }) {
+    initSimulationConfig(args);
+    if (args.table || args['list-markdown']) {
+      renderTable();
+      return;
+    }
+    if (args.json) {
+      renderJson();
+      return;
+    }
+    if (args.list) {
+      renderList();
+      return;
+    }
+    await runAllSequentialSuites();
+  }
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
+}

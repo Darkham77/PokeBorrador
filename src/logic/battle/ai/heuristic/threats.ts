@@ -3,12 +3,9 @@
 // Adapted from external/pokemon-showdown-ai/src/strategy/threats.ts
 // ============================================================
 
-import type { HeuristicBattleSnapshot, ThreatAssessment, HeuristicPokemonState } from './types.ts';
-import type { HeuristicDamageCalculator } from './damageCalculator.ts';
-import type { InferenceEngine } from './inferenceEngine.ts';
-import type { PokemonMoveId } from '@/data/battle/moves';
 import type { SideID } from '@pkmn/sim';
 
+import type { PokemonMoveId } from '@/data/battle/moves';
 import {
   SETUP_MOVES,
   PRIORITY_MOVES,
@@ -18,6 +15,11 @@ import {
   THREAT_WEIGHT_DEFENSIVE_WALL,
   PERCENTAGE_MULTIPLIER_FACTOR
 } from '@/logic/constants/encounters';
+import { logger } from '@/logic/utils/logger';
+
+import type { HeuristicDamageCalculator } from './damageCalculator.ts';
+import type { InferenceEngine } from './inferenceEngine.ts';
+import type { HeuristicBattleSnapshot, ThreatAssessment, HeuristicPokemonState } from './types.ts';
 
 const THREAT_WEIGHTS = {
   speedThreat: THREAT_WEIGHT_SPEED,
@@ -72,8 +74,10 @@ function calculateDamageThreat(
         const d = calc.calcDamage(opp, my, mv, snapshot.field);
         best = Math.max(best, d.maxPercent);
         if (d.isOHKO) totalKOs++;
-      } catch {
-        /* catch-ok: Hypothetical move exploration probe skip */
+      } catch (err) {
+        logger.debug('[Threats] Salto de cálculo hipotético de daño', {
+          cause: err instanceof Error ? err.message : String(err)
+        });
       }
     }
     totalDmg += best;
@@ -110,8 +114,10 @@ function calculateDefensiveWallValue(
     for (const mv of my.moves) {
       try {
         bestMyDmg = Math.max(bestMyDmg, calc.calcDamage(my, opp, mv.id, snapshot.field).maxPercent);
-      } catch {
-        /* catch-ok: Hypothetical move exploration probe skip */
+      } catch (err) {
+        logger.debug('[Threats] Salto de cálculo hipotético de daño', {
+          cause: err instanceof Error ? err.message : String(err)
+        });
       }
     }
     if (bestMyDmg < DEFENSIVE_WALL_MAX_DAMAGE_THRESHOLD) wallScore += DEFENSIVE_WALL_SCORE_STEP;

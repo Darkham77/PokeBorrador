@@ -1,8 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { getMapEnvironment } from '@/logic/environment/map/mapEnvironmentRegistry.ts';
-import { BaseMapEnvironment } from '@/logic/environment/map/baseMapEnvironment.ts';
-import { WEATHER_IDS, type WeatherId } from '@/logic/weather/weatherRegistry.ts';
-import { DAY_PHASES } from '@/types/system/time.ts';
+
 import type { MapRouteId } from '@/data/world/map-assets.ts';
 import { FIRE_RED_MAPS } from '@/data/world/maps.ts';
 import {
@@ -10,6 +7,10 @@ import {
   isWeatherTableRouteId,
   WEATHER_SEASON_IDS
 } from '@/data/world/weather-tables.ts';
+import { BaseMapEnvironment } from '@/logic/environment/map/baseMapEnvironment.ts';
+import { getMapEnvironment } from '@/logic/environment/map/mapEnvironmentRegistry.ts';
+import { WEATHER_IDS, type WeatherId } from '@/logic/weather/weatherRegistry.ts';
+import { DAY_PHASES } from '@/types/system/time.ts';
 
 describe('Map Environment Boundaries & Universal Dynamic Matrix (Data-Driven SSoT)', () => {
   describe('1. Verificación Dinámica Exhaustiva de Todos los Mapas en FIRE_RED_MAPS', () => {

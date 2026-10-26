@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
 
 interface Props {
@@ -40,12 +41,12 @@ watch(
   }
 );
 
-const handleConfirm = () => {
+const handleConfirm = (): void => {
   emit('confirm', inputValue.value);
   emit('close');
 };
 
-const handleCancel = () => {
+const handleCancel = (): void => {
   emit('cancel');
   emit('close');
 };

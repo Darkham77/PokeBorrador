@@ -1,5 +1,9 @@
+import type { AssetUri, DisplayText, IsoDateString, JsonObject } from '@francogp/auditor';
+
 import type { PokemonType } from '@/data/battle/types';
+import type { PlayerClassId } from '@/data/player/playerClasses';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { GymId } from '@/data/world/gyms';
 import type {
   PokemonMoveId,
   PokemonStatus,
@@ -8,12 +12,12 @@ import type {
   ShowdownSecondaryEffect,
   PokemonStatKey
 } from '@/types/pokemon/pokemon';
-import type { PlayerClassId } from '@/data/player/playerClasses';
 import type { FactionId, GenderId } from '@/types/system/game';
 export type { SessionMode } from '../auth/auth.ts';
+import type { GenderName } from '@pkmn/types';
+
 import type { AbilityId } from '@/data/battle/abilities';
 import type { MoveCategory } from '@/data/battle/moves';
-import type { GenderName } from '@pkmn/types';
 
 export const SQL_PROXY_ACTIONS = ['select', 'upsert', 'update', 'delete', 'insert'] as const;
 export type SqlProxyAction = (typeof SQL_PROXY_ACTIONS)[number];
@@ -24,12 +28,12 @@ export type SqlProxyCountMode = (typeof SQL_PROXY_COUNT_MODES)[number];
 export interface LearnsetMove {
   lv: number;
   id: PokemonMoveId;
-  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  name: DisplayText;
   pp: number;
 }
 
 export interface PokemonBaseData {
-  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  name: DisplayText;
   type: PokemonType;
   type2?: PokemonType;
   hp: number;
@@ -50,21 +54,21 @@ export interface PokemonBaseData {
 
 export interface PokemonData extends PokemonBaseData {
   id: PokemonSpeciesId;
-  category: string; // domain-ok: Open dynamic text or non-domain string payload
+  category: DisplayText;
   height: number | null;
   weight: number | null;
-  description: string; // domain-ok: Open dynamic text or non-domain string payload
+  description: DisplayText;
 }
 
 export interface AbilityBaseData {
-  name?: string; // domain-ok: Open dynamic text or non-domain string payload
-  desc: string; // domain-ok: Open dynamic text or non-domain string payload
-  effect?: string; // domain-ok: Open dynamic text or non-domain string payload
+  name?: DisplayText;
+  desc: DisplayText;
+  effect?: DisplayText;
 }
 
 export interface MoveBaseData {
   id: PokemonMoveId;
-  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  name: DisplayText;
   power: number;
   acc: number;
   type: PokemonType;
@@ -77,9 +81,9 @@ export interface MoveBaseData {
   secondaries?: ShowdownSecondaryEffect[];
   self?: ShowdownSecondaryEffect;
   status?: PokemonStatus;
-  volatileStatus?: string; // domain-ok: Showdown condition id boundary
-  sideCondition?: string; // domain-ok: Showdown side condition id boundary
-  weather?: string; // domain-ok: Showdown weather id boundary
+  volatileStatus?: DisplayText;
+  sideCondition?: DisplayText;
+  weather?: DisplayText;
   recoil?: number | boolean;
   selfKO?: boolean;
   drain?: number | boolean;
@@ -95,8 +99,8 @@ export interface MoveBaseData {
 }
 
 export interface SpeciesMetadata {
-  category: string; // domain-ok: Open dynamic text or non-domain string payload
-  description: string; // domain-ok: Open dynamic text or non-domain string payload
+  category: DisplayText;
+  description: DisplayText;
   catchRate: number;
 }
 
@@ -106,15 +110,15 @@ export interface PokemonAesthetics {
 }
 
 export interface NatureBaseData {
-  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  name: DisplayText;
   up: PokemonStatKey | null;
   down: PokemonStatKey | null;
-  desc: string; // domain-ok: Open dynamic text or non-domain string payload
+  desc: DisplayText;
 }
 
 export interface DBConfig {
-  url: string; // domain-ok: Open dynamic text or non-domain string payload
-  key: string; // domain-ok: Open dynamic text or non-domain string payload
+  url: AssetUri;
+  key: DisplayText;
 }
 
 export interface DBRouterOptions {
@@ -125,7 +129,7 @@ export interface DBCompatibilityResponse {
   compatible: boolean;
   client: number;
   db: number;
-  error?: string; // domain-ok: Open dynamic text or non-domain string payload
+  error?: DisplayText;
 }
 
 export interface DBResponse<T = unknown> {
@@ -135,34 +139,34 @@ export interface DBResponse<T = unknown> {
 }
 
 export interface ProxyQueryChainItem {
-  type: string; // domain-ok: Open dynamic text or non-domain string payload
+  type: DisplayText;
   args: unknown[];
 }
 
 /** Shared Supabase row shape used across leaderboard, playerSearch and social stores. */
 export interface ProfileRow {
-  id: string; // domain-ok: Open dynamic text or non-domain string payload
-  username: string; // domain-ok: Open dynamic text or non-domain string payload
+  id: DisplayText;
+  username: DisplayText;
   elo_rating?: number;
   trainer_level?: number;
   badges?: number;
   player_class?: PlayerClassId | null;
   faction?: FactionId | null;
-  nick_style?: string | null; // domain-ok: Open dynamic text or non-domain string payload
-  avatar_style?: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  nick_style?: DisplayText | null;
+  avatar_style?: DisplayText | null;
   gender?: GenderId | null;
-  last_played_at?: string | null; // domain-ok: ISO timestamp string
+  last_played_at?: IsoDateString | null;
   pokedex_caught?: number | null;
   pokedex_seen?: number | null;
   trainers_defeated?: number | null;
   wild_wins?: number | null;
   war_coins?: number | null;
-  defeated_gyms?: string[] | null; // domain-ok: Array of gym IDs
+  defeated_gyms?: readonly GymId[] | null;
 }
 
 /** Shared Supabase row shape for game_saves table. */
 export interface GameSaveRow {
-  user_id: string; // domain-ok: Open dynamic text or non-domain string payload
-  save_data: Record<string, unknown>; // open-record: Generic key-value data dictionary container
-  updated_at: string; // domain-ok: Open dynamic text or non-domain string payload
+  user_id: DisplayText;
+  save_data: JsonObject;
+  updated_at: IsoDateString;
 }

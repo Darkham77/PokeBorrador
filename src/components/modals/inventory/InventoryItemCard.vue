@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
 import { gsap } from 'gsap';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { ref, computed, watch, onMounted } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
-import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver';
 import { SHOP_SELLBACK_PRICE_RATIO } from '@/logic/constants/gameplay';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver';
 import type { ItemTier } from '@/types/inventory/items';
 
 interface InventoryItem {
@@ -79,7 +80,7 @@ const itemFontSize = computed(() => {
 const tierColor = computed(() => getItemTierColor(props.item.tier));
 
 // ── WATCHERS FOR SELECTION STATE ─────────────────────────────────────────────
-const getBaseColors = () => {
+const getBaseColors = (): { baseBorderColor: string; baseBoxShadow: string; baseGlow: string } => {
   const tier = props.item.tier || 'common';
   let baseBorderColor = 'rgba(148, 163, 184, 0.45)';
   let baseBoxShadow = '0 0 10px rgba(148, 163, 184, 0.15), inset 0 0 6px rgba(148, 163, 184, 0.05)';

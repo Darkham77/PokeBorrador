@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useLivePvPStore } from '@/stores/livePvP';
-import { useGameStore } from '@/stores/game';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { useLivePvPStore } from '@/stores/livePvP';
 import type { BattleInvite } from '@/types/battle/pvp';
 
 describe('Matchmaking Queue Lifecycle & Ranked Pairing Integration', () => {

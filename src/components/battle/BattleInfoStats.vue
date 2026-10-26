@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Pokemon, PokemonEVs, PokemonIVs } from '@/types/pokemon/pokemon';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { isStatId } from '@/logic/pokemon/statsMath';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import type { Pokemon, PokemonEVs, PokemonIVs } from '@/types/pokemon/pokemon';
 interface AdminStatItem {
   key: string;
   label: string;

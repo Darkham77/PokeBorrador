@@ -1,4 +1,5 @@
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { requireAbilityId } from '@/data/battle/abilities';
+import type { ItemId } from '@/data/inventory/items';
 import {
   EVOLUTION_TABLE,
   STONE_EVOLUTIONS,
@@ -7,20 +8,22 @@ import {
   getStoneEvolution,
   getTradeEvolution
 } from '@/data/pokemon/evolutionData';
-import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import type { PokemonData, LearnsetMove } from '@/types/system/database';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { ItemId } from '@/data/inventory/items';
-import { requireAbilityId } from '@/data/battle/abilities';
-import { isReadyForFriendshipEvolution } from '@/logic/pokemon/friendshipLogic';
 import { isEnabledPokemonId } from '@/data/system/constants';
+import { isReadyForFriendshipEvolution } from '@/logic/pokemon/friendshipLogic';
+import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+import type { PokemonData } from '@/types/system/database';
 
 /**
  * Evolves a Pokémon's data.
  * @returns {Object} { pendingMoves, fromId, toId }
  */
-export function evolvePokemonData(pokemon: Pokemon, toId: PokemonSpeciesId) {
+export function evolvePokemonData(
+  pokemon: Pokemon,
+  toId: PokemonSpeciesId
+): { pendingMoves: Move[]; fromId: PokemonSpeciesId; toId: PokemonSpeciesId } | null {
   const targetSpeciesId = requirePokemonSpeciesId(toId);
   const toData: PokemonData | null = pokemonDataProvider.getPokemonData(targetSpeciesId);
   if (!toData) return null;
@@ -53,10 +56,10 @@ export function evolvePokemonData(pokemon: Pokemon, toId: PokemonSpeciesId) {
   // Pending moves from the new learnset for current level
   const pendingMoves: Move[] = [];
   if (toData.learnset) {
-    (toData.learnset as LearnsetMove[])
+    toData.learnset
       .filter((m) => m.lv === pokemon.level)
       .forEach((m) => {
-        if (!pokemon.moves.find((em) => em && em.id === m.id)) {
+        if (!pokemon.moves.some((em) => em && em.id === m.id)) {
           pendingMoves.push({ id: m.id, name: m.name, pp: m.pp, maxPP: m.pp });
         }
       });

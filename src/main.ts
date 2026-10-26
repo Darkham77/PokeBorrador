@@ -1,15 +1,17 @@
 import './logic/utils/temporal-init.ts';
 import '@/logic/system/gamePrefetchCoordinator.ts';
-import { createApp } from 'vue';
-
 import { createPinia, type Pinia } from 'pinia';
+import { createApp } from 'vue';
+import { DataLoaderPlugin } from 'vue-router/experimental';
+
+import { gameBus } from '@/logic/events/gameBus';
+import { useErrorStore } from '@/stores/errorStore';
+
+import '@/styles/_index.scss';
+import { useUpdateStore } from '@/stores/update';
+
 import App from './App.vue';
 import router from './router/index.ts';
-import { DataLoaderPlugin } from 'vue-router/experimental';
-import '@/styles/_index.scss';
-import { useErrorStore } from '@/stores/errorStore';
-import { useUpdateStore } from '@/stores/update';
-import { gameBus } from '@/logic/events/gameBus';
 
 declare global {
   interface Window {
@@ -17,24 +19,23 @@ declare global {
   }
 }
 
+import { gsap } from 'gsap';
+
 // Global Components
 import PVTooltip from '@/components/common/PVTooltip.vue';
-
+import { gsapHover } from '@/directives/gsapHover';
+import { gsapLoop } from '@/directives/gsapLoop';
 // Global Directives
 import { gsapNick } from '@/directives/gsapNick';
-import { gsapLoop } from '@/directives/gsapLoop';
-import { gsapHover } from '@/directives/gsapHover';
 import { initGlobalHoverSystem } from '@/logic/hover/globalHover';
-
-import { gsap } from 'gsap';
 
 const app = createApp(App);
 const pinia = createPinia();
 
-if (typeof window !== 'undefined') {
-  window.Pinia = pinia;
-  window.gsap = gsap;
-  if (window.__E2E__ || window.location.search.includes('e2e=true')) {
+if (typeof globalThis.window !== 'undefined') {
+  globalThis.window.Pinia = pinia;
+  globalThis.window.gsap = gsap;
+  if (globalThis.window.__E2E__ || globalThis.location.search.includes('e2e=true')) {
     gsap.globalTimeline.timeScale(100);
     console.debug('⚡ [E2E] GSAP timeScale set to 100x for instant animations.');
   }
@@ -64,12 +65,14 @@ app.config.errorHandler = (err, _instance, info) => {
 };
 
 app.mount('#app');
-window.pwa_app_mounted = true;
+if (typeof globalThis.window !== 'undefined') {
+  globalThis.window.pwa_app_mounted = true;
+}
 
 // Initialize global hover animations
 initGlobalHoverSystem();
 
-if (typeof window !== 'undefined') {
+if (typeof globalThis.window !== 'undefined') {
   // Battery/CPU optimization: Sleep GSAP ticker when tab is hidden
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
@@ -79,7 +82,7 @@ if (typeof window !== 'undefined') {
     }
   });
 
-  window.addEventListener('vite:preloadError', (event) => {
+  globalThis.addEventListener('vite:preloadError', (event) => {
     event.preventDefault();
     console.warn(
       '[Vite] Chunk preload error detected (stale deployment assets). Triggering update flow via gameBus.'

@@ -6,8 +6,9 @@
  * Dijkstra GPS route testing, undo/redo history, and TypeScript code export.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach } from 'vitest';
+
 import { useMapAdventureStudioStore } from '../../stores/mapAdventureStudio.ts';
 
 describe('Map Adventure Studio Store (useMapAdventureStudioStore)', () => {

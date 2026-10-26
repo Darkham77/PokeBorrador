@@ -1,16 +1,7 @@
-import { toID } from '@/logic/utils/strings.ts';
-import type {
-  HeuristicBattleSnapshot,
-  DamageMatchup,
-  StrategicState,
-  HeuristicMoveInfo,
-  HeuristicPokemonState,
-  HeuristicDecision
-} from './types.ts';
-import type { HeuristicDamageCalculator } from './damageCalculator.ts';
-import type { InferenceEngine } from './inferenceEngine.ts';
-import { HAZARD_REMOVAL_MOVES } from './sackOrder.ts';
 import { SETUP_MOVES } from '@/logic/constants/encounters.ts';
+import { toID } from '@/logic/utils/strings.ts';
+
+import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import {
   SHOWDOWN_CHOICE_INDEX_OFFSET,
   HEURISTIC_CONFIDENCE_SCORES,
@@ -20,6 +11,16 @@ import {
   shouldConsiderSwitching,
   pickBestSwitch
 } from './heuristicHelpers.ts';
+import type { InferenceEngine } from './inferenceEngine.ts';
+import { HAZARD_REMOVAL_MOVES } from './sackOrder.ts';
+import type {
+  HeuristicBattleSnapshot,
+  DamageMatchup,
+  StrategicState,
+  HeuristicMoveInfo,
+  HeuristicPokemonState,
+  HeuristicDecision
+} from './types.ts';
 
 const HAZARD_MOVES_LIST = ['stealthrock', 'spikes', 'toxicspikes', 'stickyweb'] as const;
 const HAZARD_MOVES: ReadonlySet<string> = new Set<string>(HAZARD_MOVES_LIST); // runtime-set: Fast O(1) membership lookup set

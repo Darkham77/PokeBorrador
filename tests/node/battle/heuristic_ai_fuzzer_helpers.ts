@@ -4,6 +4,7 @@
  * Mock factories and helper utilities for heuristic AI fuzzer test suite.
  */
 
+import type { PokemonMoveId } from '../../../src/data/battle/moves.ts';
 import { heuristicDecision } from '../../../src/logic/battle/ai/heuristic/heuristicEngine.ts';
 import type {
   HeuristicBattleSnapshot,
@@ -14,7 +15,6 @@ import type {
   StrategicState,
   AIConfig
 } from '../../../src/logic/battle/ai/heuristic/types.ts';
-import type { PokemonMoveId } from '../../../src/data/battle/moves.ts';
 
 export function makeBoosts() {
   return { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0 };

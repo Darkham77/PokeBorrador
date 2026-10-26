@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+
+import type { DBRouter } from '@/logic/db/dbRouter';
 import { fetchAndFormatDefenseReports } from '@/logic/pvp/pvpDefenseReportsHelper';
 import { generateRoomCode, isValidRoomCode, formatRoomCode } from '@/logic/pvp/pvpRoomCodeHelper';
-import type { DBRouter } from '@/logic/db/dbRouter';
 
 describe('PvP Helpers Domain Suite', () => {
   describe('pvpDefenseReportsHelper', () => {

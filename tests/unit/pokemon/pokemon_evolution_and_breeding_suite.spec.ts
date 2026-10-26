@@ -1,16 +1,20 @@
+import { setActivePinia, createPinia } from 'pinia';
 /**
  * tests/unit/pokemon/pokemon_evolution_and_breeding_suite.spec.ts
  * Cohesive domain suite consolidating Pokemon breeding engine, evolution store & logic,
  * legendary vigor daycare restrictions & migrations, and Ditto transformation capture preservation.
  */
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
+
+import { toNatureId } from '@/data/battle/natures';
+import { toPokemonType } from '@/data/battle/types';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { SPECIAL_ACTIONS } from '@/logic/battle/actions/specialActions';
 import {
   checkCompatibility,
   getFirstEvolution,
   getEggSpecies
 } from '@/logic/breeding/breedingEngine';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import {
   calculateInheritance,
   inheritMoves,
@@ -18,19 +22,17 @@ import {
   calculateShinyChance,
   getGeneticsForecast
 } from '@/logic/breeding/breedingInheritance';
-import { useEvolutionStore } from '@/stores/evolution';
 import { useBreedingStore } from '@/stores/breeding';
+import { useEvolutionStore } from '@/stores/evolution';
 import { useGameStore } from '@/stores/game';
-import { SPECIAL_ACTIONS } from '@/logic/battle/actions/specialActions';
-import { toPokemonType } from '@/data/battle/types';
-import { toNatureId } from '@/data/battle/natures';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import {
   LEGENDARIES,
   legacyItemMap,
   legacyAbilityMap,
   legacyMoveMap
 } from '../../helpers/legacyDataMocks.ts';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 
 vi.mock('@/logic/db/supabase', () => ({
   supabase: {

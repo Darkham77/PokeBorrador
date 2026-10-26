@@ -5,7 +5,7 @@ defineProps<{
   activeDetails: ActiveMoveDetails;
 }>();
 
-function getKoColorClass(koText: string) {
+function getKoColorClass(koText: string): string {
   if (koText.includes('Garantizado (100%)')) return 'ko-guaranteed';
   if (koText.includes('Alta prob.')) return 'ko-high';
   if (koText.includes('Prob. media')) return 'ko-medium';

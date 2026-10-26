@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * test_aventura/logic/map/adventureProjectFactory.ts
  *
@@ -6,13 +7,13 @@
  * with authentic topological nodes, connections, and procedural configurations.
  */
 
+import { DEFAULT_ROAD_WIDTH } from '../../config/kantoRegionalConfig.ts';
+import { rawJohtoNodes, rawJohtoConnections } from '../../data/map/johtoAdventureMapData.ts';
 import type {
   AdventureProject,
   AdventureProjectNode
 } from '../../types/map/adventureWorldTypes.ts';
 import { rawNodes } from '../adventure/mapData.ts';
-import { rawJohtoNodes, rawJohtoConnections } from '../../data/map/johtoAdventureMapData.ts';
-import { DEFAULT_ROAD_WIDTH } from '../../config/kantoRegionalConfig.ts';
 
 const KANTO_CANONICAL_SEED = 42 as const;
 const JOHTO_CANONICAL_SEED = 108 as const;
@@ -78,7 +79,7 @@ const KANTO_CANONICAL_CONNECTIONS: readonly (readonly [string, string])[] = [
 ];
 
 export function getKantoDefaultProject(): AdventureProject {
-  const nodes: Record<string, AdventureProjectNode> = {}; // open-record: Dynamic adventure project map
+  const nodes: Record<DisplayText, AdventureProjectNode> = {}; // open-record: Dynamic adventure project map
   for (const [id, n] of Object.entries(rawNodes)) {
     nodes[id] = {
       id,

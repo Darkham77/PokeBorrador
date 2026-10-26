@@ -9,9 +9,10 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+
 import { resolvePoiLandmarksAndBuildings } from '../../logic/map/canvasLandmarkRenderer.ts';
 import { buildCanonicalRegionMap } from '../../logic/map/continent/canonicalRegionPresets.ts';
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
 
 describe('Bridge Shore Landing and Universal Cave Snapping Engine', () => {

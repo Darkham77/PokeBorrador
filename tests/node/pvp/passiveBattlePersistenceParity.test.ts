@@ -6,9 +6,11 @@
  * execution parity across both SQLite and PostgreSQL.
  */
 
-import { it, expect, vi } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
+
+import { it, expect, vi } from 'vite-plus/test';
+
 import { describeWithDatabase } from '../../dbTestHelper.ts';
 
 let memoryDb: DatabaseSync;

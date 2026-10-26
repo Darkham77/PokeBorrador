@@ -1,8 +1,11 @@
+import type { DisplayText } from '@francogp/auditor';
+
 /**
  * ECONOMY FORMULAS
  * Centralized logic for shop costs, healing prices, and penalties.
  */
 import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { getPokemonTier, type PokemonIvTier } from '../pokemon/tierEngine.ts';
 
 const SECONDS_TO_MS = 1000;
@@ -42,7 +45,8 @@ export function calculateIndividualHealCost(
   const tierInfo = getPokemonTier(pokemon);
   const basePrice = ROCKET_HEAL_BASE_PRICE + trainerLevel * ROCKET_HEAL_PRICE_PER_LEVEL;
   // open-record: Tier multipliers
-  const multiplier = (HEAL_COST_TIER_MULTIPLIERS as Record<string, number>)[tierInfo.tier] || 1;
+  const multiplier =
+    (HEAL_COST_TIER_MULTIPLIERS as Record<DisplayText, number>)[tierInfo.tier] || 1;
 
   return Math.floor(basePrice * multiplier);
 }
@@ -83,8 +87,7 @@ export function calculatePokemonCenterCooldown(trainerLevel: number): number {
   if (trainerLevel <= 1) return 0;
   // Potencia: (nivel - 1)^1.5 * 5.5 segundos
   return Math.floor(
-    Math.pow(trainerLevel - 1, POKEMON_CENTER_COOLDOWN_EXPONENT) *
-      POKEMON_CENTER_COOLDOWN_MULTIPLIER
+    (trainerLevel - 1) ** POKEMON_CENTER_COOLDOWN_EXPONENT * POKEMON_CENTER_COOLDOWN_MULTIPLIER
   );
 }
 

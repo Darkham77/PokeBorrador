@@ -6,8 +6,9 @@
  */
 
 import { describe, it, expect } from 'vite-plus/test';
-import { parseTrainerSpriteKey, type PokemonEditorEntity } from '@/types/pokemon/spriteShadows';
+
 import { NPC_SPRITE_TO_ARCHETYPE_MAP } from '@/data/pokemon/npcSpriteCatalog';
+import { parseTrainerSpriteKey, type PokemonEditorEntity } from '@/types/pokemon/spriteShadows';
 import { useShadowEditor } from '@/views/dev/useShadowEditor';
 
 describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {

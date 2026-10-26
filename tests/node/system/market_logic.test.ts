@@ -1,5 +1,8 @@
-import { test, describe } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { test, describe } from 'vite-plus/test';
+
+import { validateAndSanitize } from '../../../src/logic/auth/saveSanitizer.ts';
 import {
   applyMarketFilters,
   buildMarketSaleLabel,
@@ -8,10 +11,9 @@ import {
   isMarketSoldSeen
 } from '../../../src/logic/economy/market.ts';
 import type { MarketListing, MarketFilters } from '../../../src/logic/economy/market.ts';
-import type { GameState } from '../../../src/types/system/game.ts';
-import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
-import { validateAndSanitize } from '../../../src/logic/auth/saveSanitizer.ts';
 import { INITIAL_STATE } from '../../../src/stores/gameInitialState.ts';
+import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
+import type { GameState } from '../../../src/types/system/game.ts';
 
 const mockPokemon: Pokemon = {
   uid: 'test-uid-pikachu',

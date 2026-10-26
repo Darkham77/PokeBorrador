@@ -1,10 +1,11 @@
-/** @vitest-environment jsdom */
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount, flushPromises } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
+/** @vitest-environment jsdom */
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import ArenaMilestoneTrack from '@/components/modals/ArenaMilestoneTrack.vue';
-import { usePvPStore } from '@/stores/pvp';
 import { useGameStore } from '@/stores/game';
+import { usePvPStore } from '@/stores/pvp';
 
 describe('ArenaMilestoneTrack.vue', () => {
   beforeEach(() => {

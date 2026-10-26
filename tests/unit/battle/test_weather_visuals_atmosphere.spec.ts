@@ -1,4 +1,15 @@
 import { describe, it, expect } from 'vite-plus/test';
+
+import {
+  DUST_LAYER_ONE_DRIFT_X_PX,
+  DUST_LAYER_TWO_DRIFT_X_PX
+} from '@/components/common/atmosphereSandstormHelper';
+import {
+  SNOW_L1_BLIZZARD_DRIFT_X,
+  SNOW_L2_BLIZZARD_DRIFT_X,
+  computeSnowLayer1Config,
+  computeSnowLayer2Config
+} from '@/components/common/atmosphereSnowHelper';
 import { useWeatherVisuals } from '@/composables/effects/useWeatherVisuals';
 import {
   WEATHER_TILE_SNOW_L1_PX,
@@ -8,16 +19,6 @@ import {
   WEATHER_TILE_SANDSTORM_PX,
   WEATHER_EFFECT_PRESETS
 } from '@/logic/constants/visuals';
-import {
-  SNOW_L1_BLIZZARD_DRIFT_X,
-  SNOW_L2_BLIZZARD_DRIFT_X,
-  computeSnowLayer1Config,
-  computeSnowLayer2Config
-} from '@/components/common/atmosphereSnowHelper';
-import {
-  DUST_LAYER_ONE_DRIFT_X_PX,
-  DUST_LAYER_TWO_DRIFT_X_PX
-} from '@/components/common/atmosphereSandstormHelper';
 import { getWeatherAnimSeed } from '@/logic/weather/weatherMath';
 
 describe('Weather Visuals & Atmospheric Color Integration Tests', () => {

@@ -6,9 +6,11 @@
  */
 
 import { computed } from 'vue';
+
+import type { MapRouteId } from '@/data/world/map-assets';
 import { isMapExtortable } from '@/logic/map/mapCardHelper';
 import type { MapLocation } from '@/types/pokemon/encounters';
-import type { MapRouteId } from '@/data/world/map-assets';
+
 import {
   resolveActivityTerrainFeature,
   resolveSpecialRouteBonus,
@@ -82,7 +84,7 @@ const classAction = computed(() =>
   })
 );
 
-function handleActionClick() {
+function handleActionClick(): void {
   if (classAction.value?.kind === 'button-official') {
     emit('toggle-official-route');
   } else if (classAction.value?.kind === 'button-extort') {

@@ -5,12 +5,14 @@
  * with 100% domain fidelity (species, tags, stats, ivs, etc.) and satisfies validateSaveData cleanly.
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
-import { INITIAL_STATE } from '../../../src/stores/gameInitialState.ts';
+
+import { describe, it } from 'vite-plus/test';
+
 import { serializeState } from '../../../src/logic/auth/saveSerializer.ts';
-import { validateSaveData } from '../../../src/logic/validation/schemas.ts';
 import { makePokemon } from '../../../src/logic/pokemon/pokemonFactory.ts';
+import { validateSaveData } from '../../../src/logic/validation/schemas.ts';
+import { INITIAL_STATE } from '../../../src/stores/gameInitialState.ts';
 import type { GameState } from '../../../src/types/system/game.ts';
 
 describe('Save Serializer Enemy Team SSoT Parity', () => {

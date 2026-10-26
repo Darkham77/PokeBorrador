@@ -1,21 +1,22 @@
 import { gameBus } from '@/logic/events/gameBus';
 import { gsapSleep } from '@/logic/utils/gsapHelpers';
-import type { BattleContext } from '@/types/battle/battleContext';
-import type { BattleSide, BattleOutcomeFlags } from '@/types/battle/battle';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import { useUIStore } from '@/stores/ui';
+import type { BattleSide, BattleOutcomeFlags } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { clearVolatileStatus } from './battleStatus.ts';
-import { registerRewardCombatant } from './rewardsDistributor.ts';
-import {
-  handlePoliceResolution,
-  animatePlayerAutoSwap,
-  handleEnemyForceSwitchExecution
-} from './helpers/battleResolutionHelpers.ts';
 import {
   handleCombatantsExitAnimations,
   handleBattleDefeatFlow,
   handleBattleFleeFlow
 } from './battleTerminationOutcomes.ts';
+import {
+  handlePoliceResolution,
+  animatePlayerAutoSwap,
+  handleEnemyForceSwitchExecution
+} from './helpers/battleResolutionHelpers.ts';
+import { registerRewardCombatant } from './rewardsDistributor.ts';
 export { awardDebugExp } from './rewardsDistributor.ts';
 export { syncAndPersist } from './battleStateSync.ts';
 
@@ -32,7 +33,7 @@ function isCurrentBattle(
 /**
  * Handles the fainting of a Pokémon.
  */
-export async function processFaint(ctx: BattleContext, side: BattleSide) {
+export async function processFaint(ctx: BattleContext, side: BattleSide): Promise<void> {
   const active = ctx.activeBattle.value;
   if (
     !active ||
@@ -157,7 +158,7 @@ interface WindowWithDebug extends Window {
 }
 
 function recordDebugReplayFinalState(ctx: BattleContext, active: ActiveBattleInstance): void {
-  const winObj = (typeof window !== 'undefined' ? window : undefined) as
+  const winObj = (typeof globalThis.window !== 'undefined' ? globalThis : undefined) as
     | WindowWithDebug
     | undefined;
   if (winObj && winObj.__VITE_DEBUG__?.isScriptedReplayMode) {
@@ -214,7 +215,11 @@ async function finalizeBattleFlow(
 /**
  * Terminates the battle and processes results.
  */
-export async function terminateBattle(ctx: BattleContext, winParam: boolean, fled = false) {
+export async function terminateBattle(
+  ctx: BattleContext,
+  winParam: boolean,
+  fled = false
+): Promise<void> {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx;
   const fsm = ctx.fsm;
   const active = ctx.activeBattle.value;
@@ -326,7 +331,7 @@ export async function validateAndInterceptFaintedPlayer(ctx: BattleContext): Pro
 /**
  * Handles forced switch request (e.g. from Dragon Tail or Whirlwind).
  */
-export async function handleForceSwitch(ctx: BattleContext, side: BattleSide) {
+export async function handleForceSwitch(ctx: BattleContext, side: BattleSide): Promise<void> {
   const active = ctx.activeBattle.value;
   if (!active || active.over) return;
 

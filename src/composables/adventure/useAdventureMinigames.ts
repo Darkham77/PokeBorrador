@@ -1,9 +1,10 @@
-import { ref } from 'vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { ref, type Ref } from 'vue';
+
 import type { ItemId } from '@/data/inventory/items';
 import { getItemName } from '@/data/inventory/items';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import type { BattleMinigame } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const FOSSIL_POKEMON_IDS = ['omanyte', 'kabuto', 'aerodactyl'] as const;
 const FISH_POKEMON_IDS = ['magikarp', 'goldeen', 'staryu'] as const;
@@ -16,14 +17,23 @@ interface MinigameConfig {
   resumeTravelAfterEvent: () => void;
 }
 
-export function useAdventureMinigames(config: MinigameConfig) {
+export interface UseAdventureMinigamesReturn {
+  readonly showArchaeology: Ref<boolean>;
+  readonly showFishing: Ref<boolean>;
+  readonly minigamePokemon: Ref<Pokemon | null>;
+  readonly startMinigame: (type: BattleMinigame) => void;
+  readonly handleMinigameWin: (source: BattleMinigame) => void;
+  readonly handleMinigameFail: (source: BattleMinigame) => void;
+}
+
+export function useAdventureMinigames(config: MinigameConfig): UseAdventureMinigamesReturn {
   const showArchaeology = ref(false);
   const showFishing = ref(false);
   const minigamePokemon = ref<Pokemon | null>(null);
 
   const MINIGAME_SPAWN_LEVEL = 20;
 
-  const startMinigame = (type: BattleMinigame) => {
+  const startMinigame = (type: BattleMinigame): void => {
     if (type === 'archaeology') {
       const fossilId = FOSSIL_POKEMON_IDS[Math.floor(Math.random() * FOSSIL_POKEMON_IDS.length)]!;
       minigamePokemon.value = makePokemon(fossilId, MINIGAME_SPAWN_LEVEL) as Pokemon;
@@ -39,7 +49,7 @@ export function useAdventureMinigames(config: MinigameConfig) {
     }
   };
 
-  const handleMinigameWin = (source: BattleMinigame) => {
+  const handleMinigameWin = (source: BattleMinigame): void => {
     showArchaeology.value = false;
     showFishing.value = false;
     minigamePokemon.value = null;
@@ -71,7 +81,7 @@ export function useAdventureMinigames(config: MinigameConfig) {
     config.resumeTravelAfterEvent();
   };
 
-  const handleMinigameFail = (source: BattleMinigame) => {
+  const handleMinigameFail = (source: BattleMinigame): void => {
     showArchaeology.value = false;
     showFishing.value = false;
     minigamePokemon.value = null;

@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { gameBus } from '@/logic/events/gameBus';
 import { evolvePokemonData } from '@/logic/evolution/evolutionLogic';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { useGameStore } from '@/stores/game';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { gameBus } from '@/logic/events/gameBus';
 
 interface EvolutionCompletePayload {
   pokemon: Pokemon;
@@ -37,7 +38,7 @@ export const useEvolutionStore = defineStore('evolution', () => {
     targetSpeciesId: PokemonSpeciesId,
     evItemName = '',
     callback: ((data: EvolutionCompletePayload) => void) | null = null
-  ) {
+  ): void {
     sourcePokemon.value = pokemon;
     targetId.value = requirePokemonSpeciesId(targetSpeciesId);
     itemName.value = evItemName;
@@ -50,7 +51,9 @@ export const useEvolutionStore = defineStore('evolution', () => {
    * Performs the data transformation of the pokemon species.
    * Mutates the sourcePokemon object.
    */
-  function evolve() {
+  function evolve():
+    | { oldName: string; newName: string; fromId: string; toId: string }
+    | undefined {
     if (!sourcePokemon.value || !targetId.value) return;
 
     const result = evolvePokemonData(sourcePokemon.value, targetId.value);
@@ -62,7 +65,7 @@ export const useEvolutionStore = defineStore('evolution', () => {
     gameStore.registerPokedex(targetId.value, true); // true = caught
 
     // Persistence
-    void gameStore.scheduleSave();
+    gameStore.scheduleSave();
 
     return {
       oldName: pokemonDataProvider.getPokemonData(result.fromId)?.name || 'Pokémon',
@@ -75,7 +78,7 @@ export const useEvolutionStore = defineStore('evolution', () => {
   /**
    * Resets the evolution state and triggers the callback.
    */
-  function finishEvolution() {
+  function finishEvolution(): void {
     isEvolving.value = false;
     if (onComplete.value) {
       if (sourcePokemon.value) {
@@ -91,7 +94,7 @@ export const useEvolutionStore = defineStore('evolution', () => {
     onComplete.value = null;
   }
 
-  const handleStartEvolutionFlow = (e: Event) => {
+  const handleStartEvolutionFlow = (e: Event): void => {
     const detail = (
       e as CustomEvent<{ pokemon?: Pokemon; targetSpeciesId?: PokemonSpeciesId; itemName?: string }>
     ).detail;

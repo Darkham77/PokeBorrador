@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
 import { gsap } from 'gsap';
+import { ref, computed, watch } from 'vue';
+
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+import { logger } from '@/logic/utils/logger';
+import { useAudioStore } from '@/stores/audio';
+import { useGameStore } from '@/stores/game';
 import { useLivePvPStore } from '@/stores/livePvP';
 import { useSocialStore } from '@/stores/social/social';
-import { useGameStore } from '@/stores/game';
-import { useAudioStore } from '@/stores/audio';
-import { logger } from '@/logic/utils/logger';
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 
 const TOAST_ENTER_Y_OFFSET = -30;
 const TOAST_ANIM_DURATION_SEC = 0.4;
@@ -31,7 +32,7 @@ const challenger = ref<ChallengerInfo | null>(null);
 
 const activeInvite = computed(() => livePvPStore.activeInvite);
 
-async function resolveChallenger(senderId: string) {
+async function resolveChallenger(senderId: string): Promise<void> {
   const friend = socialStore.friends.find((f) => f.id === senderId);
   if (friend) {
     challenger.value = {
@@ -114,7 +115,7 @@ const levelRuleLabel = computed(() => {
   return rule === 'flat50' ? 'Nivel 50' : 'Nivel Real';
 });
 
-function onEnter(el: Element, done: () => void) {
+function onEnter(el: Element, done: () => void): void {
   gsap.fromTo(
     el,
     { opacity: 0, y: TOAST_ENTER_Y_OFFSET, scale: 0.9 },
@@ -129,7 +130,7 @@ function onEnter(el: Element, done: () => void) {
   );
 }
 
-function onLeave(el: Element, done: () => void) {
+function onLeave(el: Element, done: () => void): void {
   gsap.to(el, {
     opacity: 0,
     y: TOAST_ENTER_Y_OFFSET,
@@ -140,12 +141,12 @@ function onLeave(el: Element, done: () => void) {
   });
 }
 
-async function handleAccept() {
+async function handleAccept(): Promise<void> {
   if (!activeInvite.value) return;
   await livePvPStore.acceptInvite(activeInvite.value.id);
 }
 
-async function handleDecline() {
+async function handleDecline(): Promise<void> {
   if (!activeInvite.value) return;
   await livePvPStore.declineInvite(activeInvite.value.id);
 }

@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { useUIStore } from '@/stores/ui';
 import { computed } from 'vue';
-import { usePlayerClassStore } from '@/stores/player/playerClass';
-import { PLAYER_CLASSES, type PlayerClassId } from '@/data/player/playerClasses';
+
 import BaseModal from '@/components/common/BaseModal.vue';
+import { PLAYER_CLASSES, type PlayerClassId } from '@/data/player/playerClasses';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { useUIStore } from '@/stores/ui';
+
 import ClassSelectionCard from './class/ClassSelectionCard.vue';
 import type { RenderPlayerClass } from './class/classSelectionTypes.ts';
 
@@ -39,11 +41,11 @@ const playerClassList = computed<RenderPlayerClass[]>(() =>
   }))
 );
 
-const close = () => {
+const close = (): void => {
   emit('close');
 };
 
-const handleSelect = async (id: PlayerClassId) => {
+const handleSelect = async (id: PlayerClassId): Promise<void> => {
   const res = await classStore.selectClass(id);
   if (res.success) close();
 };

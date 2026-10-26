@@ -1,9 +1,11 @@
-import { describe, it, beforeAll, vi } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
 import { Battle } from '@pkmn/sim';
-import { getShowdownFormatId } from '../../../src/logic/battle/showdownAdapter.ts';
-import { BattleCheatManager } from '../../../src/logic/battle/helpers/battleCheatManager.ts';
+import { describe, it, beforeAll, vi } from 'vite-plus/test';
+
 import type { CertifiedBattleHistoryEntry } from '../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
+import { BattleCheatManager } from '../../../src/logic/battle/helpers/battleCheatManager.ts';
+import { getShowdownFormatId } from '../../../src/logic/battle/showdownAdapter.ts';
 
 describe('BattleCheatManager - Unit Tests', () => {
   beforeAll(async () => {

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
+
 import { isCriticalConsoleMessage } from '../../../scripts/e2e/e2e_helpers.ts';
 
 describe('Console Error Hardening - isCriticalConsoleMessage', () => {

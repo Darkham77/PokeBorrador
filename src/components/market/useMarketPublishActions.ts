@@ -1,21 +1,33 @@
-import { ref, watch, computed, type Ref } from 'vue';
+import { ref, watch, computed, type Ref, type ComputedRef } from 'vue';
+
 import { getItemById } from '@/data/inventory/items';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { InventoryItem } from './useMarketPublishInventory.ts';
 import type { useGTSStore } from '@/stores/gts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import type { InventoryItem } from './useMarketPublishInventory.ts';
 
 const DEFAULT_MARKET_LISTING_PRICE = 1000;
 const MARKET_SUGGESTED_PRICE_RATIO = 0.5;
 
+export interface UseMarketPublishActionsReturn {
+  readonly selection: Ref<Pokemon | InventoryItem | null>;
+  readonly price: Ref<number>;
+  readonly itemQty: Ref<number>;
+  readonly selectItem: (item: Pokemon | InventoryItem) => void;
+  readonly handlePublish: () => Promise<void>;
+  readonly fee: ComputedRef<number>;
+  readonly net: ComputedRef<number>;
+}
+
 export function useMarketPublishActions(
   gtsStore: ReturnType<typeof useGTSStore>,
   activeMode: Ref<'pokemon' | 'item'>
-) {
+): UseMarketPublishActionsReturn {
   const selection = ref<Pokemon | InventoryItem | null>(null);
   const price = ref(DEFAULT_MARKET_LISTING_PRICE);
   const itemQty = ref(1);
 
-  function updateSuggestedPrice() {
+  function updateSuggestedPrice(): void {
     if (activeMode.value === 'item' && selection.value && 'qty' in selection.value) {
       const nameStr = selection.value.id;
       const shopItem = getItemById(nameStr);
@@ -33,7 +45,7 @@ export function useMarketPublishActions(
     updateSuggestedPrice();
   });
 
-  function selectItem(item: Pokemon | InventoryItem) {
+  function selectItem(item: Pokemon | InventoryItem): void {
     selection.value = item;
     if ('qty' in item) {
       itemQty.value = 1;
@@ -41,7 +53,7 @@ export function useMarketPublishActions(
     updateSuggestedPrice();
   }
 
-  async function handlePublish() {
+  async function handlePublish(): Promise<void> {
     if (!selection.value || price.value < 1) return;
 
     const publishData =

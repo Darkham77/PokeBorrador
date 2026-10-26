@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
@@ -19,7 +20,7 @@ const SHOWDOWN_DB_PATH = path.resolve(
 const REPORT_OUTPUT_PATH = path.resolve(process.cwd(), 'scratch/db_comparison_detailed_report.md');
 
 // Diccionario de traducción de tipos del Core (inglés) a Showdown ES (español)
-const TYPE_MAP: Record<string, string> = {
+const TYPE_MAP: Record<DisplayText, string> = {
   grass: 'Planta',
   poison: 'Veneno',
   fire: 'Fuego',
@@ -43,7 +44,7 @@ const TYPE_MAP: Record<string, string> = {
 const STAT_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const; // lib-duplicate-ok: Canonical stat keys matching Pokemon Showdown StatID
 
 interface ShowdownPokeSpec {
-  baseStats: Record<string, number>;
+  baseStats: Record<DisplayText, number>;
   types?: string[];
   abilities?: string[];
 }
@@ -131,13 +132,14 @@ function comparePokemonAbilities(
   return 0;
 }
 
+const POKEMON_DIFFS_HEADER = [
+  '## 1. Comparación de Pokémon y Estadísticas',
+  '| Pokémon | Atributo | Valor Juego | Valor Showdown | Tipo Discrepancia |',
+  '| :--- | :--- | :--- | :--- | :--- |'
+] as const;
+
 function comparePokemonSpecies(normalizedShowdownPoke: Map<string, ShowdownPokeSpec>) {
-  const pokemonDiffsTable: string[] = [
-    // no-domain: Non-domain utility collection or data structure
-    '## 1. Comparación de Pokémon y Estadísticas',
-    '| Pokémon | Atributo | Valor Juego | Valor Showdown | Tipo Discrepancia |',
-    '| :--- | :--- | :--- | :--- | :--- |'
-  ];
+  const pokemonDiffsTable: string[] = [...POKEMON_DIFFS_HEADER];
 
   let totalPokemonCore = 0;
   let matchingPokemon = 0;
@@ -181,13 +183,14 @@ function comparePokemonSpecies(normalizedShowdownPoke: Map<string, ShowdownPokeS
   };
 }
 
+const MOVE_DIFFS_HEADER = [
+  '\n## 2. Comparación de Movimientos',
+  '| Movimiento | Propiedad | Valor Juego | Valor Showdown |',
+  '| :--- | :--- | :--- | :--- |'
+] as const;
+
 function compareMoves(normalizedShowdownMoves: Map<string, ShowdownMoveSpec>) {
-  const moveDiffsTable: string[] = [
-    // no-domain: Non-domain utility collection or data structure
-    '\n## 2. Comparación de Movimientos',
-    '| Movimiento | Propiedad | Valor Juego | Valor Showdown |',
-    '| :--- | :--- | :--- | :--- |'
-  ];
+  const moveDiffsTable: string[] = [...MOVE_DIFFS_HEADER];
 
   let moveStatsDiscrepancies = 0;
   let missingMovesInShowdown = 0;
@@ -253,8 +256,8 @@ async function main() {
   console.log(styleText('bold', '\n--- 📊 INICIANDO COMPARADOR DE BASES DE DATOS ---'));
 
   let showdownDB: {
-    pokemon: Record<string, ShowdownPokeSpec>;
-    moves: Record<string, ShowdownMoveSpec>;
+    pokemon: Record<DisplayText, ShowdownPokeSpec>;
+    moves: Record<DisplayText, ShowdownMoveSpec>;
   };
   try {
     const rawData = await fs.readFile(SHOWDOWN_DB_PATH, 'utf8');

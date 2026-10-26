@@ -1,9 +1,10 @@
+import { setActivePinia, createPinia } from 'pinia';
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
-import { useGameStore } from '@/stores/game';
-import { useEventStore } from '@/stores/events';
+
 import { useAuthStore } from '@/stores/auth';
+import { useEventStore } from '@/stores/events';
+import { useGameStore } from '@/stores/game';
 
 // Mock Supabase
 const mockChain = {

@@ -1,16 +1,17 @@
 import { defineStore } from 'pinia';
 import { computed } from 'vue';
-import { useGameStore } from '@/stores/game.ts';
-import { useUIStore } from '@/stores/ui.ts';
+
+import { getItemById, isItemId } from '@/data/inventory/items';
 import {
   generateMission,
   validateMissionPokemon,
   isPokemonEligibleForMission
 } from '@/logic/breeding/missionEngine';
-import { getItemById, isItemId } from '@/data/inventory/items';
-import { incrementRecordKey } from '@/logic/utils/mapUtils';
 import { logger } from '@/logic/utils/logger';
+import { incrementRecordKey } from '@/logic/utils/mapUtils';
 import { getGMT3Date } from '@/logic/utils/timeUtils';
+import { useGameStore } from '@/stores/game.ts';
+import { useUIStore } from '@/stores/ui.ts';
 import type { DaycareMission } from '@/types/breeding/breeding';
 
 function isValidDaycareMission(m: unknown): m is DaycareMission {
@@ -74,7 +75,7 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
     return missions.filter(hasEligiblePokemon).length;
   });
 
-  function checkDailyReset() {
+  function checkDailyReset(): void {
     const today = getGMT3Date().toPlainDate().toString();
     const missions = dailyMissions.value;
     const lastDate = missions.length > 0 && missions[0] ? missions[0].date : '';
@@ -92,20 +93,20 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
     }
   }
 
-  function regenerateMissions(dateStr: string) {
+  function regenerateMissions(dateStr: string): void {
     const level = gameStore.state.trainerLevel || 1;
-    const m1 = generateMission(level, dateStr) as DaycareMission;
-    let m2 = generateMission(level, dateStr) as DaycareMission;
+    const m1 = generateMission(level, dateStr);
+    let m2 = generateMission(level, dateStr);
 
     while (m2.targetId === m1.targetId) {
-      m2 = generateMission(level, dateStr) as DaycareMission;
+      m2 = generateMission(level, dateStr);
     }
 
     dailyMissions.value = [m1, m2];
-    void gameStore.scheduleSave();
+    gameStore.scheduleSave();
   }
 
-  function refreshMissions() {
+  function refreshMissions(): void {
     if (missionRefreshes.value <= 0) {
       uiStore.notify('No te quedan refrescos por hoy.', '⚠️');
       return;
@@ -117,7 +118,7 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
     uiStore.notify('Misiones actualizadas.', '🔄');
   }
 
-  function completeMission(missionIndex: number, pokemonUid: string) {
+  function completeMission(missionIndex: number, pokemonUid: string): void {
     const mission = dailyMissions.value[missionIndex];
     if (!mission || mission.completed) return;
 
@@ -148,7 +149,7 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
       `¡Misión completada! Recibiste ${itemData.name} x${mission.reward.qty}`,
       itemData.icon || '🎁'
     );
-    void gameStore.scheduleSave();
+    gameStore.scheduleSave();
   }
 
   return {

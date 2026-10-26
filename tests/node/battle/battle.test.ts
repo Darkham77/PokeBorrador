@@ -9,8 +9,10 @@
  * This avoids the transitive Vue chain: battleFormulas → pokemonDataProvider → vue.
  */
 
-import { describe, it, vi } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it, vi } from 'vite-plus/test';
+
 import { ACTIVE_GENERATION } from '@/data/system/constants';
 
 import {

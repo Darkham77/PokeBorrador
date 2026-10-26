@@ -17,9 +17,59 @@
  *    isolated stairs are not dilated into massive wilderness clearings.
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
 import { computeGridDistanceField, type GridBfsQueueItem } from '../utils/gridBfsUtils.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
+
+function applyRouteGateTransitable(
+  poi: POINode,
+  transitableGrid: boolean[][],
+  pathGrid: readonly (readonly boolean[])[]
+): void {
+  const streetSet = new Set<string>();
+  if (poi.urbanLayout?.internalStreets) {
+    for (const pt of poi.urbanLayout.internalStreets) {
+      streetSet.add(`${pt.x}_${pt.y}`);
+    }
+  } else {
+    const midX = poi.gridX + Math.floor(poi.footprint.width / 2);
+    for (let y = poi.gridY; y < poi.gridY + poi.footprint.height; y++) {
+      streetSet.add(`${midX - 1}_${y}`);
+      streetSet.add(`${midX}_${y}`);
+    }
+  }
+
+  for (let y = poi.gridY; y < poi.gridY + poi.footprint.height; y++) {
+    for (let x = poi.gridX; x < poi.gridX + poi.footprint.width; x++) {
+      transitableGrid[y]![x] = Boolean(streetSet.has(`${x}_${y}`) || pathGrid[y]?.[x]);
+    }
+  }
+}
+
+export interface StairPoint {
+  readonly x: number;
+  readonly y: number;
+}
+
+function dilateStairLanding(
+  stair: StairPoint,
+  radius: number,
+  W: number,
+  H: number,
+  transitableGrid: boolean[][]
+): void {
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      if (Math.abs(dx) + Math.abs(dy) <= radius) {
+        const nx = stair.x + dx;
+        const ny = stair.y + dy;
+        if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
+          transitableGrid[ny]![nx] = true;
+        }
+      }
+    }
+  }
+}
 
 export function computeTransitableGrid(
   continentMap: ContinentMapResult,
@@ -65,32 +115,7 @@ export function computeTransitableGrid(
   // 3. Mark POI settlements and checkpoints
   for (const poi of pois) {
     if (poi.type === 'route_gate') {
-      // Hermetic checkpoint: only the internal street corridor (doorway) is transitable!
-      // The lateral flanks must remain non-transitable (transitableGrid = false) so players cannot walk around the checkpoint.
-      const streetSet = new Set<string>();
-      if (poi.urbanLayout?.internalStreets) {
-        for (const pt of poi.urbanLayout.internalStreets) {
-          streetSet.add(`${pt.x}_${pt.y}`);
-        }
-      } else {
-        const midX = poi.gridX + Math.floor(poi.footprint.width / 2);
-        for (let y = poi.gridY; y < poi.gridY + poi.footprint.height; y++) {
-          for (const x of [midX - 1, midX]) {
-            streetSet.add(`${x}_${y}`);
-          }
-        }
-      }
-
-      // Seal entire gatehouse footprint: only internal streets or active paths are transitable
-      for (let y = poi.gridY; y < poi.gridY + poi.footprint.height; y++) {
-        for (let x = poi.gridX; x < poi.gridX + poi.footprint.width; x++) {
-          if (streetSet.has(`${x}_${y}`) || pathGrid[y]?.[x]) {
-            transitableGrid[y]![x] = true;
-          } else {
-            transitableGrid[y]![x] = false;
-          }
-        }
-      }
+      applyRouteGateTransitable(poi, transitableGrid, pathGrid);
       continue;
     }
 
@@ -123,17 +148,7 @@ export function computeTransitableGrid(
     });
 
     const radius = hasPath ? 2 : 1;
-    for (let dy = -radius; dy <= radius; dy++) {
-      for (let dx = -radius; dx <= radius; dx++) {
-        if (Math.abs(dx) + Math.abs(dy) <= radius) {
-          const nx = stair.x + dx;
-          const ny = stair.y + dy;
-          if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
-            transitableGrid[ny]![nx] = true;
-          }
-        }
-      }
-    }
+    dilateStairLanding(stair, radius, W, H, transitableGrid);
   }
 
   return transitableGrid;

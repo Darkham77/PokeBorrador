@@ -1,4 +1,6 @@
 import { gsap } from 'gsap';
+
+import { MILLISECONDS_PER_SECOND } from '@/logic/constants/visuals';
 import {
   createWallClockInterval,
   clearWallClockInterval,
@@ -9,7 +11,6 @@ import {
   PVP_AFK_MAX_STRIKES,
   PVP_RECONNECT_WINDOW_SEC
 } from '@/types/battle/pvp';
-import { MILLISECONDS_PER_SECOND } from '@/logic/constants/visuals';
 
 export interface PvPTimerState {
   turnSecondsRemaining: number;
@@ -40,15 +41,15 @@ export class PvPTimerManager {
     isReconnecting: false
   };
 
-  constructor(private callbacks: PvPTimerCallbacks = {}) {
+  public constructor(private callbacks: PvPTimerCallbacks = {}) {
     this.setupVisibilityListeners();
   }
 
   private setupVisibilityListeners(): void {
-    if (typeof document !== 'undefined' && typeof window !== 'undefined') {
+    if (typeof document !== 'undefined' && typeof globalThis.window !== 'undefined') {
       this.boundVisibilityHandler = () => this.checkWallClockTick();
       document.addEventListener('visibilitychange', this.boundVisibilityHandler);
-      window.addEventListener('focus', this.boundVisibilityHandler);
+      globalThis.addEventListener('focus', this.boundVisibilityHandler);
     }
   }
 
@@ -102,7 +103,7 @@ export class PvPTimerManager {
   /**
    * Starts or restarts the 45-second turn timer.
    */
-  startTurnTimer(): void {
+  public startTurnTimer(): void {
     this.stopTurnTimer();
     this.turnEndTime =
       Temporal.Now.instant().epochMilliseconds + PVP_TURN_TIMEOUT_SEC * MILLISECONDS_PER_SECOND;
@@ -127,7 +128,7 @@ export class PvPTimerManager {
   /**
    * Stops the active turn timer.
    */
-  stopTurnTimer(): void {
+  public stopTurnTimer(): void {
     this.turnEndTime = 0;
     if (this.turnTween) {
       this.turnTween.kill();
@@ -139,14 +140,14 @@ export class PvPTimerManager {
   /**
    * Called when a player makes a manual move to clear their AFK strikes.
    */
-  resetStrikes(): void {
+  public resetStrikes(): void {
     this.state.afkStrikes = 0;
   }
 
   /**
    * Handles timeout logic when turn seconds reach 0.
    */
-  handleTurnTimeout(): void {
+  public handleTurnTimeout(): void {
     if (this.state.afkStrikes === 0) {
       this.state.afkStrikes = 1;
       this.callbacks.onTurnTimeout?.(1, false);
@@ -159,7 +160,7 @@ export class PvPTimerManager {
   /**
    * Starts the 60-second reconnection window countdown.
    */
-  startReconnectCountdown(): void {
+  public startReconnectCountdown(): void {
     this.stopTurnTimer();
     this.stopReconnectCountdown();
     this.state.isReconnecting = true;
@@ -186,7 +187,7 @@ export class PvPTimerManager {
   /**
    * Stops the reconnection countdown and restores regular combat state.
    */
-  stopReconnectCountdown(): void {
+  public stopReconnectCountdown(): void {
     this.reconnectEndTime = 0;
     if (this.reconnectTween) {
       this.reconnectTween.kill();
@@ -199,15 +200,15 @@ export class PvPTimerManager {
   /**
    * Destroys all active timers, event listeners, and clears state.
    */
-  destroy(): void {
+  public destroy(): void {
     this.stopTurnTimer();
     this.stopReconnectCountdown();
     if (this.boundVisibilityHandler) {
       if (typeof document !== 'undefined') {
         document.removeEventListener('visibilitychange', this.boundVisibilityHandler);
       }
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('focus', this.boundVisibilityHandler);
+      if (typeof globalThis.window !== 'undefined') {
+        globalThis.removeEventListener('focus', this.boundVisibilityHandler);
       }
       this.boundVisibilityHandler = null;
     }

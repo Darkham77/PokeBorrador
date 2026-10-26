@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vite-plus/test';
 import { execSync } from 'node:child_process';
+
+import { describe, it, expect } from 'vite-plus/test';
 
 describe('Admin & Maintenance Scripts CLI Parameters & Help', () => {
   it('admin_supabase_users.ts outputs clear usage and options on --help', () => {
@@ -10,9 +11,9 @@ describe('Admin & Maintenance Scripts CLI Parameters & Help', () => {
         stdio: ['ignore', 'pipe', 'pipe']
       }
     );
-    expect(output).toContain('server=<perfil>');
-    expect(output).toContain('action=<accion>');
-    expect(output).toContain('email=<email>');
+    expect(output).toContain('--server=<server>');
+    expect(output).toContain('--action=<action>');
+    expect(output).toContain('--email=<email>');
     expect(output).toContain('set-password');
   });
 
@@ -24,7 +25,7 @@ describe('Admin & Maintenance Scripts CLI Parameters & Help', () => {
         stdio: ['ignore', 'pipe', 'pipe']
       }
     );
-    expect(output).toContain('server=<perfil>');
+    expect(output).toContain('--server=<server>');
     expect(output).toContain('all');
   });
 
@@ -36,20 +37,20 @@ describe('Admin & Maintenance Scripts CLI Parameters & Help', () => {
         stdio: ['ignore', 'pipe', 'pipe']
       }
     );
-    expect(output).toContain('user=<id|username>');
-    expect(output).toContain('name=<nuevo_nombre>');
+    expect(output).toContain('--user=<user>');
+    expect(output).toContain('--name=<name>');
   });
 
   it('repair_account_legality.ts outputs clear usage on --help', () => {
     const output = execSync(
-      'node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* --allow-net scripts/maintenance/repair_account_legality.ts --help',
+      'node --permission --allow-worker --allow-fs-read=* --allow-fs-write=* --import tsx scripts/maintenance/repair_account_legality.ts --help',
       {
         encoding: 'utf-8',
         stdio: ['ignore', 'pipe', 'pipe']
       }
     );
-    expect(output).toContain('user=<userId>');
-    expect(output).toContain('server=<perfil>');
+    expect(output).toContain('--user=<user>');
+    expect(output).toContain('--server=<server>');
     expect(output).toContain('all');
   });
 
@@ -77,6 +78,6 @@ describe('Admin & Maintenance Scripts CLI Parameters & Help', () => {
     expect(output).toContain('table');
     expect(output).toContain('list');
     expect(output).toContain('json');
-    expect(output).toContain('filter=<nombre>');
+    expect(output).toContain('--filter=<filter>');
   });
 });

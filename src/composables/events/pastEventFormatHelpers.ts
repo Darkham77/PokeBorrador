@@ -1,13 +1,14 @@
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
-import { logger } from '@/logic/utils/logger';
-import type { PastEventHistoryItem } from '@/types/system/stores';
+import type { DisplayText } from '@francogp/auditor';
+
+import { MINUTES_PER_HOUR } from '@/logic/constants/gameplay';
 import {
   getSubCompTitle,
   type Event as GameEvent,
   type SubCompetitionConfig
 } from '@/logic/events/eventEngine';
-
-import { MINUTES_PER_HOUR } from '@/logic/constants/gameplay';
+import { logger } from '@/logic/utils/logger';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
+import type { PastEventHistoryItem } from '@/types/system/stores';
 
 const DEFAULT_SCHEDULE_START_HOUR = 0;
 const DEFAULT_SCHEDULE_END_HOUR = 24;
@@ -60,7 +61,7 @@ export function parseSchedule(raw?: string | object): WeeklyScheduleData | null 
       return null;
     }
   }
-  return raw as WeeklyScheduleData;
+  return raw;
 }
 
 function formatAbsoluteWindow(startAt: string, endAt: string): string | null {
@@ -142,7 +143,7 @@ export function formatEventScheduleWindow(
 }
 
 // open-record: Default competition category display name mapping
-const CATEGORY_NAMES_DEFAULT: Record<string, string> = {
+const CATEGORY_NAMES_DEFAULT: Record<DisplayText, string> = {
   level: 'Mayor Nivel',
   friendship: 'Mayor Amistad'
 };
@@ -177,7 +178,7 @@ export function resolveCategoryDisplayName(
     return getSubCompTitle(eventId, { id: catId, metric: 'height', order: 'auto', name: 'Altura' });
   }
   if (CATEGORY_NAMES_DEFAULT[catId]) {
-    return CATEGORY_NAMES_DEFAULT[catId]!;
+    return CATEGORY_NAMES_DEFAULT[catId];
   }
   return 'Mayor IVs';
 }

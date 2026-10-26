@@ -113,6 +113,22 @@ function computePlateauCoreGrid(
   return { coreGrid, coreCount };
 }
 
+function isSquareBlockUniform(
+  startX: number,
+  startY: number,
+  req: number,
+  coreGrid: readonly (readonly boolean[])[]
+): boolean {
+  for (let by = 0; by < req; by++) {
+    for (let bx = 0; bx < req; bx++) {
+      if (!coreGrid[startY + by]![startX + bx]!) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 function hasContiguousCoreBlock(
   coreGrid: readonly (readonly boolean[])[],
   minX: number,
@@ -124,20 +140,70 @@ function hasContiguousCoreBlock(
   if (req === 0) return true;
   for (let y = minY; y <= maxY - req + 1; y++) {
     for (let x = minX; x <= maxX - req + 1; x++) {
-      let blockMatches = true;
-      for (let by = 0; by < req; by++) {
-        for (let bx = 0; bx < req; bx++) {
-          if (!coreGrid[y + by]![x + bx]!) {
-            blockMatches = false;
-            break;
-          }
-        }
-        if (!blockMatches) break;
+      if (isSquareBlockUniform(x, y, req, coreGrid)) {
+        return true;
       }
-      if (blockMatches) return true;
     }
   }
   return false;
+}
+
+function floodFillTierRegion(
+  startX: number,
+  startY: number,
+  z: number,
+  W: number,
+  H: number,
+  matrix: ElevationMatrix,
+  visited: boolean[][]
+): {
+  cells: { x: number; y: number }[];
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+} {
+  const cells: { x: number; y: number }[] = [];
+  const queue: { x: number; y: number }[] = [{ x: startX, y: startY }];
+  visited[startY]![startX] = true;
+
+  let minX = startX;
+  let maxX = startX;
+  let minY = startY;
+  let maxY = startY;
+
+  while (queue.length > 0) {
+    const curr = queue.pop()!;
+    cells.push(curr);
+
+    if (curr.x < minX) minX = curr.x;
+    if (curr.x > maxX) maxX = curr.x;
+    if (curr.y < minY) minY = curr.y;
+    if (curr.y > maxY) maxY = curr.y;
+
+    const neighbors = [
+      { x: curr.x + 1, y: curr.y },
+      { x: curr.x - 1, y: curr.y },
+      { x: curr.x, y: curr.y + 1 },
+      { x: curr.x, y: curr.y - 1 }
+    ];
+
+    for (const n of neighbors) {
+      if (
+        n.x >= 0 &&
+        n.x < W &&
+        n.y >= 0 &&
+        n.y < H &&
+        !visited[n.y]![n.x]! &&
+        matrix[n.y]![n.x]! >= z
+      ) {
+        visited[n.y]![n.x] = true;
+        queue.push(n);
+      }
+    }
+  }
+
+  return { cells, minX, maxX, minY, maxY };
 }
 
 /**
@@ -167,46 +233,15 @@ function findElevatedRegions(matrix: ElevationMatrix): readonly ConnectedRegion[
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) {
         if (!visited[y]![x]! && matrix[y]![x]! >= z) {
-          // Flood fill 4-way
-          const cells: { x: number; y: number }[] = [];
-          const queue: { x: number; y: number }[] = [{ x, y }];
-          visited[y]![x] = true;
-
-          let minX = x,
-            maxX = x,
-            minY = y,
-            maxY = y;
-
-          while (queue.length > 0) {
-            const curr = queue.pop()!;
-            cells.push(curr);
-
-            if (curr.x < minX) minX = curr.x;
-            if (curr.x > maxX) maxX = curr.x;
-            if (curr.y < minY) minY = curr.y;
-            if (curr.y > maxY) maxY = curr.y;
-
-            const neighbors = [
-              { x: curr.x + 1, y: curr.y },
-              { x: curr.x - 1, y: curr.y },
-              { x: curr.x, y: curr.y + 1 },
-              { x: curr.x, y: curr.y - 1 }
-            ];
-
-            for (const n of neighbors) {
-              if (
-                n.x >= 0 &&
-                n.x < W &&
-                n.y >= 0 &&
-                n.y < H &&
-                !visited[n.y]![n.x]! &&
-                matrix[n.y]![n.x]! >= z
-              ) {
-                visited[n.y]![n.x] = true;
-                queue.push(n);
-              }
-            }
-          }
+          const { cells, minX, maxX, minY, maxY } = floodFillTierRegion(
+            x,
+            y,
+            z,
+            W,
+            H,
+            matrix,
+            visited
+          );
 
           regions.push({
             elevation: z,
@@ -351,6 +386,23 @@ export function validateHeightmapConstraints(
  *   1. Eliminates sliver plateaus (< 6x6 footprint or < 3x3 walkable core).
  *   2. Resolves cramped intermediate terraces by merging them into double-height cliffs.
  */
+function floodFillEdgeNeighbor(
+  nx: number,
+  ny: number,
+  W: number,
+  H: number,
+  reachesEdge: boolean[][],
+  matrix: readonly (readonly number[])[],
+  z: number,
+  queue: { x: number; y: number }[]
+): void {
+  if (nx < 0 || nx >= W || ny < 0 || ny >= H) return;
+  if (!reachesEdge[ny]![nx]! && matrix[ny]![nx]! < z) {
+    reachesEdge[ny]![nx] = true;
+    queue.push({ x: nx, y: ny });
+  }
+}
+
 /**
  * Fills interior topological depressions (sinkholes/craters) completely enclosed by higher ground.
  * Uses a boundary-seeded flood fill to identify all cells reachable from the outer world.
@@ -403,20 +455,10 @@ export function fillHeightmapHoles(
     // 4-way BFS traversal
     while (queue.length > 0) {
       const curr = queue.pop()!;
-      const neighbors = [
-        { x: curr.x + 1, y: curr.y },
-        { x: curr.x - 1, y: curr.y },
-        { x: curr.x, y: curr.y + 1 },
-        { x: curr.x, y: curr.y - 1 }
-      ];
-      for (const n of neighbors) {
-        if (n.x >= 0 && n.x < W && n.y >= 0 && n.y < H) {
-          if (!reachesEdge[n.y]![n.x]! && matrix[n.y]![n.x]! < z) {
-            reachesEdge[n.y]![n.x] = true;
-            queue.push(n);
-          }
-        }
-      }
+      floodFillEdgeNeighbor(curr.x + 1, curr.y, W, H, reachesEdge, matrix, z, queue);
+      floodFillEdgeNeighbor(curr.x - 1, curr.y, W, H, reachesEdge, matrix, z, queue);
+      floodFillEdgeNeighbor(curr.x, curr.y + 1, W, H, reachesEdge, matrix, z, queue);
+      floodFillEdgeNeighbor(curr.x, curr.y - 1, W, H, reachesEdge, matrix, z, queue);
     }
 
     // Fill unreachable cavities (protecting water bodies)
@@ -431,6 +473,90 @@ export function fillHeightmapHoles(
     }
   }
 
+  return changed;
+}
+
+function smoothSingleElevationLayer(
+  matrix: number[][],
+  z: number,
+  H: number,
+  W: number,
+  isWaterCell?: (x: number, y: number) => boolean
+): boolean {
+  let layerChanged = false;
+  for (let y = 1; y < H - 1; y++) {
+    for (let x = 1; x < W - 1; x++) {
+      if (isWaterCell?.(x, y)) continue;
+      const val = matrix[y]![x]!;
+      const nN = matrix[y - 1]![x]! >= z ? 1 : 0;
+      const nS = matrix[y + 1]![x]! >= z ? 1 : 0;
+      const nW = matrix[y]![x - 1]! >= z ? 1 : 0;
+      const nE = matrix[y]![x + 1]! >= z ? 1 : 0;
+      const count = nN + nS + nW + nE;
+
+      if (val < z && count >= 3) {
+        matrix[y]![x] = z;
+        layerChanged = true;
+      } else if (val === z && count <= 1) {
+        matrix[y]![x] = z - 1;
+        layerChanged = true;
+      }
+    }
+  }
+  return layerChanged;
+}
+
+function smoothCellularAutomataElevation(
+  matrix: number[][],
+  maxElev: number,
+  H: number,
+  W: number,
+  isWaterCell?: (x: number, y: number) => boolean
+): boolean {
+  let anyChanged = false;
+  for (let iter = 0; iter < 3; iter++) {
+    let passChanged = false;
+    for (let z = 1; z <= maxElev; z++) {
+      if (smoothSingleElevationLayer(matrix, z, H, W, isWaterCell)) {
+        passChanged = true;
+        anyChanged = true;
+      }
+    }
+    if (!passChanged) break;
+  }
+  return anyChanged;
+}
+
+function enforceRowSouthWallRun(
+  matrix: number[][],
+  y: number,
+  z: number,
+  W: number,
+  minRun: number,
+  pruneShortWallRun: (y: number, start: number, end: number, z: number) => boolean
+): boolean {
+  let changed = false;
+  let runStart = -1;
+  for (let x = 0; x < W; x++) {
+    const isSouthDrop = matrix[y]![x]! >= z && matrix[y + 1]![x]! < z;
+    if (isSouthDrop) {
+      if (runStart === -1) runStart = x;
+      continue;
+    }
+
+    if (runStart !== -1) {
+      const len = x - runStart;
+      if (len < minRun && pruneShortWallRun(y, runStart, x, z)) {
+        changed = true;
+      }
+      runStart = -1;
+    }
+  }
+  if (runStart !== -1 && W - runStart < minRun) {
+    if (pruneShortWallRun(y, runStart, W, z)) {
+      changed = true;
+    }
+  }
   return changed;
 }
 
@@ -457,32 +583,8 @@ export function rectifyHeightmap(
   }
 
   // Pass 1: Cellular Automata Majority Smoothing (fill 1-cell notches, prune isolated tips)
-  for (let iter = 0; iter < 3; iter++) {
-    let passChanged = false;
-    for (let z = 1; z <= maxElev; z++) {
-      for (let y = 1; y < H - 1; y++) {
-        for (let x = 1; x < W - 1; x++) {
-          if (isWaterCell?.(x, y)) continue;
-          const val = matrix[y]![x]!;
-          const nN = matrix[y - 1]![x]! >= z ? 1 : 0;
-          const nS = matrix[y + 1]![x]! >= z ? 1 : 0;
-          const nW = matrix[y]![x - 1]! >= z ? 1 : 0;
-          const nE = matrix[y]![x + 1]! >= z ? 1 : 0;
-          const count = nN + nS + nW + nE;
-
-          if (val < z && count >= 3) {
-            matrix[y]![x] = z;
-            passChanged = true;
-            anyChanged = true;
-          } else if (val === z && count <= 1) {
-            matrix[y]![x] = z - 1;
-            passChanged = true;
-            anyChanged = true;
-          }
-        }
-      }
-    }
-    if (!passChanged) break;
+  if (smoothCellularAutomataElevation(matrix, maxElev, H, W, isWaterCell)) {
+    anyChanged = true;
   }
 
   const pruneShortWallRun = (y: number, start: number, end: number, z: number): boolean => {
@@ -500,26 +602,8 @@ export function rectifyHeightmap(
   for (let z = 1; z <= maxElev; z++) {
     const minRun = z >= 4 ? 2 : 3;
     for (let y = 1; y < H - 2; y++) {
-      let runStart = -1;
-      for (let x = 0; x < W; x++) {
-        const isSouthDrop = matrix[y]![x]! >= z && matrix[y + 1]![x]! < z;
-        if (isSouthDrop) {
-          if (runStart === -1) runStart = x;
-          continue;
-        }
-
-        if (runStart !== -1) {
-          const len = x - runStart;
-          if (len < minRun && pruneShortWallRun(y, runStart, x, z)) {
-            anyChanged = true;
-          }
-          runStart = -1;
-        }
-      }
-      if (runStart !== -1 && W - runStart < minRun) {
-        if (pruneShortWallRun(y, runStart, W, z)) {
-          anyChanged = true;
-        }
+      if (enforceRowSouthWallRun(matrix, y, z, W, minRun, pruneShortWallRun)) {
+        anyChanged = true;
       }
     }
   }
@@ -548,6 +632,76 @@ function tryMergeCrampedTerraceInColumn(
     }
   }
   return false;
+}
+
+function pruneThinElevationPinches(
+  sanitized: number[][],
+  iterMaxElev: number,
+  W: number,
+  H: number
+): boolean {
+  let changed = false;
+  for (let z = iterMaxElev; z >= 1; z--) {
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        if (sanitized[y]![x]! !== z) continue;
+        const hasN = y > 0 && sanitized[y - 1]![x]! >= z;
+        const hasS = y < H - 1 && sanitized[y + 1]![x]! >= z;
+        const hasW = x > 0 && sanitized[y]![x - 1]! >= z;
+        const hasE = x < W - 1 && sanitized[y]![x + 1]! >= z;
+
+        const isThinPinch = (!hasW && !hasE) || (!hasN && !hasS);
+        if (isThinPinch) {
+          sanitized[y]![x] = z - 1;
+          changed = true;
+        }
+      }
+    }
+  }
+  return changed;
+}
+
+function mergeCrampedTerraces(
+  sanitized: number[][],
+  W: number,
+  H: number,
+  minTerraceBuffer: number
+): boolean {
+  let changed = false;
+  for (let x = 0; x < W; x++) {
+    for (let y = 0; y < H - 1; y++) {
+      if (sanitized[y]![x]! <= sanitized[y + 1]![x]!) continue;
+      if (tryMergeCrampedTerraceInColumn(sanitized, x, y + 1, H, minTerraceBuffer)) {
+        changed = true;
+      }
+    }
+  }
+  return changed;
+}
+
+function demoteSteepDirectDrops(sanitized: number[][], W: number, H: number): boolean {
+  let changed = false;
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const curElev = sanitized[y]![x]!;
+      if (curElev <= 1) continue;
+      for (const [dx, dy] of [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1]
+      ] as const) {
+        const nx = x + dx;
+        const ny = y + dy;
+        const nElev = nx >= 0 && nx < W && ny >= 0 && ny < H ? sanitized[ny]![nx]! : 0;
+        if (curElev - nElev > 1) {
+          sanitized[y]![x] = nElev + 1;
+          changed = true;
+        }
+      }
+    }
+  }
+  return changed;
 }
 
 /**
@@ -630,57 +784,21 @@ export function sanitizeHeightmapMatrix(
     }
 
     // Step 1b: Prune 1-tile thin pinches / whiskers (cells with width 1 or height 1)
-    for (let z = iterMaxElev; z >= 1; z--) {
-      for (let y = 0; y < H; y++) {
-        for (let x = 0; x < W; x++) {
-          if (sanitized[y]![x]! === z) {
-            const hasN = y > 0 && sanitized[y - 1]![x]! >= z;
-            const hasS = y < H - 1 && sanitized[y + 1]![x]! >= z;
-            const hasW = x > 0 && sanitized[y]![x - 1]! >= z;
-            const hasE = x < W - 1 && sanitized[y]![x + 1]! >= z;
-
-            const isThinPinch = (!hasW && !hasE) || (!hasN && !hasS);
-            if (isThinPinch) {
-              sanitized[y]![x] = z - 1;
-              changed = true;
-            }
-          }
-        }
-      }
+    if (pruneThinElevationPinches(sanitized, iterMaxElev, W, H)) {
+      changed = true;
     }
 
     // Step 2: Merge cramped terraces into double-height multi-tier cliffs (Rule 3)
-    if (options.minTerraceBuffer > 0) {
-      for (let x = 0; x < W; x++) {
-        for (let y = 0; y < H - 1; y++) {
-          if (sanitized[y]![x]! <= sanitized[y + 1]![x]!) continue;
-          if (tryMergeCrampedTerraceInColumn(sanitized, x, y + 1, H, options.minTerraceBuffer)) {
-            changed = true;
-          }
-        }
-      }
+    if (
+      options.minTerraceBuffer > 0 &&
+      mergeCrampedTerraces(sanitized, W, H, options.minTerraceBuffer)
+    ) {
+      changed = true;
     }
 
     // Step 3: Zero Direct Drops > 1 Demotion (enforces smooth terracing without drops > 1)
-    for (let y = 0; y < H; y++) {
-      for (let x = 0; x < W; x++) {
-        const curElev = sanitized[y]![x]!;
-        if (curElev <= 1) continue;
-        for (const [dx, dy] of [
-          [1, 0],
-          [-1, 0],
-          [0, 1],
-          [0, -1]
-        ] as const) {
-          const nx = x + dx;
-          const ny = y + dy;
-          const nElev = nx >= 0 && nx < W && ny >= 0 && ny < H ? sanitized[ny]![nx]! : 0;
-          if (curElev - nElev > 1) {
-            sanitized[y]![x] = nElev + 1;
-            changed = true;
-          }
-        }
-      }
+    if (demoteSteepDirectDrops(sanitized, W, H)) {
+      changed = true;
     }
   }
 

@@ -1,3 +1,4 @@
+import { isMainModule } from '@francogp/auditor';
 /**
  * scripts/data/generate_moves_db.ts
  *
@@ -6,6 +7,7 @@
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { defineCommand, runMain } from 'citty';
 import { Dex } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
 import movesJson from '../../src/data/battle/moves.json' with { type: 'json' };
@@ -242,9 +244,15 @@ export async function generateMovesDatabase(): Promise<void> {
   );
 }
 
-if (process.argv[1]?.endsWith('generate_moves_db.ts')) {
-  generateMovesDatabase().catch((err) => {
-    console.error('❌ [MovesDB Generator] Error fatal:', err);
-    process.exit(1);
-  });
+export const command = defineCommand({
+  meta: {
+    name: 'generate-moves-db',
+    description: 'Precomputes static MoveBaseData for all moves registered in moves.json'
+  },
+  async run() {
+    await generateMovesDatabase();
+  }
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
 }

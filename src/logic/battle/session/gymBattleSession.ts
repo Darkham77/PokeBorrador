@@ -1,7 +1,8 @@
-import { PvEBattleSession } from './pveBattleSession.ts';
-import type { BattleContext } from '@/types/battle/battleContext';
-import type { GymId } from '@/data/world/gyms';
 import type { ItemId } from '@/data/inventory/items';
+import type { GymId } from '@/data/world/gyms';
+import type { BattleContext } from '@/types/battle/battleContext';
+
+import { PvEBattleSession } from './pveBattleSession.ts';
 
 export interface GymSessionOptions {
   gymId: GymId;
@@ -10,18 +11,18 @@ export interface GymSessionOptions {
 }
 
 export class GymBattleSession extends PvEBattleSession {
-  readonly gymId: GymId;
-  readonly rewardTM?: ItemId;
-  readonly trainerQuote?: string;
+  public readonly gymId: GymId;
+  public readonly rewardTM?: ItemId;
+  public readonly trainerQuote?: string;
 
-  constructor(context: BattleContext, options: GymSessionOptions) {
+  public constructor(context: BattleContext, options: GymSessionOptions) {
     super('gym', context, { showLeaderDialogue: true });
     this.gymId = options.gymId;
     this.rewardTM = options.rewardTM;
     this.trainerQuote = options.trainerQuote;
   }
 
-  override async processRewards(won: boolean): Promise<void> {
+  public override async processRewards(won: boolean): Promise<void> {
     await super.processRewards(won);
     if (won) {
       const gameStore = this.context.gs;

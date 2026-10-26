@@ -1,25 +1,26 @@
-import { ref, computed, watch, onUnmounted } from 'vue';
-import { useCombatShadowStore } from '@/stores/battle/combatShadows';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { getPokemonFeetCoords } from '@/logic/combat/shadowHelpers';
+import { ref, computed, watch, onUnmounted, type ComputedRef, type Ref } from 'vue';
+
+import type { PokemonType } from '@/data/battle/types';
 import {
   hasAnimatedSpriteId,
   requireAnimatedSpriteData,
   type AnimatedSpriteId
 } from '@/data/pokemon/animatedSpriteDatabase';
-import { requirePokemonSpriteValue } from '@/data/pokemon/spriteMapping';
-
-import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { PokemonType } from '@/data/battle/types';
 import {
   isPokemonSpeciesId,
   requirePokemonSpeciesId,
   type PokemonSpeciesId
 } from '@/data/pokemon/pokedex';
-import { toID } from '@/logic/utils/strings';
+import type { FeetPoints } from '@/data/pokemon/pokemonFeetDatabase';
+import { requirePokemonSpriteValue } from '@/data/pokemon/spriteMapping';
+import { getPokemonFeetCoords } from '@/logic/combat/shadowHelpers';
+import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { logger } from '@/logic/utils/logger';
+import { toID } from '@/logic/utils/strings';
+import { useCombatShadowStore } from '@/stores/battle/combatShadows';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const DEFAULT_SHADOW_BODY_RADIUS_PCT = 0.4;
 const SHADOW_PERCENTAGE_SCALE_FACTOR = 250;
@@ -133,7 +134,7 @@ export function computeShadowCoords(
 ): { x: number; y: number } {
   if (!pokemon) return { x: DEFAULT_SHADOW_X_FALLBACK, y: DEFAULT_SHADOW_Y_FALLBACK };
 
-  const spriteId = pokemon.id ? getEffectiveSpriteId(pokemon as SpriteResolutionTarget) : undefined;
+  const spriteId = pokemon.id ? getEffectiveSpriteId(pokemon) : undefined;
   if (spriteId && hasAnimatedShadowKey(spriteId, pokemon.gender)) {
     const key = computeAnimatedKey(spriteId, isBack, pokemon.gender);
     if (key) {
@@ -148,7 +149,7 @@ export function computeShadowCoords(
   }
 
   // Fallback to static feet database
-  const url = getFinalSpriteUrl(pokemon as SpriteResolutionTarget, {
+  const url = getFinalSpriteUrl(pokemon, {
     isShiny: !!pokemon.isShiny,
     isBack
   });
@@ -163,7 +164,7 @@ export function computeShadowBodyRadius(
 ): string {
   if (!pokemon) return `${visualRadius * SHADOW_PERCENTAGE_SCALE_FACTOR}%`;
 
-  const spriteId = pokemon.id ? getEffectiveSpriteId(pokemon as SpriteResolutionTarget) : undefined;
+  const spriteId = pokemon.id ? getEffectiveSpriteId(pokemon) : undefined;
   const animKey = spriteId
     ? computeAnimatedKey(spriteId, isBack, pokemon.gender) ||
       computeAnimatedKey(spriteId, !isBack, pokemon.gender)
@@ -180,8 +181,8 @@ export function isFlying(pokemon: Pokemon | null | undefined): boolean {
   if (data.isFloating !== undefined) return data.isFloating;
 
   const types: PokemonType[] = []; // no-domain: Non-domain utility collection or data structure
-  if (data.type) types.push(data.type as PokemonType);
-  if (data.type2) types.push(data.type2 as PokemonType);
+  if (data.type) types.push(data.type);
+  if (data.type2) types.push(data.type2);
   return types.includes('flying');
 }
 
@@ -195,7 +196,30 @@ export function getShadowWidth(pokemon: SpriteResolutionTarget, isBack: boolean)
   return `${bodyRadius * SHADOW_PERCENTAGE_SCALE_FACTOR}%`;
 }
 
-export function useBattleShadows() {
+export interface UseBattleShadowsReturn {
+  currentPlayerShadowKey: Ref<string | null>;
+  currentEnemyShadowKey: Ref<string | null>;
+  enemyGroundY: ComputedRef<string>;
+  playerGroundY: ComputedRef<string>;
+  syncEnemyShadow: (
+    visible: boolean,
+    data: Pokemon | null,
+    pos: Position,
+    animState: unknown
+  ) => Promise<void>;
+  syncPlayerShadow: (pokemon: Pokemon | null, pos: Position, animState: unknown) => Promise<void>;
+  preloadCombatCoords: (
+    p1Data: Pokemon | null,
+    p2Data: Pokemon | null,
+    p1Position: Position,
+    p2Position: Position,
+    p1Team: Pokemon[],
+    p2Team: Pokemon[]
+  ) => Promise<void>;
+  getStableShadowId: (pokemon: Pokemon | null, side: string) => string | null;
+}
+
+export function useBattleShadows(): UseBattleShadowsReturn {
   const shadowStore = useCombatShadowStore();
 
   // Unique keys for shadows in the store
@@ -224,7 +248,7 @@ export function useBattleShadows() {
     data: Pokemon | null,
     pos: Position,
     animState: unknown
-  ) => {
+  ): Promise<void> => {
     const shadowId = getStableShadowId(data, 'enemy');
 
     // Initialize coordinates immediately if seat is occupied by a pokemon
@@ -268,7 +292,11 @@ export function useBattleShadows() {
   };
 
   // Synchronize player shadow visibility and position
-  const syncPlayerShadow = async (pokemon: Pokemon | null, pos: Position, animState: unknown) => {
+  const syncPlayerShadow = async (
+    pokemon: Pokemon | null,
+    pos: Position,
+    animState: unknown
+  ): Promise<void> => {
     const shadowId = getStableShadowId(pokemon, 'player');
 
     // Initialize coordinates immediately if seat is occupied by a pokemon
@@ -320,7 +348,10 @@ export function useBattleShadows() {
     if (!val) stablePlayerGroundY.value = DEFAULT_STABLE_GROUND_Y_PCT;
   });
 
-  const preloadTeamFeet = async (team: Pokemon[], side: string) => {
+  const preloadTeamFeet = async (
+    team: Pokemon[],
+    side: string
+  ): Promise<FeetPoints[] | undefined> => {
     if (!team || !Array.isArray(team)) return;
     const tasks = team.map((p) => {
       const isBack = side === 'player';
@@ -337,7 +368,7 @@ export function useBattleShadows() {
     p2Position: Position,
     p1Team: Pokemon[],
     p2Team: Pokemon[]
-  ) => {
+  ): Promise<void> => {
     const tasks = [];
 
     // Preload feet points of ALL teams to avoid first-time lag

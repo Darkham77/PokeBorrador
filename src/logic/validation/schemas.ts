@@ -21,18 +21,12 @@ import {
   unknown,
   picklist,
   type InferOutput,
-  type InferInput
+  type InferInput,
+  type SafeParseResult
 } from 'valibot';
 
-import { pokemonSchema, pokemonEggSchema, daycareEggSchema } from './subschemas/pokemonSchemas.ts';
-import { activeBattleSchema } from './subschemas/battleSchemas.ts';
-import {
-  daycareMissionSchema,
-  claimItemSchema,
-  notificationItemSchema,
-  tradeOfferSchema,
-  gtsListingSchema
-} from './subschemas/socialSchemas.ts';
+import type { PersistedGameState } from '@/types/system/game.ts';
+
 import {
   userProfileSchema,
   trainerNameSchema,
@@ -42,8 +36,15 @@ import {
   chatMessageSchema,
   networkActionSchema
 } from './subschemas/authSchemas.ts';
-
-import type { PersistedGameState } from '@/types/system/game.ts';
+import { activeBattleSchema } from './subschemas/battleSchemas.ts';
+import { pokemonSchema, pokemonEggSchema, daycareEggSchema } from './subschemas/pokemonSchemas.ts';
+import {
+  daycareMissionSchema,
+  claimItemSchema,
+  notificationItemSchema,
+  tradeOfferSchema,
+  gtsListingSchema
+} from './subschemas/socialSchemas.ts';
 
 // Re-export all subschemas and DTO types
 export * from './subschemas/authSchemas.ts';
@@ -234,43 +235,45 @@ export const saveDataSchema = object({
 // VALIDATION HELPER FUNCTIONS
 // ==========================================
 
-export function validateUserProfile(data: unknown) {
+export function validateUserProfile(data: unknown): SafeParseResult<typeof userProfileSchema> {
   return safeParse(userProfileSchema, data);
 }
 
-export function validateNetworkAction(data: unknown) {
+export function validateNetworkAction(data: unknown): SafeParseResult<typeof networkActionSchema> {
   return safeParse(networkActionSchema, data);
 }
 
-export function validateTrainerName(data: unknown) {
+export function validateTrainerName(data: unknown): SafeParseResult<typeof trainerNameSchema> {
   return safeParse(trainerNameSchema, data);
 }
 
-export function validateChatMessage(data: unknown) {
+export function validateChatMessage(data: unknown): SafeParseResult<typeof chatMessageSchema> {
   return safeParse(chatMessageSchema, data);
 }
 
-export function validateTradeOffer(data: unknown) {
+export function validateTradeOffer(data: unknown): SafeParseResult<typeof tradeOfferSchema> {
   return safeParse(tradeOfferSchema, data);
 }
 
-export function validateGtsListing(data: unknown) {
+export function validateGtsListing(data: unknown): SafeParseResult<typeof gtsListingSchema> {
   return safeParse(gtsListingSchema, data);
 }
 
-export function validateAuthLogin(data: unknown) {
+export function validateAuthLogin(data: unknown): SafeParseResult<typeof authLoginSchema> {
   return safeParse(authLoginSchema, data);
 }
 
-export function validateAuthRegister(data: unknown) {
+export function validateAuthRegister(data: unknown): SafeParseResult<typeof authRegisterSchema> {
   return safeParse(authRegisterSchema, data);
 }
 
-export function validateAuthPasswordReset(data: unknown) {
+export function validateAuthPasswordReset(
+  data: unknown
+): SafeParseResult<typeof authPasswordResetSchema> {
   return safeParse(authPasswordResetSchema, data);
 }
 
-export function validateSaveData(data: unknown) {
+export function validateSaveData(data: unknown): SafeParseResult<typeof saveDataSchema> {
   return safeParse(saveDataSchema, data);
 }
 

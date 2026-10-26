@@ -1,8 +1,9 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
-import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
+
+import { describe, it } from 'vite-plus/test';
 
 describe('Strict Schema Static SQLite Migration', () => {
   it('normalizes legacy or incomplete save data correctly via SQL', () => {

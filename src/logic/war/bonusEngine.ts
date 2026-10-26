@@ -1,9 +1,10 @@
-import { calculateMapBonuses } from './warEngine.ts';
+import type { MapRouteId } from '@/data/world/map-assets';
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import { POKEMON_STAT_KEYS, type Pokemon } from '@/types/pokemon/pokemon';
-import type { DominanceInfo } from '@/types/system/stores';
-import type { MapRouteId } from '@/data/world/map-assets';
 import type { FactionId } from '@/types/system/game';
+import type { DominanceInfo } from '@/types/system/stores';
+
+import { calculateMapBonuses } from './warEngine.ts';
 
 const DOMINANCE_MIN_IV_BOOST = 15;
 const DOMINANCE_MONEY_BOOST_MULT = 1.2;

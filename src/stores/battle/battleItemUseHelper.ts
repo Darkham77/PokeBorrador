@@ -1,15 +1,15 @@
-import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
-import { handleItemUsage } from '@/logic/battle/battleItems';
-import { gameBus } from '@/logic/events/gameBus';
-import type { BattleContext } from '@/types/battle/battleContext';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleSource, BattleSide } from '@/types/battle/battle';
 import { requireItemId, type ItemId } from '@/data/inventory/items';
-import type { Inventory } from '@/types/inventory/items';
+import { handleItemUsage } from '@/logic/battle/battleItems';
+import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
+import { gameBus } from '@/logic/events/gameBus';
+import type { BattleSource, BattleSide } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
 import {
   requireCertifiedBattleTeamSlot,
   type CertifiedBattleGameAction
 } from '@/types/battle/certifiedBattleActions';
+import type { Inventory } from '@/types/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export interface ProcessUseItemInBattleOptions {
   eventStore: unknown;
@@ -51,7 +51,10 @@ function hasVolatileMoveLock(activePoke: Pokemon | null | undefined): boolean {
   );
 }
 
-function syncActiveBattlePlayer(activePlayer: Pokemon | null | undefined, targetPoke: Pokemon) {
+function syncActiveBattlePlayer(
+  activePlayer: Pokemon | null | undefined,
+  targetPoke: Pokemon
+): void {
   if (activePlayer && targetPoke.uid === activePlayer.uid) {
     activePlayer.hp = targetPoke.hp;
     activePlayer.status = targetPoke.status;
@@ -59,7 +62,10 @@ function syncActiveBattlePlayer(activePlayer: Pokemon | null | undefined, target
   }
 }
 
-async function handleCazabichosDuplication(cap: Pokemon, options: ProcessUseItemInBattleOptions) {
+async function handleCazabichosDuplication(
+  cap: Pokemon,
+  options: ProcessUseItemInBattleOptions
+): Promise<void> {
   const t1 = String(cap.type || '').toLowerCase();
   const t2 = String(cap.type2 || '').toLowerCase();
   const isBug = t1 === 'bug' || t1 === 'bicho' || t2 === 'bug' || t2 === 'bicho';
@@ -91,7 +97,7 @@ async function handleBattleCaptureAction(
   castRes: BattleItemUsageResult,
   activeBattle: NonNullable<BattleContext['activeBattle']['value']>,
   options: ProcessUseItemInBattleOptions
-) {
+): Promise<void> {
   activeBattle.isCapture = true;
   activeBattle.capturedPokemon = castRes.pokemon;
   activeBattle.over = true;
@@ -108,7 +114,7 @@ async function handleActiveBattleFled(
   ctx: BattleContext,
   activeBattle: NonNullable<BattleContext['activeBattle']['value']>,
   options: ProcessUseItemInBattleOptions
-) {
+): Promise<void> {
   await ctx.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ESCAPE_PROCESS);
   await ctx.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL);
 
@@ -161,7 +167,7 @@ function applyPostItemTeamUpdates(
   targetIndex: number | null,
   activeBattle: NonNullable<BattleContext['activeBattle']['value']>,
   options: ProcessUseItemInBattleOptions
-) {
+): void {
   activeBattle.playerUsedItem = true;
   if (castRes.pokemon) {
     if (targetIndex !== null && options.gs.state.team[targetIndex]) {
@@ -182,7 +188,7 @@ async function executeBattleItemTurnResolution(
   targetIndex: number | null,
   activeBattle: NonNullable<BattleContext['activeBattle']['value']>,
   options: ProcessUseItemInBattleOptions
-) {
+): Promise<void> {
   await ctx.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE);
   const targetSlotIndex = targetIndex ?? activeBattle.playerTeamIndex;
   const bagAction: CertifiedBattleGameAction = {
@@ -208,7 +214,7 @@ export async function processUseItemInBattle(
   itemId: ItemId,
   targetIndex: number | null = null,
   options: ProcessUseItemInBattleOptions
-) {
+): Promise<void> {
   const activeBattle = ctx.activeBattle.value;
   if (!activeBattle) return;
 
@@ -222,7 +228,7 @@ export async function processUseItemInBattle(
 
   const res = await handleItemUsage(itemId, targetPoke, activeBattle.enemy, {
     eventStore: options.eventStore as never,
-    addLog: options.addLog as never,
+    addLog: options.addLog,
     audio: options.audio as never,
     consumeItem: options.consumeItem,
     ctx,
@@ -235,7 +241,7 @@ export async function processUseItemInBattle(
   ctx.attackerSide.value = null;
   ctx.activeMove.value = null;
 
-  const castRes = res as BattleItemUsageResult;
+  const castRes = res;
   if (castRes.action === 'capture') {
     await handleBattleCaptureAction(castRes, activeBattle, options);
     return;
@@ -251,6 +257,6 @@ export async function processUseItemInBattle(
     !activeBattle.over &&
     ctx.fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE
   ) {
-    void ctx.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
+    await ctx.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
   }
 }

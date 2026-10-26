@@ -11,15 +11,16 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import {
   generateContinentMap,
   computeTransitableGrid,
   type ContinentMapResult
 } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateProceduralPOICatalog } from '../../logic/map/regionalPoiCatalog.ts';
 import { buildRouteChain } from '../../logic/map/routeChainTopology.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
-import { generateProceduralPOICatalog } from '../../logic/map/regionalPoiCatalog.ts';
 import { isPrimaryNode, PRIMARY_POI_TYPES } from '../../types/map/poiTypes.ts';
 
 describe('Canonical Route Topology & Nature-First Pipeline', () => {

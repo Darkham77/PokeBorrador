@@ -5,6 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import { useAssetAtlas, MASTER_SHEETS } from '../../composables/studio/useAssetAtlas.ts';
 
 describe('Asset Atlas Grid Layout & Snapping', () => {

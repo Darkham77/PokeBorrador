@@ -1,8 +1,9 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { ItemEffectResult } from '@/types/inventory/items';
 import type { ItemId } from '@/data/inventory/items';
-import { checkStoneEvolution } from '../evolution/evolutionLogic.ts';
+import type { ItemEffectResult } from '@/types/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { DEFAULT_MAX_PP_FALLBACK } from '../constants/gameplay.ts';
+import { checkStoneEvolution } from '../evolution/evolutionLogic.ts';
 
 export function healHp(p: Pokemon, amount: number): ItemEffectResult {
   const currentHp = Number(p.hp || 0);
@@ -91,9 +92,8 @@ import {
   resetAllEvs
 } from '@/logic/pokemon/evMath';
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
-import type { PokemonStatKey } from '@/types/pokemon/pokemon';
-
 import { FRIENDSHIP_BOUNDS } from '@/types/pokemon/friendship.ts';
+import type { PokemonStatKey } from '@/types/pokemon/pokemon';
 
 const BERRY_FRIENDSHIP_INCREASE = 10;
 const VITAMIN_FRIENDSHIP_INCREASE = 5;

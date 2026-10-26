@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
 import { onClickOutside } from '@vueuse/core';
-import { useGameStore } from '@/stores/game';
-import { useBattleStore } from '@/stores/battle/battle';
-import { getItemById, isItemId, type ItemId } from '@/data/inventory/items';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import PVTooltip from '@/components/common/PVTooltip.vue';
 import { gsap } from 'gsap';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ref, computed } from 'vue';
+
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { getItemById, isItemId, type ItemId } from '@/data/inventory/items';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
 
 gsap.registerPlugin(ScrollToPlugin, ScrollTrigger);
 
@@ -55,7 +56,7 @@ const availableBalls = computed(() => {
     .toSorted((a, b) => b.price - a.price);
 });
 
-const toggleBallMenu = () => {
+const toggleBallMenu = (): void => {
   if (
     battleStore.isProcessing ||
     props.isFinishing ||
@@ -87,7 +88,7 @@ const BALL_MENU_CLOSE_Y_OFFSET_PX = 20;
 const BALL_MENU_OPEN_DURATION_SEC = 0.25;
 const BALL_MENU_CLOSE_DURATION_SEC = 0.15;
 
-const openMenu = () => {
+const openMenu = (): void => {
   if (!menuRef.value) return;
 
   const tl = gsap.timeline();
@@ -118,7 +119,7 @@ const openMenu = () => {
   });
 };
 
-const closeMenu = () => {
+const closeMenu = (): void => {
   if (!menuRef.value) {
     isBallMenuOpen.value = false;
     return;
@@ -136,7 +137,7 @@ const closeMenu = () => {
   });
 };
 
-const selectBall = (ballId: ItemId) => {
+const selectBall = (ballId: ItemId): void => {
   emit('select-ball', ballId);
   closeMenu();
 };

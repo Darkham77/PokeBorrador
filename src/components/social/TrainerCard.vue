@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
-import { formatPlayerClass } from '@/logic/utils/formatters';
 import {
   resolveFactionColor,
   resolveFactionLabel
 } from '@/components/modals/trainerProfileResolver';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+import { formatPlayerClass } from '@/logic/utils/formatters';
 
 interface ProfileData {
   id: string;
@@ -40,7 +40,7 @@ const emit = defineEmits<{
   (e: 'click-profile', userId: string): void;
 }>();
 
-function onClickProfile() {
+function onClickProfile(): void {
   emit('click-profile', props.profile.id);
 }
 

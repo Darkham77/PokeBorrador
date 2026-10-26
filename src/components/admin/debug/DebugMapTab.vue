@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useUIStore } from '@/stores/ui';
+
 import SpawnDebugControls from './shared/SpawnDebugControls.vue';
 
 const ui = useUIStore();
@@ -10,10 +11,14 @@ interface ViteDebug extends Record<string, unknown> {
   togglePerf: () => void;
 }
 
-const getDebug = () => window.__VITE_DEBUG__ as ViteDebug;
+const getDebug = (): ViteDebug => globalThis.__VITE_DEBUG__ as ViteDebug;
 
-const toggleGrid = () => getDebug().toggleGrid();
-const togglePerf = () => getDebug().togglePerf();
+const toggleGrid = (): void => {
+  getDebug().toggleGrid();
+};
+const togglePerf = (): void => {
+  getDebug().togglePerf();
+};
 </script>
 
 <template>

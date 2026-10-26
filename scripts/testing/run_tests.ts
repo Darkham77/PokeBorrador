@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+import { isMainModule } from '@francogp/auditor';
 /**
  * @file run_tests.ts
  * @description Testing orchestrator script with multi-platform Docker auto-discovery,
@@ -8,6 +10,7 @@ import { styleText } from 'node:util';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { defineCommand, runMain } from 'citty';
 import {
   inspectDocker,
   ensurePostgresTestContainerReady,
@@ -103,8 +106,14 @@ function registerCleanupSignals(cleanupContainer: () => void): void {
   });
 }
 
-function executeVitestSuite(args: string[], childEnv: Record<string, string>): number {
-  if (args.length === 0) {
+interface VitestCliOptions {
+  project?: string;
+  coverage?: boolean;
+  filter?: string;
+}
+
+function executeVitestSuite(options: VitestCliOptions, childEnv: Record<DisplayText, string>): number {
+  if (!options.project && !options.coverage && !options.filter) {
     console.log(
       styleText(
         'bold',
@@ -146,14 +155,26 @@ function executeVitestSuite(args: string[], childEnv: Record<string, string>): n
     return nodeProcess.status ?? 0;
   }
 
-  const isCoverage = args.includes('--coverage');
+  const isCoverage = Boolean(options.coverage);
   const BASE_NODE_RUN_ARGS = ['--no-experimental-webstorage'] as const;
   const nodeArgs = isCoverage
     ? ['--allow-inspector', ...BASE_NODE_RUN_ARGS]
     : [...BASE_NODE_RUN_ARGS];
+
+  const vitestArgs = ['run'];
+  if (options.project) {
+    vitestArgs.push('--project', options.project);
+  }
+  if (options.coverage) {
+    vitestArgs.push('--coverage');
+  }
+  if (options.filter) {
+    vitestArgs.push(options.filter);
+  }
+
   const vitestProcess = spawnSync(
     'node',
-    [...nodeArgs, './node_modules/vitest/vitest.mjs', 'run', ...args],
+    [...nodeArgs, './node_modules/vitest/vitest.mjs', ...vitestArgs],
     { stdio: 'inherit', env: childEnv }
   );
   return vitestProcess.status ?? 0;
@@ -237,19 +258,15 @@ function printTestSummaryReport(vitestExitCode: number, postgresReady: boolean):
   }
 }
 
-/**
- * Main execution routine.
- */
-async function main(): Promise<void> {
+async function runTestRunner(options: VitestCliOptions): Promise<void> {
   syncPublicVersionJson();
-  const args = process.argv.slice(2);
   const dockerInfo = await inspectDocker();
   const { postgresReady, cleanupContainer } = await setupTestEnvironment(dockerInfo);
   registerCleanupSignals(cleanupContainer);
 
-  const childEnv: Record<string, string> = {
+  const childEnv: Record<DisplayText, string> = {
     // open-record: Generic key-value data dictionary container
-    ...(process.env as Record<string, string>) // open-record: Generic key-value data dictionary container
+    ...(process.env as Record<DisplayText, string>) // open-record: Generic key-value data dictionary container
   };
 
   if (postgresReady) {
@@ -283,7 +300,7 @@ async function main(): Promise<void> {
       )
     );
 
-    vitestExitCode = executeVitestSuite(args, childEnv);
+    vitestExitCode = executeVitestSuite(options, childEnv);
   } finally {
     cleanupContainer();
   }
@@ -292,8 +309,34 @@ async function main(): Promise<void> {
   process.exit(vitestExitCode);
 }
 
-main().catch((err: unknown) => {
-  const msg = err instanceof Error ? err.message : String(err);
-  console.error(styleText('red', `❌ Error fatal en orquestador de pruebas: ${msg}`));
-  process.exit(1);
+export const command = defineCommand({
+  meta: {
+    name: 'run-tests',
+    description: 'Orquestador centralizado de pruebas unitarias y de integración'
+  },
+  args: {
+    project: {
+      type: 'string',
+      description: 'Proyecto de Vitest a ejecutar (unit, node, migrations)'
+    },
+    coverage: {
+      type: 'boolean',
+      description: 'Generar reporte de cobertura'
+    },
+    filter: {
+      type: 'positional',
+      description: 'Filtro o archivo específico de pruebas a ejecutar',
+      required: false
+    }
+  },
+  async run({ args }) {
+    await runTestRunner({
+      project: args.project,
+      coverage: args.coverage,
+      filter: args.filter
+    });
+  }
 });
+if (isMainModule(import.meta.url)) {
+  runMain(command);
+}

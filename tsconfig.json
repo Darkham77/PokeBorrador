@@ -10,7 +10,15 @@
     "paths": {
       "@/*": ["./src/*"],
       "@/styles/*": ["./src/styles/*"]
-    }
+    },
+    "strict": true,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true,
+    "verbatimModuleSyntax": true,
+    "useUnknownInCatchVariables": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "target": "ES2025"
   },
   "include": [
     "src/**/*.ts",

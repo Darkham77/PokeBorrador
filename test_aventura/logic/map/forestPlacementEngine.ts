@@ -7,10 +7,6 @@
  * flat wilderness grass clearings with internal trails and gateways.
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
-import type { POINode, POIGateway } from '../../types/map/poiTypes.ts';
-import type { RegionalPOITemplate } from './regionalPoiCatalog.ts';
-import { generateSettlementLayout, type SettlementTerrainContext } from './cityLayoutEngine.ts';
 import {
   COMPACT_MAP_THRESHOLD,
   COMPACT_MIN_FOREST_DIST,
@@ -20,6 +16,10 @@ import {
   FOREST_CANDIDATE_SIZES_MASSIVE,
   FOREST_CANDIDATE_SIZES_LARGE
 } from '../../config/poiPlacementConfig.ts';
+import type { POINode, POIGateway } from '../../types/map/poiTypes.ts';
+import { generateSettlementLayout, type SettlementTerrainContext } from './cityLayoutEngine.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
+import type { RegionalPOITemplate } from './regionalPoiCatalog.ts';
 
 const REGIONAL_MASSIVE_DIMENSION = 200 as const;
 const REGIONAL_LARGE_DIMENSION = 128 as const;
@@ -51,6 +51,51 @@ interface ForestBox {
 const FOREST_MAP_MARGIN_CELLS = 8 as const;
 const FOREST_SEARCH_STEP = 2 as const;
 
+function isForestClearanceValid(
+  x: number,
+  y: number,
+  curW: number,
+  curH: number,
+  continentMap: ContinentMapResult
+): boolean {
+  for (let dy = 0; dy < curH; dy++) {
+    for (let dx = 0; dx < curW; dx++) {
+      const cx = x + dx;
+      const cy = y + dy;
+      if (
+        continentMap.terrainMatrix[cy]?.[cx] !== 'grass' ||
+        continentMap.heightmap[cy]?.[cx] !== 0 ||
+        continentMap.resolvedMountain.occupiedFootCells[cy]?.[cx]
+      ) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function evaluateForestCandidate(
+  x: number,
+  y: number,
+  curW: number,
+  curH: number,
+  W: number,
+  H: number,
+  continentMap: ContinentMapResult,
+  isAreaFree: (x: number, y: number, w: number, h: number, margin?: number) => boolean,
+  getMinDistanceToPlaced: (x: number, y: number) => number
+): number | null {
+  if (!isForestClearanceValid(x, y, curW, curH, continentMap) || !isAreaFree(x, y, curW, curH, 2)) {
+    return null;
+  }
+  const centerX = x + Math.floor(curW / 2);
+  const centerY = y + Math.floor(curH / 2);
+  const d = getMinDistanceToPlaced(centerX, centerY);
+  const minForestDist =
+    Math.min(W, H) <= COMPACT_MAP_THRESHOLD ? COMPACT_MIN_FOREST_DIST : STANDARD_MIN_FOREST_DIST;
+  return d >= minForestDist ? d : null;
+}
+
 function findBestForestLocation(
   continentMap: ContinentMapResult,
   candidateSizes: readonly { readonly w: number; readonly h: number }[],
@@ -76,35 +121,20 @@ function findBestForestLocation(
         x < W - curW - FOREST_MAP_MARGIN_CELLS;
         x += FOREST_SEARCH_STEP
       ) {
-        let valid = true;
-        for (let dy = 0; dy < curH; dy++) {
-          for (let dx = 0; dx < curW; dx++) {
-            const cx = x + dx;
-            const cy = y + dy;
-            if (
-              continentMap.terrainMatrix[cy]?.[cx] !== 'grass' ||
-              continentMap.heightmap[cy]?.[cx] !== 0 ||
-              continentMap.resolvedMountain.occupiedFootCells[cy]?.[cx]
-            ) {
-              valid = false;
-              break;
-            }
-          }
-          if (!valid) break;
-        }
-
-        if (valid && isAreaFree(x, y, curW, curH, 2)) {
-          const centerX = x + Math.floor(curW / 2);
-          const centerY = y + Math.floor(curH / 2);
-          const d = getMinDistanceToPlaced(centerX, centerY);
-          const minForestDist =
-            Math.min(W, H) <= COMPACT_MAP_THRESHOLD
-              ? COMPACT_MIN_FOREST_DIST
-              : STANDARD_MIN_FOREST_DIST;
-          if (d >= minForestDist && d > maxDist) {
-            maxDist = d;
-            candidate = { x, y, w: curW, h: curH };
-          }
+        const d = evaluateForestCandidate(
+          x,
+          y,
+          curW,
+          curH,
+          W,
+          H,
+          continentMap,
+          isAreaFree,
+          getMinDistanceToPlaced
+        );
+        if (d !== null && d > maxDist) {
+          maxDist = d;
+          candidate = { x, y, w: curW, h: curH };
         }
       }
     }

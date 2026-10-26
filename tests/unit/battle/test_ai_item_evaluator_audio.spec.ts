@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+import { ref } from 'vue';
+
 import { evaluateAndUseItem } from '@/logic/battle/ai/heuristic/aiItemEvaluator';
 import { useAudioStore } from '@/stores/audio';
-import { ref } from 'vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 function createMockPokemon(name: string, hp = 20, maxHp = 100): Pokemon {
   return {

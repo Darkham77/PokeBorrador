@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { PokemonCompetitionTrophy } from '@/types/pokemon/pokemon';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { resolveTrophyDisplayName } from '@/logic/events/eventEngine';
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
 import { useEventStore } from '@/stores/events';
-import { resolveTrophyDisplayName } from '@/logic/events/eventEngine';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { PokemonCompetitionTrophy } from '@/types/pokemon/pokemon';
 
 interface Props {
   trophies?: PokemonCompetitionTrophy[];
@@ -17,18 +17,18 @@ const props = withDefaults(defineProps<Props>(), {
 
 const eventStore = useEventStore();
 
-const resolveTrophyEventName = (trophy: PokemonCompetitionTrophy) => {
+const resolveTrophyEventName = (trophy: PokemonCompetitionTrophy): string => {
   return resolveTrophyDisplayName(trophy, eventStore.allEvents, props.speciesId);
 };
 
-const getRankBadge = (rank: string) => {
+const getRankBadge = (rank: string): { medal: string; label: string; css: string } => {
   if (rank === 'first') return { medal: '🥇', label: '1º LUGAR (ORO)', css: 'rank-gold' };
   if (rank === 'second') return { medal: '🥈', label: '2º LUGAR (PLATA)', css: 'rank-silver' };
   if (rank === 'third') return { medal: '🥉', label: '3º LUGAR (BRONCE)', css: 'rank-bronze' };
   return { medal: '🏆', label: 'GANADOR', css: 'rank-default' };
 };
 
-const formatDate = (timestamp: number) => {
+const formatDate = (timestamp: number): string => {
   if (!timestamp) return '';
   try {
     const instant = Temporal.Instant.fromEpochMilliseconds(timestamp);

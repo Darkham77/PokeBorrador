@@ -5,13 +5,13 @@
  * Extracted from gameStore to eliminate circular dependencies with domain feature stores.
  */
 
-import { logger } from '@/logic/utils/logger';
 import { gameBus } from '@/logic/events/gameBus.ts';
+import { logger } from '@/logic/utils/logger';
 
 function setupGamePrefetchCoordinator(): void {
-  gameBus.on('GAME_DATA_LOADED', (e: Event) => {
+  gameBus.on('GAME_DATA_LOADED', async (e: Event) => {
     const detail = (e as CustomEvent<{ userId?: string }>).detail;
-    void prefetchGameSubsystems(detail?.userId);
+    await prefetchGameSubsystems(detail?.userId);
   });
 }
 

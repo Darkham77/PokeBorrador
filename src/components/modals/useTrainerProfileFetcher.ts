@@ -1,6 +1,9 @@
-import { ref, onMounted, watch, type ComputedRef } from 'vue';
-import { useGameStore } from '@/stores/game';
+import { ref, onMounted, watch, type ComputedRef, type Ref } from 'vue';
+
 import { logger } from '@/logic/utils/logger';
+import { useGameStore } from '@/stores/game';
+import type { RankedSeasonMedal, BattleReplayRecord } from '@/types/battle/pvp.ts';
+
 import {
   mapReplayRows,
   parseAwardMedalCounts,
@@ -9,7 +12,6 @@ import {
   type ProfileRow,
   type SaveStateData
 } from './trainerProfileResolver.ts';
-import type { RankedSeasonMedal, BattleReplayRecord } from '@/types/battle/pvp.ts';
 
 const PROFILE_COLUMNS =
   'id, username, email, faction, player_class, trainer_level, avatar_style, nick_style, pvp_wins, pvp_losses, elo_rating, created_at, gender, playtime, last_played_at, ranked_max_elo, class_level, class_xp, box_count, pvp_draws, longest_streak, shiny_count, max_damage, total_battles, trade_volume, capture_attempts';
@@ -18,10 +20,24 @@ const REPLAY_COLUMNS =
 const AWARDS_QUERY_LIMIT = 100;
 const ENTRIES_QUERY_LIMIT = 500;
 
+export interface UseTrainerProfileFetcherReturn {
+  readonly loading: Ref<boolean>;
+  readonly profile: Ref<ProfileRow | null>;
+  readonly saveState: Ref<SaveStateData | null>;
+  readonly error: Ref<string | null>;
+  readonly eventParticipationsDb: Ref<number>;
+  readonly eventMedalsFirstDb: Ref<number>;
+  readonly eventMedalsSecondDb: Ref<number>;
+  readonly eventMedalsThirdDb: Ref<number>;
+  readonly rankedMedals: Ref<RankedSeasonMedal[]>;
+  readonly pinnedReplays: Ref<BattleReplayRecord[]>;
+  readonly fetchData: () => Promise<void>;
+}
+
 export function useTrainerProfileFetcher(
   userId: ComputedRef<string | null | undefined>,
   isOwnProfile: ComputedRef<boolean>
-) {
+): UseTrainerProfileFetcherReturn {
   const gameStore = useGameStore();
 
   const loading = ref(!isOwnProfile.value);
@@ -35,7 +51,10 @@ export function useTrainerProfileFetcher(
   const rankedMedals = ref<RankedSeasonMedal[]>([]);
   const pinnedReplays = ref<BattleReplayRecord[]>([]);
 
-  const fetchOwnProfileStats = async (id: string, db: NonNullable<typeof gameStore.db>) => {
+  const fetchOwnProfileStats = async (
+    id: string,
+    db: NonNullable<typeof gameStore.db>
+  ): Promise<void> => {
     const [profRes, awardsRes, compEntryRes, replaysRes] = await Promise.all([
       db.from('profiles').select(PROFILE_COLUMNS).eq('id', id).maybeSingle(),
       db.from('awards').select('prize, event_id').eq('winner_id', id).limit(AWARDS_QUERY_LIMIT),
@@ -70,7 +89,10 @@ export function useTrainerProfileFetcher(
     }
   };
 
-  const fetchOtherProfileStats = async (id: string, db: NonNullable<typeof gameStore.db>) => {
+  const fetchOtherProfileStats = async (
+    id: string,
+    db: NonNullable<typeof gameStore.db>
+  ): Promise<void> => {
     const { data: prof, error: pErr } = await db
       .from('trainer_public_profiles')
       .select(PROFILE_COLUMNS)
@@ -108,7 +130,7 @@ export function useTrainerProfileFetcher(
     }
   };
 
-  const fetchData = async () => {
+  const fetchData = async (): Promise<void> => {
     const id = userId.value;
     if (!id) {
       error.value = 'ID de usuario no proporcionado';
@@ -157,12 +179,12 @@ export function useTrainerProfileFetcher(
     }
   };
 
-  onMounted(() => {
-    void fetchData();
+  onMounted(async () => {
+    await fetchData();
   });
 
-  watch(userId, () => {
-    void fetchData();
+  watch(userId, async () => {
+    await fetchData();
   });
 
   return {

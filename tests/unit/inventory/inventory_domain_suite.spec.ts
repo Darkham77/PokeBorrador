@@ -8,11 +8,12 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+
 import { handleItemUsage } from '@/logic/battle/battleItems';
 import { gameBus } from '@/logic/events/gameBus';
 import { isValidTarget } from '@/logic/items/itemEffects';
-import { isItemUsableOn, clonePokemonForSimulation } from '@/stores/inventory/inventoryHelpers';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { isItemUsableOn, clonePokemonForSimulation } from '@/stores/inventory/inventoryHelpers';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 vi.mock('@/logic/events/gameBus', () => ({

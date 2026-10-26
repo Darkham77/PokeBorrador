@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { onMounted, ref, computed, watch } from 'vue';
+
+import { initGlobalErrorHandlers } from '@/logic/utils/errorHandler';
 import { defineResilientAsyncComponent } from '@/logic/utils/resilientComponent';
 import { useAuthStore } from '@/stores/auth';
 import { useGameStore } from '@/stores/game';
-import { initGlobalErrorHandlers } from '@/logic/utils/errorHandler';
 
 const MainGameView = defineResilientAsyncComponent(() => import('@/views/game/MainGameView.vue'));
 import ErrorOverlay from '@/components/common/ErrorOverlay.vue';
 import ModalHost from '@/components/common/ModalHost.vue';
-import ToastNotification from '@/components/ui/ToastNotification.vue';
 import ConnectionWarning from '@/components/ui/ConnectionWarning.vue';
+import ToastNotification from '@/components/ui/ToastNotification.vue';
 const BattleArena = defineResilientAsyncComponent(
   () => import('@/components/battle/BattleArena.vue')
 );
@@ -22,22 +23,8 @@ const AppVersionLockHost = defineResilientAsyncComponent(
 const SessionLockOverlay = defineResilientAsyncComponent(
   () => import('@/components/overlays/SessionLockOverlay.vue')
 );
-import { useUIStore } from '@/stores/ui';
-import { useBattleStore } from '@/stores/battle/battle';
-import { useLoadingStore } from '@/stores/loading';
-import { useBodyClass } from '@/composables/ui/useBodyClass';
-import { useWindowListener } from '@/composables/ui/useWindowListener';
-import { useAudioStore } from '@/stores/audio';
-import { logger } from '@/logic/utils/logger';
-
-import { useProfileStore } from '@/stores/player/profile';
-import { useSocialStore } from '@/stores/social/social';
 import { useRouter } from 'vue-router';
-import { useBackNavigation } from '@/composables/system/useBackNavigation';
-import { usePWA } from '@/composables/system/usePWA';
-import { useRetroGamepad } from '@/composables/system/useRetroGamepad';
-import { useUpdateStore } from '@/stores/update';
-import { useAppRouteGate } from '@/composables/system/useAppRouteGate.ts';
+
 import {
   resolveAppLoadingInfo,
   shouldShowLoadingOverlay,
@@ -49,6 +36,20 @@ import {
   shouldInitSession,
   runSessionInitialization
 } from '@/composables/system/appSessionHelper.ts';
+import { useAppRouteGate } from '@/composables/system/useAppRouteGate.ts';
+import { useBackNavigation } from '@/composables/system/useBackNavigation';
+import { usePWA } from '@/composables/system/usePWA';
+import { useRetroGamepad } from '@/composables/system/useRetroGamepad';
+import { useBodyClass } from '@/composables/ui/useBodyClass';
+import { useWindowListener } from '@/composables/ui/useWindowListener';
+import { logger } from '@/logic/utils/logger';
+import { useAudioStore } from '@/stores/audio';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useLoadingStore } from '@/stores/loading';
+import { useProfileStore } from '@/stores/player/profile';
+import { useSocialStore } from '@/stores/social/social';
+import { useUIStore } from '@/stores/ui';
+import { useUpdateStore } from '@/stores/update';
 
 const authStore = useAuthStore();
 const gameStore = useGameStore();
@@ -152,7 +153,7 @@ const showGlobalStars = computed(
 );
 const showSessionLock = computed(() => Boolean(gameStore.isSaveLocked && !dismissedLock.value));
 
-const initGameSession = async () => {
+const initGameSession = async (): Promise<void> => {
   if (
     !shouldInitSession({
       isInitializing: isSessionInitializing.value,
@@ -181,13 +182,13 @@ const initGameSession = async () => {
   }
 };
 
-const updateScrollbarWidth = () => {
-  if (typeof window === 'undefined') return;
-  const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+const updateScrollbarWidth = (): void => {
+  if (typeof globalThis.window === 'undefined') return;
+  const scrollbarWidth = globalThis.innerWidth - document.documentElement.clientWidth;
   document.documentElement.style.setProperty('--scrollbar-width', `${scrollbarWidth}px`);
 };
 
-const checkPwaVersion = async () => {
+const checkPwaVersion = async (): Promise<void> => {
   const clientVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '';
   await checkClientPwaVersion(clientVersion, updateStore);
 };
@@ -227,7 +228,7 @@ onMounted(async () => {
 
   // 6. Initialize audio context on first user interaction globally
   const audioStore = useAudioStore();
-  const initAudio = () => {
+  const initAudio = (): void => {
     audioStore.init();
     audioStore.resume();
     document.removeEventListener('click', initAudio, { capture: true });
@@ -262,7 +263,7 @@ watch(
 );
 
 // Intercept low-level events to prevent them from reaching background interactions when modals are open
-const blockEvents = (e: Event) => {
+const blockEvents = (e: Event): void => {
   handleGlobalBlockEvent(e, {
     isAnyBlockingModalOpen: uiStore.isAnyBlockingModalOpen,
     isStandaloneDevPage: isStandaloneDevPage.value
@@ -276,17 +277,17 @@ useWindowListener('touchmove', blockEvents, { capture: true, passive: false }); 
 // Global scroll lock for modals (Pure Vue Managed)
 useBodyClass('modal-open', () => uiStore.isAnyBlockingModalOpen);
 
-const handleRetry = () => {
+const handleRetry = (): void => {
   updateStore.retryCheck();
 };
 
-const handleLogout = async () => {
+const handleLogout = async (): Promise<void> => {
   loadingStore.clearAll();
   loadingStore.markAppMounted();
   await updateStore.exitToLogin();
 };
 
-const handleReclaim = async () => {
+const handleReclaim = async (): Promise<void> => {
   await gameStore.reclaimControl();
   dismissedLock.value = true;
 };

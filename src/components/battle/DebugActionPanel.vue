@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import PVTooltip from '@/components/common/PVTooltip.vue';
-import DebugActionPanelQuickButtons from './DebugActionPanelQuickButtons.vue';
 import { gameBus } from '@/logic/events/gameBus';
-import { useDebugBattleActions } from './useDebugBattleActions';
 import { useCombatShadowStore } from '@/stores/battle/combatShadows';
+
+import DebugActionPanelQuickButtons from './DebugActionPanelQuickButtons.vue';
+import { useDebugBattleActions } from './useDebugBattleActions';
 
 const emit = defineEmits<{
   (event: 'close'): void;

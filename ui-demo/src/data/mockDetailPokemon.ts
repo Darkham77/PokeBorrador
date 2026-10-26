@@ -1,27 +1,28 @@
 // ui-demo/src/data/mockDetailPokemon.ts
 
+import type { DisplayText } from '@francogp/auditor';
 import type { PokemonGender } from '@/types/pokemon/pokemon';
 import type { PokemonType } from '@/data/battle/types';
 
 export interface PokemonSummaryItem {
   id: number;
-  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  name: DisplayText;
 }
 
 export interface DetailPokemon {
-  uid: string; // domain-ok: Open dynamic text or non-domain string payload
+  uid: DisplayText;
   id: number;
-  dexNum: string; // domain-ok: Open dynamic text or non-domain string payload
-  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  dexNum: DisplayText;
+  name: DisplayText;
   gender: PokemonGender;
   type: PokemonType;
-  typeLabel: string; // domain-ok: Open dynamic text or non-domain string payload
-  category: string; // domain-ok: Open dynamic text or non-domain string payload
-  height: string; // domain-ok: Open dynamic text or non-domain string payload
-  weight: string; // domain-ok: Open dynamic text or non-domain string payload
-  nature: string; // domain-ok: Open dynamic text or non-domain string payload
-  ability: string; // domain-ok: Open dynamic text or non-domain string payload
-  vigor: string; // domain-ok: Open dynamic text or non-domain string payload
+  typeLabel: DisplayText;
+  category: DisplayText;
+  height: DisplayText;
+  weight: DisplayText;
+  nature: DisplayText;
+  ability: DisplayText;
+  vigor: DisplayText;
   hp: number;
   maxHp: number;
   level: number;
@@ -30,20 +31,20 @@ export interface DetailPokemon {
   expNext: number;
   friendship: number;
   maxFriendship: number;
-  friendshipTitle: string; // domain-ok: Open dynamic text or non-domain string payload
-  lore: string; // domain-ok: Open dynamic text or non-domain string payload
-  evolButtonText: string; // domain-ok: Open dynamic text or non-domain string payload
-  stats: { name: string; value: number; max: number }[];
+  friendshipTitle: DisplayText;
+  lore: DisplayText;
+  evolButtonText: DisplayText;
+  stats: { name: DisplayText; value: number; max: number }[];
   moves: {
-    name: string; // domain-ok: Open dynamic text or non-domain string payload
-    type: string; // domain-ok: Open dynamic text or non-domain string payload
-    typeLabel: string; // domain-ok: Open dynamic text or non-domain string payload
-    pot: string; // domain-ok: Open dynamic text or non-domain string payload
-    prec: string; // domain-ok: Open dynamic text or non-domain string payload
-    cat: string; // domain-ok: Open dynamic text or non-domain string payload
-    pp: string; // domain-ok: Open dynamic text or non-domain string payload
+    name: DisplayText;
+    type: PokemonType;
+    typeLabel: DisplayText;
+    pot: DisplayText;
+    prec: DisplayText;
+    cat: DisplayText;
+    pp: DisplayText;
   }[];
-  evolChain: { id: number; name: string; req: string }[];
+  evolChain: { id: number; name: DisplayText; req: DisplayText }[];
 }
 
 export const MOCK_DETAIL_PIKACHU: DetailPokemon = {

@@ -1,7 +1,8 @@
 import { cloneReactive } from '@/logic/utils/cloneUtils.ts';
-import { logger } from '../utils/logger.ts';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import { logger } from '../utils/logger.ts';
 import type { extractBattleConfig } from './orchestratorConfigHelper.ts';
 
 export async function validatePlayerTeamLegality(
@@ -74,10 +75,10 @@ export function setupSeatsProtocol(
 }
 
 export function checkIsDebugOrReplay(isDebugOption?: boolean): boolean {
-  if (typeof window === 'undefined') return false;
+  if (typeof globalThis.window === 'undefined') return false;
   return Boolean(
-    window.__VITE_DEBUG__?.isDeterministicSimulation ||
-    window.__VITE_DEBUG__?.isScriptedReplayMode ||
+    globalThis.__VITE_DEBUG__?.isDeterministicSimulation ||
+    globalThis.__VITE_DEBUG__?.isScriptedReplayMode ||
     isDebugOption
   );
 }
@@ -112,7 +113,7 @@ export function setupDebugLoopPokemon(
   wasSearching: boolean
 ): void {
   if (!isDebug) return;
-  ctx.debugLoopPokemon.value = wasSearching ? (cloneReactive(enemyPoke) as Pokemon) : null;
+  ctx.debugLoopPokemon.value = wasSearching ? cloneReactive(enemyPoke) : null;
 }
 
 export function pickActivePlayerTeam(
@@ -123,7 +124,10 @@ export function pickActivePlayerTeam(
   return gsTeam ?? [];
 }
 
-export function resolveStartingEnemyTeam(enemyPoke: Pokemon, enemyTeam?: Pokemon[]) {
+export function resolveStartingEnemyTeam(
+  enemyPoke: Pokemon,
+  enemyTeam?: Pokemon[]
+): { finalEnemyTeam: Pokemon[]; startingEnemyPoke: Pokemon } {
   const finalEnemyTeam = enemyTeam && enemyTeam.length > 0 ? enemyTeam : [enemyPoke];
   const startingEnemyPoke = finalEnemyTeam.find((p) => p && p.hp > 0) || enemyPoke;
   return { finalEnemyTeam, startingEnemyPoke };

@@ -1,24 +1,25 @@
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useBattleStore } from '@/stores/battle/battle';
-import { useGameStore } from '@/stores/game';
-import { useMapStore } from '@/stores/map';
-import { initBattleSequence } from '@/logic/battle/helpers/battleLifecycleInitializer';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+import { computed, ref } from 'vue';
+
+import { useBattleCombatants } from '@/composables/battle/useBattleCombatants';
+import { processSwitchSwapAnimations } from '@/logic/battle/actions/switchSequenceHelper';
 import {
   processEnemyFaintSequence,
   processPlayerFaintSequence
 } from '@/logic/battle/battleFaintSequence';
-import { processSwitchSwapAnimations } from '@/logic/battle/actions/switchSequenceHelper';
-import { useBattleCombatants } from '@/composables/battle/useBattleCombatants';
 import {
   BATTLE_STATES,
   BATTLE_SUBSTATES,
   type BattleStateName,
   type BattleSubStateName
 } from '@/logic/battle/battleStateMachine';
-import { computed, ref } from 'vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { initBattleSequence } from '@/logic/battle/helpers/battleLifecycleInitializer';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
+import { useMapStore } from '@/stores/map';
 import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 function createMockPokemon(name: string, uid: string, hp = 100, maxHp = 100): Pokemon {
   return {

@@ -11,11 +11,6 @@
  *   4. Dispersed roadside bushes, flowers, logs, and boulders.
  */
 
-import { SimplexNoise } from './noise/simplexNoise.ts';
-import type { ContinentMapResult } from './continentGenerator.ts';
-import type { POINode } from '../../types/map/poiTypes.ts';
-import { isCellAdjacentToMountainStairs } from './continentMountainEngine.ts';
-import type { WildernessPropPlacement } from './wildernessVegetationEngine.ts';
 import {
   ROUTE_GATE_PROPS_CLEARANCE_RADIUS,
   ROADSIDE_PROP_CLEARANCE_DEFAULT,
@@ -36,6 +31,11 @@ import {
   MEADOW_FLOWER_MIN,
   MEADOW_FLOWER_MAX
 } from '../../config/wildernessConfig.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
+import { isCellAdjacentToMountainStairs } from './continentMountainEngine.ts';
+import { SimplexNoise } from './noise/simplexNoise.ts';
+import type { WildernessPropPlacement } from './wildernessVegetationEngine.ts';
 
 export interface RoadsidePropsContext {
   readonly pois: readonly POINode[];
@@ -49,6 +49,80 @@ export interface RoadsidePropsContext {
   readonly prng: SimplexNoise;
   readonly treeBlocked: boolean[][];
   readonly props: WildernessPropPlacement[];
+}
+
+const EXCLUDED_SIGNPOST_POI_TYPE_LIST = [
+  'dungeon_forest',
+  'cave_entrance',
+  'water_landmark',
+  'port_dock'
+] as const;
+type ExcludedSignpostPoiType = (typeof EXCLUDED_SIGNPOST_POI_TYPE_LIST)[number];
+const EXCLUDED_SIGNPOST_POI_TYPES: ReadonlySet<ExcludedSignpostPoiType> =
+  new Set<ExcludedSignpostPoiType>(EXCLUDED_SIGNPOST_POI_TYPE_LIST);
+
+function blockGateClearanceRadius(
+  centerX: number,
+  centerY: number,
+  W: number,
+  H: number,
+  roadsidePropBlocked: boolean[][]
+): void {
+  for (let dy = -ROUTE_GATE_PROPS_CLEARANCE_RADIUS; dy <= ROUTE_GATE_PROPS_CLEARANCE_RADIUS; dy++) {
+    const ny = centerY + dy;
+    if (ny < 0 || ny >= H) continue;
+    for (
+      let dx = -ROUTE_GATE_PROPS_CLEARANCE_RADIUS;
+      dx <= ROUTE_GATE_PROPS_CLEARANCE_RADIUS;
+      dx++
+    ) {
+      const nx = centerX + dx;
+      if (nx >= 0 && nx < W && Math.hypot(dx, dy) <= ROUTE_GATE_PROPS_CLEARANCE_RADIUS) {
+        roadsidePropBlocked[ny]![nx] = true;
+      }
+    }
+  }
+}
+
+function tryPlaceStairSignpost(
+  sx: number,
+  sy: number,
+  isCandidatePropCell: (x: number, y: number) => boolean,
+  addRoadsideProp: (prop: WildernessPropPlacement, clearance: number) => void
+): boolean {
+  const candidateOffsets = [
+    { dx: 1, dy: 0 },
+    { dx: -1, dy: 0 },
+    { dx: 0, dy: 1 },
+    { dx: 0, dy: -1 }
+  ];
+  for (const off of candidateOffsets) {
+    const px = sx + off.dx;
+    const py = sy + off.dy;
+    if (isCandidatePropCell(px, py)) {
+      addRoadsideProp(
+        {
+          type: 'signpost',
+          x: px,
+          y: py,
+          prefabFile: 'poke_signpost_wood_small.png'
+        },
+        ROADSIDE_SIGNPOST_CLEARANCE
+      );
+      return true;
+    }
+  }
+  return false;
+}
+
+function resolveBoulderPrefabForBiome(biome: string): string {
+  if (biome === 'arid_desert') {
+    return 'poke_rock_boulder_brown_large.png';
+  }
+  if (biome === 'volcanic_plateau') {
+    return 'poke_boulder_gray.png';
+  }
+  return 'poke_rock_boulder_mossy_1.png';
 }
 
 /**
@@ -76,25 +150,7 @@ export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
       const b = poi.urbanLayout?.buildings[0];
       const gateCenterX = b ? Math.floor(b.x + b.width / 2) : poi.gridX + 5;
       const gateCenterY = b ? Math.floor(b.y + b.height / 2) : poi.gridY + 4;
-      for (
-        let dy = -ROUTE_GATE_PROPS_CLEARANCE_RADIUS;
-        dy <= ROUTE_GATE_PROPS_CLEARANCE_RADIUS;
-        dy++
-      ) {
-        const ny = gateCenterY + dy;
-        if (ny < 0 || ny >= H) continue;
-        for (
-          let dx = -ROUTE_GATE_PROPS_CLEARANCE_RADIUS;
-          dx <= ROUTE_GATE_PROPS_CLEARANCE_RADIUS;
-          dx++
-        ) {
-          const nx = gateCenterX + dx;
-          if (nx < 0 || nx >= W) continue;
-          if (Math.hypot(dx, dy) <= ROUTE_GATE_PROPS_CLEARANCE_RADIUS) {
-            roadsidePropBlocked[ny]![nx] = true;
-          }
-        }
-      }
+      blockGateClearanceRadius(gateCenterX, gateCenterY, W, H, roadsidePropBlocked);
     }
   }
 
@@ -166,12 +222,7 @@ export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
 
   // 3.2 Route Trailhead & Settlement Gateway Signposts
   for (const poi of pois) {
-    if (
-      poi.type === 'dungeon_forest' ||
-      poi.type === 'cave_entrance' ||
-      poi.type === 'water_landmark' ||
-      poi.type === 'port_dock'
-    ) {
+    if (EXCLUDED_SIGNPOST_POI_TYPES.has(poi.type as ExcludedSignpostPoiType)) {
       continue;
     }
 
@@ -186,30 +237,9 @@ export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
         // Look for cells bordering the path exit just outside settlement footprint
         if (!pathGrid[sy]?.[sx]) continue;
 
-        // Check neighboring candidate cells for signpost placement
-        const candidateOffsets = [
-          { dx: 1, dy: 0 },
-          { dx: -1, dy: 0 },
-          { dx: 0, dy: 1 },
-          { dx: 0, dy: -1 }
-        ];
-
-        for (const off of candidateOffsets) {
-          const px = sx + off.dx;
-          const py = sy + off.dy;
-          if (isCandidatePropCell(px, py)) {
-            addRoadsideProp(
-              {
-                type: 'signpost',
-                x: px,
-                y: py,
-                prefabFile: 'poke_signpost_wood_small.png'
-              },
-              ROADSIDE_SIGNPOST_CLEARANCE
-            );
-            placedSign = true;
-            break;
-          }
+        if (tryPlaceStairSignpost(sx, sy, isCandidatePropCell, addRoadsideProp)) {
+          placedSign = true;
+          break;
         }
       }
     }
@@ -229,15 +259,7 @@ export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
         const n = prng.noise2D(x * CLIFF_BOULDER_NOISE_SCALE, y * CLIFF_BOULDER_NOISE_SCALE);
         if (n > CLIFF_BASE_BOULDER_NOISE_THRESHOLD) {
           const mBiome = continent.macroBiomes?.biomeGrid[y]?.[x] ?? 'temperate_meadow';
-          let boulderFile = 'poke_rock_boulder_mossy_1.png';
-
-          if (mBiome === 'arid_desert') {
-            boulderFile = 'poke_rock_boulder_brown_large.png';
-          } else if (mBiome === 'volcanic_plateau') {
-            boulderFile = 'poke_boulder_gray.png';
-          } else if (mBiome === 'mint_highland') {
-            boulderFile = 'poke_rock_boulder_mossy_1.png';
-          }
+          const boulderFile = resolveBoulderPrefabForBiome(mBiome);
 
           addRoadsideProp(
             {

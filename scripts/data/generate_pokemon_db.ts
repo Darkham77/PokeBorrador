@@ -1,3 +1,4 @@
+import { isMainModule } from '@francogp/auditor';
 /**
  * scripts/data/generate_pokemon_db.ts
  *
@@ -10,6 +11,7 @@
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { defineCommand, runMain } from 'citty';
 import { Dex } from '@pkmn/sim';
 import { toID } from '../../src/logic/utils/strings.ts';
 import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
@@ -219,7 +221,10 @@ export async function generatePokemonDatabase(): Promise<void> {
     db[speciesId] = buildCompactPokemonData(species, metadata, learnsetResult);
   }
 
-  const relPath = path.relative(process.cwd(), OUTPUT_FILE).replace(/\\/g, '/');
+  const relPath = path
+    .relative(process.cwd(), OUTPUT_FILE)
+    .split(path.sep)
+    .join(path.posix.sep);
   const jsonContent = JSON.stringify(db, null, 2);
 
   try {
@@ -228,9 +233,8 @@ export async function generatePokemonDatabase(): Promise<void> {
       console.log(`📦 [PokemonDB Generator] ${relPath} está actualizado.`);
       return;
     }
-  } catch {
-    // catch-ok: file does not exist yet, proceed with writing
-    // File doesn't exist yet, proceed with writing
+  } catch (err) {
+    err;
   }
 
   await fs.writeFile(OUTPUT_FILE, jsonContent, 'utf8');
@@ -241,10 +245,15 @@ export async function generatePokemonDatabase(): Promise<void> {
   );
 }
 
-// Allow direct execution from CLI
-if (process.argv[1]?.endsWith('generate_pokemon_db.ts')) {
-  generatePokemonDatabase().catch((err) => {
-    console.error('❌ [PokemonDB Generator] Error fatal:', err);
-    process.exit(1);
-  });
+export const command = defineCommand({
+  meta: {
+    name: 'generate-pokemon-db',
+    description: 'Generador estático en tiempo de build para src/data/pokemon/pokemonDB.json'
+  },
+  async run() {
+    await generatePokemonDatabase();
+  }
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
 }

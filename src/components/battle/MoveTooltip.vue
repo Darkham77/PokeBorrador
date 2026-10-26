@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { useMoveTooltip } from '@/composables/battle/useMoveTooltip';
-import MoveTooltipDamage from './MoveTooltipDamage.vue';
-import MoveTooltipStatus from './MoveTooltipStatus.vue';
-import MoveTooltipStatsGrid from './MoveTooltipStatsGrid.vue';
-import MoveTooltipDetails from './MoveTooltipDetails.vue';
-import MoveTooltipTactical from './MoveTooltipTactical.vue';
-import MoveTooltipModifiers from './MoveTooltipModifiers.vue';
-import MoveTooltipFieldEffects from './MoveTooltipFieldEffects.vue';
 import { useBattleStore } from '@/stores/battle/battle';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+
+import MoveTooltipDamage from './MoveTooltipDamage.vue';
+import MoveTooltipDetails from './MoveTooltipDetails.vue';
+import MoveTooltipFieldEffects from './MoveTooltipFieldEffects.vue';
+import MoveTooltipModifiers from './MoveTooltipModifiers.vue';
+import MoveTooltipStatsGrid from './MoveTooltipStatsGrid.vue';
+import MoveTooltipStatus from './MoveTooltipStatus.vue';
+import MoveTooltipTactical from './MoveTooltipTactical.vue';
 
 interface Props {
   move: Move;

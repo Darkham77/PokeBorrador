@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useGameStore } from '@/stores/game';
-import { useBattleStore } from '@/stores/battle/battle';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
 import { processCombatantExpAndEvs } from '@/logic/battle/rewards/combatantExpEvProcessor';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Unified Combatant Rewards Log (Tier 1)', () => {

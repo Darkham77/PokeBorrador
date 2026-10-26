@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
 import { gsap } from 'gsap';
+import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
+
 import { useBattleTweenRegistry } from '@/composables/battle/useBattleTweenRegistry';
 import { gameBus } from '@/logic/events/gameBus';
 

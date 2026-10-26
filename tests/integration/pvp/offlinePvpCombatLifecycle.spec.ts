@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
+import { resolveOfflineRivalTeam } from '@/logic/pvp/pvpTeamHelper';
+import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
 import { useLivePvPStore } from '@/stores/livePvP';
 import { usePvPStore } from '@/stores/pvp';
-import { useGameStore } from '@/stores/game';
-import { useAuthStore } from '@/stores/auth';
-import { resolveOfflineRivalTeam } from '@/logic/pvp/pvpTeamHelper';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Offline Rival Asynchronous Combat Lifecycle Integration', () => {

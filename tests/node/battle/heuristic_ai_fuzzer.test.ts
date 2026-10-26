@@ -18,12 +18,14 @@
  * si cae por debajo de un umbral, evitando que el combate termine prematuramente.
  */
 
-import { describe, it, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
+import { describe, it, beforeEach } from 'vite-plus/test';
+
+import type { PokemonMoveId } from '../../../src/data/battle/moves.ts';
 import { HeuristicDamageCalculator } from '../../../src/logic/battle/ai/heuristic/damageCalculator.ts';
-import { InferenceEngine } from '../../../src/logic/battle/ai/heuristic/inferenceEngine.ts';
 import { heuristicDecision } from '../../../src/logic/battle/ai/heuristic/heuristicEngine.ts';
+import { InferenceEngine } from '../../../src/logic/battle/ai/heuristic/inferenceEngine.ts';
 import { AI_CONFIG_PRESETS } from '../../../src/logic/battle/ai/heuristic/types.ts';
 import type {
   HeuristicPokemonState,
@@ -32,8 +34,6 @@ import type {
   DamageMatchup,
   DamageResult
 } from '../../../src/logic/battle/ai/heuristic/types.ts';
-import type { PokemonMoveId } from '../../../src/data/battle/moves.ts';
-
 import {
   makeVolatiles,
   makeMove,

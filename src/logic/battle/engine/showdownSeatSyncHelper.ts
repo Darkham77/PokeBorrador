@@ -1,11 +1,13 @@
+import type { DisplayText } from '@francogp/auditor';
 import type { Battle, Side, Pokemon, SideID } from '@pkmn/sim';
-import { classifyRequest, requiresAction, type ChoiceRequest } from '../helpers/requestHelper.ts';
-import { getFirstValidMoveSlot } from '../helpers/showdownMoveChoiceHelper.ts';
+
 import { applyHealCheatToSide, syncRequestConditionsWithSimulator } from '../cheats.ts';
 import type {
   BattleCheatManager,
   CertifiedCheatHistoryStep
 } from '../helpers/battleCheatManager.ts';
+import { classifyRequest, requiresAction, type ChoiceRequest } from '../helpers/requestHelper.ts';
+import { getFirstValidMoveSlot } from '../helpers/showdownMoveChoiceHelper.ts';
 
 const CRITICAL_HP_THRESHOLD_RATIO = 0.3 as const;
 
@@ -27,10 +29,10 @@ export interface TurnExecutionInput {
   p1UsedBattleItem?: boolean;
   p1Agent?: BattleAgent;
   p2Agent?: BattleAgent;
-  p1Hps?: Record<string, number>; // open-record: Pokémon name/id to current HP
-  p2Hps?: Record<string, number>; // open-record: Pokémon name/id to current HP
-  p1Statuses?: Record<string, string>; // open-record: Pokémon name/id to status condition
-  p2Statuses?: Record<string, string>; // open-record: Pokémon name/id to status condition
+  p1Hps?: Record<DisplayText, number>; // open-record: Pokémon name/id to current HP
+  p2Hps?: Record<DisplayText, number>; // open-record: Pokémon name/id to current HP
+  p1Statuses?: Record<DisplayText, string>; // open-record: Pokémon name/id to status condition
+  p2Statuses?: Record<DisplayText, string>; // open-record: Pokémon name/id to status condition
   weather?: string;
   ipbActive?: boolean;
   certifiedHistoryStep?: CertifiedCheatHistoryStep;
@@ -61,7 +63,7 @@ export function sanitizeExplicitSwitchChoice(
       side.activeRequest &&
       'active' in side.activeRequest &&
       Array.isArray(side.activeRequest.active?.[0]?.moves)
-        ? side.activeRequest.active[0]!.moves
+        ? side.activeRequest.active[0].moves
         : [];
     return getFirstValidMoveSlot(activeReqMoves);
   }
@@ -101,7 +103,7 @@ export function buildTurnSeats(
   return battle.sides
     .filter((side): side is Side => Boolean(side))
     .map((side) => {
-      const seatId = side.id as SideID;
+      const seatId = side.id;
       const reqKind = classifyRequest(side.activeRequest);
       const isForce = reqKind === 'force-switch' || reqKind === 'revive-target';
       const mustAct =
@@ -137,7 +139,7 @@ export function applyPostTurnHealing(
     cheatManager.applyPostTurnCheats(battle, input.certifiedHistoryStep);
   } else if (input.ipbActive !== false) {
     for (const side of battle.sides) {
-      const sideId = side.id as SideID;
+      const sideId = side.id;
       const activeMon = side.active?.[0];
       if (
         activeMon &&

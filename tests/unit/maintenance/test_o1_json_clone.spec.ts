@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vite-plus/test';
 import fs from 'node:fs';
 import path from 'node:path';
+
 import {
   scanFileForO1Issues,
   P_JSON_CLONE
 } from '@francogp/auditor/suites/domain_data/validate_o1_data_structures';
+import { describe, it, expect } from 'vite-plus/test';
 
 describe('validate_o1_data_structures - o1-json-clone rule', () => {
   it('detects JSON.parse(JSON.stringify(...)) as a strict error', () => {

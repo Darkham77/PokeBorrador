@@ -4,23 +4,16 @@
  * Move power, accuracy, crit chance, and damage estimation math for combat tooltips.
  */
 
-import type { DayPhase } from '@/logic/utils/timeUtils.ts';
-import {
-  getMechanicalWeather,
-  WEATHER_MECHANICAL,
-  isWeatherId,
-  type WeatherMechanical
-} from '@/logic/weather/weatherRegistry.ts';
+import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves.ts';
+import { toPokemonType, type PokemonType } from '@/data/battle/types.ts';
+import type { ItemId } from '@/data/inventory/items.ts';
 import {
   calculateDamageRangePure,
   type PurePokemon,
-  type PureMove
+  type PureMove,
+  type PureDamageRange
 } from '@/logic/battle/battleMath.ts';
 import type { PureBattleWeather, PureDamageOptions } from '@/logic/battle/battleMathTypes.ts';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon.ts';
-import { toPokemonType, type PokemonType } from '@/data/battle/types.ts';
-import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves.ts';
-import type { ItemId } from '@/data/inventory/items.ts';
 import {
   STAB_STANDARD_MULTIPLIER,
   STAB_ADAPTABILITY_MULTIPLIER,
@@ -28,6 +21,14 @@ import {
   SCOPE_LENS_CRIT_RATE,
   FOCUS_ENERGY_CRIT_RATE
 } from '@/logic/constants/gameplay.ts';
+import type { DayPhase } from '@/logic/utils/timeUtils.ts';
+import {
+  getMechanicalWeather,
+  WEATHER_MECHANICAL,
+  isWeatherId,
+  type WeatherMechanical
+} from '@/logic/weather/weatherRegistry.ts';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon.ts';
 
 import {
   WEATHER_RAIN_PENALTY_TEXT,
@@ -372,7 +373,10 @@ export function calculateMoveEffectivenessAndDamage(
   basePower: number,
   playerStages: { atk?: number } | null,
   enemyStages: { def?: number } | null
-) {
+): {
+  effectiveness: { value: number; label: string; class: string } | null;
+  damageRange: PureDamageRange | null;
+} {
   if (!attacker || !defender) return { effectiveness: null, damageRange: null };
 
   const pureMove: PureMove = {
@@ -380,7 +384,7 @@ export function calculateMoveEffectivenessAndDamage(
     name: move.name,
     type: move.type || md.type || 'normal',
     power: basePower,
-    cat: (move.cat || md.cat || 'physical') as PureMove['cat'],
+    cat: move.cat || md.cat || 'physical',
     effect: typeof move.effect === 'string' ? move.effect : undefined
   };
 

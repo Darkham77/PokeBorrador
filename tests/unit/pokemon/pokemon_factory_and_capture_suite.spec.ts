@@ -4,8 +4,9 @@
  * learnset slot management, capture formula, and Pokeball catch rate modifiers.
  */
 import { describe, it, expect, vi } from 'vite-plus/test';
-import { makePokemon, levelUpPokemon } from '@/logic/pokemon/pokemonFactory';
+
 import { calculateCatchRate } from '@/logic/battle/battleEngine';
+import { makePokemon, levelUpPokemon } from '@/logic/pokemon/pokemonFactory';
 import { getDayCycle } from '@/logic/utils/timeUtils';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 

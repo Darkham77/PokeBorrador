@@ -12,7 +12,7 @@ declare module '*.vue' {
 }
 
 declare module '*.scss' {
-  const content: Record<string, string>; // open-record: Generic key-value data dictionary container
+  const content: Record<import('@francogp/auditor').DisplayText, string>;
   export default content;
 }
 

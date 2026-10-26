@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue';
 import type { MarketListing, MarketItemData } from '@/logic/economy/market';
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils.ts';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { formatCurrency } from '@/logic/utils/formatters';
 import { formatDisplayDate } from '@/logic/utils/timeUtils';
-import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils.ts';
-import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import {
   resolveItemTier,
   resolveItemDisplayName,
@@ -48,7 +50,7 @@ const buyState = computed(() =>
   )
 );
 
-function onImageError(e: Event) {
+function onImageError(e: Event): void {
   (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ITEM, 'potion');
 }
 </script>

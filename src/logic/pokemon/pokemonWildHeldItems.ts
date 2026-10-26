@@ -1,5 +1,5 @@
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { ItemId } from '@/data/inventory/items';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { GAME_RATIOS } from '@/data/system/constants';
 
 /**

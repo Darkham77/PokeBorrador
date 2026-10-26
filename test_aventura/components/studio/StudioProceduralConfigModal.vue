@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+
 import { cloneReactive } from '@/logic/utils/cloneUtils';
-import StudioModalShell from './StudioModalShell.vue';
-import { useContinentStudioStore } from '../../stores/continentStudio';
-import { CANONICAL_PRESETS } from '../../logic/map/continent/continentPersistence';
+
 import { MAX_RANDOM_SEED } from '../../config/studioConstants.ts';
+import { CANONICAL_PRESETS } from '../../logic/map/continent/continentPersistence';
+import { useContinentStudioStore } from '../../stores/continentStudio';
 import type { CanonicalPresetId, ContinentGenConfig } from '../../types/map/continentTypes';
+import StudioModalShell from './StudioModalShell.vue';
 
 const store = useContinentStudioStore();
 

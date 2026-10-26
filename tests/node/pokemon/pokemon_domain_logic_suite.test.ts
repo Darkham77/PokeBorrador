@@ -14,31 +14,32 @@
  * 10. Pokedex Migration: Syncing seen and owned species across team and box.
  */
 
-import { describe, it, test, expect, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { setActivePinia, createPinia } from 'pinia';
 
-import { getAuraStyles } from '@/logic/breeding/hatchAuras.ts';
-import type { Pokemon } from '@/types/pokemon/pokemon.ts';
-import { pokemonDebugService } from '@/logic/debug/pokemonDebugService.ts';
+import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, test, expect, beforeEach } from 'vite-plus/test';
+
+import { ITEM_IDS } from '@/data/inventory/itemIds.ts';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
 import { serializeState } from '@/logic/auth/saveSerializer.ts';
+import { getAuraStyles } from '@/logic/breeding/hatchAuras.ts';
+import { pokemonDebugService } from '@/logic/debug/pokemonDebugService.ts';
+import { calculateEvBonusIvs, EVS_PER_STAT_POINT } from '@/logic/pokemon/evMath.ts';
+import { generateIvPure } from '@/logic/pokemon/generationMath.ts';
+import { PokedexAggregator } from '@/logic/pokemon/pokedexAggregator.ts';
+import { makePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory.ts';
+import { getTypeEffectivenessMsg, getMoveDescriptionPure } from '@/logic/pokemon/pokemonMath.ts';
+import { filterAndSortPokemon } from '@/logic/pokemon/pokemonSelectionFilter.ts';
+import { getMoveDescription, calculateTotalPower } from '@/logic/pokemon/pokemonUtils.ts';
+import { calcStatsPure, getExpNeededPure, type NatureData } from '@/logic/pokemon/statsMath.ts';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider.ts';
 import { validateSaveData } from '@/logic/validation/schemas.ts';
 import { INITIAL_STATE } from '@/stores/gameInitialState.ts';
-import type { GameState } from '@/types/system/game.ts';
-import { getMoveDescription, calculateTotalPower } from '@/logic/pokemon/pokemonUtils.ts';
-import { ITEM_IDS } from '@/data/inventory/itemIds.ts';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider.ts';
-import { PokedexAggregator } from '@/logic/pokemon/pokedexAggregator.ts';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
-import { makePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory.ts';
-import { generateIvPure } from '@/logic/pokemon/generationMath.ts';
-import { calcStatsPure, getExpNeededPure, type NatureData } from '@/logic/pokemon/statsMath.ts';
-import { getTypeEffectivenessMsg, getMoveDescriptionPure } from '@/logic/pokemon/pokemonMath.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon.ts';
 import type { MoveBaseData } from '@/types/system/database.ts';
-import { calculateEvBonusIvs, EVS_PER_STAT_POINT } from '@/logic/pokemon/evMath.ts';
-import { filterAndSortPokemon } from '@/logic/pokemon/pokemonSelectionFilter.ts';
+import type { GameState } from '@/types/system/game.ts';
 
 interface MockPokemon {
   type: string;

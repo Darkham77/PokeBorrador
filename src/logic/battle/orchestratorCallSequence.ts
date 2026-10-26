@@ -5,7 +5,7 @@ export async function executePokemonCallSequence(
   ctx: BattleContext,
   initialPlayer: Pokemon,
   needsCall: boolean
-) {
+): Promise<void> {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx;
   const fsm = ctx.fsm;
 

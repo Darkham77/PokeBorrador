@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useContinentStudioStore } from '../../stores/continentStudio';
+
 import {
   VIEWPORT_ZOOM_IN_STEP,
   VIEWPORT_ZOOM_OUT_STEP,
@@ -8,6 +8,7 @@ import {
   MAX_VIEWPORT_ZOOM
 } from '../../config/studioConstants.ts';
 import { computeViewportWheelZoom } from '../../logic/utils/svgCoordinateUtils';
+import { useContinentStudioStore } from '../../stores/continentStudio';
 import type { ContinentNode } from '../../types/map/continentTypes';
 
 const store = useContinentStudioStore();
@@ -37,7 +38,7 @@ const transformStyle = computed(() => ({
   transformOrigin: '0 0'
 }));
 
-function screenToWorld(clientX: number, clientY: number) {
+function screenToWorld(clientX: number, clientY: number): { x: number; y: number } {
   if (!viewportRef.value) return { x: 0, y: 0 };
   const rect = viewportRef.value.getBoundingClientRect();
   const screenX = clientX - rect.left;
@@ -50,7 +51,7 @@ function screenToWorld(clientX: number, clientY: number) {
   };
 }
 
-function handleWheel(e: WheelEvent) {
+function handleWheel(e: WheelEvent): void {
   e.preventDefault();
   if (!viewportRef.value) return;
 
@@ -70,7 +71,7 @@ function handleWheel(e: WheelEvent) {
   store.setPan(result.newPanX, result.newPanY);
 }
 
-function handleViewportPointerDown(e: PointerEvent) {
+function handleViewportPointerDown(e: PointerEvent): void {
   if (
     e.button === 1 ||
     (e.button === 0 && store.activeTool === 'pointer' && !draggedNodeId.value)
@@ -82,7 +83,7 @@ function handleViewportPointerDown(e: PointerEvent) {
   }
 }
 
-function handleViewportPointerMove(e: PointerEvent) {
+function handleViewportPointerMove(e: PointerEvent): void {
   const world = screenToWorld(e.clientX, e.clientY);
   mouseWorldPos.value = world;
 
@@ -102,7 +103,7 @@ function handleViewportPointerMove(e: PointerEvent) {
   }
 }
 
-function handleViewportPointerUp(e: PointerEvent) {
+function handleViewportPointerUp(e: PointerEvent): void {
   if (draggedNodeId.value) {
     draggedNodeId.value = null;
     store.pushHistory();
@@ -112,12 +113,12 @@ function handleViewportPointerUp(e: PointerEvent) {
   }
   try {
     (e.currentTarget as HTMLElement)?.releasePointerCapture(e.pointerId);
-  } catch {
-    // catch-ok: Pointer capture release fails gracefully if pointer was lost
+  } catch (err) {
+    console.warn('Handled controlled exception:', err);
   }
 }
 
-function handleNodePointerDown(e: PointerEvent, nodeId: string) {
+function handleNodePointerDown(e: PointerEvent, nodeId: string): void {
   e.stopPropagation();
 
   if (store.activeTool === 'delete') {
@@ -146,7 +147,7 @@ function handleNodePointerDown(e: PointerEvent, nodeId: string) {
   }
 }
 
-function handleNodeDblClick(e: MouseEvent, nodeId: string) {
+function handleNodeDblClick(e: MouseEvent, nodeId: string): void {
   e.stopPropagation();
   const node = store.activeProject.nodes[nodeId];
   if (!node) return;
@@ -156,14 +157,14 @@ function handleNodeDblClick(e: MouseEvent, nodeId: string) {
   }
 }
 
-function handleRouteClick(e: MouseEvent, u: string, v: string) {
+function handleRouteClick(e: MouseEvent, u: string, v: string): void {
   e.stopPropagation();
   if (store.activeTool === 'delete') {
     store.removeConnection(u, v);
   }
 }
 
-function handleCanvasClick(e: MouseEvent) {
+function handleCanvasClick(e: MouseEvent): void {
   if (store.activeTool === 'add_node') {
     const world = screenToWorld(e.clientX, e.clientY);
     const name = prompt('Nombre de la nueva población:', 'Nueva Ciudad');

@@ -57,7 +57,7 @@ export async function parseLogsWithSkip(
   logs: string[],
   skipOptions?: ParseLogsSkipOptions | boolean,
   p2SkipParam = false
-) {
+): Promise<void> {
   const p1Skip = typeof skipOptions === 'boolean' ? skipOptions : Boolean(skipOptions?.p1Skip);
   const p2Skip = typeof skipOptions === 'boolean' ? p2SkipParam : Boolean(skipOptions?.p2Skip);
   let skipLogsForP1 = false;

@@ -13,14 +13,14 @@ export const awaitAnimation = (anim: gsap.core.Animation): Promise<void> => {
 /**
  * Kill all active tweens on a specific target to prevent memory leaks.
  */
-export const killTweens = (target: string | object) => {
+export const killTweens = (target: string | object): void => {
   gsap.killTweensOf(target);
 };
 
 /**
  * Creates a standard timeline with common defaults.
  */
-export const createTimeline = (vars?: gsap.TimelineVars) => {
+export const createTimeline = (vars?: gsap.TimelineVars): gsap.core.Timeline => {
   return gsap.timeline({
     ...vars,
     defaults: {

@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+import { isMainModule } from '@francogp/auditor';
 /**
  * @file upgrade_backup.ts
  * @description Upgrades legacy database backup JSON files to the latest game schema and Showdown legality.
@@ -15,22 +17,22 @@
 
 import fsPromises from 'node:fs/promises';
 import path from 'node:path';
-import { parseArgs, styleText } from 'node:util';
+import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
+import { defineCommand, runMain } from 'citty';
 import { DatabaseSync } from 'node:sqlite';
 import { DATABASE_MIGRATIONS } from '../../src/logic/db/migrations_data.ts';
 import { splitSQLStatements, translatePostgresToSqlite } from '../../src/logic/db/sqlTranslator.ts';
-import { safeResolve, safeJoin } from '@francogp/auditor';
 
 enableCompileCache();
 
-const BACKUPS_DIR = safeResolve(process.cwd(), 'database/backups');
+const BACKUPS_DIR = path.resolve(process.cwd(), 'database/backups');
 
 async function resolveTargetBackupPath(serverArg?: string, fileArg?: string): Promise<string> {
-  if (fileArg) return safeResolve(process.cwd(), fileArg);
+  if (fileArg) return path.resolve(process.cwd(), fileArg);
   if (!serverArg) return '';
 
-  const serverBackupDir = safeJoin(BACKUPS_DIR, serverArg);
+  const serverBackupDir = path.join(BACKUPS_DIR, serverArg);
   try {
     const files = await fsPromises.readdir(serverBackupDir);
     const matching = files
@@ -40,22 +42,24 @@ async function resolveTargetBackupPath(serverArg?: string, fileArg?: string): Pr
       )
       .sort()
       .reverse();
-    return matching.length > 0 && matching[0] ? safeJoin(serverBackupDir, matching[0]) : '';
+    return matching.length > 0 && matching[0] ? path.join(serverBackupDir, matching[0]) : '';
   } catch {
     return '';
   }
 }
 
+const USER_ID_PK_TABLES: ReadonlySet<string> = new Set<string>([
+  'game_saves',
+  'passive_teams',
+  'war_factions',
+  'war_coins',
+  'daycare_upgrades',
+  'ranked_queue'
+]);
+
 function getPrimaryKeyClause(tableName: string, cols: readonly string[]): string {
   if (tableName === 'system_config' || tableName === 'config') return ', PRIMARY KEY ("key")';
-  if (
-    tableName === 'game_saves' ||
-    tableName === 'passive_teams' ||
-    tableName === 'war_factions' ||
-    tableName === 'war_coins' ||
-    tableName === 'daycare_upgrades' ||
-    tableName === 'ranked_queue'
-  ) {
+  if (USER_ID_PK_TABLES.has(tableName)) {
     return ', PRIMARY KEY ("user_id")';
   }
   if (tableName === 'guardian_captures')
@@ -67,7 +71,7 @@ function getPrimaryKeyClause(tableName: string, cols: readonly string[]): string
 
 function loadBackupIntoMemorySqlite(
   db: DatabaseSync,
-  backupData: Record<string, Record<string, unknown>[]>
+  backupData: Record<DisplayText, Record<string, unknown>[]>
 ): void {
   db.exec('PRAGMA foreign_keys = OFF;');
   db.exec('BEGIN TRANSACTION;');
@@ -172,8 +176,8 @@ function applyPendingBackupMigrations(db: DatabaseSync, appliedSet: ReadonlySet<
     } catch (migErr: unknown) {
       try {
         db.exec('ROLLBACK;');
-      } catch {
-        // catch-ok: rollback safety
+      } catch (rollbackErr) {
+        rollbackErr;
       }
       throw migErr;
     }
@@ -209,8 +213,8 @@ function cleanTableRow(tableName: string, r: DatabaseTableRow): Record<string, u
   return clean;
 }
 
-function extractUpgradedBackupTables(db: DatabaseSync): Record<string, unknown[]> {
-  const upgradedBackupData: Record<string, unknown[]> = {};
+function extractUpgradedBackupTables(db: DatabaseSync): Record<DisplayText, unknown[]> {
+  const upgradedBackupData: Record<DisplayText, unknown[]> = {};
   const tablesStmt = db.prepare(
     "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
   );
@@ -226,30 +230,20 @@ function extractUpgradedBackupTables(db: DatabaseSync): Record<string, unknown[]
 
 interface BackupObject {
   metadata?: { profile?: string; timestamp?: string; totalTables?: number; totalRows?: number };
-  data?: Record<string, Record<string, unknown>[]>;
+  data?: Record<DisplayText, Record<string, unknown>[]>;
   auth?: unknown;
 }
 
-export async function upgradeBackup(): Promise<string> {
+export async function upgradeBackup(options?: {
+  server?: string;
+  file?: string;
+}): Promise<string> {
   console.log(
     styleText('bold', '\n--- 🔄 DATABASE BACKUP UPGRADE & NORMALIZATION TOOL (Node.js 26+) ---')
   );
 
-  const rawArgs = process.argv.slice(2);
-  const normalized = rawArgs.map((a) => (a.includes('=') && !a.startsWith('-') ? `--${a}` : a));
-  const { values, positionals } = parseArgs({
-    args: normalized,
-    options: {
-      server: { type: 'string', short: 's' },
-      file: { type: 'string', short: 'f' }
-    },
-    allowPositionals: true,
-    strict: false
-  });
-
-  const serverArg = typeof values.server === 'string' ? values.server : undefined;
-  const fileArg =
-    typeof values.file === 'string' ? values.file : positionals.find((p) => p.endsWith('.json'));
+  const serverArg = options?.server;
+  const fileArg = options?.file;
   const targetBackupPath = await resolveTargetBackupPath(serverArg, fileArg);
 
   if (!targetBackupPath) {
@@ -326,18 +320,30 @@ export async function upgradeBackup(): Promise<string> {
   return outPath;
 }
 
-const isDirectRun =
-  process.argv[1] &&
-  (process.argv[1].endsWith('upgrade_backup.ts') || process.argv[1].includes('upgrade_backup.ts'));
-
-if (isDirectRun) {
-  upgradeBackup().catch((err) => {
-    console.error(
-      styleText(
-        'red',
-        `❌ Error fatal durante la actualización del respaldo: ${(err as Error).message}`
-      )
-    );
-    process.exit(1);
-  });
+export const command = defineCommand({
+  meta: {
+    name: 'upgrade-backup',
+    description: 'Actualizador y normalizador de respaldos JSON a la última versión del juego'
+  },
+  args: {
+    server: {
+      type: 'string',
+      description: 'Nombre del perfil de servidor (ej: server_franco)',
+      alias: 's'
+    },
+    file: {
+      type: 'string',
+      description: 'Ruta directa al archivo JSON de respaldo',
+      alias: 'f'
+    }
+  },
+  async run({ args }) {
+    await upgradeBackup({
+      server: args.server,
+      file: args.file
+    });
+  }
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
 }

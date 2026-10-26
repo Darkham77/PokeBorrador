@@ -1,7 +1,9 @@
-import type { SpriteFacingDirection } from './poiTypes.ts';
+import type { AssetUri, DisplayText } from '@francogp/auditor';
+
 import type { StructureTemplate } from '../../config/mapStructures.ts';
-import type { CanonicalThemeSource, CityGenerationConfig } from './adventureWorldTypes.ts';
 import type { TileCollision } from '../../logic/map/tilesRegistry.ts';
+import type { CanonicalThemeSource, CityGenerationConfig } from './adventureWorldTypes.ts';
+import type { SpriteFacingDirection } from './poiTypes.ts';
 
 export type CollisionType = 0 | 1 | 2 | 3; // 0: transitable, 1: colisión, 2: agua, 3: salto hacia abajo (ledge)
 
@@ -10,12 +12,12 @@ export type MapType = 'town' | 'route';
 export interface MapWarp {
   readonly x: number;
   readonly y: number;
-  readonly targetMapId: string; // domain-ok: Open dynamic map ID
-  readonly targetSpawnId: string; // domain-ok: Open dynamic spawn ID
+  readonly targetMapId: DisplayText;
+  readonly targetSpawnId: DisplayText;
 }
 
 export interface MapSpawn {
-  readonly id: string; // domain-ok: Open dynamic spawn ID
+  readonly id: DisplayText;
   readonly x: number;
   readonly y: number;
   readonly direction?: SpriteFacingDirection;
@@ -52,8 +54,8 @@ export interface ProceduralMapOptions {
 }
 
 export interface MapCell {
-  readonly tileId: string; // domain-ok: Open dynamic tile ID
-  readonly filePath: string; // domain-ok: Asset file path URI
+  readonly tileId: DisplayText;
+  readonly filePath: AssetUri;
   readonly collision: TileCollision;
 }
 

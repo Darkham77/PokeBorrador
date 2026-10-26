@@ -1,7 +1,5 @@
 import type { SupabaseClient, RealtimeChannel } from '@supabase/supabase-js';
-import { ProxyQuery } from './proxyQuery.ts';
-import { initSQLite } from './sqliteEngine.ts';
-import { logger } from '../utils/logger.ts';
+
 import type {
   DBConfig,
   SessionMode,
@@ -9,12 +7,16 @@ import type {
   DBCompatibilityResponse,
   DBResponse
 } from '@/types/system/database';
+
+import { logger } from '../utils/logger.ts';
+import { resolveInitialDbSession, createSupabaseClient } from './dbClientFactory.ts';
 import { createOfflineAuthApi } from './dbOfflineAuth.ts';
 import { createOfflineRealtimeChannel, createNoopRealtimeChannel } from './dbOfflineRealtime.ts';
-import { DBTimeCoordinator } from './dbTimeCoordinator.ts';
-import { DBSessionCoordinator } from './dbSessionCoordinator.ts';
-import { resolveInitialDbSession, createSupabaseClient } from './dbClientFactory.ts';
 import { executeRouterRpc } from './dbRpcDispatcher.ts';
+import { DBSessionCoordinator } from './dbSessionCoordinator.ts';
+import { DBTimeCoordinator } from './dbTimeCoordinator.ts';
+import { ProxyQuery } from './proxyQuery.ts';
+import { initSQLite } from './sqliteEngine.ts';
 
 export type { DBCompatibilityResponse };
 
@@ -23,15 +25,15 @@ export type { DBCompatibilityResponse };
  * Routes queries to Supabase (Cloud) OR SQLite (Local), NEVER both in the same session.
  */
 export class DBRouter {
-  config: DBConfig;
-  _realClient: SupabaseClient | null = null;
-  mode: SessionMode;
-  options: DBRouterOptions;
-  _initialized = false;
+  public config: DBConfig;
+  public _realClient: SupabaseClient | null = null;
+  public mode: SessionMode;
+  public options: DBRouterOptions;
+  public _initialized = false;
   private _timeCoord = new DBTimeCoordinator();
   private _sessionCoord = new DBSessionCoordinator();
 
-  constructor(
+  public constructor(
     config: DBConfig = { url: '', key: '' },
     mode: SessionMode = 'online',
     options: DBRouterOptions = {}
@@ -43,119 +45,121 @@ export class DBRouter {
     this.getTimeOffset = this.getTimeOffset.bind(this);
   }
 
-  get currentSessionId(): string | null {
+  public get currentSessionId(): string | null {
     return this._sessionCoord.currentSessionId;
   }
 
-  set currentSessionId(v: string | null) {
+  public set currentSessionId(v: string | null) {
     this._sessionCoord.currentSessionId = v;
   }
 
-  get userSubscription(): RealtimeChannel | null {
+  public get userSubscription(): RealtimeChannel | null {
     return this._sessionCoord.userSubscription;
   }
 
-  set userSubscription(v: RealtimeChannel | null) {
+  public set userSubscription(v: RealtimeChannel | null) {
     this._sessionCoord.userSubscription = v;
   }
 
-  get systemConfigSubscription(): RealtimeChannel | null {
+  public get systemConfigSubscription(): RealtimeChannel | null {
     return this._sessionCoord.systemConfigSubscription;
   }
 
-  set systemConfigSubscription(v: RealtimeChannel | null) {
+  public set systemConfigSubscription(v: RealtimeChannel | null) {
     this._sessionCoord.systemConfigSubscription = v;
   }
 
-  get _timeOffset(): number {
+  public get _timeOffset(): number {
     return this._timeCoord.timeOffset;
   }
 
-  set _timeOffset(v: number) {
+  public set _timeOffset(v: number) {
     this._timeCoord.setTimeOffset(v);
   }
 
-  updateConfig(config: DBConfig): void {
+  public updateConfig(config: DBConfig): void {
     this.config = config;
     this._realClient = null;
     logger.info('DBRouter', `Server configuration updated: ${config.url}`);
   }
 
-  _ensureClient(): SupabaseClient | null {
+  public _ensureClient(): SupabaseClient | null {
     if (!this._realClient) {
       this._realClient = createSupabaseClient(this.config);
     }
     return this._realClient;
   }
 
-  get realClient(): SupabaseClient | null {
+  public get realClient(): SupabaseClient | null {
     return this.mode === 'offline' ? null : this._ensureClient();
   }
 
-  get isLocal(): boolean {
+  public get isLocal(): boolean {
     return this.mode === 'offline';
   }
 
-  setTimeOffset(ms: number): void {
+  public setTimeOffset(ms: number): void {
     this._timeCoord.setTimeOffset(ms);
   }
 
-  setMockTime(dateStr: string): void {
+  public setMockTime(dateStr: string): void {
     this._timeCoord.setMockTime(dateStr);
   }
 
-  resetTime(): void {
+  public resetTime(): void {
     this._timeCoord.resetTime();
   }
 
-  getTimeOffset(): number {
+  public getTimeOffset(): number {
     return this._timeCoord.getTimeOffset();
   }
 
-  async initSession(userId: string, sessionId: string): Promise<void> {
+  public async initSession(userId: string, sessionId: string): Promise<void> {
     await this._sessionCoord.initSession(userId, sessionId, this.mode, this.realClient);
   }
 
-  initSystemConfigSubscription(): void {
+  public initSystemConfigSubscription(): void {
     this._sessionCoord.initSystemConfigSubscription(this.mode, this.realClient);
   }
 
-  handleSessionConflict(): void {
+  public handleSessionConflict(): void {
     this._sessionCoord.handleSessionConflict();
   }
 
-  setMode(mode: SessionMode): void {
+  public setMode(mode: SessionMode): void {
     if (this.mode === mode) return;
     logger.info('DBRouter', `Switching mode from ${this.mode} to ${mode.toUpperCase()}`); // text-ok: UI text display localization string
     this.mode = mode;
 
     if (mode === 'offline') {
-      void initSQLite(this.options);
+      initSQLite(this.options).catch((err) => {
+        logger.error('DBRouter', 'Failed to initialize SQLite on mode switch', err);
+      });
     }
   }
 
-  from(table: string): ProxyQuery {
+  public from(table: string): ProxyQuery {
     return new ProxyQuery(this, table);
   }
 
-  async getServerTime(): Promise<number> {
+  public async getServerTime(): Promise<number> {
     return this._timeCoord.getServerTime(this.mode, this.realClient);
   }
 
-  async _getRawServerTime(): Promise<number> {
+  public async _getRawServerTime(): Promise<number> {
     return this._timeCoord._getRawServerTime(this.mode, this.realClient);
   }
 
-  async rpc(name: string, params: Record<string, unknown> = {}): Promise<DBResponse> {
+  public async rpc(name: string, params: Record<string, unknown> = {}): Promise<DBResponse> {
     return executeRouterRpc(this.mode, this.realClient, name, params);
   }
 
-  get auth() {
+  public get auth(): SupabaseClient['auth'] | ReturnType<typeof createOfflineAuthApi> {
     const isE2E =
-      (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
+      (typeof globalThis.window !== 'undefined' && Boolean(globalThis.__E2E__)) ||
       (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
     const e2eDriver =
-      (typeof window !== 'undefined' && window.__E2E_DRIVER__) ||
+      (typeof globalThis.window !== 'undefined' && globalThis.__E2E_DRIVER__) ||
       (typeof process !== 'undefined' && process.env.SIM_DB_DRIVER) ||
       'sqlite';
     const isE2EPostgres = isE2E && e2eDriver === 'postgres';
@@ -174,7 +178,7 @@ export class DBRouter {
     return client.auth;
   }
 
-  channel(name: string): RealtimeChannel {
+  public channel(name: string): RealtimeChannel {
     if (this.mode === 'offline') {
       return createOfflineRealtimeChannel(name);
     }

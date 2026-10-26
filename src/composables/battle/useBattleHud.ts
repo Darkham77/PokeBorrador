@@ -1,8 +1,10 @@
-import { computed, toValue, type MaybeRefOrGetter } from 'vue';
-import { useGameStore } from '@/stores/game';
-import type { useBattleStore } from '@/stores/battle/battle';
+import { computed, toValue, type ComputedRef, type MaybeRefOrGetter } from 'vue';
+
 import type { useBattleAnimations } from '@/composables/battle/useBattleAnimations';
+import type { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import {
   checkEnemyTechnicalHidden,
   checkFloatingState,
@@ -34,11 +36,29 @@ function isTrainerMode(state: TrainerModeCheckable | null | undefined): boolean 
  * Composable to manage HUD visibility and states in battle.
  * Centralizes suppression logic to prevent cross-side interference.
  */
+export interface UseBattleHudReturn {
+  isEnemyHudSuppressed: ComputedRef<boolean>;
+  isPlayerHudSuppressed: ComputedRef<boolean>;
+  activeEnemyHudData: ComputedRef<Pokemon | null>;
+  shouldScrambleEnemyData: ComputedRef<boolean>;
+  activeEnemyData: ComputedRef<Pokemon | null>;
+  activePlayerData: ComputedRef<Pokemon | null>;
+  activeEnemyIsSilhouette: ComputedRef<boolean>;
+  bushIsBehind: ComputedRef<boolean>;
+  enemyIsJumping: ComputedRef<boolean>;
+  isInstantBush: ComputedRef<boolean>;
+  enemyIsFloating: ComputedRef<boolean>;
+  isWildEncounter: ComputedRef<boolean>;
+  isEnemyTechnicalHidden: ComputedRef<boolean>;
+  isPlayerTechnicalHidden: ComputedRef<boolean>;
+  shouldShowEncounterLayers: ComputedRef<boolean>;
+}
+
 export function useBattleHud(
   animations: ReturnType<typeof useBattleAnimations>,
   battleStore: ReturnType<typeof useBattleStore>,
   enemyRef: MaybeRefOrGetter<Pokemon | null | undefined>
-) {
+): UseBattleHudReturn {
   const { isFaintInProgress, faintedPokemonSnapshot, caughtPokemonSnapshot, seats } = animations;
 
   const isTrainer = computed(() => isTrainerMode(toValue(battleStore.state)));
@@ -94,9 +114,9 @@ export function useBattleHud(
     );
   });
 
-  const activePlayerHudData = computed(() => {
+  const activePlayerHudData = computed<Pokemon | null>(() => {
     if (isFaintInProgress.value && faintedPokemonSnapshot.value?.side === 'player')
-      return faintedPokemonSnapshot.value;
+      return (faintedPokemonSnapshot.value as Pokemon) || null;
     const s = toValue(battleStore.state);
     return s ? s.player : null;
   });

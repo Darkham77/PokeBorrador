@@ -1,8 +1,8 @@
 import { getItemById, isItemId, type ItemId } from '@/data/inventory/items';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { hasMaxIV } from '@/logic/pokemon/statsMath.ts';
 import { isReadyForFriendshipEvolution } from '@/logic/pokemon/friendshipLogic.ts';
+import { hasMaxIV } from '@/logic/pokemon/statsMath.ts';
 import { FRIENDSHIP_BOUNDS } from '@/types/pokemon/friendship.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export const POKEMON_MANUAL_TAG_IDS = [
   'fav',
@@ -187,6 +187,17 @@ export const POKEMON_BADGES: Record<PokemonBadgeType, TagDefinition> = {
  * @param {Object} pokemon
  * @returns {Array} Array of badge/tag objects
  */
+type SkippedManualTag = 'iv31' | 'hatched' | 'box';
+const SKIPPED_MANUAL_TAGS: ReadonlySet<string> = new Set<SkippedManualTag>([
+  'iv31',
+  'hatched',
+  'box'
+]);
+
+function isSkippedManualTag(tag: string): tag is SkippedManualTag {
+  return SKIPPED_MANUAL_TAGS.has(tag);
+}
+
 export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDefinition[] {
   if (!pokemon) return [];
   const badges: TagDefinition[] = [];
@@ -244,7 +255,7 @@ export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDef
     tags.forEach((tagId) => {
       // Avoid duplicating iv31 or hatched if already added automatically
       // Also ignore 'box' tag as it's being deprecated/replaced
-      if (tagId === 'iv31' || tagId === 'hatched' || tagId === 'box') return;
+      if (isSkippedManualTag(tagId)) return;
 
       if (isPokemonManualTagId(tagId)) {
         const def = TAG_DEFINITIONS[tagId];

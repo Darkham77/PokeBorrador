@@ -1,9 +1,10 @@
-import type { BattleContext } from '@/types/battle/battleContext';
-import type { BattleOutcomeFlags } from '@/types/battle/battle';
-import { calculateBattleRewards } from './rewardsDistributor.ts';
+import { incrementRecordKey, addToField } from '@/logic/utils/mapUtils';
 import { useBreedingStore } from '@/stores/breeding';
 import { useUIStore } from '@/stores/ui';
-import { incrementRecordKey, addToField } from '@/logic/utils/mapUtils';
+import type { BattleOutcomeFlags } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
+
+import { calculateBattleRewards } from './rewardsDistributor.ts';
 
 function hasExitedBattle(ctx: BattleContext): boolean {
   return ctx.fsm.currentState.value === ctx.BATTLE_STATES.EXIT_BATTLE;
@@ -13,7 +14,7 @@ async function handleStolenResources(
   ctx: BattleContext,
   active: NonNullable<BattleContext['activeBattle']['value']>,
   uiStore: ReturnType<typeof useUIStore>
-) {
+): Promise<void> {
   if (!active.stolenResources) return;
   const stolen = active.stolenResources;
   if (stolen.money && stolen.money > 0) {
@@ -25,9 +26,9 @@ async function handleStolenResources(
     try {
       const { getItemById, requireItemId } = await import('@/data/inventory/items');
       for (const [itemId, qty] of Object.entries(stolen.items || {})) {
-        if (qty && (qty as number) > 0) {
+        if (qty && qty > 0) {
           const validId = requireItemId(itemId);
-          incrementRecordKey(ctx.gs.state.inventory, validId, qty as number);
+          incrementRecordKey(ctx.gs.state.inventory, validId, qty);
 
           const itemDef = getItemById(validId);
           ctx.addLog(`¡Recuperaste tu objeto robado: ${itemDef.name}!`, 'log-success', 'player');
@@ -41,7 +42,7 @@ async function handleStolenResources(
   delete active.stolenResources;
 }
 
-function handleHatchTimers(active: NonNullable<BattleContext['activeBattle']['value']>) {
+function handleHatchTimers(active: NonNullable<BattleContext['activeBattle']['value']>): void {
   try {
     const breedingStore = useBreedingStore();
     if (active.isGym) {
@@ -56,14 +57,14 @@ function handleHatchTimers(active: NonNullable<BattleContext['activeBattle']['va
   }
 }
 
-import { resolveFieldBattleRewards } from '@/logic/rules/fieldRulesCoordinator';
 import { getItemById } from '@/data/inventory/items';
+import { resolveFieldBattleRewards } from '@/logic/rules/fieldRulesCoordinator';
 
 async function handleFieldPassiveRewards(
   ctx: BattleContext,
   active: NonNullable<BattleContext['activeBattle']['value']>,
   uiStore: ReturnType<typeof useUIStore>
-) {
+): Promise<void> {
   const isWild = !active.isTrainer && !active.isGym && !active.isPvP;
   const results = resolveFieldBattleRewards({
     team: ctx.gs.state.team,
@@ -110,7 +111,7 @@ async function handleFieldPassiveRewards(
 export async function processBattleRewardsPhase(
   ctx: BattleContext,
   { win, fled }: BattleOutcomeFlags
-) {
+): Promise<void> {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx;
   const fsm = ctx.fsm;
   const active = ctx.activeBattle.value;
@@ -122,7 +123,7 @@ export async function processBattleRewardsPhase(
     active.rewardsProcessed = true;
     const isWild = !active.isTrainer && !active.isGym && !active.isPvP;
     if (!isWild) {
-      void ctx.audio.play('victoryTrainer');
+      await ctx.audio.play('victoryTrainer');
     }
     await calculateBattleRewards(ctx);
     if (ctx.activeBattle.value !== active || hasExitedBattle(ctx)) return;

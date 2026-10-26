@@ -7,6 +7,7 @@
  */
 
 import { defineBasicLoader } from 'vue-router/experimental';
+
 import { useSocialStore } from '@/stores/social/social';
 
 interface SocialLoaderData {

@@ -1,27 +1,29 @@
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getActivePinia } from 'pinia';
+
+import { requireAbilityId } from '@/data/battle/abilities';
 import { NATURES, toNatureId } from '@/data/battle/natures';
+import type { ItemId } from '@/data/inventory/items';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { DEFAULT_FALLBACK_BASE_STAT, DEFAULT_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay';
 import { getMovesAtLevel, initializePokemonVigor } from '@/logic/pokemon/pokemonUtils';
-import { getActivePinia } from 'pinia';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { getExpNeededPure, calcStatsPure } from './statsMath.ts';
-import { createDefaultEvs } from './evMath.ts';
-import type { ItemId } from '@/data/inventory/items';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { toID } from '@/logic/utils/strings.ts';
-import { requireAbilityId } from '@/data/battle/abilities';
-import { assignGender } from './pokemonGender.ts';
-import { getWildHeldItem } from './pokemonWildHeldItems.ts';
-import { getPokemonPhysicalHeight, getPokemonPhysicalWeight } from './physicalDimensionsMath.ts';
 import { getServerInstant } from '@/logic/utils/timeUtils';
-import { validatePokemon } from './pokemonValidator.ts';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+
+import { createDefaultEvs } from './evMath.ts';
+import { getPokemonPhysicalHeight, getPokemonPhysicalWeight } from './physicalDimensionsMath.ts';
 import {
   computeCreationIVs,
   computeCreationShiny,
   type PokemonCreationOptions
 } from './pokemonCreationHelper.ts';
+import { assignGender } from './pokemonGender.ts';
 import { levelUpPokemon as executeLevelUpPokemon } from './pokemonLevelUpHelper.ts';
+import { validatePokemon } from './pokemonValidator.ts';
+import { getWildHeldItem } from './pokemonWildHeldItems.ts';
+import { getExpNeededPure, calcStatsPure } from './statsMath.ts';
 
 export { assignGender, ensurePokemonGender, isGenderlessSpeciesId } from './pokemonGender.ts';
 export {
@@ -147,7 +149,7 @@ export function makePokemon(
     ability,
     gender,
     isShiny,
-    moves: getMovesAtLevel(id, level, bypass) as Move[],
+    moves: getMovesAtLevel(id, level, bypass),
     status: '',
     sleepTurns: 0,
     friendship: DEFAULT_FRIENDSHIP_VALUE,

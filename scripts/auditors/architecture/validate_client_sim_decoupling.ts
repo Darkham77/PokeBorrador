@@ -23,7 +23,9 @@ import {
   type SharedAstContext,
   normalizePosixPath,
   AuditedDocument,
-  createRuleCapabilities
+  createRuleCapabilities,
+  getAuditConfig,
+  DEFAULT_AUDIT_CONFIG
 } from '@francogp/auditor';
 
 enableCompileCache();
@@ -242,7 +244,16 @@ export function checkDistAssetsForSimChunks(
 }
 
 export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDecouplingRuleId> {
+  private readonly scannableRoots: readonly string[];
+
   constructor() {
+    const config = getAuditConfig();
+    const scannableRoots = config.paths?.srcRoots ?? DEFAULT_AUDIT_CONFIG.paths.srcRoots;
+    const includes = [
+      ...scannableRoots.map((r) => path.posix.join(r, '**/*.{ts,vue,js}')),
+      'vite.config.ts'
+    ];
+
     super({
       ruleCapabilities: createRuleCapabilities(CLIENT_SIM_DECOUPLING_RULES, {
         speed: 'light',
@@ -265,6 +276,7 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
       family: 'architecture',
       packageName: 'Showdown',
       usesThirdPartyTool: false,
+      requiredPermissions: [],
       ruleIds: CLIENT_SIM_DECOUPLING_RULES,
       ruleDescriptions: CLIENT_SIM_DECOUPLING_DESCRIPTIONS,
       ruleRemediations: {
@@ -277,11 +289,13 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
         'client-sim-chunk-present':
           'Verifica que dist/ no incluya código directo de simulación en el hilo principal.'
       },
+      remediationPhase: 'contracts',
       requiresAst: true,
       coverage: {
-        include: ['src/**/*.{ts,vue,js}', 'vite.config.ts']
+        include: includes
       }
     });
+    this.scannableRoots = scannableRoots;
   }
 
   public override async runAudit(astContext?: SharedAstContext): Promise<void> {
@@ -295,7 +309,7 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
     }[] = [];
 
     await this.runSubAuditor('client-sim-value-import', async () => {
-      const files = await this.context.collectFiles(['src'], new Set(['.ts', '.vue', '.js']));
+      const files = await this.context.collectFiles(this.scannableRoots, new Set(['.ts', '.vue', '.js']));
       for (const file of files) {
         const relPath = normalizePosixPath(path.relative(cwd, file));
         if (isWorkerBoundaryFile(relPath)) {
@@ -400,10 +414,4 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (
-  process.argv[1] &&
-  import.meta.filename &&
-  path.basename(process.argv[1]) === path.basename(import.meta.filename)
-) {
-  await BaseAuditor.runCli(new ValidateClientSimDecouplingAuditor());
-}
+await BaseAuditor.runCliIfMain(import.meta.url, new ValidateClientSimDecouplingAuditor());

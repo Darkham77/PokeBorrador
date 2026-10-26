@@ -1,6 +1,7 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { hasMaxIV } from '@/logic/pokemon/statsMath.ts';
 import { getItemById } from '@/data/inventory/items.ts';
+import { hasMaxIV } from '@/logic/pokemon/statsMath.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import type { MarketListing, MarketFilters, MarketViewContext } from './market.ts';
 
 function matchesExploreListingTypeAndPrice(

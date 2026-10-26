@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * scripts/database/migrate_backup_saves_to_showdown.ts
  *
@@ -18,7 +19,7 @@ interface BackupPoke {
   name?: string;
   species?: string;
   moves?: Array<{ id?: string; name?: string }>;
-  abilities?: string[] | Record<string, string>;
+  abilities?: string[] | Record<DisplayText, string>;
   ability?: string;
   nature?: string;
 }
@@ -38,7 +39,7 @@ interface BackupPayload {
   };
 }
 
-const SPECIES_TO_SHOWDOWN: Record<string, string> = {
+const SPECIES_TO_SHOWDOWN: Record<DisplayText, string> = {
   '1': 'bulbasaur',
   '2': 'ivysaur',
   '3': 'venusaur',
@@ -297,7 +298,7 @@ const SPECIES_TO_SHOWDOWN: Record<string, string> = {
   '351_3': 'castform-snowy'
 };
 
-const ABILITY_TO_SHOWDOWN: Record<string, string> = {
+const ABILITY_TO_SHOWDOWN: Record<DisplayText, string> = {
   Espesura: 'overgrow',
   Clorofila: 'chlorophyll',
   'Mar llamas': 'blaze',
@@ -368,7 +369,7 @@ const ABILITY_TO_SHOWDOWN: Record<string, string> = {
   Entusiasmo: 'hustle'
 };
 
-const NATURE_TO_SHOWDOWN: Record<string, string> = {
+const NATURE_TO_SHOWDOWN: Record<DisplayText, string> = {
   activa: 'active',
   huraña: 'lonely',
   audaz: 'brave',
@@ -416,7 +417,7 @@ function canLearnMove(rawSpecies: string, rawMove: string): boolean {
 }
 
 function parseSpeciesLearnsetMoves(
-  learnset: Record<string, string[]>,
+  learnset: Record<DisplayText, string[]>,
   level: number,
   moves: Array<{ id: string; lv: number }>
 ): void {
@@ -459,14 +460,14 @@ function normalize(str: string): string {
 }
 
 function buildAbilityMap(
-  showdownAbilities: Record<string, { name?: string }>
+  showdownAbilities: Record<DisplayText, { name?: string }>
 ): Map<string, string> {
   const abilityMap = new Map<string, string>();
   for (const [esName, enId] of Object.entries(ABILITY_TO_SHOWDOWN)) {
     abilityMap.set(normalize(esName), enId);
     abilityMap.set(normalize(enId), enId);
   }
-  const legacyAbilities: Record<string, string> = {
+  const legacyAbilities: Record<DisplayText, string> = {
     metamorfosis: 'shedskin',
     escudopolvo: 'shielddust',
     polvoescudo: 'shielddust',
@@ -506,7 +507,7 @@ function buildNatureMap(): Map<string, string> {
     natureMap.set(normalize(esName), enId);
     natureMap.set(normalize(enId), enId);
   }
-  const legacyNatures: Record<string, string> = {
+  const legacyNatures: Record<DisplayText, string> = {
     activa: 'active',
     activo: 'active',
     hurana: 'lonely',
@@ -558,13 +559,13 @@ function buildNatureMap(): Map<string, string> {
   return natureMap;
 }
 
-function buildMoveMap(showdownMoves: Record<string, { name?: string }>): Map<string, string> {
+function buildMoveMap(showdownMoves: Record<DisplayText, { name?: string }>): Map<string, string> {
   const moveMap = new Map<string, string>();
   for (const [id, data] of Object.entries(showdownMoves)) {
     moveMap.set(id, id);
     if (data.name) moveMap.set(normalize(data.name), id);
   }
-  const legacyMoves: Record<string, string> = {
+  const legacyMoves: Record<DisplayText, string> = {
     destructor: 'pound',
     arena: 'sandattack',
     portazo: 'slam',
@@ -891,8 +892,8 @@ async function main() {
     'utf8'
   );
   const showdownDB = {
-    abilities: JSON.parse(rawAbilities) as Record<string, { name?: string }>, // open-record: Generic key-value data dictionary container
-    moves: JSON.parse(rawMoves) as Record<string, { name?: string }> // open-record: Generic key-value data dictionary container
+    abilities: JSON.parse(rawAbilities) as Record<DisplayText, { name?: string }>, // open-record: Generic key-value data dictionary container
+    moves: JSON.parse(rawMoves) as Record<DisplayText, { name?: string }> // open-record: Generic key-value data dictionary container
   };
 
   const abilityMap = buildAbilityMap(showdownDB.abilities);

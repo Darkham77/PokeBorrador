@@ -8,8 +8,6 @@
  * and guaranteed 100% transitable door-to-street connectivity.
  */
 
-import type { CityGenerationConfig, UrbanScale } from '../../types/map/adventureWorldTypes.ts';
-import type { CardinalDirection } from '../../types/map/poiTypes.ts';
 import {
   KANTO_HOUSE_SMALL,
   KANTO_HOUSE_BLUE,
@@ -21,9 +19,11 @@ import {
   PLAZA_PARK,
   type StructureTemplate
 } from '../../config/mapStructures.ts';
-import type { TileCollision } from './tilesRegistry.ts';
+import type { CityGenerationConfig, UrbanScale } from '../../types/map/adventureWorldTypes.ts';
+import type { CardinalDirection } from '../../types/map/poiTypes.ts';
 import type { ThemeBiomePalette, MapCell, MapSpawn, MapWarp } from './proceduralMapGenerator.ts';
 import { placeScenicProps, type PropsPlacementResult } from './propsPlacementEngine.ts';
+import type { TileCollision } from './tilesRegistry.ts';
 
 const PARK_BUSH_DENSITY = 0.25;
 
@@ -465,6 +465,38 @@ export function generateStreetNetwork(
   };
 }
 
+function isRectAreaAvailable(
+  startX: number,
+  startY: number,
+  w: number,
+  h: number,
+  isPathCell: readonly (readonly boolean[])[],
+  claimed: readonly (readonly boolean[])[]
+): boolean {
+  for (let ly = startY; ly < startY + h; ly++) {
+    for (let lx = startX; lx < startX + w; lx++) {
+      if (isPathCell[ly]![lx] || claimed[ly]![lx]) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function claimRectArea(
+  startX: number,
+  startY: number,
+  w: number,
+  h: number,
+  claimed: boolean[][]
+): void {
+  for (let ly = startY; ly < startY + h; ly++) {
+    for (let lx = startX; lx < startX + w; lx++) {
+      claimed[ly]![lx] = true;
+    }
+  }
+}
+
 /**
  * Extracts candidate rectangular building lots along street edges.
  */
@@ -487,18 +519,7 @@ export function extractAvailableLots(
     if (lotY < PADDING) continue;
 
     for (let x = PADDING; x <= mapWidth - LOT_W - PADDING; x++) {
-      let isFree = true;
-      for (let ly = lotY; ly < lotY + LOT_H; ly++) {
-        for (let lx = x; lx < x + LOT_W; lx++) {
-          if (isPathCell[ly]![lx] || claimed[ly]![lx]) {
-            isFree = false;
-            break;
-          }
-        }
-        if (!isFree) break;
-      }
-
-      if (!isFree) continue;
+      if (!isRectAreaAvailable(x, lotY, LOT_W, LOT_H, isPathCell, claimed)) continue;
 
       const roadConnectY = lotY + LOT_H;
       if (roadConnectY < mapHeight) {
@@ -516,12 +537,7 @@ export function extractAvailableLots(
           roadConnectY
         });
 
-        for (let ly = lotY; ly < lotY + LOT_H; ly++) {
-          for (let lx = x; lx < x + LOT_W; lx++) {
-            claimed[ly]![lx] = true;
-          }
-        }
-
+        claimRectArea(x, lotY, LOT_W, LOT_H, claimed);
         x += LOT_W;
       }
     }
@@ -533,18 +549,7 @@ export function extractAvailableLots(
     if (lotY + LOT_H > mapHeight - PADDING) continue;
 
     for (let x = PADDING; x <= mapWidth - LOT_W - PADDING; x++) {
-      let isFree = true;
-      for (let ly = lotY; ly < lotY + LOT_H; ly++) {
-        for (let lx = x; lx < x + LOT_W; lx++) {
-          if (isPathCell[ly]![lx] || claimed[ly]![lx]) {
-            isFree = false;
-            break;
-          }
-        }
-        if (!isFree) break;
-      }
-
-      if (!isFree) continue;
+      if (!isRectAreaAvailable(x, lotY, LOT_W, LOT_H, isPathCell, claimed)) continue;
 
       const doorX = x + Math.floor(LOT_W / 2);
       const doorY = lotY + LOT_H - 1;
@@ -561,12 +566,7 @@ export function extractAvailableLots(
         roadConnectY
       });
 
-      for (let ly = lotY; ly < lotY + LOT_H; ly++) {
-        for (let lx = x; lx < x + LOT_W; lx++) {
-          claimed[ly]![lx] = true;
-        }
-      }
-
+      claimRectArea(x, lotY, LOT_W, LOT_H, claimed);
       x += LOT_W;
     }
   }
@@ -680,7 +680,7 @@ function stampStructureWithDoorway(
         elevationLayer[gy]![gx] = makeCell(tileId, tileCol);
         collisionGrid[gy]![gx] = tileCol;
       }
-      if (objectLayer[gy]) objectLayer[gy]![gx] = null;
+      if (objectLayer[gy]) objectLayer[gy][gx] = null;
     }
   }
 
@@ -742,7 +742,7 @@ function stampStructureAt(
         elevationLayer[gy]![gx] = makeCell(tileId, tileCol);
         collisionGrid[gy]![gx] = tileCol;
       }
-      if (objectLayer[gy]?.[gx]) objectLayer[gy]![gx] = null;
+      if (objectLayer[gy]?.[gx]) objectLayer[gy][gx] = null;
     }
   }
 }

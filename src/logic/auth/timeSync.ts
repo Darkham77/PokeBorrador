@@ -1,13 +1,14 @@
 import { gsap } from 'gsap';
-import { safeStorage } from '@/logic/utils/storage.ts';
+
 import { logger } from '@/logic/utils/logger.ts';
+import { safeStorage } from '@/logic/utils/storage.ts';
 import { setServerTimeOffsetNanoseconds, setServerTimeSynced } from '@/logic/utils/timeUtils.ts';
 
 const SERVER_SYNC_TIMEOUT_SEC = 3;
 
 export async function syncServerTime(): Promise<void> {
   if (
-    typeof window !== 'undefined' &&
+    typeof globalThis.window !== 'undefined' &&
     safeStorage.getItem('pokevicio_session_mode') === 'offline'
   ) {
     setServerTimeSynced(true);
@@ -45,7 +46,7 @@ export async function syncServerTime(): Promise<void> {
     );
   } catch {
     if (
-      typeof window !== 'undefined' &&
+      typeof globalThis.window !== 'undefined' &&
       safeStorage.getItem('pokevicio_session_mode') !== 'offline'
     ) {
       logger.warn('TIME', 'Failed to sync with server, using local time.');

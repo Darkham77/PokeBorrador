@@ -1,23 +1,23 @@
+import { getItemName, requireItemId, isItemId, type ItemId } from '@/data/inventory/items';
 import { getEffectiveStatPure, type PurePokemon } from '@/logic/battle/battleMath';
 import type { PureBattleWeather } from '@/logic/battle/battleMathTypes';
-import { calculateDamageForTooltip, type SmogonTooltipResult } from '@/logic/battle/smogonAdapter';
-import { getDayCycle, type DayPhase } from '@/logic/utils/timeUtils';
-import type { Move, Pokemon } from '@/types/pokemon/pokemon';
-import { getItemName, requireItemId, isItemId, type ItemId } from '@/data/inventory/items';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type {
-  BattleStages,
-  BattleState,
-  BattleConditionKey,
-  BattleTimedCondition
-} from '@/types/battle/battle';
-import { getMechanicalWeather, type WeatherMechanical } from '@/logic/weather/weatherRegistry';
 import {
   calculateMovePower,
   calculateMoveAccuracy,
   calculateCritChance,
   calculateMoveEffectivenessAndDamage
 } from '@/logic/battle/moveTooltipMath';
+import { calculateDamageForTooltip, type SmogonTooltipResult } from '@/logic/battle/smogonAdapter';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getDayCycle, type DayPhase } from '@/logic/utils/timeUtils';
+import { getMechanicalWeather, type WeatherMechanical } from '@/logic/weather/weatherRegistry';
+import type {
+  BattleStages,
+  BattleState,
+  BattleConditionKey,
+  BattleTimedCondition
+} from '@/types/battle/battle';
+import type { Move, Pokemon } from '@/types/pokemon/pokemon';
 
 type TooltipMoveData = Partial<
   Pick<Move, 'cat' | 'type' | 'power' | 'acc' | 'effect' | 'priority'>
@@ -84,7 +84,18 @@ export function applyChoiceItemModifier(
     : { type: 'boosted', text: `Objeto: ${itemName}${desc}.` };
 }
 
-function resolveTooltipMoveData(move: Move) {
+export interface ResolvedTooltipMoveData {
+  md: TooltipMoveData;
+  basePower: number;
+  isStatus: boolean;
+  moveType: string;
+  category: string;
+  isPhysical: boolean;
+  isSpecial: boolean;
+  priority: number;
+}
+
+function resolveTooltipMoveData(move: Move): ResolvedTooltipMoveData {
   const moveIdLookup = move.id || '';
   const moveData = moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) : undefined;
   const md: TooltipMoveData = moveData
@@ -139,7 +150,7 @@ function resolveTooltipSmogonCalc(
   battleState: BattleState | null | undefined,
   playerStages: Partial<BattleStages>,
   enemyStages: Partial<BattleStages>
-) {
+): SmogonTooltipResult | null {
   const { isStatus, isGym } = flags;
   if (isStatus || !defender || basePower <= 0) {
     return null;
@@ -175,7 +186,7 @@ interface TooltipPowerInput {
   class: string;
 }
 
-function formatTooltipPower(power: TooltipPowerInput, isStatus: boolean) {
+function formatTooltipPower(power: TooltipPowerInput, isStatus: boolean): TooltipPowerInput {
   const isZeroOrStatus = isStatus || power.base === 0;
   return {
     ...power,
@@ -199,11 +210,18 @@ const DEFAULT_TOOLTIP_STAGES = {
   spikes: 0
 };
 
+export interface ResolvedTooltipStages {
+  playerStageFull: Partial<BattleStages>;
+  enemyStageFull: Partial<BattleStages>;
+  playerStagesEff: { atk: number | undefined } | null;
+  enemyStagesEff: { def: number | undefined } | null;
+}
+
 function resolveTooltipStages(
   playerStages: Partial<BattleStages> | null | undefined,
   enemyStages: Partial<BattleStages> | null | undefined,
   isPhysical: boolean
-) {
+): ResolvedTooltipStages {
   const playerStageFull = playerStages ?? DEFAULT_TOOLTIP_STAGES;
   const enemyStageFull = enemyStages ?? DEFAULT_TOOLTIP_STAGES;
   const playerStagesEff =
@@ -303,7 +321,21 @@ function calculateDefenderStatDisplay(
   };
 }
 
-export function buildTooltipDamageRange(smogonResult: SmogonTooltipResult | null) {
+export interface TooltipDamageRange {
+  normalMin: number;
+  normalMax: number;
+  normalPctMin: number;
+  normalPctMax: number;
+  critMin: number;
+  critMax: number;
+  critPctMin: number;
+  critPctMax: number;
+  koChanceText: string;
+}
+
+export function buildTooltipDamageRange(
+  smogonResult: SmogonTooltipResult | null
+): TooltipDamageRange | null {
   if (!smogonResult) return null;
   return {
     normalMin: smogonResult.minDmg,
@@ -318,10 +350,17 @@ export function buildTooltipDamageRange(smogonResult: SmogonTooltipResult | null
   };
 }
 
+export interface TooltipSpeedInfo {
+  attackerSpeed: number;
+  defenderSpeed: number;
+  outspeeds: boolean;
+  priority: number;
+}
+
 export function buildTooltipSpeedInfo(
   smogonResult: SmogonTooltipResult | null,
   movePriority: number
-) {
+): TooltipSpeedInfo | null {
   if (!smogonResult) return null;
   return {
     attackerSpeed: smogonResult.attackerSpeed,
@@ -331,7 +370,26 @@ export function buildTooltipSpeedInfo(
   };
 }
 
-function buildTooltipTacticalInfo(smogonResult: SmogonTooltipResult | null) {
+export interface TooltipTacticalInfo {
+  hasAssaultVest?: boolean;
+  hasEviolite?: boolean;
+  attackerWeight?: number;
+  defenderWeight?: number;
+  overrideOffensiveStat?: string;
+  overrideDefensiveStat?: string;
+  ignoreDefensive?: boolean;
+  breaksProtect?: boolean;
+  hasCrashDamage?: boolean;
+  terrainReductions: string[];
+  isLeechSeedActive?: boolean;
+  isForesightActive?: boolean;
+  attackerTera?: string;
+  defenderTera?: string;
+}
+
+function buildTooltipTacticalInfo(
+  smogonResult: SmogonTooltipResult | null
+): TooltipTacticalInfo | null {
   if (!smogonResult) return null;
   return {
     hasAssaultVest: smogonResult.hasAssaultVest,
@@ -372,12 +430,29 @@ export function createTooltipBattleContext(
   const isGym = Boolean(battleState?.isGym);
   const rawWeather = isGym ? null : (battleState?.weather ?? null);
   const weather: PureBattleWeather | null = rawWeather
-    ? { type: rawWeather.type as PureBattleWeather['type'], turns: rawWeather.turns }
+    ? { type: rawWeather.type, turns: rawWeather.turns }
     : null;
   const mechWeather = getMechanicalWeather(weather?.type);
   const cycle = getDayCycle();
 
   return { attacker, defender, isGym, weather, mechWeather, cycle, weatherInfo: weather };
+}
+
+export interface ComputedMoveActiveDetails {
+  isStatus: boolean;
+  power: TooltipPowerInput;
+  accuracy: ReturnType<typeof calculateMoveAccuracy>;
+  effectiveness: { value: number; label: string; class: string } | null;
+  critChance: ReturnType<typeof calculateCritChance>;
+  damageRange: TooltipDamageRange | null;
+  attackerStat: TooltipStatDisplay | null;
+  defenderStat: TooltipStatDisplay | null;
+  recovery: { min: number; max: number; text: string } | null;
+  recoil: { min: number; max: number; text: string } | null;
+  fieldConditions: string[];
+  smogonDesc: string;
+  speedInfo: TooltipSpeedInfo | null;
+  tacticalInfo: TooltipTacticalInfo | null;
 }
 
 export function computeMoveActiveDetails(
@@ -386,15 +461,15 @@ export function computeMoveActiveDetails(
   battleState: BattleState | null | undefined,
   playerStages: Partial<BattleStages> | undefined,
   enemyStages: Partial<BattleStages> | undefined
-) {
+): ComputedMoveActiveDetails {
   const { attacker, defender, isGym, weather, mechWeather, cycle, weatherInfo } = ctx;
   const { md, basePower, isStatus, moveType, isPhysical, isSpecial, priority } =
     resolveTooltipMoveData(move);
 
   const power = calculateMovePower(
     move,
-    attacker as PurePokemon,
-    defender as PurePokemon | null,
+    attacker,
+    defender,
     mechWeather,
     cycle,
     basePower,
@@ -411,7 +486,7 @@ export function computeMoveActiveDetails(
     enemyStages?.eva ?? 0
   );
 
-  const critChance = calculateCritChance(attacker as PurePokemon, defender as PurePokemon | null);
+  const critChance = calculateCritChance(attacker, defender);
 
   const { playerStageFull, enemyStageFull, playerStagesEff, enemyStagesEff } = resolveTooltipStages(
     playerStages,
@@ -422,8 +497,8 @@ export function computeMoveActiveDetails(
   const { effectiveness } = calculateMoveEffectivenessAndDamage(
     move,
     md,
-    attacker as PurePokemon,
-    defender as PurePokemon | null,
+    attacker,
+    defender,
     weather,
     cycle,
     basePower,
@@ -450,15 +525,15 @@ export function computeMoveActiveDetails(
     critChance,
     damageRange: buildTooltipDamageRange(smogonResult),
     attackerStat: calculateAttackerStatDisplay(
-      attacker as PurePokemon,
-      defender as PurePokemon | null,
+      attacker,
+      defender,
       { isPhysical, isSpecial, isGym },
       playerStages,
       weatherInfo,
       cycle
     ),
     defenderStat: calculateDefenderStatDisplay(
-      defender as PurePokemon | null,
+      defender,
       { isPhysical, isSpecial, isGym },
       enemyStages,
       weatherInfo,

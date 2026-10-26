@@ -3,6 +3,7 @@ import {
   KALOS_GENERATION_NUM,
   PALDEA_GENERATION_NUM
 } from '@/logic/constants/gameplay.ts';
+
 import { isWeatherId, type WeatherId, type ShowdownWeatherId } from './weatherRegistry.ts';
 
 const STATIC_OFFICIAL_MAP: Partial<Record<WeatherId, ShowdownWeatherId>> = {
@@ -13,6 +14,15 @@ const STATIC_OFFICIAL_MAP: Partial<Record<WeatherId, ShowdownWeatherId>> = {
   sandstorm: 'sandstorm',
   dust_storm: 'sandstorm'
 };
+
+const FROZEN_WEATHER_VALUES = [
+  'snow',
+  'hail',
+  'blizzard',
+  'cold',
+  'coldwave'
+] as const satisfies readonly WeatherId[];
+const FROZEN_WEATHERS: ReadonlySet<string> = new Set<string>(FROZEN_WEATHER_VALUES);
 
 export function mapVisualToOfficialWeather(
   visualWeather: string | null | undefined,
@@ -28,13 +38,7 @@ export function mapVisualToOfficialWeather(
   if (lower === 'heavy_rain') return gen >= KALOS_GENERATION_NUM ? 'primordialsea' : 'raindance';
   if (lower === 'intense_sun') return gen >= KALOS_GENERATION_NUM ? 'desolateland' : 'sunnyday';
   if (lower === 'strong_winds') return gen >= KALOS_GENERATION_NUM ? 'deltastream' : 'none';
-  if (
-    lower === 'snow' ||
-    lower === 'hail' ||
-    lower === 'blizzard' ||
-    lower === 'cold' ||
-    lower === 'coldwave'
-  ) {
+  if (FROZEN_WEATHERS.has(lower)) {
     return gen >= PALDEA_GENERATION_NUM ? 'snow' : 'hail';
   }
   if (lower === 'fog' || lower === 'mist') {

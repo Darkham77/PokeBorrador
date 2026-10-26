@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useWarStore } from '@/stores/war';
-import { useMapStore } from '@/stores/map';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+
 import { MAP_ROUTE_MAPPING, requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useMapStore } from '@/stores/map';
+import { useWarStore } from '@/stores/war';
 import { isFactionId, type FactionId } from '@/types/system/game';
 
 const warStore = useWarStore();
@@ -22,7 +23,7 @@ interface MapData {
   name: string;
 }
 
-const getMapImage = (mapId: MapRouteId) => {
+const getMapImage = (mapId: MapRouteId): string => {
   const fileName = MAP_ROUTE_MAPPING[mapId];
   return getAssetUrl(ASSET_TYPES.MAP, fileName, { cycle: mapStore.currentCycle || 'day' });
 };

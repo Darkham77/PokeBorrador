@@ -1,5 +1,7 @@
-import { test, describe } from 'vite-plus/test';
 import assert from 'node:assert';
+
+import { test, describe } from 'vite-plus/test';
+
 import {
   hashStringTo32Bit,
   createMulberry32,

@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+
 /**
  * Weather Mapper System (Unified Registry)
  * Centralizes the definition of all weather states: mechanical logic, visual representation, and UI metadata.
@@ -124,7 +126,7 @@ const FOG_ACCURACY_MULT_LABEL = 0.6;
  * THE SINGLE SOURCE OF TRUTH FOR WEATHER
  */
 // open-record: Weather definition registry keyed by weather identifiers
-export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
+export const WEATHER_REGISTRY: Record<DisplayText, WeatherDefinition> & {
   clear: WeatherDefinition;
   sun: WeatherDefinition;
   rain: WeatherDefinition;
@@ -390,7 +392,7 @@ export const WEATHER_UI_METADATA: Record<
 // Full Visual Metadata keyed by raw token (Detailed view)
 // open-record: Weather visual metadata dictionary keyed by raw token
 export const WEATHER_VISUAL_METADATA: Record<
-  string,
+  DisplayText,
   { icon: string; label: string; description: string }
 > = Object.fromEntries(
   Object.entries(WEATHER_REGISTRY).map(([k, v]) => [

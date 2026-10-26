@@ -1,6 +1,9 @@
+import type { DisplayText } from '@francogp/auditor';
+import { isMainModule } from '@francogp/auditor';
 // scripts/e2e/fuzzer/runners/run_breeding_fuzzer.ts
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { defineCommand, runMain } from 'citty';
 import {
   checkCompatibility,
   getEggSpecies
@@ -152,7 +155,7 @@ async function runBreedingFuzzer() {
 
           // 2. Power Items
           const ivs = calculateInheritance(pA, pB, 'powerweight', 'powerbracer') as Record<
-            string,
+            DisplayText,
             number
           >; // open-record: Generic key-value data dictionary container
           if (ivs.hp !== pA.ivs.hp || ivs.atk !== pB.ivs.atk) {
@@ -238,10 +241,16 @@ async function runBreedingFuzzer() {
   }
 }
 
-if (process.argv[1] === import.meta.filename) {
-  runBreedingFuzzer().catch((err) => {
-    console.error(err);
-    process.exit(1);
-  });
+export const command = defineCommand({
+  meta: {
+    name: 'run-breeding-fuzzer',
+    description: 'Fuzzer matricial de compatibilidad de crianza Pokémon'
+  },
+  async run() {
+    await runBreedingFuzzer();
+  }
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
 }
 export { runBreedingFuzzer };

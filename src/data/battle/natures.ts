@@ -1,3 +1,5 @@
+import type { LocalizedText } from '@francogp/auditor';
+
 export const NATURE_DATA = Object.freeze({
   adamant: {
     name: 'Firme',
@@ -223,15 +225,15 @@ export function getNatureInfo(nature: NatureId) {
   return NATURE_DATA[nature];
 }
 
-const NATURES_BY_SPANISH_NAME: Readonly<Record<string, (typeof NATURE_DATA)[NatureId]>> = // open-record: Generic key-value data dictionary container
+const NATURES_BY_SPANISH_NAME: Readonly<Record<LocalizedText, (typeof NATURE_DATA)[NatureId]>> =
   Object.freeze(
     Object.fromEntries(
-      Object.values(NATURE_DATA).map((n) => [n.name.toLowerCase(), n]) // text-ok: UI text display localization string
+      Object.values(NATURE_DATA).map((n) => [n.name.toLowerCase() as LocalizedText, n])
     )
   );
 
 export function getNatureDataByNameOrId(key: string): (typeof NATURE_DATA)[NatureId] | undefined {
   const lower = key.toLowerCase(); // text-ok: UI text display localization string
   if (isNatureId(lower)) return NATURE_DATA[lower];
-  return NATURES_BY_SPANISH_NAME[lower];
+  return NATURES_BY_SPANISH_NAME[lower as LocalizedText];
 }

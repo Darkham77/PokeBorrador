@@ -7,15 +7,15 @@
  * connects functional stairs, prunes dead ends/orphans, and re-resolves water coastlines.
  */
 
+import type { POINode } from '../../types/map/poiTypes.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
+import { sanitizePathGridWidth } from './pathAutotileEngine.ts';
+import { pruneOrphanPathFragments, pruneDeadEndStubs } from './routePathPruning.ts';
 import {
   resolveWaterCoastGrid,
   type ResolvedWaterMapResult,
   BASE_GRASS_TILE
 } from './waterAutotileEngine.ts';
-import { sanitizePathGridWidth } from './pathAutotileEngine.ts';
-import type { POINode } from '../../types/map/poiTypes.ts';
-import { pruneOrphanPathFragments, pruneDeadEndStubs } from './routePathPruning.ts';
 
 function cleanseBridgeAndSandGrids({
   continentMap,

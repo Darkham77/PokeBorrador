@@ -1,23 +1,35 @@
+import { gsap } from 'gsap';
+
 import { TRAINER_RANKS, MARKET_UNLOCKS } from '@/data/player/trainer';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { OBEY_LEVEL_BY_BADGES, MAX_TRAINER_RANK_LEVEL } from '@/logic/constants/gameplay';
-import { gsap } from 'gsap';
-import { levelUpPokemon } from '@/logic/pokemon/pokemonFactory';
-import { useUIStore, type LearnItem } from '@/stores/ui';
 import { getEventExpMultiplier } from '@/logic/events/eventMultipliers.ts';
 import { gameBus } from '@/logic/events/gameBus.ts';
-import type { GameState } from '@/types/system/game';
+import { levelUpPokemon } from '@/logic/pokemon/pokemonFactory';
+import { useUIStore, type LearnItem } from '@/stores/ui';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { GameState } from '@/types/system/game';
 
 const MARKET_UNLOCK_NOTIFICATION_DELAY_SEC = 1.5;
+const DEFAULT_OBEY_LEVEL = 20;
 
-export function useTrainerActions(state: GameState, scheduleSave: () => Promise<void>) {
-  function getTrainerRank() {
+export interface UseTrainerActionsReturn {
+  getTrainerRank: () => (typeof TRAINER_RANKS)[number] | undefined;
+  addTrainerExp: (amount: number) => void;
+  checkLevelUp: (pokemon: Pokemon) => void;
+  getMaxObeyLevel: () => number;
+}
+
+export function useTrainerActions(
+  state: GameState,
+  scheduleSave: (delayMs?: number, forceRemote?: boolean) => void
+): UseTrainerActionsReturn {
+  function getTrainerRank(): (typeof TRAINER_RANKS)[number] | undefined {
     const idx = Math.min(state.trainerLevel - 1, TRAINER_RANKS.length - 1);
     return TRAINER_RANKS[idx];
   }
 
-  function addTrainerExp(amount: number) {
+  function addTrainerExp(amount: number): void {
     const uiStore = useUIStore();
     const totalMult = getEventExpMultiplier() || 1;
     if (totalMult > 1) amount = Math.round(amount * totalMult);
@@ -54,17 +66,17 @@ export function useTrainerActions(state: GameState, scheduleSave: () => Promise<
       state.trainerExpNeeded = currentRank.expNeeded;
     }
 
-    void scheduleSave();
+    scheduleSave();
   }
 
-  function checkLevelUp(pokemon: Pokemon) {
+  function checkLevelUp(pokemon: Pokemon): void {
     const uiStore = useUIStore();
     const learnQueue: LearnItem[] = [];
 
     if (pokemon.level >= MAX_POKEMON_LEVEL) {
       pokemon.exp = 0;
       pokemon.expNeeded = 0;
-      void scheduleSave();
+      scheduleSave();
       return;
     }
 
@@ -102,12 +114,12 @@ export function useTrainerActions(state: GameState, scheduleSave: () => Promise<
       uiStore.addToLearnQueue(learnQueue);
     }
 
-    void scheduleSave();
+    scheduleSave();
   }
 
-  function getMaxObeyLevel() {
+  function getMaxObeyLevel(): number {
     const badgeCount = Math.min(8, Math.max(0, state.defeatedGyms?.length || 0));
-    return OBEY_LEVEL_BY_BADGES[badgeCount] ?? OBEY_LEVEL_BY_BADGES[0];
+    return OBEY_LEVEL_BY_BADGES[badgeCount] ?? OBEY_LEVEL_BY_BADGES[0] ?? DEFAULT_OBEY_LEVEL;
   }
 
   return { getTrainerRank, addTrainerExp, checkLevelUp, getMaxObeyLevel };

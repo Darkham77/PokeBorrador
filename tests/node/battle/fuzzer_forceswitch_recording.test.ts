@@ -1,3 +1,5 @@
+import assert from 'node:assert/strict';
+
 /**
  * fuzzer_forceswitch_recording.test.ts
  *
@@ -18,12 +20,12 @@
  *   separate choose() call, independent of the normal move phase.
  */
 import { describe, it } from 'vite-plus/test';
-import assert from 'node:assert/strict';
-import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
-import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
-import { ShowdownBattleRunner } from '../../../src/logic/battle/helpers/showdownBattleRunner.ts';
-import { classifyRequest } from '../../../src/logic/battle/helpers/requestHelper.ts';
+
 import { ACTIVE_SHOWDOWN_FORMAT } from '../../../src/data/system/constants.ts';
+import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
+import { classifyRequest } from '../../../src/logic/battle/helpers/requestHelper.ts';
+import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
+import { ShowdownBattleRunner } from '../../../src/logic/battle/helpers/showdownBattleRunner.ts';
 
 /**
  * Builds a minimal team set for Showdown.

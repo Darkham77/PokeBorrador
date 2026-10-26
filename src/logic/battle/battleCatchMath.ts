@@ -21,10 +21,10 @@ const SHAKE_POWER_EXPONENT = 0.25;
 const ESCAPE_BASE_MULTIPLIER = 32;
 const ESCAPE_ATTEMPT_BONUS = 30;
 
-import { getEffectiveStatPure } from './battleMath.ts';
-
-import { getMechanicalWeather } from '@/logic/weather/weatherRegistry';
 import type { ItemId } from '@/data/inventory/items';
+import { getMechanicalWeather } from '@/logic/weather/weatherRegistry';
+
+import { getEffectiveStatPure } from './battleMath.ts';
 
 const BALL_BEHAVIORS: Partial<
   Record<
@@ -186,7 +186,7 @@ export function calculateCatchRatePure(
 
   const finalRate = Math.max(1, rawRate);
   const b = Math.floor(
-    CATCH_MATH_65535_MAX * Math.pow(finalRate / CATCH_MATH_255_MAX, SHAKE_POWER_EXPONENT)
+    CATCH_MATH_65535_MAX * (finalRate / CATCH_MATH_255_MAX) ** SHAKE_POWER_EXPONENT
   );
 
   const pokedexCount = ctx.pokedexCount ?? 0;

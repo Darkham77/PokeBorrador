@@ -4,9 +4,9 @@
  * Types for the Debug Weather Tables Modal.
  */
 
+import type { PokemonType } from '@/data/battle/types';
 import type { WeatherTableRouteId, WeatherSeasonId } from '@/data/world/weather-tables';
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
-import type { PokemonType } from '@/data/battle/types';
 import type { DayPhase } from '@/types/system/time';
 
 export type RegionId = 'kanto' | 'johto' | 'hoenn' | 'sinnoh';

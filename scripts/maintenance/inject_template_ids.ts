@@ -1,3 +1,4 @@
+import { isMainModule } from '@francogp/auditor';
 /**
  * scripts/maintenance/inject_template_ids.ts
  *
@@ -11,6 +12,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { defineCommand, runMain } from 'citty';
 
 interface InjectionOptions {
   cwd: string;
@@ -81,21 +83,7 @@ function findClosingTagOrText(
   return sanitizeSlug(textOnly);
 }
 
-function parseCliArgs(): InjectionOptions {
-  const args = process.argv.slice(2);
-  let cwd = process.cwd();
-  let dryRun = false;
 
-  for (const arg of args) {
-    if (arg.startsWith('--cwd=')) {
-      cwd = path.resolve(arg.slice(6));
-    } else if (arg === '--dry-run') {
-      dryRun = true;
-    }
-  }
-
-  return { cwd, dryRun };
-}
 
 function getAllVueFiles(dir: string): string[] {
   if (!fs.existsSync(dir)) return [];
@@ -308,5 +296,30 @@ export function runInjection(opts: InjectionOptions): void {
   console.log('======================================================\n');
 }
 
-const cliOpts = parseCliArgs();
-runInjection(cliOpts);
+export const command = defineCommand({
+  meta: {
+    name: 'inject-template-ids',
+    description: 'Inyecta IDs semánticos únicos en elementos interactivos de Vue SFCs'
+  },
+  args: {
+    cwd: {
+      type: 'string',
+      description: 'Directorio base de escaneo',
+      default: process.cwd()
+    },
+    dryRun: {
+      type: 'boolean',
+      description: 'Ejecución en modo simulación sin escribir archivos',
+      default: false
+    }
+  },
+  run({ args }) {
+    runInjection({
+      cwd: path.resolve(String(args.cwd)),
+      dryRun: Boolean(args.dryRun)
+    });
+  }
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
+}

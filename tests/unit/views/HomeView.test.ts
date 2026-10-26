@@ -1,10 +1,11 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
-import HomeView from '@/views/game/HomeView.vue';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import { useBreedingStore } from '@/stores/breeding';
 import { useLoadingStore } from '@/stores/loading';
+import HomeView from '@/views/game/HomeView.vue';
 
 describe('HomeView.vue', () => {
   beforeEach(() => {

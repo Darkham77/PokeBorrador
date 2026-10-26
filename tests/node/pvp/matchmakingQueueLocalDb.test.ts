@@ -5,8 +5,10 @@
  * across real database engines (SQLite and PostgreSQL).
  */
 
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { DatabaseSync } from 'node:sqlite';
+
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
 import { TABLES_SCHEMA } from '@/logic/db/schema.ts';
 
 describe('Local Ranked Matchmaking Queue Parity', () => {

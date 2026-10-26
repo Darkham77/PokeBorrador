@@ -155,12 +155,12 @@ export async function setupE2ESession(
           localStorage.setItem('pokevicio_sqlite_key', key);
         }
       } catch (_e) {
-        void 0;
+        0;
       }
       try {
         sessionStorage.removeItem('pokevicio_logout_reason');
       } catch (_e) {
-        void 0;
+        0;
       }
       if ('Notification' in window) {
         Object.defineProperty(Notification, 'permission', {
@@ -191,7 +191,7 @@ export async function setupE2ESession(
               (val.globalTimeline as { timeScale: (n: number) => void }).timeScale(scale);
             }
           } catch (_e) {
-            void 0;
+            0;
           }
         }
       });
@@ -299,7 +299,7 @@ export async function loginTestUser(
           localStorage.setItem('pokevicio_local_user', JSON.stringify(testUserObj));
           localStorage.setItem('pokevicio_auth_token', token);
         } catch (_e) {
-          void 0;
+          0;
         }
       },
       {

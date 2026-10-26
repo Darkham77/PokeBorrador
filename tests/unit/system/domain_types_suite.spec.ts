@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vite-plus/test';
-import { toBrand, unbrand, type Brand } from '@/types/system/branding';
 import { detectRepeatedStringUnions } from '@francogp/auditor/suites/domain_data/validate_canonical_domains';
+import { describe, it, expect } from 'vite-plus/test';
+
+import { toBrand, unbrand, type Brand } from '@/types/system/branding';
 
 type PokemonId = Brand<string, 'PokemonSpeciesId'>;
 type ItemId = Brand<string, 'ItemId'>;
@@ -105,20 +106,20 @@ describe('Domain Types & Auditor Governance Suite', () => {
       expect(repeated.size).toBe(0);
     });
 
-    it('ignores lines annotated with domain-ok or no-domain directives', () => {
+    it('ignores signatures included in universal exemptions', () => {
       const files = [
         {
-          file: 'src/escapedA.ts',
-          content: `const side: 'player' | 'enemy' = 'player'; // domain-ok: Open dynamic text or non-domain string payload`
+          file: 'src/sortA.ts',
+          content: `const sortOrder: 'asc' | 'desc' = 'asc';`
         },
         {
-          file: 'src/escapedB.ts',
-          content: `const side: 'player' | 'enemy' = 'enemy'; // domain-ok: Open dynamic text or non-domain string payload`
+          file: 'src/sortB.ts',
+          content: `const sortOrder: 'asc' | 'desc' = 'desc';`
         }
       ];
 
       const repeated = detectRepeatedStringUnions(files);
-      expect(repeated.has('enemy|player')).toBe(false);
+      expect(repeated.has('asc|desc')).toBe(false);
     });
 
     it('ignores comment lines containing literal unions', () => {

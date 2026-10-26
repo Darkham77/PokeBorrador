@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import DebugStatsTab from './debug/DebugStatsTab.vue';
 import DebugClassTab from './debug/DebugClassTab.vue';
 import DebugItemsTab from './debug/DebugItemsTab.vue';
-import DebugPokemonTab from './debug/DebugPokemonTab.vue';
-import DebugTimeTab from './debug/DebugTimeTab.vue';
-import DebugModalsTab from './debug/DebugModalsTab.vue';
 import DebugMapTab from './debug/DebugMapTab.vue';
 import DebugMissionsTab from './debug/DebugMissionsTab.vue';
-import DebugTrainersTab from './debug/DebugTrainersTab.vue';
+import DebugModalsTab from './debug/DebugModalsTab.vue';
 import type { DebugPanelCategoryId } from './debug/debugPanelCategories';
+import DebugPokemonTab from './debug/DebugPokemonTab.vue';
+import DebugStatsTab from './debug/DebugStatsTab.vue';
+import DebugTimeTab from './debug/DebugTimeTab.vue';
+import DebugTrainersTab from './debug/DebugTrainersTab.vue';
 
 defineProps<{
-  selectedCategory: DebugPanelCategoryId | string;
+  selectedCategory: DebugPanelCategoryId;
 }>();
 
 const emit = defineEmits<{

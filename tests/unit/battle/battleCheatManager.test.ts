@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vite-plus/test';
+
+import { ACTIVE_SHOWDOWN_FORMAT } from '@/data/system/constants.ts';
 import { BattleCheatManager } from '@/logic/battle/helpers/battleCheatManager.ts';
 import { createShowdownBattle } from '@/logic/battle/helpers/showdownBattleFactory.ts';
-import { ACTIVE_SHOWDOWN_FORMAT } from '@/data/system/constants.ts';
 
 const makePoke = (species: string, moves: string[]) => ({
   name: species,

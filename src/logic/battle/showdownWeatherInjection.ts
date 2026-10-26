@@ -37,7 +37,8 @@ if (typeof Worker !== 'undefined') {
         try {
           const weather =
             bridgeWeatherResolver?.() ||
-            (typeof window !== 'undefined' && window.__CURRENT_BATTLE_WEATHER__);
+            (typeof globalThis.window !== 'undefined' &&
+              globalThis.window.__CURRENT_BATTLE_WEATHER__);
           if (weather) {
             payload.weather = weather;
           }
@@ -46,8 +47,6 @@ if (typeof Worker !== 'undefined') {
         }
       }
     }
-    return (
-      originalPostMessage as (this: Worker, message: unknown, transfer?: unknown) => void
-    ).call(this, message, transferOrOptions);
+    return originalPostMessage.call(this, message, transferOrOptions);
   };
 }

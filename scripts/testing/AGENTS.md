@@ -18,6 +18,7 @@ DevOps / QA Engineers.
 - **Automatic Version SSoT Synchronization**: The test orchestrator (`run_tests.ts`) automatically calls `syncPublicVersionJson()` before starting test execution, ensuring `public/version.json` matches the canonical version in `package.json` with zero manual intervention.
 - **Node.js 26 V8 Coverage Inspector Permission Mandate**: When executing tests with `--coverage` under Node.js permission model, both the test orchestrator (`run_tests.ts`) and Vite+ worker pool forks (`test.execArgv` in `vite.config.ts`) MUST pass `--allow-inspector` to permit V8 coverage session connection via `node:inspector` without `ERR_ACCESS_DENIED`.
 - **Strict Tuple CLI Arguments Mandate**: Command-line arguments in testing runners and maintenance scripts MUST be typed as immutable tuple arrays (`as const`) to avoid domain type erasure under `validate_domain_types`.
+- **Adventure Suite E2E Simulation & Viewport Canvas Integrity Mandate**: Playwright end-to-end simulations for `test_aventura` (`test_aventura_e2e.ts` / `npm run sim:aventura`) MUST wait for asynchronous generation jobs (such as Web Worker continental world generation at default 400x400 scale) to settle via `#status-continent-generator:not(.is-loading)` and assert real non-empty pixel data on raster canvas viewports (`ctx.getImageData`) before advancing to tab switches or controls, preventing false-positive test passes on blank or crashing views.
 
 ## Key Files
 

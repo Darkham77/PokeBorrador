@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useTemplateRef, watch, onWatcherCleanup } from 'vue';
 import { gsap } from 'gsap';
+import { useTemplateRef, watch, onWatcherCleanup } from 'vue';
 
 import type { RefreshButtonSize, RefreshButtonVariant } from './baseRefreshButtonTypes';
 

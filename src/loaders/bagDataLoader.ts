@@ -7,6 +7,7 @@
  */
 
 import { defineBasicLoader } from 'vue-router/experimental';
+
 import { useInventoryStore } from '@/stores/inventory/inventory';
 
 interface BagLoaderData {

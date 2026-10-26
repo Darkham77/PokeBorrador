@@ -1,8 +1,10 @@
-import { describe, it, expect } from 'vite-plus/test';
 import { DatabaseSync } from 'node:sqlite';
+
 import { safeParse } from 'valibot';
-import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
+import { describe, it, expect } from 'vite-plus/test';
+
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
+import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
 import { saveDataSchema } from '../../../src/logic/validation/schemas.ts';
 
 describe('Fix Legacy expNeeded and Egg IDs Migration Test', () => {

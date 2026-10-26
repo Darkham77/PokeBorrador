@@ -1,18 +1,20 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
 import { computed } from 'vue';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
-import { useInventoryStore } from '@/stores/inventory/inventory';
-import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
-import type { LearnsetMove } from '@/types/system/database';
+
+import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue';
+import BaseModal from '@/components/common/BaseModal.vue';
+import type { PokemonMoveId } from '@/data/battle/moves';
+import { toPokemonType } from '@/data/battle/types';
 import { getPreEvolution } from '@/data/pokemon/evolutionData';
 import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { PokemonMoveId } from '@/data/battle/moves';
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { toPokemonType } from '@/data/battle/types';
-import BaseModal from '@/components/common/BaseModal.vue';
-import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue';
+import { useGameStore } from '@/stores/game';
+import { useInventoryStore } from '@/stores/inventory/inventory';
+import { useUIStore } from '@/stores/ui';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+import type { LearnsetMove } from '@/types/system/database';
 
 type RelearnMoveEntry = LearnsetMove & { fromId?: PokemonSpeciesId };
 
@@ -91,11 +93,11 @@ const getMoveFullData = (mv: RelearnMoveEntry): Move => {
   return fullMove;
 };
 
-const handleRelearn = (move: RelearnMoveEntry) => {
+const handleRelearn = (move: RelearnMoveEntry): void => {
   const p = pokemon.value;
   if (!p) return;
 
-  const inventory = gameStore.state.inventory as Record<string, number>; // open-record: Generic key-value data dictionary container
+  const inventory = gameStore.state.inventory as Record<DisplayText, number>; // open-record: Generic key-value data dictionary container
   const hasItem = (inventory['moverelearner'] || 0) > 0;
 
   if (!hasItem) {
@@ -132,12 +134,12 @@ const handleRelearn = (move: RelearnMoveEntry) => {
   }
 };
 
-const handleClose = () => {
+const handleClose = (): void => {
   uiStore.activePokemonForRelearner = null;
   emit('close');
 };
 
-const consumeItem = () => {
+const consumeItem = (): void => {
   const inventoryStore = useInventoryStore();
   inventoryStore.removeItem('moverelearner', 1);
 };

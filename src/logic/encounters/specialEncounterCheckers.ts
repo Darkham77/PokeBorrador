@@ -1,16 +1,17 @@
+import { getActivePinia } from 'pinia';
+
+import { GAME_RATIOS } from '@/data/system/constants';
+import { requireGymId, type GymId } from '@/data/world/gyms';
 import type { MapRouteId } from '@/data/world/map-assets';
 import { requireMapRouteId } from '@/data/world/map-assets';
-import type { Encounter, EncounterState, EncounterOptions } from '@/types/pokemon/encounters';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { DEBUG_GUARDIAN_CHANCE_PERCENT } from '@/logic/constants/encounters.ts';
+import { GUARDIAN_ENCOUNTER_CHANCE_PERCENT } from '@/logic/constants/gameplay';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { getGuardianData } from '@/logic/war/guardianEngine';
-import { GUARDIAN_ENCOUNTER_CHANCE_PERCENT } from '@/logic/constants/gameplay';
 import { isDisputePhase } from '@/logic/war/warEngine';
-import { GAME_RATIOS } from '@/data/system/constants';
-import { getActivePinia } from 'pinia';
 import { useGameStore } from '@/stores/game';
-import { requireGymId, type GymId } from '@/data/world/gyms';
-import { DEBUG_GUARDIAN_CHANCE_PERCENT } from '@/logic/constants/encounters.ts';
+import type { Encounter, EncounterState, EncounterOptions } from '@/types/pokemon/encounters';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export interface ViteDebugEncounterConfig {
   forceEncounterType?: string;
@@ -82,7 +83,7 @@ export function checkRivalSpecialEncounter(
   const hasRivalRateOverride =
     debug?.rivalChancePct !== undefined && debug?.rivalChancePct !== null;
   if (hasRivalRateOverride) {
-    rivalChance = debug!.rivalChancePct! / 100;
+    rivalChance = debug.rivalChancePct! / 100;
   } else {
     const eventRivalBonus = options.eventRivalBonus || 1;
     rivalChance *= eventRivalBonus;
@@ -128,7 +129,7 @@ export function checkDefenderSpecialEncounter(
   const hasDefenderOverride =
     debug?.defenderChancePct !== undefined && debug?.defenderChancePct !== null;
   const defenderChance = hasDefenderOverride
-    ? debug!.defenderChancePct! / 100
+    ? debug.defenderChancePct! / 100
     : DEFENDER_ENCOUNTER_CHANCE;
   if (Math.random() < defenderChance && state.faction) {
     const dominance = (options.dominanceData || {})[requireMapRouteId(locId)];
@@ -156,7 +157,7 @@ export function checkGuardianSpecialEncounter(
   const hasGuardianOverride =
     debug?.guardianChancePct !== undefined && debug?.guardianChancePct !== null;
   const guardianOverrideChance = hasGuardianOverride
-    ? debug!.guardianChancePct! / 100
+    ? debug.guardianChancePct! / 100
     : debug?.forceGuardian80
       ? DEBUG_GUARDIAN_CHANCE_PERCENT / 100
       : null;

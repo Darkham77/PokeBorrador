@@ -1,20 +1,24 @@
 <script setup lang="ts">
-import { computed, inject, ref, watch, onUnmounted, type Ref } from 'vue';
 import { gsap } from 'gsap';
-import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { computed, inject, ref, watch, onUnmounted, type Ref } from 'vue';
+
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
 import PVTooltip from '@/components/common/PVTooltip.vue';
-import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue';
 import FriendshipSealBadge from '@/components/pokemon/FriendshipSealBadge.vue';
+import { resolveCardStatusIndicators } from '@/components/pokemon/pokemonDisplayCardHelper';
+import PokemonTypePills from '@/components/shared/PokemonTypePills.vue';
+import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue';
+import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
 import { getPokemonVisualBadges } from '@/logic/constants/tags';
 import { getFieldPassiveBadges } from '@/logic/pokemon/pokemonFieldAbilities';
-import { useUIStore } from '@/stores/ui';
-import PokemonTypePills from '@/components/shared/PokemonTypePills.vue';
-import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils';
 import { calculateTotalIVs } from '@/logic/pokemon/statsMath';
-import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
-import { resolveCardStatusIndicators } from '@/components/pokemon/pokemonDisplayCardHelper';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useUIStore } from '@/stores/ui';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { ComponentPillSize } from '@/types/system/game';
+
 import {
   resolveBoxCardClasses,
   resolveHpRatio,
@@ -23,9 +27,6 @@ import {
   resolveComputedTypePillSize,
   resolveCardAuraClass
 } from './boxPokemonCardHelper';
-
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { ComponentPillSize } from '@/types/system/game';
 
 const uiStore = useUIStore();
 
@@ -109,7 +110,7 @@ const cardClasses = computed(() =>
   })
 );
 
-const handleSpriteError = (e: Event) => {
+const handleSpriteError = (e: Event): void => {
   (e.target as HTMLImageElement).style.display = 'none';
 };
 
@@ -134,7 +135,7 @@ const checkBoxRef = ref<HTMLElement | null>(null);
 let borderPulseTween: gsap.core.Tween | null = null;
 let checkBoxTween: gsap.core.Tween | null = null;
 
-const startBorderPulse = () => {
+const startBorderPulse = (): void => {
   if (borderPulseTween) borderPulseTween.kill();
   if (!selectedBorderRef.value) return;
   borderPulseTween = gsap.fromTo(
@@ -150,14 +151,14 @@ const startBorderPulse = () => {
   );
 };
 
-const stopBorderPulse = () => {
+const stopBorderPulse = (): void => {
   if (borderPulseTween) {
     borderPulseTween.kill();
     borderPulseTween = null;
   }
 };
 
-const animateCheckBox = (isSelected: boolean) => {
+const animateCheckBox = (isSelected: boolean): void => {
   if (checkBoxTween) checkBoxTween.kill();
   if (!checkBoxRef.value) return;
 

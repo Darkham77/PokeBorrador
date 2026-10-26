@@ -1,5 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { DatabaseSync } from 'node:sqlite';
+
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
 import { emulateClaimAward } from '@/logic/db/rpcEmulations/eventRpc.ts';
 import type { SQLiteDatabase } from '@/logic/db/sqliteEngine.ts';
 

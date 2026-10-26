@@ -1,8 +1,10 @@
+import type { DisplayText } from '@francogp/auditor';
 import type { Battle } from '@pkmn/sim';
-import { ShowdownBattleEngine } from '../engine/showdownBattleEngine.ts';
-import { ShowdownBattleRunner } from './showdownBattleRunner.ts';
+
 import type { CertifiedBattleHistoryEntry } from '../../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
+import { ShowdownBattleEngine } from '../engine/showdownBattleEngine.ts';
 import type { CertifiedCheatHistoryStep } from './battleCheatManager.ts';
+import { ShowdownBattleRunner } from './showdownBattleRunner.ts';
 
 export interface ShowdownExecutorOptions {
   battle: Battle;
@@ -12,13 +14,13 @@ export interface ShowdownExecutorOptions {
   p2Skip?: boolean;
   p1UsedBattleItem?: boolean;
   // open-record: Dynamic Pokemon UID mapped to HP
-  p1Hps?: Record<string, number>;
+  p1Hps?: Record<DisplayText, number>;
   // open-record: Dynamic Pokemon UID mapped to HP
-  p2Hps?: Record<string, number>;
+  p2Hps?: Record<DisplayText, number>;
   // open-record: Dynamic Pokemon UID mapped to status ID
-  p1Statuses?: Record<string, string>;
+  p1Statuses?: Record<DisplayText, string>;
   // open-record: Dynamic Pokemon UID mapped to status ID
-  p2Statuses?: Record<string, string>;
+  p2Statuses?: Record<DisplayText, string>;
   weather?: string;
   history?: CertifiedBattleHistoryEntry[];
   runner?: ShowdownBattleRunner | null;

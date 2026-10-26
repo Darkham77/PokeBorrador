@@ -1,17 +1,31 @@
-import { computed } from 'vue';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { useBattleStore } from '@/stores/battle/battle';
-import { getCombinedEffectiveness } from '@/logic/pokemon/typeEngine';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import type { MoveCategory } from '@/data/battle/moves';
+import { computed, type ComputedRef } from 'vue';
+
 import {
   getCombatEnvState,
   calculateFinalPower,
   calculateFinalAccuracy,
   calculateMoveModifier
 } from '@/logic/battle/moveCalculator';
+import { getCombinedEffectiveness } from '@/logic/pokemon/typeEngine';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { useBattleStore } from '@/stores/battle/battle';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
-export function useMoveSlotData(moveRef: () => Move | null, playerInfoRef: () => Pokemon | null) {
+export interface UseMoveSlotDataReturn {
+  moveData: ComputedRef<
+    | (Move & { type: string; power: number | undefined; acc: number | undefined; cat: string })
+    | null
+  >;
+  finalPower: ComputedRef<number>;
+  finalAccuracy: ComputedRef<number>;
+  moveModifier: ComputedRef<'boosted' | 'penalized' | null>;
+  effectivenessMultiplier: ComputedRef<number>;
+}
+
+export function useMoveSlotData(
+  moveRef: () => Move | null,
+  playerInfoRef: () => Pokemon | null
+): UseMoveSlotDataReturn {
   const battleStore = useBattleStore();
 
   const moveData = computed(() => {
@@ -23,7 +37,7 @@ export function useMoveSlotData(moveRef: () => Move | null, playerInfoRef: () =>
       type: move.type || md?.type || 'normal',
       power: move.power !== undefined ? move.power : md?.power,
       acc: move.acc !== undefined ? move.acc : md?.acc,
-      cat: (move.cat || md?.cat || 'physical') as MoveCategory
+      cat: move.cat || md?.cat || 'physical'
     };
   });
 

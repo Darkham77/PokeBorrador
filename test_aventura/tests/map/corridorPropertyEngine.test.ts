@@ -12,10 +12,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generatePokemonTopology } from '../../logic/map/pokemonGraphTopology.ts';
-import { embedPokemonTopology } from '../../logic/map/orthogonalGraphEmbedding.ts';
+
 import { sculptContinentFromGraph } from '../../logic/map/continentSculptingEngine.ts';
 import { enrichCorridorProperties } from '../../logic/map/corridorPropertyEngine.ts';
+import { embedPokemonTopology } from '../../logic/map/orthogonalGraphEmbedding.ts';
+import { generatePokemonTopology } from '../../logic/map/pokemonGraphTopology.ts';
 
 describe('Emergent Corridor Property Engine (Phase 4)', () => {
   it('enriches all corridors with valid continuous property profiles for seed 42', () => {

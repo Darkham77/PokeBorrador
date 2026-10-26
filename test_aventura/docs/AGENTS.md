@@ -17,7 +17,15 @@ Game Mechanics / Adventure Prototyping Documentation.
 - [`FARMING_ROUTES_DESIGN_DOC.md`](./FARMING_ROUTES_DESIGN_DOC.md): Farming routes layout, resource distribution, and economy design.
 - [`Propuesta_de_Diseño__Integración_de_Bicicleta_y_MO.docx`](./Propuesta_de_Diseño__Integración_de_Bicicleta_y_MO.docx): Design proposal for bicycle and HM (Hidden Machine) mechanics integration.
 
+## Work Guidance
+
+- Consult design documentation when implementing or refactoring adventure mechanics and exploration routes.
+
 ## Verification
 
 - `npm run auditor:documentation-language`
 - `npm run auditor:md`
+
+## Child DOX Index
+
+- _This directory contains specialized domain logic and files with no subdirectories._

@@ -8,10 +8,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
+import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
-import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 
 describe('mintHighlandMountainSeamIntegrity (Pattern B)', () => {
   it('guarantees seed 615856 at (88, 41) does not resolve to corner_outer_sw against same-biome mountain wall', () => {

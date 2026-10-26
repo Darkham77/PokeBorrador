@@ -1,14 +1,17 @@
-import { logger } from '../utils/logger.ts';
-import { parseAppVersion } from './dbCompatibility.ts';
 import type { SupabaseClient, RealtimeChannel } from '@supabase/supabase-js';
+
 import type { SessionMode } from '@/types/system/database';
 
-export class DBSessionCoordinator {
-  currentSessionId: string | null = null;
-  userSubscription: RealtimeChannel | null = null;
-  systemConfigSubscription: RealtimeChannel | null = null;
+import { gameBus } from '../events/gameBus.ts';
+import { logger } from '../utils/logger.ts';
+import { parseAppVersion } from './dbCompatibility.ts';
 
-  async initSession(
+export class DBSessionCoordinator {
+  public currentSessionId: string | null = null;
+  public userSubscription: RealtimeChannel | null = null;
+  public systemConfigSubscription: RealtimeChannel | null = null;
+
+  public async initSession(
     userId: string,
     sessionId: string,
     mode: SessionMode,
@@ -29,7 +32,7 @@ export class DBSessionCoordinator {
       });
     }
 
-    if (this.userSubscription) void this.userSubscription.unsubscribe();
+    if (this.userSubscription) await this.userSubscription.unsubscribe();
 
     this.userSubscription = client
       .channel(`session_lock:${userId}`)
@@ -66,7 +69,7 @@ export class DBSessionCoordinator {
     this.initSystemConfigSubscription(mode, client);
   }
 
-  initSystemConfigSubscription(mode: SessionMode, client: SupabaseClient | null): void {
+  public initSystemConfigSubscription(mode: SessionMode, client: SupabaseClient | null): void {
     if (mode === 'offline' || !client || this.systemConfigSubscription) return;
 
     try {
@@ -89,12 +92,10 @@ export class DBSessionCoordinator {
                 'DBRouter',
                 `Realtime update: New server version detected (${newServerVer}) > client (${clientVer}). Emitting PWA_NEED_REFRESH.`
               );
-              void import('../events/gameBus.ts').then(({ gameBus }) => {
-                gameBus.emit('PWA_NEED_REFRESH');
-                gameBus.emit('OUTDATED_CLIENT_DETECTED', {
-                  client: clientVer,
-                  server: newServerVer
-                });
+              gameBus.emit('PWA_NEED_REFRESH');
+              gameBus.emit('OUTDATED_CLIENT_DETECTED', {
+                client: clientVer,
+                server: newServerVer
               });
             }
           }
@@ -105,10 +106,10 @@ export class DBSessionCoordinator {
     }
   }
 
-  handleSessionConflict(): void {
+  public handleSessionConflict(): void {
     logger.error('DBRouter', 'SESSION CONFLICT DETECTED!');
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('session-conflict'));
+    if (typeof globalThis.window !== 'undefined') {
+      globalThis.dispatchEvent(new CustomEvent('session-conflict'));
     }
   }
 }

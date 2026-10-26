@@ -1,10 +1,10 @@
-import type { PokemonType } from '@/data/battle/types';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { PokemonMoveId, MoveCategory } from '@/data/battle/moves';
-import type { PokemonStatus } from '@/types/pokemon/pokemon';
 import type { AbilityId } from '@/data/battle/abilities';
+import type { PokemonMoveId, MoveCategory } from '@/data/battle/moves';
+import type { PokemonType } from '@/data/battle/types';
 import type { ItemId } from '@/data/inventory/items';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import type { PokemonStatus } from '@/types/pokemon/pokemon';
 
 export interface PurePokemon {
   id?: PokemonSpeciesId;

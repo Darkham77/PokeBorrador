@@ -45,7 +45,8 @@ function getStorageBackend(): Storage | null {
   // result-ok: Operation result wrapper payload
   try {
     if (typeof localStorage !== 'undefined') return localStorage;
-    if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+    if (typeof globalThis.window !== 'undefined' && globalThis.localStorage)
+      return globalThis.localStorage;
   } catch (err) {
     logger.debug('Storage', 'localStorage no accesible:', err);
   }
@@ -56,7 +57,8 @@ function getSessionStorageBackend(): Storage | null {
   // result-ok: Operation result wrapper payload
   try {
     if (typeof sessionStorage !== 'undefined') return sessionStorage;
-    if (typeof window !== 'undefined' && window.sessionStorage) return window.sessionStorage;
+    if (typeof globalThis.window !== 'undefined' && globalThis.sessionStorage)
+      return globalThis.sessionStorage;
   } catch (err) {
     logger.debug('Storage', 'sessionStorage no accesible:', err);
   }

@@ -4,19 +4,8 @@
  * Modular helper functions and calculations for the Daycare / Breeding store.
  */
 
-import { BASE_SHINY_DENOMINATOR, EGG_SCANNER_MIN_CLASS_LEVEL } from '@/logic/constants/gameplay.ts';
-import { EGG_SPAWN_INTERVAL_MS } from '@/logic/breeding/breedingData.ts';
-import { eggFactory } from '@/logic/breeding/eggFactory.ts';
-import {
-  calculateInheritance,
-  inheritNature,
-  inheritMoves,
-  inheritAbility,
-  calculateShinyChance
-} from '@/logic/breeding/breedingInheritance.ts';
 import { NATURES, isNatureId } from '@/data/battle/natures.ts';
 import type { NatureId } from '@/data/battle/natures.ts';
-import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality.ts';
 import {
   isBabyPokemonSpeciesId,
   isFossilPokemonSpeciesId,
@@ -26,12 +15,23 @@ import {
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB.ts';
 import { isEnabledPokemonId } from '@/data/system/constants.ts';
+import { EGG_SPAWN_INTERVAL_MS } from '@/logic/breeding/breedingData.ts';
+import {
+  calculateInheritance,
+  inheritNature,
+  inheritMoves,
+  inheritAbility,
+  calculateShinyChance
+} from '@/logic/breeding/breedingInheritance.ts';
+import { eggFactory } from '@/logic/breeding/eggFactory.ts';
+import { BASE_SHINY_DENOMINATOR, EGG_SCANNER_MIN_CLASS_LEVEL } from '@/logic/constants/gameplay.ts';
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality.ts';
 import { DEFAULT_MAX_VIGOR } from '@/logic/pokemon/pokemonUtils.ts';
+import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage.ts';
 import { calculateBreedingCost } from '@/stores/breedingActions.ts';
 import type { DaycareSlot, DaycareEgg, DaycareWarehouseItem } from '@/types/breeding/breeding.ts';
 import type { BreedingCompatibility, Pokemon } from '@/types/pokemon/pokemon.ts';
 import type { PlayerClassState } from '@/types/system/game.ts';
-import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage.ts';
 
 // ─── Egg Timer Helpers ────────────────────────────────────────────────────────
 
@@ -50,7 +50,7 @@ export function calculateNextEggTime(
   slotB: DaycareSlot | undefined
 ): number | null {
   if (compatibilityLevel === 0) return null;
-  const interval = (EGG_SPAWN_INTERVAL_MS as Record<number, number>)[compatibilityLevel];
+  const interval = EGG_SPAWN_INTERVAL_MS[compatibilityLevel];
   if (!interval) return null;
 
   if (
@@ -127,7 +127,9 @@ export function restoreDaycareSlots(
   slots: DaycareSlot[]
 ): boolean {
   const all = [...team, ...box];
-  const deposited = all.filter((p): p is Pokemon => p != null && Boolean(p.inDaycare));
+  const deposited = all.filter(
+    (p): p is Pokemon => p !== null && p !== undefined && Boolean(p.inDaycare)
+  );
 
   let needsSave = false;
   for (const p of deposited) {
@@ -249,8 +251,8 @@ export function canGenerateEgg(
 export function isEggSpeciesEligible(speciesId: PokemonSpeciesId): boolean {
   if (isEnabledPokemonId(speciesId)) return true;
   if (
-    typeof window !== 'undefined' &&
-    Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'))
+    typeof globalThis.window !== 'undefined' &&
+    Boolean(globalThis.__VITE_DEBUG__ || globalThis.location?.search?.includes('debug'))
   ) {
     return true;
   }

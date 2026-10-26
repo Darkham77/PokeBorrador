@@ -4,9 +4,10 @@
  * Standardized modal for faction selection.
  */
 import { ref } from 'vue';
-import { usePlayerClassStore } from '@/stores/player/playerClass';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
 import BaseModal from '@/components/common/BaseModal.vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
 import type { FactionId } from '@/types/system/game';
 
 interface Props {
@@ -25,7 +26,7 @@ const classStore = usePlayerClassStore();
 
 const isProcessing = ref(false);
 
-const chooseFaction = async (faction: FactionId) => {
+const chooseFaction = async (faction: FactionId): Promise<void> => {
   if (isProcessing.value) return;
 
   isProcessing.value = true;
@@ -39,7 +40,7 @@ const chooseFaction = async (faction: FactionId) => {
   }
 };
 
-const handleImgError = (e: Event) => {
+const handleImgError = (e: Event): void => {
   (e.target as HTMLImageElement).style.display = 'none';
 };
 

@@ -1,5 +1,9 @@
-import { toID } from '@/logic/utils/strings.ts';
 import type { PokemonMoveId } from '@/data/battle/moves';
+import { logger } from '@/logic/utils/logger';
+import { toID } from '@/logic/utils/strings.ts';
+
+import type { HeuristicDamageCalculator } from './damageCalculator.ts';
+import type { InferenceEngine } from './inferenceEngine.ts';
 import type {
   HeuristicBattleSnapshot,
   HeuristicPokemonState,
@@ -8,8 +12,6 @@ import type {
   DamageMatchup,
   StrategicState
 } from './types.ts';
-import type { HeuristicDamageCalculator } from './damageCalculator.ts';
-import type { InferenceEngine } from './inferenceEngine.ts';
 
 /** Offset to convert zero-indexed array slot to 1-indexed Showdown action choice. */
 export const SHOWDOWN_CHOICE_INDEX_OFFSET = 1;
@@ -102,8 +104,10 @@ export function pickBestSwitch(
           worstDmg,
           calc.calcDamage(oppActive, pokemon, mv, snapshot.field).maxPercent
         );
-      } catch {
-        /* catch-ok: Hypothetical move exploration probe skip */
+      } catch (err) {
+        logger.debug('[HeuristicHelpers] Salto de cálculo hipotético de daño', {
+          cause: err instanceof Error ? err.message : String(err)
+        });
       }
     }
     score +=
@@ -118,8 +122,10 @@ export function pickBestSwitch(
           bestMyDmg,
           calc.calcDamage(pokemon, oppActive, mv.id, snapshot.field).maxPercent
         );
-      } catch {
-        /* catch-ok: Hypothetical move exploration probe skip */
+      } catch (err) {
+        logger.debug('[HeuristicHelpers] Salto de cálculo hipotético de daño', {
+          cause: err instanceof Error ? err.message : String(err)
+        });
       }
     }
     score +=
@@ -190,8 +196,10 @@ export function hasViableSwitchCounter(
           worstDmg,
           calc.calcDamage(oppActive, pokemon, mv, snapshot.field).maxPercent
         );
-      } catch {
-        /* catch-ok: Hypothetical move exploration probe skip */
+      } catch (err) {
+        logger.debug('[HeuristicHelpers] Salto de cálculo hipotético de daño', {
+          cause: err instanceof Error ? err.message : String(err)
+        });
       }
     }
     if (worstDmg >= HEURISTIC_THRESHOLDS.SAFE_SWITCH_MAX_OPP_DAMAGE) return false;
@@ -203,8 +211,10 @@ export function hasViableSwitchCounter(
           bestMyDmg,
           calc.calcDamage(pokemon, oppActive, mv.id, snapshot.field).maxPercent
         );
-      } catch {
-        /* catch-ok: Hypothetical move exploration probe skip */
+      } catch (err) {
+        logger.debug('[HeuristicHelpers] Salto de cálculo hipotético de daño', {
+          cause: err instanceof Error ? err.message : String(err)
+        });
       }
     }
 
@@ -275,7 +285,7 @@ export function hazardsThreatenTeam(
 
 export function shouldConsiderSwitching(
   matchup: DamageMatchup,
-  strategic: StrategicState,
+  _strategic: StrategicState,
   switchOptions: HeuristicPokemonState[],
   myActive: HeuristicPokemonState | null
 ): boolean {
@@ -303,6 +313,5 @@ export function shouldConsiderSwitching(
   )
     return true;
 
-  void strategic;
   return false;
 }

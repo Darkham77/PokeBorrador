@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { usePlayerClassStore } from '@/stores/player/playerClass';
-import { useModalStore } from '@/stores/modals';
+
 import ProfileXpCard from '@/components/profile/ProfileXpCard.vue';
+import { useModalStore } from '@/stores/modals';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+
 import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
 
 const classStore = usePlayerClassStore();
@@ -11,7 +13,7 @@ const modalStore = useModalStore();
 const currentClass = computed(() => classStore.currentClassDef);
 const classLevel = computed(() => classStore.classLevel);
 
-const openClassSelection = () => {
+const openClassSelection = (): void => {
   modalStore.open('ClassSelection');
 };
 </script>

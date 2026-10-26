@@ -1,10 +1,11 @@
-import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry';
-import { getDayCycle } from '@/logic/utils/timeUtils';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { PokemonType } from '@/data/battle/types';
 import type { PokemonMoveId, MoveCategory } from '@/data/battle/moves';
+import type { PokemonType } from '@/data/battle/types';
 import type { PureBattleWeather } from '@/logic/battle/battleMathTypes';
+import { getDayCycle } from '@/logic/utils/timeUtils';
+import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry';
 import type { StatModifierStatusClass } from '@/types/battle/tooltip';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import {
   calculateStabMultiplier,
   calculateWeatherAndCyclePowerMultiplier,

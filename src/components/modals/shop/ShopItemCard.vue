@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useShopStore } from '@/stores/inventory/shop';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
+
+import type { ItemId } from '@/data/inventory/items';
+import { MAX_BAG_ITEM_QUANTITY } from '@/logic/constants/gameplay';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { formatCurrency } from '@/logic/utils/formatters';
 import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver';
-import { MAX_BAG_ITEM_QUANTITY } from '@/logic/constants/gameplay';
-import type { ItemId } from '@/data/inventory/items';
+import { useGameStore } from '@/stores/game';
+import { useShopStore } from '@/stores/inventory/shop';
+import { useUIStore } from '@/stores/ui';
 
 interface ShopItem {
   id: ItemId;
@@ -58,18 +59,18 @@ const canIncreaseQuantity = computed(
 
 const tierLabel = computed(() => getItemTierLabel(props.item.tier));
 
-const handleQuantityChange = (e: Event) => {
+const handleQuantityChange = (e: Event): void => {
   if (e.target) {
     const val = Number((e.target as HTMLInputElement).value);
     shopStore.setQuantity(props.item.id, val);
   }
 };
 
-const adjustQuantity = (amount: number) => {
+const adjustQuantity = (amount: number): void => {
   shopStore.setQuantity(props.item.id, quantity.value + amount);
 };
 
-const buy = () => {
+const buy = (): void => {
   if (!isUnlocked.value) {
     uiStore.notify('¡Objeto bloqueado! Sube tu nivel de entrenador.', '🔒');
     return;
@@ -79,7 +80,7 @@ const buy = () => {
 
 const tierColor = computed(() => getItemTierColor(props.item.tier));
 
-const handleImageError = (e: Event) => {
+const handleImageError = (e: Event): void => {
   if (e.target) {
     (e.target as HTMLImageElement).style.display = 'none';
   }

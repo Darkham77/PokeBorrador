@@ -1,9 +1,10 @@
-import type { SBCtx } from './showdownBridgeCtx.ts';
-import { isPokemonStatus, type Pokemon } from '../../types/pokemon/pokemon.ts';
 import { gameBus } from '@/logic/events/gameBus.ts';
-import { getForcedExitConfig } from './helpers/forcedSwitchRegistry.ts';
-import { applyEntryHazards } from './battleFlow.ts';
 import type { BattleSide, BattleState } from '@/types/battle/battle.ts';
+
+import { isPokemonStatus, type Pokemon } from '../../types/pokemon/pokemon.ts';
+import { applyEntryHazards } from './battleFlow.ts';
+import { getForcedExitConfig } from './helpers/forcedSwitchRegistry.ts';
+import type { SBCtx } from './showdownBridgeCtx.ts';
 
 function parseTargetStatusAndHp(target: Pokemon, rawDetails: string, hpString: string): void {
   if (target.volatileCounters) {
@@ -196,7 +197,7 @@ async function performSideSendOut(
   }
 
   const stages = (side === 'player' ? store.playerStages?.value : store.enemyStages?.value) || {};
-  void applyEntryHazards(target, stages, store.addLog);
+  await applyEntryHazards(target, stages, store.addLog);
 }
 
 function handleSameMonSwitch(

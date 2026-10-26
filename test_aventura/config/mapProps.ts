@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/config/mapProps.ts
  *
@@ -271,7 +272,7 @@ export const FIELD_ROCK: MapPropDefinition = {
 /**
  * Canonical O(1) Map Props Registry
  */
-export const MAP_PROPS_REGISTRY: Record<string, MapPropDefinition> = {
+export const MAP_PROPS_REGISTRY: Record<DisplayText, MapPropDefinition> = {
   // open-record: Map prop definitions catalog indexed by prop id
   [STREET_LAMP.id]: STREET_LAMP,
   [MAILBOX.id]: MAILBOX,

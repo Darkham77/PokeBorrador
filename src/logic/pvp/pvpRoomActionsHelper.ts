@@ -7,11 +7,11 @@
  */
 
 import { gsap } from 'gsap';
-import type { BattleInvite, PvpChallengeConfig, PvpRoomCode } from '@/types/battle/pvp';
-import { generateRoomCode, isValidRoomCode, formatRoomCode } from '@/logic/pvp/pvpRoomCodeHelper';
 
 import type { DBRouter } from '@/logic/db/dbRouter';
 import type { PvpBattleSeatFlags } from '@/logic/pvp/livePvPBattleSetupHandler';
+import { generateRoomCode, isValidRoomCode, formatRoomCode } from '@/logic/pvp/pvpRoomCodeHelper';
+import type { BattleInvite, PvpChallengeConfig, PvpRoomCode } from '@/types/battle/pvp';
 
 const ROOM_HOST_POLL_INTERVAL_SEC = 2;
 const ROOM_BATTLE_INVITE_COLUMNS =
@@ -63,7 +63,7 @@ async function executeCreateRoom(
 function startRoomHostPoller(inviteId: string, ctx: RoomActionsContext): gsap.core.Tween {
   let poller: gsap.core.Tween;
 
-  const poll = async () => {
+  const poll = async (): Promise<void> => {
     if (!ctx.db) return;
     const { data } = (await ctx.db
       .from('battle_invites')

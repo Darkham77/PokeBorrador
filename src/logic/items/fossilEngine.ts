@@ -1,8 +1,8 @@
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon';
 import type { GameState } from '@/types/system/game';
-import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 /**
  * fossilEngine.ts

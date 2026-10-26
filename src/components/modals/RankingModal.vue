@@ -1,17 +1,19 @@
 <script setup lang="ts">
+import { gsap } from 'gsap';
 import { ref, onMounted, watch, nextTick, computed } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
 import BaseRefreshButton from '@/components/common/BaseRefreshButton.vue';
-import RankingPlayerRow from './RankingPlayerRow.vue';
-import { useSocialStore } from '@/stores/social/social';
-import { useUIStore } from '@/stores/ui';
+import SeasonTournamentCard from '@/components/modals/SeasonTournamentCard.vue';
+import { RANK_ANIM_FAST_DURATION_SEC } from '@/composables/arena/useRankCardHover';
+import { toPokemonType, type PokemonType } from '@/data/battle/types';
 import { getSeasonalThemeForMonth } from '@/data/system/rankedData';
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
-import SeasonTournamentCard from '@/components/modals/SeasonTournamentCard.vue';
-import { toPokemonType, type PokemonType } from '@/data/battle/types';
+import { useSocialStore } from '@/stores/social/social';
+import { useUIStore } from '@/stores/ui';
 import type { RankingSortKey } from '@/types/system/game';
-import { gsap } from 'gsap';
-import { RANK_ANIM_FAST_DURATION_SEC } from '@/composables/arena/useRankCardHover';
+
+import RankingPlayerRow from './RankingPlayerRow.vue';
 
 const RANK_LIST_ANIM_X_OFFSET = -15;
 const RANK_LIST_ANIM_SCALE_MIN = 0.97;
@@ -50,7 +52,7 @@ const allowedTypes = computed<PokemonType[]>(() =>
   (currentTheme.value.allowedTypes || []).map(toPokemonType)
 );
 
-const handleTabEnter = (e: MouseEvent) => {
+const handleTabEnter = (e: MouseEvent): void => {
   const el = e.currentTarget as HTMLElement;
   if (el.classList.contains('active')) return;
   gsap.to(el, {
@@ -61,7 +63,7 @@ const handleTabEnter = (e: MouseEvent) => {
   });
 };
 
-const handleTabLeave = (e: MouseEvent) => {
+const handleTabLeave = (e: MouseEvent): void => {
   const el = e.currentTarget as HTMLElement;
   if (el.classList.contains('active')) return;
   gsap.to(el, {
@@ -74,12 +76,12 @@ const handleTabLeave = (e: MouseEvent) => {
 };
 
 // Fetch leaderboards
-const loadLeaderboard = async () => {
+const loadLeaderboard = async (): Promise<void> => {
   await socialStore.fetchLeaderboard(activeSort.value);
 };
 
 // GSAP Stagger Entrance Animations
-const animateList = () => {
+const animateList = (): void => {
   nextTick(() => {
     if (!listRef.value) return;
     const cards = listRef.value.querySelectorAll('.rank-card');

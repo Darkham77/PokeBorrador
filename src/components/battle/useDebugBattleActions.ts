@@ -5,10 +5,12 @@
  * and live sprite swap controls for DebugActionPanel.
  */
 
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, type Ref } from 'vue';
+
+import { useAudioStore } from '@/stores/audio.ts';
 import { useBattleStore } from '@/stores/battle/battle.ts';
 import { useGameStore } from '@/stores/game.ts';
-import { useAudioStore } from '@/stores/audio.ts';
+
 import {
   ALL_PDEX,
   deconstructPokemonId,
@@ -18,7 +20,25 @@ import {
 } from './debugActionPanelHelpers.ts';
 import { executeDebugCaptureFlow } from './debugCaptureFlow.ts';
 
-export function useDebugBattleActions() {
+export interface UseDebugBattleActionsReturn {
+  battleStore: ReturnType<typeof useBattleStore>;
+  playerBaseId: Ref<string>;
+  playerVariant: Ref<string>;
+  playerGender: Ref<string>;
+  enemyBaseId: Ref<string>;
+  enemyVariant: Ref<string>;
+  enemyGender: Ref<string>;
+  debugCapture: (forceCritical?: boolean) => Promise<void>;
+  debugCriticalCapture: () => Promise<void>;
+  toggleBinoculars: () => void;
+  toggleSearchMode: () => Promise<void>;
+  updateVisualSwap: (side?: string) => void;
+  incrementSwap: (side?: string) => void;
+  decrementSwap: (side?: string) => void;
+  toggleStatus: (side: string, type: string) => void;
+}
+
+export function useDebugBattleActions(): UseDebugBattleActionsReturn {
   const battleStore = useBattleStore();
   const gameStore = useGameStore();
   const audio = useAudioStore();
@@ -62,29 +82,31 @@ export function useDebugBattleActions() {
     { immediate: true }
   );
 
-  const debugCapture = () => {
+  const debugCapture = async (): Promise<void> => {
     if (!battleStore.state?.enemy) return;
-    return executeDebugCaptureFlow({ battleStore, gameStore, audio, isCritical: false });
+    await executeDebugCaptureFlow({ battleStore, gameStore, audio, isCritical: false });
   };
 
-  const debugCriticalCapture = () => {
+  const debugCriticalCapture = async (): Promise<void> => {
     if (!battleStore.state?.enemy) return;
-    return executeDebugCaptureFlow({ battleStore, gameStore, audio, isCritical: true });
+    await executeDebugCaptureFlow({ battleStore, gameStore, audio, isCritical: true });
   };
 
-  const toggleBinoculars = () => {
+  const toggleBinoculars = (): void => {
     battleStore.debugBinoculars = !battleStore.debugBinoculars;
   };
 
-  const toggleSearchMode = async () => {
+  const toggleSearchMode = async (): Promise<void> => {
     const { BATTLE_STATES } = await import('@/logic/battle/battleStateMachine.ts');
     const nextState = battleStore.isSearching
       ? BATTLE_STATES.INITIALIZING
       : BATTLE_STATES.SEARCH_PHASE;
-    void battleStore.fsm.transition(nextState);
+    await battleStore.fsm.transition(nextState);
   };
 
-  const getSideSwapRef = (isPlayer: boolean) => {
+  const getSideSwapRef = (
+    isPlayer: boolean
+  ): { baseId: string; variant: string; gender: string } => {
     if (isPlayer) {
       return {
         baseId: playerBaseId.value,
@@ -95,7 +117,7 @@ export function useDebugBattleActions() {
     return { baseId: enemyBaseId.value, variant: enemyVariant.value, gender: enemyGender.value };
   };
 
-  const updateVisualSwap = (side = 'enemy') => {
+  const updateVisualSwap = (side = 'enemy'): void => {
     const isPlayer = side === 'player';
     const { baseId, variant, gender } = getSideSwapRef(isPlayer);
     executeVisualSwap({
@@ -108,21 +130,21 @@ export function useDebugBattleActions() {
     });
   };
 
-  const incrementSwap = (side = 'enemy') => {
+  const incrementSwap = (side = 'enemy'): void => {
     const baseIdRef = side === 'player' ? playerBaseId : enemyBaseId;
     const num = resolveBaseNumber(String(baseIdRef.value ?? '').trim(), ALL_PDEX);
     baseIdRef.value = String(num + 1);
     updateVisualSwap(side);
   };
 
-  const decrementSwap = (side = 'enemy') => {
+  const decrementSwap = (side = 'enemy'): void => {
     const baseIdRef = side === 'player' ? playerBaseId : enemyBaseId;
     const num = resolveBaseNumber(String(baseIdRef.value ?? '').trim(), ALL_PDEX);
     baseIdRef.value = String(Math.max(1, num - 1));
     updateVisualSwap(side);
   };
 
-  const toggleStatus = (side: string, type: string) => {
+  const toggleStatus = (side: string, type: string): void => {
     applyToggledCombatant(battleStore, side === 'player', type);
   };
 

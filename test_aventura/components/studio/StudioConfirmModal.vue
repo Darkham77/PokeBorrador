@@ -3,11 +3,11 @@ import { useMapAdventureStudioStore } from '../../stores/mapAdventureStudio';
 
 const store = useMapAdventureStudioStore();
 
-function handleConfirm() {
+function handleConfirm(): void {
   store.executeRegenerate();
 }
 
-function handleCancel() {
+function handleCancel(): void {
   store.showConfirmRegenerateModal = false;
 }
 </script>

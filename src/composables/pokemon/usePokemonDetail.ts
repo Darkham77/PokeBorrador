@@ -1,31 +1,36 @@
-import { computed, toValue } from 'vue';
+import type { DisplayText } from '@francogp/auditor';
+import { computed, toValue, type ComputedRef } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
-import { useGameStore } from '@/stores/game';
-import { useModalStore } from '@/stores/modals';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping';
+
+import { isMoveCategory, type MoveCategory, type PokemonMoveId } from '@/data/battle/moves';
+import { toPokemonType } from '@/data/battle/types';
+import { getItemName } from '@/data/inventory/items';
 import {
   EVOLUTION_TABLE,
   STONE_EVOLUTIONS,
   TRADE_EVOLUTIONS,
   type EvolutionTriggerType
 } from '@/data/pokemon/evolutionData';
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping';
+import { DEFAULT_MAX_PP_FALLBACK } from '@/logic/constants/gameplay';
+import {
+  calculateInstancePhysicalData,
+  type InstancePhysicalData
+} from '@/logic/pokemon/physicalDimensionsMath';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { getItemName } from '@/data/inventory/items';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
 import { POKEMON_STAT_KEYS, type Pokemon, type PokemonStatKey } from '@/types/pokemon/pokemon';
 import type { MoveBaseData } from '@/types/system/database';
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
-import { toPokemonType } from '@/data/battle/types';
-import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { MoveCategory } from '@/data/battle/moves';
-import { calculateInstancePhysicalData } from '@/logic/pokemon/physicalDimensionsMath';
-import { DEFAULT_MAX_PP_FALLBACK } from '@/logic/constants/gameplay';
 
 const MAX_BASE_STAT_VALUE = 255;
 
 function requireMoveCategory(value: string | undefined): MoveCategory {
   if (value === undefined) return 'physical';
-  if (value === 'physical' || value === 'special' || value === 'status') return value;
+  if (isMoveCategory(value)) return value;
   throw new Error(`Invalid move category: ${value}`);
 }
 
@@ -68,8 +73,67 @@ function resolveReactivePokemon(
   return null;
 }
 
+export interface StatDisplay {
+  id: string;
+  label: string;
+  value: number;
+  baseValue: number;
+  max: number;
+  color: string;
+  iv: number;
+  ev: number;
+}
+
+export interface MoveDetail {
+  id: PokemonMoveId;
+  level: number;
+  name: string;
+  type: ReturnType<typeof toPokemonType>;
+  cat: MoveCategory;
+  power: number;
+  acc: number;
+  pp: number;
+  maxPP: number;
+}
+
+export interface DetailSpeciesData extends Omit<
+  NonNullable<ReturnType<typeof pokemonDataProvider.getPokemonData>>,
+  'type'
+> {
+  nationalId: string;
+  type: ReturnType<typeof toPokemonType>[];
+  stats: {
+    hp: number;
+    atk: number;
+    def: number;
+    spa: number;
+    spd: number;
+    spe: number;
+  };
+}
+
+export interface UsePokemonDetailReturn {
+  targetPokemon: ComputedRef<Pokemon | null>;
+  isInstance: ComputedRef<boolean>;
+  targetSpeciesId: ComputedRef<PokemonSpeciesId>;
+  species: ComputedRef<DetailSpeciesData | null>;
+  cleanCategory: ComputedRef<string>;
+  evolutions: ComputedRef<EvolutionEntry[]>;
+  displayStats: ComputedRef<StatDisplay[]>;
+  moveDetails: ComputedRef<MoveDetail[]>;
+  currentMoves: ComputedRef<Pokemon['moves']>;
+  canStoneEvolve: ComputedRef<boolean>;
+  instancePhysicalData: ComputedRef<InstancePhysicalData | null>;
+  captureDateFormatted: ComputedRef<string | null>;
+  getSprite: (id: string, isShiny?: boolean) => string;
+  finalIndex: ComputedRef<number>;
+  finalContext: ComputedRef<string>;
+}
+
 // open-record: Dynamic Vue props reactive dictionary
-export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unknown>>) {
+export function usePokemonDetail(
+  propsRefs: Record<DisplayText, MaybeRefOrGetter<unknown>>
+): UsePokemonDetailReturn {
   const gameStore = useGameStore();
   const modalStore = useModalStore();
 
@@ -78,21 +142,27 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
 
   const uiData = computed(() => {
     const modal = modalStore.stack.find((m) => m.name === 'PokemonDetail');
-    return (modal?.props || {}) as { pokemon?: Pokemon; index?: number; context?: string };
+    return modal?.props || {};
   });
 
-  const finalIndex = computed(() => {
+  const finalIndex = computed<number>(() => {
     const pIdx = getProp<number>('index') ?? -1;
-    return pIdx !== -1 ? pIdx : (uiData.value.index ?? -1);
+    if (pIdx !== -1) return pIdx;
+    const modalProps = uiData.value;
+    return typeof modalProps.index === 'number' ? modalProps.index : -1;
   });
 
-  const finalContext = computed(() => {
+  const finalContext = computed<string>(() => {
     const pCtx = getProp<string>('context');
-    return pCtx && pCtx !== 'pokedex' ? pCtx : uiData.value.context || 'pokedex';
+    if (pCtx && pCtx !== 'pokedex') return pCtx;
+    const modalProps = uiData.value;
+    return typeof modalProps.context === 'string' ? modalProps.context : 'pokedex';
   });
 
   const targetPokemon = computed(() => {
-    const directPokemon = getProp<Pokemon>('pokemon') || uiData.value.pokemon;
+    const modalProps = uiData.value;
+    const directPokemon =
+      getProp<Pokemon>('pokemon') || (modalProps.pokemon as Pokemon | null | undefined);
     return resolveReactivePokemon(gameStore, finalContext.value, finalIndex.value, directPokemon);
   });
 
@@ -149,15 +219,18 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
       return { ...evo, to: toId, isSeen, isCaught };
     };
 
-    const evoTable = EVOLUTION_TABLE as Record<string, { level: number; to: string } | undefined>; // open-record: Generic key-value data dictionary container
+    const evoTable = EVOLUTION_TABLE as Record<
+      DisplayText,
+      { level: number; to: string } | undefined
+    >; // open-record: Generic key-value data dictionary container
     if (evoTable[id]) {
-      const ev = evoTable[id]!;
+      const ev = evoTable[id];
       list.push(enrichEvo({ type: 'level', requirement: `Nv. ${ev.level}`, to: ev.to }));
     }
 
     // open-record: Generic key-value data dictionary container
     const stoneTable = STONE_EVOLUTIONS as Record<
-      string,
+      DisplayText,
       { stone: string; to: string } | undefined
     >;
     Object.keys(stoneTable).forEach((key) => {
@@ -167,9 +240,9 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
       }
     });
 
-    const tradeTable = TRADE_EVOLUTIONS as Record<string, string | undefined>; // open-record: Generic key-value data dictionary container
+    const tradeTable = TRADE_EVOLUTIONS as Record<DisplayText, string | undefined>; // open-record: Generic key-value data dictionary container
     if (tradeTable[id]) {
-      list.push(enrichEvo({ type: 'trade', requirement: 'Intercambio', to: tradeTable[id]! }));
+      list.push(enrichEvo({ type: 'trade', requirement: 'Intercambio', to: tradeTable[id] }));
     }
     return list;
   });
@@ -215,7 +288,7 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
     if (!species.value || !species.value.learnset) return [];
     return species.value.learnset
       .map((m) => {
-        const resolvedId = m.id || '';
+        const resolvedId = m.id;
         const data = pokemonDataProvider.getMoveData(resolvedId);
         const basePP = data?.pp || DEFAULT_MAX_PP_FALLBACK;
         return {
@@ -296,7 +369,7 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
     }
   });
 
-  const getSprite = (id: string, isShiny: boolean = false) =>
+  const getSprite = (id: string, isShiny: boolean = false): string =>
     getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny });
 
   return {

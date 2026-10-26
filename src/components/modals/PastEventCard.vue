@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import { computed, watch, ref } from 'vue';
 import { gsap } from 'gsap';
-import type { PastEventHistoryItem } from '@/types/system/stores';
+import { computed, watch, ref } from 'vue';
+
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { usePastEventAwards } from '@/composables/events/usePastEventAwards';
 import { getEventDisplayName, type Event as GameEvent } from '@/logic/events/eventEngine';
-import { useChatCosmeticsStore } from '@/stores/social/chatCosmetics';
+import { isAwardClaimable } from '@/logic/events/eventValidators';
 import { useEventStore } from '@/stores/events';
 import { useModalStore } from '@/stores/modals';
+import { useChatCosmeticsStore } from '@/stores/social/chatCosmetics';
 import { useUIStore } from '@/stores/ui';
-import { isAwardClaimable } from '@/logic/events/eventValidators';
-import PVTooltip from '@/components/common/PVTooltip.vue';
+import type { PastEventHistoryItem } from '@/types/system/stores';
+
 import PastEventAwardRow from './PastEventAwardRow.vue';
 import PastEventCardClaimAction from './PastEventCardClaimAction.vue';
 import PastEventCategoryPodiumBlock from './PastEventCategoryPodiumBlock.vue';
-import { usePastEventAwards } from '@/composables/events/usePastEventAwards';
 
 interface Props {
   item: PastEventHistoryItem;
 }
 
-interface Emits {
-  (e: 'claim', awardId: string): void;
-}
+type Emits = (e: 'claim', awardId: string) => void;
 
 const props = defineProps<Props>();
 const _emit = defineEmits<Emits>();
@@ -50,7 +50,7 @@ const canOpenDetail = computed<boolean>(() => {
   return displayName.value !== 'Evento desconocido' && matchingEvent.value !== null;
 });
 
-const openEventDetail = () => {
+const openEventDetail = (): void => {
   if (!canOpenDetail.value || !matchingEvent.value) return;
   const fullEvent: GameEvent & { ended_at?: string } = {
     ...matchingEvent.value,
@@ -82,7 +82,7 @@ watch(
   { immediate: true }
 );
 
-const onBtnHover = (event: MouseEvent, isEntering: boolean) => {
+const onBtnHover = (event: MouseEvent, isEntering: boolean): void => {
   const btn = event.currentTarget as HTMLElement;
   if (!btn || btn.hasAttribute('disabled')) return;
   if (isEntering) {
@@ -102,11 +102,11 @@ const onBtnHover = (event: MouseEvent, isEntering: boolean) => {
   }
 };
 
-const onDiscardHover = (event: MouseEvent, isEntering: boolean) => {
+const onDiscardHover = (event: MouseEvent, isEntering: boolean): void => {
   onBtnHover(event, isEntering);
 };
 
-const onDiscardClick = (awardId?: string, categoryName?: string) => {
+const onDiscardClick = (awardId?: string, categoryName?: string): void => {
   if (!awardId) return;
   if (modalStore.isOpen('Confirm')) return;
   const catSuffix = categoryName ? ` (${categoryName})` : '';
@@ -123,17 +123,17 @@ const onDiscardClick = (awardId?: string, categoryName?: string) => {
   });
 };
 
-const goToHomeRewards = () => {
+const goToHomeRewards = (): void => {
   modalStore.closeAll();
   uiStore.activeTab = 'home';
 };
 
-const onClaimClick = (_awardUid?: string) => {
+const onClaimClick = (_awardUid?: string): void => {
   goToHomeRewards();
 };
 
 const isClaimingAll = ref(false);
-const onClaimAllClick = () => {
+const onClaimAllClick = (): void => {
   goToHomeRewards();
 };
 

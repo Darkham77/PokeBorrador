@@ -6,9 +6,11 @@
  * across both SQLite and PostgreSQL.
  */
 
-import { describe, it, expect, vi } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
+
+import { describe, it, expect, vi } from 'vite-plus/test';
+
 import { describeWithDatabase } from '../../dbTestHelper.ts';
 
 let memoryDb: DatabaseSync;

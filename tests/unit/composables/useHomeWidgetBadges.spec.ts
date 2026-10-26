@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { ref } from 'vue';
+
 import {
   useHomeWidgetBadges,
   registerWidgetBadge,

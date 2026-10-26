@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useGameStore } from '@/stores/game';
-import { useBoxStore } from '@/stores/box';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
-import BaseModal from '@/components/common/BaseModal.vue';
 
+import BaseModal from '@/components/common/BaseModal.vue';
+import { useBoxStore } from '@/stores/box';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 interface Props {
@@ -39,7 +39,7 @@ const boxesOccupation = computed(() => {
     const start = i * BOX_CAPACITY_SLOTS;
     const end = start + BOX_CAPACITY_SLOTS;
     const slice = boxArray.slice(start, end);
-    const count = slice.filter((p) => p != null).length;
+    const count = slice.filter((p) => p !== null && p !== undefined).length;
     result.push({
       index: i,
       number: i + 1,
@@ -51,7 +51,7 @@ const boxesOccupation = computed(() => {
   return result;
 });
 
-const handleMove = (targetBoxIndex: number) => {
+const handleMove = (targetBoxIndex: number): void => {
   const target = boxesOccupation.value[targetBoxIndex];
   if (target?.isFull) {
     uiStore.notify('Esa caja está llena.', '⚠️');

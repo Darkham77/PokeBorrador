@@ -1,8 +1,9 @@
 import type { ID } from '@pkmn/sim';
-import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
-import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
-import type { BaseStats } from '../pokemon/statsMath.ts';
+
 import type { PokemonSpeciesId } from '../../data/pokemon/pokedex.ts';
+import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
+import type { BaseStats } from '../pokemon/statsMath.ts';
+import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 
 export { mapToShowdownSet } from './showdownSetMapper.ts';
 

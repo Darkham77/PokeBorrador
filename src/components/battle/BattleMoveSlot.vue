@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { computed, onMounted, watch, onUnmounted, useTemplateRef } from 'vue';
 import { gsap } from 'gsap';
-import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
-import BattleMoveInfoZone from '@/components/battle/BattleMoveInfoZone.vue';
+import { computed, onMounted, watch, onUnmounted, useTemplateRef } from 'vue';
+
 import BattleMoveDetails from '@/components/battle/BattleMoveDetails.vue';
 import BattleMoveEmptySlot from '@/components/battle/BattleMoveEmptySlot.vue';
+import BattleMoveInfoZone from '@/components/battle/BattleMoveInfoZone.vue';
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
 import { useMoveSlotData } from '@/composables/battle/useMoveSlotData';
 import { toPokemonType } from '@/data/battle/types';
+import { MOBILE_SCREEN_BREAKPOINT_PX } from '@/logic/constants/gameplay';
 import { PDEX_TYPE_COLORS as TYPE_COLORS } from '@/logic/constants/pokedexConstants';
 import { Z_LAYERS, SCALE_DEFAULT_BASE_FACTOR } from '@/logic/constants/visuals';
-import { MOBILE_SCREEN_BREAKPOINT_PX } from '@/logic/constants/gameplay';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import { useBattleStore } from '@/stores/battle/battle';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+
 import {
   type ShowdownPlayerRequest,
   type MoveSlotGlowType,
@@ -88,7 +90,7 @@ const weatherAuraClass = computed(() =>
   )
 );
 
-const updateGlow = () => {
+const updateGlow = (): void => {
   if (glowTween) {
     glowTween.kill();
     glowTween = null;
@@ -154,13 +156,14 @@ const updateGlow = () => {
   }
 };
 
-const onHover = (isEntering: boolean) => {
+const onHover = (isEntering: boolean): void => {
   const el = rootEl.value;
   if (!el || isDisabled.value) return;
 
   if (isEntering) {
     const isSmallScreen =
-      typeof window !== 'undefined' && window.innerWidth <= MOBILE_SCREEN_BREAKPOINT_PX;
+      typeof globalThis.window !== 'undefined' &&
+      globalThis.innerWidth <= MOBILE_SCREEN_BREAKPOINT_PX;
     gsap.to(el, {
       scale: isSmallScreen ? SCALE_DEFAULT_BASE_FACTOR : HOVER_SCALED_MULT,
       filter: 'Brightness(1.1)',

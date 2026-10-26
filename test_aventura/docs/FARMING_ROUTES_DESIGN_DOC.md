@@ -82,7 +82,7 @@ Se necesitará una extensión del `kantoGraph.ts` o un nuevo grafo que mapee los
 
 **Propuesta:**
 
-- Añadir una propiedad `resources: { [resourceType: string]: number }` a `MapLocation` (definido en `src/types/encounters.ts`) para indicar la abundancia de recursos en un mapa.
+- Añadir una propiedad `resources: { [resourceType: string]: number }` a `MapLocation` (definido en `src/types/pokemon/encounters.ts`) para indicar la abundancia de recursos en un mapa.
 - Modificar `findShortestPath` o crear una nueva función `findFarmingPath` que, además de considerar las MOs, evalúe la "puntuación de farmeo" de cada ruta basada en la densidad del recurso deseado.
 
 ### 3.3. Aplicación de Buffs y Previsualización

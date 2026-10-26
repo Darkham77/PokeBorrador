@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/stores/social/chatSanitizer.ts
  *
@@ -17,7 +18,7 @@ export interface PrivateChat {
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export type PrivateChatMap = Record<string, PrivateChat>; // open-record: User ID to private chat mapping
+export type PrivateChatMap = Record<DisplayText, PrivateChat>; // open-record: User ID to private chat mapping
 
 export function sanitizePrivateChats(
   chats: PrivateChatMap | undefined,

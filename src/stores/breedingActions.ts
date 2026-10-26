@@ -1,21 +1,10 @@
-import { useGameStore } from '@/stores/game.ts';
-import { useUIStore } from '@/stores/ui.ts';
-import { useInventoryStore } from '@/stores/inventory/inventory.ts';
+import type { Ref } from 'vue';
+
+import { NATURES } from '@/data/battle/natures';
 import { requireItemId, type ItemId } from '@/data/inventory/items';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { eggFactory } from '@/logic/breeding/eggFactory';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
-import {
-  calculateCloningCost,
-  calculateCloningRerolls,
-  calculateCloningShinyChance
-} from '@/logic/minigames/minigameMath';
-import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils';
-import { calculateTotalIVs } from '@/logic/pokemon/statsMath';
-import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
-import type { Ref } from 'vue';
-import type { DaycareEgg } from '@/types/breeding/breeding';
-import { NATURES } from '@/data/battle/natures';
+import { eggFactory } from '@/logic/breeding/eggFactory';
 import {
   BREEDING_COST_LOWEST_TIER,
   BREEDING_COST_MID_LOW_TIER,
@@ -28,10 +17,22 @@ import {
   FOSSIL_CLONE_BASE_SUCCESS_CHANCE,
   MAX_SINGLE_STAT_IV
 } from '@/logic/constants/gameplay.ts';
+import {
+  calculateCloningCost,
+  calculateCloningRerolls,
+  calculateCloningShinyChance
+} from '@/logic/minigames/minigameMath';
+import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils';
+import { calculateTotalIVs } from '@/logic/pokemon/statsMath';
+import { useGameStore } from '@/stores/game.ts';
+import { useInventoryStore } from '@/stores/inventory/inventory.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import type { DaycareEgg } from '@/types/breeding/breeding';
+import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
 
 export function calculateBreedingCost(pA: Pokemon, pB: Pokemon): number {
   const NEAR_PERFECT_IV_MIN = MAX_SINGLE_STAT_IV - 1;
-  const countPerfect = (p: Pokemon) => {
+  const countPerfect = (p: Pokemon): number => {
     if (!p.ivs) return 0;
     return Object.values(p.ivs).filter((val) => val >= NEAR_PERFECT_IV_MIN).length;
   };
@@ -100,7 +101,7 @@ export function executeCloneFossil(
 
   if (!isSuccess) {
     uiStore.notify('La extracción de ADN del fósil ha fallado.', '⚠️');
-    void gameStore.scheduleSave();
+    gameStore.scheduleSave();
     return false;
   }
 
@@ -142,6 +143,6 @@ export function executeCloneFossil(
     `¡Clonación exitosa! Huevo Ancestral de ${POKEMON_DB[speciesId]?.name} creado.`,
     '🥚'
   );
-  void gameStore.scheduleSave();
+  gameStore.scheduleSave();
   return true;
 }

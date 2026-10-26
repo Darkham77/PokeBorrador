@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 // scripts/battle-tester/fuzzer-engine.ts
 Reflect.set(globalThis, '__E2E__', true);
 process.env.VITE_E2E = 'true';
@@ -298,8 +299,8 @@ interface CoverageItem {
 }
 
 interface BatchLoopResult {
-  moveCoverage: Record<string, CoverageItem>;
-  abilityCoverage: Record<string, CoverageItem>;
+  moveCoverage: Record<DisplayText, CoverageItem>;
+  abilityCoverage: Record<DisplayText, CoverageItem>;
   batches: ReturnType<typeof generateTestBatches>;
 }
 
@@ -319,8 +320,8 @@ export async function runStandaloneBatch(
   unhandledBridgeLines.length = 0;
   const localUnhandled: string[] = [];
 
-  const moveCoverage: Record<string, CoverageItem> = {};
-  const abilityCoverage: Record<string, CoverageItem> = {};
+  const moveCoverage: Record<DisplayText, CoverageItem> = {};
+  const abilityCoverage: Record<DisplayText, CoverageItem> = {};
   batch.movesToTest.forEach((m) => {
     moveCoverage[m] = { id: m, type: 'move', status: 'UNTESTED' };
   });
@@ -480,7 +481,7 @@ export async function runStandaloneBatch(
             side.requestState === 'move'
         );
 
-        const preTurnForceSwitches: Partial<Record<string, boolean>> = {};
+        const preTurnForceSwitches: Partial<Record<DisplayText, boolean>> = {};
         for (const side of simBattle.sides) {
           const reqKind = classifyRequest(side.activeRequest as ChoiceRequest);
           if (reqKind === 'force-switch' || side.requestState === 'switch') {
@@ -510,8 +511,8 @@ export async function runStandaloneBatch(
           p1ReqKind !== 'force-switch' &&
           simBattle.p1.requestState !== 'switch';
 
-        const preTurnHeals: Partial<Record<string, boolean>> = {};
-        const preTurnPpRefills: Partial<Record<string, boolean>> = {};
+        const preTurnHeals: Partial<Record<DisplayText, boolean>> = {};
+        const preTurnPpRefills: Partial<Record<DisplayText, boolean>> = {};
 
         const engine = new ShowdownBattleEngine({ mode: 'fuzzer' });
         Reflect.set(engine, 'battle', simBattle);
@@ -888,8 +889,8 @@ export async function runStandaloneBatch(
 async function runBattleBatchLoop(): Promise<BatchLoopResult> {
   const batches = generateTestBatches(6);
 
-  const moveCoverage: Record<string, CoverageItem> = {};
-  const abilityCoverage: Record<string, CoverageItem> = {};
+  const moveCoverage: Record<DisplayText, CoverageItem> = {};
+  const abilityCoverage: Record<DisplayText, CoverageItem> = {};
 
   batches.forEach((b) => {
     b.movesToTest.forEach((m) => {
@@ -919,8 +920,8 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
     roundNum: number
   ): Promise<{
     batch: (typeof batches)[0];
-    moveCoverage: Record<string, CoverageItem>;
-    abilityCoverage: Record<string, CoverageItem>;
+    moveCoverage: Record<DisplayText, CoverageItem>;
+    abilityCoverage: Record<DisplayText, CoverageItem>;
   }> {
     return new Promise((resolve, reject) => {
       const worker = new Worker(workerScript, {
@@ -934,8 +935,8 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
           status: string;
           result?: {
             batch: (typeof batches)[0];
-            moveCoverage: Record<string, CoverageItem>;
-            abilityCoverage: Record<string, CoverageItem>;
+            moveCoverage: Record<DisplayText, CoverageItem>;
+            abilityCoverage: Record<DisplayText, CoverageItem>;
           };
           error?: string;
         }) => {
@@ -1206,7 +1207,7 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
   }
   console.log(`📦 ${batches.length} batches de ítems...`);
 
-  const itemCoverage: Record<string, ItemCoverageItem> = {};
+  const itemCoverage: Record<DisplayText, ItemCoverageItem> = {};
 
   batches.forEach((b) => {
     b.itemsToTest.forEach((id) => {

@@ -1,12 +1,12 @@
+import { AVATAR_STYLES_BY_ID, isAvatarStyleId } from '@/data/player/cosmeticsData';
 import type { PlayerClassId } from '@/data/player/playerClasses';
-import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
+import { MAX_SINGLE_STAT_IV, MAX_POKEMON_VIGOR } from '@/logic/constants/gameplay.ts';
 import type {
   DeploymentCost,
   ResolvedDeploymentRewards
 } from '@/logic/player/classDeploymentEngine';
-import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
-import { MAX_SINGLE_STAT_IV, MAX_POKEMON_VIGOR } from '@/logic/constants/gameplay.ts';
-import { AVATAR_STYLES_BY_ID, isAvatarStyleId } from '@/data/player/cosmeticsData';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const CLASS_TO_AVATAR_STYLE_MAP: Readonly<Record<PlayerClassId, string>> = Object.freeze({
   cazabichos: 'av-class-cazabichos',
@@ -99,7 +99,7 @@ export function applyPokemonGrowthOutcome(
   if (rewards.ivIncrements.length > 0) {
     poke.ivs = poke.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
     for (const stat of rewards.ivIncrements) {
-      const ivKey = stat as keyof PokemonIVs;
+      const ivKey = stat;
       poke.ivs[ivKey] = Math.min(MAX_SINGLE_STAT_IV, (poke.ivs[ivKey] || 0) + 1);
     }
     poke.vigor = Math.max(0, (poke.vigor ?? MAX_POKEMON_VIGOR) - rewards.vigorConsumed);

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
+import type { Event as GameEvent } from '@/logic/events/eventEngine';
 import { isAwardClaimable } from '@/logic/events/eventValidators';
 import type { PendingAward } from '@/types/system/stores';
-import type { Event as GameEvent } from '@/logic/events/eventEngine';
 
 interface Props {
   pendingMyAwards: PendingAward[];

@@ -29,13 +29,14 @@ export function resolveBattleStore(): BattleStoreAccess | null {
     const s = showdownStoreResolvers.getBattleStore();
     if (s) return s;
   }
-  if (typeof window !== 'undefined') {
-    const resolver = window.__VITE_DEBUG_STORE_RESOLVER__;
+  const win = typeof globalThis.window !== 'undefined' ? globalThis.window : null;
+  if (win) {
+    const resolver = win.__VITE_DEBUG_STORE_RESOLVER__ as (() => unknown) | undefined;
     if (resolver) return resolver() as BattleStoreAccess;
-    const debug = window.__VITE_DEBUG__;
+    const debug = win.__VITE_DEBUG__;
     if (debug?.getGameStore) {
-      const gs = debug.getGameStore();
-      const bs = Reflect.get(gs, 'gs') as BattleStoreAccess | undefined;
+      const gs = (debug.getGameStore as () => unknown)();
+      const bs = Reflect.get(gs as object, 'gs') as BattleStoreAccess | undefined;
       if (bs) return bs;
     }
   }
@@ -48,10 +49,11 @@ export function resolveGameStore(): GameStoreAccess | null {
     const s = showdownStoreResolvers.getGameStore();
     if (s) return s;
   }
-  if (typeof window !== 'undefined') {
-    const debug = window.__VITE_DEBUG__;
+  const win = typeof globalThis.window !== 'undefined' ? globalThis.window : null;
+  if (win) {
+    const debug = win.__VITE_DEBUG__;
     if (debug?.getGameStore) {
-      return debug.getGameStore() as GameStoreAccess;
+      return (debug.getGameStore as () => unknown)() as GameStoreAccess;
     }
   }
   return null;
@@ -61,25 +63,32 @@ export let showdownWorker: Worker | null = null; // singleton-ok: Singleton inst
 
 export function setShowdownWorker(worker: Worker | null): void {
   showdownWorker = worker;
-  if (typeof window !== 'undefined') {
+  const win = typeof globalThis.window !== 'undefined' ? globalThis.window : null;
+  if (win) {
     if (worker) {
-      window.__showdownWorker__ = worker;
+      win.__showdownWorker__ = worker;
     } else {
-      delete window.__showdownWorker__;
+      delete win.__showdownWorker__;
     }
   }
 }
 
 export function getShowdownWorker(): Worker | null {
   // result-ok: Operation result wrapper payload
-  if (!showdownWorker && typeof window !== 'undefined' && window.__showdownWorker__) {
-    showdownWorker = window.__showdownWorker__;
+  const win = typeof globalThis.window !== 'undefined' ? globalThis.window : null;
+  if (!showdownWorker && win?.__showdownWorker__) {
+    showdownWorker = win.__showdownWorker__;
   }
   return showdownWorker;
 }
 
 export function preloadShowdownWorker(): void {
-  if (typeof window === 'undefined' || typeof Worker === 'undefined' || getShowdownWorker()) return;
+  if (
+    typeof globalThis.window === 'undefined' ||
+    typeof Worker === 'undefined' ||
+    getShowdownWorker()
+  )
+    return;
 
   const worker = new Worker(new URL('./showdown.worker.ts', import.meta.url), { type: 'module' });
   setShowdownWorker(worker);
@@ -90,11 +99,10 @@ export function testResetShowdownWorker(): void {
     showdownWorker.terminate();
     showdownWorker = null;
   }
-  if (typeof window !== 'undefined') {
-    if (window.__showdownWorker__) {
-      window.__showdownWorker__.terminate();
-      delete window.__showdownWorker__;
-    }
+  const win = typeof globalThis.window !== 'undefined' ? globalThis.window : null;
+  if (win && win.__showdownWorker__) {
+    win.__showdownWorker__.terminate();
+    delete win.__showdownWorker__;
   }
 }
 

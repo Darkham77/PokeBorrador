@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/map/kantoProceduralCarver.ts
  *
@@ -6,20 +7,6 @@
  * props decoration, and universal bridge placement for non-canonical or custom maps.
  */
 
-import {
-  KANTO_GRID_W,
-  KANTO_GRID_H,
-  KANTO_TILE_SIZE,
-  CELL_BIOME,
-  OCCUPANCY_FLAGS,
-  OccupancyGrid,
-  type KantoNodeCoordinate,
-  type IKantoCarverWorldContext
-} from '../../types/map/kantoGridModel.ts';
-import { SimplexNoise } from './noise/simplexNoise.ts';
-import { findValidBuildingPlacementSpot } from './buildingPlacementSolver.ts';
-import { defaultPrefabsRegistry } from './prefabsRegistry.ts';
-import { CONTINENT_DEFAULT_SEED } from '../../config/studioConstants.ts';
 import {
   MOUNTAIN_BLOCK_RADIUS_TILES,
   DOOR_PATH_EXTENSION_STEPS,
@@ -38,6 +25,20 @@ import {
   TOWN_PROPS_LAYOUTS,
   RELIEF_PROPS_CONFIG
 } from '../../config/kantoCarverConfig.ts';
+import { CONTINENT_DEFAULT_SEED } from '../../config/studioConstants.ts';
+import {
+  KANTO_GRID_W,
+  KANTO_GRID_H,
+  KANTO_TILE_SIZE,
+  CELL_BIOME,
+  OCCUPANCY_FLAGS,
+  OccupancyGrid,
+  type KantoNodeCoordinate,
+  type IKantoCarverWorldContext
+} from '../../types/map/kantoGridModel.ts';
+import { findValidBuildingPlacementSpot } from './buildingPlacementSolver.ts';
+import { SimplexNoise } from './noise/simplexNoise.ts';
+import { defaultPrefabsRegistry } from './prefabsRegistry.ts';
 
 /**
  * Fills the regional map matrix with 100% impenetrable nature (FOREST_WALL, elevation 1) by default.
@@ -54,9 +55,15 @@ export function fillImpenetrableWorld(gen: IKantoCarverWorldContext): void {
  * Carves organic settlement clearings through the dense forest wall according to urban scale.
  * Rural villages get natural grass ground; metropolises get expanded clearings for boulevards.
  */
+const BASTION_SETTLEMENT_ID_LIST = ['pewter', 'cerulean', 'viridian', 'fuchsia'] as const;
+type BastionSettlementId = (typeof BASTION_SETTLEMENT_ID_LIST)[number];
+const BASTION_SETTLEMENT_IDS: ReadonlySet<BastionSettlementId> = new Set<BastionSettlementId>(
+  BASTION_SETTLEMENT_ID_LIST
+);
+
 export function carveSettlementClearings(
   gen: IKantoCarverWorldContext,
-  nodes: Record<string, KantoNodeCoordinate> // open-record: Procedural adventure nodes indexed by node id
+  nodes: Record<DisplayText, KantoNodeCoordinate> // open-record: Procedural adventure nodes indexed by node id
 ): void {
   const g = gen.grid;
   const elev = gen.elevation;
@@ -89,7 +96,7 @@ export function carveSettlementClearings(
 
     const { tx, ty } = gen.nodeToTile(n.x, n.y);
     const isMetropolis = id === 'saffron' || id === 'celadon';
-    const isBastion = id === 'pewter' || id === 'cerulean' || id === 'viridian' || id === 'fuchsia';
+    const isBastion = BASTION_SETTLEMENT_IDS.has(id as BastionSettlementId);
     const isPort = id === 'vermilion';
     const archetypeKey = isMetropolis
       ? 'metropolis'
@@ -131,7 +138,7 @@ export function carveProceduralCoastlines(gen: IKantoCarverWorldContext): void {
   const W = KANTO_GRID_W;
   const H = KANTO_GRID_H;
 
-  const setWater = (x: number, y: number) => {
+  const setWater = (x: number, y: number): void => {
     if (x >= 0 && x < W && y >= 0 && y < H) {
       const row = g[y];
       const eRow = elev[y];
@@ -227,7 +234,7 @@ export function carveProceduralCoastlines(gen: IKantoCarverWorldContext): void {
  */
 export function carveProceduralMountainChains(
   gen: IKantoCarverWorldContext,
-  nodes: Record<string, KantoNodeCoordinate> // open-record: Procedural adventure nodes indexed by node id
+  nodes: Record<DisplayText, KantoNodeCoordinate> // open-record: Procedural adventure nodes indexed by node id
 ): void {
   const g = gen.grid;
   const elev = gen.elevation;
@@ -386,15 +393,15 @@ export function carveProceduralMountainChains(
  */
 export function placeProceduralTownArchitectures(
   gen: IKantoCarverWorldContext,
-  nodes: Record<string, KantoNodeCoordinate> // open-record: Procedural adventure nodes indexed by node id
+  nodes: Record<DisplayText, KantoNodeCoordinate> // open-record: Procedural adventure nodes indexed by node id
 ): void {
   const T = KANTO_TILE_SIZE;
   const allB = defaultPrefabsRegistry.getByCategory('buildings');
   const housePrefabs = allB.filter((b) => b.id.includes('house') || b.id.includes('cottage'));
 
-  const snap = (v: number) => Math.round(v / T) * T;
+  const snap = (v: number): number => Math.round(v / T) * T;
 
-  const addBuilding = (style: string, x: number, y: number, w: number, h: number) => {
+  const addBuilding = (style: string, x: number, y: number, w: number, h: number): void => {
     const sx = snap(x);
     const sy = snap(y);
     const placement = findValidBuildingPlacementSpot(gen, sx, sy, w, h);
@@ -436,7 +443,7 @@ export function placeProceduralTownArchitectures(
     }
   };
 
-  const paveRoadLine = (x0: number, y0: number, x1: number, y1: number) => {
+  const paveRoadLine = (x0: number, y0: number, x1: number, y1: number): void => {
     const startX = Math.min(x0, x1);
     const endX = Math.max(x0, x1);
     const startY = Math.min(y0, y1);
@@ -696,7 +703,7 @@ export function placeProceduralTownArchitectures(
  */
 export function placeProceduralReliefAndProps(
   gen: IKantoCarverWorldContext,
-  nodes: Record<string, KantoNodeCoordinate> // open-record: Procedural adventure nodes indexed by node id
+  nodes: Record<DisplayText, KantoNodeCoordinate> // open-record: Procedural adventure nodes indexed by node id
 ): void {
   const T = KANTO_TILE_SIZE;
   const W = KANTO_GRID_W;

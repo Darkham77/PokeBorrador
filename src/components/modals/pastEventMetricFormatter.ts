@@ -4,13 +4,13 @@
  * Pure formatter functions for past event competition winner metrics and rank medals.
  */
 
-import type { PastCompetitionWinner } from '@/types/system/stores';
-import { getTierFromTotalIvs } from '@/logic/pokemon/tierEngine';
-import { getPhysicalDimensionTier } from '@/logic/pokemon/physicalDimensionsMath';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { toID } from '@/logic/utils/strings.ts';
 import { MAX_TOTAL_IVS_STAT_SUM } from '@/logic/constants/gameplay';
+import { getPhysicalDimensionTier } from '@/logic/pokemon/physicalDimensionsMath';
+import { getTierFromTotalIvs } from '@/logic/pokemon/tierEngine';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { toID } from '@/logic/utils/strings.ts';
+import type { PastCompetitionWinner } from '@/types/system/stores';
 
 const DIMENSION_VARIATION_FACTOR = 0.15;
 const MAX_TARGET_MULTIPLIER = 1 + DIMENSION_VARIATION_FACTOR;

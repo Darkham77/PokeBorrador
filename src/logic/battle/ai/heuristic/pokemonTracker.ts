@@ -3,16 +3,17 @@
 // Adapted from external/pokemon-showdown-ai/src/inference/tracker.ts
 // ============================================================
 
-import { toID } from '@/logic/utils/strings.ts';
+import type { AbilityId } from '@/data/battle/abilities';
+import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
 import { isItemId, type ItemId } from '@/data/inventory/items';
 import { CANONICAL_CHOICE_ITEMS_SET } from '@/logic/constants/gameplay';
-import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
-import type { AbilityId } from '@/data/battle/abilities';
+import { toID } from '@/logic/utils/strings.ts';
 import type { TrackedActionSource } from '@/types/battle/battle';
+
 import type { InferredInfo, InferredSet, RandomBattleSetEntry } from './types.ts';
 
 export class PokemonTracker {
-  readonly species: string;
+  public readonly species: string;
   private sets: InferredSet[];
   private readonly revealedMoves = new Set<string>();
   private revealedAbility: string | null = null;
@@ -22,7 +23,7 @@ export class PokemonTracker {
   private lastMove: string | null = null;
   private tookRecoil = false;
 
-  constructor(species: string, baseSets: RandomBattleSetEntry[]) {
+  public constructor(species: string, baseSets: RandomBattleSetEntry[]) {
     this.species = toID(species);
     if (baseSets.length === 0) {
       this.sets = [
@@ -34,7 +35,7 @@ export class PokemonTracker {
     }
   }
 
-  observeMove(moveId: PokemonMoveId): void {
+  public observeMove(moveId: PokemonMoveId): void {
     const mv = toID(moveId);
     this.revealedMoves.add(mv);
     if (this.lastMove === mv) this.repeatedMove = mv;
@@ -42,30 +43,30 @@ export class PokemonTracker {
     this.eliminateSetsWithout('move', mv);
   }
 
-  observeAbility(ability: AbilityId): void {
+  public observeAbility(ability: AbilityId): void {
     this.revealedAbility = toID(ability);
     if (this.revealedAbility) this.eliminateSetsWithout('ability', this.revealedAbility);
   }
 
-  observeItem(item: ItemId): void {
+  public observeItem(item: ItemId): void {
     this.revealedItem = toID(item);
     if (this.revealedItem) this.eliminateSetsWithout('item', this.revealedItem);
   }
 
-  observeItemConsumed(): void {
+  public observeItemConsumed(): void {
     this.itemConsumed = true;
   }
 
-  observeNoHazardDamage(): void {
+  public observeNoHazardDamage(): void {
     this.adjustItemProbability('heavydutyboots', 2.0);
   }
 
-  observeRecoil(): void {
+  public observeRecoil(): void {
     this.tookRecoil = true;
     this.adjustItemProbability('lifeorb', 5.0);
   }
 
-  computeMoveProbabilities(): Map<string, number> {
+  public computeMoveProbabilities(): Map<string, number> {
     const probs = new Map<string, number>();
     for (const m of this.revealedMoves) probs.set(m, 1.0);
     for (const set of this.sets) {
@@ -80,7 +81,7 @@ export class PokemonTracker {
     return probs;
   }
 
-  getInferredInfo(): InferredInfo {
+  public getInferredInfo(): InferredInfo {
     return {
       pokemon: this.species,
       possibleSets: this.sets.filter((s) => s.probability > 0),
@@ -90,7 +91,9 @@ export class PokemonTracker {
     };
   }
 
-  getLikelyUnrevealedMoves(threshold = 0.3): Array<{ move: PokemonMoveId; probability: number }> {
+  public getLikelyUnrevealedMoves(
+    threshold = 0.3
+  ): Array<{ move: PokemonMoveId; probability: number }> {
     const probs = this.computeMoveProbabilities();
     const result: Array<{ move: PokemonMoveId; probability: number }> = [];
     for (const [move, prob] of probs) {
@@ -101,7 +104,7 @@ export class PokemonTracker {
     return result.sort((a, b) => b.probability - a.probability);
   }
 
-  isMoveLikely(moveId: PokemonMoveId, threshold = 0.5): boolean {
+  public isMoveLikely(moveId: PokemonMoveId, threshold = 0.5): boolean {
     return (this.computeMoveProbabilities().get(toID(moveId)) ?? 0) >= threshold;
   }
 
@@ -183,7 +186,7 @@ export class PokemonTracker {
 
   // suppress unused-variable warning for tookRecoil / itemConsumed
   // (tracked for future heuristic extensions)
-  _diagnostics(): Record<string, unknown> {
+  public _diagnostics(): Record<string, unknown> {
     return { tookRecoil: this.tookRecoil, itemConsumed: this.itemConsumed };
   }
 }

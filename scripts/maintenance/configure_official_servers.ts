@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+import { isMainModule } from '@francogp/auditor';
 /**
  * @file configure_official_servers.ts
  * @description Script automático para parsear el archivo .env maestro y generar src/data/system/servers.local.json en PokéBorrador.
@@ -16,6 +18,7 @@ import fsPromises from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
+import { defineCommand, runMain } from 'citty';
 import type { OfficialServer } from '../../src/data/system/official_servers.ts';
 
 enableCompileCache();
@@ -26,7 +29,7 @@ const CONFIGURATOR_TARGET_NODE_VERSION_LABEL = '26';
 
 function buildOfficialServerEntry(
   profile: string,
-  conf: Record<string, string | undefined>,
+  conf: Record<DisplayText, string | undefined>,
   hasExplicitDefault: boolean
 ): OfficialServer | null {
   const id = conf.ID || profile;
@@ -178,15 +181,15 @@ export async function configureOfficialServers(): Promise<void> {
   await syncPublicVersionJson();
 }
 
-// Permitir ejecución directa
-const isDirectRun =
-  process.argv[1] &&
-  (process.argv[1].endsWith('configure_official_servers.ts') ||
-    process.argv[1].includes('configure_official_servers.ts'));
-
-if (isDirectRun) {
-  configureOfficialServers().catch((err) => {
-    console.error(styleText('red', `❌ Error fatal: ${(err as Error).message}`));
-    process.exit(1);
-  });
+export const command = defineCommand({
+  meta: {
+    name: 'configure-official-servers',
+    description: 'Parsea .env maestro y genera src/data/system/servers.local.json'
+  },
+  async run() {
+    await configureOfficialServers();
+  }
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
 }

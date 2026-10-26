@@ -1,8 +1,9 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
+
+import { processPlayerFaintSequence } from '@/logic/battle/battleFaintSequence';
+import { resolvePostTurnSwitchesAndFaints } from '@/logic/battle/helpers/turnActionResolver';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import { resolvePostTurnSwitchesAndFaints } from '@/logic/battle/helpers/turnActionResolver';
-import { processPlayerFaintSequence } from '@/logic/battle/battleFaintSequence';
 
 describe('battleDoubleFaintFuzzer (Perish Song / Double KO Resolution)', () => {
   it('calls handleFaint for enemy as well when both player and enemy faint simultaneously', async () => {

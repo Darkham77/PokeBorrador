@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { PERCENT_MAX } from '@/logic/constants/gameplay';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const PERCENT_MIN = 0;
 const HEALTHY_HP_RATIO = 0.5;

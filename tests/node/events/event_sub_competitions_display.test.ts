@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
+
 import {
   resolveSubCompetitionDirection,
   getSubCompTitle,
@@ -6,8 +7,8 @@ import {
   resolveAwardCategory,
   type SubCompetitionConfig
 } from '@/logic/events/eventCompetitions';
-import type { PendingAward } from '@/types/system/stores';
 import type { Event, EventConfig } from '@/logic/events/eventEngine';
+import type { PendingAward } from '@/types/system/stores';
 
 describe('Event Sub-Competitions Display & Resolution Parity', () => {
   const mockConfig: EventConfig = {

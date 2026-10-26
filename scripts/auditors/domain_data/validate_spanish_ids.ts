@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * scripts/auditors/domain_data/validate_spanish_ids.ts
  *
@@ -6,7 +7,6 @@
  */
 
 import fs from 'node:fs';
-import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import { BaseAuditor, FileScanAuditor, createRuleCapabilities } from '@francogp/auditor';
 
@@ -15,9 +15,9 @@ enableCompileCache();
 // Load translation names
 const abilitiesJson = JSON.parse(
   fs.readFileSync('src/data/battle/abilities.json', 'utf-8')
-) as Record<string, { name?: string }>;
+) as Record<DisplayText, { name?: string }>;
 const movesJson = JSON.parse(fs.readFileSync('src/data/battle/moves.json', 'utf-8')) as Record<
-  string,
+  DisplayText,
   { name?: string }
 >;
 const itemsJson = JSON.parse(fs.readFileSync('src/data/inventory/items.json', 'utf-8')) as {
@@ -107,6 +107,7 @@ export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
       ruleIds: SPANISH_ID_RULES,
       packageName: 'Dominio',
       usesThirdPartyTool: false,
+      requiredPermissions: [],
       ruleDescriptions: {
         'spanish-logic-id': 'ID en español en vez del inglés'
       },
@@ -114,6 +115,7 @@ export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
         'spanish-logic-id':
           'Use English canonical IDs in code logic, keeping Spanish text strictly for UI display'
       },
+      remediationPhase: 'contracts',
       roots,
       allowedExtensions: new Set(['.ts', '.vue'])
     });
@@ -136,7 +138,7 @@ export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
 
       for (let index = 0; index < lines.length; index++) {
         const lineText = lines[index]!;
-        if (this.isLineIgnored(lineText, ['spanish-ok', 'text-ok'])) continue;
+        if (/\/\/\s*(?:spanish-ok|text-ok)\b/.test(lineText)) continue;
 
         for (const pattern of this.criticalPatterns) {
           pattern.lastIndex = 0;
@@ -171,10 +173,4 @@ export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (
-  process.argv[1] &&
-  import.meta.filename &&
-  path.basename(process.argv[1]) === path.basename(import.meta.filename)
-) {
-  await BaseAuditor.runCli(new SpanishIdAuditor());
-}
+await BaseAuditor.runCliIfMain(import.meta.url, new SpanishIdAuditor());

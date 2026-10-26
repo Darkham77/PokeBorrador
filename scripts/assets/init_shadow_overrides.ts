@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * scripts/assets/init_shadow_overrides.ts
  *
@@ -13,23 +14,22 @@ import {
   requirePokemonSpeciesId
 } from '../../src/data/pokemon/pokedex.ts';
 import feetDbJson from '../../src/data/pokemon/pokemonFeetDatabase.json' with { type: 'json' };
-import type { SpriteShadowOverridesMap } from '../../src/types/pokemon/spriteShadows.ts';
+import type { SpriteShadowOverride } from '../../src/types/pokemon/spriteShadows.ts';
 
 const TARGET_FILE = path.resolve(process.cwd(), 'src/data/pokemon/spriteShadowOverrides.json');
 
 async function main() {
-  const overrides: SpriteShadowOverridesMap = {};
+  const overrides: Record<DisplayText, SpriteShadowOverride> = {};
 
   try {
     const raw = await fs.readFile(TARGET_FILE, 'utf8');
     const existing = JSON.parse(raw);
     Object.assign(overrides, existing);
-  } catch {
-    // catch-ok: file does not exist yet, initialize fresh
-    // File does not exist yet, initialize fresh
+  } catch (err) {
+    err;
   }
 
-  const pGroup = feetDbJson.p as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
+  const pGroup = feetDbJson.p as Record<DisplayText, readonly number[]>; // open-record: Generic key-value data dictionary container
 
   for (const [speciesId, aesthetic] of Object.entries(POKEMON_AESTHETICS)) {
     if (!aesthetic || !aesthetic.floating) continue;

@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/events/eventCompetitionsHelper.ts
  *
@@ -5,17 +6,18 @@
  * tiebreaking, titles, descriptions, and award category resolution.
  */
 
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { PendingAward, PastCompetitionWinner } from '@/types/system/stores.ts';
-import { hashString, mulberry32 } from '@/logic/utils/math.ts';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider.ts';
 import {
   getPokemonPhysicalWeight,
   getPokemonPhysicalHeight,
   getPhysicalDimensionTier
 } from '@/logic/pokemon/physicalDimensionsMath.ts';
-import { getPokemonTier } from '@/logic/pokemon/tierEngine.ts';
 import { calculateTotalIVs } from '@/logic/pokemon/statsMath.ts';
+import { getPokemonTier } from '@/logic/pokemon/tierEngine.ts';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider.ts';
+import { hashString, mulberry32 } from '@/logic/utils/math.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { PendingAward, PastCompetitionWinner } from '@/types/system/stores.ts';
+
 import type {
   SubCompetitionConfig,
   SubCompetitionOrder,
@@ -255,7 +257,7 @@ function hasMatchingPrizeItems(
 ): boolean {
   if (!candidatePrize || typeof candidatePrize !== 'object') return false;
   const candidateItems = ((candidatePrize as Record<string, unknown>).items || {}) as Record<
-    string,
+    DisplayText,
     number
   >; // open-record: Generic key-value data dictionary container
   const candidateKeys = Object.keys(candidateItems);
@@ -312,13 +314,11 @@ export function resolveAwardCategoryId(
   subComps: readonly SubCompetitionConfig[] = [],
   winners?: PastCompetitionWinner[]
 ): string | null {
-  const directCatId = (award.category_id ||
-    (parsedPrize.category_id as string | undefined) ||
-    '') as string;
+  const directCatId = award.category_id || (parsedPrize.category_id as string | undefined) || '';
   if (directCatId) return directCatId;
 
   if (subComps.length > 0) {
-    const prizeItems = (parsedPrize.items || {}) as Record<string, number>; // open-record: Generic key-value data dictionary container
+    const prizeItems = (parsedPrize.items || {}) as Record<DisplayText, number>; // open-record: Generic key-value data dictionary container
     const matchedId = matchCategoryIdFromPrizeItems(prizeItems, subComps);
     if (matchedId) return matchedId;
   }

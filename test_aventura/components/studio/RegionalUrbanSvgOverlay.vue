@@ -12,6 +12,10 @@
  */
 
 import { ref, computed } from 'vue';
+
+import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+import { checkBuildingCollision } from '../../logic/map/settlementPlacementHelper.ts';
+import { screenToSvgCoords as transformScreenToSvg } from '../../logic/utils/svgCoordinateUtils.ts';
 import { useRegionalContinentStudioStore } from '../../stores/continentStudioStore.ts';
 import type {
   UrbanBuildingPlacement,
@@ -20,9 +24,6 @@ import type {
   UrbanPropType,
   UrbanElementType
 } from '../../types/map/poiTypes.ts';
-import { checkBuildingCollision } from '../../logic/map/settlementPlacementHelper.ts';
-import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
-import { screenToSvgCoords as transformScreenToSvg } from '../../logic/utils/svgCoordinateUtils.ts';
 
 const store = useRegionalContinentStudioStore();
 const svgRef = ref<SVGSVGElement | null>(null);

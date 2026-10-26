@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import MapCard from '@/components/map/MapCard.vue';
-import type { MapLocation } from '@/types/pokemon/encounters';
-import { gsapHover as vGsapHover } from '@/directives/gsapHover';
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
-import type { DayPhase } from '@/logic/utils/timeUtils';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts';
+import { gsapHover as vGsapHover } from '@/directives/gsapHover';
+import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import type { MapLocation } from '@/types/pokemon/encounters';
 import type { CardinalDirection } from '@/types/system/game';
+
+import type { AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts';
 import AdventureDirectionButton from './AdventureDirectionButton.vue';
 import type { DirectionConnectionItem } from './adventureDirectionTypes';
 
 interface Props {
-  adjacentConnections: Record<CardinalDirection, DirectionConnectionItem[]>;
+  adjacentConnections: Record<CardinalDirection, readonly DirectionConnectionItem[]>;
   isTraveling: boolean;
   hasHealthyTeam: boolean;
   activeHMs: Set<string>;

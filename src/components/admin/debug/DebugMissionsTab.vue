@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useGameStore } from '@/stores/game';
-import { useDebugStore } from '@/stores/debug';
 import { logger } from '@/logic/utils/logger';
+import { useDebugStore } from '@/stores/debug';
+import { useGameStore } from '@/stores/game';
 
 interface ViteDebugBridge {
   regenerateMissions?: () => void;
@@ -11,9 +11,9 @@ interface ViteDebugBridge {
 const game = useGameStore();
 const debug = useDebugStore();
 
-const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge; // domain-ok: Open dynamic text or non-domain string payload
+const getDebugBridge = (): ViteDebugBridge => globalThis.__VITE_DEBUG__ as ViteDebugBridge; // domain-ok: Open dynamic text or non-domain string payload
 
-const regenerate = () => {
+const regenerate = (): void => {
   const bridge = getDebugBridge();
   if (bridge?.regenerateMissions) {
     bridge.regenerateMissions();
@@ -24,7 +24,7 @@ const regenerate = () => {
   }
 };
 
-const clear = () => {
+const clear = (): void => {
   if (!confirm('¿Seguro que quieres borrar todas las misiones actuales?')) return;
 
   const bridge = getDebugBridge();

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import {
   CANONICAL_47_BITMASKS,
   bitmaskTo3x3Grid,

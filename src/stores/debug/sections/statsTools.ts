@@ -1,22 +1,23 @@
-import type { DebugSystem } from '@/types/system/debug.ts';
+import { getItemById } from '@/data/inventory/items';
+import { requirePlayerClassId } from '@/data/player/playerClasses';
+import { TRAINER_RANKS } from '@/data/player/trainer';
 import { GYM_IDS, isGymId, requireGymId, type GymId } from '@/data/world/gyms';
-
 import { logger } from '@/logic/utils/logger';
 import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage';
 import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
 import { useProfileStore } from '@/stores/player/profile';
-import { TRAINER_RANKS } from '@/data/player/trainer';
-import { requireFactionId } from '@/types/system/game';
-import { requirePlayerClassId } from '@/data/player/playerClasses';
+import { useUIStore } from '@/stores/ui';
+import { useWarStore } from '@/stores/war';
 import type { BattleDifficulty } from '@/types/battle/battle';
+import type { DebugSystem } from '@/types/system/debug.ts';
+import { requireFactionId } from '@/types/system/game';
 
 const GYM_DIFFICULTY_LEVEL_EASY = 15 as const;
 const GYM_DIFFICULTY_LEVEL_NORMAL = 35 as const;
 const GYM_DIFFICULTY_LEVEL_HARD = 75 as const;
 const GYM_SIMULATED_MONEY_PER_LEVEL = 10 as const;
 
-export function registerStatsTools(debug: DebugSystem) {
+export function registerStatsTools(debug: DebugSystem): void {
   const game = useGameStore();
   const ui = useUIStore();
 
@@ -41,7 +42,7 @@ export function registerStatsTools(debug: DebugSystem) {
     action: (val: number) => {
       game.state.money = val;
       ui.notify(`Debug: Dinero ajustado a ${val}`, '💰');
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description: 'Establece el dinero del jugador.'
   });
@@ -54,7 +55,7 @@ export function registerStatsTools(debug: DebugSystem) {
     action: (val: number) => {
       game.state.trainerExp = val;
       ui.notify(`Debug: Experiencia ajustada a ${val}`, '📈');
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description: 'Establece la experiencia actual del entrenador.'
   });
@@ -72,7 +73,7 @@ export function registerStatsTools(debug: DebugSystem) {
         game.state.trainerExpNeeded = rank.expNeeded;
       }
       ui.notify(`Debug: Nivel ajustado a ${val}`, '⭐');
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description: 'Establece el nivel del entrenador.'
   });
@@ -85,7 +86,7 @@ export function registerStatsTools(debug: DebugSystem) {
     action: (val: number) => {
       game.state.classLevel = val;
       ui.notify(`Debug: Nivel de clase ajustado a ${val}`, '🎓');
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description: 'Establece el nivel de la clase activa del jugador.'
   });
@@ -108,7 +109,7 @@ export function registerStatsTools(debug: DebugSystem) {
       }
       game.state.classData.reputation = val;
       ui.notify(`Debug: Reputación ajustada a ${val}`, '🎖️');
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description: 'Establece la reputación del jugador.'
   });
@@ -121,7 +122,7 @@ export function registerStatsTools(debug: DebugSystem) {
     action: (val: number) => {
       game.state.battleCoins = val;
       ui.notify(`Debug: Battle Coins ajustados a ${val}`, '🪙');
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description: 'Establece las Battle Coins (BC) del jugador.'
   });
@@ -133,16 +134,14 @@ export function registerStatsTools(debug: DebugSystem) {
     category: 'stats',
     action: (val: number) => {
       game.state.warCoins = val;
-      void import('@/stores/war').then(({ useWarStore }) => {
-        try {
-          const warStore = useWarStore();
-          warStore.warCoins = val;
-        } catch (e) {
-          console.warn('Failed to update ELO in warStore:', e);
-        }
-      });
+      try {
+        const warStore = useWarStore();
+        warStore.warCoins = val;
+      } catch (e) {
+        console.warn('Failed to update ELO in warStore:', e);
+      }
       ui.notify(`Debug: Monedas de Guerra ajustadas a ${val}`, '⚡');
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description: 'Establece las Monedas de Guerra del jugador.'
   });
@@ -155,7 +154,7 @@ export function registerStatsTools(debug: DebugSystem) {
     action: (val: number) => {
       game.state.eloRating = val;
       ui.notify(`Debug: ELO ajustado a ${val}`, '📊');
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description: 'Establece el ELO del jugador para PvP.'
   });
@@ -185,7 +184,7 @@ export function registerStatsTools(debug: DebugSystem) {
         `Debug: Medallas ajustadas a ${game.state.badges} (${game.state.defeatedGyms.join(', ') || 'ninguna'})`,
         '🏆'
       );
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description: 'Establece el número de medallas del entrenador.'
   });
@@ -209,10 +208,8 @@ export function registerStatsTools(debug: DebugSystem) {
 
         const tm = gym.rewardTM;
         if (tm) {
-          void import('@/data/inventory/items').then(({ getItemById }) => {
-            const itemObj = getItemById(tm);
-            game.state.inventory[itemObj.id] = (game.state.inventory[itemObj.id] || 0) + 1;
-          });
+          const itemObj = getItemById(tm);
+          game.state.inventory[itemObj.id] = (game.state.inventory[itemObj.id] || 0) + 1;
         }
       }
 
@@ -250,7 +247,7 @@ export function registerStatsTools(debug: DebugSystem) {
         : `¡Reafirmación Simulada (${difficulty.toUpperCase()})! Ganaste ₱${moneyGained} y experiencia para tu equipo.`; // text-ok: UI text display localization string
 
       ui.notify(msg, '🏆');
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description: 'Simula la victoria de un gimnasio y otorga sus recompensas.'
   });
@@ -265,7 +262,7 @@ export function registerStatsTools(debug: DebugSystem) {
       game.state.gymProgress = {};
       game.state.badges = 0;
       ui.notify('Progreso de gimnasios reseteado.', '🔄');
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description: 'Elimina todas las medallas y reinicia el progreso de gimnasios.'
   });
@@ -278,7 +275,7 @@ export function registerStatsTools(debug: DebugSystem) {
     action: (f: string) => {
       game.state.faction = f === 'none' || f === 'null' ? null : requireFactionId(f);
       ui.notify(`Debug: Facción cambiada a ${f}`, '🛡️');
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description: 'Cambia la facción del jugador (magma, aqua, rocket, etc).'
   });
@@ -300,7 +297,7 @@ export function registerStatsTools(debug: DebugSystem) {
         }
       }
       ui.notify(`Debug: Clase cambiada a ${targetClass || 'ninguna'}`, '🎭');
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description: 'Establece la clase activa del jugador.'
   });
@@ -343,7 +340,7 @@ export function registerStatsTools(debug: DebugSystem) {
         'Debug: Cooldowns eliminados con éxito (clases, Centro Pokémon, misiones y cambio de identidad).',
         '⚡'
       );
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description:
       'Elimina todos los cooldowns activos de cualquier clase (escaneo de IVs, extorsión, rutas preferidas, misiones), Centro Pokémon y reinicia el cooldown de cambio de nombre y género.'

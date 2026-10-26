@@ -1,16 +1,17 @@
-import { gameBus } from '@/logic/events/gameBus';
-import { useAudioStore } from '@/stores/audio';
-import { useBattleStore } from '@/stores/battle/battle';
-import type { BattleSide } from '@/types/battle/battle';
+import type { DisplayText } from '@francogp/auditor';
+
 import type { MoveCategory } from '@/data/battle/moves';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
+import { CANONICAL_TERRAINS, RADIX_DECIMAL } from '@/logic/constants/gameplay';
+import { gameBus } from '@/logic/events/gameBus';
 import { levelUpPokemon } from '@/logic/pokemon/pokemonFactory';
 import { isWeatherId } from '@/logic/weather/weatherRegistry';
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
-
+import { useAudioStore } from '@/stores/audio';
+import { useBattleStore } from '@/stores/battle/battle';
+import type { BattleSide } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { DebugSystem } from '@/types/system/debug.ts';
-import { CANONICAL_TERRAINS, RADIX_DECIMAL } from '@/logic/constants/gameplay';
 
 const DEBUG_FIELD_WEATHER_IDS = [
   'sun',
@@ -51,12 +52,12 @@ interface BattleStatusHolder {
   endure?: boolean;
   focusEnergy?: boolean;
   lockOn?: boolean;
-  volatileCounters?: Record<string, number>; // open-record: Dynamic Showdown volatile status counter dictionary
+  volatileCounters?: Record<DisplayText, number>; // open-record: Dynamic Showdown volatile status counter dictionary
 }
 
 const DEFAULT_SUBSTITUTE_HP = 25 as const;
 
-const SECONDARY_STATUS_TOGGLERS: Record<string, (poke: BattleStatusHolder) => void> = {
+const SECONDARY_STATUS_TOGGLERS: Record<DisplayText, (poke: BattleStatusHolder) => void> = {
   // open-record: Secondary status debug toggle command map
   confusion: (p) => {
     const active = (Number(p.confused) || 0) > 0;
@@ -203,7 +204,7 @@ const SECONDARY_STATUS_TOGGLERS: Record<string, (poke: BattleStatusHolder) => vo
   }
 };
 
-export function registerBattleTools(debug: DebugSystem) {
+export function registerBattleTools(debug: DebugSystem): void {
   const audio = useAudioStore();
 
   debug.register({
@@ -211,8 +212,8 @@ export function registerBattleTools(debug: DebugSystem) {
     label: 'REPRODUCIR SONIDO',
     command: 'playSound',
     description: 'Reproducir un sonido del sistema.',
-    action: (type: string) => {
-      void audio.play(type);
+    action: async (type: string) => {
+      await audio.play(type);
       return `Reproduciendo sonido: ${type}`;
     }
   });
@@ -222,8 +223,8 @@ export function registerBattleTools(debug: DebugSystem) {
     label: 'SONIDO VICTORIA',
     command: 'playVictoryTrainer',
     description: 'Probar el sonido 8-bit de victoria contra entrenadores.',
-    action: () => {
-      void audio.play('victoryTrainer');
+    action: async () => {
+      await audio.play('victoryTrainer');
       return 'Sonido de victoria reproducido.';
     }
   });
@@ -233,8 +234,8 @@ export function registerBattleTools(debug: DebugSystem) {
     label: 'SONIDO DERROTA',
     command: 'playDefeat',
     description: 'Probar el sonido 8-bit de derrota.',
-    action: () => {
-      void audio.play('defeat');
+    action: async () => {
+      await audio.play('defeat');
       return 'Sonido de derrota reproducido.';
     }
   });
@@ -261,7 +262,7 @@ export function registerBattleTools(debug: DebugSystem) {
     }
   });
 
-  const DEBUG_ANIM_EVENT_MAP: Readonly<Record<string, string>> = {
+  const DEBUG_ANIM_EVENT_MAP: Readonly<Record<DisplayText, string>> = {
     // open-record: Animation event mapping dictionary
     release: 'PLAY_RELEASE_ENERGY',
     catch: 'PLAY_CATCH_ENERGY',
@@ -284,7 +285,10 @@ export function registerBattleTools(debug: DebugSystem) {
   type DebugUiAnimType = (typeof DEBUG_UI_ANIM_TYPES)[number];
   const DEBUG_UI_ANIM_TYPES_SET: ReadonlySet<DebugUiAnimType> = new Set(DEBUG_UI_ANIM_TYPES);
 
-  function handleDebugAttackAnim(side: string, options: Record<string, unknown>): string {
+  async function handleDebugAttackAnim(
+    side: string,
+    options: Record<string, unknown>
+  ): Promise<string> {
     const battle = useBattleStore();
     battle.attackerSide = side as BattleSide;
     battle.activeMove = {
@@ -305,10 +309,9 @@ export function registerBattleTools(debug: DebugSystem) {
     };
 
     if (battle.animations?.awaitTween) {
-      void battle.animations.awaitTween(`attack-${side}`).then(() => {
-        battle.attackerSide = null;
-        battle.activeMove = null;
-      });
+      await battle.animations.awaitTween(`attack-${side}`);
+      battle.attackerSide = null;
+      battle.activeMove = null;
     } else {
       battle.attackerSide = null;
       battle.activeMove = null;
@@ -319,10 +322,7 @@ export function registerBattleTools(debug: DebugSystem) {
   function handleDebugEscapeAnim(side: string, type: string): string {
     const escapeType = type === 'escape_teleport' ? 'teleport' : 'flee';
     const battle = useBattleStore();
-    const pokemon =
-      side === 'player'
-        ? (battle.state?.player as Pokemon | null | undefined)
-        : (battle.state?.enemy as Pokemon | null | undefined);
+    const pokemon = side === 'player' ? battle.state?.player : battle.state?.enemy;
     gameBus.emit('TRIGGER_COMBATANT_ESCAPE', { side, pokemon, type: escapeType });
     return `Efecto de escape ${escapeType} emitido para ${side}`;
   }
@@ -346,11 +346,11 @@ export function registerBattleTools(debug: DebugSystem) {
     description: 'Disparar una animación de combate via Bus.',
     action: (type: string, side = 'enemy', options: Record<string, unknown> = {}) => {
       if (
-        typeof window !== 'undefined' &&
-        window.__VITE_DEBUG__?.triggerAnim &&
+        typeof globalThis.window !== 'undefined' &&
+        globalThis.__VITE_DEBUG__?.triggerAnim &&
         (type === 'full_catch_normal' || type === 'full_catch_critical')
       ) {
-        window.__VITE_DEBUG__.triggerAnim(type, side, options);
+        globalThis.__VITE_DEBUG__.triggerAnim(type, side, options);
         return;
       }
       if (type === 'attack') {
@@ -390,28 +390,26 @@ export function registerBattleTools(debug: DebugSystem) {
     description:
       'Cambiar estado de un pokemon (burn, poison, paralysis, freeze, sleep, null). Toggle si ya lo tiene.',
     action: (side: string, status: string) => {
-      void import('@/stores/battle/battle').then(({ useBattleStore }) => {
-        const battle = useBattleStore();
-        const poke = side === 'player' ? battle.state?.player : battle.state?.enemy;
+      const battle = useBattleStore();
+      const poke = side === 'player' ? battle.state?.player : battle.state?.enemy;
 
-        if (poke) {
-          if (status === 'null' || status === '') {
-            poke.status = '';
-          } else {
-            // Toggle logic
-            poke.status =
-              poke.status === (status as Pokemon['status']) ? '' : (status as Pokemon['status']);
-            if (poke.status === 'slp') poke.sleepTurns = 3;
-          }
-
-          // Force Reactivity
-          if (side === 'player' && battle.state) {
-            battle.state.player = { ...poke };
-          } else if (battle.state?.enemy && poke === battle.state.enemy) {
-            battle.state.enemy = { ...battle.state.enemy };
-          }
+      if (poke) {
+        if (status === 'null' || status === '') {
+          poke.status = '';
+        } else {
+          // Toggle logic
+          poke.status =
+            poke.status === (status as Pokemon['status']) ? '' : (status as Pokemon['status']);
+          if (poke.status === 'slp') poke.sleepTurns = 3;
         }
-      });
+
+        // Force Reactivity
+        if (side === 'player' && battle.state) {
+          battle.state.player = { ...poke };
+        } else if (battle.state?.enemy && poke === battle.state.enemy) {
+          battle.state.enemy = { ...battle.state.enemy };
+        }
+      }
       return `Comando setStatus(${side}, ${status}) enviado.`;
     }
   });
@@ -422,26 +420,24 @@ export function registerBattleTools(debug: DebugSystem) {
     description:
       'Cambiar estados secundarios (confused, attracted, cursed, seeded). Toggle automático.',
     action: (side: string, type: string) => {
-      void import('@/stores/battle/battle').then(({ useBattleStore }) => {
-        const battle = useBattleStore();
-        const poke = (side === 'player' ? battle.state?.player : battle.state?.enemy) as
-          | (Pokemon & BattleStatusHolder)
-          | undefined;
+      const battle = useBattleStore();
+      const poke = (side === 'player' ? battle.state?.player : battle.state?.enemy) as
+        | (Pokemon & BattleStatusHolder)
+        | undefined;
 
-        if (poke) {
-          const toggler = SECONDARY_STATUS_TOGGLERS[type];
-          if (toggler) {
-            toggler(poke);
-          }
-
-          // Force Reactivity
-          if (side === 'player' && battle.state) {
-            battle.state.player = { ...poke };
-          } else if (battle.state?.enemy && poke === battle.state.enemy) {
-            battle.state.enemy = { ...battle.state.enemy };
-          }
+      if (poke) {
+        const toggler = SECONDARY_STATUS_TOGGLERS[type];
+        if (toggler) {
+          toggler(poke);
         }
-      });
+
+        // Force Reactivity
+        if (side === 'player' && battle.state) {
+          battle.state.player = { ...poke };
+        } else if (battle.state?.enemy && poke === battle.state.enemy) {
+          battle.state.enemy = { ...battle.state.enemy };
+        }
+      }
       return `Comando setSecondaryStatus(${side}, ${type}) enviado.`;
     }
   });
@@ -469,13 +465,13 @@ export function registerBattleTools(debug: DebugSystem) {
   }
 
   function applyBattleStageEffect(
-    stages: Record<string, number> | undefined, // open-record: Dynamic battle stage name map
+    stages: Record<DisplayText, number> | undefined, // open-record: Dynamic battle stage name map
     effect: string,
     val: string
   ): void {
     if (!stages) return;
     const stageKey = effect === 'lightscreen' ? 'lightScreen' : effect;
-    if (!STAGE_EFFECT_SET.has(stageKey as (typeof STAGE_EFFECT_KEYS)[number])) return;
+    if (!STAGE_EFFECT_SET.has(stageKey)) return;
     // FLIP logic: if it already has the effect (>0), remove it (0). Otherwise, set it (val or 5).
     stages[stageKey] =
       (stages[stageKey] || 0) > 0
@@ -511,7 +507,9 @@ export function registerBattleTools(debug: DebugSystem) {
     val: string
   ): void {
     if (!battleState) return;
-    const updatedConditions: Record<string, { turns: number }> = { ...battleState.fieldConditions }; // open-record: Dynamic battle field conditions map
+    const updatedConditions: Record<DisplayText, { turns: number }> = {
+      ...battleState.fieldConditions
+    }; // open-record: Dynamic battle field conditions map
     const isTerrain = CANONICAL_TERRAINS_SET.has(effect);
     let newTerrain: string | null = battleState.terrain ?? null;
 
@@ -541,20 +539,18 @@ export function registerBattleTools(debug: DebugSystem) {
     command: 'setStatStage',
     description: 'Cambiar nivel de estadística (-6 a +6).',
     action: (side: string, stat: string, val: string) => {
-      void import('@/stores/battle/battle').then(({ useBattleStore }) => {
-        const battle = useBattleStore();
-        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<
-          string,
-          number
-        >; // open-record: Generic key-value data dictionary container
-        const sKey = stat;
-        if (stages && stages[sKey] !== undefined) {
-          stages[sKey] = clampStatStage(stages[sKey], parseInt(val, RADIX_DECIMAL), true);
-          // Force reactivity for ref objects
-          if (side === 'player') battle.playerStages = { ...battle.playerStages };
-          else battle.enemyStages = { ...battle.enemyStages };
-        }
-      });
+      const battle = useBattleStore();
+      const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<
+        DisplayText,
+        number
+      >; // open-record: Generic key-value data dictionary container
+      const sKey = stat;
+      if (stages && stages[sKey] !== undefined) {
+        stages[sKey] = clampStatStage(stages[sKey], parseInt(val, RADIX_DECIMAL), true);
+        // Force reactivity for ref objects
+        if (side === 'player') battle.playerStages = { ...battle.playerStages };
+        else battle.enemyStages = { ...battle.enemyStages };
+      }
       return `setStatStage(${side}, ${stat}, ${val})`;
     }
   });
@@ -564,20 +560,18 @@ export function registerBattleTools(debug: DebugSystem) {
     command: 'modifyStatStage',
     description: 'Modificar nivel de estadística relativo (ej: +1, -1).',
     action: (side: string, stat: string, delta: string) => {
-      void import('@/stores/battle/battle').then(({ useBattleStore }) => {
-        const battle = useBattleStore();
-        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<
-          string,
-          number
-        >; // open-record: Generic key-value data dictionary container
-        const sKey = stat;
-        if (stages && stages[sKey] !== undefined) {
-          stages[sKey] = clampStatStage(stages[sKey] || 0, parseInt(delta, RADIX_DECIMAL), false);
-          // Force reactivity for ref objects
-          if (side === 'player') battle.playerStages = { ...battle.playerStages };
-          else battle.enemyStages = { ...battle.enemyStages };
-        }
-      });
+      const battle = useBattleStore();
+      const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<
+        DisplayText,
+        number
+      >; // open-record: Generic key-value data dictionary container
+      const sKey = stat;
+      if (stages && stages[sKey] !== undefined) {
+        stages[sKey] = clampStatStage(stages[sKey] || 0, parseInt(delta, RADIX_DECIMAL), false);
+        // Force reactivity for ref objects
+        if (side === 'player') battle.playerStages = { ...battle.playerStages };
+        else battle.enemyStages = { ...battle.enemyStages };
+      }
       return `modifyStatStage(${side}, ${stat}, ${delta})`;
     }
   });
@@ -587,34 +581,32 @@ export function registerBattleTools(debug: DebugSystem) {
     command: 'setFieldEffect',
     description: 'Activar efecto de campo (screens, weather, terrains). Toggle automático.',
     action: (side: string, effect: string, val: string) => {
-      void import('@/stores/battle/battle').then(({ useBattleStore }) => {
-        const battle = useBattleStore();
-        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<
-          string,
-          number
-        >; // open-record: Generic key-value data dictionary container
-        applyBattleStageEffect(stages, effect, val);
-        applyBattleWeatherEffect(battle.state, effect, val);
-        applyBattleTerrainOrFieldEffect(battle.state, effect, val);
-        if (battle.state) {
-          const sideConds =
-            side === 'player'
-              ? (battle.state.playerSideConditions ??= {})
-              : (battle.state.enemySideConditions ??= {});
-          const stageKey = effect === 'lightscreen' ? 'lightScreen' : effect;
-          const turnsVal = stages[stageKey];
-          if ((turnsVal || 0) > 0) {
-            sideConds[effect as import('@/types/battle/battle').BattleConditionKey] = {
-              turns: turnsVal || 1
-            };
-          } else {
-            delete sideConds[effect as import('@/types/battle/battle').BattleConditionKey];
-          }
-          battle.state = { ...battle.state };
+      const battle = useBattleStore();
+      const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<
+        DisplayText,
+        number
+      >; // open-record: Generic key-value data dictionary container
+      applyBattleStageEffect(stages, effect, val);
+      applyBattleWeatherEffect(battle.state, effect, val);
+      applyBattleTerrainOrFieldEffect(battle.state, effect, val);
+      if (battle.state) {
+        const sideConds =
+          side === 'player'
+            ? (battle.state.playerSideConditions ??= {})
+            : (battle.state.enemySideConditions ??= {});
+        const stageKey = effect === 'lightscreen' ? 'lightScreen' : effect;
+        const turnsVal = stages[stageKey];
+        if ((turnsVal || 0) > 0) {
+          sideConds[effect as import('@/types/battle/battle').BattleConditionKey] = {
+            turns: turnsVal || 1
+          };
+        } else {
+          delete sideConds[effect as import('@/types/battle/battle').BattleConditionKey];
         }
-        if (side === 'player') battle.playerStages = { ...battle.playerStages };
-        else battle.enemyStages = { ...battle.enemyStages };
-      });
+        battle.state = { ...battle.state };
+      }
+      if (side === 'player') battle.playerStages = { ...battle.playerStages };
+      else battle.enemyStages = { ...battle.enemyStages };
       return `setFieldEffect(${side}, ${effect}, ${val})`;
     }
   });

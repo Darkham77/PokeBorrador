@@ -1,14 +1,16 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
 import { computed } from 'vue';
-import { useTradeStore } from '@/stores/trade';
-import { useGameStore } from '@/stores/game';
-import type { TradeOffer } from '@/types/system/stores';
+
 import { isItemId, getItemById } from '@/data/inventory/items';
+import { useGameStore } from '@/stores/game';
+import { useTradeStore } from '@/stores/trade';
+import type { TradeOffer } from '@/types/system/stores';
 
 const tradeStore = useTradeStore();
 const gameStore = useGameStore();
 
-const getOfferSummary = (t: TradeOffer) => {
+const getOfferSummary = (t: TradeOffer): string => {
   const parts: string[] = []; // text-ok: UI text display localization string
   if (t.offer_pokemon) parts.push(t.offer_pokemon.name);
   if (t.offer_items) {
@@ -20,7 +22,7 @@ const getOfferSummary = (t: TradeOffer) => {
   return parts.length > 0 ? parts.join(', ') : 'Nada';
 };
 
-const getRequestSummary = (t: TradeOffer) => {
+const getRequestSummary = (t: TradeOffer): string => {
   const parts: string[] = []; // text-ok: UI text display localization string
   if (t.request_pokemon) parts.push(t.request_pokemon.name);
   if (t.request_items) {
@@ -69,7 +71,7 @@ const canFulfillTrade = (t: TradeOffer): { can: boolean; reason?: string } => {
 };
 
 const validationMap = computed(() => {
-  const result: Record<string, { can: boolean; reason?: string }> = {}; // open-record: Trade UUID mapped to validation state
+  const result: Record<DisplayText, { can: boolean; reason?: string }> = {}; // open-record: Trade UUID mapped to validation state
   tradeStore.pendingIncoming.forEach((t) => {
     result[t.id] = canFulfillTrade(t);
   });

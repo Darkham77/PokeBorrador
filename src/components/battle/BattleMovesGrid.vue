@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
-import type { ComponentPublicInstance } from 'vue';
 import { gsap } from 'gsap';
-import { Z_LAYERS } from '@/logic/constants/visuals';
+import { ref, computed, onUnmounted } from 'vue';
+import type { ComponentPublicInstance, CSSProperties } from 'vue';
+
 import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue';
+import { Z_LAYERS } from '@/logic/constants/visuals';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+
 import { resolveDropSlotIndex, hasExceededTouchThreshold } from './battleMovesTouchHelper';
 
 interface Props {
@@ -47,7 +49,7 @@ const touchDeltaX = ref(0);
 const touchDeltaY = ref(0);
 
 const moveRefs = ref<(HTMLElement | null)[]>([]);
-const setMoveRef = (el: Element | ComponentPublicInstance | null, index: number) => {
+const setMoveRef = (el: Element | ComponentPublicInstance | null, index: number): void => {
   if (el) {
     moveRefs.value[index] = (el as ComponentPublicInstance).$el as HTMLElement;
   } else {
@@ -55,7 +57,7 @@ const setMoveRef = (el: Element | ComponentPublicInstance | null, index: number)
   }
 };
 
-const touchDragStyle = (index: number) => {
+const touchDragStyle = (index: number): CSSProperties => {
   if (!isTouchDragging.value || draggedIndex.value !== index) return {};
   return {
     transform: `translate(${touchDeltaX.value}px, ${touchDeltaY.value}px)`,
@@ -65,7 +67,7 @@ const touchDragStyle = (index: number) => {
   };
 };
 
-const onDragStart = (index: number, e: DragEvent) => {
+const onDragStart = (index: number, e: DragEvent): void => {
   if (!props.canReorder || !fullMoves.value[index]) return;
   draggedIndex.value = index;
   isDragging.value = true;
@@ -74,13 +76,13 @@ const onDragStart = (index: number, e: DragEvent) => {
   }
 };
 
-const onDragOver = (index: number, e: DragEvent) => {
+const onDragOver = (index: number, e: DragEvent): void => {
   if (!props.canReorder) return;
   e.preventDefault();
   dragOverIndex.value = index;
 };
 
-const onDrop = (targetIndex: number, e: DragEvent) => {
+const onDrop = (targetIndex: number, e: DragEvent): void => {
   if (!props.canReorder) return;
   e.preventDefault();
   if (draggedIndex.value !== null && draggedIndex.value !== targetIndex) {
@@ -89,7 +91,7 @@ const onDrop = (targetIndex: number, e: DragEvent) => {
   onDragEnd();
 };
 
-const onDragEnd = () => {
+const onDragEnd = (): void => {
   isDragging.value = false;
   draggedIndex.value = null;
   dragOverIndex.value = null;
@@ -99,7 +101,7 @@ const TOUCH_LONG_PRESS_DELAY_SEC = 0.3;
 const TOUCH_VIBRATE_DURATION_MS = 50;
 const TOUCH_MOVE_CANCEL_THRESHOLD_PX = 15;
 
-function handleTouchStart(index: number, e: TouchEvent) {
+function handleTouchStart(index: number, e: TouchEvent): void {
   if (!props.canReorder || !fullMoves.value[index]) return;
 
   const touch = e.touches?.[0];
@@ -127,14 +129,14 @@ function handleTouchStart(index: number, e: TouchEvent) {
   });
 }
 
-function handleTouchMoveNonPassive(e: TouchEvent) {
+function handleTouchMoveNonPassive(e: TouchEvent): void {
   if (isTouchDragging.value) {
     e.preventDefault();
   }
   handleTouchMove(e);
 }
 
-function handleTouchEndNonPassive(e: TouchEvent) {
+function handleTouchEndNonPassive(e: TouchEvent): void {
   const index = draggedIndex.value;
   if (index !== null) {
     const el = moveRefs.value[index];
@@ -147,7 +149,7 @@ function handleTouchEndNonPassive(e: TouchEvent) {
   handleTouchEnd(e);
 }
 
-function handleTouchMove(e: TouchEvent) {
+function handleTouchMove(e: TouchEvent): void {
   const touch = e.touches?.[0];
   if (!touch) return;
 
@@ -168,7 +170,7 @@ function handleTouchMove(e: TouchEvent) {
   }
 }
 
-function handleTouchEnd(e: TouchEvent) {
+function handleTouchEnd(e: TouchEvent): void {
   if (touchTimer.value) touchTimer.value.kill();
   if (isTouchDragging.value && draggedIndex.value !== null) {
     const el = moveRefs.value[draggedIndex.value];

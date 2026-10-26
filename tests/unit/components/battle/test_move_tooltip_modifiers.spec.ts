@@ -1,8 +1,9 @@
+import { mount } from '@vue/test-utils';
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vite-plus/test';
-import { mount } from '@vue/test-utils';
-import MoveTooltipModifiers from '@/components/battle/MoveTooltipModifiers.vue';
+
 import MoveTooltipFieldEffects from '@/components/battle/MoveTooltipFieldEffects.vue';
+import MoveTooltipModifiers from '@/components/battle/MoveTooltipModifiers.vue';
 import type { ActiveMoveDetails } from '@/composables/battle/useMoveTooltip';
 
 describe('MoveTooltip subcomponents', () => {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import type { RankedSeasonMedal } from '@/types/battle/pvp.ts';
 import { usePvPStore } from '@/stores/pvp';
+import type { RankedSeasonMedal } from '@/types/battle/pvp.ts';
+
 import ProfileRankedMedalItem from './ProfileRankedMedalItem.vue';
 
 interface Props {

@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 import { type Page, expect } from '@playwright/test';
 import { toID } from '@pkmn/sim';
 import {
@@ -31,7 +32,7 @@ export interface E2EBattleState {
   enemyRequest?: unknown;
 }
 
-const ITEM_TRANSLATIONS: Record<string, string> = {
+const ITEM_TRANSLATIONS: Record<DisplayText, string> = {
   potion: 'Poción',
   superpotion: 'Superpoción',
   hyperpotion: 'Hiperpoción',
@@ -178,11 +179,18 @@ export async function executeNativeAutoBattle(page: Page): Promise<void> {
       if (!store) return true;
       const active = (store.activeBattle || store.state) as { over?: boolean } | undefined;
       const fsmState = store.currentFsmState;
+      const TERMINAL_FSM_STATE_VALUES = [
+        'EXIT_BATTLE',
+        'REWARDS_PHASE',
+        'SEARCH_PHASE'
+      ] as const;
+      type TerminalFsmStateValue = (typeof TERMINAL_FSM_STATE_VALUES)[number];
+      const TERMINAL_FSM_STATES: ReadonlySet<TerminalFsmStateValue> = new Set<TerminalFsmStateValue>(
+        TERMINAL_FSM_STATE_VALUES
+      );
       return (
         active?.over === true ||
-        fsmState === 'EXIT_BATTLE' ||
-        fsmState === 'REWARDS_PHASE' ||
-        fsmState === 'SEARCH_PHASE'
+        (fsmState !== undefined && TERMINAL_FSM_STATES.has(fsmState as TerminalFsmStateValue))
       );
     });
     if (battleOver) {

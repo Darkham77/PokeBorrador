@@ -11,8 +11,9 @@
  * - Full rewards resolution across all 4 classes
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
 
 import {
   getDeploymentCost,

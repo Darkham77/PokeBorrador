@@ -1,37 +1,37 @@
 <script setup lang="ts">
-import { ref, computed, reactive, watch, nextTick } from 'vue';
 import { gsap } from 'gsap';
-import { useGameStore } from '@/stores/game';
-import { useInventoryStore } from '@/stores/inventory/inventory';
-import { useUIStore } from '@/stores/ui';
-import { useBattleStore } from '@/stores/battle/battle';
-import { useModalStore } from '@/stores/modals';
-import BaseModal from '@/components/common/BaseModal.vue';
+import { ref, computed, reactive, watch, nextTick } from 'vue';
 
+import BaseModal from '@/components/common/BaseModal.vue';
+// Sub-components
+import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue';
+import { useGridTransitions } from '@/composables/ui/useGridTransitions';
 import { getItemById } from '@/data/inventory/items';
 import { isGlobalItem } from '@/logic/providers/itemProvider';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
+import { useInventoryStore } from '@/stores/inventory/inventory';
 import {
   isEquippableHeldItem,
   mapInventoryToItems,
   type Item as InventoryListItem
 } from '@/stores/inventory/inventoryHelpers';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import type { Item, ItemDiscardAction } from '@/types/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import InventoryActionMenu from './inventory/InventoryActionMenu.vue';
+import InventoryControls from './inventory/InventoryControls.vue';
+import InventoryItemCard from './inventory/InventoryItemCard.vue';
+import InventoryQuantityModal from './inventory/InventoryQuantityModal.vue';
+import InventoryModalHeader from './InventoryModalHeader.vue';
 import {
   filterBattleItemsByCategoryAndQuery,
   filterUtilizableBattleItems,
   calculateEstimatedGain,
   resolveValidPokemonTargets
 } from './inventoryModalHelper';
-import type { Item, ItemDiscardAction } from '@/types/inventory/items';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-
-// Sub-components
-import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue';
-import InventoryItemCard from './inventory/InventoryItemCard.vue';
-import { useGridTransitions } from '@/composables/ui/useGridTransitions';
-import InventoryControls from './inventory/InventoryControls.vue';
-import InventoryModalHeader from './InventoryModalHeader.vue';
-import InventoryQuantityModal from './inventory/InventoryQuantityModal.vue';
-import InventoryActionMenu from './inventory/InventoryActionMenu.vue';
 
 interface Props {
   id?: string;
@@ -64,6 +64,7 @@ const isSmallScreen = computed(() => ui.isSmallScreen);
 // State
 const multiSelectMode = ref<string | null>(null);
 import type { ItemId } from '@/data/inventory/items';
+import type { ShopMainTab } from '@/types/inventory/items';
 
 const selectedItems = reactive(new Map<ItemId, number>());
 const quantitySelectionItem = ref<InventoryListItem | null>(null);
@@ -71,7 +72,7 @@ const itemActionMenu = ref<InventoryListItem | null>(null); // { item, type: 'se
 
 // Local states for battle mode to prevent overwriting/sharing state with main inventory
 const battleActiveCategory = ref('potions');
-const battleActiveMainTab = ref<'productos' | 'materiales'>('productos');
+const battleActiveMainTab = ref<ShopMainTab>('productos');
 const battleSearchQuery = ref('');
 
 // Top-level categories (standard bag)
@@ -235,7 +236,7 @@ const selectedObjectsTotal = computed(() =>
 );
 
 // Handlers
-const handleItemClick = (item: InventoryListItem) => {
+const handleItemClick = (item: InventoryListItem): void => {
   if (multiSelectMode.value) {
     if (selectedItems.has(item.id)) {
       selectedItems.delete(item.id);
@@ -256,7 +257,10 @@ const handleItemClick = (item: InventoryListItem) => {
   itemActionMenu.value = item;
 };
 
-function applyTargetedItem(dbItem: Item, target: NonNullable<typeof uiStore.inventoryTarget>) {
+function applyTargetedItem(
+  dbItem: Item,
+  target: NonNullable<typeof uiStore.inventoryTarget>
+): void {
   if (isEquippableHeldItem(dbItem)) {
     const success = inventoryStore.equipItem(dbItem.id, target.context, target.index);
     if (success) {
@@ -271,7 +275,7 @@ function applyTargetedItem(dbItem: Item, target: NonNullable<typeof uiStore.inve
   }
 }
 
-function openTargetSelectionModal(dbItem: Item, validTargets: Pokemon[]) {
+function openTargetSelectionModal(dbItem: Item, validTargets: Pokemon[]): void {
   const isHeld = isEquippableHeldItem(dbItem);
   const battleStore = useBattleStore();
   modalStore.open('PokemonSelection', {
@@ -302,7 +306,7 @@ function openTargetSelectionModal(dbItem: Item, validTargets: Pokemon[]) {
   });
 }
 
-function executeItemUse(item: InventoryListItem) {
+function executeItemUse(item: InventoryListItem): void {
   const dbItem = getItemById(item.id);
   if (!dbItem) {
     uiStore.notify(`Error: Objeto "${item.name}" no reconocido.`, '⚠️');
@@ -341,7 +345,7 @@ function executeItemUse(item: InventoryListItem) {
   openTargetSelectionModal(dbItem, validTargets);
 }
 
-const handleActionSelect = (type: string) => {
+const handleActionSelect = (type: string): void => {
   const item = itemActionMenu.value;
   if (!item) return;
   itemActionMenu.value = null;
@@ -354,7 +358,7 @@ const handleActionSelect = (type: string) => {
   }
 };
 
-const handleMultiExecute = async () => {
+const handleMultiExecute = async (): Promise<void> => {
   if (selectedItems.size === 0) return;
   const mode = multiSelectMode.value;
   if (!mode) return;
@@ -389,7 +393,7 @@ const handleMultiExecute = async () => {
   });
 };
 
-const handleQuantityConfirm = async (qty: number) => {
+const handleQuantityConfirm = async (qty: number): Promise<void> => {
   if (quantitySelectionItem.value) {
     const itemId = quantitySelectionItem.value.id;
 
@@ -418,12 +422,12 @@ const handleQuantityConfirm = async (qty: number) => {
   }
 };
 
-const handleCancelSelection = () => {
+const handleCancelSelection = (): void => {
   selectedItems.clear();
   multiSelectMode.value = null;
 };
 
-const close = () => {
+const close = (): void => {
   emit('close');
   handleCancelSelection();
   uiStore.inventoryTarget = null;

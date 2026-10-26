@@ -5,12 +5,13 @@
  * Sidebar for adventure test simulator: HMs, bike, team passives, field moves, cheats, and logs.
  */
 
-import AdventureCheatPanel from './AdventureCheatPanel.vue';
-import type { ItemId } from '@/data/inventory/items';
 import {
   ADVENTURE_MO_TYPES,
   type AdventureMoType
 } from '@/composables/adventure/helpers/adventureSimulationConstants';
+import type { ItemId } from '@/data/inventory/items';
+
+import AdventureCheatPanel from './AdventureCheatPanel.vue';
 
 interface ActivePassiveItem {
   label: string;

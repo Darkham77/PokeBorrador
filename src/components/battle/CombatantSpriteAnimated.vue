@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import type { AnimatedSpriteData } from '@/data/pokemon/animatedSpriteDatabase';
-import type { CombatantSpriteMode } from '@/types/battle/battle';
 import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
+import type { CombatantSpriteMode } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const props = defineProps<{
   pokemon: Pokemon | null;

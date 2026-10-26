@@ -1,9 +1,6 @@
-import { makePokemon, validatePokemon } from '@/logic/pokemon/pokemonFactory';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { useUIStore } from '@/stores/ui';
-import { useLoadingStore } from '@/stores/loading';
-import type { GameState } from '@/types/system/game';
-import type { Pokemon, PokemonEgg, PokemonStorageLocation } from '@/types/pokemon/pokemon';
+import type { DisplayText } from '@francogp/auditor';
+import { getActivePinia } from 'pinia';
+
 import {
   BUFF_FIELDS,
   getItemById,
@@ -11,34 +8,52 @@ import {
   requireItemId
 } from '@/data/inventory/items';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { logger } from '@/logic/utils/logger';
-import { healStuckMissions } from '@/logic/player/missionRecovery';
-import { healStuckEventPokemon } from '@/logic/player/eventRecovery';
-import { getActivePinia } from 'pinia';
-import type { Event as GameEvent } from '@/logic/events/eventEngine';
-import type { CompetitionEntry } from '@/types/system/stores';
-import { isPokemonBusy, type PokemonTagId } from '@/logic/constants/tags';
 import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay';
+import { isPokemonBusy, type PokemonTagId } from '@/logic/constants/tags';
+import type { Event as GameEvent } from '@/logic/events/eventEngine';
 import { gameBus } from '@/logic/events/gameBus.ts';
+import { healStuckEventPokemon } from '@/logic/player/eventRecovery';
+import { healStuckMissions } from '@/logic/player/missionRecovery';
+import { makePokemon, validatePokemon } from '@/logic/pokemon/pokemonFactory';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { logger } from '@/logic/utils/logger';
+import { useLoadingStore } from '@/stores/loading';
+import { useUIStore } from '@/stores/ui';
+import type { Pokemon, PokemonEgg, PokemonStorageLocation } from '@/types/pokemon/pokemon';
+import type { GameState } from '@/types/system/game';
+import type { CompetitionEntry } from '@/types/system/stores';
 
 export function usePokemonActions(
   state: GameState,
-  scheduleSave: () => Promise<void>,
+  scheduleSave: (delayMs?: number, forceRemote?: boolean) => void,
   autoFillPvpTeam: () => void,
   autoFillWarTeam: () => void,
   autoFillPvpTeam6?: () => void
-) {
-  function autoFillPvpBoth() {
+): {
+  registerPokedex: (id: PokemonSpeciesId, caught?: boolean) => void;
+  chooseStarter: (id: PokemonSpeciesId) => Promise<void>;
+  addPokemon: (
+    pokemon: Pokemon | null,
+    options?: { notify: boolean }
+  ) => { success: boolean; target: null } | { success: boolean; target: PokemonStorageLocation };
+  removePokemon: (uid: string) => boolean;
+  reorderTeam: (draggedIndex: number, targetIndex: number) => void;
+  reorderMoves: (pokemon: Pokemon, fromIndex: number, toIndex: number) => void;
+  sendToBox: (index: number) => boolean;
+  togglePokeTag: (context: PokemonStorageLocation, index: number, tagId: PokemonTagId) => void;
+  validateAll: () => void;
+} {
+  function autoFillPvpBoth(): void {
     autoFillPvpTeam();
     autoFillPvpTeam6?.();
   }
 
-  function registerPokedex(id: PokemonSpeciesId, caught = false) {
+  function registerPokedex(id: PokemonSpeciesId, caught = false): void {
     if (!state.seenPokedex.includes(id)) state.seenPokedex.push(id);
     if (caught && !state.pokedex.includes(id)) state.pokedex.push(id);
   }
 
-  async function chooseStarter(id: PokemonSpeciesId) {
+  async function chooseStarter(id: PokemonSpeciesId): Promise<void> {
     const speciesId = requirePokemonSpeciesId(id);
     const loadingStore = useLoadingStore();
     loadingStore.start(
@@ -63,11 +78,14 @@ export function usePokemonActions(
       }
     }
 
-    await scheduleSave(); // Save immediately
+    scheduleSave(); // Save immediately
     loadingStore.finish('choose_starter');
   }
 
-  function addPokemon(pokemon: Pokemon | null, options = { notify: true }) {
+  function addPokemon(
+    pokemon: Pokemon | null,
+    options = { notify: true }
+  ): { success: boolean; target: null } | { success: boolean; target: PokemonStorageLocation } {
     if (!pokemon) return { success: false, target: null };
     if (!pokemon.obtainedAt) {
       pokemon.obtainedAt = Temporal.Now.instant().epochMilliseconds;
@@ -95,46 +113,46 @@ export function usePokemonActions(
       gameBus.emit('CAPTURE_SUCCESS');
     }
 
-    void scheduleSave();
+    scheduleSave();
     autoFillPvpBoth();
     autoFillWarTeam();
     return { success: true, target };
   }
 
-  function removePokemon(uid: string) {
+  function removePokemon(uid: string): boolean {
     const teamIdx = state.team.findIndex((p) => p.uid === uid);
     if (teamIdx !== -1) {
       const p = state.team[teamIdx];
       if (p && isPokemonBusy(p)) return false;
       state.team.splice(teamIdx, 1);
       autoFillPvpBoth();
-      void scheduleSave();
+      scheduleSave();
       return true;
     }
-    const boxIdx = state.box.findIndex((p) => p != null && p.uid === uid);
+    const boxIdx = state.box.findIndex((p) => p !== null && p !== undefined && p.uid === uid);
     if (boxIdx !== -1) {
       const p = state.box[boxIdx];
       if (!p || isPokemonBusy(p)) return false;
       state.box.splice(boxIdx, 1);
       autoFillPvpBoth();
       autoFillWarTeam();
-      void scheduleSave();
+      scheduleSave();
       return true;
     }
     return false;
   }
 
-  function reorderTeam(draggedIndex: number, targetIndex: number) {
+  function reorderTeam(draggedIndex: number, targetIndex: number): void {
     if (draggedIndex === targetIndex) return;
     const newTeam = [...state.team];
     const [moved] = newTeam.splice(draggedIndex, 1);
     if (!moved) return;
     newTeam.splice(targetIndex, 0, moved);
     state.team = newTeam;
-    void scheduleSave();
+    scheduleSave();
   }
 
-  function reorderMoves(pokemon: Pokemon, fromIndex: number, toIndex: number) {
+  function reorderMoves(pokemon: Pokemon, fromIndex: number, toIndex: number): void {
     if (fromIndex === toIndex || !pokemon || !pokemon.moves) return;
     const newMoves = [...pokemon.moves];
     const moved = newMoves[fromIndex];
@@ -142,10 +160,10 @@ export function usePokemonActions(
     newMoves.splice(fromIndex, 1);
     newMoves.splice(toIndex, 0, moved);
     pokemon.moves = newMoves;
-    void scheduleSave();
+    scheduleSave();
   }
 
-  function sendToBox(index: number) {
+  function sendToBox(index: number): boolean {
     if (state.team.length <= 1) {
       useUIStore().notify('No puedes quedarte sin Pokémon en el equipo.', '⚠️');
       return false;
@@ -158,11 +176,15 @@ export function usePokemonActions(
     useUIStore().notify(`¡${p.name} fue enviado a la Caja PC!`, '📦');
     autoFillPvpBoth();
     autoFillWarTeam();
-    void scheduleSave();
+    scheduleSave();
     return true;
   }
 
-  function togglePokeTag(context: PokemonStorageLocation, index: number, tagId: PokemonTagId) {
+  function togglePokeTag(
+    context: PokemonStorageLocation,
+    index: number,
+    tagId: PokemonTagId
+  ): void {
     const p = context === 'team' ? state.team[index] : state.box ? state.box[index] : null;
     if (!p) return;
 
@@ -173,10 +195,10 @@ export function usePokemonActions(
     } else {
       p.tags.push(tagId);
     }
-    void scheduleSave();
+    scheduleSave();
   }
 
-  function validateAll() {
+  function validateAll(): void {
     // Self-healing stuck Pokémon on mission
     if (state.classData) {
       const activeMission = (
@@ -191,14 +213,14 @@ export function usePokemonActions(
       const fixedAny = healStuckMissions(state.team, state.box, activeMission);
       if (fixedAny) {
         logger.info('SaveMigration', 'Self-healed stuck Pokémon on mission.');
-        void scheduleSave();
+        scheduleSave();
       }
     }
 
     // Self-healing stuck Pokémon on events
     const piniaActive = getActivePinia();
     const eventsState = piniaActive?.state?.value?.events as
-      | { allEvents?: GameEvent[]; userEntries?: Record<string, CompetitionEntry> } // open-record: Composite event_id:catId index
+      | { allEvents?: GameEvent[]; userEntries?: Record<DisplayText, CompetitionEntry> } // open-record: Composite event_id:catId index
       | undefined;
     const fixedEvents = healStuckEventPokemon(
       state.team,
@@ -208,7 +230,7 @@ export function usePokemonActions(
     );
     if (fixedEvents) {
       logger.info('SaveMigration', 'Self-healed stuck Pokémon on event(s).');
-      void scheduleSave();
+      scheduleSave();
     }
 
     state.team.forEach((p) => p && validatePokemon(p));
@@ -247,7 +269,7 @@ export function usePokemonActions(
       state.team = teamToKeep;
       autoFillPvpBoth();
       autoFillWarTeam();
-      void scheduleSave();
+      scheduleSave();
     }
 
     if (state.eggs && Array.isArray(state.eggs)) {
@@ -276,7 +298,7 @@ export function usePokemonActions(
             `Timer corrupto detectado en ${field} (${val}s). Ajustando al máximo permitido por el objeto (${maxAllowedSecs}s).`
           );
           Reflect.set(state, field, maxAllowedSecs);
-          void scheduleSave();
+          scheduleSave();
         }
       }
     });

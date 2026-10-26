@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useShopStore, getDeterministicDailyBlackMarketItemIds } from '@/stores/inventory/shop';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import { useGameStore } from '@/stores/game';
+import { useShopStore, getDeterministicDailyBlackMarketItemIds } from '@/stores/inventory/shop';
 import { useUIStore } from '@/stores/ui';
 
 describe('Deterministic Black Market', () => {

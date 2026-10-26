@@ -4,6 +4,8 @@
  * Domain-Type-First contracts and metadata for the Friendship / Happiness System.
  */
 
+import type { DisplayText, CssClassName } from '@francogp/auditor';
+
 export const FRIENDSHIP_SEAL_TIERS = [
   'distrust',
   'sprout',
@@ -21,11 +23,11 @@ export interface FriendshipSealMetadata {
   readonly id: FriendshipSealTier;
   readonly minFriendship: number;
   readonly maxFriendship: number;
-  readonly label: string; // domain-ok: Open dynamic text or non-domain string payload
-  readonly iconEmoji: string; // domain-ok: Open dynamic text or non-domain string payload
-  readonly iconName: string; // domain-ok: Open dynamic text or non-domain string payload
-  readonly barGradientClass: string; // domain-ok: Open dynamic text or non-domain string payload
-  readonly evaluatorQuote: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly label: DisplayText;
+  readonly iconEmoji: DisplayText;
+  readonly iconName: DisplayText;
+  readonly barGradientClass: CssClassName;
+  readonly evaluatorQuote: DisplayText;
   readonly isEvolutionReady: boolean;
   readonly isCombatPerksActive: boolean;
 }

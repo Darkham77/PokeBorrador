@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+
+import { defaultPrefabsRegistry } from '../../logic/map/prefabsRegistry';
 import { useContinentStudioStore, type StudioActiveTool } from '../../stores/continentStudio';
 import type { ContinentBiomeType, ContinentProject } from '../../types/map/continentTypes';
 import StudioProceduralConfigModal from './StudioProceduralConfigModal.vue';
 import StudioSpritePipelineModal from './StudioSpritePipelineModal.vue';
-import { defaultPrefabsRegistry } from '../../logic/map/prefabsRegistry';
 
 const emit = defineEmits<{
   (e: 'export-png'): void;

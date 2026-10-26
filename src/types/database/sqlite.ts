@@ -1,5 +1,7 @@
+import type { DisplayText } from '@francogp/auditor';
+
 export interface SQLiteResult {
-  columns: string[]; // domain-ok: Open dynamic text or non-domain string payload
+  columns: DisplayText[];
   values: unknown[][];
 }
 

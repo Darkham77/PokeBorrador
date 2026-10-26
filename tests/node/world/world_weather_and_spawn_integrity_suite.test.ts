@@ -4,12 +4,15 @@
  * Consolidated Suite for Weather Math, Climate Biome Restrictions, Unique Weather Identity, and Spawn/Legendary Integrity.
  */
 
-import { describe, it, test } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { describe, it, test } from 'vite-plus/test';
+
+import { FIRE_RED_MAPS } from '../../../src/data/world/maps.ts';
+import { ROUTE_WEATHER_TABLES } from '../../../src/data/world/weather-tables.ts';
 import {
   mulberry32,
   hashString,
@@ -19,8 +22,6 @@ import {
   getWeatherAnimSeed,
   type WeatherTable
 } from '../../../src/logic/weather/weatherMath.ts';
-import { FIRE_RED_MAPS } from '../../../src/data/world/maps.ts';
-import { ROUTE_WEATHER_TABLES } from '../../../src/data/world/weather-tables.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

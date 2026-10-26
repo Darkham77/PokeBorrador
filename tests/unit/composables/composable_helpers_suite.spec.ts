@@ -1,21 +1,10 @@
+import { setActivePinia, createPinia } from 'pinia';
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { ref, computed } from 'vue';
-import { setActivePinia, createPinia } from 'pinia';
+
 import { useAdventureEvents } from '@/composables/adventure/useAdventureEvents';
-import { useGameStore } from '@/stores/game';
-import { useBattleStore } from '@/stores/battle/battle';
-import { useInventoryStore } from '@/stores/inventory/inventory';
-import { useShopStore } from '@/stores/inventory/shop';
-import { useMapStore } from '@/stores/map';
 import { handleRewardsReset } from '@/composables/battle/useBattleArenaCoordinator';
-import {
-  useEventDetailBonuses,
-  type ExtendedEventConfig
-} from '@/composables/events/useEventDetailBonuses';
-import type { Event as GameEvent } from '@/logic/events/eventEngine';
 import { useMoveTooltip } from '@/composables/battle/useMoveTooltip';
-import { BATTLE_STATES } from '@/logic/battle/battleStateMachine';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import { useWeatherVisuals } from '@/composables/effects/useWeatherVisuals';
 import {
   getCategoryIcon,
@@ -24,8 +13,20 @@ import {
   formatEventScheduleWindow,
   resolveCategoryDisplayName
 } from '@/composables/events/pastEventFormatHelpers';
-import type { PastEventHistoryItem } from '@/types/system/stores';
+import {
+  useEventDetailBonuses,
+  type ExtendedEventConfig
+} from '@/composables/events/useEventDetailBonuses';
+import { BATTLE_STATES } from '@/logic/battle/battleStateMachine';
+import type { Event as GameEvent } from '@/logic/events/eventEngine';
 import type { SubCompetitionConfig } from '@/logic/events/eventEngine';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
+import { useInventoryStore } from '@/stores/inventory/inventory';
+import { useShopStore } from '@/stores/inventory/shop';
+import { useMapStore } from '@/stores/map';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+import type { PastEventHistoryItem } from '@/types/system/stores';
 
 describe('Composable Helpers Domain Suite', () => {
   describe('useAdventureEvents', () => {

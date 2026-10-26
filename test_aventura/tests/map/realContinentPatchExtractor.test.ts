@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import {
   extractRealContinentPatches,

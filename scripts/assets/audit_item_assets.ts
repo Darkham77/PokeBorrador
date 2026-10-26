@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+import { isMainModule } from '@francogp/auditor';
 /**
  * scripts/assets/audit_item_assets.ts
  *
@@ -10,10 +12,11 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { styleText, parseArgs } from 'node:util';
+import { styleText } from 'node:util';
+import { defineCommand, runMain } from 'citty';
 import { SHOP_ITEMS } from '../../src/data/inventory/items.ts';
 
-const AUDIT_ITEM_MAPPING: Record<string, string> = {
+const AUDIT_ITEM_MAPPING: Record<DisplayText, string> = {
   pocion: 'potion',
   super_pocion: 'super-potion',
   hiper_pocion: 'hyper-potion',
@@ -145,8 +148,7 @@ function buildItemPathsToCheck(
   mappedKey: string,
   publicDir: string
 ): string[] {
-  const pathsToCheck: string[] = [
-    // no-domain: Non-domain utility collection or data structure
+  const pathsToCheck = [
     path.join(publicDir, 'assets/sprites', `${itemSprite}.webp`),
     path.join(publicDir, 'assets/sprites', `${itemSprite}.png`)
   ];
@@ -163,8 +165,8 @@ async function checkIfAnyPathExists(paths: string[]): Promise<boolean> {
     try {
       await fs.access(p);
       return true;
-    } catch {
-      // catch-ok: path does not exist, continue search
+    } catch (err) {
+      err;
     }
   }
   return false;
@@ -244,65 +246,76 @@ function printMissingItemsDetail(allMissing: readonly AuditResult[], isSummary: 
   }
 }
 
-async function main() {
-  const { values } = parseArgs({
-    options: {
-      output: { type: 'string', short: 'o' },
-      summary: { type: 'boolean', short: 's' }
+export const command = defineCommand({
+  meta: {
+    name: 'audit-item-assets',
+    description: 'Auditoría de imágenes de ítems contra archivos físicos en public/'
+  },
+  args: {
+    output: {
+      type: 'string',
+      alias: 'o',
+      description: 'Ruta del archivo de reporte de salida'
     },
-    strict: false
-  });
+    summary: {
+      type: 'boolean',
+      alias: 's',
+      description: 'Mostrar solo resumen sin detalle extenso'
+    }
+  },
+  async run({ args }) {
+    console.log(styleText('bold', '\n--- 🔎 ITEM IMAGE ASSETS AUDIT ---'));
 
-  console.log(styleText('bold', '\n--- 🔎 ITEM IMAGE ASSETS AUDIT ---'));
+    const publicDir = path.resolve(process.cwd(), 'public');
+    const results: AuditResult[] = [];
 
-  const publicDir = path.resolve(process.cwd(), 'public');
-  const results: AuditResult[] = [];
+    for (const item of SHOP_ITEMS) {
+      const res = await auditSingleShopItem(item, publicDir);
+      if (res) results.push(res);
+    }
 
-  for (const item of SHOP_ITEMS) {
-    const res = await auditSingleShopItem(item, publicDir);
-    if (res) results.push(res);
+    // Group and print stats
+    const localShopItems = results.filter((r) => r.shops.includes('Poké Market (Local)'));
+    const bcShopItems = results.filter((r) => r.shops.includes('BC Shop (Battle Club)'));
+
+    const localFound = localShopItems.filter((r) => r.found).length;
+    const localMissing = localShopItems.filter((r) => !r.found);
+
+    const bcFound = bcShopItems.filter((r) => r.found).length;
+    const bcMissing = bcShopItems.filter((r) => !r.found);
+
+    console.log(`\n🏬 ${styleText('bold', 'POKÉ MARKET (TIENDA LOCAL):')}`);
+    console.log(`   📦 Total ítems con sprite: ${localShopItems.length}`);
+    console.log(`   ✅ Con imagen física:      ${localFound}`);
+    console.log(`   ❌ Con imagen FALTANTE:    ${localMissing.length}`);
+
+    console.log(`\n🎖️  ${styleText('bold', 'BATTLE CLUB SHOP (BC SHOP):')}`);
+    console.log(`   📦 Total ítems con sprite: ${bcShopItems.length}`);
+    console.log(`   ✅ Con imagen física:      ${bcFound}`);
+    console.log(`   ❌ Con imagen FALTANTE:    ${bcMissing.length}`);
+
+    console.log('\n════════════════════════════════════════════════');
+
+    const allMissing = results.filter((r) => !r.found);
+    printMissingItemsDetail(allMissing, Boolean(args.summary));
+
+    if (args.output) {
+      const outputPath = path.resolve(process.cwd(), String(args.output));
+      const lines = [
+        `--- ITEM IMAGE ASSETS AUDIT REPORT ---`,
+        `Total Local Shop: ${localShopItems.length} (Missing: ${localMissing.length})`,
+        `Total BC Shop: ${bcShopItems.length} (Missing: ${bcMissing.length})`,
+        `\nDetailed Missing Items:`
+      ];
+      allMissing.forEach((i) => {
+        lines.push(`- [MISSING] ${i.name} (ID: ${i.id}) [Shops: ${i.shops.join(', ') || 'None'}]`);
+        i.expectedPaths.forEach((p) => lines.push(`  Expected: ${path.relative(process.cwd(), p)}`));
+      });
+      await fs.writeFile(outputPath, lines.join('\n'), 'utf-8');
+      console.log(styleText('cyan', `\n✨ Reporte completo escrito en: ${args.output}`));
+    }
   }
-
-  // Group and print stats
-  const localShopItems = results.filter((r) => r.shops.includes('Poké Market (Local)'));
-  const bcShopItems = results.filter((r) => r.shops.includes('BC Shop (Battle Club)'));
-
-  const localFound = localShopItems.filter((r) => r.found).length;
-  const localMissing = localShopItems.filter((r) => !r.found);
-
-  const bcFound = bcShopItems.filter((r) => r.found).length;
-  const bcMissing = bcShopItems.filter((r) => !r.found);
-
-  console.log(`\n🏬 ${styleText('bold', 'POKÉ MARKET (TIENDA LOCAL):')}`);
-  console.log(`   📦 Total ítems con sprite: ${localShopItems.length}`);
-  console.log(`   ✅ Con imagen física:      ${localFound}`);
-  console.log(`   ❌ Con imagen FALTANTE:    ${localMissing.length}`);
-
-  console.log(`\n🎖️  ${styleText('bold', 'BATTLE CLUB SHOP (BC SHOP):')}`);
-  console.log(`   📦 Total ítems con sprite: ${bcShopItems.length}`);
-  console.log(`   ✅ Con imagen física:      ${bcFound}`);
-  console.log(`   ❌ Con imagen FALTANTE:    ${bcMissing.length}`);
-
-  console.log('\n════════════════════════════════════════════════');
-
-  const allMissing = results.filter((r) => !r.found);
-  printMissingItemsDetail(allMissing, Boolean(values.summary));
-
-  if (values.output) {
-    const outputPath = path.resolve(process.cwd(), values.output as string);
-    const lines = [
-      `--- ITEM IMAGE ASSETS AUDIT REPORT ---`,
-      `Total Local Shop: ${localShopItems.length} (Missing: ${localMissing.length})`,
-      `Total BC Shop: ${bcShopItems.length} (Missing: ${bcMissing.length})`,
-      `\nDetailed Missing Items:`
-    ];
-    allMissing.forEach((i) => {
-      lines.push(`- [MISSING] ${i.name} (ID: ${i.id}) [Shops: ${i.shops.join(', ') || 'None'}]`);
-      i.expectedPaths.forEach((p) => lines.push(`  Expected: ${path.relative(process.cwd(), p)}`));
-    });
-    await fs.writeFile(outputPath, lines.join('\n'), 'utf-8');
-    console.log(styleText('cyan', `\n✨ Reporte completo escrito en: ${values.output}`));
-  }
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
 }
-
-main().catch(console.error);

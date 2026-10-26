@@ -1,18 +1,18 @@
-import { useGameStore } from '@/stores/game.ts';
-import { useUIStore } from '@/stores/ui.ts';
+import { requireItemId, ITEMS_BY_ID, type ItemId } from '@/data/inventory/items';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { gameBus } from '@/logic/events/gameBus';
-import { useModalStore } from '@/stores/modals.ts';
 import { itemEffects as ITEM_EFFECTS, getDynamicItemEffect } from '@/logic/items/itemEffects';
 import { isGlobalItem } from '@/logic/providers/itemProvider.ts';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { consumeItem } from '@/stores/inventory/inventoryHelpers.ts';
-import type { Pokemon, Move, PokemonStorageLocation } from '@/types/pokemon/pokemon';
-import type { ItemEffectResult, ItemEffectResultType } from '@/types/inventory/items';
+import { logger } from '@/logic/utils/logger.ts';
 import { useAudioStore } from '@/stores/audio.ts';
-import type { GameState } from '@/types/system/game';
-import { requireItemId, ITEMS_BY_ID, type ItemId } from '@/data/inventory/items';
 import { useErrorStore } from '@/stores/errorStore.ts';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { useGameStore } from '@/stores/game.ts';
+import { consumeItem } from '@/stores/inventory/inventoryHelpers.ts';
+import { useModalStore } from '@/stores/modals.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import type { ItemEffectResult, ItemEffectResultType } from '@/types/inventory/items';
+import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon';
 
 const HEAL_ITEM_IDS = [
   'potion',
@@ -87,51 +87,43 @@ const POST_EFFECT_HANDLERS: Partial<
     };
 
     if (pokemon.moves.length < 4) {
-      pokemon.moves.push(moveObj as Move);
+      pokemon.moves.push(moveObj);
       uiStore.notify(`¡${pokemon.name} aprendió ${moveData.name}!`, '📖');
       return true;
     }
     uiStore.addToLearnQueue({
       pokemon,
-      move: moveObj as Move,
+      move: moveObj,
       onComplete: () => {
         consumeItem(gameStore, itemId);
-        void gameStore.save(false);
+        gameStore.scheduleSave();
       }
     });
     return false;
   },
   nature_patch: ({ context, index, uiStore }) => {
     uiStore.activePokemonForNature =
-      context !== null && index !== null
-        ? { context: context as PokemonStorageLocation, index }
-        : null;
+      context !== null && index !== null ? { context: context, index } : null;
     useModalStore().open('NaturePatch');
     return false; // Handled by NaturePatchModal on confirm
   },
   pp_up: ({ context, index, itemId, uiStore }) => {
     uiStore.activePokemonForPPUp =
-      context !== null && index !== null
-        ? { context: context as PokemonStorageLocation, index }
-        : null;
+      context !== null && index !== null ? { context: context, index } : null;
     uiStore.activeItemForPPUp = itemId;
     useModalStore().open('PPUp');
     return false; // Handled by PPUpModal on confirm
   },
   ppmax: ({ context, index, itemId, uiStore }) => {
     uiStore.activePokemonForPPUp =
-      context !== null && index !== null
-        ? { context: context as PokemonStorageLocation, index }
-        : null;
+      context !== null && index !== null ? { context: context, index } : null;
     uiStore.activeItemForPPUp = itemId;
     useModalStore().open('PPUp');
     return false; // Handled by PPUpModal on confirm
   },
   ability_pill: ({ context, index, uiStore }) => {
     uiStore.activePokemonForAbility =
-      context !== null && index !== null
-        ? { context: context as PokemonStorageLocation, index }
-        : null;
+      context !== null && index !== null ? { context: context, index } : null;
     useModalStore().open('AbilityPill');
     return false; // Handled by AbilityPillModal on confirm
   }
@@ -189,10 +181,10 @@ function handleGlobalItemUsage(
   const effectFn = ITEM_EFFECTS[validItemId];
   if (!effectFn) return { success: false, message: 'Efecto global no implementado.' };
 
-  const result = (effectFn as (p: GameState) => ItemEffectResult)(gameStore.state);
+  const result = effectFn(gameStore.state);
   if (result.success) {
     consumeItem(gameStore, itemId);
-    void gameStore.save(false);
+    gameStore.scheduleSave();
   }
   return result;
 }
@@ -228,7 +220,7 @@ function applyPokemonItemUsage(params: {
 
   if (shouldConsumeImmediately) {
     consumeItem(gameStore, itemId);
-    void gameStore.save(false);
+    gameStore.scheduleSave();
   }
 
   return result;
@@ -236,11 +228,10 @@ function applyPokemonItemUsage(params: {
 
 function playItemAudio(itemId: ItemId): void {
   const audioStore = useAudioStore();
-  if (isHealItemId(itemId)) {
-    void audioStore.play('heal');
-  } else {
-    void audioStore.play('item');
-  }
+  const playPromise = isHealItemId(itemId) ? audioStore.play('heal') : audioStore.play('item');
+  playPromise.catch((err) => {
+    logger.warn('Inventory', 'Failed to play item audio', err);
+  });
 }
 
 export function executeUseItem(
@@ -274,7 +265,7 @@ export function executeUseItem(
     return result;
   } catch (error) {
     const errorStore = useErrorStore();
-    errorStore.setError(error as Error, {
+    errorStore.setError(error, {
       type: 'Item Usage Error',
       source: `executeUseItem(${itemName})`
     });

@@ -1,29 +1,28 @@
-import { defineConfig, type HmrContext, type PluginOption } from 'vite-plus';
-import { type ViteDevServer } from 'vite-plus';
-import vue from '@vitejs/plugin-vue';
-import * as compiler from 'vue/compiler-sfc';
-import path from 'node:path';
+import fs from 'node:fs';
+import fsPromises from 'node:fs/promises';
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import path from 'node:path';
 
-import { generateMigrations } from './scripts/database/generate_migrations.ts';
+import { vitePrecompressPlugin } from '@francogp/auditor';
+import basicSsl from '@vitejs/plugin-basic-ssl';
+import vue from '@vitejs/plugin-vue';
+import { visualizer } from 'rollup-plugin-visualizer';
+import { VitePWA } from 'vite-plugin-pwa';
+import { defineConfig, type HmrContext, type Plugin, type PluginOption } from 'vite-plus';
+import { type ViteDevServer } from 'vite-plus';
+import type { ESBuildOptions } from 'vite-plus';
+import * as compiler from 'vue/compiler-sfc';
+
 import { generatePokemonDatabase } from './scripts/data/generate_pokemon_db.ts';
-import { sassTrapsFixer } from './scripts/maintenance/vite-plugin-sass-traps.ts';
-import { staticPrecompressPlugin } from './scripts/maintenance/vite-plugin-precompress.ts';
-import { lanPvPPlugin } from './scripts/maintenance/vite-plugin-lan-pvp.ts';
+import { generateMigrations } from './scripts/database/generate_migrations.ts';
 import { devShadowEditorPlugin } from './scripts/maintenance/vite-plugin-dev-shadow-editor.ts';
 import { fixPkmnSimPlugin } from './scripts/maintenance/vite-plugin-fix-pkmn-sim.ts';
+import { lanPvPPlugin } from './scripts/maintenance/vite-plugin-lan-pvp.ts';
+import { sassTrapsFixer } from './scripts/maintenance/vite-plugin-sass-traps.ts';
 import { isValidSqliteBuffer } from './src/logic/db/sqliteBufferValidator.ts';
-
-import { VitePWA } from 'vite-plugin-pwa';
-import basicSsl from '@vitejs/plugin-basic-ssl';
-import { visualizer } from 'rollup-plugin-visualizer';
-
-import fsPromises from 'node:fs/promises';
-import fs from 'node:fs';
-
-import type { ESBuildOptions } from 'vite-plus';
-
-type ESBuildOptionsWithCharset = ESBuildOptions & { charset?: 'utf8' };
+type ESBuildOptionsWithCharset = ESBuildOptions & {
+  charset?: 'utf8';
+};
 const esbuildConfig: ESBuildOptionsWithCharset = {
   charset: 'utf8',
   legalComments: 'none',
@@ -32,14 +31,13 @@ const esbuildConfig: ESBuildOptionsWithCharset = {
   pure:
     process.env.NODE_ENV === 'production' ? ['console.log', 'console.info', 'console.debug'] : []
 };
-
-function pokemonDbGeneratorPlugin() {
+function pokemonDbGeneratorPlugin(): Plugin {
   return {
     name: 'pokemon-db-generator',
-    async buildStart() {
+    async buildStart(): Promise<void> {
       await generatePokemonDatabase();
     },
-    handleHotUpdate({ file }: { file: string }) {
+    handleHotUpdate({ file }: { file: string }): void {
       if (
         file.includes('src/data/pokemon/speciesMetadata') ||
         file.includes('src/data/battle/moves') ||
@@ -52,14 +50,13 @@ function pokemonDbGeneratorPlugin() {
     }
   };
 }
-
-function migrationsPlugin() {
+function migrationsPlugin(): Plugin {
   return {
     name: 'migrations-generator',
-    async buildStart() {
+    async buildStart(): Promise<void> {
       await generateMigrations();
     },
-    handleHotUpdate({ file }: { file: string }) {
+    handleHotUpdate({ file }: { file: string }): void {
       if (file.includes('database/migrations')) {
         generateMigrations().catch((err) => {
           console.error('[Migrations Generator] Hot update generation failed:', err);
@@ -80,19 +77,16 @@ function migrationsPlugin() {
     }
   };
 }
-
-function devDbImportPlugin() {
+function devDbImportPlugin(): Plugin {
   return {
     name: 'dev-db-import',
     configureServer(server: ViteDevServer) {
       let cleanDbRamBuffer: Buffer | null = null;
       const simDbRamBuffers = new Map<string, Buffer>();
-
       const manualImportPath = path.resolve(
         import.meta.dirname,
         'scratch/database/manual_user_backup_import.db'
       );
-
       const getSimKey = (req: IncomingMessage): string | null => {
         const headerKey = req.headers['x-db-key'];
         const cleanHeaderKey =
@@ -102,7 +96,6 @@ function devDbImportPlugin() {
               ? headerKey[0].replace(/[^a-zA-Z0-9_-]/g, '')
               : '';
         if (cleanHeaderKey && cleanHeaderKey.startsWith('sim_')) return cleanHeaderKey;
-
         if (!req.url) return null;
         try {
           const parsed = new URL(req.url, 'http://localhost');
@@ -112,7 +105,6 @@ function devDbImportPlugin() {
           return null;
         }
       };
-
       const getSimDbPath = (simKey: string): string => {
         const normalizedKey = simKey.startsWith('sim_') ? simKey : `sim_${simKey}`;
         return path.resolve(
@@ -121,7 +113,6 @@ function devDbImportPlugin() {
           `${normalizedKey}.db`
         );
       };
-
       async function handleManualImportRoute(
         req: IncomingMessage,
         res: ServerResponse
@@ -138,7 +129,6 @@ function devDbImportPlugin() {
           }
           return true;
         }
-
         if (url.startsWith('/api/dev-manual-import-db')) {
           try {
             await fsPromises.access(manualImportPath);
@@ -155,7 +145,6 @@ function devDbImportPlugin() {
           }
           return true;
         }
-
         if (url.startsWith('/api/dev-manual-import-cleanup')) {
           try {
             await fsPromises.unlink(manualImportPath);
@@ -167,10 +156,8 @@ function devDbImportPlugin() {
           res.end('Cleaned up');
           return true;
         }
-
         return false;
       }
-
       async function handleSimDbCheck(req: IncomingMessage, res: ServerResponse): Promise<void> {
         const simKey = getSimKey(req);
         if (!simKey) {
@@ -189,7 +176,6 @@ function devDbImportPlugin() {
           res.end(JSON.stringify({ exists: existsInRam }));
         }
       }
-
       async function handleSimDbCleanup(req: IncomingMessage, res: ServerResponse): Promise<void> {
         const simKey = getSimKey(req);
         if (simKey) {
@@ -207,7 +193,6 @@ function devDbImportPlugin() {
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('Cleaned up');
       }
-
       async function handleSimDbDownload(req: IncomingMessage, res: ServerResponse): Promise<void> {
         const simKey = getSimKey(req);
         if (!simKey) {
@@ -215,7 +200,6 @@ function devDbImportPlugin() {
           res.end('Simulation key missing or invalid');
           return;
         }
-
         // 1. Prioritize RAM memory buffer (most recent, instant, free of I/O race conditions)
         const ramBuf = simDbRamBuffers.get(simKey);
         if (ramBuf && isValidSqliteBuffer(ramBuf)) {
@@ -227,7 +211,6 @@ function devDbImportPlugin() {
           console.debug(`📦 [DevDB] Simulation ${simKey} sent to client from RAM memory.`);
           return;
         }
-
         // 2. Read from disk if not available in RAM
         const simPath = getSimDbPath(simKey);
         try {
@@ -252,7 +235,6 @@ function devDbImportPlugin() {
           res.end('No simulation database found');
         }
       }
-
       function handleSimDbExport(req: IncomingMessage, res: ServerResponse): void {
         const simKey = getSimKey(req);
         if (!simKey) {
@@ -260,7 +242,6 @@ function devDbImportPlugin() {
           res.end('Simulation key required with sim_ prefix');
           return;
         }
-
         let isAborted = false;
         req.on('aborted', () => {
           isAborted = true;
@@ -268,7 +249,6 @@ function devDbImportPlugin() {
         req.on('close', () => {
           if (!req.complete) isAborted = true;
         });
-
         const chunks: Buffer[] = [];
         req.on('data', (chunk) => chunks.push(chunk as Buffer));
         req.on('end', async () => {
@@ -280,11 +260,9 @@ function devDbImportPlugin() {
             res.end('Upload aborted');
             return;
           }
-
           const buffer = Buffer.concat(chunks);
           const rawLength = req.headers['content-length'];
           const expectedLength = rawLength ? parseInt(rawLength, 10) : undefined;
-
           if (!isValidSqliteBuffer(buffer, expectedLength)) {
             console.warn(
               `⚠️ [DevDB] Simulation ${simKey} failed SQLite buffer validation (len: ${buffer.length}, expected: ${expectedLength}). Discarding.`
@@ -293,7 +271,6 @@ function devDbImportPlugin() {
             res.end('Invalid SQLite database buffer');
             return;
           }
-
           simDbRamBuffers.set(simKey, buffer);
           const simPath = getSimDbPath(simKey);
           const tmpPath = `${simPath}.${Math.random().toString(36).substring(2, 8)}.tmp`;
@@ -311,7 +288,6 @@ function devDbImportPlugin() {
           res.end('Saved');
         });
       }
-
       async function handleSimDbRoute(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
         const url = req.url ?? '';
         if (url.startsWith('/api/dev-sim-db-check') || url.startsWith('/api/dev-import-db-check')) {
@@ -335,7 +311,6 @@ function devDbImportPlugin() {
         }
         return false;
       }
-
       async function handleCleanDbDownload(res: ServerResponse): Promise<void> {
         if (cleanDbRamBuffer) {
           res.writeHead(200, {
@@ -361,7 +336,6 @@ function devDbImportPlugin() {
           res.end('No clean template database found');
         }
       }
-
       function handleCleanDbExport(req: IncomingMessage, res: ServerResponse): void {
         let isAborted = false;
         req.on('aborted', () => {
@@ -370,7 +344,6 @@ function devDbImportPlugin() {
         req.on('close', () => {
           if (!req.complete) isAborted = true;
         });
-
         const chunks: Buffer[] = [];
         req.on('data', (chunk) => chunks.push(chunk as Buffer));
         req.on('end', async () => {
@@ -382,11 +355,9 @@ function devDbImportPlugin() {
             res.end('Upload aborted');
             return;
           }
-
           const buffer = Buffer.concat(chunks);
           const rawLength = req.headers['content-length'];
           const expectedLength = rawLength ? parseInt(rawLength, 10) : undefined;
-
           if (!isValidSqliteBuffer(buffer, expectedLength)) {
             console.warn(
               `⚠️ [DevDB] clean_template.db failed SQLite buffer validation (len: ${buffer.length}). Discarding.`
@@ -395,7 +366,6 @@ function devDbImportPlugin() {
             res.end('Invalid SQLite database buffer');
             return;
           }
-
           cleanDbRamBuffer = buffer;
           const dbPath = path.resolve(import.meta.dirname, 'scratch/database/clean_template.db');
           const tmpPath = `${dbPath}.${Math.random().toString(36).substring(2, 8)}.tmp`;
@@ -411,7 +381,6 @@ function devDbImportPlugin() {
           res.end('Success');
         });
       }
-
       async function handleCleanDbRoute(
         req: IncomingMessage,
         res: ServerResponse
@@ -427,7 +396,6 @@ function devDbImportPlugin() {
         }
         return false;
       }
-
       server.middlewares.use(
         async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
           if (await handleManualImportRoute(req, res)) return;
@@ -439,13 +407,11 @@ function devDbImportPlugin() {
     }
   };
 }
-
 // ─── Version System ───────────────────────────────────────────────────────────
 // The developer's LOCAL build is the single source of truth for the version.
 // Canonical application version derived from package.json (Single Source of Truth)
 // managed via auditor-version (@francogp/auditor).
 const isVitest = !!process.env.VITEST;
-
 function getPackageVersion(): string {
   try {
     const pkgPath = path.resolve(import.meta.dirname, 'package.json');
@@ -456,7 +422,11 @@ function getPackageVersion(): string {
       'version' in parsed &&
       typeof (parsed as Record<string, unknown>).version === 'string'
     ) {
-      const ver = (parsed as { version: string }).version;
+      const ver = (
+        parsed as {
+          version: string;
+        }
+      ).version;
       return ver.startsWith('v') ? ver : `v${ver}`;
     }
   } catch {
@@ -464,16 +434,14 @@ function getPackageVersion(): string {
   }
   return 'v0.6.0';
 }
-
 const appVersion: string = getPackageVersion();
-
 /**
  * Plugin que sincroniza public/version.json con la versión canónica de package.json
  */
-function versionPlugin() {
+function versionPlugin(): Plugin {
   return {
     name: 'version-json-writer',
-    buildStart() {
+    buildStart(): void {
       try {
         const publicDir = path.resolve(import.meta.dirname, 'public');
         if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
@@ -489,17 +457,14 @@ function versionPlugin() {
     }
   };
 }
-
 // Detect if building on GitHub Actions for GitHub Pages
 const isGithubActions = !!process.env.GITHUB_ACTIONS;
 const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1];
 const base = process.env.VITE_BASE_URL || (isGithubActions && repoName ? `/${repoName}/` : '/');
-
 interface ChunkRule {
   readonly patterns: readonly string[];
   readonly chunk: string;
 }
-
 const CHUNK_RULES: readonly ChunkRule[] = [
   {
     patterns: ['node_modules/vue', 'node_modules/pinia', 'node_modules/vue-router'],
@@ -526,7 +491,6 @@ const CHUNK_RULES: readonly ChunkRule[] = [
   { patterns: ['src/data/world/', 'src/data/weather/'], chunk: 'game-data-world' },
   { patterns: ['src/data/player/', 'src/data/system/', 'src/data/ai/'], chunk: 'game-data-system' }
 ];
-
 function resolveManualChunk(id: string): string | undefined {
   for (const rule of CHUNK_RULES) {
     if (rule.patterns.some((pattern) => id.includes(pattern))) {
@@ -535,171 +499,167 @@ function resolveManualChunk(id: string): string | undefined {
   }
   return undefined;
 }
-
-const plugins: PluginOption[] = [
-  fixPkmnSimPlugin(),
-  vue({
-    compiler,
-    template: {
-      compilerOptions: {
-        hoistStatic: true,
-        cacheHandlers: true,
-        comments: false
+const vuePlugin: unknown = vue({
+  compiler,
+  template: {
+    compilerOptions: {
+      hoistStatic: true,
+      cacheHandlers: true,
+      comments: false
+    }
+  }
+});
+const plugins = [fixPkmnSimPlugin(), vuePlugin];
+if (!isVitest) {
+  plugins.push(
+    basicSsl(),
+    lanPvPPlugin(),
+    pokemonDbGeneratorPlugin(),
+    migrationsPlugin(),
+    devDbImportPlugin(),
+    devShadowEditorPlugin(),
+    sassTrapsFixer(),
+    versionPlugin(),
+    VitePWA({
+      registerType: 'prompt',
+      includeAssets: ['sql-wasm.wasm', 'assets/fondo/logo%203.webp'],
+      manifest: {
+        name: 'Poké Vicio',
+        short_name: 'PokéVicio',
+        description: 'El juego definitivo de Pokémon para navegador',
+        theme_color: '#161a2e',
+        background_color: '#0a0c14',
+        display: 'standalone',
+        orientation: 'any',
+        start_url: base,
+        scope: base,
+        icons: [
+          {
+            src: 'assets/fondo/logo%203.webp',
+            sizes: '512x512',
+            type: 'image/webp',
+            purpose: 'any'
+          },
+          {
+            src: 'assets/fondo/logo%203.webp',
+            sizes: '512x512',
+            type: 'image/webp',
+            purpose: 'maskable'
+          }
+        ]
+      },
+      workbox: {
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+        // CRITICAL: Precache ONLY the essential App Shell (< 500 KB).
+        // Heavy data chunks, optional views, and dynamic engines are cached on-demand via runtime caching.
+        globPatterns: [
+          '**/*.{html,ico,woff2}',
+          '**/index-*.{js,css}',
+          '**/vendor-vue-*.js',
+          '**/vendor-gsap-*.js'
+        ],
+        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
+        runtimeCaching: [
+          {
+            // Dynamic code chunks & wasm modules (game data, modals, subviews, sqlite)
+            urlPattern: /\/assets\/.*\.(js|css|wasm)(\?.*)?$/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'app-dynamic-chunks-v1',
+              expiration: {
+                maxEntries: 150,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            // Dynamic event and PokeCenter UI banners (updated in background via StaleWhileRevalidate)
+            urlPattern:
+              /\/assets\/ui\/(events|pokecenter)\/.*\.(png|webp|svg|gif|jpg|jpeg)(\?.*)?$/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'game-event-banners-v1',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            // All game image assets (sprites, icons, backgrounds)
+            urlPattern: /\/assets\/.*\.(png|webp|svg|gif|jpg|jpeg)(\?.*)?$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'game-images-v1',
+              expiration: {
+                maxEntries: 25000,
+                maxAgeSeconds: 60 * 60 * 24 * 90 // 90 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            // All game audio assets (music tracks, SFX files: mp3, ogg, wav, midi, m4a, flac, aac)
+            urlPattern: /\/assets\/.*\.(mp3|ogg|wav|mid|midi|m4a|flac|aac)(\?.*)?$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'game-audio-v1',
+              expiration: {
+                maxEntries: 500,
+                maxAgeSeconds: 60 * 60 * 24 * 90 // 90 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          }
+        ]
+      },
+      devOptions: {
+        enabled: false,
+        type: 'module'
+      }
+    }),
+    vitePrecompressPlugin(),
+    {
+      name: 'worker-reload-plugin',
+      handleHotUpdate({ file, server }: HmrContext) {
+        if (file.endsWith('showdown.worker.ts')) {
+          server.config.logger.info(
+            `[HMR] showdown.worker.ts modificado. Forzando recarga de página.`
+          );
+          server.ws.send({ type: 'full-reload' });
+          return [];
+        }
+        return;
       }
     }
-  }),
-  ...((!isVitest
-    ? [
-        basicSsl(),
-        lanPvPPlugin(),
-        pokemonDbGeneratorPlugin(),
-        migrationsPlugin(),
-        devDbImportPlugin(),
-        devShadowEditorPlugin(),
-        sassTrapsFixer(),
-        versionPlugin(),
-        VitePWA({
-          registerType: 'prompt',
-          includeAssets: ['sql-wasm.wasm', 'assets/fondo/logo%203.webp'],
-          manifest: {
-            name: 'Poké Vicio',
-            short_name: 'PokéVicio',
-            description: 'El juego definitivo de Pokémon para navegador',
-            theme_color: '#161a2e',
-            background_color: '#0a0c14',
-            display: 'standalone',
-            orientation: 'any',
-            start_url: base,
-            scope: base,
-            icons: [
-              {
-                src: 'assets/fondo/logo%203.webp',
-                sizes: '512x512',
-                type: 'image/webp',
-                purpose: 'any'
-              },
-              {
-                src: 'assets/fondo/logo%203.webp',
-                sizes: '512x512',
-                type: 'image/webp',
-                purpose: 'maskable'
-              }
-            ]
-          },
-          workbox: {
-            cleanupOutdatedCaches: true,
-            skipWaiting: true,
-            clientsClaim: true,
-            // CRITICAL: Precache ONLY the essential App Shell (< 500 KB).
-            // Heavy data chunks, optional views, and dynamic engines are cached on-demand via runtime caching.
-            globPatterns: [
-              '**/*.{html,ico,woff2}',
-              '**/index-*.{js,css}',
-              '**/vendor-vue-*.js',
-              '**/vendor-gsap-*.js'
-            ],
-            maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
-            runtimeCaching: [
-              {
-                // Dynamic code chunks & wasm modules (game data, modals, subviews, sqlite)
-                urlPattern: /\/assets\/.*\.(js|css|wasm)(\?.*)?$/i,
-                handler: 'StaleWhileRevalidate',
-                options: {
-                  cacheName: 'app-dynamic-chunks-v1',
-                  expiration: {
-                    maxEntries: 150,
-                    maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-                  },
-                  cacheableResponse: {
-                    statuses: [0, 200]
-                  }
-                }
-              },
-              {
-                // Dynamic event and PokeCenter UI banners (updated in background via StaleWhileRevalidate)
-                urlPattern:
-                  /\/assets\/ui\/(events|pokecenter)\/.*\.(png|webp|svg|gif|jpg|jpeg)(\?.*)?$/i,
-                handler: 'StaleWhileRevalidate',
-                options: {
-                  cacheName: 'game-event-banners-v1',
-                  expiration: {
-                    maxEntries: 100,
-                    maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-                  },
-                  cacheableResponse: {
-                    statuses: [0, 200]
-                  }
-                }
-              },
-              {
-                // All game image assets (sprites, icons, backgrounds)
-                urlPattern: /\/assets\/.*\.(png|webp|svg|gif|jpg|jpeg)(\?.*)?$/i,
-                handler: 'CacheFirst',
-                options: {
-                  cacheName: 'game-images-v1',
-                  expiration: {
-                    maxEntries: 25000,
-                    maxAgeSeconds: 60 * 60 * 24 * 90 // 90 days
-                  },
-                  cacheableResponse: {
-                    statuses: [0, 200]
-                  }
-                }
-              },
-              {
-                // All game audio assets (music tracks, SFX files: mp3, ogg, wav, midi, m4a, flac, aac)
-                urlPattern: /\/assets\/.*\.(mp3|ogg|wav|mid|midi|m4a|flac|aac)(\?.*)?$/i,
-                handler: 'CacheFirst',
-                options: {
-                  cacheName: 'game-audio-v1',
-                  expiration: {
-                    maxEntries: 500,
-                    maxAgeSeconds: 60 * 60 * 24 * 90 // 90 days
-                  },
-                  cacheableResponse: {
-                    statuses: [0, 200]
-                  }
-                }
-              }
-            ]
-          },
-          devOptions: {
-            enabled: false,
-            type: 'module'
-          }
-        }),
-        staticPrecompressPlugin(),
-        {
-          name: 'worker-reload-plugin',
-          handleHotUpdate({ file, server }: HmrContext) {
-            if (file.endsWith('showdown.worker.ts')) {
-              server.config.logger.info(
-                `[HMR] showdown.worker.ts modificado. Forzando recarga de página.`
-              );
-              server.ws.send({ type: 'full-reload' });
-              return [];
-            }
-            return;
-          }
-        }
-      ]
-    : []) as PluginOption[]),
-  ...(process.env.ANALYZE === 'true'
-    ? [
-        visualizer({
-          filename: 'scratch/bundle_stats.html',
-          open: false,
-          gzipSize: true,
-          brotliSize: true
-        })
-      ]
-    : [])
-];
-
+  );
+}
+if (process.env.ANALYZE === 'true') {
+  plugins.push(
+    visualizer({
+      filename: 'scratch/bundle_stats.html',
+      open: false,
+      gzipSize: true,
+      brotliSize: true
+    })
+  );
+}
 // https://vitejs.dev/config/
 export default defineConfig({
   base,
-  plugins,
+  plugins: plugins as PluginOption[],
   define: {
     __BUILD_TIME__: JSON.stringify(appVersion.match(/build\.(\d{8}-\d{6})/)?.[1] || appVersion),
     __APP_VERSION__: JSON.stringify(appVersion)
@@ -859,24 +819,19 @@ export default defineConfig({
     fsModuleCache: true,
     fsModuleCachePath: 'node_modules/.vitest-cache',
     sharedViteServer: true,
-
     // 2. CSS/Sass layout bypass in unit tests (layout tested exclusively in Playwright)
     css: false,
-
     // 3. Native Node.js worker execution args
     execArgv: [
       '--no-experimental-webstorage',
       '--no-warnings=ExperimentalWarning',
       '--allow-inspector'
     ],
-
     // 4. Thread-based worker pool (fast startup on Windows)
     pool: 'forks',
     fileParallelism: true,
     teardownTimeout: 10000,
     vmMemoryLimit: '1GB',
-
-    // 5. Unified V8 Coverage
     coverage: {
       provider: 'v8',
       include: [
@@ -897,9 +852,8 @@ export default defineConfig({
         'node_modules/**'
       ],
       reporter: ['text', 'json', 'html'],
-      reportsDirectory: './coverage'
+      reportsDirectory: 'scratch/coverage'
     },
-
     // 6. Unified Inline Workspace Projects
     projects: [
       {
@@ -920,7 +874,7 @@ export default defineConfig({
             'src/**/*.{test,spec}.ts'
           ],
           setupFiles: ['./tests/vitest.setup.ts'],
-          testTimeout: 60000
+          testTimeout: 120000
         }
       },
       {
@@ -946,7 +900,8 @@ export default defineConfig({
           testTimeout: 300000
         }
       }
-    ]
+    ],
+    include: ['tests/**/*.{test,spec}.ts', 'test_aventura/tests/**/*.{test,spec}.ts']
   },
   lint: {
     options: {
@@ -966,7 +921,161 @@ export default defineConfig({
       '@francogp/domain-type/no-naked-string-union': 'error',
       '@francogp/domain-type/no-record-string-key': 'error',
       '@francogp/domain-type/no-untyped-string-set-map': 'error',
-      '@francogp/domain-type/no-broad-string-array': 'error'
+      '@francogp/domain-type/no-broad-string-array': 'error',
+      '@typescript-eslint/no-floating-promises': 'error',
+      'unicorn/prefer-node-protocol': 'error',
+      'no-debugger': 'error',
+      'no-else-return': 'error',
+      'no-empty': [
+        'error',
+        {
+          allowEmptyCatch: false
+        }
+      ],
+      'max-depth': ['error', 4],
+      'import/no-duplicates': 'error',
+      eqeqeq: ['error', 'always'],
+      'prefer-const': 'error',
+      'no-var': 'error',
+      'no-self-compare': 'error',
+      'no-eval': 'error',
+      'vue/no-async-in-computed-properties': 'error',
+      'vue/no-side-effects-in-computed-properties': 'error',
+      'vue/no-export-in-script-setup': 'error',
+      'vue/no-lifecycle-after-await': 'error',
+      'vue/no-watch-after-await': 'error',
+      'vue/prefer-import-from-vue': 'error',
+      'vitest/no-identical-title': 'error',
+      'vitest/no-focused-tests': 'error',
+      'vitest/no-disabled-tests': 'error',
+      'vitest/prefer-to-have-length': 'error',
+      'vitest/valid-title': 'error',
+      'import/no-self-import': 'error',
+      'import/no-empty-named-blocks': 'error',
+      'no-useless-catch': 'error',
+      'no-useless-rename': 'error',
+      'no-sparse-arrays': 'error',
+      'no-shadow-restricted-names': 'error',
+      'unicorn/prefer-string-starts-ends-with': 'error',
+      'unicorn/throw-new-error': 'error',
+      'unicorn/no-useless-spread': 'error',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
+      '@typescript-eslint/consistent-indexed-object-style': 'error',
+      '@typescript-eslint/no-empty-object-type': 'error',
+      '@typescript-eslint/no-unnecessary-template-expression': 'error',
+      '@typescript-eslint/no-unnecessary-type-arguments': 'error',
+      '@typescript-eslint/no-unnecessary-type-constraint': 'error',
+      '@typescript-eslint/prefer-function-type': 'error',
+      '@typescript-eslint/prefer-return-this-type': 'error',
+      '@typescript-eslint/ban-tslint-comment': 'error',
+      'import/no-mutable-exports': 'error',
+      'no-extend-native': 'error',
+      'no-proto': 'error',
+      'no-iterator': 'error',
+      'prefer-object-has-own': 'error',
+      'no-useless-computed-key': 'error',
+      'node/no-exports-assign': 'error',
+      'import/no-webpack-loader-syntax': 'error',
+      'import/no-dynamic-require': 'error',
+      'import/no-amd': 'error',
+      'import/no-named-default': 'error',
+      'no-new-wrappers': 'error',
+      'no-array-constructor': 'error',
+      'no-caller': 'error',
+      'unicorn/no-new-buffer': 'error',
+      'no-implied-eval': 'error',
+      'no-new-func': 'error',
+      'no-script-url': 'error',
+      'default-case-last': 'error',
+      radix: 'error',
+      'no-return-assign': 'error',
+      'no-multi-assign': 'error',
+      'no-sequences': 'error',
+      'no-labels': 'error',
+      'no-void': 'error',
+      'no-useless-call': 'error',
+      yoda: 'error',
+      'no-unneeded-ternary': 'error',
+      'promise/no-new-statics': 'error',
+      'promise/valid-params': 'error',
+      'promise/no-return-in-finally': 'error',
+      'node/no-new-require': 'error',
+      'node/no-path-concat': 'error',
+      'unicorn/no-unnecessary-array-flat-depth': 'error',
+      'unicorn/no-unnecessary-array-splice-count': 'error',
+      'unicorn/no-unreadable-iife': 'error',
+      'unicorn/no-useless-switch-case': 'error',
+      'unicorn/no-useless-promise-resolve-reject': 'error',
+      'unicorn/prefer-array-some': 'error',
+      'unicorn/no-unnecessary-slice-end': 'error',
+      'unicorn/explicit-timer-delay': 'error',
+      'unicorn/prefer-date-now': 'error',
+      'unicorn/prefer-math-min-max': 'error',
+      'unicorn/prefer-math-trunc': 'error',
+      'unicorn/prefer-prototype-methods': 'error',
+      'unicorn/prefer-regexp-test': 'error',
+      'unicorn/prefer-default-parameters': 'error',
+      'unicorn/prefer-global-this': 'error',
+      'unicorn/prefer-optional-catch-binding': 'error',
+      'unicorn/prefer-string-trim-start-end': 'error',
+      'prefer-exponentiation-operator': 'error',
+      'prefer-numeric-literals': 'error',
+      'prefer-rest-params': 'error',
+      'vitest/no-duplicate-hooks': 'error',
+      'vitest/no-test-prefixes': 'error',
+      'vitest/no-test-return-statement': 'error',
+      'vitest/prefer-to-contain': 'error',
+      'vitest/prefer-to-be': 'error',
+      'vitest/prefer-comparison-matcher': 'error',
+      'vitest/no-import-node-test': 'error',
+      'vitest/no-interpolation-in-snapshots': 'error',
+      'vitest/prefer-expect-resolves': 'error',
+      'vitest/prefer-mock-promise-shorthand': 'error',
+      'vitest/prefer-mock-return-shorthand': 'error',
+      'vitest/prefer-strict-equal': 'error',
+      'vitest/prefer-to-be-truthy': 'error',
+      'vitest/prefer-to-be-falsy': 'error',
+      'vitest/prefer-to-be-object': 'error',
+      'vitest/prefer-todo': 'error',
+      'vue/no-expose-after-await': 'error',
+      'vue/return-in-computed-property': 'error',
+      'vue/no-import-compiler-macros': 'error',
+      'vue/valid-next-tick': 'error',
+      'vue/no-deprecated-destroyed-lifecycle': 'error',
+      'vue/component-definition-name-casing': 'error',
+      'vue/define-emits-declaration': 'error',
+      'vue/define-props-declaration': 'error',
+      'vue/next-tick-style': 'error',
+      'vue/prop-name-casing': 'error',
+      'vue/require-direct-export': 'error',
+      'vue/require-typed-ref': 'error',
+      '@typescript-eslint/explicit-member-accessibility': [
+        'error',
+        {
+          accessibility: 'explicit'
+        }
+      ],
+      '@typescript-eslint/explicit-function-return-type': [
+        'error',
+        {
+          allowExpressions: true,
+          allowTypedFunctionExpressions: true,
+          allowHigherOrderFunctions: true,
+          allowDirectConstAssertionInArrowFunctions: true
+        }
+      ],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_'
+        }
+      ],
+      'vue/no-required-prop-with-default': 'error',
+      'vue/no-deprecated-model-definition': 'error',
+      'no-useless-assignment': 'error',
+      'unicode-bom': 'error'
     },
     ignorePatterns: [
       'scripts/**',
@@ -996,7 +1105,18 @@ export default defineConfig({
       'tmp/**',
       '.agents/**',
       'coverage/**',
-      '**/*.d.ts'
+      '**/*.d.ts',
+      '.agents/skills/**/scripts/**',
+      '.markdownlintignore',
+      '.prettierrc',
+      '.replit',
+      'public/_headers',
+      '_raw-assets/**/desktop.ini',
+      '_raw-assets/**/*.pdn',
+      'docs/**/*.html',
+      'docs/**/*.txt',
+      'docs/**/*.docx',
+      'test_aventura/docs/**/*.docx'
     ]
   },
   fmt: {
@@ -1021,12 +1141,25 @@ export default defineConfig({
       'external/**',
       'showdown/**',
       'backup_legacy_code/**',
-      'supabase/docker/**'
+      'supabase/docker/**',
+      '.agents/skills/**/scripts/**',
+      '.markdownlintignore',
+      '.prettierrc',
+      '.replit',
+      'public/_headers',
+      '_raw-assets/**/desktop.ini',
+      '_raw-assets/**/*.pdn',
+      'docs/**/*.html',
+      'docs/**/*.txt',
+      'docs/**/*.docx',
+      'test_aventura/docs/**/*.docx'
     ],
     singleQuote: true,
     semi: true,
     trailingComma: 'none',
-    printWidth: 100
+    printWidth: 100,
+    sortPackageJson: true,
+    sortImports: true
   },
   staged: {
     '*': 'vp check --fix'

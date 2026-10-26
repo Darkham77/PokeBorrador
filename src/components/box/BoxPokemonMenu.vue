@@ -1,29 +1,31 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
-import { useBoxStore } from '@/stores/box';
-import { useInventoryStore } from '@/stores/inventory/inventory';
-import { getItemById } from '@/data/inventory/items';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { getNatureInfo } from '@/data/battle/natures';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import PVTooltip from '@/components/common/PVTooltip.vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
-import BoxPokemonMenuHeader from './BoxPokemonMenuHeader.vue';
-import BoxPokemonMenuSummary from './BoxPokemonMenuSummary.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import PokemonTypePills from '@/components/shared/PokemonTypePills.vue';
+import { getNatureInfo } from '@/data/battle/natures';
+import { toPokemonType, type PokemonType } from '@/data/battle/types';
+import { getItemById } from '@/data/inventory/items';
+import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay';
+import { isPokemonBusy } from '@/logic/constants/tags';
 import { getFieldPassiveBadges } from '@/logic/pokemon/pokemonFieldAbilities';
-import { useModalStore } from '@/stores/modals';
 import {
   calculateTotalPower,
   getPokemonTier,
   calculateRocketSellPrice as calculatePrice
 } from '@/logic/pokemon/pokemonUtils';
-import PokemonTypePills from '@/components/shared/PokemonTypePills.vue';
-import { toPokemonType, type PokemonType } from '@/data/battle/types';
-import { isPokemonBusy } from '@/logic/constants/tags';
-import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useBoxStore } from '@/stores/box';
+import { useGameStore } from '@/stores/game';
+import { useInventoryStore } from '@/stores/inventory/inventory';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import BoxPokemonMenuHeader from './BoxPokemonMenuHeader.vue';
+import BoxPokemonMenuSummary from './BoxPokemonMenuSummary.vue';
 
 interface Props {
   show?: boolean;
@@ -115,7 +117,7 @@ const abilityData = computed(() => {
   };
 });
 
-const handleMoveToTeam = () => {
+const handleMoveToTeam = (): void => {
   const res = boxStore.moveBoxToTeam(props.boxIndex);
   if (res.success) {
     uiStore.notify(res.msg, '➕');
@@ -125,7 +127,7 @@ const handleMoveToTeam = () => {
   }
 };
 
-const handleSwap = (teamIndex: number) => {
+const handleSwap = (teamIndex: number): void => {
   const res = boxStore.swapBoxWithTeam(props.boxIndex, teamIndex);
   if (res.success) {
     uiStore.notify(res.msg, '↔️');
@@ -135,20 +137,20 @@ const handleSwap = (teamIndex: number) => {
   }
 };
 
-const handleDetail = () => {
+const handleDetail = (): void => {
   if (pokemon.value) {
     uiStore.openPokemonDetail(pokemon.value, props.boxIndex, 'box');
   }
 };
 
-const handleUseItem = () => {
+const handleUseItem = (): void => {
   // Set target context directly in uiStore and open modal via modalStore
   // to avoid circular dependency issues with uiStore.toggleInventory
   uiStore.inventoryTarget = { context: 'box', index: props.boxIndex };
   useModalStore().open('Inventory');
 };
 
-const handleUnequipItem = () => {
+const handleUnequipItem = (): void => {
   const inventoryStore = useInventoryStore();
   const unequipped = inventoryStore.unequipItem('box', props.boxIndex);
   if (unequipped) {
@@ -158,14 +160,14 @@ const handleUnequipItem = () => {
   }
 };
 
-const handleMoveToBox = () => {
+const handleMoveToBox = (): void => {
   useModalStore().open('BoxMove', {
     pokemon: pokemon.value,
     boxIndex: props.boxIndex
   });
 };
 
-const handleRelease = () => {
+const handleRelease = (): void => {
   if (!pokemon.value) return;
   if (pokemon.value.inDaycare) {
     uiStore.notify('No se puede liberar un Pokémon en la Guardería.', '⚠️');
@@ -184,7 +186,7 @@ const handleRelease = () => {
   });
 };
 
-const handleSellRocket = () => {
+const handleSellRocket = (): void => {
   if (!pokemon.value) return;
   const price = calculatePrice(pokemon.value);
 

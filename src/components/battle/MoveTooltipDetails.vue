@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import type { ActiveMoveDetails } from '@/composables/battle/useMoveTooltip';
 import type { PokemonMoveId } from '@/data/battle/moves';
+
 import { resolveSpeedMatchup, resolveTacticalRows } from './moveTooltipDetailsHelper.ts';
 
 const props = defineProps<{

@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+
 // src/composables/rewards/rewardsPillExtractor.ts
 import { getItemById, getItemName } from '@/data/inventory/items';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
@@ -16,7 +18,7 @@ export const parsePrize = (rawPrize: unknown): Record<string, unknown> => {
   return typeof rawPrize === 'object' ? (rawPrize as Record<string, unknown>) : {}; // open-record: Generic key-value data dictionary container
 };
 
-const EXCLUDED_PRIZE_KEY_MAP: Record<string, true> = {
+const EXCLUDED_PRIZE_KEY_MAP: Record<DisplayText, true> = {
   // open-record: Dynamic prize payload field keys for exclusion filtering
   type: true,
   amount: true,
@@ -107,7 +109,7 @@ function extractNestedItemPills(
   if (!prize.items || typeof prize.items !== 'object') return [];
   const pills: UnifiedRewardPill[] = [];
 
-  for (const [itId, itQty] of Object.entries(prize.items as Record<string, number>)) {
+  for (const [itId, itQty] of Object.entries(prize.items as Record<DisplayText, number>)) {
     // open-record: Generic key-value data dictionary container
     if (typeof itQty === 'number' && itQty > 0) {
       const itDef = getItemById(itId);
@@ -178,7 +180,7 @@ function extractSoldGtsPills(prize: Record<string, unknown>, prefix: string): Un
       const isShiny = Boolean(sPoke.isShiny);
       pills.push({
         id: `${prefix}-sold-poke-${sPoke.name}`,
-        label: `${sPoke.name.toUpperCase()}`, // text-ok: UI text display localization string
+        label: sPoke.name.toUpperCase(), // text-ok: UI text display localization string
         qtyText: sPoke.level ? `Nv. ${sPoke.level}` : isShiny ? '✨' : undefined,
         spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, toID(sPoke.name), { isShiny }),
         description: `Ejemplar Pokémon vendido: ${sPoke.name}.`,
@@ -215,7 +217,7 @@ function extractPokemonPill(
 
   return {
     id: `${prefix}-poke-${sp}`,
-    label: `${sp.toUpperCase()}`, // text-ok: UI text display localization string
+    label: sp.toUpperCase(), // text-ok: UI text display localization string
     qtyText:
       typeof lv === 'number' || typeof lv === 'string' ? `Nv. ${lv}` : shiny ? '✨' : undefined,
     spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, toID(sp), { isShiny: shiny }),

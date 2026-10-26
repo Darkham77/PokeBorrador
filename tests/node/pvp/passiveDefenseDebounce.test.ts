@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useGameStore } from '@/stores/game';
-import { usePvPStore } from '@/stores/pvp';
-import { useAuthStore } from '@/stores/auth';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test';
+
 import type { DBRouter } from '@/logic/db/dbRouter';
 import { pokemonDebugService } from '@/logic/debug/pokemonDebugService';
+import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { usePvPStore } from '@/stores/pvp';
 
 describe('PvP Passive Defense Debounce & Coalescing Suite', () => {
   let mockDb: {

@@ -1,5 +1,10 @@
-import { computed, toValue, type MaybeRefOrGetter } from 'vue';
+import { computed, toValue, type MaybeRefOrGetter, type ComputedRef } from 'vue';
+
 import { toVirtualStyles } from '@/logic/combat/spatialCoordinator';
+
+export interface UseVirtualPositionReturn {
+  readonly styles: ComputedRef<ReturnType<typeof toVirtualStyles>>;
+}
 
 /**
  * useVirtualPosition
@@ -16,7 +21,7 @@ export function useVirtualPosition(
   y: MaybeRefOrGetter<number>,
   w?: MaybeRefOrGetter<number | undefined>,
   h?: MaybeRefOrGetter<number | undefined>
-) {
+): UseVirtualPositionReturn {
   const styles = computed(() => {
     return toVirtualStyles(toValue(x), toValue(y), toValue(w), toValue(h));
   });

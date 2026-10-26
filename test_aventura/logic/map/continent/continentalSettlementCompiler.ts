@@ -1,22 +1,5 @@
 // Phase 7: Procedural POI & Urban Settlement Compiler for Parametric Continents
 
-import type {
-  EmbeddedTopologyGraph,
-  EmbeddedCorridor
-} from '../../../types/map/pokemonGraphTypes.ts';
-import type {
-  POINode,
-  POIType,
-  POITerrainPreference,
-  CardinalDirection,
-  SettlementLayoutResult
-} from '../../../types/map/poiTypes.ts';
-import type { ContinentMapResult } from '../continentGenerator.ts';
-import type { WaterTerrainKind } from '../waterAutotileEngine.ts';
-import { generateSettlementLayout, type SettlementTerrainContext } from '../cityLayoutEngine.ts';
-import { placeProceduralRouteGates } from './routeGatePlacementEngine.ts';
-import { resolvePortGateAsset } from '../canvasLandmarkRenderer.ts';
-import { HASH_PRIME_FACTOR } from '../../../config/graphEmbeddingConfig.ts';
 import {
   CAVE_SNAP_SEARCH_RADIUS,
   ISLAND_SEED_OFFSET,
@@ -26,6 +9,23 @@ import {
   PORT_TERMINAL_LATERAL_FLANK_RADIUS,
   MIN_ISLAND_SETTLEMENT_AREA
 } from '../../../config/continentalEngineConfig.ts';
+import { HASH_PRIME_FACTOR } from '../../../config/graphEmbeddingConfig.ts';
+import type {
+  POINode,
+  POIType,
+  POITerrainPreference,
+  CardinalDirection,
+  SettlementLayoutResult
+} from '../../../types/map/poiTypes.ts';
+import type {
+  EmbeddedTopologyGraph,
+  EmbeddedCorridor
+} from '../../../types/map/pokemonGraphTypes.ts';
+import { resolvePortGateAsset } from '../canvasLandmarkRenderer.ts';
+import { generateSettlementLayout, type SettlementTerrainContext } from '../cityLayoutEngine.ts';
+import type { ContinentMapResult } from '../continentGenerator.ts';
+import type { WaterTerrainKind } from '../waterAutotileEngine.ts';
+import { placeProceduralRouteGates } from './routeGatePlacementEngine.ts';
 
 export interface ContinentalSettlementPoisResult {
   readonly pois: POINode[];
@@ -33,6 +33,100 @@ export interface ContinentalSettlementPoisResult {
   readonly bridgeGrid: boolean[][];
   readonly placedGates: readonly POINode[];
   readonly activeCorridors: readonly EmbeddedCorridor[];
+}
+
+const URBAN_POI_TYPE_LIST = ['metropolis', 'city', 'town', 'pokemon_league', 'route_gate'] as const;
+type UrbanPoiType = (typeof URBAN_POI_TYPE_LIST)[number];
+const URBAN_POI_TYPES: ReadonlySet<UrbanPoiType> = new Set<UrbanPoiType>(URBAN_POI_TYPE_LIST);
+
+function snapCaveEntranceToSouthCliffWall(
+  originX: number,
+  originY: number,
+  width: number,
+  height: number,
+  continent: ContinentMapResult,
+  searchRadius: number
+): { bestX: number; bestY: number } {
+  let bestX = originX;
+  let bestY = originY;
+  let minDst = Infinity;
+
+  for (let dy = -searchRadius; dy <= searchRadius; dy++) {
+    for (let dx = -searchRadius; dx <= searchRadius; dx++) {
+      const cx = originX + dx;
+      const cy = originY + dy;
+      if (cx < 1 || cx >= width - 1 || cy < 1 || cy >= height - 2) continue;
+
+      const mCell = continent.resolvedMountain.cellDetails[cy]?.[cx];
+      const isSouthWall =
+        mCell && (mCell.role.includes('edge_south') || mCell.role.includes('cliff'));
+      const frontElev = continent.heightmap[cy + 1]?.[cx] ?? 0;
+      const frontTerrain = continent.terrainMatrix[cy + 1]?.[cx];
+      const frontIsGround =
+        frontElev === 0 && frontTerrain !== 'water' && frontTerrain !== 'water_deep';
+      if (!isSouthWall || !frontIsGround) continue;
+
+      const dst = Math.hypot(dx, dy);
+      if (dst < minDst) {
+        minDst = dst;
+        bestX = cx;
+        bestY = cy;
+      }
+    }
+  }
+  return { bestX, bestY };
+}
+
+function pavePortTerminalFootprint(
+  gateX: number,
+  gateY: number,
+  gateW: number,
+  gateH: number,
+  width: number,
+  height: number,
+  terrainMatrix: WaterTerrainKind[][],
+  heightmap: number[][]
+): void {
+  for (let dy = -PORT_TERMINAL_NORTH_PADDING; dy < gateH; dy++) {
+    for (
+      let dx = -PORT_TERMINAL_LATERAL_FLANK_RADIUS;
+      dx < gateW + PORT_TERMINAL_LATERAL_FLANK_RADIUS;
+      dx++
+    ) {
+      const gy = gateY + dy;
+      const gx = gateX + dx;
+      if (gy < 0 || gy >= height || gx < 0 || gx >= width) continue;
+
+      const t = terrainMatrix[gy]?.[gx];
+      if (t !== 'water' && t !== 'water_deep') {
+        terrainMatrix[gy]![gx] = 'sand';
+        heightmap[gy]![gx] = 0;
+      }
+    }
+  }
+}
+
+export interface IslandBounds {
+  minY: number;
+  maxY: number;
+  minX: number;
+  maxX: number;
+}
+
+function countIslandLandArea(
+  bounds: IslandBounds,
+  terrainMatrix: readonly (readonly (string | undefined)[])[]
+): number {
+  let landArea = 0;
+  for (let y = bounds.minY; y <= bounds.maxY; y++) {
+    for (let x = bounds.minX; x <= bounds.maxX; x++) {
+      const t = terrainMatrix[y]?.[x];
+      if (t && t !== 'water' && t !== 'water_deep') {
+        landArea++;
+      }
+    }
+  }
+  return landArea;
 }
 
 export function compileContinentalSettlementPois(
@@ -143,37 +237,16 @@ export function compileContinentalSettlementPois(
       terrainPreference = 'mountain_wall';
 
       // Snap to nearest south cliff wall (edge_south_top) with transitable ground in front
-      let bestX = en.gridX;
-      let bestY = en.gridY;
-      let minDst = Infinity;
-      const searchRadius = CAVE_SNAP_SEARCH_RADIUS;
-      for (let dy = -searchRadius; dy <= searchRadius; dy++) {
-        for (let dx = -searchRadius; dx <= searchRadius; dx++) {
-          const cx = en.gridX + dx;
-          const cy = en.gridY + dy;
-          if (cx < 1 || cx >= width - 1 || cy < 1 || cy >= height - 2) continue;
-
-          const mCell = continent.resolvedMountain.cellDetails[cy]?.[cx];
-          const isSouthWall =
-            mCell && (mCell.role.includes('edge_south') || mCell.role.includes('cliff'));
-          const frontElev = continent.heightmap[cy + 1]?.[cx] ?? 0;
-          const frontTerrain = continent.terrainMatrix[cy + 1]?.[cx];
-          const frontIsGround =
-            frontElev === 0 && frontTerrain !== 'water' && frontTerrain !== 'water_deep';
-          if (!isSouthWall || !frontIsGround) continue;
-
-          const dst = Math.hypot(dx, dy);
-          if (dst < minDst) {
-            minDst = dst;
-            bestX = cx;
-            bestY = cy;
-          }
-        }
-      }
-      if (minDst < Infinity) {
-        poiGridX = bestX;
-        poiGridY = bestY;
-      }
+      const snapped = snapCaveEntranceToSouthCliffWall(
+        en.gridX,
+        en.gridY,
+        width,
+        height,
+        continent,
+        CAVE_SNAP_SEARCH_RADIUS
+      );
+      poiGridX = snapped.bestX;
+      poiGridY = snapped.bestY;
     } else if (en.role === 'secondary_landmark') {
       type = 'town';
       name = CANONICAL_LANDMARK_NAMES[landmarkIndex++ % CANONICAL_LANDMARK_NAMES.length]!;
@@ -198,13 +271,7 @@ export function compileContinentalSettlementPois(
       tier: en.role === 'starter' ? 0 : 1
     };
 
-    if (
-      type === 'metropolis' ||
-      type === 'city' ||
-      type === 'town' ||
-      type === 'pokemon_league' ||
-      type === 'route_gate'
-    ) {
+    if (URBAN_POI_TYPES.has(type as UrbanPoiType)) {
       let poiSeed = seed;
       for (let i = 0; i < poiNode.id.length; i++) {
         poiSeed = (Math.imul(poiSeed, HASH_PRIME_FACTOR) + poiNode.id.charCodeAt(i)) >>> 0;
@@ -223,23 +290,16 @@ export function compileContinentalSettlementPois(
       const gateY = poiGridY + en.height - gateH;
 
       // Ensure dry land for terminal footprint and continuous beach promenade along harbor coast
-      for (let dy = -PORT_TERMINAL_NORTH_PADDING; dy < gateH; dy++) {
-        for (
-          let dx = -PORT_TERMINAL_LATERAL_FLANK_RADIUS;
-          dx < gateW + PORT_TERMINAL_LATERAL_FLANK_RADIUS;
-          dx++
-        ) {
-          const gy = gateY + dy;
-          const gx = gateX + dx;
-          if (gy < 0 || gy >= height || gx < 0 || gx >= width) continue;
-
-          const t = continent.terrainMatrix[gy]?.[gx];
-          if (t !== 'water' && t !== 'water_deep') {
-            (continent.terrainMatrix as WaterTerrainKind[][])[gy]![gx] = 'sand';
-            (continent.heightmap as number[][])[gy]![gx] = 0;
-          }
-        }
-      }
+      pavePortTerminalFootprint(
+        gateX,
+        gateY,
+        gateW,
+        gateH,
+        width,
+        height,
+        continent.terrainMatrix as WaterTerrainKind[][],
+        continent.heightmap as number[][]
+      );
 
       // Filter out any standard residential building or props that overlap the port terminal footprint or its direct approach
       if (poiNode.urbanLayout?.buildings) {
@@ -296,15 +356,7 @@ export function compileContinentalSettlementPois(
   if (continent.archipelagoIslands) {
     for (const island of continent.archipelagoIslands) {
       // Calculate contiguous land tile count of this island
-      let landArea = 0;
-      for (let y = island.bounds.minY; y <= island.bounds.maxY; y++) {
-        for (let x = island.bounds.minX; x <= island.bounds.maxX; x++) {
-          const t = continent.terrainMatrix[y]?.[x];
-          if (t && t !== 'water' && t !== 'water_deep') {
-            landArea++;
-          }
-        }
-      }
+      const landArea = countIslandLandArea(island.bounds, continent.terrainMatrix);
 
       if (landArea >= MIN_ISLAND_SETTLEMENT_AREA && island.role === 'port_city') {
         const islandNode: POINode = {
@@ -325,7 +377,7 @@ export function compileContinentalSettlementPois(
         (islandNode as { urbanLayout?: SettlementLayoutResult }).urbanLayout = layout;
         pois.push(islandNode);
       } else {
-        const configureMinorIslet = () => {
+        const configureMinorIslet = (): void => {
           const archetypeIdx =
             Math.abs(island.cx * ARCHETYPE_PRIME_X + island.cy * ARCHETYPE_PRIME_Y + seed) % 3;
           if (archetypeIdx === 0) {

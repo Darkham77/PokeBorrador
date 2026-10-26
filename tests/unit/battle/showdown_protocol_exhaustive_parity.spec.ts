@@ -1,15 +1,17 @@
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
-import { ref } from 'vue';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+import { ref } from 'vue';
+
 import { handleCoreEvents } from '@/logic/battle/showdownBridgeCore';
-import { handleStageEvents } from '@/logic/battle/showdownBridgeStages';
+import type { SBCtx } from '@/logic/battle/showdownBridgeCtx';
 import { handleFieldEvents } from '@/logic/battle/showdownBridgeField';
 import { handleMiscEvents } from '@/logic/battle/showdownBridgeMisc';
+import { handleStageEvents } from '@/logic/battle/showdownBridgeStages';
 import { useGameStore } from '@/stores/game';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { SBCtx } from '@/logic/battle/showdownBridgeCtx';
 
 describe('Showdown Protocol 1:1 Exhaustive Parity Verification', () => {
   let mockStore: BattleContext;

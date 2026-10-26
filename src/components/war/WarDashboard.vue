@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { useWarStore } from '@/stores/war';
 import { computed, onMounted } from 'vue';
+
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { formatCurrency } from '@/logic/utils/formatters';
 import { WEEKLY_REWARD_MILESTONES } from '@/logic/war/warEngine';
+import { useWarStore } from '@/stores/war';
+
 import MapControlList from './MapControlList.vue';
 
 const warStore = useWarStore();

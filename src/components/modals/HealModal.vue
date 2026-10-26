@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { gsap } from 'gsap';
-import { useShopStore } from '@/stores/inventory/shop';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { getPokemonTier } from '@/logic/pokemon/tierEngine';
-import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
 import { toPokemonType } from '@/data/battle/types';
+import { getPokemonTier } from '@/logic/pokemon/tierEngine';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useGameStore } from '@/stores/game';
+import { useShopStore } from '@/stores/inventory/shop';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { resolveClassSurcharge, resolveHealButtonState } from './healModalHelper';
 
 const GSAP_SCALE_SELECTED = 1.1;
@@ -71,7 +73,12 @@ const TYPE_COLORS = {
   fairy: '#EE99AC'
 };
 
-function getPokemonFX(p: Pokemon | null) {
+function getPokemonFX(p: Pokemon | null): {
+  typeColor: string;
+  isShiny: boolean;
+  isLegendary: boolean;
+  tierColor: string;
+} {
   if (!p) return { typeColor: '#A8A878', isShiny: false, isLegendary: false, tierColor: '#A8A878' };
   const data = pokemonDataProvider.getPokemonData(p.id);
   const tier = getPokemonTier(p);
@@ -85,9 +92,9 @@ function getPokemonFX(p: Pokemon | null) {
   };
 }
 
-function needsHealing(p: Pokemon | null) {
+function needsHealing(p: Pokemon | null): boolean {
   if (!p) return false;
-  return p.hp < p.maxHp || p.status || p.moves?.some((m) => m && m.pp < (m.maxPP || 0));
+  return Boolean(p.hp < p.maxHp || p.status || p.moves?.some((m) => m && m.pp < (m.maxPP || 0)));
 }
 
 const slotRefs = ref<HTMLElement[]>([]);
@@ -108,7 +115,7 @@ function setSpriteRef(index: number) {
 
 const activeTweensMap = new Map<number, gsap.core.Tween[]>();
 
-function clearSlotAnimations(index: number) {
+function clearSlotAnimations(index: number): void {
   const tweens = activeTweensMap.get(index);
   if (tweens) {
     tweens.forEach((t) => t.kill());
@@ -128,7 +135,7 @@ function clearSlotAnimations(index: number) {
     });
 }
 
-function startSlotAnimations(index: number) {
+function startSlotAnimations(index: number): void {
   clearSlotAnimations(index);
 
   const slot = slotRefs.value[index];
@@ -211,7 +218,7 @@ watch(
 const GSAP_BADGE_INITIAL_ROTATION_DEG = -20;
 const GSAP_BADGE_MID_ROTATION_DEG = 10;
 
-function onBadgeEnter(el: Element, done: () => void) {
+function onBadgeEnter(el: Element, done: () => void): void {
   const tl = gsap.timeline({ onComplete: done });
   tl.fromTo(
     el,
@@ -230,7 +237,7 @@ function onBadgeEnter(el: Element, done: () => void) {
   });
 }
 
-async function handleHeal() {
+async function handleHeal(): Promise<void> {
   if (cost.value === 0) {
     const damagedCount = team.value.filter((p: Pokemon | null) => p && needsHealing(p)).length;
     if (damagedCount === 0) {
@@ -277,7 +284,7 @@ async function handleHeal() {
   });
 }
 
-function handleClose() {
+function handleClose(): void {
   if (isHealing.value) return;
   emit('close');
 }
@@ -300,7 +307,7 @@ onMounted(() => {
 
 const GSAP_OVERLAY_HEAL_DELAY_SEC = 0.1;
 
-Reflect.set(window, 'showHealEffect', (active: boolean) => {
+Reflect.set(globalThis, 'showHealEffect', (active: boolean) => {
   if (active) {
     const modalStore = useModalStore();
     modalStore.open('HealOverlay');

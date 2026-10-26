@@ -9,12 +9,12 @@ const DEFAULT_FALLBACK_VIEWPORT_WIDTH_PX = 1000 as const;
 const DEFAULT_FALLBACK_VIEWPORT_HEIGHT_PX = 800 as const;
 
 function getEffectiveZoom(tooltipEl?: HTMLElement | null): number {
-  if (typeof window === 'undefined') return 1;
+  if (typeof globalThis.window === 'undefined') return 1;
 
   if (typeof document !== 'undefined') {
     const rawZoom =
       document.documentElement.style.getPropertyValue('--app-zoom') ||
-      window.getComputedStyle(document.documentElement).getPropertyValue('--app-zoom');
+      globalThis.getComputedStyle(document.documentElement).getPropertyValue('--app-zoom');
     const appZoom = parseFloat(rawZoom);
     if (!Number.isNaN(appZoom) && appZoom > 0) {
       return appZoom;
@@ -22,9 +22,9 @@ function getEffectiveZoom(tooltipEl?: HTMLElement | null): number {
   }
 
   if (tooltipEl) {
-    const wrapper = tooltipEl.querySelector('.tooltip-animate-wrapper') as HTMLElement | null;
+    const wrapper = tooltipEl.querySelector('.tooltip-animate-wrapper');
     const target = wrapper ?? tooltipEl;
-    const computedZoom = parseFloat(window.getComputedStyle(target).zoom);
+    const computedZoom = parseFloat(globalThis.getComputedStyle(target).zoom);
     if (!Number.isNaN(computedZoom) && computedZoom > 0) {
       return computedZoom;
     }
@@ -83,13 +83,33 @@ function resolveFlippedPosition(
   return pos;
 }
 
+interface BaseCoordinates {
+  readonly top: number;
+  readonly left: number;
+}
+
+interface NudgeAndArrowResult {
+  readonly top: number;
+  readonly left: number;
+  readonly arrowOffset: { readonly x: number; readonly y: number };
+}
+
+export interface UseTooltipPositionReturn {
+  readonly coords: Ref<{ top: number; left: number; right: string }>;
+  readonly activePosition: Ref<string>;
+  readonly arrowOffset: Ref<{ x: number; y: number }>;
+  readonly isRightSide: Ref<boolean>;
+  readonly maxHeight: Ref<number | null>;
+  readonly updatePosition: () => void;
+}
+
 function calculateBaseCoordinates(
   pos: string,
   rect: DOMRect,
   triggerCenter: number,
   scrollX: number,
   scrollY: number
-) {
+): BaseCoordinates {
   if (pos === 'top' || pos === 'bottom') {
     return {
       top: pos === 'top' ? rect.top + scrollY - GAP_PX : rect.bottom + scrollY + GAP_PX,
@@ -118,7 +138,7 @@ function calculateNudgeAndArrow(
   scrollY: number,
   viewportWidth: number,
   viewportHeight: number
-) {
+): NudgeAndArrowResult {
   const anchorX = triggerCenter + scrollX;
   const anchorY = baseTop;
 
@@ -155,24 +175,28 @@ export function useTooltipPosition(
   trigger: Ref<HTMLElement | null>,
   tooltip: Ref<HTMLElement | null>,
   position: string
-) {
-  const coords = ref({ top: 0, left: 0 as number | 'auto', right: 'auto' as number | 'auto' });
+): UseTooltipPositionReturn {
+  const coords = ref({ top: 0, left: 0, right: 'auto' });
   const activePosition = ref(position);
   const arrowOffset = ref({ x: 0, y: 0 });
   const isRightSide = ref(false);
   const maxHeight = ref<number | null>(null);
 
-  const updatePosition = () => {
+  const updatePosition = (): void => {
     if (!trigger.value || !tooltip.value) return;
 
     const rect = trigger.value.getBoundingClientRect();
     const tipRect = tooltip.value.getBoundingClientRect();
-    const scrollY = typeof window !== 'undefined' ? window.scrollY : 0;
-    const scrollX = typeof window !== 'undefined' ? window.scrollX : 0;
+    const scrollY = typeof globalThis.window !== 'undefined' ? globalThis.scrollY : 0;
+    const scrollX = typeof globalThis.window !== 'undefined' ? globalThis.scrollX : 0;
     const viewportWidth =
-      typeof window !== 'undefined' ? window.innerWidth : DEFAULT_FALLBACK_VIEWPORT_WIDTH_PX;
+      typeof globalThis.window !== 'undefined'
+        ? globalThis.innerWidth
+        : DEFAULT_FALLBACK_VIEWPORT_WIDTH_PX;
     const viewportHeight =
-      typeof window !== 'undefined' ? window.innerHeight : DEFAULT_FALLBACK_VIEWPORT_HEIGHT_PX;
+      typeof globalThis.window !== 'undefined'
+        ? globalThis.innerHeight
+        : DEFAULT_FALLBACK_VIEWPORT_HEIGHT_PX;
 
     const triggerCenter = rect.left + rect.width / 2;
     isRightSide.value = triggerCenter > viewportWidth / 2;

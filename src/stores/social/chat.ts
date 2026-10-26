@@ -1,21 +1,21 @@
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { useAuthStore } from '@/stores/auth.ts';
-import { useGameStore } from '@/stores/game.ts';
-import { useUIStore } from '@/stores/ui.ts';
-import { useAudioStore } from '@/stores/audio.ts';
-import { logger } from '@/logic/utils/logger';
-import { useChatCosmeticsStore } from '@/stores/social/chatCosmetics.ts';
-import { useChatPrivateStore, type ChatMessage } from '@/stores/social/chatPrivate.ts';
 
-import type { RealtimeChannel } from '@supabase/supabase-js';
-import { validateChatMessage } from '@/logic/validation/schemas';
 import {
   CHAT_MAX_MESSAGES_HISTORY,
   CHAT_OPTIMISTIC_DEDUP_WINDOW_MS,
   CHAT_THROTTLE_INTERVAL_MS,
   CHAT_MAX_MESSAGE_LENGTH
 } from '@/logic/constants/gameplay.ts';
+import { logger } from '@/logic/utils/logger';
+import { validateChatMessage } from '@/logic/validation/schemas';
+import { useAudioStore } from '@/stores/audio.ts';
+import { useAuthStore } from '@/stores/auth.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useChatCosmeticsStore } from '@/stores/social/chatCosmetics.ts';
+import { useChatPrivateStore, type ChatMessage } from '@/stores/social/chatPrivate.ts';
+import { useUIStore } from '@/stores/ui.ts';
 
 export const useChatStore = defineStore('chat', () => {
   const authStore = useAuthStore();
@@ -27,7 +27,7 @@ export const useChatStore = defineStore('chat', () => {
 
   const cosmeticsStore = useChatCosmeticsStore();
   const profileCosmetics = computed(() => cosmeticsStore.profileCosmetics);
-  const fetchMissingCosmetics = async (forceIds: string[] = []) => {
+  const fetchMissingCosmetics = async (forceIds: string[] = []): Promise<void> => {
     const uniqueUserIds = new Set<string>();
     globalMessages.value.forEach((m) => {
       if (m.user_id) uniqueUserIds.add(m.user_id);
@@ -61,7 +61,7 @@ export const useChatStore = defineStore('chat', () => {
   let globalChannel: RealtimeChannel | null = null;
   let lastMessageSentTimestamp = 0;
 
-  async function loadGlobalHistory() {
+  async function loadGlobalHistory(): Promise<void> {
     // If offline, ProxyQuery will handle the local SELECT
 
     const db = gameStore.db;
@@ -78,7 +78,7 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  async function initGlobalChat() {
+  async function initGlobalChat(): Promise<void> {
     if (globalChannel) return;
 
     await loadGlobalHistory();
@@ -94,7 +94,7 @@ export const useChatStore = defineStore('chat', () => {
           schema: 'public',
           table: 'global_chat_messages'
         },
-        ({ new: row }: { new: Record<string, unknown> }) => {
+        async ({ new: row }: { new: Record<string, unknown> }) => {
           const validation = validateChatMessage(row);
           if (!validation.success) {
             logger.error(
@@ -119,8 +119,7 @@ export const useChatStore = defineStore('chat', () => {
               // If optimistic ID is a temporary number (epochMs) and not a UUID, it is the optimistic push
               if (typeof m.id === 'number') {
                 const diff = Math.abs(
-                  (m.id as number) -
-                    Temporal.Instant.from(row.created_at as string).epochMilliseconds
+                  m.id - Temporal.Instant.from(row.created_at as string).epochMilliseconds
                 );
                 return diff < CHAT_OPTIMISTIC_DEDUP_WINDOW_MS;
               }
@@ -144,7 +143,7 @@ export const useChatStore = defineStore('chat', () => {
             return;
           }
 
-          globalMessages.value.push(row as ChatMessage); // domain-ok: Open dynamic text or non-domain string payload
+          globalMessages.value.push(row); // domain-ok: Open dynamic text or non-domain string payload
           if (globalMessages.value.length > CHAT_MAX_MESSAGES_HISTORY) globalMessages.value.shift();
 
           const senderId = row.user_id as string;
@@ -154,18 +153,18 @@ export const useChatStore = defineStore('chat', () => {
             cached.username !== row.username ||
             cached.player_class !== row.player_class ||
             cached.trainer_level !== row.trainer_level;
-          void fetchMissingCosmetics(needsUpdate ? [senderId] : []);
+          await fetchMissingCosmetics(needsUpdate ? [senderId] : []);
 
           // Sonido si el mensaje no es mío
           if (row.user_id !== authStore.user?.id) {
-            void audioStore.play('receivedMsg');
+            await audioStore.play('receivedMsg');
           }
         }
       )
       .subscribe();
   }
 
-  async function sendGlobalMessage(text: string) {
+  async function sendGlobalMessage(text: string): Promise<void> {
     if (!authStore.user || !text.trim() || !gameStore.db) return;
 
     const now = Temporal.Now.instant().epochMilliseconds;
@@ -192,9 +191,9 @@ export const useChatStore = defineStore('chat', () => {
     };
     globalMessages.value.push(optimisticRow as ChatMessage); // domain-ok: Open dynamic text or non-domain string payload
     if (globalMessages.value.length > CHAT_MAX_MESSAGES_HISTORY) globalMessages.value.shift();
-    void fetchMissingCosmetics(authStore.user?.id ? [authStore.user.id] : []);
+    await fetchMissingCosmetics(authStore.user?.id ? [authStore.user.id] : []);
 
-    void audioStore.play('sentMsg'); // Sound on immediate send
+    await audioStore.play('sentMsg'); // Sound on immediate send
 
     const { error } = await gameStore.db.from('global_chat_messages').insert(payload);
     if (error) {

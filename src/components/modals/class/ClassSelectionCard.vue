@@ -6,9 +6,11 @@
  */
 
 import { gsap } from 'gsap';
+
+import PVTooltip from '@/components/common/PVTooltip.vue';
 import { type PlayerClassId } from '@/data/player/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import PVTooltip from '@/components/common/PVTooltip.vue';
+
 import type { RenderPlayerClass } from './classSelectionTypes.ts';
 
 interface Props {
@@ -40,11 +42,11 @@ function splitLeadingEmoji(text: string): { emoji: string | null; text: string }
   return { emoji: null, text };
 }
 
-const getTrainerSprite = (id: string) => {
+const getTrainerSprite = (id: string): string => {
   return getAssetUrl(ASSET_TYPES.TRAINER, id, { trainerSuffix: 'avatar' });
 };
 
-const getButtonVariant = (clsId: PlayerClassId) => {
+const getButtonVariant = (clsId: PlayerClassId): string => {
   switch (clsId) {
     case 'rocket':
       return 'danger';
@@ -59,13 +61,13 @@ const getButtonVariant = (clsId: PlayerClassId) => {
   }
 };
 
-const handleImageError = (e: Event) => {
+const handleImageError = (e: Event): void => {
   if (e.target) {
     (e.target as HTMLImageElement).style.display = 'none';
   }
 };
 
-const onCardHover = (event: MouseEvent, isEntering: boolean) => {
+const onCardHover = (event: MouseEvent, isEntering: boolean): void => {
   const card = event.currentTarget as HTMLElement;
   if (!card) return;
   const glow = card.querySelector('.card-glow');

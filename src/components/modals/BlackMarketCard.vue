@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { formatCurrency } from '@/logic/utils/formatters';
-import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver';
-import type { Item } from '@/types/inventory/items';
+
 import type { ItemId } from '@/data/inventory/items';
 import {
   BLACK_MARKET_DEFAULT_DISCOUNT,
   BATTLE_COIN_TO_MONEY_RATE,
   PERCENT_BASE_MULTIPLIER
 } from '@/logic/constants/gameplay';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { formatCurrency } from '@/logic/utils/formatters';
+import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver';
+import type { Item } from '@/types/inventory/items';
 
 interface Props {
   item: Item;
@@ -41,7 +42,7 @@ const discountPercentageText = computed(
   () => `-${Math.round((props.discount ?? 0) * PERCENT_BASE_MULTIPLIER)}%`
 );
 
-function handleImageError(e: Event) {
+function handleImageError(e: Event): void {
   if (e.target) {
     (e.target as HTMLImageElement).style.display = 'none';
   }

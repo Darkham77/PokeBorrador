@@ -5,9 +5,11 @@
  * Avoids pulling the heavy pokemonFeetDatabase (1.2 MB) on app boot.
  */
 import criesJson from './pokemonCriesDatabase.json' with { type: 'json' };
+import type { AssetUri } from '@francogp/auditor';
+import { isPokemonSpeciesId, type PokemonSpeciesId } from './pokedex.ts';
 
 // fallow-ignore-next-line unused-export
-export const POKEMON_CRIES_DATABASE: Record<string, string> = criesJson; // open-record: Generic key-value data dictionary container
+export const POKEMON_CRIES_DATABASE: Partial<Record<PokemonSpeciesId, AssetUri>> = criesJson;
 
 // fallow-ignore-next-line unused-export
 export function isPokemonCryId(value: string): boolean {
@@ -15,6 +17,8 @@ export function isPokemonCryId(value: string): boolean {
 }
 
 export function getPokemonCryFilename(speciesId: string): string {
-  // domain-ok: Open dynamic text or non-domain string payload
-  return POKEMON_CRIES_DATABASE[speciesId] ?? `${speciesId}.mp3`;
+  if (isPokemonSpeciesId(speciesId)) {
+    return POKEMON_CRIES_DATABASE[speciesId] ?? `${speciesId}.mp3`;
+  }
+  return `${speciesId}.mp3`;
 }

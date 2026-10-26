@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
 import PVTooltip from '@/components/common/PVTooltip.vue';
-import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
 import type { PokemonGender } from '@/types/pokemon/pokemon';
 
 interface Props {

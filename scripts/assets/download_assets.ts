@@ -1,3 +1,4 @@
+import { isMainModule } from '@francogp/auditor';
 /**
  * scripts/assets/download_assets.ts
  *
@@ -23,7 +24,8 @@
 import fs from 'node:fs/promises';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { parseArgs, styleText } from 'node:util';
+import { styleText } from 'node:util';
+import { defineCommand, runMain } from 'citty';
 import { enableCompileCache } from 'node:module';
 import { Dex, toID } from '@pkmn/sim';
 
@@ -150,13 +152,15 @@ export function toItemSlugCandidates(id: string): string[] {
   return Array.from(candidates);
 }
 
-const ALLOWED_ASSET_HOSTS = new Set([
-  // runtime-set: Fast O(1) membership lookup set
+const ALLOWED_ASSET_HOST_VALUES = [
   'www.serebii.net',
   'raw.githubusercontent.com',
   'play.pokemonshowdown.com',
   'img.pokemondb.net'
-]);
+] as const;
+const ALLOWED_ASSET_HOSTS: ReadonlySet<string> = new Set<string>(
+  ALLOWED_ASSET_HOST_VALUES
+);
 
 function isAllowedAssetUrl(parsed: URL): boolean {
   return parsed.protocol === 'https:' && ALLOWED_ASSET_HOSTS.has(parsed.hostname);
@@ -191,9 +195,8 @@ async function tryFetchAssetBuffer(url: string): Promise<Buffer | null> {
     ) {
       return buf;
     }
-  } catch {
-    // catch-ok: try next source
-    // Try next source
+  } catch (err) {
+    err;
   }
   return null;
 }
@@ -327,59 +330,44 @@ async function downloadPokemon(limit: number) {
         const buf = Buffer.from(await res.arrayBuffer());
         await fs.writeFile(target, buf);
       }
-    } catch {
-      // catch-ok: ignore single failure during bulk download
-      // Ignore single failure
+    } catch (err) {
+      err;
     }
   }
 }
 
-async function main() {
-  const { values, positionals } = parseArgs({
-    options: {
-      pokemon: { type: 'boolean' },
-      items: { type: 'boolean' },
-      trainers: { type: 'boolean' },
-      all: { type: 'boolean' },
-      limit: { type: 'string' }
-    },
-    allowPositionals: true,
-    strict: false
-  });
+export const command = defineCommand({
+  meta: {
+    name: 'download-assets',
+    description: 'Descargador universal de assets y sprites'
+  },
+  args: {
+    pokemon: { type: 'boolean', description: 'Descargar sprites de Pokémon' },
+    items: { type: 'boolean', description: 'Descargar sprites de ítems' },
+    trainers: { type: 'boolean', description: 'Descargar sprites de entrenadores' },
+    all: { type: 'boolean', description: 'Descargar todos los assets' },
+    limit: { type: 'string', description: 'Límite de especies de Pokémon' }
+  },
+  async run({ args }) {
+    const doAll =
+      Boolean(args.all) ||
+      (!args.pokemon && !args.items && !args.trainers);
+    const doItems = doAll || Boolean(args.items);
+    const doPokemon = doAll || Boolean(args.pokemon);
+    const pokemonLimit =
+      typeof args.limit === 'string' ? parseInt(args.limit, 10) : TOTAL_POKEMON_SPECIES;
 
-  const isPositionalItems = positionals.includes('items');
-  const isPositionalPokemon = positionals.includes('pokemon');
-  const isPositionalTrainers = positionals.includes('trainers');
-  const isPositionalAll = positionals.includes('all');
+    console.log(styleText('bold', '\n--- 📥 UNIVERSAL ASSET DOWNLOADER & MULTI-SOURCE SCRAPER ---'));
 
-  const doAll =
-    values.all ||
-    isPositionalAll ||
-    (!values.pokemon &&
-      !values.items &&
-      !values.trainers &&
-      !isPositionalItems &&
-      !isPositionalPokemon &&
-      !isPositionalTrainers);
-  const doItems = doAll || values.items || isPositionalItems;
-  const doPokemon = doAll || values.pokemon || isPositionalPokemon;
-  const pokemonLimit =
-    typeof values.limit === 'string' ? parseInt(values.limit, 10) : TOTAL_POKEMON_SPECIES;
+    if (doItems) {
+      await downloadAllItems();
+    }
 
-  console.log(styleText('bold', '\n--- 📥 UNIVERSAL ASSET DOWNLOADER & MULTI-SOURCE SCRAPER ---'));
-
-  if (doItems) {
-    await downloadAllItems();
+    if (doPokemon) {
+      await downloadPokemon(pokemonLimit);
+    }
   }
-
-  if (doPokemon) {
-    await downloadPokemon(pokemonLimit);
-  }
-}
-
-if (process.argv[1]?.endsWith('download_assets.ts')) {
-  main().catch((err) => {
-    console.error(styleText('red', `\n💥 Error fatal: ${(err as Error).message}`));
-    process.exit(1);
-  });
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
 }

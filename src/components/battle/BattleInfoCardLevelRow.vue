@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import PokemonTypePills from '@/components/shared/PokemonTypePills.vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
-import { useGameStore } from '@/stores/game.ts';
+import PokemonTypePills from '@/components/shared/PokemonTypePills.vue';
 import { NATURE_DATA, getNatureDataByNameOrId } from '@/data/battle/natures.ts';
+import { useGameStore } from '@/stores/game.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon.ts';
 
 interface Props {

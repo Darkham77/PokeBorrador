@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { gsap } from 'gsap';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { pokemonNeedsHealing } from '@/logic/economy/economyFormulas';
+import { computed } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
 import { usePokemonCenterCooldown } from '@/composables/map/usePokemonCenterCooldown';
+import { pokemonNeedsHealing } from '@/logic/economy/economyFormulas';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const gameStore = useGameStore();
@@ -25,7 +26,7 @@ const bannerStyle = computed(() => ({
   backgroundImage: `url('${bannerUrl.value}')`
 }));
 
-const onBannerHover = (event: MouseEvent, enter: boolean) => {
+const onBannerHover = (event: MouseEvent, enter: boolean): void => {
   const el = event.currentTarget as HTMLElement;
   if (!el || cooldownSecondsLeft.value > 0) return;
   const bg = el.querySelector('.banner-bg') as HTMLElement | null;
@@ -52,7 +53,7 @@ const onBannerHover = (event: MouseEvent, enter: boolean) => {
   }
 };
 
-const openCenter = () => {
+const openCenter = (): void => {
   const needsHeal = (gameStore.state.team as (Pokemon | null)[]).some(
     (p) => p && pokemonNeedsHealing(p)
   );

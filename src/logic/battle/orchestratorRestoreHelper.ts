@@ -1,12 +1,13 @@
-import { cloneReactive } from '@/logic/utils/cloneUtils.ts';
-import type { BattleContext } from '@/types/battle/battleContext';
-import type { BattleState, BattleStages, BattleLog } from '@/types/battle/battle';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { isMatchingUid } from './showdownUidMapper.ts';
-import { initWorkerForBattle } from './orchestratorWorkerInitHelper.ts';
 import { requireMapRouteId } from '@/data/world/map-assets';
-import { isBattleMinigame } from './battleMinigames.ts';
 import { gameBus } from '@/logic/events/gameBus';
+import { cloneReactive } from '@/logic/utils/cloneUtils.ts';
+import type { BattleState, BattleStages, BattleLog } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import { isBattleMinigame } from './battleMinigames.ts';
+import { initWorkerForBattle } from './orchestratorWorkerInitHelper.ts';
+import { isMatchingUid } from './showdownUidMapper.ts';
 
 type RestorableBattlePayload = Partial<
   BattleState & {

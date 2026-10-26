@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
 import { useClipboard } from '@vueuse/core';
+import { ref, computed } from 'vue';
+
 import { useGsapTransition } from '@/composables/ui/useGsapTransition';
+import { CLIPBOARD_COPIED_DUR_MS } from '@/logic/constants/visuals';
+import { logger } from '@/logic/utils/logger';
+import { useAuthStore } from '@/stores/auth';
 import { useErrorStore } from '@/stores/errorStore';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
-import { useAuthStore } from '@/stores/auth';
-import { logger } from '@/logic/utils/logger';
-import { CLIPBOARD_COPIED_DUR_MS } from '@/logic/constants/visuals';
 
 const errorStore = useErrorStore();
 const gameStore = useGameStore();
@@ -24,7 +25,7 @@ const accumulatedDetails = computed(() => {
     .join('\n\n----------------------------------------\n\n');
 });
 
-const copyError = async () => {
+const copyError = async (): Promise<void> => {
   if (errorStore.errors.length === 0) return;
 
   const report = [
@@ -49,11 +50,11 @@ const copyError = async () => {
   }
 };
 
-const reloadGame = () => {
-  window.location.reload();
+const reloadGame = (): void => {
+  globalThis.location.reload();
 };
 
-const closeError = () => {
+const closeError = (): void => {
   userAction.value = '';
   errorStore.clearError();
   uiStore.closeAll(); // Restore background block by clearing the stack
@@ -85,7 +86,7 @@ const transitionHooks = useGsapTransition({
             </p>
 
             <div class="error-user-action-container">
-              <label for="error-overlay-user-action" class="error-sub-title error-label-block">
+              <label class="error-sub-title error-label-block">
                 ¿QUÉ ESTABAS HACIENDO?
                 <textarea
                   id="error-overlay-user-action"

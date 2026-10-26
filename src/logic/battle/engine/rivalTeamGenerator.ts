@@ -1,15 +1,16 @@
 import { TeamGenerators } from '@pkmn/randoms';
 import { Dex, type PokemonSet } from '@pkmn/sim';
-import { toID } from '@/logic/utils/strings.ts';
+
+import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import {
   ACTIVE_GENERATION,
   ENABLED_POKEMON_IDS_SET,
   MAX_POKEMON_LEVEL
 } from '@/data/system/constants';
 import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
-import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
-import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { logger } from '@/logic/utils/logger';
+import { toID } from '@/logic/utils/strings.ts';
 
 export interface TrainerTeamOptions {
   level: number;
@@ -189,7 +190,7 @@ export class TrainerTeamGenerator {
    * Generates a fully compliant, competitively designed Pokémon team for any trainer archetype
    * using Showdown's native team generator engine filtered by allowed thematic species.
    */
-  static generateTeam(options: TrainerTeamOptions): PokemonSet[] {
+  public static generateTeam(options: TrainerTeamOptions): PokemonSet[] {
     if (options.teamSize <= 0) {
       return [];
     }
@@ -247,7 +248,7 @@ export class RivalTeamGenerator {
   /**
    * Specialization for Rival encounters with guaranteed Ace in slot 0 and level+5 difficulty.
    */
-  static generateTeam(options: RivalTeamOptions): PokemonSet[] {
+  public static generateTeam(options: RivalTeamOptions): PokemonSet[] {
     return TrainerTeamGenerator.generateTeam({
       level: options.level,
       teamSize: options.teamSize,

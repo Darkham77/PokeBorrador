@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ARCHETYPE_PRESETS } from './useDebugTrainers.ts';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
+
+import { ARCHETYPE_PRESETS } from './useDebugTrainers.ts';
 
 const teamSize = defineModel<number>('teamSize', { required: true });
 const forceShiny = defineModel<boolean>('forceShiny', { required: true });

@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/events/eventEngine.ts
  *
@@ -13,9 +14,10 @@ import {
   type PokemonSpeciesId
 } from '@/data/pokemon/pokedex';
 import { getGMT3Date } from '@/logic/utils/timeUtils.ts';
-import { safeParse, resolveWeeklyRotation } from './eventSchedules.ts';
-import type { SubCompetitionConfig, CompetitionScope } from './eventCompetitions.ts';
 import type { DomainPrizeData } from '@/types/rewards/rewards';
+
+import type { SubCompetitionConfig, CompetitionScope } from './eventCompetitions.ts';
+import { safeParse, resolveWeeklyRotation } from './eventSchedules.ts';
 
 // Re-export scheduling and date helpers
 export * from './eventSchedules.ts';
@@ -69,7 +71,7 @@ export interface EventConfig {
   catchStartDate?: string;
   catchEndDate?: string;
   subCompetitions?: SubCompetitionConfig[];
-  minigameBuffs?: Record<string, MinigameEventBuffs>; // open-record: Minigame buff configuration map
+  minigameBuffs?: Record<DisplayText, MinigameEventBuffs>; // open-record: Minigame buff configuration map
   customRules?: Array<{ label: string; value: string; color?: string }>;
   prizes?: {
     first?: DomainPrizeData | Record<string, unknown>; // open-record: Generic key-value data dictionary container
@@ -78,7 +80,7 @@ export interface EventConfig {
   };
   /** 4-week monthly rotation: week number (1-4) -> rotation data */
   rotationTheme?: RotationTheme;
-  weeklyRotations?: Record<string, WeeklyRotationEntry>; // open-record: Weekly rotation index map
+  weeklyRotations?: Record<DisplayText, WeeklyRotationEntry>; // open-record: Weekly rotation index map
 }
 
 import type { EventTypeKind } from '@/types/system/stores';
@@ -93,8 +95,8 @@ export interface Event {
   manual?: boolean;
   start_at?: string;
   end_at?: string;
-  schedule?: string | Record<string, unknown>;
-  config?: string | EventConfig;
+  schedule?: DisplayText | Record<DisplayText, unknown>;
+  config?: DisplayText | EventConfig;
 }
 
 export interface GlobalMultipliers {

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useWindowListener } from '@/composables/ui/useWindowListener';
-import PVTooltip from '@/components/common/PVTooltip.vue';
-import MoveTooltip from '@/components/battle/MoveTooltip.vue';
-import BattleMovesGrid from '@/components/battle/BattleMovesGrid.vue';
-import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
 
+import BattleMovesGrid from '@/components/battle/BattleMovesGrid.vue';
+import MoveTooltip from '@/components/battle/MoveTooltip.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
+import { useWindowListener } from '@/composables/ui/useWindowListener';
 import type { Move } from '@/types/pokemon/pokemon';
 
 interface MoveDetail extends Move {
@@ -32,14 +32,16 @@ const emit = defineEmits<{
 const MOBILE_VIEWPORT_MAX_WIDTH_PX = 600;
 
 const isSmallScreen = ref(
-  typeof window !== 'undefined' ? window.innerWidth <= MOBILE_VIEWPORT_MAX_WIDTH_PX : false
+  typeof globalThis.window !== 'undefined'
+    ? globalThis.innerWidth <= MOBILE_VIEWPORT_MAX_WIDTH_PX
+    : false
 );
-const handleResize = () => {
-  isSmallScreen.value = window.innerWidth <= MOBILE_VIEWPORT_MAX_WIDTH_PX;
+const handleResize = (): void => {
+  isSmallScreen.value = globalThis.innerWidth <= MOBILE_VIEWPORT_MAX_WIDTH_PX;
 };
 useWindowListener('resize', handleResize);
 
-function handleReorder(fromIndex: number, toIndex: number) {
+function handleReorder(fromIndex: number, toIndex: number): void {
   emit('reorder-moves', fromIndex, toIndex);
 }
 </script>

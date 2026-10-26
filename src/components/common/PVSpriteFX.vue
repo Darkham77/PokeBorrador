@@ -4,20 +4,22 @@ const DEFAULT_RADIUS_PX = 40;
 </script>
 
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
+import { gsap } from 'gsap';
 /**
  * PVSpriteFX.vue
  * Centralized orchestrator for visual effects on Pokémon sprites.
  * 1:1 MIGRATION - Modularized with identical logic.
  */
 import { computed, inject, type Ref, ref, watch, nextTick, onUnmounted, type PropType } from 'vue';
-import { useUIStore } from '@/stores/ui';
-import { useBattleStore } from '@/stores/battle/battle';
-import { gsap } from 'gsap';
-import PVStatusFX from './PVStatusFX.vue';
-import PVAuraFX from './PVAuraFX.vue';
+
 import { resolveEffectSettings } from '@/data/battle/fx-configs';
 import { Z_LAYERS } from '@/logic/constants/visuals';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useUIStore } from '@/stores/ui';
 
+import PVAuraFX from './PVAuraFX.vue';
+import PVStatusFX from './PVStatusFX.vue';
 import {
   applyVolatileFXTweens,
   applyStatusFXTweens,
@@ -161,7 +163,7 @@ const fieldEffects = computed(() => {
 
 const activeStatusEffects = computed(() => {
   if (!props.status || isSimplified.value || isAnimStateHidden.value) return [];
-  const map: Record<string, string> = {
+  const map: Record<DisplayText, string> = {
     // open-record: Status effect emoji map
     brn: '🔥',
     psn: '☠️',
@@ -176,7 +178,7 @@ const activeStatusEffects = computed(() => {
 const spriteLayerRef = ref<HTMLElement | null>(null);
 const activeTweens: gsap.core.Tween[] = [];
 
-const refreshPersistentFX = (retryCount = 0) => {
+const refreshPersistentFX = (retryCount = 0): void => {
   if (props.overlayOnly || !spriteLayerRef.value) return;
   const statusWrapper = spriteLayerRef.value.querySelector(
     '.pokemon-sprite-status-wrapper'
@@ -256,7 +258,7 @@ const allActiveFXDebug = computed(() => {
     const DEBUG_CENTER_OFFSET_PERCENT = 50;
     const DEFAULT_DEBUG_Y_RANGE_PERCENT: readonly [number, number] = [-10, 10] as const;
 
-    const style: Record<string, string> = {
+    const style: Record<DisplayText, string> = {
       // open-record: Dynamic debug overlay CSS styles
       position: 'absolute',
       border:

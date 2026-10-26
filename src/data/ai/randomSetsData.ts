@@ -6,6 +6,7 @@
  */
 
 import dbJson from './random-sets.json' with { type: 'json' };
+import type { DisplayText } from '@francogp/auditor';
 import type { ItemId } from '../inventory/items.ts';
 import type { PokemonSpeciesId } from '../pokemon/pokedex.ts';
 import type { AbilityId } from '../battle/abilities.ts';
@@ -15,7 +16,7 @@ export interface RandomSetItem {
   moves: PokemonMoveId[];
   ability: AbilityId;
   item?: ItemId;
-  role: string; // domain-ok: Open dynamic text or non-domain string payload
+  role: DisplayText;
 }
 
 export interface RandomSetEntry {

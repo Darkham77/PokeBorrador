@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { Move } from '@/types/pokemon/pokemon';
+
 import { ACCURACY_INFINITE_SENTINEL } from '@/logic/constants/gameplay';
-import BattleMoveStatItem from './BattleMoveStatItem.vue';
+import type { Move } from '@/types/pokemon/pokemon';
+
 import BattleMoveCategoryItem from './BattleMoveCategoryItem.vue';
+import BattleMoveStatItem from './BattleMoveStatItem.vue';
 
 interface Props {
   move: Move;

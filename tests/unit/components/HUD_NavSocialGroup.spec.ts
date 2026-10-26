@@ -1,11 +1,12 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import HUD_NavSocialGroup from '@/components/ui/navigation/HUD_NavSocialGroup.vue';
-import { useUIStore } from '@/stores/ui';
 import { useModalStore } from '@/stores/modals';
 import { useSocialStore } from '@/stores/social/social';
+import { useUIStore } from '@/stores/ui';
 
 describe('HUD_NavSocialGroup.vue', () => {
   let pinia: ReturnType<typeof createPinia>;

@@ -31,9 +31,9 @@ export interface ContinentProjectExportPayload {
 }
 
 export function loadProfileListFromStorage(): SavedProfileMeta[] {
-  if (typeof window === 'undefined' || !window.localStorage) return [];
+  if (typeof globalThis.window === 'undefined' || !globalThis.localStorage) return [];
   try {
-    const raw = window.localStorage.getItem(STORAGE_PROFILES_KEY);
+    const raw = globalThis.localStorage.getItem(STORAGE_PROFILES_KEY);
     return raw ? (JSON.parse(raw) as SavedProfileMeta[]) : [];
   } catch {
     // catch-ok: Fallback to empty array when storage is blocked or corrupted
@@ -42,9 +42,9 @@ export function loadProfileListFromStorage(): SavedProfileMeta[] {
 }
 
 export function saveProjectToStorage(payload: ContinentProjectExportPayload): SavedProfileMeta[] {
-  if (typeof window === 'undefined' || !window.localStorage) return [];
+  if (typeof globalThis.window === 'undefined' || !globalThis.localStorage) return [];
   try {
-    window.localStorage.setItem(STORAGE_PROJECT_PREFIX + payload.id, JSON.stringify(payload));
+    globalThis.localStorage.setItem(STORAGE_PROJECT_PREFIX + payload.id, JSON.stringify(payload));
     const meta: SavedProfileMeta = {
       id: payload.id,
       name: payload.name,
@@ -52,7 +52,7 @@ export function saveProjectToStorage(payload: ContinentProjectExportPayload): Sa
     };
     const currentList = loadProfileListFromStorage().filter((p) => p.id !== payload.id);
     currentList.unshift(meta);
-    window.localStorage.setItem(STORAGE_PROFILES_KEY, JSON.stringify(currentList));
+    globalThis.localStorage.setItem(STORAGE_PROFILES_KEY, JSON.stringify(currentList));
     return currentList;
   } catch (e) {
     console.error('[regionalPersistenceHelper] Error saving project:', e);
@@ -61,9 +61,9 @@ export function saveProjectToStorage(payload: ContinentProjectExportPayload): Sa
 }
 
 export function loadProjectFromStorage(id: string): ContinentProjectExportPayload | null {
-  if (typeof window === 'undefined' || !window.localStorage) return null;
+  if (typeof globalThis.window === 'undefined' || !globalThis.localStorage) return null;
   try {
-    const raw = window.localStorage.getItem(STORAGE_PROJECT_PREFIX + id);
+    const raw = globalThis.localStorage.getItem(STORAGE_PROJECT_PREFIX + id);
     return raw ? (JSON.parse(raw) as ContinentProjectExportPayload) : null;
   } catch {
     // catch-ok: Fallback to null when project data in storage is malformed

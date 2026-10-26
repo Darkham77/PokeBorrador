@@ -1,5 +1,5 @@
-import type { Pokemon } from '../../types/pokemon/pokemon.ts';
 import type { ShowdownPlayerRequest } from '../../types/battle/battle.ts';
+import type { Pokemon } from '../../types/pokemon/pokemon.ts';
 import { isMatchingUid } from './showdownUidMapper.ts';
 
 interface RequestPokemonWithUid {
@@ -14,7 +14,7 @@ export class ShowdownSlotResolver {
   /**
    * Finds a Pokémon in the reactive team by its Showdown list index (1-based).
    */
-  static getPokemonByShowdownSlot(
+  public static getPokemonByShowdownSlot(
     team: Pokemon[],
     request: ShowdownPlayerRequest | null | undefined,
     slotNum: number,
@@ -41,7 +41,7 @@ export class ShowdownSlotResolver {
   /**
    * Gets the Showdown slot (1-based index) for a Pokémon by its UID.
    */
-  static getShowdownSlotForUid(
+  public static getShowdownSlotForUid(
     request: ShowdownPlayerRequest | null | undefined,
     uid: string
   ): number {

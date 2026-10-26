@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useAuthStore } from '@/stores/auth';
 import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue';
 import { useGsapTransition } from '@/composables/ui/useGsapTransition';
+import { useAuthStore } from '@/stores/auth';
 
 interface Props {
   show?: boolean;
@@ -22,11 +22,11 @@ defineEmits<{
 const authStore = useAuthStore();
 const { beforeEnter, enter, leave } = useGsapTransition({ type: 'fade' });
 
-function handleReconnect() {
-  window.location.reload();
+function handleReconnect(): void {
+  globalThis.location.reload();
 }
 
-async function handleLogout() {
+async function handleLogout(): Promise<void> {
   await authStore.logout();
 }
 </script>

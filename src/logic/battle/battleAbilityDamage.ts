@@ -1,8 +1,12 @@
+import type { DisplayText } from '@francogp/auditor';
+
+import { isSandForceBoostedType } from '@/data/battle/abilities.ts';
 import {
   HELD_ITEM_TYPE_BOOST_MULTIPLIER,
   SAND_FORCE_MULTIPLIER,
   GUTS_STATUS_ATK_MULTIPLIER
 } from '@/logic/constants/gameplay.ts';
+
 import { getMechanicalWeather } from '../weather/weatherRegistry.ts';
 import {
   type PurePokemon,
@@ -22,7 +26,7 @@ const STANDARD_STAB = 1.5 as const;
 const ADAPTABILITY_STAB = 2.0 as const;
 
 // open-record: Pinch ability type boost dictionary
-const PINCH_ABILITY_TYPES: Readonly<Record<string, string>> = {
+const PINCH_ABILITY_TYPES: Readonly<Record<DisplayText, string>> = {
   blaze: 'fire',
   torrent: 'water',
   overgrow: 'grass',
@@ -30,7 +34,7 @@ const PINCH_ABILITY_TYPES: Readonly<Record<string, string>> = {
 };
 
 // open-record: Held item elemental type booster dictionary
-const HELD_ITEM_TYPE_BOOSTERS: Record<string, string> = {
+const HELD_ITEM_TYPE_BOOSTERS: Record<DisplayText, string> = {
   charcoal: 'fire',
   magnet: 'electric',
   mystic_water: 'water',
@@ -43,10 +47,6 @@ const HELD_ITEM_TYPE_BOOSTERS: Record<string, string> = {
 };
 
 export { getMoveCategory };
-
-function isSandForceType(type: string): boolean {
-  return type === 'ground' || type === 'rock' || type === 'steel';
-}
 
 function checkPinchAbilityBoost(
   ab: string | null | undefined,
@@ -63,7 +63,7 @@ function checkSandForceBoost(
   weather?: PureBattleWeather | null
 ): boolean {
   if (!weather || weather.turns === 0 || ab !== 'sandforce') return false;
-  return getMechanicalWeather(weather.type) === 'sandstorm' && isSandForceType(moveType);
+  return getMechanicalWeather(weather.type) === 'sandstorm' && isSandForceBoostedType(moveType);
 }
 
 export function getAbilityMultiplierPure(

@@ -151,11 +151,11 @@ async function handleFailedFlee(
     !ctx.activeBattle.value.over &&
     ctx.fsm.currentState.value === ctx.BATTLE_STATES.ACTIVE_BATTLE
   ) {
-    void ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.WAIT_INPUT);
+    await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.WAIT_INPUT);
   }
 }
 
-export async function executeFlee(ctx: BattleContext) {
+export async function executeFlee(ctx: BattleContext): Promise<void> {
   if (ctx.isProcessing.value) return;
 
   const active = ctx.activeBattle.value;

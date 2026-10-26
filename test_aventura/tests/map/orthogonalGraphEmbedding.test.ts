@@ -14,12 +14,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generatePokemonTopology } from '../../logic/map/pokemonGraphTopology.ts';
+
 import {
   embedPokemonTopology,
   validateEmbeddedGraphInvariants,
   computeBandGrid
 } from '../../logic/map/orthogonalGraphEmbedding.ts';
+import { generatePokemonTopology } from '../../logic/map/pokemonGraphTopology.ts';
 
 describe('Orthogonal Graph Embedding Engine (Phase 2)', () => {
   it('computes valid band grid dimensions for variable node counts', () => {

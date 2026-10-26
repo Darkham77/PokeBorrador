@@ -1,21 +1,22 @@
+import { createPinia, setActivePinia } from 'pinia';
 // @vitest-environment jsdom
 // jsdom-ok: Requires browser localStorage and navigator.storage for debug simulation
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
-import { createPinia, setActivePinia } from 'pinia';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import { findLatestPastEvent } from '@/logic/debug/rewardsDebugOccurrenceHelper';
 import {
   simulatePastEventAndMissionsReward,
   clearDebugSimulatedRewards
 } from '@/logic/debug/rewardsDebugSimulation';
+import type { Event as GameEvent } from '@/logic/events/eventEngine';
+import { isAwardClaimable } from '@/logic/events/eventValidators';
+import { useAuthStore } from '@/stores/auth';
 import { useEventStore } from '@/stores/events';
 import { useGameStore } from '@/stores/game';
-import { useAuthStore } from '@/stores/auth';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
 import { useGTSStore } from '@/stores/gts';
+import { useModalStore } from '@/stores/modals';
 import { usePvPStore } from '@/stores/pvp';
-import { isAwardClaimable } from '@/logic/events/eventValidators';
-import type { Event as GameEvent } from '@/logic/events/eventEngine';
+import { useUIStore } from '@/stores/ui';
 
 describe('rewardsDebugSimulation logic', () => {
   beforeEach(() => {
@@ -213,6 +214,9 @@ describe('rewardsDebugSimulation logic', () => {
     const eventStore = useEventStore();
     const gameStore = useGameStore();
     const uiStore = useUIStore();
+
+    gameStore.save = vi.fn().mockResolvedValue({ success: true } as any);
+    gameStore.fetchClaimQueue = vi.fn().mockResolvedValue(undefined);
 
     eventStore.pendingAwards = [
       {

@@ -1,27 +1,29 @@
 import assert from 'node:assert/strict';
-import { describe, it, expect } from 'vite-plus/test';
 import fs from 'node:fs';
 import path from 'node:path';
+
 import type { PokemonSet, Battle } from '@pkmn/sim';
 import { toID } from '@pkmn/sim';
+import { describe, it, expect } from 'vite-plus/test';
 
-import { patchShowdownSpreadModify } from '@/logic/battle/engine/showdownSpreadModifyHelper';
-import { createShowdownBattle } from '@/logic/battle/helpers/showdownBattleFactory';
-import { ACTIVE_SHOWDOWN_FORMAT } from '@/data/system/constants';
-import { BattleAgent } from '../../../scripts/e2e/fuzzer/core/fuzzer_agent.ts';
-import type { ChoiceRequest } from '@/logic/battle/helpers/requestHelper';
-import { ShowdownBattleRunner } from '@/logic/battle/helpers/showdownBattleRunner';
 import { requireItemId, getItemById } from '@/data/inventory/items';
-import { handleMiscEvents } from '@/logic/battle/showdownBridgeMisc';
-import type { SBCtx } from '@/logic/battle/showdownBridgeCtx';
-import { ShowdownBattleEngine } from '@/logic/battle/engine/showdownBattleEngine';
-import { ShowdownTeamMapper } from '@/logic/battle/helpers/showdownTeamMapper';
+import { ACTIVE_SHOWDOWN_FORMAT } from '@/data/system/constants';
 import {
   STATUS_EMOJI_MAP,
   STATUS_SHORT_LABEL_MAP,
   STATUS_NAME_MAP,
   STATUS_TOOLTIP_MAP
 } from '@/logic/battle/battleUiUtils';
+import { ShowdownBattleEngine } from '@/logic/battle/engine/showdownBattleEngine';
+import { patchShowdownSpreadModify } from '@/logic/battle/engine/showdownSpreadModifyHelper';
+import type { ChoiceRequest } from '@/logic/battle/helpers/requestHelper';
+import { createShowdownBattle } from '@/logic/battle/helpers/showdownBattleFactory';
+import { ShowdownBattleRunner } from '@/logic/battle/helpers/showdownBattleRunner';
+import { ShowdownTeamMapper } from '@/logic/battle/helpers/showdownTeamMapper';
+import type { SBCtx } from '@/logic/battle/showdownBridgeCtx';
+import { handleMiscEvents } from '@/logic/battle/showdownBridgeMisc';
+
+import { BattleAgent } from '../../../scripts/e2e/fuzzer/core/fuzzer_agent.ts';
 
 const CERTIFIED_SEED = [31, 32, 33, 34];
 const E2E_MODE = () => true;

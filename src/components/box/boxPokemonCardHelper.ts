@@ -1,6 +1,8 @@
+import type { DisplayText } from '@francogp/auditor';
+
+import { getPokemonTier } from '@/logic/pokemon/pokemonUtils';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { ComponentPillSize } from '@/types/system/game';
-import { getPokemonTier } from '@/logic/pokemon/pokemonUtils';
 
 const DEFAULT_MAX_HP = 100 as const;
 const MIN_RATIO = 0 as const;
@@ -20,13 +22,13 @@ export interface BoxCardClassOptions {
   pokemon?: Pokemon;
 }
 
-export function resolveBoxCardClasses(options: BoxCardClassOptions): Record<string, boolean> {
+export function resolveBoxCardClasses(options: BoxCardClassOptions): Record<DisplayText, boolean> {
   // open-record: CSS class boolean toggle map
   const p = options.pokemon;
   const isBusy = !!(p?.onMission || p?.onEvent || p?.inDaycare || p?.onDefense);
   const isFast = options.isFastActive ?? options.isPerformanceActive ?? false;
 
-  const classes: Record<string, boolean> = {
+  const classes: Record<DisplayText, boolean> = {
     // open-record: CSS class boolean toggle map
     'box-pokemon-card': true,
     selected: options.isSelected,

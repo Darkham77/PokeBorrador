@@ -6,16 +6,16 @@
  */
 
 import { DEFAULT_PLAYER_CLASS } from '@/data/player/playerClasses.ts';
-import { DEFAULT_TRAINER_LEVEL } from '@/types/system/game.ts';
+import type { DBRouter } from '@/logic/db/dbRouter.ts';
 import { logger } from '@/logic/utils/logger.ts';
 import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage.ts';
-import type { DBRouter } from '@/logic/db/dbRouter.ts';
 import type {
   PassiveBattleReport,
   PassiveBattleReportData,
   PassiveOpponentProfile,
   PassiveBattleResult
 } from '@/types/battle/pvp.ts';
+import { DEFAULT_TRAINER_LEVEL } from '@/types/system/game.ts';
 
 interface ProfileQueryRow {
   id: string;
@@ -48,7 +48,7 @@ function parseReportData(rawData: unknown): PassiveBattleReportData {
     }
   }
   if (typeof rawData === 'object' && rawData !== null) {
-    return rawData as PassiveBattleReportData;
+    return rawData;
   }
   return {};
 }

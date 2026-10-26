@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
+
 import { CATEGORY_LABELS } from '@/data/inventory/items';
 import type { BagMainTab } from '@/types/inventory/items';
 
@@ -52,7 +53,7 @@ const categories = computed(() => {
   return allCats;
 });
 
-const setCategory = (id: string) => {
+const setCategory = (id: string): void => {
   emit('update:activeCategory', id);
 };
 
@@ -60,7 +61,7 @@ const setCategory = (id: string) => {
 watch(
   () => categories.value,
   (newCats) => {
-    if (!newCats.find((c) => c.id === props.activeCategory)) {
+    if (!newCats.some((c) => c.id === props.activeCategory)) {
       emit('update:activeCategory', 'todos');
     }
   },

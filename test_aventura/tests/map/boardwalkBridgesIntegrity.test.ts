@@ -15,11 +15,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { resolvePathGrid } from '../../logic/map/pathAutotileEngine.ts';
+
+import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { resolvePathGrid } from '../../logic/map/pathAutotileEngine.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
-import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 
 describe('boardwalkBridgesIntegrity (Error 8)', () => {
   it('guarantees resolvePathGrid preserves bridgeGrid cells when pathGrid is false', () => {

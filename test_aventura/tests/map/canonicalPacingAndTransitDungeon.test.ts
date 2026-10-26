@@ -8,12 +8,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
-import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
-import { generateWildernessLayer } from '../../logic/map/wildernessVegetationEngine.ts';
-import { computeTransitableGrid } from '../../logic/map/transitableGridEngine.ts';
 import { generateProceduralPOICatalog } from '../../logic/map/regionalPoiCatalog.ts';
+import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
+import { computeTransitableGrid } from '../../logic/map/transitableGridEngine.ts';
+import { generateWildernessLayer } from '../../logic/map/wildernessVegetationEngine.ts';
 
 describe.skip('Canonical Level Design Adjustments', () => {
   it('enforces port consolidation: strictly <= 2 maritime docks/landmarks with zero parallel dock clustering', () => {

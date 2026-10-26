@@ -1,19 +1,7 @@
+import { gsap } from 'gsap';
 import { defineStore } from 'pinia';
 import { ref, reactive, watch, computed } from 'vue';
-import { gsap } from 'gsap';
 
-import { useAuthStore } from '@/stores/auth.ts';
-import { useGameStore } from '@/stores/game.ts';
-import { useUIStore } from '@/stores/ui.ts';
-import { useAudioStore } from '@/stores/audio.ts';
-import { useChatStore } from '@/stores/social/chat.ts';
-import { registerFriendIdsProvider } from '@/stores/social/chatPrivate.ts';
-import { useLeaderboardStore } from '@/stores/leaderboard.ts';
-import { usePlayerSearchStore } from '@/stores/player/playerSearch.ts';
-import { logger } from '@/logic/utils/logger';
-import { parseInstantSafe } from '@/logic/utils/timeUtils';
-import type { GameState } from '@/types/system/game';
-import type { ProfileRow } from '@/types/system/database';
 import {
   ONLINE_PRESENCE_WINDOW_MS,
   MAX_FRIEND_REQUESTS_PER_MINUTE,
@@ -21,6 +9,19 @@ import {
   ONLINE_PRESENCE_PING_INTERVAL_SEC
 } from '@/logic/constants/gameplay.ts';
 import { ONE_MINUTE_MS } from '@/logic/constants/items.ts';
+import { logger } from '@/logic/utils/logger';
+import { parseInstantSafe } from '@/logic/utils/timeUtils';
+import { useAudioStore } from '@/stores/audio.ts';
+import { useAuthStore } from '@/stores/auth.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useLeaderboardStore } from '@/stores/leaderboard.ts';
+import { usePlayerSearchStore } from '@/stores/player/playerSearch.ts';
+import { useChatStore } from '@/stores/social/chat.ts';
+import { registerFriendIdsProvider } from '@/stores/social/chatPrivate.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import type { ProfileRow } from '@/types/system/database';
+import type { GameState } from '@/types/system/game';
+
 import { parseFriendsList, parsePendingRequests } from './socialParser.ts';
 
 const SOCIAL_PROFILE_COLUMNS =
@@ -228,11 +229,11 @@ export const useSocialStore = defineStore('social', () => {
   async function searchPlayers(
     query: string,
     filters?: { playerClass?: string; faction?: string }
-  ) {
+  ): Promise<void> {
     await playerSearchStore.searchPlayers(query, filters);
   }
 
-  async function sendFriendRequest(targetId: string) {
+  async function sendFriendRequest(targetId: string): Promise<void> {
     if (!gameStore.db || !authStore.user) return;
 
     const now = Temporal.Now.instant().epochMilliseconds;
@@ -259,7 +260,7 @@ export const useSocialStore = defineStore('social', () => {
     } else {
       sentRequestTimestamps.value.push(now);
       uiStore.notify('Solicitud enviada correctamente', '👥');
-      void audioStore.play('sentMsg'); // Sonido al enviar solicitud
+      await audioStore.play('sentMsg'); // Sonido al enviar solicitud
       const res = searchResults.value.find((p: SearchResult) => p.id === targetId);
       if (res) {
         res.status = 'pending';
@@ -268,7 +269,7 @@ export const useSocialStore = defineStore('social', () => {
     }
   }
 
-  async function respondRequest(fId: string, status: string) {
+  async function respondRequest(fId: string, status: string): Promise<void> {
     if (!gameStore.db) return;
     const { error } = await gameStore.db.from('friendships').update({ status }).eq('id', fId);
     if (!error) {
@@ -277,7 +278,7 @@ export const useSocialStore = defineStore('social', () => {
     }
   }
 
-  async function removeFriend(targetId: string) {
+  async function removeFriend(targetId: string): Promise<void> {
     if (!authStore.user || !gameStore.db) return;
     const { error } = await gameStore.db
       .from('friendships')
@@ -294,7 +295,7 @@ export const useSocialStore = defineStore('social', () => {
     }
   }
 
-  async function refreshNotificationCount() {
+  async function refreshNotificationCount(): Promise<void> {
     if (!authStore.user) return;
 
     const db = gameStore.db;
@@ -341,7 +342,7 @@ export const useSocialStore = defineStore('social', () => {
    * Re-fetches the updated_at for all current friends and recalculates isOnline.
    * Lightweight — only queries game_saves for friend IDs already loaded.
    */
-  async function refreshFriendsPresence() {
+  async function refreshFriendsPresence(): Promise<void> {
     const db = gameStore.db;
     if (!db || friends.value.length === 0) return;
     try {
@@ -370,11 +371,11 @@ export const useSocialStore = defineStore('social', () => {
     }
   }
 
-  function startPresence() {
+  function startPresence(): void {
     if (presenceInterval) presenceInterval.kill();
     if (authStore.sessionMode === 'offline') return;
 
-    const ping = async () => {
+    const ping = async (): Promise<void> => {
       if (!authStore.user || !gameStore.db) return;
       await gameStore.db
         .from('profiles')
@@ -389,10 +390,12 @@ export const useSocialStore = defineStore('social', () => {
       presenceInterval = gsap.delayedCall(ONLINE_PRESENCE_PING_INTERVAL_SEC, ping);
     };
 
-    void ping();
+    ping().catch((err) => {
+      logger.warn('Social', `Presence ping error: ${(err as Error).message}`);
+    });
   }
 
-  function stopPresence() {
+  function stopPresence(): void {
     if (presenceInterval) presenceInterval.kill();
     presenceInterval = null;
   }
@@ -410,7 +413,7 @@ export const useSocialStore = defineStore('social', () => {
     }
   });
 
-  async function fetchLeaderboard(sortBy = 'elo_rating') {
+  async function fetchLeaderboard(sortBy = 'elo_rating'): Promise<void> {
     await leaderboardStore.fetchLeaderboard(sortBy);
   }
 

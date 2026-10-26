@@ -1,5 +1,7 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
+
 import {
   POSTGRES_URL,
   waitForPostgres,
@@ -27,7 +29,7 @@ describe('Postgres Test Container Lifecycle & Reuse', () => {
     assert.strictEqual(second.isReady, true, 'Re-invocation should return isReady: true');
     // Reusing avoids container tear-down and 83 SQL migrations (takes >30s); assert it reuses without recreation
     assert.ok(elapsedMs < 20000, `Expected reuse in <20000ms, took ${elapsedMs}ms`);
-  }, 120_000);
+  });
 
   it('verifies POSTGRES_URL matches standard test container configuration', () => {
     assert.ok(typeof POSTGRES_URL === 'string', 'POSTGRES_URL must be a string');

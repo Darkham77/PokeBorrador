@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
 import type { AuthUser } from '@/types/auth/auth';
 import type { GameState, NotificationItem, GenderId, GameStatKey } from '@/types/system/game';
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
 
 interface ProfileData {
   username: string;
@@ -39,11 +40,11 @@ export const useProfileStore = defineStore('profile', () => {
     gender: 'h'
   });
 
-  function updateProfile(data: Partial<ProfileData>) {
+  function updateProfile(data: Partial<ProfileData>): void {
     profileData.value = { ...profileData.value, ...data };
   }
 
-  function syncProfileFromAuth(user: AuthUser, state: GameState) {
+  function syncProfileFromAuth(user: AuthUser, state: GameState): void {
     if (!user) return;
 
     let lastSaveStr = 'Sin datos';
@@ -79,7 +80,7 @@ export const useProfileStore = defineStore('profile', () => {
       profileData.value.last_renamed_at;
 
     updateProfile({
-      username: state.trainer || (user.user_metadata?.username as string) || 'Entrenador',
+      username: state.trainer || user.user_metadata?.username || 'Entrenador',
       email: user.email || '—',
       isAdmin: user.user_metadata?.role === 'admin',
       level: state.trainerLevel || 1,

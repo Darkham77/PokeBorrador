@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import { formatCosmeticRequirement, type LockableCosmeticStyle } from './cosmeticsFilterHelper';
 
 const props = withDefaults(

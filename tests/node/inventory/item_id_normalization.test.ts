@@ -7,18 +7,20 @@
  * This test MUST FAIL before normalizing fuzzer_item_generator.ts and PASS after it.
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
-import {
-  generateItemBatches,
-  generateItemTestBatches,
-  ITEM_FUZZER_ACTIVE_HOLDER_COUNT
-} from '../../../scripts/e2e/fuzzer/generators/fuzzer_item_generator.ts';
+
+import { describe, it } from 'vite-plus/test';
+
 import {
   hasCertifiedItemProtocolEvidence,
   hasControlDivergedBeforeNextCertifiedDecision,
   isControlChoiceRejection
 } from '../../../scripts/e2e/fuzzer/core/fuzzer_engine.ts';
+import {
+  generateItemBatches,
+  generateItemTestBatches,
+  ITEM_FUZZER_ACTIVE_HOLDER_COUNT
+} from '../../../scripts/e2e/fuzzer/generators/fuzzer_item_generator.ts';
 import { getItemById, requireItemId, SHOP_ITEMS } from '../../../src/data/inventory/items.ts';
 
 describe('Fuzzer Item Generator — Strict Item ID Normalization', () => {

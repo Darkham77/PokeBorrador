@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, watch } from 'vue';
-import { useChatStore } from '@/stores/social/chat';
-import { useAuthStore } from '@/stores/auth';
-import { useUIStore } from '@/stores/ui';
-import BaseModal from '@/components/common/BaseModal.vue';
-import DirectChatMessageRow from './DirectChatMessageRow.vue';
 import { gsap } from 'gsap';
+import { ref, computed, onMounted, nextTick, watch } from 'vue';
+
+import BaseModal from '@/components/common/BaseModal.vue';
+import { useAuthStore } from '@/stores/auth';
+import { useChatStore } from '@/stores/social/chat';
+import { useUIStore } from '@/stores/ui';
+
+import DirectChatMessageRow from './DirectChatMessageRow.vue';
 
 interface Props {
   friendId: string;
@@ -23,13 +25,13 @@ const inputField = ref<HTMLInputElement | null>(null);
 
 const chat = computed(() => chatStore.privateChats[props.friendId]);
 
-function scrollToBottom() {
+function scrollToBottom(): void {
   if (messagesContainer.value) {
     messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
   }
 }
 
-async function handleSendMessage() {
+async function handleSendMessage(): Promise<void> {
   const text = newMessage.value.trim();
   if (!text) return;
 
@@ -38,11 +40,11 @@ async function handleSendMessage() {
   nextTick(scrollToBottom);
 }
 
-function closeChat() {
+function closeChat(): void {
   chatStore.closeChat(props.friendId);
 }
 
-function openTrainerProfile(userId?: string) {
+function openTrainerProfile(userId?: string): void {
   if (!userId) return;
   uiStore.open('TrainerProfile', { userId });
 }
@@ -80,7 +82,7 @@ watch(
 
 import { MESSAGE_ANIM_DURATION_SEC, MESSAGE_ANIM_OVERSHOOT } from '@/logic/constants/visuals';
 
-const onMessageEnter = (el: Element, done: () => void) => {
+const onMessageEnter = (el: Element, done: () => void): void => {
   gsap.fromTo(
     el,
     { scale: 0.9, opacity: 0 },

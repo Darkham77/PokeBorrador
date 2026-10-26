@@ -1,5 +1,5 @@
-import { toValue, type MaybeRefOrGetter } from 'vue';
 import gsap from 'gsap';
+import { toValue, type MaybeRefOrGetter } from 'vue';
 
 export type TransitionType =
   | 'fade'
@@ -24,12 +24,18 @@ const DEFAULT_TRANSITION_SCALE = 0.95 as const;
 const DEFAULT_ENTER_DURATION_SEC = 0.3 as const;
 const DEFAULT_LEAVE_DURATION_SEC = 0.25 as const;
 
+export interface UseGsapTransitionReturn {
+  readonly beforeEnter: (el: Element) => void;
+  readonly enter: (el: Element, done: () => void) => void;
+  readonly leave: (el: Element, done: () => void) => void;
+}
+
 /**
  * useGsapTransition
  * Returns a set of GSAP-powered Transition hooks for Vue's <Transition :css="false">.
  */
-export function useGsapTransition(options: GsapTransitionOptions = {}) {
-  const onBeforeEnter = (el: Element) => {
+export function useGsapTransition(options: GsapTransitionOptions = {}): UseGsapTransitionReturn {
+  const onBeforeEnter = (el: Element): void => {
     const type = toValue(options.type) || 'fade';
     const yOffset = toValue(options.yOffset) ?? DEFAULT_TRANSITION_OFFSET_PX;
     const xOffset = toValue(options.xOffset) ?? DEFAULT_TRANSITION_OFFSET_PX;
@@ -52,7 +58,7 @@ export function useGsapTransition(options: GsapTransitionOptions = {}) {
     gsap.set(el, fromVars);
   };
 
-  const onEnter = (el: Element, done: () => void) => {
+  const onEnter = (el: Element, done: () => void): void => {
     const duration = toValue(options.duration) ?? DEFAULT_ENTER_DURATION_SEC;
     const ease = toValue(options.easeEnter) ?? 'power2.out';
 
@@ -67,7 +73,7 @@ export function useGsapTransition(options: GsapTransitionOptions = {}) {
     });
   };
 
-  const onLeave = (el: Element, done: () => void) => {
+  const onLeave = (el: Element, done: () => void): void => {
     const type = toValue(options.type) || 'fade';
     const duration = toValue(options.duration) ?? DEFAULT_LEAVE_DURATION_SEC;
     const ease = toValue(options.easeLeave) ?? 'power2.in';

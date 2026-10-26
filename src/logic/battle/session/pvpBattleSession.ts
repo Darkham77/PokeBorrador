@@ -1,6 +1,7 @@
-import { BaseBattleSession } from './baseBattleSession.ts';
-import type { BattleContext } from '@/types/battle/battleContext';
 import type { BattleMode } from '@/types/battle/battleConfig';
+import type { BattleContext } from '@/types/battle/battleContext';
+
+import { BaseBattleSession } from './baseBattleSession.ts';
 
 export interface PvPSessionOptions {
   isHost: boolean;
@@ -12,14 +13,14 @@ export interface PvPSessionOptions {
 }
 
 export class PvPBattleSession extends BaseBattleSession {
-  readonly isHost: boolean;
-  readonly ranked: boolean;
-  readonly opponentId?: string;
-  readonly opponentName?: string;
-  readonly matchId?: string;
+  public readonly isHost: boolean;
+  public readonly ranked: boolean;
+  public readonly opponentId?: string;
+  public readonly opponentName?: string;
+  public readonly matchId?: string;
   private pendingGuestChoice: string | null = null;
 
-  constructor(mode: BattleMode, context: BattleContext, options: PvPSessionOptions) {
+  public constructor(mode: BattleMode, context: BattleContext, options: PvPSessionOptions) {
     super(mode, context, {
       showTurnTimer: true,
       allowBag: false,
@@ -34,11 +35,11 @@ export class PvPBattleSession extends BaseBattleSession {
     this.matchId = options.matchId;
   }
 
-  setOpponentChoice(choice: string): void {
+  public setOpponentChoice(choice: string): void {
     this.pendingGuestChoice = choice;
   }
 
-  async resolveOpponentChoice(_playerChoice: string): Promise<string> {
+  public override async resolveOpponentChoice(_playerChoice: string): Promise<string> {
     if (this.pendingGuestChoice) {
       const choice = this.pendingGuestChoice;
       this.pendingGuestChoice = null;
@@ -47,7 +48,7 @@ export class PvPBattleSession extends BaseBattleSession {
     return 'pass';
   }
 
-  async processRewards(_won: boolean): Promise<void> {
+  public async processRewards(_won: boolean): Promise<void> {
     // PvP rewards: ELO update handled via livePvP / pvpStore
   }
 }

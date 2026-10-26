@@ -5,16 +5,19 @@
  * Handles weekly recurring schedules, monthly triggers, and active time windows.
  */
 
-import { logger } from '@/logic/utils/logger.ts';
-import { getArgDateString, normalizeZonedDateTime } from '@/logic/utils/timeUtils.ts';
+import type { DisplayText } from '@francogp/auditor';
+
 import {
   MINUTES_PER_HOUR,
   HOURS_PER_DAY,
   MINUTES_PER_DAY,
   DAYS_PER_WEEK
 } from '@/logic/constants/gameplay.ts';
-import type { Event, EventConfig, WeeklyRotationEntry } from './eventEngine.ts';
+import { logger } from '@/logic/utils/logger.ts';
+import { getArgDateString, normalizeZonedDateTime } from '@/logic/utils/timeUtils.ts';
 import type { PokemonCompetitionTrophy } from '@/types/pokemon/pokemon.ts';
+
+import type { Event, EventConfig, WeeklyRotationEntry } from './eventEngine.ts';
 
 export { getArgDateString };
 
@@ -144,7 +147,7 @@ export function resolveWeeklyRotation(
       ? zdtOrSpecies
       : normalizeZonedDateTime();
   const week = getWeekOfMonth(zdt);
-  return (cfg.weeklyRotations[String(week)] as WeeklyRotationEntry | undefined) ?? null;
+  return cfg.weeklyRotations[String(week)] ?? null;
 }
 
 /**
@@ -153,7 +156,7 @@ export function resolveWeeklyRotation(
  */
 export function getEventDisplayName(
   event: Event,
-  zdtOrOccurrenceOrSpecies?: Temporal.ZonedDateTime | UpcomingEventOccurrence | string | null
+  zdtOrOccurrenceOrSpecies?: Temporal.ZonedDateTime | UpcomingEventOccurrence | DisplayText | null
 ): string {
   const cfg = safeParse(event.config) as EventConfig;
 
@@ -662,7 +665,7 @@ function formatStaticDateLabels(
   const shortDayEnd = DAY_NAMES_SHORT[jsDayEnd] ?? 'Día';
   const fullDayStart = DAY_NAMES_FULL[jsDayStart] ?? 'Día';
 
-  const formatTime = (timeZdt: Temporal.ZonedDateTime) =>
+  const formatTime = (timeZdt: Temporal.ZonedDateTime): string =>
     `${String(timeZdt.hour).padStart(2, '0')}:${String(timeZdt.minute).padStart(2, '0')}`;
 
   if (isSameDay) {

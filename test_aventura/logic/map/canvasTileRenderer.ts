@@ -14,18 +14,17 @@
  *   Layer 8: Strict North-to-South Y-Sorted Trees (Wilderness & Dungeon Forests)
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
-import type { POINode, SettlementBuilding } from '../../types/map/poiTypes.ts';
-import type { WildernessLayerResult } from './wildernessVegetationEngine.ts';
-import { renderBaseTerrainAndCliffs } from './canvasTerrainPathBlitter.ts';
-import { collectStandingDepthEntities } from './canvasDepthEntityCollector.ts';
-import type { ProgressionObstacle } from './progressionObstacleEngine.ts';
-import type { MicroVignette } from './microVignetteEngine.ts';
-import type { ResolvedRouteNetworkResult } from './routeNetworkEngine.ts';
-import type { LedgeRun } from './routeLedgeEngine.ts';
-
 import { CANVAS_RENDERER } from '../../config/canvasRendererConfig.ts';
 import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+import type { POINode, SettlementBuilding } from '../../types/map/poiTypes.ts';
+import { collectStandingDepthEntities } from './canvasDepthEntityCollector.ts';
+import { renderBaseTerrainAndCliffs } from './canvasTerrainPathBlitter.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
+import type { MicroVignette } from './microVignetteEngine.ts';
+import type { ProgressionObstacle } from './progressionObstacleEngine.ts';
+import type { LedgeRun } from './routeLedgeEngine.ts';
+import type { ResolvedRouteNetworkResult } from './routeNetworkEngine.ts';
+import type { WildernessLayerResult } from './wildernessVegetationEngine.ts';
 export { CANVAS_TILE_SIZE };
 import type { TileBlitInstruction } from '../../types/map/autotileStudioTypes.ts';
 

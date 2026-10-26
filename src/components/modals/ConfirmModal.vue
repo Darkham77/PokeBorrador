@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
 
 interface Props {
@@ -34,14 +35,14 @@ const emit = defineEmits<{
 
 const clicked = ref(false);
 
-const handleConfirm = () => {
+const handleConfirm = (): void => {
   if (clicked.value) return;
   clicked.value = true;
   emit('confirm');
   emit('close');
 };
 
-const handleCancel = () => {
+const handleCancel = (): void => {
   emit('cancel');
   emit('close');
 };

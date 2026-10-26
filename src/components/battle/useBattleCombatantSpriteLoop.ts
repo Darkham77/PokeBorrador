@@ -4,13 +4,14 @@
  * GSAP Timeline spritesheet animation loop for combatant sprites (idle + variation cycling).
  */
 
-import { ref, type Ref, onUnmounted } from 'vue';
 import { gsap } from 'gsap';
-import type { BattleCombatantProps } from '@/types/battle/battle';
+import { ref, type Ref, onUnmounted } from 'vue';
+
 import {
   POKEMON_SPRITE_IDLE_FPS,
   POKEMON_SPRITE_VARIATION_FPS
 } from '@/logic/constants/animations';
+import type { BattleCombatantProps, CombatantSpriteMode } from '@/types/battle/battle';
 
 export interface AnimatedSpriteFramesInfo {
   frames: number;
@@ -27,14 +28,23 @@ export interface UseBattleCombatantSpriteLoopParams {
   variationMeta: Ref<AnimatedSpriteFramesInfo | null>;
 }
 
-export function useBattleCombatantSpriteLoop(params: UseBattleCombatantSpriteLoopParams) {
+export interface UseBattleCombatantSpriteLoopReturn {
+  currentMode: Ref<CombatantSpriteMode>;
+  idleCyclesTarget: Ref<number>;
+  animTween: Ref<gsap.core.Timeline | null>;
+  animateSpritesheet: () => void;
+}
+
+export function useBattleCombatantSpriteLoop(
+  params: UseBattleCombatantSpriteLoopParams
+): UseBattleCombatantSpriteLoopReturn {
   const { props, spriteRef, isAnimated, frames, variationMeta } = params;
 
-  const currentMode = ref<'idle' | 'variation'>('idle');
+  const currentMode = ref<CombatantSpriteMode>('idle');
   const idleCyclesTarget = ref(Math.floor(Math.random() * IDLE_CYCLES_VARIANCE) + IDLE_CYCLES_MIN);
   const animTween = ref<gsap.core.Timeline | null>(null);
 
-  const animateSpritesheet = () => {
+  const animateSpritesheet = (): void => {
     if (animTween.value) {
       animTween.value.kill();
       animTween.value = null;
@@ -54,7 +64,7 @@ export function useBattleCombatantSpriteLoop(params: UseBattleCombatantSpriteLoo
       return;
     }
 
-    const playMode = () => {
+    const playMode = (): void => {
       // 1. Clean up previous timelines and stop all onComplete callbacks
       if (animTween.value) {
         animTween.value.kill();
@@ -62,7 +72,7 @@ export function useBattleCombatantSpriteLoop(params: UseBattleCombatantSpriteLoo
       }
       if (!props.pokemon) return;
 
-      const startTween = () => {
+      const startTween = (): void => {
         if (!spriteRef.value) return;
 
         const activeClass =

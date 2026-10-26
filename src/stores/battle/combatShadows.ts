@@ -5,8 +5,8 @@ const DEFAULT_COMBAT_SHADOW_ENTITY_SIZE_PX = 300;
 const DEFAULT_COMBAT_SHADOW_WIDTH_PCT = '70%';
 const DEFAULT_FEET_Y_FLOOR = 0.9 as const;
 const DEFAULT_FEET_X_CENTER = 0.5 as const;
-import { DEFAULT_SHADOW_SCALE } from '@/types/pokemon/spriteShadows';
 import { requireFeetPoints, type FeetPoints } from '@/data/pokemon/pokemonFeetDatabase';
+import { DEFAULT_SHADOW_SCALE } from '@/types/pokemon/spriteShadows';
 
 /**
  * Combat Shadow Store
@@ -89,7 +89,7 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
   const activeShadows = reactive(new Map<string, CombatShadow>());
   const isSolidShadows = ref(false);
 
-  function toggleSolidShadows() {
+  function toggleSolidShadows(): void {
     isSolidShadows.value = !isSolidShadows.value;
   }
 
@@ -117,21 +117,24 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
     return requireFeetPoints(key);
   }
 
-  async function requestShadow(id: string, options: Partial<CombatShadow> = {}) {
+  async function requestShadow(
+    id: string,
+    options: Partial<CombatShadow> = {}
+  ): Promise<CombatShadow> {
     const existing = activeShadows.get(id);
     const reused = tryReuseExistingShadow(existing, options);
     if (reused) {
-      return Promise.resolve(reused);
+      return reused;
     }
 
     const dbKey = getCleanDatabaseKey(options.spriteUrl || '');
     const cachedPoints = options.spriteUrl ? requireFeetPoints(dbKey) : null;
     const newShadow = createCombatShadow(id, options, existing, cachedPoints);
     activeShadows.set(id, newShadow);
-    return Promise.resolve(newShadow);
+    return newShadow;
   }
 
-  function hideShadow(id: string) {
+  function hideShadow(id: string): void {
     if (!id) return;
     const shadow = activeShadows.get(id);
     if (shadow) {
@@ -139,7 +142,7 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
     }
   }
 
-  function clearAll() {
+  function clearAll(): void {
     activeShadows.clear();
   }
 

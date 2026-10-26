@@ -5,6 +5,7 @@
  * and evolution eligibility checks.
  */
 
+import type { StatModifierDirection } from '@/types/battle/tooltip.ts';
 import {
   FRIENDSHIP_BOUNDS,
   FRIENDSHIP_SEAL_MAP,
@@ -12,7 +13,6 @@ import {
   type FriendshipSealMetadata,
   type FriendshipSealTier
 } from '@/types/pokemon/friendship.ts';
-import type { StatModifierDirection } from '@/types/battle/tooltip.ts';
 
 const SOOTHE_BELL_FRIENDSHIP_MULTIPLIER = 1.5 as const;
 

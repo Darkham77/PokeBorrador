@@ -377,8 +377,8 @@ In the active team modal (6-card grid), the Friendship Seal is anchored in the *
   - `radiant_prism` (💎): Executes a periodic subtle diagonal sheen highlight every 4 seconds.
   - `best_friends` (🎀): Emits faint golden micro-particles upon modal entry.
   - **Hover Event**: The pin scales up $1.15\times$ with an elastic bounce (`gsap.to(pin, { scale: 1.15, duration: 0.2, ease: "back.out(2)" })`) and spawns a retro tooltip:
-    > **🎀 Cinta de Mejores Amigos (255/255)**  
-    > _«¡No podría quererte más! Su profundo vínculo activa ventajas milagrosas en combate.»_
+    > **🎀 Best Friends Ribbon (255/255)**  
+    > _"It couldn't love you more! Its deep bond triggers miraculous battle advantages."_
 
 #### B. Storage Box Card Layout (`BoxPokemonCard.vue`)
 
@@ -400,8 +400,8 @@ In the compact storage box grid, the pin occupies the **top-left corner**, achie
 ```
 
 - **Box Quick-Filters**: The storage search bar header includes toggle pills to quickly filter and sort stored Pokémon:
-  - 💎 **«Listos para Evolucionar»**: Filters for `friendship >= 160`.
-  - 🎀 **«Vínculo Máximo»**: Filters for `friendship >= 220`.
+  - 💎 **"Ready to Evolve"**: Filters for `friendship >= 160`.
+  - 🎀 **"Max Bond"**: Filters for `friendship >= 220`.
 
 ---
 

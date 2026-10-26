@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vite-plus/test';
 import { Battle } from '@pkmn/sim';
+import { describe, it, expect } from 'vite-plus/test';
+
 import { executeBattleTurn } from '../../../src/logic/battle/helpers/showdownExecutor.ts';
 
 /**

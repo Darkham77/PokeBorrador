@@ -1,11 +1,10 @@
-import type { DebugSystem } from '@/types/system/debug.ts';
-
+import { BUFF_FIELDS, type BuffField } from '@/data/inventory/items';
+import { ONE_HOUR_MS, DURATION_24_HOURS_MS } from '@/logic/constants/items.ts';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
-import { ONE_HOUR_MS, DURATION_24_HOURS_MS } from '@/logic/constants/items.ts';
-import { BUFF_FIELDS, type BuffField } from '@/data/inventory/items';
+import type { DebugSystem } from '@/types/system/debug.ts';
 
-export function registerTimeTools(debug: DebugSystem) {
+export function registerTimeTools(debug: DebugSystem): void {
   const game = useGameStore();
   const ui = useUIStore();
 
@@ -36,8 +35,8 @@ export function registerTimeTools(debug: DebugSystem) {
       const current = game.db.getTimeOffset();
       game.db.setTimeOffset(current + h * ONE_HOUR_MS);
       ui.notify(`Debug: +${h} horas añadidas`, '⏩');
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('time-sync-update'));
+      if (typeof globalThis.window !== 'undefined') {
+        globalThis.dispatchEvent(new CustomEvent('time-sync-update'));
       }
     },
     description: 'Añade una cantidad de horas al offset de tiempo actual.'
@@ -53,8 +52,8 @@ export function registerTimeTools(debug: DebugSystem) {
       const ONE_WEEK_MS = 7 * DURATION_24_HOURS_MS;
       game.db.setTimeOffset(current + w * ONE_WEEK_MS);
       ui.notify(`Debug: +${w} semanas añadidas`, '⏩');
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('time-sync-update'));
+      if (typeof globalThis.window !== 'undefined') {
+        globalThis.dispatchEvent(new CustomEvent('time-sync-update'));
       }
     },
     description: 'Añade semanas completas para simular cambios de estación.'
@@ -80,10 +79,10 @@ export function registerTimeTools(debug: DebugSystem) {
           }
         }
       });
-      void game.saveGame(false);
+      game.scheduleSave();
       ui.notify(`Debug: -${secs}s en buffs activos`, '⏩');
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('time-sync-update'));
+      if (typeof globalThis.window !== 'undefined') {
+        globalThis.dispatchEvent(new CustomEvent('time-sync-update'));
       }
     },
     description: 'Adelanta una cantidad de segundos en todos los buffs temporales activos.'
@@ -105,10 +104,10 @@ export function registerTimeTools(debug: DebugSystem) {
           if (buffField === 'brushSecs') s.brushType = null;
           if (buffField === 'incenseSecs') s.incenseType = null;
         }
-        void game.saveGame(false);
+        game.scheduleSave();
         ui.notify(`Debug: ${buffField} fijado a ${seconds}s`, '⏱️');
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('time-sync-update'));
+        if (typeof globalThis.window !== 'undefined') {
+          globalThis.dispatchEvent(new CustomEvent('time-sync-update'));
         }
       }
     },

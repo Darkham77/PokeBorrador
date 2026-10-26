@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { gsap } from 'gsap';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 import type { PlayerClassDefinition } from '@/data/player/playerClasses';
 import type { GenderId } from '@/types/system/game';
@@ -21,7 +22,7 @@ const emit = defineEmits<{
 
 const GSAP_TRAINER_CARD_HOVER_SCALE_BOOST = 1.05;
 
-const onTrainerMouseEnter = (event: MouseEvent) => {
+const onTrainerMouseEnter = (event: MouseEvent): void => {
   const target = event.currentTarget as HTMLElement;
   gsap.to(target, {
     scale: GSAP_TRAINER_CARD_HOVER_SCALE_BOOST,
@@ -31,7 +32,7 @@ const onTrainerMouseEnter = (event: MouseEvent) => {
   });
 };
 
-const onTrainerMouseLeave = (event: MouseEvent) => {
+const onTrainerMouseLeave = (event: MouseEvent): void => {
   const target = event.currentTarget as HTMLElement;
   gsap.to(target, {
     scale: 1,
@@ -41,7 +42,7 @@ const onTrainerMouseLeave = (event: MouseEvent) => {
   });
 };
 
-const onRankCardMouseEnter = (event: MouseEvent) => {
+const onRankCardMouseEnter = (event: MouseEvent): void => {
   const target = event.currentTarget as HTMLElement;
   gsap.to(target, {
     backgroundColor: 'rgba(15, 23, 42, 0.6)',
@@ -52,7 +53,7 @@ const onRankCardMouseEnter = (event: MouseEvent) => {
   });
 };
 
-const onRankCardMouseLeave = (event: MouseEvent) => {
+const onRankCardMouseLeave = (event: MouseEvent): void => {
   const target = event.currentTarget as HTMLElement;
   gsap.to(target, {
     backgroundColor: 'rgba(15, 23, 42, 0.4)',
@@ -63,7 +64,7 @@ const onRankCardMouseLeave = (event: MouseEvent) => {
   });
 };
 
-const handleImageError = (e: Event) => {
+const handleImageError = (e: Event): void => {
   if (e.target) {
     (e.target as HTMLImageElement).style.display = 'none';
   }

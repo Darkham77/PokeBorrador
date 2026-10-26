@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { PastCompetitionWinner } from '@/types/system/stores';
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
-import { useUIStore } from '@/stores/ui';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { useAuthStore } from '@/stores/auth';
 import { useGameStore } from '@/stores/game';
 import { useModalStore } from '@/stores/modals';
 import { useChatCosmeticsStore } from '@/stores/social/chatCosmetics';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import PastEventPodiumBadge from './PastEventPodiumBadge.vue';
+import { useUIStore } from '@/stores/ui';
+import type { PastCompetitionWinner } from '@/types/system/stores';
+
 import {
   formatWinnerMetric,
   getWinnerSpeciesId,
@@ -19,6 +20,7 @@ import {
   resolveWinnerName,
   resolveWinnerNickStyle
 } from './pastEventMetricFormatter.ts';
+import PastEventPodiumBadge from './PastEventPodiumBadge.vue';
 
 interface Props {
   winner: PastCompetitionWinner;
@@ -34,7 +36,7 @@ const gameStore = useGameStore();
 const modalStore = useModalStore();
 const chatCosmetics = useChatCosmeticsStore();
 
-const openTrainerProfile = (userId?: string) => {
+const openTrainerProfile = (userId?: string): void => {
   if (userId) {
     uiStore.open('TrainerProfile', { userId });
   }
@@ -62,7 +64,7 @@ const winnerSpeciesId = computed<PokemonSpeciesId | null>(() => getWinnerSpecies
 const winnerSpeciesName = computed<string>(() => getWinnerSpeciesName(props.winner));
 const pokemonDisplayName = computed<string>(() => formatPokemonDisplayName(props.winner));
 
-const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
+const openSpeciesDetail = (speciesId: PokemonSpeciesId): void => {
   modalStore.open('PokedexDetail', {
     speciesId,
     context: 'pokedex'

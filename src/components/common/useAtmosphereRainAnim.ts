@@ -1,7 +1,8 @@
 import { gsap } from 'gsap';
 import type { Ref } from 'vue';
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
+
 import { TEXTURE_TILE_SIZE_BASE } from '@/logic/constants/visuals';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
 
 const RAIN_ATMOSPHERE_WEATHER_IDS_SET: ReadonlySet<WeatherId> = new Set<WeatherId>([
   'rain',
@@ -42,7 +43,25 @@ export function useAtmosphereRainAnim(
   lightningRef: Ref<HTMLElement | null>,
   flashRef: Ref<HTMLElement | null>,
   lightningPos: Ref<{ x1: number; x2: number }>
-) {
+): {
+  initRainAnim: (
+    w: WeatherId,
+    seed1: number,
+    seed2: number,
+    animSeed: number,
+    isLowPower: boolean,
+    speedVar: number,
+    weatherTimeline: gsap.core.Timeline | null,
+    atmosphereContext: gsap.Context | null,
+    props: {
+      isVisible: boolean;
+      isFastMode?: boolean;
+      isPerformanceMode?: boolean;
+      weather: WeatherId;
+    }
+  ) => void;
+  cleanUpLightning: () => void;
+} {
   let lightningTimer: gsap.core.Tween | null = null;
 
   const initRainAnim = (
@@ -60,7 +79,7 @@ export function useAtmosphereRainAnim(
       isPerformanceMode?: boolean;
       weather: WeatherId;
     }
-  ) => {
+  ): void => {
     if (!RAIN_ATMOSPHERE_WEATHER_IDS_SET.has(w) || !weatherTimeline) return;
 
     const isStorm = w === 'storm' || w === 'thunderstorm';
@@ -118,7 +137,7 @@ export function useAtmosphereRainAnim(
     }
 
     if (isStorm) {
-      const strike = () => {
+      const strike = (): void => {
         const isFast = props.isFastMode ?? props.isPerformanceMode ?? false;
         if (
           !props.isVisible ||
@@ -132,7 +151,7 @@ export function useAtmosphereRainAnim(
         const isFlipped = Math.random() > HALF_PROBABILITY_THRESHOLD;
         lightningPos.value = { x1, x2: x1 };
 
-        const runStrike = () => {
+        const runStrike = (): void => {
           if (!lightningRef.value) return;
           const tl = gsap.timeline();
           tl.to(lightningRef.value, {
@@ -175,7 +194,7 @@ export function useAtmosphereRainAnim(
     }
   };
 
-  const cleanUpLightning = () => {
+  const cleanUpLightning = (): void => {
     if (lightningTimer) {
       lightningTimer.kill();
       lightningTimer = null;

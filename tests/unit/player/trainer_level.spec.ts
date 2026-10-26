@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
+import { TRAINER_RANKS } from '@/data/player/trainer';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
-import { TRAINER_RANKS } from '@/data/player/trainer';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 vi.mock('@/logic/pokemon/pokemonFactory', () => ({

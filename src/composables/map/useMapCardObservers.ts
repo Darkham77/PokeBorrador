@@ -1,10 +1,14 @@
 import { ref, onMounted, onUnmounted, type Ref } from 'vue';
+
 import { MOBILE_SCREEN_BREAKPOINT_PX } from '@/logic/constants/gameplay';
 
 const WIDE_CARD_BREAKPOINT_PX = 350;
 const MEDIUM_CARD_BREAKPOINT_PX = 200;
 
-export function useMapCardObservers(cardRef: Ref<HTMLElement | null>, windowWidth: Ref<number>) {
+export function useMapCardObservers(
+  cardRef: Ref<HTMLElement | null>,
+  windowWidth: Ref<number>
+): { currentCols: Ref<number, number>; isVisible: Ref<boolean, boolean> } {
   const currentCols = ref(3);
   const isVisible = ref(false);
 

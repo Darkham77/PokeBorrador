@@ -1,4 +1,4 @@
-﻿/**
+/**
  * src/logic/map/biomeDistributionEngine.ts
  *
  * MATHEMATICAL BIOME DISTRIBUTION ENGINE (SSoT)

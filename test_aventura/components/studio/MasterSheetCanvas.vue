@@ -12,12 +12,14 @@
  *   5. Automated JSON generator for canonical_assets_manifest.json.
  */
 
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { gsap } from 'gsap';
-import { COPY_FEEDBACK_DELAY_SEC, CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+
 import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
-import type { CanonicalAssetEntry } from '../../logic/map/canonicalAssetsRegistry.ts';
+
 import type { SheetGridLayout, SelectionRect } from '../../composables/studio/useAssetAtlas.ts';
+import { COPY_FEEDBACK_DELAY_SEC, CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+import type { CanonicalAssetEntry } from '../../logic/map/canonicalAssetsRegistry.ts';
 
 const LABEL_TAG_HEIGHT = 14;
 const LABEL_MAX_WIDTH = 80;
@@ -231,8 +233,8 @@ function handlePointerDown(e: PointerEvent): void {
   if (e.button === 1 || e.altKey || (e.button === 0 && e.shiftKey)) {
     isPanning.value = true;
     panStart.value = { x: e.clientX - panX.value, y: e.clientY - panY.value };
-    window.addEventListener('pointermove', onPointerMovePan);
-    window.addEventListener('pointerup', stopPan);
+    globalThis.addEventListener('pointermove', onPointerMovePan);
+    globalThis.addEventListener('pointerup', stopPan);
     return;
   }
 
@@ -269,8 +271,8 @@ function handlePointerDown(e: PointerEvent): void {
       h: g.tileSize
     });
 
-    window.addEventListener('pointermove', onPointerMoveDrag);
-    window.addEventListener('pointerup', stopDrag);
+    globalThis.addEventListener('pointermove', onPointerMoveDrag);
+    globalThis.addEventListener('pointerup', stopDrag);
   }
 }
 
@@ -282,8 +284,8 @@ function onPointerMovePan(e: PointerEvent): void {
 
 function stopPan(): void {
   isPanning.value = false;
-  window.removeEventListener('pointermove', onPointerMovePan);
-  window.removeEventListener('pointerup', stopPan);
+  globalThis.removeEventListener('pointermove', onPointerMovePan);
+  globalThis.removeEventListener('pointerup', stopPan);
 }
 
 function onPointerMoveDrag(e: PointerEvent): void {
@@ -319,8 +321,8 @@ function onPointerMoveDrag(e: PointerEvent): void {
 
 function stopDrag(): void {
   isDraggingSelection.value = false;
-  window.removeEventListener('pointermove', onPointerMoveDrag);
-  window.removeEventListener('pointerup', stopDrag);
+  globalThis.removeEventListener('pointermove', onPointerMoveDrag);
+  globalThis.removeEventListener('pointerup', stopDrag);
 }
 
 function handleWheel(e: WheelEvent): void {
@@ -456,7 +458,7 @@ async function copySnippet(): Promise<void> {
     gsap.delayedCall(COPY_FEEDBACK_DELAY_SEC, () => {
       copyFeedback.value = null;
     });
-  } catch (_e) {
+  } catch {
     copyFeedback.value = '⚠️ No se pudo copiar automáticamente';
   }
 }

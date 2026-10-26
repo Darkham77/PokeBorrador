@@ -5,6 +5,15 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
+import type { MapNode } from '../../logic/adventure/mapData.ts';
+import {
+  inferCanonicalCityConfig,
+  generateLocalMapForNode,
+  SCALE_DIMENSIONS
+} from '../../logic/map/nodeLocalMapGenerator.ts';
+import { getBiomePalette, type MapCell } from '../../logic/map/proceduralMapGenerator.ts';
+import type { TileCollision } from '../../logic/map/tilesRegistry.ts';
 import {
   generateUrbanLayout,
   generateStreetNetwork,
@@ -13,14 +22,6 @@ import {
   findBestLotFor,
   type UrbanZoningOptions
 } from '../../logic/map/urbanZoningEngine.ts';
-import {
-  inferCanonicalCityConfig,
-  generateLocalMapForNode,
-  SCALE_DIMENSIONS
-} from '../../logic/map/nodeLocalMapGenerator.ts';
-import { getBiomePalette, type MapCell } from '../../logic/map/proceduralMapGenerator.ts';
-import type { TileCollision } from '../../logic/map/tilesRegistry.ts';
-import type { MapNode } from '../../logic/adventure/mapData.ts';
 
 describe('urbanZoningEngine', () => {
   function createTestMatrix<T>(w: number, h: number, fill: T): T[][] {

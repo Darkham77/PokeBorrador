@@ -5,16 +5,18 @@
  * Game Entities metadata (Warps & Spawns), and the connected Urban Flow network.
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import { describe, it, expect, beforeAll } from 'vitest';
+
+import { POKEMON_CENTER, POKEMART, KANTO_HOUSE_SMALL } from '../../config/mapStructures.ts';
+import { generateProceduralMap } from '../../logic/map/proceduralMapGenerator.ts';
 import {
   TilesRegistryService,
   loadTilesRegistry,
   type TilesRegistryJson
 } from '../../logic/map/tilesRegistry.ts';
-import { generateProceduralMap } from '../../logic/map/proceduralMapGenerator.ts';
-import { POKEMON_CENTER, POKEMART, KANTO_HOUSE_SMALL } from '../../config/mapStructures.ts';
 
 describe('Procedural Route, Ledges & Game Entities (v2.5)', () => {
   let registryService: TilesRegistryService;

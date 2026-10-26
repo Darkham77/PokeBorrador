@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+
+import type { MarketListingType } from '@/logic/economy/market';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { useGameStore } from '@/stores/game';
 import { useGTSStore } from '@/stores/gts';
 import { useUIStore } from '@/stores/ui';
-import MarketPublishSelector from './MarketPublishSelector.vue';
-import MarketPublishForm from './MarketPublishForm.vue';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { MarketListingType } from '@/logic/economy/market';
+
+import MarketPublishForm from './MarketPublishForm.vue';
+import MarketPublishSelector from './MarketPublishSelector.vue';
 import { useMarketPublishActions } from './useMarketPublishActions.ts';
 
 const game = useGameStore();
@@ -47,7 +49,7 @@ const selectedItemUid = computed(() => {
   return null;
 });
 
-function handleOpenDetail() {
+function handleOpenDetail(): void {
   if (!selectedPokemon.value) return;
   const teamIdx = (game.state.team || []).findIndex((p) => p?.uid === selectedPokemon.value?.uid);
   if (teamIdx !== -1) {

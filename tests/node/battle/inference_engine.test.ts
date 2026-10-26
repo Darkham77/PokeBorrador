@@ -1,5 +1,7 @@
-import { describe, it, vi, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it, vi, beforeEach } from 'vite-plus/test';
+
 import { InferenceEngine } from '../../../src/logic/battle/ai/heuristic/inferenceEngine.ts';
 import type { HeuristicBattleSnapshot } from '../../../src/logic/battle/ai/heuristic/types.ts';
 

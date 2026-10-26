@@ -7,33 +7,28 @@
  * data sources (Team, PC, Encounters) without creating intermediate arrays.
  */
 
-import type { Pokemon } from '@/types/pokemon/pokemon';
-
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export class PokedexAggregator {
   /**
    * Returns an iterator that yields all unique Pokémon IDs seen across different pools.
    * Demonstrates Iterator.concat() to avoid merging massive arrays in memory.
    */
-  static getAllKnownSpecies(
+  public static *getAllKnownSpecies(
     team: Pokemon[],
     pc: Pokemon[],
     seenInWild: PokemonSpeciesId[]
   ): IterableIterator<PokemonSpeciesId> {
-    const teamIds = team.map((p) => p.id).values();
-    const pcIds = pc.map((p) => p.id).values();
-    const wildIds = seenInWild.values();
-
-    // Iterator sequencing (V8 14.6 / Node 26)
-    // This creates a single lazy iterator instead of [...team, ...pc, ...wild]
-    return Iterator.concat(teamIds, pcIds, wildIds);
+    for (const p of team) yield p.id;
+    for (const p of pc) yield p.id;
+    for (const id of seenInWild) yield id;
   }
 
   /**
    * Filters the aggregated iterator.
    */
-  static getFilteredSpecies(
+  public static getFilteredSpecies(
     team: Pokemon[],
     pc: Pokemon[],
     seenInWild: PokemonSpeciesId[]

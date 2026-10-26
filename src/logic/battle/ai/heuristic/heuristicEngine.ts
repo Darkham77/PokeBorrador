@@ -4,16 +4,7 @@
 // BattleState dependency removed — uses snapshot + isTrapped flag
 // ============================================================
 
-import type {
-  HeuristicBattleSnapshot,
-  HeuristicPokemonState,
-  HeuristicMoveInfo,
-  HeuristicDecision,
-  DamageMatchup,
-  StrategicState
-} from './types.ts';
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
-import type { InferenceEngine } from './inferenceEngine.ts';
 import {
   evaluatePriorityKOLayer,
   evaluateGuaranteedKOLayer,
@@ -22,6 +13,15 @@ import {
   evaluateSetupAndPivotLayers,
   evaluateAttackAndSwitchLayers
 } from './heuristicLayerEvaluators.ts';
+import type { InferenceEngine } from './inferenceEngine.ts';
+import type {
+  HeuristicBattleSnapshot,
+  HeuristicPokemonState,
+  HeuristicMoveInfo,
+  HeuristicDecision,
+  DamageMatchup,
+  StrategicState
+} from './types.ts';
 
 export {
   SHOWDOWN_CHOICE_INDEX_OFFSET,

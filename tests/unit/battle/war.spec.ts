@@ -1,18 +1,19 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useWarStore } from '@/stores/war';
-import { useGameStore } from '@/stores/game';
-import { useAuthStore } from '@/stores/auth';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
+import type { MapRouteId } from '@/data/world/map-assets';
+import type { DBRouter } from '@/logic/db/dbRouter';
+import { getConflictZones, getGuardianData } from '@/logic/war/guardianEngine';
 import {
   getWeekId,
   getPreviousWeekId,
   isDisputePhase,
   getPointReward
 } from '@/logic/war/warEngine';
-import { getConflictZones, getGuardianData } from '@/logic/war/guardianEngine';
+import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { useWarStore } from '@/stores/war';
 import type { GameState } from '@/types/system/game';
-import type { DBRouter } from '@/logic/db/dbRouter';
-import type { MapRouteId } from '@/data/world/map-assets';
 
 const TEST_CONFLICT_MAPS: MapRouteId[] = [
   'route1',

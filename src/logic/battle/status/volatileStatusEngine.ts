@@ -1,6 +1,6 @@
-import { requireVolatileStatusKey, type Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleContext } from '@/types/battle/battleContext';
 import type { BattleSide } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
+import { requireVolatileStatusKey, type Pokemon } from '@/types/pokemon/pokemon';
 
 const BOUND_DAMAGE_DIVISOR = 16 as const;
 const TRAPPED_DAMAGE_DIVISOR = 16 as const;
@@ -100,7 +100,7 @@ export async function processVolatileCounters(
   pokemon: Pokemon,
   ctx: BattleContext,
   role: BattleSide | 'info' = 'info'
-) {
+): Promise<void> {
   if (!pokemon.volatileCounters) return;
 
   const side = role === 'player' ? 'player' : 'enemy';

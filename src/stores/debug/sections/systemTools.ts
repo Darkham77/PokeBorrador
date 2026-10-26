@@ -1,18 +1,17 @@
-import type { DebugSystem } from '@/types/system/debug.ts';
-import type { PokemonStorageLocation } from '@/types/pokemon/pokemon';
-
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
-import { useErrorStore } from '@/stores/errorStore';
-import { useEventStore } from '@/stores/events';
+import { gsap } from 'gsap';
 
 import { logger } from '@/logic/utils/logger';
-import { gsap } from 'gsap';
+import { useErrorStore } from '@/stores/errorStore';
+import { useEventStore } from '@/stores/events';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import type { PokemonStorageLocation } from '@/types/pokemon/pokemon';
+import type { DebugSystem } from '@/types/system/debug.ts';
 
 const DEBUG_MODAL_STACK_DELAY_SEC = 0.5;
 
-export function registerSystemTools(debug: DebugSystem) {
+export function registerSystemTools(debug: DebugSystem): void {
   const game = useGameStore();
   const ui = useUIStore();
   const modalStore = useModalStore();
@@ -156,7 +155,7 @@ export function registerSystemTools(debug: DebugSystem) {
     action: () => {
       localStorage.clear();
       sessionStorage.clear();
-      window.location.reload();
+      globalThis.location.reload();
     },
     description: 'Limpia todo el estado local (localStorage/sessionStorage) y reinicia la página.'
   });

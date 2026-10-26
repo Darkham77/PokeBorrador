@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
 import { gsap } from 'gsap';
+import { ref, onMounted, onUnmounted } from 'vue';
+
+import type { FeetPoints } from '@/data/pokemon/pokemonFeetDatabase';
+
 import CombatShadow from './CombatShadow.vue';
 import { getTrainerIdleConfig } from './helpers/trainerIdleAnims.ts';
-import type { FeetPoints } from '@/data/pokemon/pokemonFeetDatabase';
 
 const props = withDefaults(
   defineProps<{

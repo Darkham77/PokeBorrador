@@ -53,7 +53,7 @@ All assets are available in both uncompressed **PNG** and lossless **WebP** form
 - **Problem**: `vilevial` currently reuses `crafting/tier3/leftovers.webp`.
 - **Domain Context**: Vile Vial (Frasco Vil) is the signature held item for the Smogon CAP 30 Pokémon **Venomicon**, boosting Poison and Flying moves (+20%).
 - **Files Provided**:
-  - `vilevial.png` / `.webp`: The exact 30x30 official item icon from the Smogon/Showdown sprites repository (`src/minisprites/items/ivile_vial.png`).
+  - `vilevial.png` / `.webp`: The exact 30x30 official item icon from the Smogon/Showdown sprites repository (`public/assets/sprites/crafting/tier3/vilevial.webp`).
 
 ### Group 4: `rarecandy` vs `vigorcandy` & `vigorrestorer`
 

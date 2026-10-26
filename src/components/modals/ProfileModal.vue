@@ -1,33 +1,34 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { gsap } from 'gsap';
-import { useUIStore } from '@/stores/ui';
-import { useGameStore } from '@/stores/game';
-import { useAuthStore } from '@/stores/auth';
-import { useProfileStore } from '@/stores/player/profile';
-import { usePlayerClassStore } from '@/stores/player/playerClass';
-import { useModalStore } from '@/stores/modals';
-import { useLivePvPStore } from '@/stores/livePvP';
-import { useTrainerProfile } from '@/components/modals/useTrainerProfile';
-import { useStatHover } from '@/composables/ui/useStatHover';
+import { computed } from 'vue';
 
 // Components
 import BaseModal from '@/components/common/BaseModal.vue';
-import ProfileStatsGrid from '@/components/profile/ProfileStatsGrid.vue';
-import ProfileNotifications from '@/components/profile/ProfileNotifications.vue';
-import ProfileTradeNotifs from '@/components/profile/ProfileTradeNotifs.vue';
-import ProfileXpCard from '@/components/profile/ProfileXpCard.vue';
+import { useTrainerProfile } from '@/components/modals/useTrainerProfile';
 import ProfileAchievementsGrid from '@/components/profile/ProfileAchievementsGrid.vue';
 import ProfileEventStatsCard from '@/components/profile/ProfileEventStatsCard.vue';
-import ProfileRankedMedalsCard from '@/components/profile/ProfileRankedMedalsCard.vue';
+import ProfileNotifications from '@/components/profile/ProfileNotifications.vue';
 import ProfilePinnedReplaysCard from '@/components/profile/ProfilePinnedReplaysCard.vue';
-import ProfileFactionWarCard from './ProfileFactionWarCard.vue';
 import ProfilePokedexCard from '@/components/profile/ProfilePokedexCard.vue';
-import ProfileStatsSection from './ProfileStatsSection.vue';
-import ProfileIdentityCard from './ProfileIdentityCard.vue';
+import ProfileRankedMedalsCard from '@/components/profile/ProfileRankedMedalsCard.vue';
+import ProfileStatsGrid from '@/components/profile/ProfileStatsGrid.vue';
+import ProfileTradeNotifs from '@/components/profile/ProfileTradeNotifs.vue';
+import ProfileXpCard from '@/components/profile/ProfileXpCard.vue';
+import { useStatHover } from '@/composables/ui/useStatHover';
 import { formatCurrency } from '@/logic/utils/formatters';
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
+import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { useLivePvPStore } from '@/stores/livePvP';
+import { useModalStore } from '@/stores/modals';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { useProfileStore } from '@/stores/player/profile';
+import { useUIStore } from '@/stores/ui';
 import type { BattleReplayRecord } from '@/types/battle/pvp';
+
+import ProfileFactionWarCard from './ProfileFactionWarCard.vue';
+import ProfileIdentityCard from './ProfileIdentityCard.vue';
+import ProfileStatsSection from './ProfileStatsSection.vue';
 
 interface Props {
   show?: boolean;
@@ -80,9 +81,9 @@ const {
   pinnedReplays
 } = useTrainerProfile(() => authStore.user?.id);
 
-const formatNum = (num: unknown) => formatCurrency(Number(num || 0));
+const formatNum = (num: unknown): string => formatCurrency(Number(num || 0));
 
-const formatDate = (isoStr: string | null | undefined) => {
+const formatDate = (isoStr: string | null | undefined): string => {
   if (!isoStr) return '---';
   try {
     const inst = Temporal.Instant.from(isoStr);
@@ -91,7 +92,7 @@ const formatDate = (isoStr: string | null | undefined) => {
     const month = String(zdt.month).padStart(2, '0');
     const year = zdt.year;
     return `${day}/${month}/${year}`;
-  } catch (_) {
+  } catch {
     return '---';
   }
 };
@@ -142,30 +143,30 @@ const normalizedStats = computed(() => {
 const modalStore = useModalStore();
 const livePvPStore = useLivePvPStore();
 
-const handleWatchReplay = (replay: BattleReplayRecord) => {
+const handleWatchReplay = (replay: BattleReplayRecord): void => {
   livePvPStore.watchReplay(replay);
   close();
 };
 
-const openRename = () => {
+const openRename = (): void => {
   modalStore.open('Rename');
 };
 
-const close = () => {
+const close = (): void => {
   emit('close');
 };
 
-const handleLogout = () => {
+const handleLogout = (): void => {
   authStore.logout();
 };
 
-const handleEditProfile = () => {
+const handleEditProfile = (): void => {
   uiStore.open('Cosmetics');
 };
 
 const GSAP_AVATAR_HOVER_SCALE_BOOST = 1.05;
 
-const handleAvatarEnter = (e: MouseEvent) => {
+const handleAvatarEnter = (e: MouseEvent): void => {
   gsap.to(e.currentTarget, {
     scale: GSAP_AVATAR_HOVER_SCALE_BOOST,
     duration: 0.2,
@@ -173,7 +174,7 @@ const handleAvatarEnter = (e: MouseEvent) => {
   });
 };
 
-const handleAvatarLeave = (e: MouseEvent) => {
+const handleAvatarLeave = (e: MouseEvent): void => {
   gsap.to(e.currentTarget, {
     scale: 1,
     duration: 0.2,
@@ -181,7 +182,7 @@ const handleAvatarLeave = (e: MouseEvent) => {
   });
 };
 
-const handleFactionChoice = () => {
+const handleFactionChoice = (): void => {
   uiStore.open('FactionChoice');
 };
 </script>

@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useTradeStore } from '@/stores/trade';
-import { useSocialStore } from '@/stores/social/social';
+
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import { useAuthStore } from '@/stores/auth';
 import { useGameStore } from '@/stores/game';
+import { useSocialStore } from '@/stores/social/social';
+import { useTradeStore } from '@/stores/trade';
 import { useUIStore } from '@/stores/ui';
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
-import TradeAssetsGrid from './TradeAssetsGrid.vue';
 import type { TradeOffer, TradeCardMode } from '@/types/system/stores';
+
+import TradeAssetsGrid from './TradeAssetsGrid.vue';
 
 const props = defineProps<{
   trade: TradeOffer;
@@ -26,7 +28,16 @@ const authStore = useAuthStore();
 const gameStore = useGameStore();
 const uiStore = useUIStore();
 
-const getCosmetics = (userId: string) => {
+interface TrainerTradeCosmetics {
+  readonly username: string;
+  readonly playerClass: string;
+  readonly level: number;
+  readonly avatar_style: string;
+  readonly nick_style: string;
+  readonly gender: string;
+}
+
+const getCosmetics = (userId: string): TrainerTradeCosmetics => {
   if (userId === authStore.user?.id) {
     return {
       username: gameStore.state.trainer || 'Tú',
@@ -63,24 +74,24 @@ const participantId = computed(() =>
 );
 const cosmetics = computed(() => getCosmetics(participantId.value));
 
-function openProfile() {
+function openProfile(): void {
   uiStore.open('TrainerProfile', { userId: participantId.value });
 }
 
-async function onAccept() {
+async function onAccept(): Promise<void> {
   const ok = await tradeStore.acceptTrade(props.trade.id);
   if (ok) emit('accepted');
 }
 
-function onReject() {
+function onReject(): void {
   tradeStore.rejectTrade(props.trade.id);
 }
 
-function onCancel() {
+function onCancel(): void {
   tradeStore.rejectTrade(props.trade.id);
 }
 
-async function onClaim() {
+async function onClaim(): Promise<void> {
   await tradeStore.claimTrade(props.trade.id);
   emit('claimed');
 }

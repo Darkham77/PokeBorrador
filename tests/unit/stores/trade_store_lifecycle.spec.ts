@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useTradeStore } from '@/stores/trade';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import { useGameStore } from '@/stores/game';
+import { useTradeStore } from '@/stores/trade';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Trade Store Lifecycle & Validation Suite (Tier 1)', () => {

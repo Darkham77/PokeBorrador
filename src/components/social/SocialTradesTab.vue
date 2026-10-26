@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue';
-import { useTradeStore } from '@/stores/trade';
-import { useGameStore } from '@/stores/game';
+import type { DisplayText } from '@francogp/auditor';
 import { gsap } from 'gsap';
-import TradeCard from '@/components/social/TradeCard.vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
+
 import ClaimCard from '@/components/social/ClaimCard.vue';
 import SocialTradesSubNav from '@/components/social/SocialTradesSubNav.vue';
-import type { TradeOffer } from '@/types/system/stores';
+import TradeCard from '@/components/social/TradeCard.vue';
+import { useGameStore } from '@/stores/game';
+import { useTradeStore } from '@/stores/trade';
 import type { ClaimItem } from '@/types/system/game';
+import type { TradeOffer } from '@/types/system/stores';
+
 import {
   type TradeSubTab,
   canFulfillTradeOffer,
@@ -29,7 +32,7 @@ const listRef = ref<HTMLElement | null>(null);
 /* ── Validation map for incoming offers ── */
 const validationMap = computed(() => {
   // open-record: Trade offer validation result indexed by offer id string
-  const result: Record<string, { can: boolean; reason?: string }> = {};
+  const result: Record<DisplayText, { can: boolean; reason?: string }> = {};
   const context = {
     team: gameStore.state.team,
     box: gameStore.state.box,
@@ -43,7 +46,7 @@ const validationMap = computed(() => {
 });
 
 /* ── Animation ── */
-function animateCards() {
+function animateCards(): void {
   nextTick(() => {
     if (!listRef.value) return;
     const cards = listRef.value.querySelectorAll('.trade-card, .claim-card');
@@ -63,13 +66,13 @@ function animateCards() {
   });
 }
 
-function switchSubTab(target: TradeSubTab) {
+function switchSubTab(target: TradeSubTab): void {
   subTab.value = target;
   animateCards();
 }
 
 /* ── Auto-switch to claims when an incoming trade is accepted ── */
-function onTradeAccepted() {
+function onTradeAccepted(): void {
   subTab.value = 'claims';
   animateCards();
 }

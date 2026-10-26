@@ -10,8 +10,8 @@
  *   - Places flanking rock obstacles on open-water Surf routes.
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
 import type { RouteWaypoint } from '../../types/map/poiTypes.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
 import type { MaritimeRockObstacle } from './routeNetworkEngine.ts';
 import type { WaterTerrainKind } from './waterAutotileEngine.ts';
 
@@ -128,8 +128,8 @@ function traceHorizontalBridgeSegment(
       cFixed && cFixed !== 'water' ? cFixed : cComp && cComp !== 'water' ? cComp : 'sand';
     for (const cy of [fixedY, compY]) {
       if (continentMap.cells[cy]?.[landX]?.terrain === 'water') {
-        (continentMap.cells[cy]![landX]! as { terrain: string }).terrain = shoreTerr;
-        (continentMap.cells[cy]![landX]! as { isWalkable: boolean }).isWalkable = true;
+        (continentMap.cells[cy][landX] as { terrain: string }).terrain = shoreTerr;
+        (continentMap.cells[cy][landX] as { isWalkable: boolean }).isWalkable = true;
         mutableTerrainMatrix[cy]![landX] = shoreTerr;
       }
     }
@@ -225,8 +225,8 @@ function traceVerticalBridgeSegment(
       cFixed && cFixed !== 'water' ? cFixed : cComp && cComp !== 'water' ? cComp : 'sand';
     for (const cx of [fixedX, compX]) {
       if (continentMap.cells[landY]?.[cx]?.terrain === 'water') {
-        (continentMap.cells[landY]![cx]! as { terrain: string }).terrain = shoreTerr;
-        (continentMap.cells[landY]![cx]! as { isWalkable: boolean }).isWalkable = true;
+        (continentMap.cells[landY][cx] as { terrain: string }).terrain = shoreTerr;
+        (continentMap.cells[landY][cx] as { isWalkable: boolean }).isWalkable = true;
         mutableTerrainMatrix[landY]![cx] = shoreTerr;
       }
     }

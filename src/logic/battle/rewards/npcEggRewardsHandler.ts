@@ -1,8 +1,5 @@
-import type { BattleContext } from '@/types/battle/battleContext';
-import type { BattleState } from '@/types/battle/battle';
-import { eggFactory } from '@/logic/breeding/eggFactory';
-import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils';
 import { NATURES } from '@/data/battle/natures';
+import { eggFactory } from '@/logic/breeding/eggFactory';
 import {
   BASE_SHINY_DENOMINATOR,
   NPC_NORMAL_BABY_EGG_DROP_CHANCE,
@@ -12,6 +9,9 @@ import {
   MAX_TOTAL_CARRIED_EGGS,
   NPC_EGG_TINT
 } from '@/logic/constants/gameplay';
+import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils';
+import type { BattleState } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
 
 /**
  * Handles the chance for NPC trainers (2%) or Rivals (5%) to reward a mysterious baby Pokémon egg upon defeat.

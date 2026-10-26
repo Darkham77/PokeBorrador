@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * scripts/assets/helpers/catalogGenerators.ts
  *
@@ -10,7 +11,6 @@ import fsSync from 'node:fs';
 import path from 'node:path';
 import { styleText } from 'node:util';
 import { Dex, toID } from '@pkmn/sim';
-import { safeResolve, safeJoin, safeWriteFile, safeReadFile } from '@francogp/auditor';
 import type {
   SpriteShadowOverride,
   SpriteShadowOverridesMap,
@@ -55,7 +55,7 @@ export async function generateBushCatalog(environmentFiles: string[]): Promise<v
     }
   }
 
-  const dynamicCatalog: Record<string, string[]> = {};
+  const dynamicCatalog: Record<DisplayText, string[]> = {};
 
   for (const prefix of repeatedPrefixes) {
     dynamicCatalog[prefix] = [];
@@ -78,9 +78,9 @@ export async function generateBushCatalog(environmentFiles: string[]): Promise<v
     }
   }
 
-  const catalogDir = safeResolve(process.cwd(), 'src/logic/environment');
+  const catalogDir = path.resolve(process.cwd(), 'src/logic/environment');
   await fs.mkdir(catalogDir, { recursive: true });
-  const catalogPath = safeJoin(catalogDir, 'bushCatalog.ts');
+  const catalogPath = path.join(catalogDir, 'bushCatalog.ts');
 
   const logDetails = Object.keys(dynamicCatalog)
     .map((k) => `${dynamicCatalog[k]?.length ?? 0} ${k}`)
@@ -99,7 +99,7 @@ export const BUSH_FAMILIES = ${JSON.stringify(dynamicCatalog, null, 2)} as const
 export type BushFamily = keyof typeof BUSH_FAMILIES;
 `;
 
-  await safeWriteFile(catalogPath, catalogContent);
+  await fs.writeFile(catalogPath, catalogContent);
   console.log(
     styleText('green', `   [OK] Catálogo generado con éxito: ${logDetails || 'Ninguno'}.`)
   );
@@ -107,7 +107,7 @@ export type BushFamily = keyof typeof BUSH_FAMILIES;
 
 export async function generateBattleMapCatalog(
   sourceDir: string,
-  mapRouteMapping: Record<string, string>
+  mapRouteMapping: Record<DisplayText, string>
 ): Promise<string[]> {
   console.log(
     styleText(
@@ -115,7 +115,7 @@ export async function generateBattleMapCatalog(
       `\n   📦 Generando catálogo de mapas de combate en src/data/map-assets.ts...`
     )
   );
-  const battleMapsSourceDir = safeResolve(sourceDir, 'public/assets/maps_battle');
+  const battleMapsSourceDir = path.resolve(sourceDir, 'public/assets/maps_battle');
   const battleMaps: string[] = []; // no-domain: Non-domain utility collection or data structure
   try {
     const entries = await fs.readdir(battleMapsSourceDir);
@@ -170,8 +170,8 @@ export async function generateBattleMapCatalog(
     styleText('green', `   [OK] Todos los mapas tienen su correspondiente fondo de combate.`)
   );
 
-  const mapAssetsPath = safeResolve(process.cwd(), 'src/data/world/map-assets.ts');
-  let mapAssetsContent = await safeReadFile(mapAssetsPath, 'utf-8');
+  const mapAssetsPath = path.resolve(process.cwd(), 'src/data/world/map-assets.ts');
+  let mapAssetsContent = await fs.readFile(mapAssetsPath, 'utf-8');
 
   const marker = 'const AVAILABLE_BATTLE_MAPS';
   const exportMarker = 'export const AVAILABLE_BATTLE_MAPS';
@@ -210,7 +210,7 @@ export function getAvailableCyclesForMap(mapId: MapRouteId): DayPhase[] {
 }
 `;
 
-  await safeWriteFile(mapAssetsPath, generatedContent);
+  await fs.writeFile(mapAssetsPath, generatedContent);
   console.log(
     styleText(
       'green',
@@ -221,10 +221,10 @@ export function getAvailableCyclesForMap(mapId: MapRouteId): DayPhase[] {
 }
 
 export interface PackedFeetData {
-  p: Record<string, PackedFeetTuple>;
-  n: Record<string, PackedFeetTuple>;
-  t: Record<string, PackedFeetTuple>;
-  c: Record<string, string>;
+  p: Record<DisplayText, PackedFeetTuple>;
+  n: Record<DisplayText, PackedFeetTuple>;
+  t: Record<DisplayText, PackedFeetTuple>;
+  c: Record<DisplayText, string>;
   shadow?: GlobalShadowConfig;
 }
 
@@ -241,7 +241,7 @@ function normalizeSpriteBaseKey(key: string): string {
 
 function resolveSpriteOverride(
   keyPath: string,
-  overridesMap?: Record<string, SpriteShadowOverride>
+  overridesMap?: Record<DisplayText, SpriteShadowOverride>
 ): SpriteShadowOverride | undefined {
   if (!overridesMap) return undefined;
   if (overridesMap[keyPath]) return overridesMap[keyPath];
@@ -287,11 +287,11 @@ function assignPackedTarget(key: string, tuple: PackedFeetTuple, packed: PackedF
 }
 
 function resolveShadowOverridesSync(
-  overrides?: Record<string, SpriteShadowOverride>
-): Record<string, SpriteShadowOverride> {
+  overrides?: Record<DisplayText, SpriteShadowOverride>
+): Record<DisplayText, SpriteShadowOverride> {
   if (overrides) return overrides;
   try {
-    const overridesPath = safeResolve(process.cwd(), 'src/data/pokemon/spriteShadowOverrides.json');
+    const overridesPath = path.resolve(process.cwd(), 'src/data/pokemon/spriteShadowOverrides.json');
     if (fsSync.existsSync(overridesPath)) {
       return JSON.parse(fsSync.readFileSync(overridesPath, 'utf8'));
     }
@@ -303,7 +303,7 @@ function resolveShadowOverridesSync(
 }
 
 function backfillVariationIdleFeet(
-  pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }>
+  pokemonFeetDatabase: Record<DisplayText, { feetY: number; feetX: number }>
 ): void {
   for (const key of Object.keys(pokemonFeetDatabase)) {
     const isVariation =
@@ -323,8 +323,8 @@ function shouldSkipRedundantBaseTuple(
   key: string,
   baseKey: string,
   tuple: PackedFeetTuple,
-  pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }>,
-  overridesMap: Record<string, SpriteShadowOverride>
+  pokemonFeetDatabase: Record<DisplayText, { feetY: number; feetX: number }>,
+  overridesMap: Record<DisplayText, SpriteShadowOverride>
 ): boolean {
   if (!key.startsWith('/assets/sprites/pokemon/') || !key.endsWith('.webp')) {
     return false;
@@ -344,8 +344,8 @@ function shouldSkipRedundantBaseTuple(
 }
 
 function packExistingFeetEntries(
-  pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }>,
-  overridesMap: Record<string, SpriteShadowOverride>,
+  pokemonFeetDatabase: Record<DisplayText, { feetY: number; feetX: number }>,
+  overridesMap: Record<DisplayText, SpriteShadowOverride>,
   packed: PackedFeetData
 ): void {
   for (const key of Object.keys(pokemonFeetDatabase).sort()) {
@@ -362,8 +362,8 @@ function packExistingFeetEntries(
 }
 
 function packRemainingOverrides(
-  pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }>,
-  overridesMap: Record<string, SpriteShadowOverride>,
+  pokemonFeetDatabase: Record<DisplayText, { feetY: number; feetX: number }>,
+  overridesMap: Record<DisplayText, SpriteShadowOverride>,
   packed: PackedFeetData
 ): void {
   for (const key of Object.keys(overridesMap).sort()) {
@@ -376,9 +376,9 @@ function packRemainingOverrides(
 }
 
 export function packFeetCoordinates(
-  pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }>,
+  pokemonFeetDatabase: Record<DisplayText, { feetY: number; feetX: number }>,
   packed: PackedFeetData,
-  overrides?: Record<string, SpriteShadowOverride>
+  overrides?: Record<DisplayText, SpriteShadowOverride>
 ): void {
   const overridesMap = resolveShadowOverridesSync(overrides);
   backfillVariationIdleFeet(pokemonFeetDatabase);
@@ -562,7 +562,7 @@ export {
 }
 
 export async function generateFeetAndCriesDatabase(
-  pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }>,
+  pokemonFeetDatabase: Record<DisplayText, { feetY: number; feetX: number }>,
   criesDir: string,
   targetDir: string,
   pipelineWarnings: string[],
@@ -575,7 +575,7 @@ export async function generateFeetAndCriesDatabase(
     )
   );
   await fs.mkdir(targetDir, { recursive: true });
-  const databasePath = safeJoin(targetDir, 'pokemonFeetDatabase.ts');
+  const databasePath = path.join(targetDir, 'pokemonFeetDatabase.ts');
 
   const packed: PackedFeetData = {
     p: {},
@@ -646,15 +646,15 @@ export async function generateFeetAndCriesDatabase(
     process.exit(1);
   }
 
-  const jsonPath = safeJoin(targetDir, 'pokemonFeetDatabase.json');
-  await safeWriteFile(jsonPath, JSON.stringify(packed, null, 2));
+  const jsonPath = path.join(targetDir, 'pokemonFeetDatabase.json');
+  await fs.writeFile(jsonPath, JSON.stringify(packed, null, 2));
 
-  const criesJsonPath = safeJoin(targetDir, 'pokemonCriesDatabase.json');
-  await safeWriteFile(criesJsonPath, JSON.stringify(packed.c, null, 2));
+  const criesJsonPath = path.join(targetDir, 'pokemonCriesDatabase.json');
+  await fs.writeFile(criesJsonPath, JSON.stringify(packed.c, null, 2));
 
   const databaseContent = getPokemonFeetDatabaseFileContent();
 
-  await safeWriteFile(databasePath, databaseContent);
+  await fs.writeFile(databasePath, databaseContent);
   console.log(
     styleText('green', `   [OK] Base de datos de anclaje y gritos integrada generada con éxito.`)
   );
@@ -669,10 +669,10 @@ const PROGRESS_FEET_WRITE_FILES_PCT = 85 as const;
 const PROGRESS_FEET_COMPLETE_PCT = 100 as const;
 
 async function loadShadowOverrides(overridesPath: string): Promise<{
-  overrides: Record<string, SpriteShadowOverride>;
+  overrides: Record<DisplayText, SpriteShadowOverride>;
   globalShadowConfig?: GlobalShadowConfig;
 }> {
-  let overrides: Record<string, SpriteShadowOverride> = {};
+  let overrides: Record<DisplayText, SpriteShadowOverride> = {};
   let globalShadowConfig: GlobalShadowConfig | undefined;
   try {
     const rawOverrides = await fs.readFile(overridesPath, 'utf8');
@@ -685,9 +685,8 @@ async function loadShadowOverrides(overridesPath: string): Promise<{
         overrides = parsed as SpriteShadowOverridesMap;
       }
     }
-  } catch {
-    // catch-ok: no overrides file found, use defaults
-    // No overrides
+  } catch (err) {
+    err;
   }
   return { overrides, globalShadowConfig };
 }
@@ -695,7 +694,7 @@ async function loadShadowOverrides(overridesPath: string): Promise<{
 async function scanDirectoryForMissingSprites(
   dirPath: string,
   prefix: string,
-  flatDb: Record<string, { feetY: number; feetX: number }>
+  flatDb: Record<DisplayText, { feetY: number; feetX: number }>
 ): Promise<void> {
   try {
     const files = await fs.readdir(dirPath);
@@ -714,8 +713,8 @@ async function scanDirectoryForMissingSprites(
 
 async function populateFlatFeetDb(
   existingPacked: PackedFeetData
-): Promise<Record<string, { feetY: number; feetX: number }>> {
-  const flatDb: Record<string, { feetY: number; feetX: number }> = {};
+): Promise<Record<DisplayText, { feetY: number; feetX: number }>> {
+  const flatDb: Record<DisplayText, { feetY: number; feetX: number }> = {};
   for (const [subKey, tuple] of Object.entries(existingPacked.p || {})) {
     flatDb[`/assets/sprites/pokemon/${subKey}.webp`] = { feetY: tuple[0]!, feetX: tuple[1]! };
   }
@@ -727,12 +726,12 @@ async function populateFlatFeetDb(
   }
 
   await scanDirectoryForMissingSprites(
-    safeResolve(process.cwd(), 'public/assets/sprites/trainers'),
+    path.resolve(process.cwd(), 'public/assets/sprites/trainers'),
     '/assets/sprites/trainers/',
     flatDb
   );
   await scanDirectoryForMissingSprites(
-    safeResolve(process.cwd(), 'public/assets/sprites/npc'),
+    path.resolve(process.cwd(), 'public/assets/sprites/npc'),
     '/assets/sprites/npc/',
     flatDb
   );
@@ -744,9 +743,9 @@ export async function regenerateFeetDatabase(
   onProgress?: (progress: number, message: string) => void
 ): Promise<PackedFeetData> {
   onProgress?.(PROGRESS_FEET_INIT_PCT, 'Leyendo catálogos y base de datos estática...');
-  const jsonPath = safeResolve(process.cwd(), 'src/data/pokemon/pokemonFeetDatabase.json');
-  const databasePath = safeResolve(process.cwd(), 'src/data/pokemon/pokemonFeetDatabase.ts');
-  const overridesPath = safeResolve(process.cwd(), 'src/data/pokemon/spriteShadowOverrides.json');
+  const jsonPath = path.resolve(process.cwd(), 'src/data/pokemon/pokemonFeetDatabase.json');
+  const databasePath = path.resolve(process.cwd(), 'src/data/pokemon/pokemonFeetDatabase.ts');
+  const overridesPath = path.resolve(process.cwd(), 'src/data/pokemon/spriteShadowOverrides.json');
 
   const rawJson = await fs.readFile(jsonPath, 'utf8');
   const existingPacked: PackedFeetData = JSON.parse(rawJson);
@@ -777,8 +776,8 @@ export async function regenerateFeetDatabase(
     PROGRESS_FEET_WRITE_FILES_PCT,
     'Escribiendo pokemonFeetDatabase.json y wrappers TS...'
   );
-  await safeWriteFile(jsonPath, JSON.stringify(newPacked, null, 2));
-  await safeWriteFile(databasePath, getPokemonFeetDatabaseFileContent());
+  await fs.writeFile(jsonPath, JSON.stringify(newPacked, null, 2));
+  await fs.writeFile(databasePath, getPokemonFeetDatabaseFileContent());
 
   onProgress?.(PROGRESS_FEET_COMPLETE_PCT, 'Recompilación de base de datos finalizada con éxito');
   console.log(styleText('green', `   [OK] Base de datos de sombras y pies regenerada con éxito.`));
@@ -787,7 +786,7 @@ export async function regenerateFeetDatabase(
 
 function matchArchetypeFromKeywords(
   normalized: string,
-  archetypeKeywords: Record<string, string[]>
+  archetypeKeywords: Record<DisplayText, string[]>
 ): string | undefined {
   for (const [archetype, keywords] of Object.entries(archetypeKeywords)) {
     for (const keyword of keywords) {
@@ -819,8 +818,8 @@ function resolveFallbackArchetype(normalized: string): string {
 function classifyNpcSprite(
   baseName: string,
   normalized: string,
-  archetypeKeywords: Record<string, string[]>,
-  catalogLists: Record<string, string[]>
+  archetypeKeywords: Record<DisplayText, string[]>,
+  catalogLists: Record<DisplayText, string[]>
 ): void {
   const matched = matchArchetypeFromKeywords(normalized, archetypeKeywords);
   const target = matched ?? resolveFallbackArchetype(normalized);
@@ -835,7 +834,7 @@ export async function generateNpcSpriteCatalog(
   sourceDir: string,
   npcCatalogPath: string,
   pipelineWarnings: string[]
-): Promise<Record<string, string[]>> {
+): Promise<Record<DisplayText, string[]>> {
   console.log(
     styleText(
       'yellow',
@@ -845,11 +844,11 @@ export async function generateNpcSpriteCatalog(
   const { ARCHETYPE_KEYWORDS } = await import('../../../src/logic/utils/npcSpriteRouter.ts');
   const { TRAINER_TYPES } = await import('../../../src/data/player/trainerTypes.ts');
 
-  const catalogLists: Record<string, string[]> = Object.fromEntries(
+  const catalogLists: Record<DisplayText, string[]> = Object.fromEntries(
     Object.keys(TRAINER_TYPES).map((key) => [key, []])
   );
 
-  const npcSourceDir = safeResolve(sourceDir, 'public/assets/sprites/npc');
+  const npcSourceDir = path.resolve(sourceDir, 'public/assets/sprites/npc');
 
   try {
     const entries = await fs.readdir(npcSourceDir);
@@ -900,20 +899,20 @@ export function requireNpcSpriteId(value: string): NpcSpriteId {
 }
 `;
 
-  await safeWriteFile(npcCatalogPath, npcCatalogContent);
+  await fs.writeFile(npcCatalogPath, npcCatalogContent);
   console.log(styleText('green', `   [OK] Catálogo de sprites de NPCs generado con éxito.`));
   return catalogLists;
 }
 
 export async function generateAnimatedSpriteDatabase(
-  animatedDbData: Record<string, AnimatedSpriteData>,
-  animatedVariationFrames: Record<string, number>,
+  animatedDbData: Record<DisplayText, AnimatedSpriteData>,
+  animatedVariationFrames: Record<DisplayText, number>,
   maxAnimatedSizeFront: number,
   maxAnimatedSizeBack: number
 ): Promise<number> {
   const animatedSpriteCount = Object.keys(animatedDbData).length;
-  const animatedDbPath = safeResolve(process.cwd(), 'src/data/pokemon/animatedSpriteDatabase.ts');
-  const animatedJsonPath = safeResolve(
+  const animatedDbPath = path.resolve(process.cwd(), 'src/data/pokemon/animatedSpriteDatabase.ts');
+  const animatedJsonPath = path.resolve(
     process.cwd(),
     'src/data/pokemon/animatedSpriteDatabase.json'
   );
@@ -928,7 +927,7 @@ export async function generateAnimatedSpriteDatabase(
     VARIATIONS: animatedVariationFrames
   };
 
-  await safeWriteFile(animatedJsonPath, JSON.stringify(compactDbJson, null, 2));
+  await fs.writeFile(animatedJsonPath, JSON.stringify(compactDbJson, null, 2));
 
   const animatedDbContent = [
     '/**',
@@ -1007,7 +1006,7 @@ export async function generateAnimatedSpriteDatabase(
     ''
   ].join('\n');
 
-  await safeWriteFile(animatedDbPath, animatedDbContent);
+  await fs.writeFile(animatedDbPath, animatedDbContent);
   console.log(
     styleText(
       'green',

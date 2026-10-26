@@ -1,5 +1,6 @@
-import { PDEX_ORDER, GEN2_PDEX_ORDER, GAME_TMS, TM_COMPAT } from '../../data/pokemon/pokedex.ts';
 import type { PokemonType } from '@/data/battle/types';
+
+import { PDEX_ORDER, GEN2_PDEX_ORDER, GAME_TMS, TM_COMPAT } from '../../data/pokemon/pokedex.ts';
 
 export { PDEX_ORDER, GEN2_PDEX_ORDER, GAME_TMS, TM_COMPAT };
 

@@ -1,20 +1,22 @@
+import { setActivePinia, createPinia } from 'pinia';
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
-import { useAuthStore } from '@/stores/auth';
-import { useGameStore } from '@/stores/game';
-import { useDebugStore } from '@/stores/debug';
-import { useUIStore } from '@/stores/ui';
-import { useMapStore } from '@/stores/map';
-import { usePvPStore } from '@/stores/pvp';
-import { useBreedingStore } from '@/stores/breeding';
-import { useModalStore } from '@/stores/modals';
-import { useErrorStore } from '@/stores/errorStore';
-import type { AuthUser } from '@/types/auth/auth';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { DaycareMission } from '@/types/breeding/breeding';
-import type { PlayerClassId } from '@/data/player/playerClasses';
+
 import { DEBUG_PANEL_CATEGORIES } from '@/components/admin/debug/debugPanelCategories.ts';
+import type { PlayerClassId } from '@/data/player/playerClasses';
+import { useAuthStore } from '@/stores/auth';
+import { useBreedingStore } from '@/stores/breeding';
+import { useDebugStore } from '@/stores/debug';
+import { useErrorStore } from '@/stores/errorStore';
+import { useGameStore } from '@/stores/game';
+import { useMapStore } from '@/stores/map';
+import { useModalStore } from '@/stores/modals';
+import { usePvPStore } from '@/stores/pvp';
+import { useUIStore } from '@/stores/ui';
+import type { AuthUser } from '@/types/auth/auth';
+import type { DaycareMission } from '@/types/breeding/breeding';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { mockLocalStorage } from '../../helpers/debugSetup.ts';
 import { mockChain } from '../../helpers/supabaseMock.ts';
 

@@ -10,14 +10,14 @@
  * @module itemMath
  */
 
-import type { Pokemon, StatusClearTarget } from '../../types/pokemon/pokemon.ts';
 import type { ItemEffectResult } from '../../types/inventory/items.ts';
+import type { Pokemon, StatusClearTarget } from '../../types/pokemon/pokemon.ts';
+import { DEFAULT_MAX_PP_FALLBACK } from '../constants/gameplay.ts';
 import {
   calculateTotalBaseStats,
   calculateTotalIVs,
   calculateRocketSellPriceRaw
 } from '../pokemon/statsMath.ts';
-import { DEFAULT_MAX_PP_FALLBACK } from '../constants/gameplay.ts';
 
 // ── Target Validation ─────────────────────────────────────────────────────────
 

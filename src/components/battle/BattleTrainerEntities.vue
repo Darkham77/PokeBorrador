@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue';
-import VirtualEntity from './VirtualEntity.vue';
-import BattleTrainerFigure from './BattleTrainerFigure.vue';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
+
 import { getPokemonFeetCoords } from '@/logic/combat/shadowHelpers';
-import { useCombatShadowStore } from '@/stores/battle/combatShadows';
+import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
 import {
   TRAINER_RETREAT_X_OFFSET_PX,
   TRAINER_RETREAT_Y_OFFSET_PX,
   TRAINER_RETREAT_SCALE
 } from '@/logic/constants/animations';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useCombatShadowStore } from '@/stores/battle/combatShadows';
 import type { GenderId } from '@/types/system/game';
+
+import BattleTrainerFigure from './BattleTrainerFigure.vue';
+import VirtualEntity from './VirtualEntity.vue';
 
 const props = defineProps<{
   isTrainerVisible: boolean;

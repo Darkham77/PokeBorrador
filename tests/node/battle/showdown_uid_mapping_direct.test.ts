@@ -1,7 +1,8 @@
-import { describe, it, beforeEach, beforeAll, vi } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
 import { Battle } from '@pkmn/sim';
+import { describe, it, beforeEach, beforeAll, vi } from 'vite-plus/test';
+
 import { getShowdownFormatId } from '../../../src/logic/battle/showdownAdapter.ts';
 
 describe('Showdown Direct UID Mapping & Sync Unit Tests', () => {

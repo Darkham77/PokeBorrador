@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 import { test, expect, type Page } from '@playwright/test';
 import { BaseE2ESimulation } from '../base_simulation.ts';
 import { waitForStoreReady, clickResilient, type WindowWithResolver } from '../e2e_helpers.ts';
@@ -27,7 +28,7 @@ const MAX_ACTIVE_MARKET_LISTINGS_LIMIT = 10;
 async function seedMockListings(dbPath: string, count: number) {
   const isPostgres = process.env.SIM_DB_DRIVER === 'postgres';
   const species = ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'ekans', 'sandshrew']; // no-domain: Non-domain utility collection or data structure
-  const speciesTypes: Record<string, { type: string; type2?: string }> = {
+  const speciesTypes: Record<DisplayText, { type: string; type2?: string }> = {
     caterpie: { type: 'bug' },
     weedle: { type: 'bug', type2: 'poison' },
     pidgey: { type: 'normal', type2: 'flying' },
@@ -110,8 +111,8 @@ async function seedMockListings(dbPath: string, count: number) {
   } finally {
     try {
       db.close();
-    } catch (_e: unknown) {
-      // catch-ok: expected db already closed
+    } catch (err) {
+      err;
     }
   }
 }

@@ -70,7 +70,7 @@ export class SimplexNoise {
   private readonly perm: Uint8Array;
   private readonly permMod12: Uint8Array;
 
-  constructor(seed = CONTINENT_DEFAULT_SEED) {
+  public constructor(seed = CONTINENT_DEFAULT_SEED) {
     const prng = createMulberry32(seed);
     const p = new Uint8Array(PERM_TABLE_SIZE);
     for (let i = 0; i < PERM_TABLE_SIZE; i++) {

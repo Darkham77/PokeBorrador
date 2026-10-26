@@ -1,3 +1,4 @@
+import type { DisplayText, HexColor } from '@francogp/auditor';
 import type { PokemonType } from '@/data/battle/types';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
@@ -27,17 +28,17 @@ export interface GymDifficulty {
 
 export interface Gym {
   id: GymId;
-  name: string; // domain-ok: Open dynamic text or non-domain string payload
-  city: string; // domain-ok: Open dynamic text or non-domain string payload
+  name: DisplayText;
+  city: DisplayText;
   locationId: MapRouteId;
-  leader: string; // domain-ok: Open dynamic text or non-domain string payload
+  leader: DisplayText;
   type: PokemonType;
-  typeColor: string; // domain-ok: Open dynamic text or non-domain string payload
-  badge: string; // domain-ok: Open dynamic text or non-domain string payload
-  badgeName: string; // domain-ok: Open dynamic text or non-domain string payload
+  typeColor: HexColor;
+  badge: DisplayText;
+  badgeName: DisplayText;
   sprite: NpcSpriteId;
-  quote: string; // domain-ok: Open dynamic text or non-domain string payload
-  victoryQuote: string; // domain-ok: Open dynamic text or non-domain string payload
+  quote: DisplayText;
+  victoryQuote: DisplayText;
   rewardTM: ItemId;
   pokemon: readonly PokemonSpeciesId[];
   levels: readonly number[];

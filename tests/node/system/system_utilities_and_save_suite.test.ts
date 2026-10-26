@@ -1,22 +1,24 @@
-import { describe, it, expect } from 'vite-plus/test';
 import assert from 'node:assert/strict';
-import path from 'node:path';
 import fs from 'node:fs';
+import path from 'node:path';
+
+import { describe, it, expect } from 'vite-plus/test';
+
+import { VALID_NPC_SPRITES } from '@/data/pokemon/npcSpriteCatalog';
+import { serializeState } from '@/logic/auth/saveSerializer';
+import { serializeState as serializeStateService } from '@/logic/auth/saveService';
+import { ShowdownBattleRunner } from '@/logic/battle/helpers/showdownBattleRunner';
+import { mulberry32, hashString } from '@/logic/utils/math';
+import { resolveNpcSprite, type NpcSpriteId } from '@/logic/utils/npcSpriteRouter';
+import { validateSaveData } from '@/logic/validation/schemas';
+import { canSaveState } from '@/stores/game/actions/saveActionHelpers';
+import { INITIAL_STATE } from '@/stores/gameInitialState';
+import type { GameState } from '@/types/system/game';
 
 import {
   runBatteryOfDiagnostics,
   testInMemoryMigrations
 } from '../../../scripts/maintenance/diagnose_account.ts';
-import type { GameState } from '@/types/system/game';
-import { INITIAL_STATE } from '@/stores/gameInitialState';
-import { serializeState } from '@/logic/auth/saveSerializer';
-import { validateSaveData } from '@/logic/validation/schemas';
-import { mulberry32, hashString } from '@/logic/utils/math';
-import { resolveNpcSprite, type NpcSpriteId } from '@/logic/utils/npcSpriteRouter';
-import { VALID_NPC_SPRITES } from '@/data/pokemon/npcSpriteCatalog';
-import { serializeState as serializeStateService } from '@/logic/auth/saveService';
-import { canSaveState } from '@/stores/game/actions/saveActionHelpers';
-import { ShowdownBattleRunner } from '@/logic/battle/helpers/showdownBattleRunner';
 
 describe('System Utilities & Save Services Domain Suite', () => {
   describe('Diagnose Account Tool', () => {

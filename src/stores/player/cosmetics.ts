@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
-import { useGameStore } from '@/stores/game.ts';
-import { useAuthStore } from '@/stores/auth.ts';
+
 import {
   NICK_STYLES,
   AVATAR_STYLES,
@@ -13,6 +12,8 @@ import {
   type AvatarStyleId
 } from '@/data/player/cosmeticsData';
 import { COSMETIC_UNLOCK_CLASS_LEVEL } from '@/logic/player/classMath';
+import { useAuthStore } from '@/stores/auth.ts';
+import { useGameStore } from '@/stores/game.ts';
 
 export const useCosmeticsStore = defineStore('cosmetics', () => {
   const gameStore = useGameStore();
@@ -32,8 +33,8 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
   // Check if context is local development
   const isLocal = computed(() => {
     if (import.meta.env.DEV) return true;
-    if (typeof window !== 'undefined') {
-      const hn = window.location.hostname;
+    if (typeof globalThis.window !== 'undefined') {
+      const hn = globalThis.location.hostname;
       return hn === 'localhost' || hn === '127.0.0.1' || hn.endsWith('.local');
     }
     return false;
@@ -78,7 +79,7 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
     return { isEligible: true };
   }
 
-  function sanitizeEquippedCosmetics() {
+  function sanitizeEquippedCosmetics(): void {
     const userClass = gameStore.state.playerClass || '';
     const currentLevel = Math.max(
       gameStore.state.classLevel || 1,
@@ -96,7 +97,7 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
       );
       if (!check.isEligible) {
         gameStore.state.nick_style = null;
-        void gameStore.save(false);
+        gameStore.scheduleSave();
       }
     }
 
@@ -111,13 +112,13 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
       );
       if (!check.isEligible) {
         gameStore.state.avatar_style = null;
-        void gameStore.save(false);
+        gameStore.scheduleSave();
       }
     }
   }
 
   // --- ACTIONS ---
-  async function equipNickStyle(styleId?: NickStyleId) {
+  async function equipNickStyle(styleId?: NickStyleId): Promise<void> {
     if (!authStore.user || !gameStore.db) return;
 
     // Security validation before equipping
@@ -159,7 +160,7 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
     }
   }
 
-  async function equipAvatarStyle(styleId?: AvatarStyleId) {
+  async function equipAvatarStyle(styleId?: AvatarStyleId): Promise<void> {
     if (!authStore.user || !gameStore.db) return;
 
     // Security validation before equipping

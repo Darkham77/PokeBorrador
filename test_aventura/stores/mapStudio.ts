@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/stores/mapStudio.ts
  *
@@ -5,9 +6,22 @@
  * Centralizes the active map state, tool selection, layers, viewport pan/zoom,
  * undo/redo history stack, and interactive test-drive mechanics.
  */
-
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+
+import { MAP_PROPS_REGISTRY, type MapPropDefinition } from '../config/mapProps.ts';
+import {
+  type StructureTemplate,
+  getStructureTemplate,
+  STRUCTURE_TEMPLATES,
+  registerStructureTemplate
+} from '../config/mapStructures.ts';
+import { STUDIO_MAX_HISTORY_STEPS } from '../config/studioConstants.ts';
+import {
+  loadCustomTilesFromStorage,
+  loadCustomStructuresFromStorage,
+  saveCustomStructuresToStorage
+} from '../logic/map/customAssetsStorage.ts';
 import {
   type GeneratedMap,
   type MapCell,
@@ -18,19 +32,6 @@ import {
 } from '../logic/map/proceduralMapGenerator.ts';
 import { defaultTilesRegistry } from '../logic/map/tilesRegistry.ts';
 import type { SpriteFacingDirection } from '../types/map/poiTypes.ts';
-import {
-  type StructureTemplate,
-  getStructureTemplate,
-  STRUCTURE_TEMPLATES,
-  registerStructureTemplate
-} from '../config/mapStructures.ts';
-import {
-  loadCustomTilesFromStorage,
-  loadCustomStructuresFromStorage,
-  saveCustomStructuresToStorage
-} from '../logic/map/customAssetsStorage.ts';
-import { MAP_PROPS_REGISTRY, type MapPropDefinition } from '../config/mapProps.ts';
-import { STUDIO_MAX_HISTORY_STEPS } from '../config/studioConstants.ts';
 
 function propToStructureTemplate(prop: MapPropDefinition): StructureTemplate {
   return {
@@ -43,7 +44,7 @@ function propToStructureTemplate(prop: MapPropDefinition): StructureTemplate {
   };
 }
 
-const PROP_STRUCTURE_TEMPLATES: Record<string, StructureTemplate> = Object.fromEntries(
+const PROP_STRUCTURE_TEMPLATES: Record<DisplayText, StructureTemplate> = Object.fromEntries(
   // open-record: Prop templates indexed by prop id string
   Object.values(MAP_PROPS_REGISTRY).map((p) => [p.id, propToStructureTemplate(p)])
 );
@@ -175,13 +176,13 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
   const playerDirection = ref<SpriteFacingDirection>('down');
 
   // Custom User-Imported Structures & Props
-  const customStructures = ref<Record<string, StructureTemplate>>({}); // open-record: User-imported custom structures dictionary
-  const availableStructures = computed<Record<string, StructureTemplate>>(() => {
+  const customStructures = ref<Record<DisplayText, StructureTemplate>>({}); // open-record: User-imported custom structures dictionary
+  const availableStructures = computed<Record<DisplayText, StructureTemplate>>(() => {
     // open-record: Aggregated structures dictionary
     return { ...STRUCTURE_TEMPLATES, ...PROP_STRUCTURE_TEMPLATES, ...customStructures.value };
   });
 
-  const availableProps = computed<Record<string, MapPropDefinition>>(() => MAP_PROPS_REGISTRY); // open-record: Map prop definitions catalog
+  const availableProps = computed<Record<DisplayText, MapPropDefinition>>(() => MAP_PROPS_REGISTRY); // open-record: Map prop definitions catalog
 
   function selectProp(propId: string): void {
     selectedStructureId.value = propId;
@@ -202,7 +203,9 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
   function registerCustomStructure(template: StructureTemplate): void {
     registerStructureTemplate(template);
     customStructures.value = { ...customStructures.value, [template.id]: template };
-    void saveCustomStructuresToStorage(Object.values(customStructures.value));
+    saveCustomStructuresToStorage(Object.values(customStructures.value)).catch((err) => {
+      console.warn('Handled promise rejection:', err);
+    });
   }
 
   async function loadPersistedCustomAssets(): Promise<void> {
@@ -212,7 +215,7 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
     }
     const structs = await loadCustomStructuresFromStorage();
     if (structs.length > 0) {
-      const map: Record<string, StructureTemplate> = {}; // open-record: Loaded custom structures mapping
+      const map: Record<DisplayText, StructureTemplate> = {}; // open-record: Loaded custom structures mapping
       for (const s of structs) {
         registerStructureTemplate(s);
         map[s.id] = s;
@@ -221,7 +224,9 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
     }
   }
 
-  void loadPersistedCustomAssets();
+  loadPersistedCustomAssets().catch((err) => {
+    console.warn('Handled promise rejection:', err);
+  });
 
   /**
    * Initializes or replaces the active map.
@@ -610,8 +615,8 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
     if (!currentMap.value || typeof localStorage === 'undefined') return;
     try {
       localStorage.setItem(AUTOSAVE_STORAGE_KEY, JSON.stringify(currentMap.value));
-    } catch {
-      // catch-ok: Storage full or private mode quota restriction
+    } catch (err) {
+      console.warn('Handled controlled exception:', err);
     }
   }
 

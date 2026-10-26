@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 const LEAF_WEATHER_STORM_WIND_COUNT = 15 as const;
 const LEAF_WEATHER_WIND_COUNT = 8 as const;
 const ATMOSPHERE_SEED_Y_MULTIPLIER = 300 as const;
@@ -106,7 +107,7 @@ export interface AtmosphereOverlayStyleOptions {
 
 export function resolveWeatherOverlayStyles(
   options: AtmosphereOverlayStyleOptions
-): Record<string, string | number> {
+): Record<DisplayText, string | number> {
   // open-record: Dynamic CSS custom property dictionary
   const finalZ =
     options.zIndex !== undefined && options.zIndex !== ''

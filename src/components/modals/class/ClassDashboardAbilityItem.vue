@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { gsap } from 'gsap';
+import { computed } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
+
 import { CLASS_DASHBOARD_HOVER_DURATION_SEC } from './classSelectionTypes';
 
 const props = withDefaults(
@@ -24,7 +26,7 @@ const isLocked = computed(() => effectiveReqLevel.value > props.classLevel);
 const showLevelBadge = computed(() => effectiveReqLevel.value > DEFAULT_REQ_LEVEL);
 const tooltipText = computed(() => props.technicalBonus || 'Información no disponible.');
 
-const onMouseEnter = (event: MouseEvent) => {
+const onMouseEnter = (event: MouseEvent): void => {
   const target = event.currentTarget as HTMLElement;
   gsap.to(target, {
     backgroundColor: 'rgba(30, 41, 59, 0.6)',
@@ -34,7 +36,7 @@ const onMouseEnter = (event: MouseEvent) => {
   });
 };
 
-const onMouseLeave = (event: MouseEvent) => {
+const onMouseLeave = (event: MouseEvent): void => {
   const target = event.currentTarget as HTMLElement;
   gsap.to(target, {
     backgroundColor: 'rgba(15, 23, 42, 0.4)',

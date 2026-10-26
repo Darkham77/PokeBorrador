@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useShopStore } from '../../../src/stores/inventory/shop.ts';
-import { useGameStore } from '../../../src/stores/game.ts';
-import { useUIStore } from '../../../src/stores/ui.ts';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import { SHOP_ITEMS } from '../../../src/data/inventory/items.ts';
+import { useGameStore } from '../../../src/stores/game.ts';
+import { useShopStore } from '../../../src/stores/inventory/shop.ts';
+import { useUIStore } from '../../../src/stores/ui.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 
 describe('Shop Store', () => {

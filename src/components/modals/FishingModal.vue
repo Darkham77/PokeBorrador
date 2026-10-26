@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { gsap } from 'gsap';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { MinigameDifficulty } from '@/types/battle/battle';
 import {
   calculateFishingDifficulty,
   FISHING_DIFFICULTIES
 } from '@/components/modals/fishingGameHelper';
 import { MILLISECONDS_PER_SECOND } from '@/logic/constants/visuals';
+import type { MinigameDifficulty } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const MINIGAME_SPAWN_PADDING_PX = 60;
 const MINIGAME_MIN_DISTANCE_PX = 85;
@@ -108,7 +109,7 @@ function scheduleGameplayDelay(delaySec: number, callback: () => void): gsap.cor
   return tween;
 }
 
-const spawnNext = () => {
+const spawnNext = (): void => {
   if (!gameActive.value || spawnedNotesCount.value >= totalNotes.value) return;
 
   spawnedNotesCount.value++;
@@ -128,7 +129,7 @@ const spawnNext = () => {
     y = padding + Math.random() * (MINIGAME_CONTAINER_SIZE_PX - padding * 2);
 
     for (const pos of activePositions.value) {
-      const dist = Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2));
+      const dist = Math.sqrt((x - pos.x) ** 2 + (y - pos.y) ** 2);
       if (dist < minDistance) {
         tooClose = true;
         break;
@@ -182,7 +183,7 @@ const spawnNext = () => {
   gameCall = scheduleGameplayDelay(spawnInterval.value / MILLISECONDS_PER_SECOND, spawnNext);
 };
 
-const handleNoteClick = (note: Note) => {
+const handleNoteClick = (note: Note): void => {
   if (note.clicked || !gameActive.value) return;
 
   if (note.id !== clickedNotesCount.value + 1) {
@@ -224,7 +225,7 @@ const handleNoteClick = (note: Note) => {
   }
 };
 
-const failGame = (msg: string) => {
+const failGame = (msg: string): void => {
   if (!gameActive.value) return;
   gameActive.value = false;
   feedback.value = msg;
@@ -233,7 +234,7 @@ const failGame = (msg: string) => {
 
 const isFinished = ref(false);
 
-const finishGame = (success: boolean) => {
+const finishGame = (success: boolean): void => {
   if (isFinished.value) return;
   isFinished.value = true;
   gameActive.value = false;
@@ -273,7 +274,7 @@ onUnmounted(() => {
   activeTweens.clear();
 });
 
-const handleCloseModal = () => {
+const handleCloseModal = (): void => {
   emit('close');
   props.onCloseCallback?.();
 };

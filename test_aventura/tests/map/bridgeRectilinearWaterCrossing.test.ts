@@ -11,14 +11,16 @@
  *   4. Decorative rock sprites have transparent alpha backgrounds (no opaque cave floor tan or green grass).
  */
 
-import { describe, it, expect } from 'vitest';
-import path from 'node:path';
 import fs from 'node:fs';
+import path from 'node:path';
+
 import sharp from 'sharp';
+import { describe, it, expect } from 'vitest';
+
+import { resolveCanonicalBridges } from '../../logic/map/canonicalBridgeEngine.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
-import { resolveCanonicalBridges } from '../../logic/map/canonicalBridgeEngine.ts';
 
 const manifestPath = path.resolve(
   import.meta.dirname,

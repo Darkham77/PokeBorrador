@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vite-plus/test';
+
+import { ACTIVE_SHOWDOWN_FORMAT } from '../../../src/data/system/constants.ts';
 import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
 import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
 import { ShowdownLogEnricher } from '../../../src/logic/battle/helpers/showdownLogEnricher.ts';
-import { ACTIVE_SHOWDOWN_FORMAT } from '../../../src/data/system/constants.ts';
 
 describe('Reproduce Trapped Bide Switch Rejection', () => {
   it('checks Showdown activeRequest and trapped status when Bide is active', () => {

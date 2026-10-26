@@ -8,8 +8,8 @@
  * - Compression of save payloads for background OPFS caching
  */
 
-import { decompress, compress, isGzip } from '@/logic/utils/compression.ts';
 import { validateAndSanitize, type ValidateAndSanitizeResult } from '@/logic/auth/saveSanitizer.ts';
+import { decompress, compress, isGzip } from '@/logic/utils/compression.ts';
 import type { GameState } from '@/types/system/game.ts';
 
 export interface WorkerProcessSaveMessage {
@@ -24,7 +24,7 @@ export interface WorkerProcessSaveMessage {
 export interface WorkerCompressSaveMessage {
   type: 'COMPRESS_SAVE';
   payload: {
-    data: GameState | Record<string, unknown> | string;
+    data: string | object;
   };
 }
 
@@ -52,7 +52,7 @@ export type SaveWorkerOutgoingMessage =
   | WorkerCompressSaveResponse
   | WorkerErrorResponse;
 
-self.onmessage = async (e: MessageEvent<SaveWorkerIncomingMessage>) => {
+globalThis.onmessage = async (e: MessageEvent<SaveWorkerIncomingMessage>) => {
   const data = e.data;
   if (!data || !data.type) return;
 
@@ -75,7 +75,7 @@ self.onmessage = async (e: MessageEvent<SaveWorkerIncomingMessage>) => {
           type: 'PROCESS_SAVE_RESULT',
           payload: { valid: false, issues: ['No payload provided to worker'], error: 'No data' }
         };
-        self.postMessage(res);
+        globalThis.postMessage(res);
         return;
       }
 
@@ -84,7 +84,7 @@ self.onmessage = async (e: MessageEvent<SaveWorkerIncomingMessage>) => {
         type: 'PROCESS_SAVE_RESULT',
         payload: validation
       };
-      self.postMessage(res);
+      globalThis.postMessage(res);
       return;
     }
 
@@ -94,7 +94,7 @@ self.onmessage = async (e: MessageEvent<SaveWorkerIncomingMessage>) => {
         type: 'COMPRESS_SAVE_RESULT',
         payload: { compressed }
       };
-      self.postMessage(res);
+      globalThis.postMessage(res);
       return;
     }
   } catch (err) {
@@ -103,6 +103,6 @@ self.onmessage = async (e: MessageEvent<SaveWorkerIncomingMessage>) => {
       type: 'WORKER_ERROR',
       error: errorMsg
     };
-    self.postMessage(res);
+    globalThis.postMessage(res);
   }
 };

@@ -83,7 +83,7 @@ const LCG_CONSTANTS = {
 function createLcg(seed: number): () => number {
   let s = seed >>> 0 || LCG_CONSTANTS.DEFAULT_SEED;
   return () => {
-    s = (s * LCG_CONSTANTS.MULTIPLIER + LCG_CONSTANTS.INCREMENT) | 0;
+    s = Math.trunc(s * LCG_CONSTANTS.MULTIPLIER + LCG_CONSTANTS.INCREMENT);
     return (s >>> 0) / LCG_CONSTANTS.DIVISOR;
   };
 }

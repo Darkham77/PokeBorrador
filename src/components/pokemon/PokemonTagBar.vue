@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 import {
   CANONICAL_FILTER_TAGS,
@@ -59,7 +60,7 @@ function isTagActive(tagId: PokemonFilterTagId): boolean {
   return selectedTags.value.includes(tagId);
 }
 
-function toggleTag(tagId: PokemonFilterTagId) {
+function toggleTag(tagId: PokemonFilterTagId): void {
   const current = [...selectedTags.value];
   const idx = current.indexOf(tagId);
 
@@ -98,7 +99,7 @@ function toggleTag(tagId: PokemonFilterTagId) {
   emit('toggle', tagId);
 }
 
-function toggleCompatible() {
+function toggleCompatible(): void {
   emit('update:filterCompatibleOnly', !props.filterCompatibleOnly);
 }
 </script>

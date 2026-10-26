@@ -1,6 +1,7 @@
-import { describe, it, vi, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
+
+import { describe, it, vi, beforeEach } from 'vite-plus/test';
 
 let memoryDb: DatabaseSync;
 
@@ -19,9 +20,9 @@ vi.mock('@/logic/db/sqliteEngine.ts', () => ({
 }));
 
 import { emulateAwardEventAutomated } from '@/logic/db/rpcEmulations/eventRpc.ts';
-import { isNewEntryBetter } from '@/logic/events/eventEngine.ts';
 import { queryLocal } from '@/logic/db/sqliteEngine.ts';
 import type { SQLiteDatabase } from '@/logic/db/sqliteEngine.ts';
+import { isNewEntryBetter } from '@/logic/events/eventEngine.ts';
 
 describe('Magikarp Contest Scoring & Tiebreaker Rules', () => {
   beforeEach(async () => {

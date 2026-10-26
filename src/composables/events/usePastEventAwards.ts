@@ -1,11 +1,14 @@
-import { computed, toValue, type MaybeRefOrGetter } from 'vue';
+import type { DisplayText } from '@francogp/auditor';
+import { computed, toValue, type ComputedRef, type MaybeRefOrGetter } from 'vue';
+
+import { resolveAwardCategory } from '@/logic/events/eventCompetitions';
+import { getDefaultSubCompetitions, type Event as GameEvent } from '@/logic/events/eventEngine';
 import type {
   PastEventHistoryItem,
   PastCompetitionWinner,
   PendingAward
 } from '@/types/system/stores';
-import { getDefaultSubCompetitions, type Event as GameEvent } from '@/logic/events/eventEngine';
-import { resolveAwardCategory } from '@/logic/events/eventCompetitions';
+
 import {
   formatEventScheduleWindow,
   getCategoryIcon,
@@ -44,10 +47,21 @@ export const parsePrize = (rawPrize: unknown): Record<string, unknown> => {
   return {};
 };
 
+export interface UsePastEventAwardsReturn {
+  formattedSchedule: ComputedRef<string>;
+  groupedWinners: ComputedRef<CategoryGroup[]>;
+  getCategoryIcon: (categoryName: string) => string;
+  allMyAwards: ComputedRef<PendingAward[]>;
+  pendingMyAwards: ComputedRef<PendingAward[]>;
+  parsePrize: (rawPrize: unknown) => Record<string, unknown>;
+  getAwardForCategory: (categoryId: string) => PendingAward | undefined;
+  unmatchedAwards: ComputedRef<PendingAward[]>;
+}
+
 export function usePastEventAwards(
   itemInput: MaybeRefOrGetter<PastEventHistoryItem>,
   matchingEventInput: MaybeRefOrGetter<GameEvent | null>
-) {
+): UsePastEventAwardsReturn {
   const item = computed(() => toValue(itemInput));
   const matchingEvent = computed(() => toValue(matchingEventInput));
 
@@ -57,7 +71,7 @@ export function usePastEventAwards(
 
   const groupedWinners = computed<CategoryGroup[]>(() => {
     // open-record: Grouping winners by dynamic category ID
-    const groups: Record<string, CategoryGroup> = {};
+    const groups: Record<DisplayText, CategoryGroup> = {};
     const currentItem = item.value;
     const targetEvent = matchingEvent.value || currentItem.raw_event;
     const subComps = targetEvent ? getDefaultSubCompetitions(targetEvent) : [];
@@ -77,7 +91,7 @@ export function usePastEventAwards(
           winners: []
         };
       }
-      groups[catId]!.winners.push(w);
+      groups[catId].winners.push(w);
     }
     return Object.values(groups);
   });

@@ -1,14 +1,13 @@
+import type { OfficialServer } from '../../data/system/official_servers.ts';
+import { OFFICIAL_SERVERS_BY_ID, DEFAULT_SERVER } from '../../data/system/official_servers.ts';
+import type { SessionMode } from '../../types/system/database.ts';
+import { isLocalEnvironment } from '../utils/env.ts';
+import { safeStorage } from '../utils/storage.ts';
 /**
  * SUPABASE CONFIG - REMOTE PERSISTENCE LAYER
  * Now managed by DBRouter for autonomous lazy initialization.
  */
 import { DBRouter } from './dbRouter.ts';
-import { safeStorage } from '../utils/storage.ts';
-import type { SessionMode } from '../../types/system/database.ts';
-import type { OfficialServer } from '../../data/system/official_servers.ts';
-import { OFFICIAL_SERVERS_BY_ID, DEFAULT_SERVER } from '../../data/system/official_servers.ts';
-
-import { isLocalEnvironment } from '../utils/env.ts';
 
 const TEST_POSTGRES_SERVER: OfficialServer = {
   id: 'test_postgres',
@@ -45,7 +44,7 @@ export const supabase = new DBRouter(
 /**
  * Utility to switch the active server and persist the choice.
  */
-export const switchServer = (serverId: string) => {
+export const switchServer = (serverId: string): void => {
   const server =
     serverId === 'test_postgres' ? TEST_POSTGRES_SERVER : OFFICIAL_SERVERS_BY_ID[serverId];
   if (!server) return;

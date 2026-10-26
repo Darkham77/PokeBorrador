@@ -11,14 +11,15 @@
  */
 
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { useRegionalContinentStudioStore } from '../stores/continentStudioStore.ts';
-import { renderRegionalContinentTilemap } from '../logic/map/canvasViewportBlitter.ts';
+
 import ContinentStudioControls from '../components/studio/ContinentStudioControls.vue';
-import RegionalStudioToolbar from '../components/studio/RegionalStudioToolbar.vue';
-import RegionalNetworkSvgOverlay from '../components/studio/RegionalNetworkSvgOverlay.vue';
-import RegionalUrbanSvgOverlay from '../components/studio/RegionalUrbanSvgOverlay.vue';
 import POIDetailDrawer from '../components/studio/POIDetailDrawer.vue';
+import RegionalNetworkSvgOverlay from '../components/studio/RegionalNetworkSvgOverlay.vue';
+import RegionalStudioToolbar from '../components/studio/RegionalStudioToolbar.vue';
+import RegionalUrbanSvgOverlay from '../components/studio/RegionalUrbanSvgOverlay.vue';
 import { VIEWPORT_ZOOM_IN_STEP, VIEWPORT_ZOOM_OUT_STEP } from '../config/studioConstants.ts';
+import { renderRegionalContinentTilemap } from '../logic/map/canvasViewportBlitter.ts';
+import { useRegionalContinentStudioStore } from '../stores/continentStudioStore.ts';
 
 const MIN_CONTINENT_STUDIO_ZOOM = 0.15;
 
@@ -105,9 +106,9 @@ function onWindowPointerMove(e: PointerEvent): void {
 function stopPanning(): void {
   if (!isPanning.value) return;
   isPanning.value = false;
-  window.removeEventListener('pointermove', onWindowPointerMove);
-  window.removeEventListener('pointerup', stopPanning);
-  window.removeEventListener('pointercancel', stopPanning);
+  globalThis.removeEventListener('pointermove', onWindowPointerMove);
+  globalThis.removeEventListener('pointerup', stopPanning);
+  globalThis.removeEventListener('pointercancel', stopPanning);
 }
 
 function handlePointerDown(e: PointerEvent): void {
@@ -121,9 +122,9 @@ function handlePointerDown(e: PointerEvent): void {
   if (e.button === 0 || e.button === 1) {
     isPanning.value = true;
     panStart.value = { x: e.clientX - panX.value, y: e.clientY - panY.value };
-    window.addEventListener('pointermove', onWindowPointerMove);
-    window.addEventListener('pointerup', stopPanning);
-    window.addEventListener('pointercancel', stopPanning);
+    globalThis.addEventListener('pointermove', onWindowPointerMove);
+    globalThis.addEventListener('pointerup', stopPanning);
+    globalThis.addEventListener('pointercancel', stopPanning);
   }
 }
 

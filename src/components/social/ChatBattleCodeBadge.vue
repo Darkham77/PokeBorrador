@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+
 import { useGameStore } from '@/stores/game';
 import { useLivePvPStore } from '@/stores/livePvP';
 import { useUIStore } from '@/stores/ui';
+
 import { mapDbRecordToBattleReplay } from './chatBattleCodeHelper';
 
 interface Props {
@@ -17,7 +19,7 @@ const uiStore = useUIStore();
 
 const loading = ref(false);
 
-async function handleWatch() {
+async function handleWatch(): Promise<void> {
   if (loading.value) return;
   loading.value = true;
 

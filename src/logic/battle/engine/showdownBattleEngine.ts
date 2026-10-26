@@ -1,9 +1,11 @@
 // src/logic/battle/engine/showdownBattleEngine.ts
 import type { Battle } from '@pkmn/sim';
-import { createShowdownBattle } from '../helpers/showdownBattleFactory.ts';
-import { type ChoiceRequest, requiresAction } from '../helpers/requestHelper.ts';
-import { BattleCheatManager } from '../helpers/battleCheatManager.ts';
+
 import type { CertifiedBattleHistoryEntry } from '../../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
+import { ACTIVE_SHOWDOWN_FORMAT } from '../../../data/system/constants.ts';
+import { BattleCheatManager } from '../helpers/battleCheatManager.ts';
+import { type ChoiceRequest, requiresAction } from '../helpers/requestHelper.ts';
+import { createShowdownBattle } from '../helpers/showdownBattleFactory.ts';
 import {
   resolveExplicitChoiceHelper,
   resolveCandidateOrFallback,
@@ -12,7 +14,6 @@ import {
   advanceSeatReplayerCandidate,
   consumeCertifiedChoice
 } from './showdownChoiceResolver.ts';
-import { ACTIVE_SHOWDOWN_FORMAT } from '../../../data/system/constants.ts';
 import {
   type BattleCheatRecord,
   type BattleAgent,
@@ -27,6 +28,8 @@ import {
 } from './showdownTurnExecutionHelper.ts';
 
 export type EngineMode = 'fuzzer' | 'replayer';
+import type { ShowdownSeatKey } from '../helpers/showdownSeats.ts';
+export type { ShowdownSeatKey };
 
 export interface ShowdownBattleEngineOptions {
   mode: EngineMode;
@@ -58,28 +61,24 @@ export class ShowdownBattleEngine {
   public readonly choiceIdx: Map<string, number> = new Map();
   /** Backward-compat accessor. Prefer choiceIdx.get('p1'). */
   // fallow-ignore-next-line unused-class-member
-  get p1ChoiceIdx(): number {
+  public get p1ChoiceIdx(): number {
     return this.choiceIdx.get('p1') ?? 0;
   }
   /** Backward-compat accessor. Prefer choiceIdx.get('p2'). */
   // fallow-ignore-next-line unused-class-member
-  get p2ChoiceIdx(): number {
+  public get p2ChoiceIdx(): number {
     return this.choiceIdx.get('p2') ?? 0;
   }
 
-  private readonly seatChoices: Map<string, string[]>;
+  private readonly seatChoices: Map<ShowdownSeatKey, string[]>;
   private readonly cheatManager: BattleCheatManager;
 
-  constructor(options: ShowdownBattleEngineOptions) {
+  public constructor(options: ShowdownBattleEngineOptions) {
     this.mode = options.mode;
 
-    this.battle = createShowdownBattle(
-      options.format || ACTIVE_SHOWDOWN_FORMAT,
-      options.seed as string | number[] | null | undefined
-    );
+    this.battle = createShowdownBattle(options.format || ACTIVE_SHOWDOWN_FORMAT, options.seed);
     // p1 = player seat, all others (p2, p3, p4) use the enemyChoices stream.
-    this.seatChoices = new Map([
-      // runtime-map: Fast O(1) keyed lookup dictionary
+    this.seatChoices = new Map<ShowdownSeatKey, string[]>([
       ['p1', options.playerChoices ?? []],
       ['p2', options.enemyChoices ?? []],
       ['p3', options.enemyChoices ?? []],
@@ -94,7 +93,7 @@ export class ShowdownBattleEngine {
   }
 
   // fallow-ignore-next-line unused-class-member
-  public setSeatChoices(seatId: string, choices: string[]): void {
+  public setSeatChoices(seatId: ShowdownSeatKey, choices: string[]): void {
     this.seatChoices.set(seatId, choices || []);
     if (!this.choiceIdx.has(seatId)) {
       this.choiceIdx.set(seatId, 0);

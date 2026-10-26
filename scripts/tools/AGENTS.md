@@ -19,6 +19,7 @@ This directory contains utility CLI scripts and tools for developer workflow mai
 
 ## Key Files
 
+- `audit_event_parity.ts`: Utility script auditing Showdown event outputs against client event handlers.
 - `compare_combat.ts`: Module implementation.
 - `compare_db_showdown.ts`: Module implementation.
 - `fetch_ev_yields.ts`: Module implementation.

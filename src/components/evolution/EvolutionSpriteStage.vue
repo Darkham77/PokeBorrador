@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import type { EvolutionStep, EvolutionSpriteTarget } from './evolutionTypes';
 
 const props = withDefaults(
@@ -32,7 +33,7 @@ const isShowingTo = computed(
 const resolvedFromAlt = computed(() => props.oldName || 'Pokémon pre-evolución');
 const resolvedToAlt = computed(() => props.newName || 'Pokémon evolución');
 
-const onImageError = (e: Event) => {
+const onImageError = (e: Event): void => {
   const target = e.target as HTMLImageElement | null;
   if (target) target.style.display = 'none';
 };

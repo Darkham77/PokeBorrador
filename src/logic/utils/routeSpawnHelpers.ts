@@ -1,19 +1,9 @@
-import { NATURE_DATA, NATURES } from '@/data/battle/natures';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { calculateTotalBaseStats } from '@/logic/pokemon/statsMath';
-import {
-  getMechanicalWeather,
-  WEATHER_UI_METADATA,
-  WEATHER_VISUAL_METADATA
-} from '@/logic/weather/weatherRegistry';
-import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
 import { ABILITY_TRANSLATIONS_ES } from '@/data/battle/abilities';
-import { isEnabledPokemonId } from '@/data/system/constants';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { NATURE_DATA, NATURES, type NatureId } from '@/data/battle/natures';
 import type { PokemonType } from '@/data/battle/types';
 import type { ItemId } from '@/data/inventory/items';
 import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { PokedexStatus } from '@/types/pokemon/pokemon';
+import { isEnabledPokemonId } from '@/data/system/constants';
 import {
   REPEL_ENCOUNTER_RATE_MODIFIER,
   SUPER_REPEL_ENCOUNTER_RATE_MODIFIER,
@@ -22,6 +12,16 @@ import {
   STANDARD_ROD_SPAWN_BUDGET,
   DEFAULT_FISHING_RATE_WEIGHT
 } from '@/logic/constants/encounters.ts';
+import { calculateTotalBaseStats } from '@/logic/pokemon/statsMath';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import {
+  getMechanicalWeather,
+  WEATHER_UI_METADATA,
+  WEATHER_VISUAL_METADATA
+} from '@/logic/weather/weatherRegistry';
+import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
+import type { PokedexStatus } from '@/types/pokemon/pokemon';
 
 const TRAVEL_INCENSE_ITEM_IDS = [
   'incensefire',
@@ -90,11 +90,11 @@ export function getSelectableSpecies(bypassWhitelist = false): SelectableSpecies
     }));
 }
 
-export function getSelectableNatures() {
+export function getSelectableNatures(): { id: NatureId; name: string }[] {
   return NATURES.map((n) => ({ id: n, name: NATURE_DATA[n].name }));
 }
 
-export function getSelectableAbilities() {
+export function getSelectableAbilities(): { id: string; name: string }[] {
   return Object.entries(ABILITY_TRANSLATIONS_ES).map(([id, data]) => ({
     id,
     name: data.name
@@ -115,7 +115,13 @@ export function translateWeather(w: string): string {
 
 export function calculateActiveTravelModifiers(
   items: ReadonlySet<TravelBuffItemId> | readonly TravelBuffItemId[]
-) {
+): {
+  encounterRateMod: number;
+  expMultiplier: number;
+  moneyMultiplier: number;
+  shinyChanceMod: number;
+  typeFocus: PokemonType | null;
+} {
   const itemSet = items instanceof Set ? items : new Set(items);
   let encounterRateMod = 0;
   let expMultiplier = 1.0;
@@ -171,7 +177,20 @@ function getPokedexVisibility(
   return { isSeen, isCaught };
 }
 
-function getPokemonBasicData(id: string, isSeen: boolean) {
+function getPokemonBasicData(
+  id: string,
+  isSeen: boolean
+): {
+  name: string;
+  types: PokemonType[];
+  hp: number;
+  atk: number;
+  def: number;
+  spa: number;
+  spd: number;
+  spe: number;
+  totalStats: number;
+} {
   const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null;
   const name = isSeen ? (data?.name ?? id.toUpperCase()) : 'Desconocido'; // text-ok: UI text display localization string
   const types = data ? [data.type, data.type2].filter((t): t is PokemonType => Boolean(t)) : [];
@@ -202,7 +221,7 @@ export function getSpawnStatus({
   isInCurrentCycle,
   isBuffed,
   isDebuffed
-}: SpawnStatusFlags) {
+}: SpawnStatusFlags): { spawnType: string; statusClass: string } {
   let spawnType = 'Común';
   let statusClass = 'common';
   if (isVisitor) {
@@ -433,7 +452,12 @@ function buildRouteSpawnItem(
 function resolveEventBoostedStatus(
   statusClass: string,
   speciesBonuses: { rate: number; shiny: number }
-) {
+): {
+  isEventBoosted: boolean;
+  finalStatusClass: string;
+  eventRateMult: number;
+  eventShinyMult: number;
+} {
   const isEventBoosted = speciesBonuses.rate > 1 || speciesBonuses.shiny > 1;
   return {
     isEventBoosted,

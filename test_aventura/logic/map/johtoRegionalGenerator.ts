@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * test_aventura/logic/map/johtoRegionalGenerator.ts
  *
@@ -6,6 +7,7 @@
  * Lake of Rage hydrography, Cianwood / Whirl Islands sea channels, and Mt. Silver / Mortar massifs.
  */
 
+import type { ProceduralGenerationConfig } from '../../types/map/adventureWorldTypes.ts';
 import {
   KANTO_GRID_W,
   KANTO_GRID_H,
@@ -15,7 +17,6 @@ import {
   type KantoNodeCoordinate
 } from '../../types/map/kantoGridModel.ts';
 import { KantoRegionalWorldGenerator } from './kantoRegionalGenerator.ts';
-import type { ProceduralGenerationConfig } from '../../types/map/adventureWorldTypes.ts';
 
 // ---------------------------------------------------------------------------
 // Geographic & Elevation Constants
@@ -89,7 +90,7 @@ interface JohtoBuildingBlueprint {
   readonly h: number;
 }
 
-const JOHTO_CANONICAL_BUILDINGS: Record<string, readonly JohtoBuildingBlueprint[]> = {
+const JOHTO_CANONICAL_BUILDINGS: Record<DisplayText, readonly JohtoBuildingBlueprint[]> = {
   // open-record: Canonical buildings configuration for Johto nodes
   newbark: [
     { style: 'lab_oak', dx: 20, dy: -30, ...BUILDING_DIMENSIONS.LAB_OAK },
@@ -115,8 +116,8 @@ const JOHTO_CANONICAL_BUILDINGS: Record<string, readonly JohtoBuildingBlueprint[
 } as const;
 
 export class JohtoRegionalWorldGenerator extends KantoRegionalWorldGenerator {
-  override generate(
-    nodes: Record<string, KantoNodeCoordinate>, // open-record: Dynamic adventure project map
+  public override generate(
+    nodes: Record<DisplayText, KantoNodeCoordinate>, // open-record: Dynamic adventure project map
     connections: readonly (readonly [string, string])[],
     seed = JOHTO_DEFAULT_SEED,
     config?: ProceduralGenerationConfig
@@ -143,29 +144,27 @@ export class JohtoRegionalWorldGenerator extends KantoRegionalWorldGenerator {
     if (autoOcean) {
       // A. Lake of Rage in the North-Center
       for (let y = LAKE_OF_RAGE_BOUNDS.MIN_Y; y <= LAKE_OF_RAGE_BOUNDS.MAX_Y; y++) {
+        const row = this.grid[y];
+        if (!row) continue;
         for (let x = LAKE_OF_RAGE_BOUNDS.MIN_X; x <= LAKE_OF_RAGE_BOUNDS.MAX_X; x++) {
           const d = Math.hypot(x - LAKE_OF_RAGE_BOUNDS.CENTER_X, y - LAKE_OF_RAGE_BOUNDS.CENTER_Y);
           if (d <= LAKE_OF_RAGE_BOUNDS.RADIUS) {
-            const row = this.grid[y];
-            if (row) {
-              row[x] = CELL_BIOME.WATER;
-              this.occupancy.set(x, y, OCCUPANCY_FLAGS.WATER);
-            }
+            row[x] = CELL_BIOME.WATER;
+            this.occupancy.set(x, y, OCCUPANCY_FLAGS.WATER);
           }
         }
       }
 
       // B. Western Ocean & Whirl Islands Bay
       for (let y = WESTERN_OCEAN_BOUNDS.MIN_Y; y < KANTO_GRID_H; y++) {
+        const row = this.grid[y];
+        if (!row) continue;
         for (let x = 0; x < WESTERN_OCEAN_BOUNDS.MAX_X; x++) {
           const wave =
             Math.sin(y * WESTERN_OCEAN_BOUNDS.WAVE_FREQUENCY) * WESTERN_OCEAN_BOUNDS.WAVE_AMPLITUDE;
           if (x < WESTERN_OCEAN_BOUNDS.BASE_X + wave) {
-            const row = this.grid[y];
-            if (row) {
-              row[x] = CELL_BIOME.WATER;
-              this.occupancy.set(x, y, OCCUPANCY_FLAGS.WATER);
-            }
+            row[x] = CELL_BIOME.WATER;
+            this.occupancy.set(x, y, OCCUPANCY_FLAGS.WATER);
           }
         }
       }
@@ -249,21 +248,15 @@ export class JohtoRegionalWorldGenerator extends KantoRegionalWorldGenerator {
     while (true) {
       const halfW = Math.floor(width / 2);
       for (let wy = -halfW; wy <= halfW; wy++) {
+        const py = cy + wy;
+        if (py < 0 || py >= KANTO_GRID_H) continue;
+        const row = this.grid[py];
+        if (!row) continue;
         for (let wx = -halfW; wx <= halfW; wx++) {
           const px = cx + wx;
-          const py = cy + wy;
-          if (px >= 0 && px < KANTO_GRID_W && py >= 0 && py < KANTO_GRID_H) {
-            const row = this.grid[py];
-            if (row) {
-              if (row[px] === CELL_BIOME.WATER) {
-                row[px] = CELL_BIOME.BRIDGE;
-                this.occupancy.set(px, py, OCCUPANCY_FLAGS.ROAD);
-              } else {
-                row[px] = CELL_BIOME.DIRT_PATH;
-                this.occupancy.set(px, py, OCCUPANCY_FLAGS.ROAD);
-              }
-            }
-          }
+          if (px < 0 || px >= KANTO_GRID_W) continue;
+          row[px] = row[px] === CELL_BIOME.WATER ? CELL_BIOME.BRIDGE : CELL_BIOME.DIRT_PATH;
+          this.occupancy.set(px, py, OCCUPANCY_FLAGS.ROAD);
         }
       }
       if (cx === x1 && cy === y1) break;
@@ -279,7 +272,7 @@ export class JohtoRegionalWorldGenerator extends KantoRegionalWorldGenerator {
     }
   }
 
-  private placeJohtoBuildings(nodes: Record<string, KantoNodeCoordinate>): void {
+  private placeJohtoBuildings(nodes: Record<DisplayText, KantoNodeCoordinate>): void {
     // open-record: Dynamic adventure project map nodes
     const T = JOHTO_CANONICAL_TILE_SIZE;
     const addBldg = (style: string, px: number, py: number, w: number, h: number): void => {

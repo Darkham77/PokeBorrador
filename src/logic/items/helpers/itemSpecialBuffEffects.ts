@@ -1,9 +1,9 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { ItemEffectResult } from '@/types/inventory/items';
 import type { ItemId } from '@/data/inventory/items';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { MIN_VIGOR_VAL, SINGLE_VIGOR_RESTORE, SINGLE_LEVEL_GAIN } from '@/logic/constants/items';
 import { DEFAULT_MAX_VIGOR } from '@/logic/pokemon/pokemonUtils';
+import type { ItemEffectResult } from '@/types/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const pokeEffect = (fn: (p: Pokemon) => ItemEffectResult) => (p: unknown) => fn(p as Pokemon);
 

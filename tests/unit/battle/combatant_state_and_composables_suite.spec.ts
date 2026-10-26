@@ -6,19 +6,20 @@
  * and unified status / weather badge filtering.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
-import { defineComponent, ref } from 'vue';
 import { mount } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+import { defineComponent, ref } from 'vue';
+
+import { useBattleCombatantSpriteLoop } from '@/components/battle/useBattleCombatantSpriteLoop';
+import { useBattleCombatantState } from '@/components/battle/useBattleCombatantState';
+import { useCombatantStatus } from '@/composables/battle/useCombatantStatus';
+import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
 import {
   POKEMON_SPRITE_IDLE_FPS,
   POKEMON_SPRITE_VARIATION_FPS
 } from '@/logic/constants/animations';
-import { useBattleCombatantSpriteLoop } from '@/components/battle/useBattleCombatantSpriteLoop';
-import { useBattleCombatantState } from '@/components/battle/useBattleCombatantState';
 import { useBattleStore } from '@/stores/battle/battle';
-import { useCombatantStatus } from '@/composables/battle/useCombatantStatus';
-import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
 import type { BattleCombatantProps, BattleState } from '@/types/battle/battle';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 

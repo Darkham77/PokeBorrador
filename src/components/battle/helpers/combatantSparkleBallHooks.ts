@@ -5,8 +5,7 @@
  */
 
 import { gsap } from 'gsap';
-import { gameBus } from '@/logic/events/gameBus';
-import type { BattleSide } from '@/types/battle/battle';
+
 import {
   SPARKLE_FULL_ROTATION_DEG,
   SPARKLE_HORIZONTAL_DURATION_SEC,
@@ -16,10 +15,12 @@ import {
   BALL_LEAVE_SCALE,
   BALL_LEAVE_DURATION_SEC
 } from '@/logic/constants/animations';
+import { gameBus } from '@/logic/events/gameBus';
+import type { BattleSide } from '@/types/battle/battle';
 
 const SPARKLE_CENTER_OFFSET_PERCENT = -50;
 
-export function onSparkleEnter(el: Element, done: () => void) {
+export function onSparkleEnter(el: Element, done: () => void): void {
   const htmlEl = el as HTMLElement;
   const tx = parseFloat(htmlEl.dataset.tx || '0');
   const ty = parseFloat(htmlEl.dataset.ty || '0');
@@ -63,7 +64,7 @@ export function onSparkleEnter(el: Element, done: () => void) {
   });
 }
 
-export function onBallEnter(el: Element, done: () => void) {
+export function onBallEnter(el: Element, done: () => void): void {
   gsap.fromTo(
     el,
     { opacity: 0, scale: 0.5 },
@@ -77,7 +78,7 @@ export function onBallEnter(el: Element, done: () => void) {
   );
 }
 
-export function onBallLeave(el: Element, side: BattleSide, done: () => void) {
+export function onBallLeave(el: Element, side: BattleSide, done: () => void): void {
   const tween = gsap.to(el, {
     opacity: 0,
     scale: BALL_LEAVE_SCALE,
@@ -95,7 +96,7 @@ const CRITICAL_BANNER_ANIM = {
   Y_STAGE_3: -65
 } as const;
 
-export function onCriticalBannerEnter(el: Element, done: () => void) {
+export function onCriticalBannerEnter(el: Element, done: () => void): void {
   const htmlEl = el as HTMLElement;
   const tl = gsap.timeline({ onComplete: done });
 

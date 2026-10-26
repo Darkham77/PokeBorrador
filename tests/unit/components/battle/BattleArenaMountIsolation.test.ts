@@ -1,8 +1,10 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import BattleArena from '@/components/battle/BattleArena.vue';
+import BattleTrainerEntities from '@/components/battle/BattleTrainerEntities.vue';
 import { useBattleStore } from '@/stores/battle/battle';
 import { useMapStore } from '@/stores/map';
 
@@ -64,5 +66,28 @@ describe('BattleArena Mount & Idle State Resilience (Tier 1 RED Reproduction)', 
         }
       });
     }).toThrowError(/\[BattleArena\] battle\.locationId no especificado en batalla activa/);
+  });
+
+  it('mounts BattleTrainerEntities cleanly without throwing ReferenceError: watch is not defined', () => {
+    const wrapper = mount(BattleTrainerEntities, {
+      props: {
+        isTrainerVisible: true,
+        showStandingTrainers: false,
+        trainerAnimState: null,
+        showGuides: false,
+        p2Pos: { x: 100, y: 100 },
+        baseEntitySizeEnemy: 64,
+        baseEntitySizePlayer: 64,
+        objectScale: 1,
+        isTrainerOrGym: false,
+        isPvP: false,
+        trainerSprite: 'cazabichos',
+        trainerGender: 'h',
+        trainerName: 'Ash',
+        playerBackSpriteUrl: '/assets/sprites/trainers/cazabichos_h_back.webp'
+      }
+    });
+
+    expect(wrapper.exists()).toBe(true);
   });
 });

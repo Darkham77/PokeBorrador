@@ -1,28 +1,29 @@
 // ui-demo/src/data/mockSelectionPokemon.ts
 
+import type { DisplayText, HexColor } from '@francogp/auditor';
 import type { PokemonGender } from '@/types/pokemon/pokemon';
 
 export const MOCK_SELECTION_SOURCES = ['team', 'box'] as const;
 export type MockSelectionSource = (typeof MOCK_SELECTION_SOURCES)[number];
 
 export interface SelectionDemoPokemon {
-  uid: string; // domain-ok: Open dynamic text or non-domain string payload
+  uid: DisplayText;
   id: number;
-  name: string; // domain-ok: Open dynamic text or non-domain string payload
-  nickname?: string; // domain-ok: Open dynamic text or non-domain string payload
+  name: DisplayText;
+  nickname?: DisplayText;
   gender?: PokemonGender;
   level: number;
   ivs: number;
   total: number;
-  types: { id: string; label: string }[];
+  types: { id: DisplayText; label: DisplayText }[];
   hp: number;
   maxHp: number;
-  tier: string; // domain-ok: Open dynamic text or non-domain string payload
-  tierColor: string; // domain-ok: Open dynamic text or non-domain string payload
-  tierBg: string; // domain-ok: Open dynamic text or non-domain string payload
+  tier: DisplayText;
+  tierColor: HexColor;
+  tierBg: DisplayText;
   source: MockSelectionSource;
-  badges: string[]; // domain-ok: Open dynamic text or non-domain string payload
-  seasonViolation?: string; // domain-ok: Open dynamic text or non-domain string payload
+  badges: DisplayText[];
+  seasonViolation?: DisplayText;
 }
 
 export const MOCK_SELECTION_ITEMS: SelectionDemoPokemon[] = [

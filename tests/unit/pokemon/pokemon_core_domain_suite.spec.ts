@@ -1,29 +1,31 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+import { Dex } from '@pkmn/sim';
+import { setActivePinia, createPinia } from 'pinia';
 /**
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { ref, nextTick, type Ref } from 'vue';
-import { setActivePinia, createPinia } from 'pinia';
-import fs from 'node:fs';
-import path from 'node:path';
-import { Dex } from '@pkmn/sim';
 
 import { useBoxFilters } from '@/composables/pokemon/useBoxFilters';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { mockLocalStorage } from '../../helpers/debugSetup.ts';
-import { validateAndSanitize } from '@/logic/auth/saveSanitizer';
-import { checkPokemonLegality, hasIllegalPokemon } from '@/logic/pokemon/pokemonLegality';
-import { auditAndRepairSaveData } from '../../../scripts/maintenance/repair_account_legality.ts';
-import type { SaveDataDto } from '@/logic/validation/schemas';
-import { assignGender, makePokemon } from '@/logic/pokemon/pokemonFactory';
-import { pokemonDebugService } from '@/logic/debug/pokemonDebugService';
-import { calcStatsPure } from '@/logic/pokemon/statsMath';
-import { getLegalSpeciesMoves, getMaxAllowedMoves } from '@/logic/pokemon/pokemonLearnset';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { validateAndSanitize } from '@/logic/auth/saveSanitizer';
+import { pokemonDebugService } from '@/logic/debug/pokemonDebugService';
+import { assignGender, makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { getLegalSpeciesMoves, getMaxAllowedMoves } from '@/logic/pokemon/pokemonLearnset';
+import { checkPokemonLegality, hasIllegalPokemon } from '@/logic/pokemon/pokemonLegality';
 import { getTypeEffectivenessMsg } from '@/logic/pokemon/pokemonMath';
 import { getMoveDescription, generateRandomIVs } from '@/logic/pokemon/pokemonUtils';
-import type { MoveBaseData } from '@/types/system/database';
+import { calcStatsPure } from '@/logic/pokemon/statsMath';
 import { getPokemonTier, hasPerfectIV } from '@/logic/pokemon/tierEngine';
+import type { SaveDataDto } from '@/logic/validation/schemas';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { MoveBaseData } from '@/types/system/database';
+
+import { auditAndRepairSaveData } from '../../../scripts/maintenance/repair_account_legality.ts';
+import { mockLocalStorage } from '../../helpers/debugSetup.ts';
 
 mockLocalStorage();
 if (typeof window !== 'undefined' && !window.localStorage) {

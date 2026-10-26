@@ -9,6 +9,8 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
+
+import { getStructureTemplate } from '../../config/mapStructures.ts';
 import {
   extractTilePixels,
   isDiscardableTile,
@@ -19,7 +21,6 @@ import {
   type RawPixelGrid
 } from '../../logic/map/inBrowserTileProcessor.ts';
 import { TilesRegistryService } from '../../logic/map/tilesRegistry.ts';
-import { getStructureTemplate } from '../../config/mapStructures.ts';
 
 describe('In-Browser Tile Processor Pipeline', () => {
   let testRegistry: TilesRegistryService;

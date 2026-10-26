@@ -1,6 +1,6 @@
-import type { Pokemon, Move } from '../../../types/pokemon/pokemon.ts';
 import type { BattleStages } from '../../../types/battle/battle.ts';
 import type { BattleContext } from '../../../types/battle/battleContext.ts';
+import type { Pokemon, Move } from '../../../types/pokemon/pokemon.ts';
 import type { SwitchEvaluationMode } from './heuristic/heuristicEngine.ts';
 
 export interface CombatAI {

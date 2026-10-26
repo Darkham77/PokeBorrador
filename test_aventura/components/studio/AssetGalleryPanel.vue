@@ -13,6 +13,7 @@
  */
 
 import { ref, computed } from 'vue';
+
 import type { CanonicalAssetEntry } from '../../logic/map/canonicalAssetsRegistry.ts';
 
 const props = defineProps<{

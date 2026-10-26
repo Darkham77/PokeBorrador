@@ -1,17 +1,10 @@
 import { describe, it, expect } from 'vite-plus/test';
+
 import {
   resolveBoxCardClasses,
   resolveComputedTypePillSize,
   resolveCardAuraClass
 } from '@/components/box/boxPokemonCardHelper';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import {
-  getHpClass,
-  calculateHpData,
-  resolveCardStatusIndicators,
-  resolveVisibleCardActions,
-  resolvePokemonCardClasses
-} from '@/components/pokemon/pokemonDisplayCardHelper';
 import {
   getCategoryDescription,
   formatRange,
@@ -22,6 +15,13 @@ import {
   type PhysicalData
 } from '@/components/pokemon-detail/pokemonSummaryHelper';
 import {
+  getHpClass,
+  calculateHpData,
+  resolveCardStatusIndicators,
+  resolveVisibleCardActions,
+  resolvePokemonCardClasses
+} from '@/components/pokemon/pokemonDisplayCardHelper';
+import {
   hexToRgb,
   resolveSpinConfig,
   resolveShadowConfig,
@@ -30,6 +30,7 @@ import {
   SHADOW_CONFIGS
 } from '@/components/profile/trainerAvatarAnimHelper';
 import { FULL_ROTATION_DEG } from '@/logic/constants/animations';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 function createMockPokemon(overrides: Partial<Pokemon> = {}): Pokemon {
   return {

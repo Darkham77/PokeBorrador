@@ -1,10 +1,11 @@
-import type { Pokemon, PokemonIVs, PokemonMoveId } from '@/types/pokemon/pokemon';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { DisplayText, IsoDateString, HexColor } from '@francogp/auditor';
+
 import type { NatureId } from '@/data/battle/natures';
 import type { ItemId } from '@/data/inventory/items';
-import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
-
 import type { TrainerTypeKey } from '@/data/player/trainerTypes';
+import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { Pokemon, PokemonIVs, PokemonMoveId } from '@/types/pokemon/pokemon';
 
 export const BREEDING_ACTIVITY_SOURCES = ['battle', 'capture', 'gym', 'minigame'] as const;
 export type BreedingActivitySource = (typeof BREEDING_ACTIVITY_SOURCES)[number];
@@ -25,48 +26,48 @@ export interface MissionRequirement {
 
 export interface MissionReward {
   id: ItemId;
-  name: string; // domain-ok: UI Spanish text localization label
+  name: DisplayText;
   qty: number;
-  icon: string; // domain-ok: UI emoji icon
+  icon: DisplayText;
 }
 
 export interface DaycareSlot {
   pokemon: Pokemon | null;
   slotIndex: number;
-  depositedAt?: string | null; // domain-ok: Open dynamic text or non-domain string payload
-  deposited_at?: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  depositedAt?: IsoDateString | null;
+  deposited_at?: IsoDateString | null;
 }
 
 export interface DaycareEgg {
-  id: string; // domain-ok: unique egg instance id
+  id: DisplayText;
   species: PokemonSpeciesId;
-  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  name: DisplayText;
   level: number;
   isEgg: boolean;
   steps: number;
-  motherId?: string; // domain-ok: Open dynamic text or non-domain string payload
-  mother_id?: string; // domain-ok: Open dynamic text or non-domain string payload
-  depositedAt?: string; // domain-ok: Open dynamic text or non-domain string payload
-  deposited_at?: string; // domain-ok: Open dynamic text or non-domain string payload
+  motherId?: DisplayText;
+  mother_id?: DisplayText;
+  depositedAt?: IsoDateString;
+  deposited_at?: IsoDateString;
   ivs: PokemonIVs;
   nature: NatureId;
   movesAtBirth: PokemonMoveId[];
   abilityIndex: number;
   isShiny: boolean;
   cost: number;
-  tint?: string; // domain-ok: Open dynamic text or non-domain string payload
+  tint?: HexColor;
   isAncestral?: boolean;
-  inheritedIvs?: Record<string, unknown> & { _scanned?: boolean; _cost?: number }; // open-record: Generic key-value data dictionary container
-  inherited_ivs?: Record<string, unknown> & { _scanned?: boolean; _cost?: number }; // open-record: Generic key-value data dictionary container
+  inheritedIvs?: Record<DisplayText, unknown> & { _scanned?: boolean; _cost?: number };
+  inherited_ivs?: Record<DisplayText, unknown> & { _scanned?: boolean; _cost?: number };
 }
 
 export type DaycareWarehouseItem = DaycareEgg | Pokemon;
 
 export interface DaycareMission {
-  date: string; // domain-ok: Open dynamic text or non-domain string payload
+  date: IsoDateString;
   targetId: PokemonSpeciesId;
   requirement: MissionRequirement;
-  reqText: string; // domain-ok: Open dynamic text or non-domain string payload
+  reqText: DisplayText;
   reward: MissionReward;
   completed: boolean;
   trainerType: TrainerTypeKey;

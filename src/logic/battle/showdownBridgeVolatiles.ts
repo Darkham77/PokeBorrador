@@ -1,10 +1,13 @@
-import { SHOWDOWN_DISABLE_DURATION_TURNS } from '../../data/system/constants.ts';
-import { toID } from '@/logic/utils/strings.ts';
-import type { SBCtx } from './showdownBridgeCtx.ts';
-import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
-import { toPokemonType } from '@/data/battle/types.ts';
+import type { DisplayText } from '@francogp/auditor';
+
 import { isPokemonMoveId, requirePokemonMoveId } from '@/data/battle/moves.ts';
+import { toPokemonType } from '@/data/battle/types.ts';
+import { toID } from '@/logic/utils/strings.ts';
 import { requireVolatileStatusKey } from '@/types/pokemon/pokemon.ts';
+
+import { SHOWDOWN_DISABLE_DURATION_TURNS } from '../../data/system/constants.ts';
+import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
+import type { SBCtx } from './showdownBridgeCtx.ts';
 
 type VolatileTarget = NonNullable<ReturnType<SBCtx['getPoke']>>;
 type VolatileStartHandler = (
@@ -15,7 +18,7 @@ type VolatileStartHandler = (
 ) => void;
 type VolatileEndHandler = (ctx: SBCtx, target: VolatileTarget, line: string) => void;
 
-const VOLATILE_START_HANDLERS: Record<string, VolatileStartHandler> = {
+const VOLATILE_START_HANDLERS: Record<DisplayText, VolatileStartHandler> = {
   // open-record: Showdown volatile status start handler map
   typechange: (_ctx, target, parts) => {
     const newType = parts[4] || '';
@@ -74,7 +77,7 @@ const VOLATILE_START_HANDLERS: Record<string, VolatileStartHandler> = {
   }
 };
 
-const VOLATILE_END_HANDLERS: Record<string, VolatileEndHandler> = {
+const VOLATILE_END_HANDLERS: Record<DisplayText, VolatileEndHandler> = {
   // open-record: Showdown volatile status end handler map
   confusion: ({ store }, target, line) => {
     delete target.volatileCounters!['confusion'];

@@ -1,11 +1,13 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { DisplayText } from '@francogp/auditor';
+
 import { getPokedexOrderIndex, requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { getPokemonTier } from '@/logic/pokemon/tierEngine';
-import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils';
 import {
   getPokemonPhysicalWeight,
   getPokemonPhysicalHeight
 } from '@/logic/pokemon/physicalDimensionsMath';
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils';
+import { getPokemonTier } from '@/logic/pokemon/tierEngine';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export interface BoxSortItem {
   p: Pokemon | null;
@@ -43,11 +45,11 @@ function compareByRecent(a: BoxSortItem, b: BoxSortItem): number {
 
 type SortComparator = (a: BoxSortItem, b: BoxSortItem) => number;
 
-const SORT_COMPARATORS: Readonly<Record<string, SortComparator>> = {
+const SORT_COMPARATORS: Readonly<Record<DisplayText, SortComparator>> = {
   // open-record: Box sort key comparator dispatch table
   level: (a, b) => (b.p as Pokemon).level - (a.p as Pokemon).level,
-  tier: (a, b) => getPokemonTier(b.p as Pokemon).total - getPokemonTier(a.p as Pokemon).total,
-  ivs: (a, b) => getPokemonTier(b.p as Pokemon).total - getPokemonTier(a.p as Pokemon).total,
+  tier: (a, b) => getPokemonTier(b.p).total - getPokemonTier(a.p).total,
+  ivs: (a, b) => getPokemonTier(b.p).total - getPokemonTier(a.p).total,
   friendship: (a, b) =>
     ((b.p as Pokemon).friendship ?? FALLBACK_FRIENDSHIP) -
     ((a.p as Pokemon).friendship ?? FALLBACK_FRIENDSHIP),

@@ -1,10 +1,11 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/debug/rewardsDebugOccurrenceHelper.ts
  *
  * Helper for matching past event occurrences and picking simulated prizes.
  */
 
-import { normalizeZonedDateTime } from '@/logic/utils/timeUtils';
+import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine';
 import {
   safeParse,
   isLastSundayOfMonth,
@@ -13,7 +14,7 @@ import {
 } from '@/logic/events/eventSchedules';
 import { getEventConfiguredPrizes } from '@/logic/events/eventValidators';
 import { logger } from '@/logic/utils/logger';
-import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine';
+import { normalizeZonedDateTime } from '@/logic/utils/timeUtils';
 
 export interface PastEventMatch {
   event: GameEvent;
@@ -94,7 +95,7 @@ function matchMonthlyTrigger(
   if (typeof sched.trigger !== 'string') return null;
   const predicate = (
     MONTHLY_TRIGGER_PREDICATES as Record<
-      string,
+      DisplayText,
       ((day: Temporal.ZonedDateTime) => boolean) | undefined
     >
   )[sched.trigger]; // open-record: Monthly trigger predicate lookup
@@ -197,7 +198,7 @@ export function pickRandomPrize(event: GameEvent): {
       const chosenKey = prizeKeys[Math.floor(Math.random() * prizeKeys.length)] || 'first';
       const rawPrize =
         ((chosenSub.prizes as Record<string, unknown>)[chosenKey] as Record<string, unknown>) || {}; // open-record: Generic key-value data dictionary container
-      const rankLabels: Record<string, string> = {
+      const rankLabels: Record<DisplayText, string> = {
         first: '1° Puesto 🥇',
         second: '2° Puesto 🥈',
         third: '3° Puesto 🥉'
@@ -213,12 +214,12 @@ export function pickRandomPrize(event: GameEvent): {
 
   // 2. Check event-level prizes
   if (cfg && cfg.prizes && typeof cfg.prizes === 'object') {
-    const keys = Object.keys(cfg.prizes as Record<string, unknown>); // open-record: Generic key-value data dictionary container
+    const keys = Object.keys(cfg.prizes); // open-record: Generic key-value data dictionary container
     if (keys.length > 0) {
       const chosenKey = keys[Math.floor(Math.random() * keys.length)] || 'first';
       const rawPrize =
         ((cfg.prizes as Record<string, unknown>)[chosenKey] as Record<string, unknown>) || {}; // open-record: Generic key-value data dictionary container
-      const rankLabels: Record<string, string> = {
+      const rankLabels: Record<DisplayText, string> = {
         first: '1° Puesto 🥇',
         second: '2° Puesto 🥈',
         third: '3° Puesto 🥉'

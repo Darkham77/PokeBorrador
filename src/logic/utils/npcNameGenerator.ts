@@ -1,7 +1,8 @@
-import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
 import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
+import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
+import type { BinaryGender } from '@/types/pokemon/spriteShadows';
 
-export type NpcGender = 'M' | 'F';
+export type NpcGender = BinaryGender;
 
 export const MALE_NAMES = [
   'Chano',
@@ -109,8 +110,7 @@ export const FEMALE_NAMES = [
   'Naiara'
 ] as const;
 
-const KNOWN_FEMALE_SPRITES: readonly string[] = [
-  // no-domain: Non-domain utility collection or data structure
+const KNOWN_FEMALE_SPRITES = [
   'nurse',
   'nurseryaide',
   'battlegirl',
@@ -165,10 +165,9 @@ const KNOWN_FEMALE_SPRITES: readonly string[] = [
   'scientistf',
   'skytrainerf',
   'pokemonrangerf'
-];
+] as const;
 
-const KNOWN_MALE_SPRITES: readonly string[] = [
-  // no-domain: Non-domain utility collection or data structure
+const KNOWN_MALE_SPRITES = [
   'oak',
   'elm',
   'rowan',
@@ -220,7 +219,10 @@ const KNOWN_MALE_SPRITES: readonly string[] = [
   'tamer',
   'policeman',
   'doctor'
-];
+] as const;
+
+const KNOWN_FEMALE_SPRITES_SET: ReadonlySet<string> = new Set<string>(KNOWN_FEMALE_SPRITES);
+const KNOWN_MALE_SPRITES_SET: ReadonlySet<string> = new Set<string>(KNOWN_MALE_SPRITES);
 
 const ARCHETYPE_TITLES: Partial<Record<NpcArchetype, { M: string; F: string }>> = {
   caza_bichos: { M: 'Caza Bichos', F: 'Caza Bichos' },
@@ -258,8 +260,8 @@ export function detectGenderFromSprite(spriteId?: NpcSpriteId): NpcGender {
 
   // Check known female sprite IDs or suffixes
   if (
-    KNOWN_FEMALE_SPRITES.includes(clean) ||
-    KNOWN_FEMALE_SPRITES.includes(baseName) ||
+    KNOWN_FEMALE_SPRITES_SET.has(clean) ||
+    KNOWN_FEMALE_SPRITES_SET.has(baseName) ||
     clean.includes('female') ||
     clean.endsWith('f') ||
     clean.includes('girl') ||
@@ -270,8 +272,8 @@ export function detectGenderFromSprite(spriteId?: NpcSpriteId): NpcGender {
 
   // Check known male sprite IDs
   if (
-    KNOWN_MALE_SPRITES.includes(clean) ||
-    KNOWN_MALE_SPRITES.includes(baseName) ||
+    KNOWN_MALE_SPRITES_SET.has(clean) ||
+    KNOWN_MALE_SPRITES_SET.has(baseName) ||
     clean.includes('man') ||
     clean.includes('boy')
   ) {

@@ -5,10 +5,10 @@
 > **Estado actual de la implementación:**
 >
 > - ✅ SQL schema creado (`db_dominance_schema.sql`) — **pendiente ejecutarlo en Supabase**
-> - ✅ `src/legacy/js/04_state.js` — campos `faction`, `warCoins`, `warCoinsSpent`, `warDailyCap` añadidos al estado
-> - ✅ `src/legacy/js/21_dominance.js` — lógica central creada (guardianes, puntos, bonos, UI)
+> - ✅ `legacy/js/04_state.js` — campos `faction`, `warCoins`, `warCoinsSpent`, `warDailyCap` añadidos al estado
+> - ✅ `legacy/js/21_dominance.js` — lógica central creada (guardianes, puntos, bonos, UI)
 > - ✅ `index.html` — tab Guerra añadido a la navegación, modales de bando y tienda inyectados, `<script>` de `21_dominance.js` añadido
-> - ✅ `src/legacy/js/01_auth.js` — `serializeState()` incluye campos de guerra; `initDominanceSystem()` llamado al login; badge de facción en perfil
+> - ✅ `legacy/js/01_auth.js` — `serializeState()` incluye campos de guerra; `initDominanceSystem()` llamado al login; badge de facción en perfil
 > - ⚠️ Algunos cambios de los pasos 5-11 pueden estar incompletos o con errores — esta guía te permite rehacerlos limpiamente
 
 ---
@@ -25,10 +25,10 @@ Esto crea las tablas: `war_factions`, `war_points`, `war_dominance`, `guardian_c
 
 ---
 
-## PROMPT 1 — Verificar el estado actual del archivo src/legacy/js/21_dominance.js
+## PROMPT 1 — Verificar el estado actual del archivo legacy/js/21_dominance.js
 
 ```text
-Abrí el archivo src/legacy/js/21_dominance.js y verificá que contenga las siguientes funciones. Si alguna falta, añadila al final sin tocar lo que ya existe:
+Abrí el archivo legacy/js/21_dominance.js y verificá que contenga las siguientes funciones. Si alguna falta, añadila al final sin tocar lo que ya existe:
 
 1. `renderFactionModal()` — muestra el modal `#faction-choice-modal` si `state.faction === null`
 2. `renderWarTab()` — llama a `renderWarPanel()`
@@ -43,10 +43,10 @@ Si todas existen, respondé "Todo OK" y no modifiques nada.
 
 ---
 
-## PROMPT 2 — Hook en src/legacy/js/06_encounters.js: Guardián en goLocation
+## PROMPT 2 — Hook en legacy/js/06_encounters.js: Guardián en goLocation
 
 ````text
-En el archivo src/legacy/js/06_encounters.js, encontrá la función `goLocation(locId)`. Necesito hacer dos cambios quirúrgicos:
+En el archivo legacy/js/06_encounters.js, encontrá la función `goLocation(locId)`. Necesito hacer dos cambios quirúrgicos:
 
 **Cambio 1:** Convertir la función a `async`:
 - Cambiá `function goLocation(locId)` por `async function goLocation(locId)`
@@ -75,11 +75,11 @@ No toques nada más en el archivo. Verificá que el juego cargue sin errores de 
 
 ---
 
-## PROMPT 3 — Hook en src/legacy/js/04_state.js: multiplicador shiny de dominancia
+## PROMPT 3 — Hook en legacy/js/04_state.js: multiplicador shiny de dominancia
 
 ````text
 
-En el archivo src/legacy/js/04_state.js, dentro de la función `makePokemon(id, level)`, encontrá este bloque:
+En el archivo legacy/js/04_state.js, dentro de la función `makePokemon(id, level)`, encontrá este bloque:
 
 ```js
 finalShinyRate = Math.max(1, finalShinyRate);
@@ -101,11 +101,11 @@ No toques nada más en el archivo. Verificá que el juego cargue sin errores.
 
 ---
 
-## PROMPT 4 — Hook en src/legacy/js/07_battle.js: puntos de guerra al ganar
+## PROMPT 4 — Hook en legacy/js/07_battle.js: puntos de guerra al ganar
 
 ````text
 
-En el archivo src/legacy/js/07_battle.js, dentro de la función `endBattle(won)`, encontrá este bloque exacto:
+En el archivo legacy/js/07_battle.js, dentro de la función `endBattle(won)`, encontrá este bloque exacto:
 
 ```js
 setLog(`¡${b.enemy.name} fue derrotado!`, 'log-player');
@@ -131,11 +131,11 @@ No toques nada más. Verificá que el juego cargue sin errores.
 
 ---
 
-## PROMPT 5 — Hook en src/legacy/js/07_battle.js: multiplicador EXP de dominancia
+## PROMPT 5 — Hook en legacy/js/07_battle.js: multiplicador EXP de dominancia
 
 ````text
 
-En el archivo src/legacy/js/07_battle.js, dentro de la función `awardBattleExperience(isCapture = false)`, encontrá estas líneas:
+En el archivo legacy/js/07_battle.js, dentro de la función `awardBattleExperience(isCapture = false)`, encontrá estas líneas:
 
 ```js
 const expMultiplier = isCapture ? 4 : ((b.isTrainer || b.isGym) ? 8 : 4);
@@ -165,11 +165,11 @@ No toques nada más. Verificá que el juego cargue sin errores.
 
 ---
 
-## PROMPT 6 — Hook en src/legacy/js/07_battle.js: captura de Guardián
+## PROMPT 6 — Hook en legacy/js/07_battle.js: captura de Guardián
 
 ````text
 
-En el archivo src/legacy/js/07_battle.js, encontrá la función `catchSuccess(enemy)`.
+En el archivo legacy/js/07_battle.js, encontrá la función `catchSuccess(enemy)`.
 
 **Cambio 1:** Convertirla a async:
 
@@ -272,11 +272,11 @@ Verificá que el juego cargue sin errores de consola.
 
 ---
 
-## PROMPT 8 — Verificar badge de facción en perfil (src/legacy/js/01_auth.js)
+## PROMPT 8 — Verificar badge de facción en perfil (legacy/js/01_auth.js)
 
 ````text
 
-En el archivo src/legacy/js/01_auth.js, dentro de la función `updateProfilePanel(user, profile)`, verificá que exista un bloque que actualice el elemento `#player-faction-badge` según `state.faction`.
+En el archivo legacy/js/01_auth.js, dentro de la función `updateProfilePanel(user, profile)`, verificá que exista un bloque que actualice el elemento `#player-faction-badge` según `state.faction`.
 
 Si NO existe, encontrá la línea donde termina el bloque `if (user && profile) { ... }` (cierra con `}`) y DESPUÉS de ese cierre de bloque, añadí:
 
@@ -303,11 +303,11 @@ Si YA existe ese bloque, no toques nada, respondé "Ya estaba".
 
 ---
 
-## PROMPT 9 — Verificar llamada a initDominanceSystem en el login (src/legacy/js/01_auth.js)
+## PROMPT 9 — Verificar llamada a initDominanceSystem en el login (legacy/js/01_auth.js)
 
 ````text
 
-En el archivo src/legacy/js/01_auth.js, dentro de la función `onLogin(user)`, verificá que exista esta línea (o similar) cerca del final del bloque try:
+En el archivo legacy/js/01_auth.js, dentro de la función `onLogin(user)`, verificá que exista esta línea (o similar) cerca del final del bloque try:
 
 ```js
 if (typeof initDominanceSystem === 'function') setTimeout(() => initDominanceSystem(), 1500);
@@ -327,17 +327,17 @@ Si YA existe, no toques nada, respondé "Ya estaba".
 
 Necesito que hagas una revisión integral del Sistema de Dominancia implementado en Poké Vicio. Revisá lo siguiente **leyendo los archivos actuales** (no hagas cambios aún):
 
-1. `src/legacy/js/21_dominance.js` — ¿Se define `initDominanceSystem`, `chooseFaction`, `tryTriggerGuardian`, `claimGuardianCapture`, `addWarPoints`, `renderWarPanel`, `renderWarShop`?
+1. `legacy/js/21_dominance.js` — ¿Se define `initDominanceSystem`, `chooseFaction`, `tryTriggerGuardian`, `claimGuardianCapture`, `addWarPoints`, `renderWarPanel`, `renderWarShop`?
 
-2. `src/legacy/js/06_encounters.js` — ¿`goLocation` es `async` y llama a `tryTriggerGuardian`?
+2. `legacy/js/06_encounters.js` — ¿`goLocation` es `async` y llama a `tryTriggerGuardian`?
 
-3. `src/legacy/js/07_battle.js` — ¿`catchSuccess` es `async` y chequea `enemy.isGuardian`? ¿`endBattle` llama a `addWarPoints`? ¿`awardBattleExperience` aplica `getDominanceExpMultiplier`?
+3. `legacy/js/07_battle.js` — ¿`catchSuccess` es `async` y chequea `enemy.isGuardian`? ¿`endBattle` llama a `addWarPoints`? ¿`awardBattleExperience` aplica `getDominanceExpMultiplier`?
 
-4. `src/legacy/js/04_state.js` — ¿`makePokemon` aplica `getDominanceShinyMultiplier`? ¿`INITIAL_STATE` tiene `faction`, `warCoins`, `warCoinsSpent`, `warDailyCap`?
+4. `legacy/js/04_state.js` — ¿`makePokemon` aplica `getDominanceShinyMultiplier`? ¿`INITIAL_STATE` tiene `faction`, `warCoins`, `warCoinsSpent`, `warDailyCap`?
 
-5. `src/legacy/js/01_auth.js` — ¿`serializeState()` guarda `faction`, `warCoins`, `warCoinsSpent`, `warDailyCap`? ¿`onLogin` llama a `initDominanceSystem`?
+5. `legacy/js/01_auth.js` — ¿`serializeState()` guarda `faction`, `warCoins`, `warCoinsSpent`, `warDailyCap`? ¿`onLogin` llama a `initDominanceSystem`?
 
-6. `index.html` — ¿Existe `<div id="tab-war">` con el panel de guerra? ¿Existe `<div id="faction-choice-modal">`? ¿Existe `<div id="war-shop-modal">`? ¿Existe `<script src="src/legacy/js/21_dominance.js">`?
+6. `index.html` — ¿Existe `<div id="tab-war">` con el panel de guerra? ¿Existe `<div id="faction-choice-modal">`? ¿Existe `<div id="war-shop-modal">`? ¿Existe `<script src="legacy/js/21_dominance.js">`?
 
 Reportá el estado de cada punto. Si hay algo faltante, hacé los cambios quirúrgicos necesarios.
 

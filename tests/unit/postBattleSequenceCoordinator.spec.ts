@@ -1,20 +1,21 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test';
 import { ref, computed } from 'vue';
+
+import { useBattleArenaCoordinator } from '@/composables/battle/useBattleArenaCoordinator';
 import {
   PostBattleSequenceCoordinator,
   POST_BATTLE_PRIORITIES,
   postBattleCoordinator
 } from '@/logic/battle/postBattleSequenceCoordinator';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
-import { useEvolutionStore } from '@/stores/evolution';
-import { useEventStore } from '@/stores/events';
 import { useBattleStore } from '@/stores/battle/battle';
-import { useBattleArenaCoordinator } from '@/composables/battle/useBattleArenaCoordinator';
+import { useEventStore } from '@/stores/events';
+import { useEvolutionStore } from '@/stores/evolution';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import type { BattleState } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import type { BattleState } from '@/types/battle/battle';
 
 vi.mock('@/logic/utils/gsapHelpers', () => ({
   gsapSleep: vi.fn(async () => {

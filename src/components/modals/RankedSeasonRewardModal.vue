@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue';
 import { gsap } from 'gsap';
+import { ref, computed, watch, nextTick } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
-import RankedSeasonPrizeItem from './RankedSeasonPrizeItem.vue';
+import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { RankedTierId } from '@/data/system/rankedData';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { calculateSoftResetElo } from '@/logic/pvp/eloRatingMath';
+import { RANKED_TIERS, type RankedTierCode } from '@/logic/pvp/rankedEngine';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
-import { RANKED_TIERS, type RankedTierCode } from '@/logic/pvp/rankedEngine';
-import { calculateSoftResetElo } from '@/logic/pvp/eloRatingMath';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { RankedSeasonMedal } from '@/types/battle/pvp';
-import type { RankedTierId } from '@/data/system/rankedData';
+
+import RankedSeasonPrizeItem from './RankedSeasonPrizeItem.vue';
 
 interface AwardItem {
   id: string;
@@ -88,7 +90,7 @@ watch(
   { immediate: true }
 );
 
-function applyLocalAward(award: AwardItem, finalElo: number) {
+function applyLocalAward(award: AwardItem, finalElo: number): void {
   if (!award.prize) return;
   const prize = award.prize as {
     type?: string;
@@ -139,7 +141,7 @@ function applyLocalAward(award: AwardItem, finalElo: number) {
   }
 }
 
-async function handleClaimAll() {
+async function handleClaimAll(): Promise<void> {
   if (isClaiming.value || isClaimed.value) return;
 
   isClaiming.value = true;
@@ -157,14 +159,14 @@ async function handleClaimAll() {
     uiStore.notify('¡Recompensas de temporada reclamadas con éxito!', '🎉');
     emit('claimed');
     emit('close');
-  } catch (_err) {
+  } catch {
     uiStore.notify('Error al reclamar recompensas.', '❌');
   } finally {
     isClaiming.value = false;
   }
 }
 
-function handleClose() {
+function handleClose(): void {
   emit('close');
 }
 </script>

@@ -1,6 +1,7 @@
+import { mount } from '@vue/test-utils';
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vite-plus/test';
-import { mount } from '@vue/test-utils';
+
 import MissionCard from '@/components/events/MissionCard.vue';
 import type { DetailedMissionReward } from '@/logic/player/classMissionsData';
 

@@ -24,6 +24,29 @@ export interface TerrainCell {
   readonly terrain: string;
 }
 
+export interface PierNeighborAdjacencies {
+  hasN: boolean;
+  hasS: boolean;
+  hasW: boolean;
+  hasE: boolean;
+}
+
+function resolvePortDockPierTile(
+  hSpan: number,
+  vSpan: number,
+  adjacencies: PierNeighborAdjacencies
+): string {
+  const { hasN, hasS, hasW, hasE } = adjacencies;
+  if (hSpan > vSpan) {
+    if (!hasN) return 'poke_port_pier_h_top.png';
+    if (!hasS) return 'poke_port_pier_h_bot.png';
+    return 'poke_port_pier_h_mid.png';
+  }
+  if (!hasW) return 'poke_port_pier_v_left.png';
+  if (!hasE) return 'poke_port_pier_v_right.png';
+  return 'poke_port_pier_v_mid.png';
+}
+
 /**
  * Resolves all bridgeGrid cells into canonical 32x32 bridge tiles with authentic
  * plank directions, side railings, pilings, and shore transitions.
@@ -108,27 +131,7 @@ export function resolveCanonicalBridges(
 
       // Canonical Vermilion Port Stone Pier (Authentic 3-cell wide corridor)
       if (options?.isPortDockCell && options.isPortDockCell(c, r)) {
-        let pierFile: string;
-        if (hSpan > vSpan) {
-          // Horizontal pier (East/West)
-          if (!hasN) {
-            pierFile = 'poke_port_pier_h_top.png';
-          } else if (!hasS) {
-            pierFile = 'poke_port_pier_h_bot.png';
-          } else {
-            pierFile = 'poke_port_pier_h_mid.png';
-          }
-        } else {
-          // Vertical pier (North/South)
-          if (!hasW) {
-            pierFile = 'poke_port_pier_v_left.png';
-          } else if (!hasE) {
-            pierFile = 'poke_port_pier_v_right.png';
-          } else {
-            pierFile = 'poke_port_pier_v_mid.png';
-          }
-        }
-
+        const pierFile = resolvePortDockPierTile(hSpan, vSpan, { hasN, hasS, hasW, hasE });
         blits.push({ file: pierFile, x: c, y: r, layerIndex: 3 });
         continue;
       }

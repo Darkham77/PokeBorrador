@@ -1,16 +1,29 @@
-import { toID } from '@/logic/utils/strings.ts';
+import type { DisplayText } from '@francogp/auditor';
+
 import { PALDEA_GENERATION_NUM } from '@/logic/constants/gameplay.ts';
+import { toID } from '@/logic/utils/strings.ts';
+
 import { type WeatherId, type ShowdownWeatherId } from './weatherRegistry.ts';
 
 /**
  * Returns the localized weather name in Spanish for a given official Showdown weather ID.
  */
+type ClearWeatherAlias = 'none' | 'clear' | 'null';
+const CLEAR_WEATHER_ALIASES: ReadonlySet<string> = new Set<ClearWeatherAlias>([
+  'none',
+  'clear',
+  'null'
+]);
+
+function isClearWeatherAlias(id: string): id is ClearWeatherAlias {
+  return CLEAR_WEATHER_ALIASES.has(id);
+}
+
 export function getLocalizedWeatherName(
   officialWeatherId: ShowdownWeatherId | WeatherId,
   gen: number
 ): string {
-  if (officialWeatherId === 'none' || officialWeatherId === 'clear' || officialWeatherId === 'null')
-    return 'Despejado';
+  if (isClearWeatherAlias(officialWeatherId)) return 'Despejado';
   const lower = toID(officialWeatherId);
 
   const localizedMap: Partial<Record<ShowdownWeatherId, string>> = {
@@ -24,11 +37,11 @@ export function getLocalizedWeatherName(
     deltastream: 'Turbulencias'
   };
 
-  const entry = (localizedMap as Record<string, string | undefined>)[lower]; // open-record: Localized weather dictionary
+  const entry = (localizedMap as Record<DisplayText, string | undefined>)[lower]; // open-record: Localized weather dictionary
   return entry || 'Despejado';
 }
 
-const OFFICIAL_TO_VISUAL_MAP: Record<string, string> = {
+const OFFICIAL_TO_VISUAL_MAP: Record<DisplayText, string> = {
   // open-record: Loose showdown/alias weather id to visual id map
   raindance: 'rain',
   rain: 'rain',

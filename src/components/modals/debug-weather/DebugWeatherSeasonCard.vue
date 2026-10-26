@@ -5,8 +5,8 @@
  * Renders a season card and iterates its daily cycle rows.
  */
 
-import DebugWeatherProbTag from './DebugWeatherProbTag.vue';
 import type { WeatherSeasonData } from '../debugWeatherTypes';
+import DebugWeatherProbTag from './DebugWeatherProbTag.vue';
 
 defineProps<{
   season: WeatherSeasonData;

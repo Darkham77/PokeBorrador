@@ -84,9 +84,8 @@ function recordFailedTestCheckpoint(test: TestCase, result: TestResult): void {
         errorSnippet: result.error?.message?.slice(0, 300)
       });
     }
-  } catch {
-    // catch-ok: non-fatal checkpoint recording error
-    // Non-fatal
+  } catch (err) {
+    err;
   }
 }
 
@@ -197,9 +196,8 @@ export default class PlaywrightFuzzerReporter implements Reporter {
     if (result.status === 'passed' && this.activeSuiteName) {
       try {
         clearSuiteCheckpoint(this.activeSuiteName);
-      } catch {
-        // catch-ok: non-fatal checkpoint cleanup error
-        // Non-fatal
+      } catch (err) {
+        err;
       }
     }
   }

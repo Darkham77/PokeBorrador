@@ -6,9 +6,9 @@ import {
   type SeasonalThemeConfig
 } from '@/data/system/rankedData';
 import { makePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
-import type { GameState } from '@/types/system/game';
-import { POKEMON_STAT_KEYS, type Pokemon } from '@/types/pokemon/pokemon';
 import type { RankedSeasonMedal } from '@/types/battle/pvp';
+import { POKEMON_STAT_KEYS, type Pokemon } from '@/types/pokemon/pokemon';
+import type { GameState } from '@/types/system/game';
 
 const BASE_RANKED_ELO = 1000 as const;
 const ELO_TIER_MAESTRO = 3400 as const;

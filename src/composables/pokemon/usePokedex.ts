@@ -1,10 +1,11 @@
-import { ref, computed, type Ref } from 'vue';
 import { refDebounced } from '@vueuse/core';
-import { useUIStore } from '@/stores/ui';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping';
+import { ref, computed, type Ref, type ComputedRef } from 'vue';
+
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useUIStore } from '@/stores/ui';
 import type { GameState, PokedexItem } from '@/types/system/game';
 
 function toPokemonSpeciesIds(values: readonly string[]): PokemonSpeciesId[] {
@@ -13,11 +14,18 @@ function toPokemonSpeciesIds(values: readonly string[]): PokemonSpeciesId[] {
 
 const SEARCH_INPUT_DEBOUNCE_MS = 150 as const;
 
+export interface UsePokedexReturn {
+  searchQuery: Ref<string>;
+  sortBy: Ref<string>;
+  sortOrder: Ref<'asc' | 'desc'>;
+  pokemonList: ComputedRef<PokedexItem[]>;
+}
+
 export function usePokedex(
   gs: Ref<GameState>,
   currentOrder: Ref<readonly PokemonSpeciesId[]>,
   _currentGen: Ref<number>
-) {
+): UsePokedexReturn {
   const uiStore = useUIStore();
   const searchQuery = ref('');
   const debouncedSearchQuery = refDebounced(searchQuery, SEARCH_INPUT_DEBOUNCE_MS);
@@ -54,7 +62,7 @@ export function usePokedex(
       if (spriteId === undefined) {
         throw new Error(`[usePokedex] Missing sprite id for Pokemon species: ${id}`);
       }
-      const nationalNum = parseInt(String(spriteId));
+      const nationalNum = parseInt(String(spriteId), 10);
 
       return {
         id,

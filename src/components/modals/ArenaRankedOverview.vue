@@ -1,20 +1,21 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
 import { gsap } from 'gsap';
-import { usePvPStore } from '@/stores/pvp';
-import { useLivePvPStore } from '@/stores/livePvP';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { ref, computed, onMounted, watch } from 'vue';
+
 import SeasonTournamentCard from '@/components/modals/SeasonTournamentCard.vue';
 import { toPokemonType, type PokemonType } from '@/data/battle/types';
 import { getSeasonalThemeForMonth, type RankedTierId } from '@/data/system/rankedData';
-import { validateTeamForRanked, normalizeRankedRules } from '@/logic/pvp/rankedEngine';
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
 import {
   ARENA_TIER_ICON_FLOAT_Y_PX,
   TIER_ICON_FLOAT_DURATION_SEC
 } from '@/logic/constants/animations';
+import { validateTeamForRanked, normalizeRankedRules } from '@/logic/pvp/rankedEngine';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
+import { useLivePvPStore } from '@/stores/livePvP';
+import { useModalStore } from '@/stores/modals';
+import { usePvPStore } from '@/stores/pvp';
+import { useUIStore } from '@/stores/ui';
 
 import {
   resolveSearchMessage,
@@ -75,9 +76,8 @@ const searchMessage = computed(() =>
   resolveSearchMessage(livePvP.searchPhase, livePvP.searchSecondsRemaining)
 );
 
-const getRankIcon = (tierId?: RankedTierId) => {
-  const id = tierId || 'bronce';
-  return getAssetUrl(ASSET_TYPES.RANK, id);
+const getRankIcon = (tierId: RankedTierId = 'bronce'): string => {
+  return getAssetUrl(ASSET_TYPES.RANK, tierId);
 };
 
 const seasonActive = computed(() => {
@@ -89,7 +89,7 @@ const seasonActive = computed(() => {
   );
 });
 
-function startSearch() {
+function startSearch(): void {
   if (!seasonActive.value) {
     ui.notify('La temporada no está activa.', '🚫');
     return;
@@ -111,13 +111,13 @@ function startSearch() {
   livePvP.startSearch();
 }
 
-function handleTournamentCardClick() {
+function handleTournamentCardClick(): void {
   if (!modalStore.isOpen('Arena')) {
     modalStore.open('Arena', { initialTab: 'ranked' });
   }
 }
 
-function handleEmojiEnter(e: MouseEvent) {
+function handleEmojiEnter(e: MouseEvent): void {
   const emoji = (e.currentTarget as HTMLElement).querySelector('.emoji');
   if (emoji) {
     gsap.to(emoji, {
@@ -129,7 +129,7 @@ function handleEmojiEnter(e: MouseEvent) {
   }
 }
 
-function handleEmojiLeave(e: MouseEvent) {
+function handleEmojiLeave(e: MouseEvent): void {
   const emoji = (e.currentTarget as HTMLElement).querySelector('.emoji');
   if (emoji) {
     gsap.to(emoji, {

@@ -1,24 +1,24 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { audit4SeatCompatibility } from '../audit_4seat_compatibility.js';
-import { auditActiveGenSSoT } from '../audit_active_gen_ssot.js';
-import { auditCatchRateMath } from '../audit_catch_rate_math.js';
-import { auditFSMEventParity } from '../audit_fsm_event_parity.js';
-import { auditFsmSubstateParity } from '../audit_fsm_substate_parity.js';
-import { auditFSMZeroTimer } from '../audit_fsm_zero_timer.js';
-import { auditPlaywrightActionability } from '../audit_playwright_actionability.js';
+import { audit4SeatCompatibility } from '../audit_4seat_compatibility.ts';
+import { auditActiveGenSSoT } from '../audit_active_gen_ssot.ts';
+import { auditCatchRateMath } from '../audit_catch_rate_math.ts';
+import { auditFSMEventParity } from '../audit_fsm_event_parity.ts';
+import { auditFsmSubstateParity } from '../audit_fsm_substate_parity.ts';
+import { auditFSMZeroTimer } from '../audit_fsm_zero_timer.ts';
+import { auditPlaywrightActionability } from '../audit_playwright_actionability.ts';
 import { auditRequestSchema } from '../audit_request_schema.ts';
-import { auditSharedExecutorDuplication } from '../audit_shared_executor_duplication.js';
-import { auditShowdownAbilityData } from '../audit_showdown_ability_data.js';
-import { auditShowdownItemData } from '../audit_showdown_item_data.js';
-import { auditShowdownMoveMechanics } from '../audit_showdown_move_mechanics.js';
-import { auditShowdownStatusNull } from '../audit_showdown_status_null.js';
-import { auditSilentFallbackPatterns } from '../audit_silent_fallback_patterns.js';
-import { auditStatStageBoosts } from '../audit_stat_stage_boosts.js';
-import { auditUIDMappingIntegrity } from '../audit_uid_mapping_integrity.js';
-import { auditWeatherTerrainParity } from '../audit_weather_terrain_parity.js';
-import { findUntestedShowdownEffects } from '../find_untested_showdown_effects.js';
-import { parseReplayLogDesync } from '../parse_replay_log_desync.js';
+import { auditSharedExecutorDuplication } from '../audit_shared_executor_duplication.ts';
+import { auditShowdownAbilityData } from '../audit_showdown_ability_data.ts';
+import { auditShowdownItemData } from '../audit_showdown_item_data.ts';
+import { auditShowdownMoveMechanics } from '../audit_showdown_move_mechanics.ts';
+import { auditShowdownStatusNull } from '../audit_showdown_status_null.ts';
+import { auditSilentFallbackPatterns } from '../audit_silent_fallback_patterns.ts';
+import { auditStatStageBoosts } from '../audit_stat_stage_boosts.ts';
+import { auditUIDMappingIntegrity } from '../audit_uid_mapping_integrity.ts';
+import { auditWeatherTerrainParity } from '../audit_weather_terrain_parity.ts';
+import { findUntestedShowdownEffects } from '../find_untested_showdown_effects.ts';
+import { parseReplayLogDesync } from '../parse_replay_log_desync.ts';
 
 test('Audit Tools Integrity Suite - Zero False Positives', () => {
   // 1. Audit 4-Seat Compatibility

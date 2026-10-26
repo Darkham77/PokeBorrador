@@ -1,15 +1,16 @@
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
 /**
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { h, ref } from 'vue';
-import { mount } from '@vue/test-utils';
-import { setActivePinia, createPinia } from 'pinia';
-import '../../helpers/battleMockSetup';
+
+import '../../helpers/battleMockSetup.ts';
 import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue';
 import { executeSwitch } from '@/logic/battle/actions/switchAction';
-import { clearVolatileStatus } from '@/logic/battle/battleStatus';
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
+import { clearVolatileStatus } from '@/logic/battle/battleStatus';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 

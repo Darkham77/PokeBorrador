@@ -1,6 +1,12 @@
+import type {
+  BattleSide,
+  ShowdownPlayerRequest,
+  BattleStages,
+  WinnerSide
+} from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
-import type { BattleSide, ShowdownPlayerRequest, BattleStages } from '@/types/battle/battle';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+
 import { ShowdownTeamResolver } from '../showdownTeamResolver.ts';
 
 interface SwitchTurnChoices {
@@ -65,7 +71,7 @@ async function resolveInitialSwitchChoices(
   if (side === 'player' && active.enemy && active.player) {
     const { decideEnemyMove } = await import('../ai/battleAI.ts');
     const { computeP2Choice } = await import('../battleTurnChoiceHelper.ts');
-    const stages = (ctx.playerStages?.value ?? {}) as BattleStages;
+    const stages = ctx.playerStages?.value ?? {};
     const eMove = resolveEnemyReactionMove(
       active.enemy,
       active.player,
@@ -127,11 +133,11 @@ async function resolveReplayChoices(
 }
 
 function resolveMockEnemyChoice(initialP2Choice: string, p2Skip: boolean): string {
-  if (typeof window === 'undefined') {
+  if (typeof globalThis.window === 'undefined') {
     return initialP2Choice;
   }
 
-  const debug = window.__VITE_DEBUG__;
+  const debug = globalThis.__VITE_DEBUG__;
   if (debug?.nextEnemyChoice) {
     if (!p2Skip) {
       const choice = debug.nextEnemyChoice;
@@ -164,8 +170,8 @@ async function resolveDebugOrReplayChoices(
   initial: SwitchTurnChoices,
   side: BattleSide
 ): Promise<DebugResolvedChoices> {
-  if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-    return resolveReplayChoices(window.__VITE_DEBUG__, initial, side);
+  if (typeof globalThis.window !== 'undefined' && globalThis.__VITE_DEBUG__?.isScriptedReplayMode) {
+    return resolveReplayChoices(globalThis.__VITE_DEBUG__, initial, side);
   }
 
   return {
@@ -210,7 +216,16 @@ async function executeWorkerTurnWithRollback(
   choices: SwitchTurnChoices,
   oldPoke: { uid: string } | null,
   side: BattleSide
-) {
+): Promise<{
+  logs: string[];
+  isOver: boolean;
+  winner: string | null;
+  winnerSide?: WinnerSide | null;
+  p1ForceSwitch?: boolean;
+  p2ForceSwitch?: boolean;
+  p1Request?: ShowdownPlayerRequest;
+  p2Request?: ShowdownPlayerRequest;
+}> {
   try {
     const { executeTurnInWorker } = await import('../showdownWorkerClient.ts');
     console.debug('[switchAction] calling executeTurnInWorker...', choices);
@@ -220,9 +235,12 @@ async function executeWorkerTurnWithRollback(
       choices.p1Skip,
       choices.p2Skip
     );
-    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+    if (
+      typeof globalThis.window !== 'undefined' &&
+      globalThis.__VITE_DEBUG__?.isScriptedReplayMode
+    ) {
       const { ShowdownBattleRunner } = await import('../helpers/showdownBattleRunner.ts');
-      ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__);
+      ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(globalThis.__VITE_DEBUG__);
     }
     console.debug(`[E2E-DEBUG-SWITCH-RESULT] logs: ${JSON.stringify(result.logs)}`);
     return result;
@@ -389,9 +407,12 @@ export async function processForcedSwitchWorkerTurn(
 
       const { syncTeamsFromLastWorkerState } = await import('../showdownWorkerClient.ts');
       await syncTeamsFromLastWorkerState();
-      if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+      if (
+        typeof globalThis.window !== 'undefined' &&
+        globalThis.__VITE_DEBUG__?.isScriptedReplayMode
+      ) {
         const { ShowdownBattleRunner } = await import('../helpers/showdownBattleRunner.ts');
-        ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__);
+        ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(globalThis.__VITE_DEBUG__);
       }
 
       const { handleForceSwitch } = await import('../resolution.ts');

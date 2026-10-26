@@ -1,16 +1,17 @@
+import { setActivePinia, createPinia } from 'pinia';
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { ref } from 'vue';
-import { setActivePinia, createPinia } from 'pinia';
+
 import { calculateEscapeChancePure } from '@/logic/battle/battleCatchMath';
-import { calculateEscapeChance } from '@/logic/battle/battleFormulas';
 import { executeFlee } from '@/logic/battle/battleFlee';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import { gameBus } from '@/logic/events/gameBus';
-import { useBattleStore } from '@/stores/battle/battle';
+import { calculateEscapeChance } from '@/logic/battle/battleFormulas';
 import { restoreBattleState } from '@/logic/battle/orchestratorRestoreHelper';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleContext } from '@/types/battle/battleContext';
+import { gameBus } from '@/logic/events/gameBus';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { useBattleStore } from '@/stores/battle/battle';
 import type { BattleState, BattleStages } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 vi.mock('@/logic/battle/showdownWorkerClient.ts', () => ({
   showdownWorker: {},

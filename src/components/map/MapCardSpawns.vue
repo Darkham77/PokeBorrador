@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
 import { ref, computed } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 
 interface ProcessedGridItem {
@@ -29,7 +31,7 @@ const props = defineProps<{
     cols: number;
   };
   processedGrid: ProcessedGridItem[];
-  processedSprites: Record<string, string>; // open-record: Composite cache key (${key}-${isCaught})
+  processedSprites: Record<DisplayText, string>; // open-record: Composite cache key (${key}-${isCaught})
   processedRareAura: string;
   processedAtmosAura: string;
   isLowPowerActive: boolean;

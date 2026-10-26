@@ -5,6 +5,7 @@
  * Modular sub-panel rendering combat weather effects and type spawn modifiers.
  */
 import type { PokemonType } from '@/data/battle/types';
+
 import RouteSpawnsWeatherDescLine from './RouteSpawnsWeatherDescLine.vue';
 import RouteSpawnsWeatherModifiers from './RouteSpawnsWeatherModifiers.vue';
 

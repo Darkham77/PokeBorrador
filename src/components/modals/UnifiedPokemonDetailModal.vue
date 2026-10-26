@@ -1,25 +1,26 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
 // Universal Pokémon info panel (Pokedex + Instance)
 import { ref, computed, type MaybeRefOrGetter } from 'vue';
-import { useUIStore } from '@/stores/ui';
-import { useGameStore } from '@/stores/game';
-import { useInventoryStore } from '@/stores/inventory/inventory';
-import { usePokemonDetail } from '@/composables/pokemon/usePokemonDetail';
-import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants';
+
 import BaseModal from '@/components/common/BaseModal.vue';
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
-
-import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue';
+import PokemonActionFooter from '@/components/pokemon-detail/PokemonActionFooter.vue';
 import PokemonDetailHeader from '@/components/pokemon-detail/PokemonDetailHeader.vue';
 import PokemonDetailTabContent from '@/components/pokemon-detail/PokemonDetailTabContent.vue';
-import PokemonActionFooter from '@/components/pokemon-detail/PokemonActionFooter.vue';
+import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue';
+import { usePokemonDetail } from '@/composables/pokemon/usePokemonDetail';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants';
+import type { PokemonTagId } from '@/logic/constants/tags';
+import { useGameStore } from '@/stores/game';
+import { useInventoryStore } from '@/stores/inventory/inventory';
+import { useUIStore } from '@/stores/ui';
 import type {
   Pokemon,
   PokemonStorageLocation,
   PokemonSelectionSource
 } from '@/types/pokemon/pokemon';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { PokemonTagId } from '@/logic/constants/tags';
 
 interface Props {
   show?: boolean;
@@ -63,7 +64,7 @@ const {
   getSprite,
   finalIndex,
   finalContext
-} = usePokemonDetail(props as Record<string, MaybeRefOrGetter<unknown>>); // open-record: Generic key-value data dictionary container
+} = usePokemonDetail(props as Record<DisplayText, MaybeRefOrGetter<unknown>>); // open-record: Generic key-value data dictionary container
 
 // --- LOCAL UI STATE ---
 const ui = useUIStore();
@@ -102,10 +103,10 @@ const tabs = computed(() => {
 });
 
 // --- HANDLERS ---
-const handleBuy = () => {
+const handleBuy = (): void => {
   if (props.extra) {
     (
-      Reflect.get(window, 'buyFromMarket') as
+      Reflect.get(globalThis, 'buyFromMarket') as
         | ((offerId: string, price: number, type: string) => void)
         | undefined
     )?.(props.extra.offerId || '', props.extra.price || 0, props.extra.type || '');
@@ -113,7 +114,7 @@ const handleBuy = () => {
   }
 };
 
-const handleEvolve = () => {
+const handleEvolve = (): void => {
   const inventoryStore = useInventoryStore();
   inventoryStore.activeMainTab = 'productos';
   inventoryStore.activeCategory = 'stones';
@@ -121,7 +122,9 @@ const handleEvolve = () => {
   uiStore.toggleInventory(finalContext.value as PokemonStorageLocation, finalIndex.value);
 };
 
-const handleToggleTag = (tagOrId: PokemonTagId | { id?: PokemonTagId; dbId?: PokemonTagId }) => {
+const handleToggleTag = (
+  tagOrId: PokemonTagId | { id?: PokemonTagId; dbId?: PokemonTagId }
+): void => {
   const tagId = typeof tagOrId === 'string' ? tagOrId : tagOrId.id || tagOrId.dbId;
   if (tagId && isInstance.value && finalIndex.value > -1) {
     const ctx = finalContext.value;
@@ -131,7 +134,7 @@ const handleToggleTag = (tagOrId: PokemonTagId | { id?: PokemonTagId; dbId?: Pok
   }
 };
 
-const handleEditNickname = () => {
+const handleEditNickname = (): void => {
   if (!isInstance.value || !targetPokemon.value) return;
 
   uiStore.openPrompt({
@@ -148,7 +151,7 @@ const handleEditNickname = () => {
   });
 };
 
-const handleReorderMoves = (from: number, to: number) => {
+const handleReorderMoves = (from: number, to: number): void => {
   if (isInstance.value && targetPokemon.value) {
     gameStore.reorderMoves(targetPokemon.value, from, to);
   }

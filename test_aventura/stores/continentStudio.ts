@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/stores/continentStudio.ts
  *
@@ -10,9 +11,32 @@
  * - Undo / Redo history management
  * - Viewport zoom/pan and tool selection
  */
-
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+
+import {
+  STUDIO_MAX_HISTORY_STEPS,
+  MAX_RANDOM_SEED,
+  MIN_VIEWPORT_ZOOM,
+  MAX_VIEWPORT_ZOOM
+} from '../config/studioConstants.ts';
+import {
+  generateContinent,
+  type GeneratedContinentResult
+} from '../logic/map/continent/continentalEngine.ts';
+import {
+  saveProjectProfile,
+  loadProjectProfile,
+  listProjectProfiles,
+  deleteProjectProfile,
+  createBlankProject,
+  createPresetProject
+} from '../logic/map/continent/continentPersistence.ts';
+import {
+  exportRoutesToSvg,
+  importRoutesFromSvg,
+  regenerateGeographyFromGraph
+} from '../logic/map/continent/svgRouteAdapter.ts';
 import type {
   ContinentProject,
   ContinentNode,
@@ -23,30 +47,6 @@ import type {
   PlacedCustomSprite,
   CanonicalPresetId
 } from '../types/map/continentTypes.ts';
-import {
-  generateContinent,
-  type GeneratedContinentResult
-} from '../logic/map/continent/continentalEngine.ts';
-import {
-  exportRoutesToSvg,
-  importRoutesFromSvg,
-  regenerateGeographyFromGraph
-} from '../logic/map/continent/svgRouteAdapter.ts';
-import {
-  saveProjectProfile,
-  loadProjectProfile,
-  listProjectProfiles,
-  deleteProjectProfile,
-  createBlankProject,
-  createPresetProject
-} from '../logic/map/continent/continentPersistence.ts';
-
-import {
-  STUDIO_MAX_HISTORY_STEPS,
-  MAX_RANDOM_SEED,
-  MIN_VIEWPORT_ZOOM,
-  MAX_VIEWPORT_ZOOM
-} from '../config/studioConstants.ts';
 
 const DEFAULT_VIEWPORT_ZOOM = 0.5;
 
@@ -74,7 +74,7 @@ export const useContinentStudioStore = defineStore('continentStudio', () => {
 
   // 2. Active Project Management
   const initialProject = createPresetProject('kanto');
-  const projects = ref<Record<string, ContinentProject>>({
+  const projects = ref<Record<DisplayText, ContinentProject>>({
     // open-record: Continent studio projects reactive dictionary indexed by project id
     [initialProject.id]: initialProject
   });
@@ -124,8 +124,8 @@ export const useContinentStudioStore = defineStore('continentStudio', () => {
       projects.value[restored.id] = restored;
       activeProjectId.value = restored.id;
       cachedGenResult.value = null;
-    } catch {
-      // catch-ok: Fallback when history undo state cannot be restored
+    } catch (err) {
+      console.warn('Handled controlled exception:', err);
     }
   }
 
@@ -139,8 +139,8 @@ export const useContinentStudioStore = defineStore('continentStudio', () => {
       projects.value[restored.id] = restored;
       activeProjectId.value = restored.id;
       cachedGenResult.value = null;
-    } catch {
-      // catch-ok: Fallback when history redo state cannot be restored
+    } catch (err) {
+      console.warn('Handled controlled exception:', err);
     }
   }
 

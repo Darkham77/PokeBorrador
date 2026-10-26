@@ -1,6 +1,5 @@
-import { processExpGain, processEvGain } from '../battleRewards.ts';
-import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import { clampFriendship } from '@/logic/pokemon/friendshipLogic.ts';
+import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import type { BattleContext } from '@/types/battle/battleContext';
 import {
   POKEMON_STAT_KEYS,
@@ -8,6 +7,8 @@ import {
   type Move,
   type PokemonStatKey
 } from '@/types/pokemon/pokemon';
+
+import { processExpGain, processEvGain } from '../battleRewards.ts';
 
 const POKERUS_SPREAD_PROBABILITY = 0.33;
 

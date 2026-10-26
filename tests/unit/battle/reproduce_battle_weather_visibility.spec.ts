@@ -1,3 +1,5 @@
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
 /**
  * tests/unit/battle/reproduce_battle_weather_visibility.spec.ts
  * Deterministic reproduction test (RED -> GREEN) verifying that:
@@ -6,12 +8,11 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
-import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
+
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
 
 describe('Reproduce Battle Weather Visibility & Fast Mode (RED -> GREEN)', () => {
   beforeEach(() => {

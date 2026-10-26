@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import { useLivePvPStore } from '@/stores/livePvP';
 
 interface Props {

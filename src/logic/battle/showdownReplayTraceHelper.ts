@@ -1,5 +1,6 @@
-import { logger } from '../utils/logger.ts';
 import type { BattleState } from '@/types/battle/battle';
+
+import { logger } from '../utils/logger.ts';
 import { buildCombatReplayPayload } from './helpers/combatReplayHelper.ts';
 import { resolveBattleStore } from './showdownWorkerInstance.ts';
 
@@ -23,7 +24,7 @@ interface ReplayTraceContextArgs {
 }
 
 function isReplayExecutionComplete(
-  debugObj: Record<string, unknown>,
+  debugObj: Record<string, unknown> | ViteDebugApi,
   history: unknown,
   certifiedHistoryIndex: number | undefined
 ): boolean {
@@ -43,7 +44,7 @@ export interface ReplayChoiceFlags {
 }
 
 function recordReplayTrace(
-  debugObj: Record<string, unknown>,
+  debugObj: Record<string, unknown> | ViteDebugApi,
   p1Choice: string,
   p2Choice?: string,
   options: ReplayChoiceFlags = {}
@@ -63,7 +64,8 @@ function recordReplayTrace(
 }
 
 function serializeReplayContext(args: ReplayTraceContextArgs): string {
-  const viteDebug = typeof window !== 'undefined' ? window.__VITE_DEBUG__ : undefined;
+  const viteDebug =
+    typeof globalThis.window !== 'undefined' ? globalThis.__VITE_DEBUG__ : undefined;
   return JSON.stringify({
     isSimulation: args.isSimulation,
     p1Choice: args.p1Choice,
@@ -91,15 +93,10 @@ export function validateAndTraceSimulationReplay(
 ): SimulationValidationResult {
   const { p1Skip, p2Skip, p1UsedBattleItem } = options;
   const isSimulation =
-    typeof window !== 'undefined' && !!window.__VITE_DEBUG__?.isScriptedReplayMode;
-  const debugObj = (typeof window !== 'undefined' ? window.__VITE_DEBUG__ : undefined) as
-    | Record<string, unknown>
-    | undefined; // open-record: Generic key-value data dictionary container
+    typeof globalThis.window !== 'undefined' && !!globalThis.__VITE_DEBUG__?.isScriptedReplayMode;
+  const debugObj = typeof globalThis.window !== 'undefined' ? globalThis.__VITE_DEBUG__ : undefined; // open-record: Generic key-value data dictionary container
   const history = debugObj?.history;
-  const certifiedHistoryIndex =
-    isSimulation && debugObj
-      ? (Reflect.get(debugObj, 'replayHistoryIdx') as number | undefined)
-      : undefined;
+  const certifiedHistoryIndex = isSimulation && debugObj ? debugObj.replayHistoryIdx : undefined;
 
   if (
     isSimulation &&
@@ -142,8 +139,8 @@ export function generateWorkerReproductionError(payloadMessage?: string): Error 
   let reproductionReport = '';
   try {
     const battleStore = resolveBattleStore();
-    const active = ((battleStore?.state as { value?: BattleState } | undefined)?.value ||
-      battleStore?.state) as BattleState | null | undefined;
+    const active =
+      (battleStore?.state as { value?: BattleState } | undefined)?.value || battleStore?.state;
     if (active) {
       const reportObj = buildCombatReplayPayload(active);
       reproductionReport = `\n\n--- REPRODUCE BATTLE TEST CASE ---\nJSON Payload:\n${JSON.stringify(reportObj, null, 2)}\n----------------------------------`;

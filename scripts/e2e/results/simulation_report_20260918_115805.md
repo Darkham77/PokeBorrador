@@ -1,7 +1,7 @@
 # 🏆 Final E2E Simulation & Dual-Driver Parity Certification Report
 
 **Timestamp**: 2026-09-18T11:58:05Z  
-**Runtime**: Node.js v26.9.0 | Playwright 1.58.x | Vite 7.x  
+**Runtime**: Node.js (>=26) | Playwright 1.58.x | Vite 7.x  
 **Database Engines**: SQLite (In-Memory WASM) + PostgreSQL (Ephemeral Supabase Container on port 54329)  
 **Session ID**: `9c8b83`  
 **Final Verdict**: 🟢 **100% PASS — FULLY CERTIFIED**

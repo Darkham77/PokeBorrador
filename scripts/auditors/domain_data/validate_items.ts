@@ -65,8 +65,10 @@ export const ITEM_RULES: readonly ItemRuleId[] = [
   'item-sprite-collision'
 ] as const;
 
-const MUST_BE_USABLE = new Set(['pociones', 'potions', 'utility', 'booster', 'stones', 'stone']);
-const MUST_NOT_BE_USABLE = new Set([
+const MUST_BE_USABLE_VALUES = ['pociones', 'potions', 'utility', 'booster', 'stones', 'stone'] as const;
+const MUST_BE_USABLE: ReadonlySet<string> = new Set<string>(MUST_BE_USABLE_VALUES);
+
+const MUST_NOT_BE_USABLE_VALUES = [
   'held',
   'combat_held',
   'pokeballs',
@@ -77,9 +79,12 @@ const MUST_NOT_BE_USABLE = new Set([
   'component',
   'machinery',
   'tms'
-]);
+] as const;
+const MUST_NOT_BE_USABLE: ReadonlySet<string> = new Set<string>(
+  MUST_NOT_BE_USABLE_VALUES
+);
 const REQUIRED_FIELDS = ['id', 'name', 'cat', 'sprite', 'icon', 'desc', 'price'] as const;
-const VALID_CATS = new Set([
+const VALID_CAT_VALUES = [
   'pociones',
   'potions',
   'utility',
@@ -102,8 +107,10 @@ const VALID_CATS = new Set([
   'machinery',
   'tms',
   'otros'
-]);
-const ALLOWED_USABLE_HELD = new Set([
+] as const;
+const VALID_CATS: ReadonlySet<string> = new Set<string>(VALID_CAT_VALUES);
+
+const ALLOWED_USABLE_HELD_VALUES = [
   'vigorrestorer',
   'pomegberry',
   'kelpsyberry',
@@ -111,7 +118,10 @@ const ALLOWED_USABLE_HELD = new Set([
   'hondewberry',
   'grepaberry',
   'tamatoberry'
-]);
+] as const;
+const ALLOWED_USABLE_HELD: ReadonlySet<string> = new Set<string>(
+  ALLOWED_USABLE_HELD_VALUES
+);
 const FORBIDDEN_DESC_PATTERNS = [
   /\bholder('s)?\b/i,
   /\braises?\b/i,
@@ -334,6 +344,7 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
       ruleIds: ITEM_RULES,
       packageName: 'Ítems',
       usesThirdPartyTool: false,
+      requiredPermissions: [],
       ruleDescriptions: {
         'item-missing-field': 'Campo faltante en ítem',
         'item-sprite-not-found': 'Sprite de ítem no encontrado',
@@ -361,14 +372,12 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
           'Remove unused healing entry or register corresponding item in items.json',
         'item-sprite-collision': 'Assign unique sprite path to resolve duplicate sprite usage'
       },
+      remediationPhase: 'contracts',
       requiredFiles: [
         SHOP_FILE,
         BATTLE_FILE,
         ...ITEM_EFFECT_FILES.map((f) => path.resolve(process.cwd(), f))
-      ],
-      coverage: {
-        include: ['src/data/inventory/items.json', ...ITEM_EFFECT_FILES]
-      }
+      ]
     });
   }
 
@@ -466,10 +475,4 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (
-  process.argv[1] &&
-  import.meta.filename &&
-  path.basename(process.argv[1]) === path.basename(import.meta.filename)
-) {
-  await BaseAuditor.runCli(new ItemAuditor());
-}
+await BaseAuditor.runCliIfMain(import.meta.url, new ItemAuditor());

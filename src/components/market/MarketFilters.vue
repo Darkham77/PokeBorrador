@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, useId } from 'vue';
-import { useGTSStore } from '@/stores/gts';
+
 import type { MarketFilters } from '@/logic/economy/market';
+import { useGTSStore } from '@/stores/gts';
+
 import MarketPokemonFiltersGroup from './MarketPokemonFiltersGroup.vue';
 
 interface Props {
@@ -33,7 +35,7 @@ const categories = [
   { value: 'otros', label: 'Otros' }
 ];
 
-const setFilter = <K extends keyof MarketFilters>(key: K, value: MarketFilters[K]) => {
+const setFilter = <K extends keyof MarketFilters>(key: K, value: MarketFilters[K]): void => {
   gtsStore.filters[key] = value;
 };
 
@@ -49,7 +51,7 @@ const formattedPriceRange = computed(() => {
   return `${minText} - ${maxText}`;
 });
 
-const resetFilters = () => {
+const resetFilters = (): void => {
   gtsStore.filters = {
     mode: 'pokemon',
     search: '',

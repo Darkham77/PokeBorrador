@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
 import { useClipboard } from '@vueuse/core';
+import { computed, ref } from 'vue';
+
+import { ARENA_JOIN_CODE_LENGTH } from '@/logic/constants/gameplay';
+import { formatRoomCode, isValidRoomCode } from '@/logic/pvp/pvpRoomCodeHelper';
 import { useLivePvPStore } from '@/stores/livePvP';
 import { useUIStore } from '@/stores/ui';
-import { formatRoomCode, isValidRoomCode } from '@/logic/pvp/pvpRoomCodeHelper';
-import { ARENA_JOIN_CODE_LENGTH } from '@/logic/constants/gameplay';
 import type { PvpMatchFormat, PvpLevelRule, PvpRoomCode } from '@/types/battle/pvp';
 
 const livePvP = useLivePvPStore();
@@ -20,7 +21,7 @@ const isJoining = ref(false);
 const isJoinCodeValid = computed(() => joinCodeInput.value.length === ARENA_JOIN_CODE_LENGTH);
 const canJoinRoom = computed(() => isJoinCodeValid.value && !isJoining.value);
 
-async function handleCreateRoom() {
+async function handleCreateRoom(): Promise<void> {
   if (isCreating.value) return;
   isCreating.value = true;
   try {
@@ -38,12 +39,12 @@ async function handleCreateRoom() {
   }
 }
 
-async function handleCancelRoom() {
+async function handleCancelRoom(): Promise<void> {
   await livePvP.cancelRoom();
   ui.notify('Sala cancelada.', '🛑');
 }
 
-async function handleJoinRoom() {
+async function handleJoinRoom(): Promise<void> {
   const code = formatRoomCode(joinCodeInput.value);
   if (!isValidRoomCode(code)) {
     ui.notify('El código debe tener 4 caracteres válidos.', '⚠️');
@@ -60,7 +61,7 @@ async function handleJoinRoom() {
   }
 }
 
-async function copyRoomCode() {
+async function copyRoomCode(): Promise<void> {
   if (livePvP.activeRoomCode) {
     await copy(livePvP.activeRoomCode);
     ui.notify('¡Código copiado al portapapeles!', '📋');

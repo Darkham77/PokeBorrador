@@ -10,6 +10,14 @@
 
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+
+import AutotilePatchCard from '../components/studio/AutotilePatchCard.vue';
+import AutotileReportModal from '../components/studio/AutotileReportModal.vue';
+import { preloadTileImages } from '../logic/map/canvasImageLoader.ts';
+import {
+  extractRealContinentPatches,
+  extractCellNeighborhood
+} from '../logic/map/realContinentPatchExtractor.ts';
 import { useRegionalContinentStudioStore } from '../stores/continentStudioStore.ts';
 import {
   REAL_PATCH_CATEGORIES,
@@ -19,13 +27,6 @@ import {
   type AutotileErrorReport,
   type MountainPatchSubtype
 } from '../types/map/autotileStudioTypes.ts';
-import {
-  extractRealContinentPatches,
-  extractCellNeighborhood
-} from '../logic/map/realContinentPatchExtractor.ts';
-import { preloadTileImages } from '../logic/map/canvasImageLoader.ts';
-import AutotilePatchCard from '../components/studio/AutotilePatchCard.vue';
-import AutotileReportModal from '../components/studio/AutotileReportModal.vue';
 
 const DEFAULT_PATCH_INSPECTION_LIMIT = 48;
 const RANDOM_SEED_RANGE = 900000;

@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { useUIStore } from '@/stores/ui';
 import { computed } from 'vue';
-import { useGameStore } from '@/stores/game';
-import BaseModal from '@/components/common/BaseModal.vue';
-import { formatCurrency } from '@/logic/utils/formatters';
-import ShopSearchControls from '@/components/common/ShopSearchControls.vue';
 
+import BaseModal from '@/components/common/BaseModal.vue';
+import ShopSearchControls from '@/components/common/ShopSearchControls.vue';
 // Sub-components
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue';
+import { formatCurrency } from '@/logic/utils/formatters';
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
+
 import ShopItemCard from './shop/ShopItemCard.vue';
 
 interface Props {
@@ -29,8 +30,9 @@ const gameStore = useGameStore();
 const ui = useUIStore();
 const isSmallScreen = computed(() => ui.isSmallScreen);
 
-import { useShopLogic } from '@/composables/inventory/useShopLogic';
 import { toRef } from 'vue';
+
+import { useShopLogic } from '@/composables/inventory/useShopLogic';
 
 const { activeMainTab, activeTab, search, sortKey, sortOrder, filteredItems, availableCategories } =
   useShopLogic({
@@ -40,7 +42,7 @@ const { activeMainTab, activeTab, search, sortKey, sortOrder, filteredItems, ava
     cardSelector: '.shop-item-card'
   });
 
-const close = () => {
+const close = (): void => {
   emit('close');
 };
 </script>

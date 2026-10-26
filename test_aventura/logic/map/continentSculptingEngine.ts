@@ -9,40 +9,39 @@
  * 100% of mainland settlements rest deeply on solid continental bedrock.
  */
 
-import { SimplexNoise } from './noise/simplexNoise.ts';
-import type { EmbeddedTopologyGraph } from '../../types/map/pokemonGraphTypes.ts';
-import { sanitizeWaterTerrainMatrix, type WaterTerrainKind } from './waterAutotileEngine.ts';
-import { resolveMountainMapGrid } from './mountainAutotileEngine.ts';
-import type {
-  ContinentGeneratorOptions,
-  ContinentMapResult,
-  SettlementExclusionZone
-} from './continentGenerator.ts';
-import {
-  generateArchipelagoIslands,
-  applyArchipelagoBeachBuffers
-} from './archipelagoGenerator.ts';
-import { synthesizeMacroBiomes } from './macroBiomeSynthesizer.ts';
-import { generateContinentalMountains } from './continentMountainEngine.ts';
-import {
-  generateProceduralRiverDrainage,
-  type ProceduralRiverDrainageResult
-} from './continent/riverHydrographyEngine.ts';
-import { compileGeologicalAutotiling } from './geologicalAutotilingEngine.ts';
+import { CONTINENT_SCULPT } from '../../config/continentSculptingConfig.ts';
 import {
   CONTINENT_DEFAULT_SEED,
   DEFAULT_BEACH_WIDTH,
   DEFAULT_LAKE_COUNT,
   DEFAULT_MOUNTAIN_PALETTE
 } from '../../config/studioConstants.ts';
-import { CONTINENT_SCULPT } from '../../config/continentSculptingConfig.ts';
-
+import type { EmbeddedTopologyGraph } from '../../types/map/pokemonGraphTypes.ts';
 import {
   computeGridDistanceField,
   floodFillGrid,
   type GridBfsQueueItem,
   type GridPoint
 } from '../utils/gridBfsUtils.ts';
+import {
+  generateArchipelagoIslands,
+  applyArchipelagoBeachBuffers
+} from './archipelagoGenerator.ts';
+import {
+  generateProceduralRiverDrainage,
+  type ProceduralRiverDrainageResult
+} from './continent/riverHydrographyEngine.ts';
+import type {
+  ContinentGeneratorOptions,
+  ContinentMapResult,
+  SettlementExclusionZone
+} from './continentGenerator.ts';
+import { generateContinentalMountains } from './continentMountainEngine.ts';
+import { compileGeologicalAutotiling } from './geologicalAutotilingEngine.ts';
+import { synthesizeMacroBiomes } from './macroBiomeSynthesizer.ts';
+import { resolveMountainMapGrid } from './mountainAutotileEngine.ts';
+import { SimplexNoise } from './noise/simplexNoise.ts';
+import { sanitizeWaterTerrainMatrix, type WaterTerrainKind } from './waterAutotileEngine.ts';
 
 export interface PerimeterBeachOptions {
   readonly variableBeach?: boolean;
@@ -190,6 +189,28 @@ export function removeOrphanTiles(
   }
 }
 
+function computeGrassCellClearance(
+  x: number,
+  y: number,
+  W: number,
+  H: number,
+  maxClearanceSearch: number,
+  matrix: readonly (readonly WaterTerrainKind[])[]
+): number {
+  let minD = Infinity;
+  for (let dy = -maxClearanceSearch; dy <= maxClearanceSearch; dy++) {
+    for (let dx = -maxClearanceSearch; dx <= maxClearanceSearch; dx++) {
+      const nx = x + dx;
+      const ny = y + dy;
+      if (nx < 0 || nx >= W || ny < 0 || ny >= H || matrix[ny]![nx] !== 'grass') {
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < minD) minD = d;
+      }
+    }
+  }
+  return minD;
+}
+
 /**
  * Carves organic inland freshwater lakes into the continental grass plain.
  * Strictly guarantees lakes have >= 4 cells clearance from the beach.
@@ -218,18 +239,7 @@ export function carveInlandLakes(
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       if (matrix[y]![x] !== 'grass') continue;
-      let minD = Infinity;
-      for (let dy = -maxClearanceSearch; dy <= maxClearanceSearch; dy++) {
-        for (let dx = -maxClearanceSearch; dx <= maxClearanceSearch; dx++) {
-          const nx = x + dx;
-          const ny = y + dy;
-          if (nx < 0 || nx >= W || ny < 0 || ny >= H || matrix[ny]![nx] !== 'grass') {
-            const d = Math.sqrt(dx * dx + dy * dy);
-            if (d < minD) minD = d;
-          }
-        }
-      }
-      clearance[y]![x] = minD;
+      clearance[y]![x] = computeGrassCellClearance(x, y, W, H, maxClearanceSearch, matrix);
     }
   }
 
@@ -276,6 +286,42 @@ export function carveInlandLakes(
         if (d + perturbation <= radius && matrix[ly]![lx] === 'grass') {
           matrix[ly]![lx] = 'water';
         }
+      }
+    }
+  }
+}
+
+export interface GridCoord {
+  x: number;
+  y: number;
+}
+
+function carveSurfRoutePointCorridor(
+  pt: GridCoord,
+  rad: number,
+  W: number,
+  H: number,
+  nodes: readonly { gridX: number; gridY: number; width: number; height: number }[],
+  surfWaterMask: boolean[][]
+): void {
+  for (let dy = -rad; dy <= rad; dy++) {
+    for (let dx = -rad; dx <= rad; dx++) {
+      if (dx * dx + dy * dy > rad * rad) continue;
+      const wx = pt.x + dx;
+      const wy = pt.y + dy;
+      if (wx < 0 || wx >= W || wy < 0 || wy >= H) continue;
+
+      const nearNode = nodes.some((node) => {
+        const nodeMargin = CONTINENT_SCULPT.SURF_NODE_MARGIN;
+        return (
+          wx >= node.gridX - nodeMargin &&
+          wx < node.gridX + node.width + nodeMargin &&
+          wy >= node.gridY - nodeMargin &&
+          wy < node.gridY + node.height + nodeMargin
+        );
+      });
+      if (!nearNode) {
+        surfWaterMask[wy]![wx] = true;
       }
     }
   }
@@ -335,29 +381,7 @@ function generateGraphEnvelopeLandmass(
         CONTINENT_SCULPT.SURF_MIN_RADIUS,
         Math.round(CONTINENT_SCULPT.SURF_BASE_RADIUS + n * CONTINENT_SCULPT.SURF_NOISE_AMP)
       );
-      for (let dy = -rad; dy <= rad; dy++) {
-        for (let dx = -rad; dx <= rad; dx++) {
-          if (dx * dx + dy * dy <= rad * rad) {
-            const wx = pt.x + dx;
-            const wy = pt.y + dy;
-            if (wx >= 0 && wx < W && wy >= 0 && wy < H) {
-              // Protect terminal node footprints and their immediate disembarkation shorelines (margin = 4)
-              const nearNode = embedded.nodes.some((node) => {
-                const nodeMargin = CONTINENT_SCULPT.SURF_NODE_MARGIN;
-                return (
-                  wx >= node.gridX - nodeMargin &&
-                  wx < node.gridX + node.width + nodeMargin &&
-                  wy >= node.gridY - nodeMargin &&
-                  wy < node.gridY + node.height + nodeMargin
-                );
-              });
-              if (!nearNode) {
-                surfWaterMask[wy]![wx] = true;
-              }
-            }
-          }
-        }
-      }
+      carveSurfRoutePointCorridor(pt, rad, W, H, embedded.nodes, surfWaterMask);
     }
   }
 
@@ -466,6 +490,24 @@ function generateGraphEnvelopeLandmass(
   return matrix;
 }
 
+function stampSolidLandAroundCell(
+  cell: GridCoord,
+  radius: number,
+  W: number,
+  H: number,
+  rawMatrix: WaterTerrainKind[][]
+): void {
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      const cy = cell.y + dy;
+      const cx = cell.x + dx;
+      if (cx >= 2 && cx < W - 2 && cy >= 2 && cy < H - 2) {
+        rawMatrix[cy]![cx] = 'grass';
+      }
+    }
+  }
+}
+
 export function sculptContinentFromGraph(
   embedded: EmbeddedTopologyGraph,
   options?: ContinentGeneratorOptions
@@ -505,15 +547,7 @@ export function sculptContinentFromGraph(
   for (const corridor of embedded.corridors) {
     if (corridor.kind === 'surf_route' || corridor.kind === 'wormhole_tunnel') continue;
     for (const cell of corridor.pathCells) {
-      for (let dy = -CORRIDOR_SOLID_LAND_RADIUS; dy <= CORRIDOR_SOLID_LAND_RADIUS; dy++) {
-        for (let dx = -CORRIDOR_SOLID_LAND_RADIUS; dx <= CORRIDOR_SOLID_LAND_RADIUS; dx++) {
-          const cy = cell.y + dy;
-          const cx = cell.x + dx;
-          if (cx >= 2 && cx < W - 2 && cy >= 2 && cy < H - 2) {
-            rawMatrix[cy]![cx] = 'grass';
-          }
-        }
-      }
+      stampSolidLandAroundCell(cell, CORRIDOR_SOLID_LAND_RADIUS, W, H, rawMatrix);
     }
   }
 

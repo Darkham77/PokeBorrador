@@ -1,12 +1,14 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
+
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
 import {
   getEventCurrentWindow,
   isPokemonEligibleForEvent,
   type Event as GameEvent
 } from '@/logic/events/eventEngine.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
 
 describe('Global Event Capture Date Restrictions (eventEngine)', () => {
   const sampleMagikarp = (obtainedAt?: number): Pokemon => ({

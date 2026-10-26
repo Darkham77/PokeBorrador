@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { useBreedingStore } from '@/stores/breeding';
-import { useModalStore } from '@/stores/modals';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
 import { getItemById } from '@/data/inventory/items';
-import MissionCard from './MissionCard.vue';
-import EventMissionsHeaderBar from './EventMissionsHeaderBar.vue';
-import EventClassMissionsSection from './EventClassMissionsSection.vue';
 import { isPokemonEligibleForMission } from '@/logic/breeding/missionEngine';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useBreedingStore } from '@/stores/breeding';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
 import type { DaycareMission } from '@/types/breeding/breeding';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import EventClassMissionsSection from './EventClassMissionsSection.vue';
+import EventMissionsHeaderBar from './EventMissionsHeaderBar.vue';
+import MissionCard from './MissionCard.vue';
 
 interface Props {
   hideRefresh?: boolean;
@@ -26,12 +28,12 @@ const modalStore = useModalStore();
 const gameStore = useGameStore();
 const uiStore = useUIStore();
 
-const getMatchingPokesForMission = (mission: DaycareMission) => {
+const getMatchingPokesForMission = (mission: DaycareMission): Pokemon[] => {
   const allPokes = gameStore.allPokemonList;
   return allPokes.filter((p) => isPokemonEligibleForMission(p, mission));
 };
 
-const canDeliverMission = (mission: DaycareMission) => {
+const canDeliverMission = (mission: DaycareMission): boolean => {
   if (mission.completed) return false;
   return getMatchingPokesForMission(mission).length > 0;
 };
@@ -41,7 +43,7 @@ const getDailyMissionBtnText = (mission: DaycareMission): string => {
   return canDeliverMission(mission) ? 'ENTREGAR' : 'NO DISPONIBLE';
 };
 
-const openDelivery = (idx: number) => {
+const openDelivery = (idx: number): void => {
   const mission = breedingStore.dailyMissions[idx];
   if (!mission) return;
 
@@ -73,19 +75,19 @@ onMounted(() => {
   breedingStore.checkDailyReset();
 });
 
-const getDailyMissionUnmetText = (mission: DaycareMission) => {
+const getDailyMissionUnmetText = (mission: DaycareMission): string => {
   if (mission.completed) return '';
   if (canDeliverMission(mission)) return '';
   return `Requisito no cumplido: ${mission.reqText || 'Pokémon no encontrado en Equipo o Caja'}`;
 };
 
-const getDailyMissionAvailableText = (mission: DaycareMission) => {
+const getDailyMissionAvailableText = (mission: DaycareMission): string => {
   if (mission.completed) return '';
   if (canDeliverMission(mission)) return '¡Tienes el Pokémon listo para entregar!';
   return '';
 };
 
-const getMissionRewardItem = (mission: DaycareMission) => {
+const getMissionRewardItem = (mission: DaycareMission): ReturnType<typeof getItemById> => {
   return getItemById(mission.reward.id);
 };
 </script>

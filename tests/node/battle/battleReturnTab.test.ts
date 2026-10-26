@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
-import { handleBattleFlowCompletion } from '@/logic/battle/searchLoop';
-import type { BattleContext } from '@/types/battle/battleContext';
-import { ref } from 'vue';
-import { useUIStore } from '@/stores/ui';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import { ref } from 'vue';
+
+import { handleBattleFlowCompletion } from '@/logic/battle/searchLoop';
+import { useUIStore } from '@/stores/ui';
+import type { BattleContext } from '@/types/battle/battleContext';
 
 describe('Battle ReturnTab Navigation - Unit Tests', () => {
   beforeEach(() => {

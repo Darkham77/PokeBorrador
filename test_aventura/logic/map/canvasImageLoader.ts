@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/map/canvasImageLoader.ts
  *
@@ -10,7 +11,7 @@ import { CANONICAL_ASSETS_BY_ID } from './canonicalAssetsRegistry.ts';
 
 const imageCache = new Map<string, HTMLImageElement>();
 
-const FALLBACK_TILE_MAP: Record<string, string> = {
+const FALLBACK_TILE_MAP: Record<DisplayText, string> = {
   // open-record: Asset file name fallback dictionary
   'poke_cliff_brown_inner_nw.png': 'poke_cliff_brown_edge_n.png',
   'poke_cliff_brown_inner_ne.png': 'poke_cliff_brown_edge_n.png',
@@ -27,6 +28,26 @@ const FALLBACK_TILE_MAP: Record<string, string> = {
   'poke_lighthouse.png': 'poke_port_lighthouse_beacon.png',
   'poke_item_ball.png': 'poke_signpost.png'
 };
+
+export type VegetationImageFilename =
+  | 'poke_tree_cuttable.png'
+  | 'tree_cuttable.png'
+  | 'tree_viridian_forest.png'
+  | 'poke_tree_poke.png'
+  | 'tree_poke.png';
+
+const VEGETATION_IMAGE_FILENAMES: ReadonlySet<VegetationImageFilename> =
+  new Set<VegetationImageFilename>([
+    'poke_tree_cuttable.png',
+    'tree_cuttable.png',
+    'tree_viridian_forest.png',
+    'poke_tree_poke.png',
+    'tree_poke.png'
+  ]);
+
+function isVegetationImageFilename(filename: string): filename is VegetationImageFilename {
+  return VEGETATION_IMAGE_FILENAMES.has(filename as VegetationImageFilename);
+}
 
 /**
  * Resolves public web URL for a given tile or prefab asset filename.
@@ -52,13 +73,7 @@ export function resolveTileUrl(filename: string): string {
     }
   }
 
-  if (
-    filename === 'poke_tree_cuttable.png' ||
-    filename === 'tree_cuttable.png' ||
-    filename === 'tree_viridian_forest.png' ||
-    filename === 'poke_tree_poke.png' ||
-    filename === 'tree_poke.png'
-  ) {
+  if (isVegetationImageFilename(filename)) {
     return `/test_aventura/assets/prefabs/vegetation/${filename}`;
   }
   return `/test_aventura/assets/prefabs/${filename}`;
@@ -71,7 +86,7 @@ function loadTileImage(filename: string): Promise<HTMLImageElement | null> {
   const cached = imageCache.get(filename);
   if (cached) return Promise.resolve(cached);
 
-  if (typeof window === 'undefined' || typeof Image === 'undefined') {
+  if (typeof globalThis.window === 'undefined' || typeof Image === 'undefined') {
     return Promise.resolve(null);
   }
 

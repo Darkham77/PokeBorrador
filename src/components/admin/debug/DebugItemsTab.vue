@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
 import gsap from 'gsap';
-import { SHOP_ITEMS, type ItemId } from '@/data/inventory/items';
+import { ref, computed } from 'vue';
 
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
-import { useInventoryStore } from '@/stores/inventory/inventory';
+import { SHOP_ITEMS, type ItemId } from '@/data/inventory/items';
 import { incrementRecordKey } from '@/logic/utils/mapUtils';
+import { useGameStore } from '@/stores/game';
+import { useInventoryStore } from '@/stores/inventory/inventory';
+import { useUIStore } from '@/stores/ui';
 
 const DEFAULT_SEARCH_ITEMS_LIMIT = 10;
 const FILTERED_SEARCH_ITEMS_LIMIT = 15;
@@ -39,35 +39,35 @@ const gameStore = useGameStore();
 const uiStore = useUIStore();
 const inventoryStore = useInventoryStore();
 
-async function addItem(item: ShopItem, qty = DEFAULT_ADD_ITEM_QTY) {
+async function addItem(item: ShopItem, qty = DEFAULT_ADD_ITEM_QTY): Promise<void> {
   inventoryStore.addItem(item.id, qty);
 }
 
-function addTenOfEach() {
+function addTenOfEach(): void {
   const inventory: Partial<Record<ItemId, number>> = { ...gameStore.state.inventory };
   (SHOP_ITEMS as ShopItem[]).forEach((item) => {
     incrementRecordKey(inventory, item.id, DEFAULT_ADD_ITEM_QTY);
   });
   gameStore.state.inventory = inventory as typeof gameStore.state.inventory;
-  void gameStore.save(false);
+  gameStore.save(false);
   uiStore.notify(`Agregados ${DEFAULT_ADD_ITEM_QTY} de cada objeto`, '🎒');
 }
 
-function onBtnEnter(e: Event) {
+function onBtnEnter(e: Event): void {
   gsap.to(e.currentTarget as HTMLElement, {
     y: DEBUG_ITEM_HOVER_Y_PX,
     duration: DEBUG_ITEM_HOVER_DURATION_SEC,
     ease: 'power2.out'
   });
 }
-function onBtnLeave(e: Event) {
+function onBtnLeave(e: Event): void {
   gsap.to(e.currentTarget as HTMLElement, {
     y: 0,
     duration: DEBUG_ITEM_LEAVE_DURATION_SEC,
     ease: 'power2.in'
   });
 }
-function onBtnDown(e: Event) {
+function onBtnDown(e: Event): void {
   gsap.to(e.currentTarget as HTMLElement, {
     y: 0,
     duration: DEBUG_ITEM_PRESS_DURATION_SEC,

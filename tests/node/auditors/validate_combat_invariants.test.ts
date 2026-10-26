@@ -9,6 +9,7 @@
  */
 
 import { describe, it, expect } from 'vite-plus/test';
+
 import {
   CombatInvariantsAuditor,
   COMBAT_INVARIANTS_RULES,

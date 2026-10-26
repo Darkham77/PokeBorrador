@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useBattleStore } from '@/stores/battle/battle';
+
 import { getActiveMinigame } from '@/logic/battle/battleMinigames';
+import { useBattleStore } from '@/stores/battle/battle';
 
 interface Props {
   isRewardsWait: boolean;

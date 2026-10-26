@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useCombatShadowStore } from '@/stores/battle/combatShadows';
-import { generatePixelShadow } from '@/logic/combat/shadowHelpers';
+
 import { GLOBAL_SHADOW_CONFIG } from '@/data/pokemon/pokemonFeetDatabase';
+import { generatePixelShadow } from '@/logic/combat/shadowHelpers';
+import { useCombatShadowStore } from '@/stores/battle/combatShadows';
 import type { GlobalShadowConfig } from '@/types/pokemon/spriteShadows';
 
 interface Props {

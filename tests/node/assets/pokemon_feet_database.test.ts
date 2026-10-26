@@ -5,10 +5,11 @@
  */
 
 import { describe, it, expect } from 'vite-plus/test';
-import { requireFeetPoints } from '../../../src/data/pokemon/pokemonFeetDatabase.ts';
+
 import type { PackedFeetDatabase } from '../../../src/data/pokemon/feetCoordinatesData.ts';
-import legacyFeetDb from '../../fixtures/assets/pokemonFeetDatabase.legacy.json' with { type: 'json' };
+import { requireFeetPoints } from '../../../src/data/pokemon/pokemonFeetDatabase.ts';
 import overridesJson from '../../../src/data/pokemon/spriteShadowOverrides.json' with { type: 'json' };
+import legacyFeetDb from '../../fixtures/assets/pokemonFeetDatabase.legacy.json' with { type: 'json' };
 
 describe('pokemonFeetDatabase', () => {
   describe('Base Sprite Resolution', () => {

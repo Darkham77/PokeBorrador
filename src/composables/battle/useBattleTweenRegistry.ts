@@ -1,4 +1,5 @@
 import { gsap } from 'gsap';
+
 import { gameBus } from '@/logic/events/gameBus';
 
 interface RegisterTweenDetail {
@@ -6,7 +7,14 @@ interface RegisterTweenDetail {
   tween: gsap.core.Tween | gsap.core.Timeline;
 }
 
-export function useBattleTweenRegistry() {
+export function useBattleTweenRegistry(): {
+  activeTweens: Map<string, gsap.core.Timeline | gsap.core.Tween>;
+  pendingTweenResolvers: Map<string, { resolve: () => void; reject: (err: Error) => void }>;
+  onRegisterTween: (e: Event) => void;
+  initTweenRegistryListeners: () => void;
+  cleanupTweenRegistryListeners: () => void;
+  awaitTween: (animKey: string) => Promise<void>;
+} {
   const activeTweens = new Map<string, gsap.core.Tween | gsap.core.Timeline>();
   // Pending resolvers: set when awaitTween is called before the component has mounted.
   // Resolved immediately by the REGISTER_TWEEN handler when the component fires the event.
@@ -15,7 +23,7 @@ export function useBattleTweenRegistry() {
     { resolve: () => void; reject: (err: Error) => void }
   >();
 
-  const onRegisterTween = (e: Event) => {
+  const onRegisterTween = (e: Event): void => {
     const data = (e as CustomEvent<RegisterTweenDetail>).detail;
     if (data && typeof data.key === 'string' && data.tween) {
       activeTweens.set(data.key, data.tween);
@@ -31,12 +39,12 @@ export function useBattleTweenRegistry() {
     }
   };
 
-  const initTweenRegistryListeners = () => {
+  const initTweenRegistryListeners = (): void => {
     cleanupTweenRegistryListeners();
     gameBus.on('REGISTER_TWEEN', onRegisterTween);
   };
 
-  const cleanupTweenRegistryListeners = () => {
+  const cleanupTweenRegistryListeners = (): void => {
     gameBus.off('REGISTER_TWEEN', onRegisterTween);
     activeTweens.clear();
     // Fail-fast: any pending awaiter whose component never fired REGISTER_TWEEN must crash loud.
@@ -65,7 +73,7 @@ export function useBattleTweenRegistry() {
       let resolved = false;
       let fallbackCall: gsap.core.Tween | null = null;
 
-      const done = () => {
+      const done = (): void => {
         if (!resolved) {
           resolved = true;
           if (fallbackCall) fallbackCall.kill();

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ArenaRankedOverview from '@/components/modals/ArenaRankedOverview.vue';
+
 import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
 </script>
 

@@ -1,12 +1,12 @@
+import type { PlayerClassId } from '@/data/player/playerClasses';
+import { deserializePokemonTeam } from '@/logic/auth/savePokemonSerializer.ts';
+import type { DBRouter } from '@/logic/db/dbRouter.ts';
 import { isAllowedRankGap } from '@/logic/pvp/rankedEngine.ts';
-import type { Pokemon } from '@/types/pokemon/pokemon.ts';
+import { evaluatePokemonForSeason } from '@/logic/pvp/seasonTeamFilter.ts';
 import { logger } from '@/logic/utils/logger.ts';
 import type { ShowdownPlayerRequest } from '@/types/battle/battle.ts';
 import type { PvPAction } from '@/types/battle/pvp.ts';
-import type { DBRouter } from '@/logic/db/dbRouter.ts';
-import { evaluatePokemonForSeason } from '@/logic/pvp/seasonTeamFilter.ts';
-import { deserializePokemonTeam } from '@/logic/auth/savePokemonSerializer.ts';
-import type { PlayerClassId } from '@/data/player/playerClasses';
+import type { Pokemon } from '@/types/pokemon/pokemon.ts';
 import type { GenderId } from '@/types/system/game';
 
 export interface PassiveTeamCandidate {
@@ -116,7 +116,7 @@ function validateAndFilterCandidates(
     );
     if (hasCorruptPokemon) {
       if (candidate.user_id) {
-        void db.from('passive_teams').update({ is_active: false }).eq('user_id', candidate.user_id);
+        db.from('passive_teams').update({ is_active: false }).eq('user_id', candidate.user_id);
       }
       continue;
     }
@@ -125,10 +125,7 @@ function validateAndFilterCandidates(
       const hasIneligible = team.some((p) => !evaluatePokemonForSeason(p, seasonRules).eligible);
       if (hasIneligible) {
         if (candidate.user_id) {
-          void db
-            .from('passive_teams')
-            .update({ is_active: false })
-            .eq('user_id', candidate.user_id);
+          db.from('passive_teams').update({ is_active: false }).eq('user_id', candidate.user_id);
         }
         continue;
       }

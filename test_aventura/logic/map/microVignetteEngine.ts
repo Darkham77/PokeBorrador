@@ -16,9 +16,10 @@
  * Also provides the Stray Tile Sweeper utility to eliminate isolated orphan road slivers.
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
-import type { POINode } from '../../types/map/poiTypes.ts';
 import { DECORATION_DEFAULT_SEED } from '../../config/studioConstants.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
+import { createLcgRng } from './noise/lcgRng.ts';
 
 export type MicroVignetteKind =
   | 'berry_orchard'
@@ -111,11 +112,7 @@ export function generateMicroVignettes(
   const W = continent.width;
   const H = continent.height;
 
-  let rngSeed = (options.seed ?? DECORATION_DEFAULT_SEED) | 0;
-  const nextRng = (): number => {
-    rngSeed = (rngSeed * 1664525 + 1013904223) | 0;
-    return (rngSeed >>> 0) / 4294967296;
-  };
+  const nextRng = createLcgRng(options.seed ?? DECORATION_DEFAULT_SEED);
 
   const occupied = Array.from({ length: H }, () => Array(W).fill(false));
 

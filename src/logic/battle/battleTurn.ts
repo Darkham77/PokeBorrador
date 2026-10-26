@@ -1,7 +1,8 @@
-import { decideEnemyMove, evaluateAndUseNPCItem } from './ai/battleAI.ts';
 import type { BattleContext } from '@/types/battle/battleContext';
-import { resolveTurnChoices } from './battleTurnChoiceHelper.ts';
+
+import { decideEnemyMove, evaluateAndUseNPCItem } from './ai/battleAI.ts';
 import { updateCastformForm } from './battleFlow.ts';
+import { resolveTurnChoices } from './battleTurnChoiceHelper.ts';
 import { runEnemyAction } from './helpers/turnActionResolver.ts';
 import {
   resolvePlayerForcedMoveIndex,
@@ -111,7 +112,7 @@ async function executeWorkerTurn(args: TurnExecutionArgs): Promise<void> {
 /**
  * Handles the turn logic for a single move execution.
  */
-export async function executeTurn(store: BattleContext, moveIndex: number) {
+export async function executeTurn(store: BattleContext, moveIndex: number): Promise<void> {
   const p = store.activeBattle.value?.player;
   const e = store.activeBattle.value?.enemy;
   if (p) {

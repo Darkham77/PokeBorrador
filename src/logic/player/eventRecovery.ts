@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+
 import type { Pokemon } from '../../types/pokemon/pokemon.ts';
 import type { CompetitionEntry } from '../../types/system/stores.ts';
 import type { Event as GameEvent } from '../events/eventEngine.ts';
@@ -12,7 +14,7 @@ export function healStuckEventPokemon(
   team: (Pokemon | null)[],
   box: (Pokemon | null)[],
   activeEvents: GameEvent[] | undefined,
-  userEntries: Record<string, CompetitionEntry> | undefined, // open-record: Composite event_id:catId index
+  userEntries: Record<DisplayText, CompetitionEntry> | undefined, // open-record: Composite event_id:catId index
   currentInstant?: Temporal.Instant
 ): boolean {
   const activeEventIds = new Set<string>();

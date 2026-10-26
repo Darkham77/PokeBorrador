@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { onMounted, reactive } from 'vue';
 import { gsap } from 'gsap';
-import { useGymsStore } from '@/stores/gyms';
-import { useGameStore } from '@/stores/game';
-import GymCard from '@/components/gyms/GymCard.vue';
+import { onMounted, reactive } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import GymCard from '@/components/gyms/GymCard.vue';
 import type { GymId, Gym } from '@/data/world/gyms';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useGameStore } from '@/stores/game';
+import { useGymsStore } from '@/stores/gyms';
 import type { BattleDifficulty } from '@/types/battle/battle';
 
 const gymsStore = useGymsStore();
@@ -21,7 +22,7 @@ onMounted(() => {
   });
 });
 
-const handleBadgeEnter = (e: MouseEvent) => {
+const handleBadgeEnter = (e: MouseEvent): void => {
   gsap.to(e.currentTarget, {
     scale: 1.1,
     y: -2,
@@ -32,7 +33,7 @@ const handleBadgeEnter = (e: MouseEvent) => {
   });
 };
 
-const handleBadgeLeave = (e: MouseEvent) => {
+const handleBadgeLeave = (e: MouseEvent): void => {
   const el = e.currentTarget as HTMLElement;
   const isActive = el.classList.contains('active');
   gsap.to(el, {

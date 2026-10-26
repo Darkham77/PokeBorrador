@@ -12,6 +12,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import { buildCanonicalRegionMap } from '../../logic/map/continent/canonicalRegionPresets.ts';
 
 describe.skip('Topological Barrier Encauzamiento & Route Obligation', () => {
@@ -96,13 +97,13 @@ describe.skip('Topological Barrier Encauzamiento & Route Obligation', () => {
     }
 
     // E) Impassable wilderness props (boulders, fences, cuttable trees, bushes)
+    const IMPASSABLE_PROP_TYPE_LIST = ['boulder', 'fence_h', 'bush', 'sapling'] as const;
+    type ImpassablePropType = (typeof IMPASSABLE_PROP_TYPE_LIST)[number];
+    const IMPASSABLE_PROP_TYPES: ReadonlySet<ImpassablePropType> = new Set<ImpassablePropType>(
+      IMPASSABLE_PROP_TYPE_LIST
+    );
     for (const prop of wilderness.props) {
-      if (
-        prop.type === 'boulder' ||
-        prop.type === 'fence_h' ||
-        prop.type === 'bush' ||
-        prop.type === 'sapling'
-      ) {
+      if (IMPASSABLE_PROP_TYPES.has(prop.type as ImpassablePropType)) {
         if (prop.y >= 0 && prop.y < H && prop.x >= 0 && prop.x < W) {
           blockedGrid[prop.y]![prop.x] = true;
         }

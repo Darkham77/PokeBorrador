@@ -1,17 +1,18 @@
 import type { Router } from 'vue-router';
-import { logger } from '@/logic/utils/logger';
+
 import {
   checkDBCompatibility,
   checkAppVersionCompatibility,
   type DBRouter
 } from '@/logic/db/dbRouter';
-import type { useUpdateStore } from '@/stores/update';
-import type { useGameStore } from '@/stores/game';
-import type { useBattleStore } from '@/stores/battle/battle';
-import type { useUIStore } from '@/stores/ui';
+import { logger } from '@/logic/utils/logger';
 import type { useAuthStore } from '@/stores/auth';
+import type { useBattleStore } from '@/stores/battle/battle';
+import type { useGameStore } from '@/stores/game';
 import type { useProfileStore } from '@/stores/player/profile';
 import type { useSocialStore } from '@/stores/social/social';
+import type { useUIStore } from '@/stores/ui';
+import type { useUpdateStore } from '@/stores/update';
 
 export interface ShouldInitSessionParams {
   isInitializing: boolean;
@@ -38,10 +39,7 @@ export interface RunSessionInitParams {
 }
 
 export async function runSessionInitialization(params: RunSessionInitParams): Promise<void> {
-  const isCompatible = await validateAppAndDbCompatibility(
-    params.gameStore.db as DBRouter,
-    params.updateStore
-  );
+  const isCompatible = await validateAppAndDbCompatibility(params.gameStore.db, params.updateStore);
   if (!isCompatible) return;
 
   await params.gameStore.loadGame();
@@ -111,7 +109,7 @@ async function restoreActiveCombatOrMap(
       'Combate cancelado: se detectaron Pokémon ilegales en tu equipo. Repáralos en el menú de depuración.',
       '⚠️'
     );
-    void router.replace('/game/map');
+    await router.replace('/game/map');
     return;
   }
 
@@ -147,7 +145,7 @@ export async function checkClientPwaVersion(
 ): Promise<void> {
   if (import.meta.env.DEV) return;
   try {
-    const verUrl = new URL(`${import.meta.env.BASE_URL}version.json`, window.location.origin);
+    const verUrl = new URL(`${import.meta.env.BASE_URL}version.json`, globalThis.location.origin);
     verUrl.searchParams.set('t', Temporal.Now.instant().epochMilliseconds.toString());
     // fallow-ignore-next-line security-sink
     const response = await fetch(verUrl, {
@@ -177,7 +175,7 @@ export async function checkClientPwaVersion(
 function isElementOrParentScrollable(el: HTMLElement | null): boolean {
   let curr: HTMLElement | null = el;
   while (curr && curr !== document.body && curr !== document.documentElement) {
-    const style = window.getComputedStyle(curr);
+    const style = globalThis.getComputedStyle(curr);
     const overflow = style.overflow + style.overflowY + style.overflowX;
     if (/(auto|scroll)/.test(overflow)) {
       return true;

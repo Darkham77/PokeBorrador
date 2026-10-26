@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { ref } from 'vue';
+
+import type { Event as GameEvent } from '@/logic/events/eventEngine';
 import { claimAward, claimAllEventAwards } from '@/stores/events/eventAwardsActions';
 import type { EventAwardsContext } from '@/stores/events/eventAwardsActions';
 import type { PendingAward, PastEventHistoryItem } from '@/types/system/stores';
-import type { Event as GameEvent } from '@/logic/events/eventEngine';
 
 describe('Multi-Award Event Claim & Storage Capacity Validation', () => {
   const mockAllEvents: GameEvent[] = [

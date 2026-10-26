@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from 'vue';
-import { useSocialStore } from '@/stores/social/social';
-import { useUIStore } from '@/stores/ui';
-import TrainerCard from './TrainerCard.vue';
-import SocialSearchResultActions from './SocialSearchResultActions.vue';
 import { gsap } from 'gsap';
+import { ref, onMounted, watch, nextTick } from 'vue';
 
 import { MIN_SEARCH_QUERY_LENGTH } from '@/logic/constants/gameplay';
+import { useSocialStore } from '@/stores/social/social';
+import { useUIStore } from '@/stores/ui';
+
+import SocialSearchResultActions from './SocialSearchResultActions.vue';
+import TrainerCard from './TrainerCard.vue';
 
 const socialStore = useSocialStore();
 const uiStore = useUIStore();
@@ -22,11 +23,11 @@ const CARD_ANIM_SCALE_MIN = 0.95;
 const CARD_ANIM_DURATION_SEC = 0.45;
 const CARD_ANIM_STAGGER_SEC = 0.06;
 
-function openTrainerProfile(userId: string) {
+function openTrainerProfile(userId: string): void {
   uiStore.open('TrainerProfile', { userId });
 }
 
-async function handleSearch() {
+async function handleSearch(): Promise<void> {
   if (searchQuery.value.length < MIN_SEARCH_QUERY_LENGTH) {
     socialStore.searchResults = [];
     return;
@@ -37,7 +38,7 @@ async function handleSearch() {
   });
 }
 
-function animateCards() {
+function animateCards(): void {
   nextTick(() => {
     if (!listRef.value) return;
     const cards = listRef.value.querySelectorAll('.trainer-card');

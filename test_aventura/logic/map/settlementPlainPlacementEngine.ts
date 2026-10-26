@@ -7,10 +7,6 @@
  * across regional flat grass plains with clearance buffers and gateways.
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
-import type { POINode, POIGateway } from '../../types/map/poiTypes.ts';
-import type { RegionalPOITemplate } from './regionalPoiCatalog.ts';
-import { generateSettlementLayout, type SettlementTerrainContext } from './cityLayoutEngine.ts';
 import {
   COMPACT_MAP_THRESHOLD,
   COMPACT_METROPOLIS_MIN_DIST,
@@ -28,6 +24,10 @@ import {
   FALLBACK_MIN_DISTANCE_COMPACT,
   FALLBACK_MIN_DISTANCE_DEFAULT
 } from '../../config/poiPlacementConfig.ts';
+import type { POINode, POIGateway } from '../../types/map/poiTypes.ts';
+import { generateSettlementLayout, type SettlementTerrainContext } from './cityLayoutEngine.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
+import type { RegionalPOITemplate } from './regionalPoiCatalog.ts';
 import type { WaterTerrainKind } from './waterAutotileEngine.ts';
 
 const CHOKE_SEARCH_MIN_Y_RATIO = 0.25 as const;
@@ -35,6 +35,12 @@ const CHOKE_SEARCH_MAX_Y_RATIO = 0.65 as const;
 const CHOKE_SEARCH_MIN_X_RATIO = 0.2 as const;
 const CHOKE_SEARCH_MAX_X_RATIO = 0.8 as const;
 const CHOKE_SEARCH_STEP = 3 as const;
+
+const PLAIN_SETTLEMENT_TYPE_LIST = ['metropolis', 'city', 'town'] as const;
+type PlainSettlementType = (typeof PLAIN_SETTLEMENT_TYPE_LIST)[number];
+const PLAIN_SETTLEMENT_TYPES: ReadonlySet<PlainSettlementType> = new Set<PlainSettlementType>(
+  PLAIN_SETTLEMENT_TYPE_LIST
+);
 
 export interface PlainSettlementsContext {
   readonly continentMap: ContinentMapResult;
@@ -61,6 +67,36 @@ interface PlainCand {
   readonly distToPlaced: number;
 }
 
+function isBufferAreaFlatPlain(
+  x: number,
+  y: number,
+  curW: number,
+  curH: number,
+  reqBuffer: number,
+  W: number,
+  H: number,
+  continentMap: ContinentMapResult
+): boolean {
+  for (let dy = -reqBuffer; dy < curH + reqBuffer; dy++) {
+    for (let dx = -reqBuffer; dx < curW + reqBuffer; dx++) {
+      const cx = x + dx;
+      const cy = y + dy;
+      if (
+        cy < 0 ||
+        cy >= H ||
+        cx < 0 ||
+        cx >= W ||
+        continentMap.terrainMatrix[cy]?.[cx] !== 'grass' ||
+        continentMap.heightmap[cy]?.[cx] !== 0 ||
+        continentMap.resolvedMountain.occupiedFootCells[cy]?.[cx]
+      ) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 function findCandidatesWithBuffer(
   continentMap: ContinentMapResult,
   curW: number,
@@ -77,36 +113,15 @@ function findCandidatesWithBuffer(
     for (let x = 4; x < W - curW - 4; x++) {
       if (!isAreaFree(x, y, curW, curH, 2)) continue;
 
-      let allFlatPlain = true;
-      for (let dy = -reqBuffer; dy < curH + reqBuffer; dy++) {
-        for (let dx = -reqBuffer; dx < curW + reqBuffer; dx++) {
-          const cx = x + dx;
-          const cy = y + dy;
-          if (
-            cy < 0 ||
-            cy >= H ||
-            cx < 0 ||
-            cx >= W ||
-            continentMap.terrainMatrix[cy]?.[cx] !== 'grass' ||
-            continentMap.heightmap[cy]?.[cx] !== 0 ||
-            continentMap.resolvedMountain.occupiedFootCells[cy]?.[cx]
-          ) {
-            allFlatPlain = false;
-            break;
-          }
-        }
-        if (!allFlatPlain) break;
-      }
+      if (!isBufferAreaFlatPlain(x, y, curW, curH, reqBuffer, W, H, continentMap)) continue;
 
-      if (allFlatPlain) {
-        const cx = x + Math.floor(curW / 2);
-        const cy = y + Math.floor(curH / 2);
-        const distToCenter = Math.hypot(cx - W / 2, cy - H / 2);
-        const distToPlaced = getMinDistanceToPlaced(cx, cy);
+      const cx = x + Math.floor(curW / 2);
+      const cy = y + Math.floor(curH / 2);
+      const distToCenter = Math.hypot(cx - W / 2, cy - H / 2);
+      const distToPlaced = getMinDistanceToPlaced(cx, cy);
 
-        if (distToPlaced >= reqMinDist) {
-          candidates.push({ x, y, distToCenter, distToPlaced });
-        }
+      if (distToPlaced >= reqMinDist) {
+        candidates.push({ x, y, distToCenter, distToPlaced });
       }
     }
   }
@@ -208,6 +223,27 @@ function placeArchipelagoSecondaryLandmark(
   }
 }
 
+function flattenIslandArea(
+  posX: number,
+  posY: number,
+  width: number,
+  height: number,
+  W: number,
+  H: number,
+  continentMap: ContinentMapResult
+): void {
+  for (let dy = 0; dy < height; dy++) {
+    for (let dx = 0; dx < width; dx++) {
+      const cy = posY + dy;
+      const cx = posX + dx;
+      if (cy >= 0 && cy < H && cx >= 0 && cx < W) {
+        (continentMap.terrainMatrix as WaterTerrainKind[][])[cy]![cx] = 'grass';
+        (continentMap.heightmap as number[][])[cy]![cx] = 0;
+      }
+    }
+  }
+}
+
 /**
  * Places plain settlements (Metropolis, City, Town).
  */
@@ -226,8 +262,8 @@ export function placePlainSettlements(ctx: PlainSettlementsContext): void {
   const W = continentMap.width;
   const H = continentMap.height;
 
-  const plainTemplates = activeCatalog.filter(
-    (t) => t.type === 'metropolis' || t.type === 'city' || t.type === 'town'
+  const plainTemplates = activeCatalog.filter((t) =>
+    PLAIN_SETTLEMENT_TYPES.has(t.type as PlainSettlementType)
   );
 
   for (const tmpl of plainTemplates) {
@@ -246,16 +282,7 @@ export function placePlainSettlements(ctx: PlainSettlementsContext): void {
       const posX = island.cx - Math.floor(iW / 2);
       const posY = island.cy - Math.floor(iH / 2);
 
-      for (let dy = 0; dy < iH; dy++) {
-        for (let dx = 0; dx < iW; dx++) {
-          const cy = posY + dy;
-          const cx = posX + dx;
-          if (cy >= 0 && cy < H && cx >= 0 && cx < W) {
-            (continentMap.terrainMatrix as WaterTerrainKind[][])[cy]![cx] = 'grass';
-            (continentMap.heightmap as number[][])[cy]![cx] = 0;
-          }
-        }
-      }
+      flattenIslandArea(posX, posY, iW, iH, W, H, continentMap);
 
       const gateways = computeNodeGateways(posX, posY, iW, iH, tmpl.type);
       const node: POINode = {
@@ -438,6 +465,61 @@ export function placePlainSettlements(ctx: PlainSettlementsContext): void {
   }
 }
 
+function tryPlaceFallbackGate(
+  gateTmpl: RegionalPOITemplate,
+  gW: number,
+  gH: number,
+  W: number,
+  H: number,
+  continentMap: ContinentMapResult,
+  ctx: PlainSettlementsContext
+): boolean {
+  for (
+    let y = Math.floor(H * CHOKE_SEARCH_MIN_Y_RATIO);
+    y < Math.floor(H * CHOKE_SEARCH_MAX_Y_RATIO);
+    y += CHOKE_SEARCH_STEP
+  ) {
+    for (
+      let x = Math.floor(W * CHOKE_SEARCH_MIN_X_RATIO);
+      x < Math.floor(W * CHOKE_SEARCH_MAX_X_RATIO);
+      x += CHOKE_SEARCH_STEP
+    ) {
+      if (!ctx.isAreaFree(x, y, gW, gH, 1)) continue;
+      if (!isAreaFlatGrass(continentMap, x, y, gW, gH)) continue;
+      if (
+        ctx.getMinDistanceToPlaced(x + Math.floor(gW / 2), y + Math.floor(gH / 2)) <
+        GATE_MIN_DISTANCE_TO_SETTLEMENT
+      ) {
+        continue;
+      }
+
+      const midX = x + Math.floor(gW / 2);
+      const gateways: POIGateway[] = [
+        { x: midX, y, direction: 'north' },
+        { x: midX, y: y + gH - 1, direction: 'south' }
+      ];
+      const node: POINode = {
+        id: gateTmpl.id,
+        name: gateTmpl.name,
+        type: gateTmpl.type,
+        footprint: { width: gW, height: gH },
+        terrainPreference: gateTmpl.preference,
+        gridX: x,
+        gridY: y,
+        elevation: 0,
+        facing: 'south',
+        gateways
+      };
+      const layout = generateSettlementLayout(node, ctx.getSettlementContext());
+      (node as { urbanLayout?: typeof layout }).urbanLayout = layout;
+      ctx.placedNodes.push(node);
+      ctx.markAreaOccupied(x, y, gW, gH);
+      return true;
+    }
+  }
+  return false;
+}
+
 /**
  * Places route gate checkpoints between settlements and around metropolis corridors.
  */
@@ -448,7 +530,6 @@ export function placeRouteGateCheckpoints(ctx: PlainSettlementsContext): void {
     placedNodes,
     isAreaFree,
     markAreaOccupied,
-    getMinDistanceToPlaced,
     getSettlementContext
   } = ctx;
   const W = continentMap.width;
@@ -499,51 +580,7 @@ export function placeRouteGateCheckpoints(ctx: PlainSettlementsContext): void {
     }
 
     if (!gatePlaced) {
-      for (
-        let y = Math.floor(H * CHOKE_SEARCH_MIN_Y_RATIO);
-        y < Math.floor(H * CHOKE_SEARCH_MAX_Y_RATIO);
-        y += CHOKE_SEARCH_STEP
-      ) {
-        for (
-          let x = Math.floor(W * CHOKE_SEARCH_MIN_X_RATIO);
-          x < Math.floor(W * CHOKE_SEARCH_MAX_X_RATIO);
-          x += CHOKE_SEARCH_STEP
-        ) {
-          if (!isAreaFree(x, y, gW, gH, 1)) continue;
-          if (!isAreaFlatGrass(continentMap, x, y, gW, gH)) continue;
-          if (
-            getMinDistanceToPlaced(x + Math.floor(gW / 2), y + Math.floor(gH / 2)) <
-            GATE_MIN_DISTANCE_TO_SETTLEMENT
-          ) {
-            continue;
-          }
-
-          const midX = x + Math.floor(gW / 2);
-          const gateways: POIGateway[] = [
-            { x: midX, y, direction: 'north' },
-            { x: midX, y: y + gH - 1, direction: 'south' }
-          ];
-          const node: POINode = {
-            id: gateTmpl.id,
-            name: gateTmpl.name,
-            type: gateTmpl.type,
-            footprint: { width: gW, height: gH },
-            terrainPreference: gateTmpl.preference,
-            gridX: x,
-            gridY: y,
-            elevation: 0,
-            facing: 'south',
-            gateways
-          };
-          const layout = generateSettlementLayout(node, getSettlementContext());
-          (node as { urbanLayout?: typeof layout }).urbanLayout = layout;
-          placedNodes.push(node);
-          markAreaOccupied(x, y, gW, gH);
-          gatePlaced = true;
-          break;
-        }
-        if (gatePlaced) break;
-      }
+      tryPlaceFallbackGate(gateTmpl, gW, gH, W, H, continentMap, ctx);
     }
   }
 }

@@ -5,9 +5,10 @@
  * Allows custom assets to persist across browser sessions and page reloads.
  */
 
-import type { TileMetadata } from './tilesRegistry.ts';
-import type { StructureTemplate } from '../../config/mapStructures.ts';
 import { logger } from '@/logic/utils/logger';
+
+import type { StructureTemplate } from '../../config/mapStructures.ts';
+import type { TileMetadata } from './tilesRegistry.ts';
 
 const CUSTOM_ASSETS_DB_NAME = 'pokevicio_studio_assets_db';
 const DB_VERSION = 1;

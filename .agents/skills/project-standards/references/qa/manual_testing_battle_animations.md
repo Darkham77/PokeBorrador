@@ -564,11 +564,11 @@ stateDiagram-v2
 
 #### Test Case 7.3.1: Catch Sequence Step-by-Step Verification
 
-1. Open **EFECTOS (✨)** -> **FASES DE CAPTURA**:
-   - Click **FASE 1: RAYO ATRAPAR (📥)**: Enemy Pokémon is sucked into the Poké Ball on the ground.
-   - Click **FASE 2: SACUDIDA (🫨)**: Poké Ball wobbles with 4-stage tilt and `wobble` audio.
-   - Click **FASE 3: ÉXITO (🌟)**: Poké Ball pulses golden, 12 sparkling stars disperse, and victory chime plays.
-   - Click **FALLA: ESCAPAR (📤)**: Poké Ball bursts open and Pokémon re-emerges.
+1. Open **EFFECTS (✨)** -> **CAPTURE PHASES**:
+   - Click **PHASE 1: CATCH BEAM (📥)**: Enemy Pokémon is sucked into the Poké Ball on the ground.
+   - Click **PHASE 2: WOBBLE (🫨)**: Poké Ball wobbles with 4-stage tilt and `wobble` audio.
+   - Click **PHASE 3: SUCCESS (🌟)**: Poké Ball pulses golden, 12 sparkling stars disperse, and victory chime plays.
+   - Click **FAILURE: ESCAPE (📤)**: Poké Ball bursts open and Pokémon re-emerges.
 
 ---
 
@@ -577,7 +577,7 @@ stateDiagram-v2
 | Test ID      | System / Feature | Test Scenario                  | Preconditions                              | Trigger / Debug Command                                       | Expected Visual & Audio Output                                                               | Associated FSM States                               | Pass/Fail Criteria                 |
 | :----------- | :--------------- | :----------------------------- | :----------------------------------------- | :------------------------------------------------------------ | :------------------------------------------------------------------------------------------- | :-------------------------------------------------- | :--------------------------------- |
 | **QA-FS-01** | Forced Switch    | Enemy Whirlwind on Player      | Player has 2+ alive Pokémon                | `triggerAnim('escape_flee', 'player', { type: 'whirlwind' })` | 720° spiral upward ejection, `flee` sound, incoming Pokémon dragged out                      | `PLAY_ESCAPE_ANIM` $\rightarrow$ `POKEMON_CALL`     | 0 position jumps, log matches      |
-| **QA-FS-02** | Forced Switch    | Dragon Tail on Enemy Trainer   | Enemy Trainer has bench                    | Execute move **Cola Dragón**                                  | Heavy knockback recoil, `damage` sound, next Pokémon deployed                                | `PLAY_DAMAGE` $\rightarrow$ `POKEMON_CALL`          | Enemy seat smoothly swapped        |
+| **QA-FS-02** | Forced Switch    | Dragon Tail on Enemy Trainer   | Enemy Trainer has bench                    | Execute move **Dragon Tail**                                  | Heavy knockback recoil, `damage` sound, next Pokémon deployed                                | `PLAY_DAMAGE` $\rightarrow$ `POKEMON_CALL`          | Enemy seat smoothly swapped        |
 | **QA-FS-03** | Forced Switch    | Whirlwind on Empty Bench       | Target is last Pokémon alive               | Execute **Remolino**                                          | Log shows `¡Pero falló!`, target remains stationary                                          | `ACTIVE_BATTLE` $\rightarrow$ `WAIT_INPUT`          | Move fails, 0 visual exit          |
 | **QA-FL-01** | Flee System      | Wild Flee (Player Faster)      | Wild encounter, Player Spe $\ge$ Enemy Spe | Click **HUIR** -> Confirm                                     | Player recalled to ball, Enemy flees with dust particles in parallel                         | `ESCAPE_PROCESS` $\rightarrow$ `POKEMON_RECALL`     | Parallel resolution, 0 frame drops |
 | **QA-FL-02** | Flee System      | Wild Flee (Failed Escape)      | Player Spe < Enemy Spe                     | Click **HUIR** -> Confirm                                     | Log `¡No pudiste escapar!`, enemy counter-attacks, turn restores                             | `ESCAPE_PROCESS` $\rightarrow$ `APPLY_MOVE`         | Input restored if player survives  |

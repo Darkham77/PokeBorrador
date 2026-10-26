@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useUIStore } from '@/stores/ui';
-import { usePlayerClassStore } from '@/stores/player/playerClass';
-import { useGameStore } from '@/stores/game';
-import { getEloTier } from '@/logic/pvp/rankedEngine';
+
 import BaseModal from '@/components/common/BaseModal.vue';
+import { getEloTier } from '@/logic/pvp/rankedEngine';
+import { useGameStore } from '@/stores/game';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { useUIStore } from '@/stores/ui';
 
 // Sub-components
 import ClassDashboard from './class/ClassDashboard.vue';
@@ -34,11 +35,11 @@ const trainerLevel = computed(() => gameStore.state.trainerLevel || 1);
 const classLevel = computed(() => classStore.classLevel);
 const trainerRank = computed(() => getEloTier(gameStore.state.eloRating).name);
 
-const close = () => {
+const close = (): void => {
   emit('close');
 };
 
-const handleSelect = () => {
+const handleSelect = (): void => {
   uiStore.open('ClassSelection');
   close();
 };

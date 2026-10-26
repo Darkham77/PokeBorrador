@@ -1,12 +1,3 @@
-import { BaseMapEnvironment, type MapEnvironmentBoundaries } from './baseMapEnvironment.ts';
-import {
-  OutdoorEnvironment,
-  SubterraneanCaveEnvironment,
-  InteriorFacilityEnvironment,
-  StadiumEnvironment
-} from './concreteEnvironments.ts';
-import { FIRE_RED_MAPS } from '@/data/world/maps.ts';
-import type { MapLocation } from '@/types/pokemon/encounters.ts';
 import type { GymId } from '@/data/world/gyms.ts';
 import {
   MAP_ROUTE_MAPPING,
@@ -14,13 +5,23 @@ import {
   isMapRouteId,
   type MapRouteId
 } from '@/data/world/map-assets.ts';
+import { FIRE_RED_MAPS } from '@/data/world/maps.ts';
 import {
   ROUTE_WEATHER_TABLES,
   isWeatherTableRouteId,
   WEATHER_SEASON_IDS
 } from '@/data/world/weather-tables.ts';
 import { isWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry.ts';
+import type { MapLocation } from '@/types/pokemon/encounters.ts';
 import { DAY_PHASES, type DayPhase } from '@/types/system/time.ts';
+
+import { BaseMapEnvironment, type MapEnvironmentBoundaries } from './baseMapEnvironment.ts';
+import {
+  OutdoorEnvironment,
+  SubterraneanCaveEnvironment,
+  InteriorFacilityEnvironment,
+  StadiumEnvironment
+} from './concreteEnvironments.ts';
 
 export interface EnvironmentResolutionOptions {
   readonly isGym?: boolean;
@@ -72,6 +73,14 @@ function deriveAllowedWeathers(loc: MapLocation): ReadonlySet<WeatherId> {
   return allowed;
 }
 
+const INDOOR_MAP_ID_VALUES = [
+  'stadium',
+  'power_plant',
+  'pokemon_tower',
+  'mansion'
+] as const satisfies readonly MapRouteId[];
+const INDOOR_MAP_IDS: ReadonlySet<string> = new Set<string>(INDOOR_MAP_ID_VALUES);
+
 function buildBoundariesFromMapLocation(loc: MapLocation): MapEnvironmentBoundaries {
   const allowedWeathers = deriveAllowedWeathers(loc);
 
@@ -94,13 +103,7 @@ function buildBoundariesFromMapLocation(loc: MapLocation): MapEnvironmentBoundar
         })();
 
   const isCave = Boolean(loc.isCave || loc.isCrystalCave);
-  const isIndoors = Boolean(
-    loc.isIndoors ||
-    loc.id === 'stadium' ||
-    loc.id === 'power_plant' ||
-    loc.id === 'pokemon_tower' ||
-    loc.id === 'mansion'
-  );
+  const isIndoors = Boolean(loc.isIndoors || INDOOR_MAP_IDS.has(loc.id));
 
   return {
     id: loc.id,

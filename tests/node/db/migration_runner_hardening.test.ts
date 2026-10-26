@@ -4,9 +4,11 @@
  * execute atomically with fail-fast semantics (ON_ERROR_STOP parity) across SQLite and PostgreSQL.
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
+
+import { describe, it } from 'vite-plus/test';
+
 import { describeWithDatabase } from '../../dbTestHelper.ts';
 
 describeWithDatabase('Database Migration Runner Hardening & Fail-Fast Parity', (engine, getDb) => {

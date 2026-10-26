@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import { useBattleVisuals } from '@/composables/battle/useBattleVisuals';
 
 const props = defineProps<{

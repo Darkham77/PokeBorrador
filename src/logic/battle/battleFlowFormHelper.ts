@@ -1,9 +1,12 @@
+import type { DisplayText } from '@francogp/auditor';
+
+import type { PokemonType } from '@/data/battle/types';
+import { MIN_BATTLE_STAT_STAGE } from '@/logic/constants/gameplay';
+import type { BattleStages, LogFn } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { getWeatherFamily } from '../../data/system/weatherFamilies.ts';
 import { WEATHER_MECHANICAL } from '../weather/weatherRegistry.ts';
-import { MIN_BATTLE_STAT_STAGE } from '@/logic/constants/gameplay';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleStages, LogFn } from '@/types/battle/battle';
-import type { PokemonType } from '@/data/battle/types';
 
 export function updateCastformForm(
   pokemon: Pokemon | null | undefined,
@@ -40,7 +43,7 @@ export function updateCastformForm(
     pokemon.type2 = undefined;
 
     // open-record: Castform weather form labels dictionary
-    const formLabels: Record<string, string> = {
+    const formLabels: Record<DisplayText, string> = {
       sunny: 'Soleada',
       rainy: 'Lluvia',
       snowy: 'Nieve'

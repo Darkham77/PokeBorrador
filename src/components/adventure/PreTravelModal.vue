@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { ShopItemData } from '@/data/inventory/items';
-import type { Inventory } from '@/types/inventory/items';
+
 import BaseModal from '@/components/common/BaseModal.vue';
+import type { ShopItemData } from '@/data/inventory/items';
 import {
   calculateActiveTravelModifiers,
   type TravelBuffItemId
 } from '@/logic/utils/routeSpawnHelpers';
+import type { Inventory } from '@/types/inventory/items';
 
 const props = defineProps<{
   show: boolean;

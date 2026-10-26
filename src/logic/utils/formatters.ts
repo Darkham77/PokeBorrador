@@ -23,18 +23,14 @@ export const formatCurrency = (
   return (val || 0).toLocaleString();
 };
 
+const NULL_STRING_LITERAL_VALUES = ['null', 'undefined', 'Null', 'NULL'] as const;
+const NULL_STRING_LITERALS: ReadonlySet<string> = new Set<string>(NULL_STRING_LITERAL_VALUES);
+
 /**
  * Translates and formats player trainer class name.
  */
 export const formatPlayerClass = (playerClass: string | null | undefined): string => {
-  if (
-    !playerClass ||
-    playerClass === 'null' ||
-    playerClass === 'undefined' ||
-    playerClass === 'Null' ||
-    playerClass === 'NULL' ||
-    !playerClass.trim()
-  ) {
+  if (!playerClass || NULL_STRING_LITERALS.has(playerClass) || !playerClass.trim()) {
     return 'SIN CLASE';
   }
   const clean = playerClass.toLowerCase().trim(); // text-ok: UI text display localization string
@@ -51,10 +47,7 @@ export const formatPlayerClass = (playerClass: string | null | undefined): strin
 export const formatFaction = (faction: string | null | undefined): string => {
   if (
     !faction ||
-    faction === 'null' ||
-    faction === 'undefined' ||
-    faction === 'Null' ||
-    faction === 'NULL' ||
+    NULL_STRING_LITERALS.has(faction) ||
     !faction.trim() ||
     faction.toLowerCase() === 'none'
   ) {

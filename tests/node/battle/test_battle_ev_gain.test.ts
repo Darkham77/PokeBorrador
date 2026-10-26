@@ -1,8 +1,10 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
+
 import { processEvGain, processExpGain } from '@/logic/battle/battleRewards';
-import { makePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import { createDefaultEvs } from '@/logic/pokemon/evMath';
+import { makePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Battle EV Gains & Rewards Distribution (Gen 6-9 Standard)', () => {

@@ -1,7 +1,8 @@
+import { gameBus } from '@/logic/events/gameBus';
 import type { LogFn } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import { gameBus } from '@/logic/events/gameBus';
+
 import { callPokemonToBattle } from './specialActionsHelper.ts';
 
 function handleWildTeleport(

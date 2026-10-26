@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { computed, toValue } from 'vue';
-import { useGameStore } from '@/stores/game';
-import { useBattleStore } from '@/stores/battle/battle';
-import { useUIStore } from '@/stores/ui';
+
 import BoxPokemonCard from '@/components/box/BoxPokemonCard.vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils';
 import { isRevivingForceSwitchRequest } from '@/logic/battle/helpers/requestHelper.ts';
 import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay';
-
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
 import { useLivePvPStore } from '@/stores/livePvP';
+import { useUIStore } from '@/stores/ui';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const gameStore = useGameStore();
 const battleStore = useBattleStore();
@@ -54,7 +54,7 @@ const canSwitch = computed(() => {
   return true;
 });
 
-const handleSwitch = (index: number) => {
+const handleSwitch = (index: number): void => {
   const pokemon = team.value[index];
   if (!pokemon) return;
 

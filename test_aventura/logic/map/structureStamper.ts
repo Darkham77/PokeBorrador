@@ -1,10 +1,5 @@
 // Structure Stamper Engine for Multi-Tile Buildings & Scenic Props
 
-import {
-  type TilesRegistryService,
-  type TileCollision,
-  defaultTilesRegistry
-} from './tilesRegistry.ts';
 import type { StructureTemplate } from '../../config/mapStructures.ts';
 import type {
   GeneratedMap,
@@ -13,6 +8,80 @@ import type {
   MapWarp,
   MapSpawn
 } from '../../types/map/proceduralMapTypes.ts';
+import {
+  type TilesRegistryService,
+  type TileCollision,
+  defaultTilesRegistry
+} from './tilesRegistry.ts';
+
+interface StructureCellLayers {
+  readonly decLayer: (MapCell | null)[][];
+  readonly legacyDec?: (MapCell | null)[][];
+  readonly elev: (MapCell | null)[][];
+  readonly legacyElev?: (MapCell | null)[][];
+}
+
+function stampStructureLayers(
+  gx: number,
+  gy: number,
+  cell: MapCell,
+  isProp: boolean,
+  layers: StructureCellLayers
+): void {
+  if (isProp) {
+    layers.decLayer[gy]![gx] = cell;
+    if (layers.legacyDec) {
+      layers.legacyDec[gy]![gx] = cell;
+    }
+  } else {
+    layers.elev[gy]![gx] = cell;
+    if (layers.legacyElev) {
+      layers.legacyElev[gy]![gx] = cell;
+    }
+    if (layers.decLayer[gy]) {
+      layers.decLayer[gy][gx] = null;
+    }
+    if (layers.legacyDec?.[gy]) {
+      layers.legacyDec[gy][gx] = null;
+    }
+  }
+}
+
+function registerStructureDoors(
+  gridX: number,
+  gridY: number,
+  footW: number,
+  footH: number,
+  structureTemplate: StructureTemplate,
+  targetMap: GeneratedMap
+): void {
+  if (!structureTemplate.interiorMapId || !targetMap.entities) return;
+  const warps = targetMap.entities.warps as MapWarp[];
+  const spawns = targetMap.entities.spawns as MapSpawn[];
+  for (let r = 0; r < footH; r++) {
+    for (let c = 0; c < footW; c++) {
+      if (structureTemplate.collisionMask[r]?.[c] === 0) {
+        const doorX = gridX + c;
+        const doorY = gridY + r;
+        warps.push({
+          x: doorX,
+          y: doorY,
+          targetMapId: structureTemplate.interiorMapId,
+          targetSpawnId: structureTemplate.defaultSpawnId ?? 'spawn_entrance'
+        });
+        const stepY = doorY + 1;
+        if (stepY < targetMap.height) {
+          spawns.push({
+            id: `${structureTemplate.id}_exit`,
+            x: doorX,
+            y: stepY,
+            direction: 'down'
+          });
+        }
+      }
+    }
+  }
+}
 
 /**
  * Declarative function to stamp a multitile structure template and overwrite
@@ -43,6 +112,13 @@ export function stampStructure(
   const decLayer = targetMap.layers.decorations as (MapCell | null)[][];
   const legacyDec = targetMap.objectLayer as (MapCell | null)[][] | undefined;
 
+  const layers: StructureCellLayers = {
+    decLayer,
+    legacyDec,
+    elev,
+    legacyElev
+  };
+
   for (let r = 0; r < footH; r++) {
     for (let c = 0; c < footW; c++) {
       const tileId = structureTemplate.tiles[r]?.[c];
@@ -55,28 +131,9 @@ export function stampStructure(
         const filePath = entry ? entry.file_path : `/assets/tiles/decorations/${tileId}.png`;
         const tileCol: TileCollision = col === 1 ? true : col === 2 ? 'water' : false;
         const cell: MapCell = { tileId, filePath, collision: tileCol };
-
         const isProp = structureTemplate.id.startsWith('prop_');
 
-        if (isProp) {
-          decLayer[gy]![gx] = cell;
-          if (legacyDec) {
-            legacyDec[gy]![gx] = cell;
-          }
-        } else {
-          elev[gy]![gx] = cell;
-          if (legacyElev) {
-            legacyElev[gy]![gx] = cell;
-          }
-
-          // Clear decorations/props so vegetation or rocks never clip into the building
-          if (decLayer[gy]) {
-            decLayer[gy]![gx] = null;
-          }
-          if (legacyDec?.[gy]) {
-            legacyDec[gy]![gx] = null;
-          }
-        }
+        stampStructureLayers(gx, gy, cell, isProp, layers);
       }
 
       colMat[gy]![gx] = col;
@@ -87,33 +144,7 @@ export function stampStructure(
   }
 
   // Register warps and exit spawns if interiorMapId is provided
-  if (structureTemplate.interiorMapId && targetMap.entities) {
-    const warps = targetMap.entities.warps as MapWarp[];
-    const spawns = targetMap.entities.spawns as MapSpawn[];
-    for (let r = 0; r < footH; r++) {
-      for (let c = 0; c < footW; c++) {
-        if (structureTemplate.collisionMask[r]?.[c] === 0) {
-          const doorX = gridX + c;
-          const doorY = gridY + r;
-          warps.push({
-            x: doorX,
-            y: doorY,
-            targetMapId: structureTemplate.interiorMapId,
-            targetSpawnId: structureTemplate.defaultSpawnId ?? 'spawn_entrance'
-          });
-          const stepY = doorY + 1;
-          if (stepY < targetMap.height) {
-            spawns.push({
-              id: `${structureTemplate.id}_exit`,
-              x: doorX,
-              y: stepY,
-              direction: 'down'
-            });
-          }
-        }
-      }
-    }
-  }
+  registerStructureDoors(gridX, gridY, footW, footH, structureTemplate, targetMap);
 
   return true;
 }
@@ -147,7 +178,7 @@ export function stampStructureInternal(
         collisionGrid[gy]![gx] = tileCol;
       }
       if (objectLayer[gy]) {
-        objectLayer[gy]![gx] = null;
+        objectLayer[gy][gx] = null;
       }
     }
   }

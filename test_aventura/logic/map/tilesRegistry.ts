@@ -76,7 +76,7 @@ export class TilesRegistryService {
   private manifest: TilesManifest | null = null;
   private version = '2.0';
 
-  constructor(initialData?: TilesRegistryJson) {
+  public constructor(initialData?: TilesRegistryJson) {
     if (initialData) {
       this.loadRegistry(initialData);
     }
@@ -91,8 +91,9 @@ export class TilesRegistryService {
     if (!manifestUrl.startsWith('/') || manifestUrl.includes('..')) {
       throw new Error(`[TilesRegistry] Disallowed manifest URL: ${manifestUrl}`);
     }
+    const targetManifestUrl = new URL(manifestUrl, globalThis.location.origin);
     // fallow-ignore-next-line security-sink
-    const res = await fetch(manifestUrl);
+    const res = await fetch(targetManifestUrl);
     if (!res.ok) {
       throw new Error(
         `[TilesRegistry] Failed to fetch tiles manifest: ${res.status} ${res.statusText}`
@@ -119,8 +120,9 @@ export class TilesRegistryService {
     if (!fullUrl.startsWith('/') || fullUrl.includes('..')) {
       throw new Error(`[TilesRegistry] Disallowed category URL: ${fullUrl}`);
     }
+    const targetCategoryUrl = new URL(fullUrl, globalThis.location.origin);
     // fallow-ignore-next-line security-sink
-    const res = await fetch(fullUrl);
+    const res = await fetch(targetCategoryUrl);
     if (!res.ok) {
       throw new Error(
         `[TilesRegistry] Failed to fetch category ${category} from ${fullUrl}: ${res.status}`

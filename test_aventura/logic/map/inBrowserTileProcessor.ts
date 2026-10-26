@@ -8,19 +8,11 @@
  */
 
 import {
-  type TileCategory,
-  type TileMetadata,
-  type TileCollision,
-  defaultTilesRegistry,
-  TilesRegistryService
-} from './tilesRegistry.ts';
-import {
   type StructureTemplate,
   type StructureCollisionType,
   type StructureTheme,
   registerStructureTemplate
 } from '../../config/mapStructures.ts';
-
 import {
   TILE_SIZE,
   CHANNELS_PER_PIXEL,
@@ -72,6 +64,13 @@ import {
   STRUCTURE_COLLISION_SOLID,
   STRUCTURE_COLLISION_WATER
 } from '../../config/tileProcessorConfig.ts';
+import {
+  type TileCategory,
+  type TileMetadata,
+  type TileCollision,
+  defaultTilesRegistry,
+  TilesRegistryService
+} from './tilesRegistry.ts';
 
 export { TILE_SIZE };
 
@@ -429,8 +428,8 @@ export function tilePixelsToDataUrl(
         ctx.putImageData(imgData, 0, 0);
         return canvas.toDataURL('image/png');
       }
-    } catch {
-      // catch-ok: Fallback to pure software encoder when HTML5 canvas fails or is restricted
+    } catch (err) {
+      console.warn('Handled controlled exception:', err);
     }
   }
   return encodeRgbaToPngDataUrl(rgba, width, height);
@@ -477,7 +476,7 @@ export async function processTilesetSheet(
 
       const dataUrl = tilePixelsToDataUrl(pixels);
       const collision: TileCollision =
-        options.category === 'water' ? 'water' : options.category === 'elevation' ? true : false;
+        options.category === 'water' ? 'water' : options.category === 'elevation';
 
       const metadata: TileMetadata = {
         id: tileId,

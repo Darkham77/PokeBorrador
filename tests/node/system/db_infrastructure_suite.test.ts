@@ -1,8 +1,9 @@
-import { describe, it, test, expect } from 'vite-plus/test';
 import assert from 'node:assert/strict';
-import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
+
+import { describe, it, test, expect } from 'vite-plus/test';
 
 import { TABLES_SCHEMA } from '@/logic/db/schema';
 import { ensureSchemaIntegrity } from '@/logic/db/sqliteSchemaIntegrity';

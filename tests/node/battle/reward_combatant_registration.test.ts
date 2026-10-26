@@ -1,10 +1,11 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
 import { ref } from 'vue';
-import type { Pokemon } from '@/types/pokemon/pokemon.ts';
-import type { BattleState } from '@/types/battle/battle.ts';
-import type { BattleContext } from '@/types/battle/battleContext.ts';
+
 import { processEnemyFaintSequence } from '@/logic/battle/battleFaintSequence.ts';
 import { registerRewardCombatant } from '@/logic/battle/rewardsDistributor.ts';
+import type { BattleState } from '@/types/battle/battle.ts';
+import type { BattleContext } from '@/types/battle/battleContext.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon.ts';
 
 function createMockEnemy(uid: string, species: string, level = 20): Pokemon {
   return {

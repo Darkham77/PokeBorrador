@@ -16,7 +16,8 @@ Poké Vicio Development Team.
 
 ## Key Files
 
-- simplexNoise.ts: 2D Simplex noise generator with octave-based Fractional Brownian Motion (FBM) and seedable permutation tables.
+- [`simplexNoise.ts`](./simplexNoise.ts): 2D Simplex noise generator with octave-based Fractional Brownian Motion (FBM) and seedable permutation tables.
+- [`lcgRng.ts`](./lcgRng.ts): Linear Congruential Generator (LCG) pseudo-random number generator helper for procedural map generation.
 
 ## Work Guidance
 

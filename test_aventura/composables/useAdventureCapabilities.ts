@@ -1,8 +1,17 @@
-import { computed } from 'vue';
+import { computed, type ComputedRef } from 'vue';
+
 import { useGameStore } from '@/stores/game.ts';
+
 import type { MapNode } from '../logic/adventure/mapData.ts';
 
-export function useAdventureCapabilities() {
+export interface UseAdventureCapabilitiesReturn {
+  hasSurf: ComputedRef<boolean>;
+  hasCut: ComputedRef<boolean>;
+  followerSpeciesId: ComputedRef<string | null>;
+  checkNodePass: (node: MapNode) => { canPass: boolean; reason?: string };
+}
+
+export function useAdventureCapabilities(): UseAdventureCapabilitiesReturn {
   const gameStore = useGameStore();
 
   const hasSurf = computed(() => {

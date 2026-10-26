@@ -7,8 +7,10 @@
  * ("Torneo de Pesca Acuática") when resolved with species or date.
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
+
 import {
   getEventDisplayName,
   resolveTrophyDisplayName,

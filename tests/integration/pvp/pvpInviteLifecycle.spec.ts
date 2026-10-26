@@ -1,12 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useLivePvPStore } from '@/stores/livePvP';
-import { useGameStore } from '@/stores/game';
-import { useAuthStore } from '@/stores/auth';
-import { useModalStore } from '@/stores/modals';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import { ShowdownPerspectiveAdapter } from '@/logic/battle/helpers/showdownPerspectiveAdapter';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { useLivePvPStore } from '@/stores/livePvP';
+import { useModalStore } from '@/stores/modals';
 import type { BattleInvite, PvpChallengeConfig } from '@/types/battle/pvp';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('PvP Invite Lifecycle & Safety Integration', () => {
   let dbInvites: Record<string, BattleInvite>;

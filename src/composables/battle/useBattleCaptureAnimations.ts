@@ -1,16 +1,17 @@
-import { ref, computed, toValue, type MaybeRefOrGetter } from 'vue';
-import { gameBus } from '@/logic/events/gameBus';
-import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers';
-import type { useBattleStore } from '@/stores/battle/battle';
-import type { BattleSide } from '@/types/battle/battle';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { ref, computed, toValue, type ComputedRef, type Ref, type MaybeRefOrGetter } from 'vue';
+
 import { useBattleSeats } from '@/composables/battle/useBattleSeats';
 import { useBattleTweenRegistry } from '@/composables/battle/useBattleTweenRegistry';
-import { useGameStore } from '@/stores/game';
-import { useAudioStore } from '@/stores/audio';
-import { logger } from '@/logic/utils/logger';
 import { isItemId, type ItemId } from '@/data/inventory/items';
 import { COMBATANT_DAMAGE_SHAKE_DUR_SEC } from '@/logic/constants/animations';
+import { gameBus } from '@/logic/events/gameBus';
+import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers';
+import { logger } from '@/logic/utils/logger';
+import { useAudioStore } from '@/stores/audio';
+import type { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
+import type { BattleSide, BattleSeatSpecialState } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const CATCH_SPARKLE_DURATION_SEC = 1.5;
 const CATCH_CELEBRATION_DURATION_SEC = 1.5;
@@ -41,10 +42,61 @@ interface CatchSparkle {
   delay: string;
 }
 
+export interface UseBattleCaptureAnimationsReturn {
+  caughtPokemonSnapshot: Ref<Pokemon | null>;
+  isFaintInProgress: Ref<boolean>;
+  faintedPokemonSnapshot: Ref<(Partial<Pokemon> & { side: string }) | null>;
+  catchSparkles: Ref<CatchSparkle[]>;
+  isCriticalCaptureActive: Ref<Record<BattleSide, boolean>>;
+  seats: ReturnType<typeof useBattleSeats>['seats'];
+  playerAnimState: ComputedRef<string | null>;
+  enemyAnimState: ComputedRef<string | null>;
+  playerActivePokeballId: ComputedRef<string | null>;
+  enemyActivePokeballId: ComputedRef<string | null>;
+  playerCaptureActive: ComputedRef<boolean>;
+  enemyCaptureActive: ComputedRef<boolean>;
+  playerIsShaking: ComputedRef<boolean>;
+  playerIsBlinking: ComputedRef<boolean>;
+  enemyIsShaking: ComputedRef<boolean>;
+  enemyIsBlinking: ComputedRef<boolean>;
+  isCaptureSequenceActive: ComputedRef<boolean>;
+  triggerCatchSparkles: (side: string) => Promise<void>;
+  triggerCriticalCaptureFx: (side: BattleSide) => Promise<void>;
+  handleReleaseRequest: (
+    detail: string | { side?: string; ballId?: ItemId; pokemon?: Pokemon; isCritical?: boolean }
+  ) => Promise<void>;
+  handleWithdrawRequest: (detail: string | { side?: string; pokemon?: Pokemon }) => Promise<void>;
+  handleCatchRequest: (
+    detail: string | { side?: string; ballId?: ItemId; pokemon?: Pokemon }
+  ) => Promise<void>;
+  handleShakeRequest: (detail: string | { side?: string; isCapture?: boolean }) => Promise<void>;
+  handleBlinkRequest: (detail: string | { side?: string }) => Promise<void>;
+  handleFlinchRequest: (detail: string | { side?: string }) => Promise<void>;
+  handleHealRequest: (detail: string | { side?: string }) => Promise<void>;
+  handleFaintAnim: (
+    e:
+      | string
+      | { side?: string; isFaint?: boolean; pokemon?: Pokemon }
+      | { detail?: string | { side: string; isFaint?: boolean; pokemon?: Pokemon } }
+  ) => Promise<void>;
+  playCatchCelebration: (side: string) => Promise<void>;
+  playBallFadeOut: (side: string) => Promise<void>;
+  resetCaptureStates: () => void;
+  getPokemonAnimState: (side: string, pokemon?: Pokemon | null) => BattleSeatSpecialState | null;
+  getPokemonBallId: (side: string, pokemon?: Pokemon | null) => ItemId;
+  getPokemonCaptureActive: (side: string, pokemon?: Pokemon | null) => boolean;
+  getPokemonIsShaking: (side: string, pokemon?: Pokemon | null) => boolean;
+  getPokemonIsBlinking: (side: string, pokemon?: Pokemon | null) => boolean;
+  getPokemonIsHealing: (side: string, pokemon?: Pokemon | null) => boolean | undefined;
+  awaitTween: ReturnType<typeof useBattleTweenRegistry>['awaitTween'];
+  initListeners: () => void;
+  cleanupListeners: () => void;
+}
+
 export function useBattleCaptureAnimations(
   battleStore: ReturnType<typeof useBattleStore>,
   enemyRef: MaybeRefOrGetter<Pokemon | null | undefined>
-) {
+): UseBattleCaptureAnimationsReturn {
   const caughtPokemonSnapshot = ref<Pokemon | null>(null);
   const isFaintInProgress = ref(false);
   const faintedPokemonSnapshot = ref<(Partial<Pokemon> & { side: string }) | null>(null);
@@ -90,7 +142,7 @@ export function useBattleCaptureAnimations(
   });
 
   // fallow-ignore-next-line complexity
-  const fixPokemonBallTagInSave = (pokemonUid: string) => {
+  const fixPokemonBallTagInSave = (pokemonUid: string): void => {
     try {
       const gameStore = useGameStore();
       if (!gameStore?.state) return;
@@ -112,7 +164,7 @@ export function useBattleCaptureAnimations(
             'useBattleCaptureAnimations',
             `Fixed missing ball tag for pokemon uid=${pokemonUid} in save data. Added ball:pokeball.`
           );
-          void gameStore.scheduleSave();
+          gameStore.scheduleSave();
         }
       }
     } catch (e) {
@@ -124,7 +176,7 @@ export function useBattleCaptureAnimations(
     }
   };
 
-  const triggerCatchSparkles = (side: string) => {
+  const triggerCatchSparkles = (side: string): Promise<void> => {
     const tl = createTimeline();
     const count = CATCH_SPARKLE_PARTICLE_COUNT;
 
@@ -162,9 +214,13 @@ export function useBattleCaptureAnimations(
     return awaitAnimation(tl);
   };
 
-  const triggerCriticalCaptureFx = (side: BattleSide) => {
+  const triggerCriticalCaptureFx = (side: BattleSide): Promise<void> => {
     isCriticalCaptureActive.value[side] = true;
-    void useAudioStore().play('criticalThrow');
+    useAudioStore()
+      .play('criticalThrow')
+      .catch((err) => {
+        logger.warn('Handled promise rejection:', { cause: err });
+      });
     const tl = createTimeline();
     const count = CRITICAL_CAPTURE_BURST_COUNT;
 
@@ -207,18 +263,20 @@ export function useBattleCaptureAnimations(
     return awaitAnimation(tl);
   };
 
-  const handleCriticalCaptureEvent = (e: Event) => {
+  const handleCriticalCaptureEvent = (e: Event): void => {
     const detail = (e as CustomEvent).detail as { side?: string } | undefined;
     const side: BattleSide = detail?.side === 'player' ? 'player' : 'enemy';
-    void triggerCriticalCaptureFx(side);
+    triggerCriticalCaptureFx(side).catch((err) => {
+      logger.warn('Handled promise rejection:', { cause: err });
+    });
   };
 
-  const initListeners = () => {
+  const initListeners = (): void => {
     initTweenRegistryListeners();
     gameBus.on('CRITICAL_CAPTURE_FX', handleCriticalCaptureEvent);
   };
 
-  const cleanupListeners = () => {
+  const cleanupListeners = (): void => {
     cleanupTweenRegistryListeners();
     gameBus.off('CRITICAL_CAPTURE_FX', handleCriticalCaptureEvent);
   };
@@ -247,7 +305,9 @@ export function useBattleCaptureAnimations(
   };
 
   // fallow-ignore-next-line complexity
-  const handleReleaseRequest = async (detail: string | { side?: string; pokemon?: Pokemon }) => {
+  const handleReleaseRequest = async (
+    detail: string | { side?: string; pokemon?: Pokemon }
+  ): Promise<void> => {
     const side = typeof detail === 'string' ? detail : detail?.side || 'player';
     const pokemon = typeof detail === 'object' ? detail?.pokemon : null;
     const seat = getSeat(side);
@@ -279,7 +339,9 @@ export function useBattleCaptureAnimations(
     slot.pokemonUid = null;
   };
 
-  const handleWithdrawRequest = async (detail: string | { side?: string; pokemon?: Pokemon }) => {
+  const handleWithdrawRequest = async (
+    detail: string | { side?: string; pokemon?: Pokemon }
+  ): Promise<void> => {
     const side = typeof detail === 'string' ? detail : detail?.side || 'player';
     const pokemon = typeof detail === 'object' ? (detail as { pokemon?: Pokemon })?.pokemon : null;
     const slot = getSeat(side).exit;
@@ -305,7 +367,7 @@ export function useBattleCaptureAnimations(
   // fallow-ignore-next-line complexity
   const handleCatchRequest = async (
     detail: string | { side?: string; ballId?: ItemId; pokemon?: Pokemon }
-  ) => {
+  ): Promise<void> => {
     const side = typeof detail === 'string' ? detail : detail?.side || 'enemy';
     const pokemon = typeof detail === 'object' ? (detail as { pokemon?: Pokemon })?.pokemon : null;
     const slot = getSeat(side).exit;
@@ -444,7 +506,7 @@ export function useBattleCaptureAnimations(
     return Promise.resolve();
   };
 
-  const handleHealRequest = async (detail: string | { side?: string }) => {
+  const handleHealRequest = async (detail: string | { side?: string }): Promise<void> => {
     const side = typeof detail === 'string' ? detail : detail?.side || 'player';
     const seat = getSeat(side);
     if (seat) {
@@ -469,7 +531,7 @@ export function useBattleCaptureAnimations(
       | string
       | { side?: string; isFaint?: boolean; pokemon?: Pokemon }
       | { detail?: string | { side: string; isFaint?: boolean; pokemon?: Pokemon } }
-  ) => {
+  ): Promise<void> => {
     if (isFaintInProgress.value) return Promise.resolve();
 
     const data = typeof e === 'object' ? (e && 'detail' in e ? e.detail : e) : e;
@@ -549,7 +611,7 @@ export function useBattleCaptureAnimations(
     return awaitAnimation(tl);
   };
 
-  const playCatchCelebration = (side: string) => {
+  const playCatchCelebration = (side: string): Promise<void> => {
     const seat = getSeat(side);
     if (seat) {
       seat.entry.isCaptureActive = true;
@@ -562,14 +624,16 @@ export function useBattleCaptureAnimations(
         duration: CATCH_CELEBRATION_DURATION_SEC,
         onStart: () => {
           gameBus.emit('PLAY_SOUND', 'caught');
-          void triggerCatchSparkles(side);
+          triggerCatchSparkles(side).catch((err) => {
+            logger.warn('Handled promise rejection:', { cause: err });
+          });
         }
       }
     );
     return awaitAnimation(tl);
   };
 
-  const playBallFadeOut = async (side: string) => {
+  const playBallFadeOut = async (side: string): Promise<void> => {
     const seat = getSeat(side);
     if (!seat) return;
 
@@ -585,7 +649,7 @@ export function useBattleCaptureAnimations(
     caughtPokemonSnapshot.value = null;
   };
 
-  const resetCaptureStates = () => {
+  const resetCaptureStates = (): void => {
     caughtPokemonSnapshot.value = null;
     isFaintInProgress.value = false;
     faintedPokemonSnapshot.value = null;
@@ -612,7 +676,10 @@ export function useBattleCaptureAnimations(
     isCriticalCaptureActive.value = { player: false, enemy: false };
   };
 
-  const getPokemonAnimState = (side: string, pokemon?: Pokemon | null) =>
+  const getPokemonAnimState = (
+    side: string,
+    pokemon?: Pokemon | null
+  ): 'trapped' | 'catching' | 'releasing' | null =>
     getSeatProperty(
       side,
       pokemon,
@@ -621,7 +688,7 @@ export function useBattleCaptureAnimations(
       battleStore.player?.uid,
       battleStore.enemy?.uid
     );
-  const getPokemonBallId = (side: string, pokemon?: Pokemon | null) =>
+  const getPokemonBallId = (side: string, pokemon?: Pokemon | null): ItemId =>
     getSeatProperty(
       side,
       pokemon,
@@ -630,7 +697,7 @@ export function useBattleCaptureAnimations(
       battleStore.player?.uid,
       battleStore.enemy?.uid
     );
-  const getPokemonCaptureActive = (side: string, pokemon?: Pokemon | null) =>
+  const getPokemonCaptureActive = (side: string, pokemon?: Pokemon | null): boolean =>
     getSeatProperty(
       side,
       pokemon,
@@ -639,7 +706,7 @@ export function useBattleCaptureAnimations(
       battleStore.player?.uid,
       battleStore.enemy?.uid
     );
-  const getPokemonIsShaking = (side: string, pokemon?: Pokemon | null) =>
+  const getPokemonIsShaking = (side: string, pokemon?: Pokemon | null): boolean =>
     getSeatProperty(
       side,
       pokemon,
@@ -648,7 +715,7 @@ export function useBattleCaptureAnimations(
       battleStore.player?.uid,
       battleStore.enemy?.uid
     );
-  const getPokemonIsBlinking = (side: string, pokemon?: Pokemon | null) =>
+  const getPokemonIsBlinking = (side: string, pokemon?: Pokemon | null): boolean =>
     getSeatProperty(
       side,
       pokemon,
@@ -657,7 +724,7 @@ export function useBattleCaptureAnimations(
       battleStore.player?.uid,
       battleStore.enemy?.uid
     );
-  const getPokemonIsHealing = (side: string, pokemon?: Pokemon | null) =>
+  const getPokemonIsHealing = (side: string, pokemon?: Pokemon | null): boolean | undefined =>
     getSeatProperty(
       side,
       pokemon,

@@ -1,5 +1,7 @@
-import { describe, it, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it, beforeEach } from 'vite-plus/test';
+
 import { HeuristicDamageCalculator } from '../../../src/logic/battle/ai/heuristic/damageCalculator.ts';
 import type {
   HeuristicBattleSnapshot,

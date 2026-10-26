@@ -25,9 +25,8 @@ export function getDirectionArrow(direction?: StatModifierDirection): StatModifi
   return direction === 'up' ? '▲' : '▼';
 }
 
-export function formatStageValue(stage?: number): string {
-  const val = stage ?? 0;
-  return `${val >= 0 ? '+' : ''}${val}`;
+export function formatStageValue(stage: number = 0): string {
+  return `${stage >= 0 ? '+' : ''}${stage}`;
 }
 
 export function getStageRangeLabel(currentStage?: number, finalStage?: number): string {

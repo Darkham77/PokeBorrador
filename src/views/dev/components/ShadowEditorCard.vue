@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { gsap } from 'gsap';
 /**
  * src/views/dev/components/ShadowEditorCard.vue
  *
@@ -6,12 +7,17 @@
  * High-contrast arena preview, responsive aspect-ratio zoom scaling,
  * visible headers with Frente/Espalda badges, and full editing controls.
  */
-
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { gsap } from 'gsap';
+
 import CombatShadow from '@/components/battle/CombatShadow.vue';
-import { useCombatShadowStore } from '@/stores/battle/combatShadows';
 import { getShadowWidth } from '@/composables/battle/useBattleShadows';
+import {
+  ANIMATED_SPRITE_DATABASE,
+  hasAnimatedSpriteId
+} from '@/data/pokemon/animatedSpriteDatabase';
+import { DEFAULT_FRAME_SIZE_PX, POKEMON_SPRITE_IDLE_FPS } from '@/logic/constants/animations';
+import { logger } from '@/logic/utils/logger.ts';
+import { useCombatShadowStore } from '@/stores/battle/combatShadows';
 import {
   type EditorEntity,
   type SpriteShadowOverride,
@@ -21,11 +27,7 @@ import {
   MAX_SHADOW_SCALE,
   SHADOW_SCALE_STEP
 } from '@/types/pokemon/spriteShadows';
-import {
-  ANIMATED_SPRITE_DATABASE,
-  hasAnimatedSpriteId
-} from '@/data/pokemon/animatedSpriteDatabase';
-import { DEFAULT_FRAME_SIZE_PX, POKEMON_SPRITE_IDLE_FPS } from '@/logic/constants/animations';
+
 import {
   copySliderValue,
   readSliderValue,
@@ -94,14 +96,16 @@ const formatPercent = (ratio: number): number => Math.round(ratio * PERCENT_PREC
 const MIN_SPRITE_FRAME_SIZE_PX = 16;
 
 // Determine animation metadata from spriteUrl in O(1)
-const getAnimSpriteKey = (url: string): string | null => {
-  if (!url.includes('/animated/')) return null;
-  const match = url.match(/\/([^/]+)\.webp$/i);
-  if (!match) return null;
-  const fileName = match[1]!; // e.g. "25i", "25i_f", "1i"
-  const isBack = url.includes('/Back');
+const getAnimSpriteKey = (spritePath: string): string | null => {
+  if (!spritePath.includes('/animated/')) return null;
+  const cleanPath = spritePath.split('?')[0] ?? '';
+  const lastSlash = cleanPath.lastIndexOf('/');
+  const baseName = lastSlash >= 0 ? cleanPath.slice(lastSlash + 1) : cleanPath;
+  if (!baseName.toLowerCase().endsWith('.webp')) return null;
+  const fileName = baseName.slice(0, -5); // e.g. "25i", "25i_f", "1i"
+  const isBack = cleanPath.includes('/Back');
   if (isBack) {
-    return fileName.endsWith('_f') ? fileName.replace(/_f$/, '_f_back') : `${fileName}_back`;
+    return fileName.endsWith('_f') ? `${fileName.slice(0, -2)}_f_back` : `${fileName}_back`;
   }
   return fileName;
 };
@@ -150,7 +154,7 @@ const effectiveShadowWidthStr = computed(() => {
 
 const DEFAULT_GENERIC_FEET_Y_RATIO = 0.75 as const;
 
-const syncShadowInStore = () => {
+const syncShadowInStore = (): void => {
   shadowStore.requestShadow(shadowKey.value, {
     side: 'generic',
     feetX: 0.5,
@@ -174,7 +178,7 @@ watch(
 );
 
 // GSAP spritesheet stepping animation
-const startAnimation = () => {
+const startAnimation = (): void => {
   if (animTween) {
     animTween.kill();
     animTween = null;
@@ -220,7 +224,7 @@ const dragStartPointer = ref({ x: 0, y: 0 });
 const dragStartCoords = ref({ x: 0, y: 0 });
 const hasPointerMoved = ref(false);
 
-const handlePointerDown = (e: PointerEvent) => {
+const handlePointerDown = (e: PointerEvent): void => {
   e.preventDefault();
   e.stopPropagation();
   isDragging.value = true;
@@ -230,7 +234,7 @@ const handlePointerDown = (e: PointerEvent) => {
   (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
 };
 
-const handlePointerMove = (e: PointerEvent) => {
+const handlePointerMove = (e: PointerEvent): void => {
   if (!isDragging.value) return;
   e.preventDefault();
   e.stopPropagation();
@@ -260,14 +264,13 @@ const handlePointerMove = (e: PointerEvent) => {
   );
 };
 
-const handlePointerUp = (e: PointerEvent) => {
+const handlePointerUp = (e: PointerEvent): void => {
   if (isDragging.value) {
     isDragging.value = false;
     try {
       (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch (_err) {
-      // catch-ok: Pointer capture might already be released or lost by the browser
-      // Ignored if capture lost
+    } catch (err) {
+      logger.warn('Handled controlled exception:', { cause: err });
     }
 
     // Direct click-to-pin when clicked on sprite without dragging
@@ -299,7 +302,7 @@ const handlePointerUp = (e: PointerEvent) => {
   }
 };
 
-const handleNumericXChange = (event: Event) => {
+const handleNumericXChange = (event: Event): void => {
   const num = parseFloat((event.target as HTMLInputElement).value);
   if (isNaN(num)) return;
   const val = Math.max(MIN_COORDINATE, Math.min(MAX_COORDINATE, Number(num.toFixed(3))));
@@ -313,7 +316,7 @@ const handleNumericXChange = (event: Event) => {
   );
 };
 
-const handleNumericYChange = (event: Event) => {
+const handleNumericYChange = (event: Event): void => {
   const num = parseFloat((event.target as HTMLInputElement).value);
   if (isNaN(num)) return;
   const val = Math.max(MIN_COORDINATE, Math.min(MAX_COORDINATE, Number(num.toFixed(3))));
@@ -327,7 +330,7 @@ const handleNumericYChange = (event: Event) => {
   );
 };
 
-const handleShadowScaleChange = (event: Event) => {
+const handleShadowScaleChange = (event: Event): void => {
   const num = parseFloat((event.target as HTMLInputElement).value);
   if (isNaN(num)) return;
   const val = Math.max(MIN_SHADOW_SCALE, Math.min(MAX_SHADOW_SCALE, Number(num.toFixed(2))));
@@ -341,7 +344,7 @@ const handleShadowScaleChange = (event: Event) => {
   );
 };
 
-const handleFlyingToggle = (event: Event) => {
+const handleFlyingToggle = (event: Event): void => {
   const checked = (event.target as HTMLInputElement).checked;
   emit(
     'updateOverride',
@@ -357,7 +360,7 @@ const COPY_FEEDBACK_DURATION_SEC = 0.9 as const;
 const copiedField = ref<ShadowSliderField | null>(null);
 let copyResetTween: gsap.core.Tween | null = null;
 
-const handleCopyValue = async (field: ShadowSliderField, val: number) => {
+const handleCopyValue = async (field: ShadowSliderField, val: number): Promise<void> => {
   await copySliderValue(val);
   copiedField.value = field;
   if (copyResetTween) {
@@ -371,7 +374,7 @@ const handleCopyValue = async (field: ShadowSliderField, val: number) => {
   });
 };
 
-const handlePasteValue = async (field: ShadowSliderField) => {
+const handlePasteValue = async (field: ShadowSliderField): Promise<void> => {
   const raw = await readSliderValue();
   if (raw === null || isNaN(raw)) return;
 
@@ -411,7 +414,7 @@ const handlePasteValue = async (field: ShadowSliderField) => {
 const copiedAll = ref(false);
 let copyAllResetTween: gsap.core.Tween | null = null;
 
-const handleCopyAll = async () => {
+const handleCopyAll = async (): Promise<void> => {
   await copyAllValues({
     feetX: currentFeetX.value,
     feetY: currentFeetY.value,
@@ -428,7 +431,7 @@ const handleCopyAll = async () => {
   });
 };
 
-const handlePasteAll = async () => {
+const handlePasteAll = async (): Promise<void> => {
   const snapshot = await readAllValues();
   if (!snapshot) return;
 
@@ -442,7 +445,7 @@ const handlePasteAll = async () => {
   );
 };
 
-const handleReset = () => {
+const handleReset = (): void => {
   emit('resetOverride', props.entity.key);
 };
 </script>

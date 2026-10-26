@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+
 import { formatCosmeticRequirement, type LockableCosmeticStyle } from './cosmeticsFilterHelper';
 
 const props = withDefaults(

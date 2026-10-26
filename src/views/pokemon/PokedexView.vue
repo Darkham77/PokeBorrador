@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useGameStore } from '@/stores/game';
-import { PDEX_ORDER, GEN2_PDEX_ORDER } from '@/logic/constants/pokedexConstants';
-import { usePokedex } from '@/composables/pokemon/usePokedex';
-import { usePokedexDataLoader } from '@/loaders/pokedexDataLoader';
 
+import PokedexControls from '@/components/pokedex/PokedexControls.vue';
 // Components
 import PokedexHeader from '@/components/pokedex/PokedexHeader.vue';
-import PokedexControls from '@/components/pokedex/PokedexControls.vue';
 import PokedexPokemonCard from '@/components/pokedex/PokedexPokemonCard.vue';
+import { usePokedex } from '@/composables/pokemon/usePokedex';
+import { usePokedexDataLoader } from '@/loaders/pokedexDataLoader';
+import { PDEX_ORDER, GEN2_PDEX_ORDER } from '@/logic/constants/pokedexConstants';
+import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import type { PokedexItem } from '@/types/system/game';
 
@@ -46,7 +46,7 @@ const stats = computed(() => {
   return { seen: currentGenSeen, caught: currentGenCaught, total: currentGenTotal };
 });
 
-const openDetail = (p: PokedexItem) => {
+const openDetail = (p: PokedexItem): void => {
   if (!p.isSeen) return;
   uiStore.open('PokedexDetail', { speciesId: p.id, context: 'pokedex' });
 };

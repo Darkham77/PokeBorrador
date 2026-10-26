@@ -1,5 +1,16 @@
-import { logger } from '../utils/logger.ts';
 import type { ShowdownPlayerRequest, WinnerSide } from '@/types/battle/battle';
+
+import { logger } from '../utils/logger.ts';
+import {
+  validateAndTraceSimulationReplay,
+  generateWorkerReproductionError
+} from './showdownReplayTraceHelper.ts';
+import {
+  syncTeamsFromLastWorkerState,
+  prepareTurnStateForWorker,
+  syncWorkerTurnSuccessToClient,
+  type WorkerSuccessPayload
+} from './showdownTurnSyncHelper.ts';
 import {
   showdownWorker,
   setShowdownWorker,
@@ -9,16 +20,6 @@ import {
   registerShowdownStoreResolvers,
   cleanWorkerListener
 } from './showdownWorkerInstance.ts';
-import {
-  syncTeamsFromLastWorkerState,
-  prepareTurnStateForWorker,
-  syncWorkerTurnSuccessToClient,
-  type WorkerSuccessPayload
-} from './showdownTurnSyncHelper.ts';
-import {
-  validateAndTraceSimulationReplay,
-  generateWorkerReproductionError
-} from './showdownReplayTraceHelper.ts';
 
 export {
   showdownWorker,
@@ -100,7 +101,7 @@ export async function executeTurnInWorker(
   );
 
   return new Promise((resolve, reject) => {
-    const handler = async (event: MessageEvent) => {
+    const handler = async (event: MessageEvent): Promise<void> => {
       const data = event.data as { type: string; payload: WorkerSuccessPayload };
       const { type, payload } = data;
       if (type === 'WORKER_LOG') {

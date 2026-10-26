@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 import fs from 'node:fs';
 import path from 'node:path';
 import movesJson from '../../src/data/battle/moves.json' with { type: 'json' };
@@ -120,38 +121,38 @@ for (const item of shopItems) {
 }
 
 // 3. All Dex abilities and natures
-const natureReplacements = new Map<string, string>([
-  // runtime-map: Fast O(1) keyed lookup dictionary
-  ['fuerte', 'hardy'],
-  ['docil', 'docile'],
-  ['dócil', 'docile'],
-  ['seria', 'serious'],
-  ['timida', 'timid'],
-  ['tímida', 'timid'],
-  ['activa', 'hasty'],
-  ['modesta', 'modest'],
-  ['afable', 'mild'],
-  ['mansa', 'quiet'],
-  ['alocada', 'rash'],
-  ['serena', 'calm'],
-  ['amable', 'gentle'],
-  ['cauta', 'careful'],
-  ['picara', 'naughty'],
-  ['pícara', 'naughty'],
-  ['osada', 'bold'],
-  ['placida', 'relaxed'],
-  ['plácida', 'relaxed'],
-  ['agitada', 'impish'],
-  ['floja', 'lax'],
-  ['audaz', 'brave'],
-  ['firme', 'adamant'],
-  ['alegre', 'jolly'],
-  ['miedosa', 'timid'],
-  ['huraña', 'lonely'],
-  ['hurana', 'lonely'],
-  ['grosera', 'sassy'],
-  ['ingenua', 'naive']
-]);
+const NATURE_REPLACEMENTS_MAP: Record<DisplayText, string> = {
+  fuerte: 'hardy',
+  docil: 'docile',
+  dócil: 'docile',
+  seria: 'serious',
+  timida: 'timid',
+  tímida: 'timid',
+  activa: 'hasty',
+  modesta: 'modest',
+  afable: 'mild',
+  mansa: 'quiet',
+  alocada: 'rash',
+  serena: 'calm',
+  amable: 'gentle',
+  cauta: 'careful',
+  picara: 'naughty',
+  pícara: 'naughty',
+  osada: 'bold',
+  placida: 'relaxed',
+  plácida: 'relaxed',
+  agitada: 'impish',
+  floja: 'lax',
+  audaz: 'brave',
+  firme: 'adamant',
+  alegre: 'jolly',
+  miedosa: 'timid',
+  huraña: 'lonely',
+  hurana: 'lonely',
+  grosera: 'sassy',
+  ingenua: 'naive'
+};
+const natureReplacements = new Map<string, string>(Object.entries(NATURE_REPLACEMENTS_MAP));
 
 console.log(`📊 Total variantes de movimientos mapeadas: ${moveReplacements.size}`);
 console.log(`📊 Total variantes de items mapeadas: ${itemReplacements.size}`);

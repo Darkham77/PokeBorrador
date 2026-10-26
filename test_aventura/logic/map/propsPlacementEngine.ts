@@ -27,11 +27,6 @@ import {
   TRIMMED_HEDGE,
   FIELD_ROCK
 } from '../../config/mapProps.ts';
-import {
-  type TileCollision,
-  type TilesRegistryService,
-  defaultTilesRegistry
-} from './tilesRegistry.ts';
 import type {
   MapCell,
   MapSpawn,
@@ -39,6 +34,11 @@ import type {
   GeneratedMap,
   CollisionType
 } from './proceduralMapGenerator.ts';
+import {
+  type TileCollision,
+  type TilesRegistryService,
+  defaultTilesRegistry
+} from './tilesRegistry.ts';
 import type { UrbanLot } from './urbanZoningEngine.ts';
 
 const MIN_FENCE_DENSITY_FACTOR = 0.25 as const;
@@ -193,26 +193,49 @@ export function stampProp(
       const gx = gridX + c;
       const gy = gridY + r;
 
-      if (tileId) {
-        const entry = registry.getTileById(tileId);
-        const filePath = entry ? entry.file_path : `/assets/tiles/decorations/${tileId}.png`;
-        const cell: MapCell = { tileId, filePath, collision: isSolid };
+      if (!tileId) continue;
 
-        decLayer[gy]![gx] = cell;
-        if (legacyDec) {
-          legacyDec[gy]![gx] = cell;
-        }
+      const entry = registry.getTileById(tileId);
+      const filePath = entry ? entry.file_path : `/assets/tiles/decorations/${tileId}.png`;
+      const cell: MapCell = { tileId, filePath, collision: isSolid };
 
-        if (isSolid) {
-          colMat[gy]![gx] = 1;
-          if (colGrid) {
-            colGrid[gy]![gx] = true;
-          }
+      decLayer[gy]![gx] = cell;
+      if (legacyDec) {
+        legacyDec[gy]![gx] = cell;
+      }
+
+      if (isSolid) {
+        colMat[gy]![gx] = 1;
+        if (colGrid) {
+          colGrid[gy]![gx] = true;
         }
       }
     }
   }
 
+  return true;
+}
+
+function tryPlaceSidewalkLamp(
+  x: number,
+  y: number,
+  objectLayer: (MapCell | null)[][],
+  elevationLayer: (MapCell | null)[][],
+  collisionGrid: TileCollision[][],
+  isPathCell: boolean[][],
+  isReserved: (x: number, y: number, w: number, h: number) => boolean,
+  mapWidth: number,
+  mapHeight: number,
+  makeCell: (tileId: string, collision: TileCollision) => MapCell
+): boolean {
+  if (y < 0 || y + 1 >= mapHeight) return false;
+  if (isReserved(x, y, 1, 2)) return false;
+  if (
+    !canPlacePropAt(objectLayer, elevationLayer, isPathCell, STREET_LAMP, x, y, mapWidth, mapHeight)
+  ) {
+    return false;
+  }
+  stampPropAt(objectLayer, collisionGrid, STREET_LAMP, x, y, mapWidth, mapHeight, makeCell);
   return true;
 }
 
@@ -391,64 +414,37 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
       for (let x = 3; x <= mapWidth - 4; x += lampSpacing) {
         if (prng() > dFactor) continue;
 
-        // Try South sidewalk (lamp base at ry + 1)
         const southY = ry + 1;
-        if (
-          southY + 1 < mapHeight &&
-          !isReserved(x, southY, 1, 2) &&
-          canPlacePropAt(
+        const northY = ry - 3;
+        const placed =
+          tryPlaceSidewalkLamp(
+            x,
+            southY,
             objectLayer,
             elevationLayer,
-            isPathCell,
-            STREET_LAMP,
-            x,
-            southY,
-            mapWidth,
-            mapHeight
-          )
-        ) {
-          stampPropAt(
-            objectLayer,
             collisionGrid,
-            STREET_LAMP,
+            isPathCell,
+            isReserved,
+            mapWidth,
+            mapHeight,
+            makeCell
+          ) ||
+          tryPlaceSidewalkLamp(
             x,
-            southY,
+            northY,
+            objectLayer,
+            elevationLayer,
+            collisionGrid,
+            isPathCell,
+            isReserved,
             mapWidth,
             mapHeight,
             makeCell
           );
+
+        if (placed) {
           placedPropsCount++;
           lampsCount++;
-        } else {
-          // Try North sidewalk (lamp top at ry - 3, base at ry - 2)
-          const northY = ry - 3;
-          if (
-            northY >= 0 &&
-            !isReserved(x, northY, 1, 2) &&
-            canPlacePropAt(
-              objectLayer,
-              elevationLayer,
-              isPathCell,
-              STREET_LAMP,
-              x,
-              northY,
-              mapWidth,
-              mapHeight
-            )
-          ) {
-            stampPropAt(
-              objectLayer,
-              collisionGrid,
-              STREET_LAMP,
-              x,
-              northY,
-              mapWidth,
-              mapHeight,
-              makeCell
-            );
-            placedPropsCount++;
-            lampsCount++;
-          }
         }
       }
     }
@@ -726,33 +722,33 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
     // 3. Field rocks and wood stumps in open wild
     for (let y = 3; y < mapHeight - 3; y += 4) {
       for (let x = 3; x < mapWidth - 3; x += 4) {
-        if (prng() < dFactor * WILD_OBSTACLE_CHANCE_FACTOR) {
-          const obstacleProp = prng() < 0.5 ? FIELD_ROCK : WOOD_STUMP;
-          if (
-            !isReserved(x, y, 1, 1) &&
-            canPlacePropAt(
-              objectLayer,
-              elevationLayer,
-              isPathCell,
-              obstacleProp,
-              x,
-              y,
-              mapWidth,
-              mapHeight
-            )
-          ) {
-            stampPropAt(
-              objectLayer,
-              collisionGrid,
-              obstacleProp,
-              x,
-              y,
-              mapWidth,
-              mapHeight,
-              makeCell
-            );
-            placedPropsCount++;
-          }
+        if (prng() >= dFactor * WILD_OBSTACLE_CHANCE_FACTOR) continue;
+
+        const obstacleProp = prng() < 0.5 ? FIELD_ROCK : WOOD_STUMP;
+        if (
+          !isReserved(x, y, 1, 1) &&
+          canPlacePropAt(
+            objectLayer,
+            elevationLayer,
+            isPathCell,
+            obstacleProp,
+            x,
+            y,
+            mapWidth,
+            mapHeight
+          )
+        ) {
+          stampPropAt(
+            objectLayer,
+            collisionGrid,
+            obstacleProp,
+            x,
+            y,
+            mapWidth,
+            mapHeight,
+            makeCell
+          );
+          placedPropsCount++;
         }
       }
     }

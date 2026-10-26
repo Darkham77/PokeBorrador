@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { isItemUsableOutsideCombat, useInventoryStore } from '@/stores/inventory/inventory';
-import { useGameStore } from '@/stores/game';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import { getItemById } from '@/data/inventory/items';
+import { useGameStore } from '@/stores/game';
+import { isItemUsableOutsideCombat, useInventoryStore } from '@/stores/inventory/inventory';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 // Mock components and external logic

@@ -1,8 +1,9 @@
 import type { RealtimeChannel, REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js';
 import { gsap } from 'gsap';
-import { lanRelayBridge } from './lanRelayBridge.ts';
-import { logger } from '../utils/logger.ts';
+
 import { cloneReactive } from '../utils/cloneUtils.ts';
+import { logger } from '../utils/logger.ts';
+import { lanRelayBridge } from './lanRelayBridge.ts';
 
 const MOCK_CHANNEL_SUBSCRIBE_DELAY_SEC = 0.01 as const;
 const MAX_SEEN_IDS = 100 as const;
@@ -16,7 +17,7 @@ export function createOfflineRealtimeChannel(name: string): RealtimeChannel {
   }> = [];
   const seenMsgUids = new Set<string>();
 
-  const dispatchPayload = (rawPayload: unknown) => {
+  const dispatchPayload = (rawPayload: unknown): void => {
     if (!rawPayload || typeof rawPayload !== 'object') return;
     const msg = rawPayload as {
       type?: string;

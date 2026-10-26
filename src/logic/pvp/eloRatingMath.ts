@@ -13,7 +13,7 @@ export const ELO_SOFT_RESET_DIVISOR = 2 as const;
 export function calculateExpectedScore(playerElo: number, opponentElo: number): number {
   const pElo = Number(playerElo) || MIN_INITIAL_ELO;
   const oElo = Number(opponentElo) || MIN_INITIAL_ELO;
-  return 1 / (1 + Math.pow(ELO_SCALE_BASE, (oElo - pElo) / ELO_SCALE_DIVISOR));
+  return 1 / (1 + ELO_SCALE_BASE ** ((oElo - pElo) / ELO_SCALE_DIVISOR));
 }
 
 /**

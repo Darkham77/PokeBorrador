@@ -5,9 +5,10 @@
  * Zero UI / Pinia dependencies.
  */
 
-import type { GameState } from '@/types/system/game';
-import type { SaveDataDto } from '@/logic/validation/schemas';
 import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay';
+import type { SaveDataDto } from '@/logic/validation/schemas';
+import type { GameState } from '@/types/system/game';
+
 import { serializeActiveBattle } from './battleSerializerHelper.ts';
 import { parseMarketSoldSeenIds } from './saveSanitizerHelpers.ts';
 
@@ -19,7 +20,13 @@ function serializeMapData(map: (GameState | SaveDataDto)['map']): SaveDataDto['m
   };
 }
 
-function serializeTicketBuffs(state: GameState | SaveDataDto) {
+function serializeTicketBuffs(state: GameState | SaveDataDto): {
+  safariTicketSecs: number;
+  ceruleanTicketSecs: number;
+  articunoTicketSecs: number;
+  mewtwoTicketSecs: number;
+  repelSecs: number;
+} {
   return {
     safariTicketSecs: state.safariTicketSecs ?? 0,
     ceruleanTicketSecs: state.ceruleanTicketSecs ?? 0,
@@ -29,7 +36,16 @@ function serializeTicketBuffs(state: GameState | SaveDataDto) {
   };
 }
 
-function serializeToolBuffs(state: GameState | SaveDataDto) {
+function serializeToolBuffs(state: GameState | SaveDataDto): {
+  fishingRodSecs: number;
+  fishingRodType: string | null;
+  pickaxeSecs: number;
+  pickaxeType: string | null;
+  brushSecs: number;
+  brushType: string | null;
+  incenseSecs: number;
+  incenseType: string | null;
+} {
   return {
     fishingRodSecs: state.fishingRodSecs ?? 0,
     fishingRodType: state.fishingRodType ?? null,
@@ -42,7 +58,13 @@ function serializeToolBuffs(state: GameState | SaveDataDto) {
   };
 }
 
-function serializeBoosterBuffs(state: GameState | SaveDataDto) {
+function serializeBoosterBuffs(state: GameState | SaveDataDto): {
+  shinyBoostSecs: number;
+  amuletCoinSecs: number;
+  luckyEggSecs: number;
+  ivScannerSecs: number;
+  daycare_berry_egg_time: number;
+} {
   return {
     shinyBoostSecs: state.shinyBoostSecs ?? 0,
     amuletCoinSecs: state.amuletCoinSecs ?? 0,
@@ -52,7 +74,26 @@ function serializeBoosterBuffs(state: GameState | SaveDataDto) {
   };
 }
 
-function serializeTimedBuffs(state: GameState | SaveDataDto) {
+function serializeTimedBuffs(state: GameState | SaveDataDto): {
+  shinyBoostSecs: number;
+  amuletCoinSecs: number;
+  luckyEggSecs: number;
+  ivScannerSecs: number;
+  daycare_berry_egg_time: number;
+  fishingRodSecs: number;
+  fishingRodType: string | null;
+  pickaxeSecs: number;
+  pickaxeType: string | null;
+  brushSecs: number;
+  brushType: string | null;
+  incenseSecs: number;
+  incenseType: string | null;
+  safariTicketSecs: number;
+  ceruleanTicketSecs: number;
+  articunoTicketSecs: number;
+  mewtwoTicketSecs: number;
+  repelSecs: number;
+} {
   return {
     ...serializeTicketBuffs(state),
     ...serializeToolBuffs(state),
@@ -60,7 +101,12 @@ function serializeTimedBuffs(state: GameState | SaveDataDto) {
   };
 }
 
-function serializeWarOverview(state: GameState | SaveDataDto) {
+function serializeWarOverview(state: GameState | SaveDataDto): {
+  faction: 'union' | 'poder' | null;
+  lastResolvedWeek: string | null;
+  warTeam: string[];
+  warSlots: number;
+} {
   return {
     faction: state.faction ?? null,
     lastResolvedWeek: state.lastResolvedWeek ?? null,
@@ -69,25 +115,51 @@ function serializeWarOverview(state: GameState | SaveDataDto) {
   };
 }
 
-function serializeWarEconomy(state: GameState | SaveDataDto) {
+function serializeWarEconomy(
+  state: GameState | SaveDataDto
+): Pick<
+  SaveDataDto,
+  | 'warCoins'
+  | 'warCoinsSpent'
+  | 'warDailyCap'
+  | 'warDailyCoins'
+  | 'warMyPtsLocal'
+  | 'warPointsAccumulator'
+> {
   return {
     warCoins: state.warCoins,
     warCoinsSpent: state.warCoinsSpent,
     warDailyCap: state.warDailyCap as SaveDataDto['warDailyCap'],
-    warDailyCoins: state.warDailyCoins as SaveDataDto['warDailyCoins'],
-    warMyPtsLocal: state.warMyPtsLocal as SaveDataDto['warMyPtsLocal'],
+    warDailyCoins: state.warDailyCoins,
+    warMyPtsLocal: state.warMyPtsLocal,
     warPointsAccumulator: state.warPointsAccumulator
   };
 }
 
-function serializeWarState(state: GameState | SaveDataDto) {
+function serializeWarState(
+  state: GameState | SaveDataDto
+): Pick<
+  SaveDataDto,
+  | 'faction'
+  | 'lastResolvedWeek'
+  | 'warTeam'
+  | 'warSlots'
+  | 'warCoins'
+  | 'warCoinsSpent'
+  | 'warDailyCap'
+  | 'warDailyCoins'
+  | 'warMyPtsLocal'
+  | 'warPointsAccumulator'
+> {
   return {
     ...serializeWarOverview(state),
     ...serializeWarEconomy(state)
   };
 }
 
-function serializeBlackMarketDaily(daily: unknown) {
+function serializeBlackMarketDaily(
+  daily: unknown
+): NonNullable<NonNullable<SaveDataDto['classData']>['blackMarketDaily']> {
   const d = daily as
     | NonNullable<NonNullable<GameState['classData']>['blackMarketDaily']>
     | null
@@ -101,7 +173,7 @@ function serializeBlackMarketDaily(daily: unknown) {
 
 function serializeClassActiveMission(
   mission: NonNullable<GameState['classData'] | SaveDataDto['classData']>['activeMission']
-) {
+): NonNullable<SaveDataDto['classData']>['activeMission'] {
   if (!mission) return null;
   return {
     id: mission.id,
@@ -117,7 +189,25 @@ function serializeClassActiveMission(
   };
 }
 
-function serializeTrainerIdentity(state: GameState | SaveDataDto) {
+function serializeTrainerIdentity(
+  state: GameState | SaveDataDto
+): Pick<
+  SaveDataDto,
+  | 'trainer'
+  | 'gender'
+  | 'last_renamed_at'
+  | 'badges'
+  | 'balls'
+  | 'money'
+  | 'battleCoins'
+  | 'eggs'
+  | 'trainerLevel'
+  | 'trainerExp'
+  | 'trainerExpNeeded'
+  | 'trainerChance'
+  | 'nick_style'
+  | 'avatar_style'
+> {
   return {
     trainer: state.trainer,
     gender: state.gender ?? 'h',
@@ -126,7 +216,7 @@ function serializeTrainerIdentity(state: GameState | SaveDataDto) {
     balls: state.balls,
     money: state.money,
     battleCoins: state.battleCoins,
-    eggs: state.eggs as SaveDataDto['eggs'],
+    eggs: state.eggs,
     trainerLevel: state.trainerLevel,
     trainerExp: state.trainerExp,
     trainerExpNeeded: state.trainerExpNeeded,
@@ -136,7 +226,18 @@ function serializeTrainerIdentity(state: GameState | SaveDataDto) {
   };
 }
 
-function serializeGymAndPokedex(state: GameState | SaveDataDto) {
+function serializeGymAndPokedex(
+  state: GameState | SaveDataDto
+): Pick<
+  SaveDataDto,
+  | 'pokedex'
+  | 'seenPokedex'
+  | 'defeatedGyms'
+  | 'gymProgress'
+  | 'lastGymWins'
+  | 'lastGymAttempts'
+  | 'dailyGymRematches'
+> {
   return {
     pokedex: state.pokedex,
     seenPokedex: state.seenPokedex,
@@ -144,49 +245,92 @@ function serializeGymAndPokedex(state: GameState | SaveDataDto) {
     gymProgress: state.gymProgress,
     lastGymWins: state.lastGymWins,
     lastGymAttempts: state.lastGymAttempts,
-    dailyGymRematches: state.dailyGymRematches as SaveDataDto['dailyGymRematches']
+    dailyGymRematches: state.dailyGymRematches
   };
 }
 
-function serializeRankedAndPvP(state: GameState | SaveDataDto) {
+function serializeRankedAndPvP(
+  state: GameState | SaveDataDto
+): Pick<
+  SaveDataDto,
+  | 'eloRating'
+  | 'pvpStats'
+  | 'rankedMaxElo'
+  | 'rankedRewardsClaimed'
+  | 'lastRankedSeason'
+  | 'rankedMedals'
+  | 'pvpTeam'
+  | 'pvpTeam6'
+  | 'pvpMatchHistory'
+  | 'lastResolvedSeasonId'
+> {
   return {
     eloRating: state.eloRating,
     pvpStats: state.pvpStats,
     rankedMaxElo: state.rankedMaxElo,
     rankedRewardsClaimed: state.rankedRewardsClaimed,
     lastRankedSeason: state.lastRankedSeason ?? null,
-    rankedMedals: (state.rankedMedals ?? []) as SaveDataDto['rankedMedals'],
+    rankedMedals: state.rankedMedals ?? [],
     pvpTeam: state.pvpTeam,
     pvpTeam6: state.pvpTeam6,
-    pvpMatchHistory: state.pvpMatchHistory as SaveDataDto['pvpMatchHistory'],
+    pvpMatchHistory: state.pvpMatchHistory,
     lastResolvedSeasonId: state.lastResolvedSeasonId ?? ''
   };
 }
 
-function serializeDaycareAndPassive(state: GameState | SaveDataDto) {
+function serializeDaycareAndPassive(
+  state: GameState | SaveDataDto
+): Pick<
+  SaveDataDto,
+  | 'passiveTeamUids'
+  | 'passiveTeamActive'
+  | 'daycare_missions'
+  | 'daycare_mission_refreshes'
+  | 'daycareWarehouse'
+> {
   return {
     passiveTeamUids: state.passiveTeamUids,
     passiveTeamActive: Boolean(state.passiveTeamActive),
-    daycare_missions: state.daycare_missions as SaveDataDto['daycare_missions'],
+    daycare_missions: state.daycare_missions,
     daycare_mission_refreshes: state.daycare_mission_refreshes,
     daycareWarehouse: state.daycareWarehouse as SaveDataDto['daycareWarehouse']
   };
 }
 
-function serializeCollections(state: GameState | SaveDataDto) {
+function serializeCollections(
+  state: GameState | SaveDataDto
+): Pick<
+  SaveDataDto,
+  | 'inventory'
+  | 'team'
+  | 'box'
+  | 'stats'
+  | 'guardianCaptures'
+  | 'chats'
+  | 'claimQueue'
+  | 'notificationHistory'
+> {
   return {
-    inventory: state.inventory as SaveDataDto['inventory'],
+    inventory: state.inventory,
     team: state.team as SaveDataDto['team'],
     box: state.box as SaveDataDto['box'],
     stats: state.stats,
-    guardianCaptures: (state.guardianCaptures ?? {}) as SaveDataDto['guardianCaptures'],
+    guardianCaptures: state.guardianCaptures ?? {},
     chats: state.chats,
-    claimQueue: state.claimQueue as SaveDataDto['claimQueue'],
-    notificationHistory: state.notificationHistory as SaveDataDto['notificationHistory']
+    claimQueue: state.claimQueue,
+    notificationHistory: state.notificationHistory
   };
 }
 
-function serializeSessionState(state: GameState | SaveDataDto) {
+function serializeSessionState(state: GameState | SaveDataDto): {
+  boxCount: number;
+  starterChosen: boolean;
+  marketSoldSeenIds: string[];
+  lastPokemonCenterHeal: number;
+  playtime: number;
+  activeBattle: SaveDataDto['activeBattle'];
+  map: { currentMap: string; region: string; lastNavigateAt: number } | undefined;
+} {
   return {
     boxCount: state.boxCount,
     starterChosen: Boolean(state.starterChosen),
@@ -198,7 +342,12 @@ function serializeSessionState(state: GameState | SaveDataDto) {
   };
 }
 
-function serializeClassRoutes(cd: NonNullable<GameState['classData'] | SaveDataDto['classData']>) {
+function serializeClassRoutes(cd: NonNullable<GameState['classData'] | SaveDataDto['classData']>): {
+  extortedRouteId: string | null;
+  extortedRouteTimestamp: string | null;
+  officialRouteId: string | null;
+  officialRouteTimestamp: string | null;
+} {
   return {
     extortedRouteId: cd.extortedRouteId ?? null,
     extortedRouteTimestamp: cd.extortedRouteTimestamp ?? null,
@@ -209,7 +358,15 @@ function serializeClassRoutes(cd: NonNullable<GameState['classData'] | SaveDataD
 
 function serializeClassProgress(
   cd: NonNullable<GameState['classData'] | SaveDataDto['classData']>
-) {
+): {
+  captureStreak: number;
+  longestStreak: number;
+  reputation: number;
+  blackMarketSales: number;
+  criminality: number;
+  lastEggScanDate: string | null;
+  kitCaptures: number;
+} {
   return {
     captureStreak: cd.captureStreak,
     longestStreak: cd.longestStreak,
@@ -249,7 +406,9 @@ function serializeClassData(
   };
 }
 
-function serializePlayerClass(state: GameState | SaveDataDto) {
+function serializePlayerClass(
+  state: GameState | SaveDataDto
+): Pick<SaveDataDto, 'playerClass' | 'classLevel' | 'classXP' | 'classData'> {
   const cd = serializeClassData(state.classData);
   return {
     playerClass: state.playerClass ?? null,

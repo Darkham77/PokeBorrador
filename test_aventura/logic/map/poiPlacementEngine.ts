@@ -14,18 +14,18 @@
  *   - 'water_landmark': Shrines or lighthouses on lakes or coastal lagoons.
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
 import type { POINode, POIGateway } from '../../types/map/poiTypes.ts';
-import type { SettlementTerrainContext } from './cityLayoutEngine.ts';
-import { placePokemonLeague } from './pokemonLeaguePlacementEngine.ts';
-import { placeCoastalHarborDocks } from './coastalHarborPlacementEngine.ts';
-import { placeWaterLandmarks } from './waterLandmarkPlacementEngine.ts';
-import { placeDungeonForests } from './forestPlacementEngine.ts';
 import { placeCaveEntrances } from './cavePlacementEngine.ts';
+import type { SettlementTerrainContext } from './cityLayoutEngine.ts';
+import { placeCoastalHarborDocks } from './coastalHarborPlacementEngine.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
+import { placeDungeonForests } from './forestPlacementEngine.ts';
+import { placePokemonLeague } from './pokemonLeaguePlacementEngine.ts';
 import {
   placePlainSettlements,
   placeRouteGateCheckpoints
 } from './settlementPlainPlacementEngine.ts';
+import { placeWaterLandmarks } from './waterLandmarkPlacementEngine.ts';
 
 export interface POIPlacementOptions {
   readonly seed?: number;
@@ -34,8 +34,6 @@ export interface POIPlacementOptions {
   readonly generationMode?: 'preset' | 'procedural'; // default: 'preset'
   readonly targetUrbanSettlements?: number;
 }
-
-import { REGIONAL_POI_CATALOG, generateProceduralPOICatalog } from './regionalPoiCatalog.ts';
 
 import {
   DEFAULT_POI_TARGET_COUNT,
@@ -48,6 +46,7 @@ import {
   CITY_GATEWAY_Y,
   DEFAULT_MIN_SETTLEMENT_DISTANCE
 } from '../../config/poiPlacementConfig.ts';
+import { REGIONAL_POI_CATALOG, generateProceduralPOICatalog } from './regionalPoiCatalog.ts';
 
 /**
  * Places heterogeneous POIs onto the continent map respecting strict terrain and clearance constraints.
@@ -69,7 +68,7 @@ export function placeRegionalPOIs(
 
   let lcgSeed = options?.seed ?? DEFAULT_POI_SEED;
   const nextRng = (): number => {
-    lcgSeed = (lcgSeed * POI_LCG_MULTIPLIER + POI_LCG_INCREMENT) | 0;
+    lcgSeed = Math.trunc(lcgSeed * POI_LCG_MULTIPLIER + POI_LCG_INCREMENT);
     return (lcgSeed >>> 0) / POI_LCG_DIVISOR;
   };
 

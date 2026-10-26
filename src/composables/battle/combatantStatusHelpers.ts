@@ -1,21 +1,20 @@
+import { isAbilityId, type AbilityId } from '@/data/battle/abilities';
+import type { PokemonType } from '@/data/battle/types';
+import { VOLATILE_STATUS_LIST } from '@/data/battle/volatileStatusMap';
+import { getItemName, isItemId, type ItemId } from '@/data/inventory/items';
+import { ACTIVE_GENERATION } from '@/data/system/constants';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { logger } from '@/logic/utils/logger';
+import { toID } from '@/logic/utils/strings.ts';
+import { getWeatherCombatDescription } from '@/logic/weather/weatherCombatDescriptions.ts';
 import {
   getMechanicalWeather,
   WEATHER_MECHANICAL,
   WEATHER_UI_METADATA,
-  WEATHER_VISUAL_METADATA,
-  type WeatherMechanical
+  WEATHER_VISUAL_METADATA
 } from '@/logic/weather/weatherRegistry';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { PokemonType } from '@/data/battle/types';
-import { VOLATILE_STATUS_LIST } from '@/data/battle/volatileStatusMap';
-import { toID } from '@/logic/utils/strings.ts';
-import { ACTIVE_GENERATION } from '@/data/system/constants';
-import { getWeatherCombatDescription } from '@/logic/weather/weatherCombatDescriptions.ts';
-import { getItemName, isItemId, type ItemId } from '@/data/inventory/items';
-import { isAbilityId, type AbilityId } from '@/data/battle/abilities';
 import type { BattleStages } from '@/types/battle/battle';
-import { logger } from '@/logic/utils/logger';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export interface VolatileStatusItem {
   icon: string;
@@ -333,8 +332,8 @@ function doesWeatherAffectPokemon(
     return true;
   }
   const types: PokemonType[] = [];
-  if (target.type) types.push(target.type as PokemonType);
-  if (target.type2) types.push(target.type2 as PokemonType);
+  if (target.type) types.push(target.type);
+  if (target.type2) types.push(target.type2);
 
   if (checkTypeWeatherAffiliation(mechWeather, visualWeather, types, target.isFloating)) {
     return true;
@@ -364,8 +363,7 @@ export function buildWeatherVolatileItem(
   }
 
   const visualType = weather.visual || weather.type || 'clear';
-  const config =
-    WEATHER_VISUAL_METADATA[visualType] || WEATHER_UI_METADATA[mechWeather as WeatherMechanical];
+  const config = WEATHER_VISUAL_METADATA[visualType] || WEATHER_UI_METADATA[mechWeather];
   if (config) {
     return { icon: config.icon, text: `${config.label}: ${desc}` };
   }

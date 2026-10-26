@@ -4,9 +4,24 @@
  * State management and business logic for the developer shadow calibration editor.
  */
 
-import { ref, computed, watch, onMounted, getCurrentInstance } from 'vue';
+import gsap from 'gsap';
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  getCurrentInstance,
+  type ComputedRef,
+  type Ref
+} from 'vue';
+
+import { FEET_COORDINATES_DATA } from '@/data/pokemon/feetCoordinatesData';
+import { GLOBAL_SHADOW_CONFIG } from '@/data/pokemon/pokemonFeetDatabase';
+import { logger } from '@/logic/utils/logger';
+import type { BinaryGender } from '@/types/pokemon/spriteShadows';
 import type {
   SpriteShadowOverridesMap,
+  SpriteShadowOverride,
   EditorEntity,
   ShadowEntityCategory,
   GlobalShadowConfig
@@ -16,13 +31,9 @@ import {
   DEFAULT_SHADOW_HEIGHT_RATIO,
   DEFAULT_SHADOW_PIXELATION
 } from '@/types/pokemon/spriteShadows';
-import { GLOBAL_SHADOW_CONFIG } from '@/data/pokemon/pokemonFeetDatabase';
-import { FEET_COORDINATES_DATA } from '@/data/pokemon/feetCoordinatesData';
-import { buildFullEditorCatalog } from './utils/shadowEditorCatalogHelpers.ts';
-import type { GenderName } from '@pkmn/types';
-import gsap from 'gsap';
-import { logger } from '@/logic/utils/logger';
+
 import { DEFAULT_PAGE_SIZE } from './devShadowMathHelper.ts';
+import { buildFullEditorCatalog } from './utils/shadowEditorCatalogHelpers.ts';
 const DEFAULT_COLUMNS = 4;
 const DEFAULT_FEET_Y = 0.9;
 const DEFAULT_FEET_X = 0.5;
@@ -44,7 +55,55 @@ function getNonShinyPath(fullPath: string): string {
     .replace('/shiny/', '/');
 }
 
-export function useShadowEditor() {
+export type ShadowEditorViewFilter = 'all' | 'front' | 'back';
+
+export interface UseShadowEditorReturn {
+  overrides: Ref<SpriteShadowOverridesMap>;
+  globalShadowConfig: Ref<GlobalShadowConfig>;
+  resetGlobalWidthRatio: () => void;
+  resetGlobalHeightRatio: () => void;
+  resetGlobalPixelation: () => void;
+  hasUnsavedChanges: ComputedRef<boolean>;
+  modifiedCount: ComputedRef<number>;
+  isLoading: Ref<boolean>;
+  isSaving: Ref<boolean>;
+  isRebuilding: Ref<boolean>;
+  rebuildProgress: Ref<number>;
+  rebuildMessage: Ref<string>;
+  toastMessage: Ref<string | null>;
+  selectedCategory: Ref<ShadowEntityCategory>;
+  selectedView: Ref<ShadowEditorViewFilter>;
+  selectedGen: Ref<number | 'all'>;
+  selectedGender: Ref<'all' | BinaryGender>;
+  isShiny: Ref<boolean>;
+  searchQuery: Ref<string>;
+  onlyModified: Ref<boolean>;
+  columns: Ref<number>;
+  spriteZoom: Ref<number>;
+  currentPage: Ref<number>;
+  totalEntities: ComputedRef<number>;
+  totalPages: ComputedRef<number>;
+  allEntities: Ref<EditorEntity[]>;
+  filteredEntities: ComputedRef<EditorEntity[]>;
+  pagedEntities: ComputedRef<EditorEntity[]>;
+  buildCatalog: () => void;
+  setEntityOverride: (
+    key: string,
+    feetX: number,
+    feetY: number,
+    isFlying: boolean,
+    shadowScale?: number
+  ) => void;
+  resetEntityOverride: (key: string) => void;
+  getEffectiveOverride: (key: string) => SpriteShadowOverride | undefined;
+  isInheritedFromBase: (key: string) => boolean;
+  getNonShinyPath: (path: string) => string;
+  saveChanges: () => Promise<void>;
+  rebuildDatabase: () => Promise<boolean>;
+  downloadJson: () => void;
+}
+
+export function useShadowEditor(): UseShadowEditorReturn {
   const overrides = ref<SpriteShadowOverridesMap>({});
   const initialSavedJson = ref<string>('{}');
   const globalShadowConfig = ref<GlobalShadowConfig>({
@@ -63,35 +122,34 @@ export function useShadowEditor() {
 
   // Helper to read from sessionStorage safely
   const getSessionNumber = (key: string, fallback: number): number => {
-    if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') return fallback;
+    if (typeof globalThis.window === 'undefined' || typeof sessionStorage === 'undefined')
+      return fallback;
     try {
       const val = sessionStorage.getItem(key);
       if (val !== null) {
         const num = parseFloat(val);
         if (!isNaN(num) && num > 0) return num;
       }
-    } catch {
-      // catch-ok: SessionStorage may be unavailable or disabled in sandboxed dev environment
-      // sessionStorage unavailable
+    } catch (err) {
+      logger.warn('Handled controlled exception:', { cause: err });
     }
     return fallback;
   };
 
   const setSessionValue = (key: string, val: string): void => {
-    if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') return;
+    if (typeof globalThis.window === 'undefined' || typeof sessionStorage === 'undefined') return;
     try {
       sessionStorage.setItem(key, val);
-    } catch {
-      // catch-ok: SessionStorage may be unavailable or disabled in sandboxed dev environment
-      // sessionStorage unavailable
+    } catch (err) {
+      logger.warn('Handled controlled exception:', { cause: err });
     }
   };
 
   // Filters & Settings
   const selectedCategory = ref<ShadowEntityCategory>('pokemon');
-  const selectedView = ref<'all' | 'front' | 'back'>('all');
+  const selectedView = ref<ShadowEditorViewFilter>('all');
   const selectedGen = ref<number | 'all'>('all');
-  const selectedGender = ref<'all' | Extract<GenderName, 'M' | 'F'>>('all');
+  const selectedGender = ref<'all' | BinaryGender>('all');
   const isShiny = ref(false);
   const searchQuery = ref('');
   const onlyModified = ref(false);
@@ -115,7 +173,7 @@ export function useShadowEditor() {
   const allEntities = ref<EditorEntity[]>([]);
 
   let toastTween: gsap.core.Tween | null = null;
-  const showToast = (msg: string) => {
+  const showToast = (msg: string): void => {
     toastMessage.value = msg;
     if (toastTween) toastTween.kill();
     toastTween = gsap.delayedCall(TOAST_TIMEOUT_SEC, () => {
@@ -132,21 +190,21 @@ export function useShadowEditor() {
     );
   });
 
-  const resetGlobalWidthRatio = () => {
+  const resetGlobalWidthRatio = (): void => {
     globalShadowConfig.value = {
       ...globalShadowConfig.value,
       widthRatio: DEFAULT_SHADOW_WIDTH_RATIO
     };
   };
 
-  const resetGlobalHeightRatio = () => {
+  const resetGlobalHeightRatio = (): void => {
     globalShadowConfig.value = {
       ...globalShadowConfig.value,
       heightRatio: DEFAULT_SHADOW_HEIGHT_RATIO
     };
   };
 
-  const resetGlobalPixelation = () => {
+  const resetGlobalPixelation = (): void => {
     globalShadowConfig.value = {
       ...globalShadowConfig.value,
       pixelation: DEFAULT_SHADOW_PIXELATION
@@ -161,9 +219,9 @@ export function useShadowEditor() {
   const getPrecalculatedFeet = (
     fullPath: string
   ): { feetY: number; feetX: number; isFlying: boolean; shadowScale: number } => {
-    const pGroup = (FEET_COORDINATES_DATA.p ?? {}) as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
-    const nGroup = (FEET_COORDINATES_DATA.n ?? {}) as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
-    const tGroup = (FEET_COORDINATES_DATA.t ?? {}) as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
+    const pGroup = FEET_COORDINATES_DATA.p ?? {}; // open-record: Generic key-value data dictionary container
+    const nGroup = FEET_COORDINATES_DATA.n ?? {}; // open-record: Generic key-value data dictionary container
+    const tGroup = FEET_COORDINATES_DATA.t ?? {}; // open-record: Generic key-value data dictionary container
 
     let tuple: readonly number[] | undefined;
     if (fullPath.startsWith('/assets/sprites/pokemon/')) {
@@ -194,7 +252,7 @@ export function useShadowEditor() {
     return { feetY: DEFAULT_FEET_Y, feetX: DEFAULT_FEET_X, isFlying: false, shadowScale: 1.0 };
   };
 
-  const buildCatalog = () => {
+  const buildCatalog = (): void => {
     allEntities.value = buildFullEditorCatalog(
       FEET_COORDINATES_DATA,
       isShiny.value,
@@ -202,7 +260,7 @@ export function useShadowEditor() {
     );
   };
 
-  const loadOverrides = async () => {
+  const loadOverrides = async (): Promise<void> => {
     isLoading.value = true;
     try {
       const res = await fetch('/api/dev-load-shadow-overrides');
@@ -288,7 +346,7 @@ export function useShadowEditor() {
     feetY: number,
     isFlying: boolean,
     shadowScale?: number
-  ) => {
+  ): void => {
     overrides.value = {
       ...overrides.value,
       [key]: {
@@ -302,7 +360,7 @@ export function useShadowEditor() {
     };
   };
 
-  const getEffectiveOverride = (key: string) => {
+  const getEffectiveOverride = (key: string): SpriteShadowOverride | undefined => {
     if (overrides.value[key]) return overrides.value[key];
     const baseKey = getNonShinyPath(key);
     if (baseKey !== key && overrides.value[baseKey]) {
@@ -317,7 +375,7 @@ export function useShadowEditor() {
     return baseKey !== key && overrides.value[baseKey] !== undefined;
   };
 
-  const resetEntityOverride = (key: string) => {
+  const resetEntityOverride = (key: string): void => {
     if (overrides.value[key]) {
       const next = { ...overrides.value };
       delete next[key];
@@ -325,7 +383,7 @@ export function useShadowEditor() {
     }
   };
 
-  const saveChanges = async () => {
+  const saveChanges = async (): Promise<void> => {
     isSaving.value = true;
     try {
       const res = await fetch('/api/dev-save-shadow-overrides', {
@@ -391,7 +449,7 @@ export function useShadowEditor() {
     });
   };
 
-  const downloadJson = () => {
+  const downloadJson = (): void => {
     const payload = {
       globalShadowConfig: globalShadowConfig.value,
       overrides: overrides.value
@@ -411,11 +469,13 @@ export function useShadowEditor() {
   });
 
   if (getCurrentInstance()) {
-    onMounted(() => {
-      void loadOverrides();
+    onMounted(async () => {
+      await loadOverrides();
     });
   } else {
-    void loadOverrides();
+    loadOverrides().catch((err) => {
+      logger.warn('Handled promise rejection:', { cause: err });
+    });
   }
 
   return {

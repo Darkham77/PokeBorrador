@@ -13,17 +13,17 @@ const emit = defineEmits<{
   (e: 'close'): void;
 }>();
 
-const closeEditor = () => {
+const closeEditor = (): void => {
   emit('close');
 };
 
-const confirmSave = () => {
-  (Reflect.get(window, 'confirmPassiveTeamEdit') as (() => void) | undefined)?.();
+const confirmSave = (): void => {
+  (Reflect.get(globalThis, 'confirmPassiveTeamEdit') as (() => void) | undefined)?.();
 };
 
 // Shim for legacy code - we keep this but use the prop as source of truth
-if (typeof window !== 'undefined') {
-  Reflect.set(window, 'openPassiveTeamEditor', () => {
+if (typeof globalThis.window !== 'undefined') {
+  Reflect.set(globalThis, 'openPassiveTeamEditor', () => {
     // This is now managed by the store/host, but we keep the shim for event-based calls
     import('@/stores/modals').then((m) => m.useModalStore().open('PassiveTeamEditor'));
   });

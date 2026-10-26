@@ -20,6 +20,12 @@
     "prefer-native-element": "off",
     "prefer-button": "off",
     "unique-landmark": "off",
-    "wcag/h63": "off"
+    "wcag/h63": "off",
+    "doctype-style": [
+      "error",
+      {
+        "style": "lowercase"
+      }
+    ]
   }
 }

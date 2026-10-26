@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
-import { useGTSStore } from '@/stores/gts';
-import { useModalStore } from '@/stores/modals';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
 import { getItemById } from '@/data/inventory/items';
 import type { MarketListing } from '@/logic/economy/market';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useGTSStore } from '@/stores/gts';
+import { useModalStore } from '@/stores/modals';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
 import HomeWidgetRefreshBtn from './HomeWidgetRefreshBtn.vue';
 
@@ -21,7 +23,7 @@ onMounted(async () => {
 const unclaimedGtsCount = computed(() => gtsStore.unclaimedGtsCount);
 const recentListings = computed<MarketListing[]>(() => gtsStore.listings.slice(0, 5));
 
-const openGTS = () => {
+const openGTS = (): void => {
   modalStore.open('GlobalMarket');
 };
 

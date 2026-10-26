@@ -1,5 +1,7 @@
 import type { Ref } from 'vue';
+
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
+
 import {
   computeSandstormKinematics,
   computeSandstormSpeed,
@@ -26,13 +28,20 @@ export function useAtmosphereSandstormAnim(
     duration: number,
     seed?: number
   ) => void
-) {
+): {
+  initSandstormAnim: (
+    w: WeatherId,
+    animSeed: number,
+    isLowPower: boolean,
+    speedVar: number
+  ) => void;
+} {
   const initSandstormAnim = (
     w: WeatherId,
     animSeed: number,
     isLowPower: boolean,
     speedVar: number
-  ) => {
+  ): void => {
     if (!SANDSTORM_ATMOSPHERE_WEATHER_IDS_SET.has(w)) return;
     const l1 = dustLayer1Ref.value;
     if (!l1) return;

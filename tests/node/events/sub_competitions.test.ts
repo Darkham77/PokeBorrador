@@ -1,5 +1,10 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
+
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
+import { validateAndSanitize } from '@/logic/auth/saveSanitizer.ts';
+import { serializeState } from '@/logic/auth/saveSerializer.ts';
 import {
   getDefaultSubCompetitions,
   resolveSubCompetitionDirection,
@@ -10,11 +15,8 @@ import {
   type Event as GameEvent,
   type SubCompetitionConfig
 } from '@/logic/events/eventEngine.ts';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
-import { validateAndSanitize } from '@/logic/auth/saveSanitizer.ts';
-import { serializeState } from '@/logic/auth/saveSerializer.ts';
 import { INITIAL_STATE } from '@/stores/gameInitialState.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Multi-Category Sub-Competitions Engine', () => {
   const createMockPokemon = (overrides: Partial<Pokemon> = {}): Pokemon => ({

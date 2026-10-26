@@ -1,3 +1,8 @@
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { resolveFieldEncounterModifiers } from '@/logic/rules/fieldRulesCoordinator';
+import { redistributeWeatherSpawns, applyFishingRodBudget } from '@/logic/utils/routeSpawnHelpers';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
 import type {
   MapLocation,
   Encounter,
@@ -5,17 +10,13 @@ import type {
   EncounterState
 } from '@/types/pokemon/encounters';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import { redistributeWeatherSpawns, applyFishingRodBudget } from '@/logic/utils/routeSpawnHelpers';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+
 import {
   clampLegendaryRates,
   selectFromPool,
   applyAtmosphericStatus,
   getSpeciesEntries
 } from './encounterHelpers.ts';
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { resolveFieldEncounterModifiers } from '@/logic/rules/fieldRulesCoordinator';
 
 const DEFAULT_FISHING_POOL_WEIGHT = 10 as const;
 const DEFAULT_FISHING_VISITOR_WEIGHT_OFFSET = -10 as const;

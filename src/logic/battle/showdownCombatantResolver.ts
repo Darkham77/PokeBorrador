@@ -4,10 +4,11 @@
  * Resolves combatants, teams, and Pokémon UIDs from raw Showdown battle log lines.
  */
 
+import { useGameStore } from '@/stores/game';
 import type { BattleSide, BattleState } from '@/types/battle/battle.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon.ts';
+
 import { findMatchingPokemon, isMatchingUid } from './showdownUidMapper.ts';
-import { useGameStore } from '@/stores/game';
 
 export function parseBattleSide(rawId: string): BattleSide | null {
   if (/^p1[a-d]?:/.test(rawId)) return 'player';
@@ -61,13 +62,14 @@ function locateActiveBattlePokemonByUid(
 function matchPokemonBySuffixOrIdentity(team: Pokemon[], rawId: string): Pokemon | null {
   const namePart = rawId.includes(':') ? (rawId.split(':')[1]?.trim() ?? '') : '';
   if (namePart) {
-    const suffixMon = (team.find(
-      (mon) =>
-        mon &&
-        (isMatchingUid(mon.uid, namePart) ||
-          mon.name?.toLowerCase() === namePart.toLowerCase() ||
-          mon.id === namePart)
-    ) ?? null) as Pokemon | null; // text-ok: UI text display localization string
+    const suffixMon =
+      team.find(
+        (mon) =>
+          mon &&
+          (isMatchingUid(mon.uid, namePart) ||
+            mon.name?.toLowerCase() === namePart.toLowerCase() ||
+            mon.id === namePart)
+      ) ?? null; // text-ok: UI text display localization string
     if (suffixMon) {
       console.debug(
         `[E2E-GETPOKE-SUFFIX-MATCH] Matched rawId "${rawId}" to team UID "${suffixMon.uid}" via name/UID`

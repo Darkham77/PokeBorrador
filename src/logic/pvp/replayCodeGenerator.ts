@@ -5,6 +5,10 @@
  * for PVP battle replays and spectator sharing.
  */
 
+import type { SideID } from '@pkmn/sim';
+
+import { isSeasonalThemeId } from '@/data/system/rankedData.ts';
+import { parseJsonSafe } from '@/logic/utils/jsonUtils.ts';
 import {
   requireBattleCode,
   type BattleCode,
@@ -12,9 +16,6 @@ import {
   type ReplayCombatantSummary,
   type ReplayChoiceStep
 } from '@/types/battle/pvp.ts';
-import { isSeasonalThemeId } from '@/data/system/rankedData.ts';
-import { parseJsonSafe } from '@/logic/utils/jsonUtils.ts';
-import type { SideID } from '@pkmn/sim';
 
 const BATTLE_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const PART_LENGTH = 4;

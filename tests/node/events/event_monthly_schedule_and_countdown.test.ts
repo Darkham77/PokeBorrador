@@ -7,8 +7,10 @@
  * 3. getEventCurrentWindow() and getUpcomingEventOccurrences() calculate exact timestamps and countdowns for all monthly triggers.
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
+
 import {
   getEventCurrentWindow,
   getUpcomingEventOccurrences,

@@ -1,16 +1,17 @@
+import { setActivePinia, createPinia } from 'pinia';
 import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { computed } from 'vue';
-import { setActivePinia, createPinia } from 'pinia';
-import { useGameStore } from '@/stores/game';
-import { useBattleStore } from '@/stores/battle/battle';
+
+import { useBattleTrainerVisuals } from '@/composables/battle/useBattleTrainerVisuals';
+import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases';
 import { serializeState } from '@/logic/auth/saveSerializer';
-import { validateSaveData } from '@/logic/validation/schemas';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import type { DBRouter } from '@/logic/db/dbRouter';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { executePassiveMatchmakingFallback } from '@/logic/pvp/passiveMatchmakingHelper';
-import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases';
-import { useBattleTrainerVisuals } from '@/composables/battle/useBattleTrainerVisuals';
-import type { DBRouter } from '@/logic/db/dbRouter';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { validateSaveData } from '@/logic/validation/schemas';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
 import type { BattleState } from '@/types/battle/battle';
 
 describe('PvP Save Validation & Opponent Resolution (Tier 1)', () => {

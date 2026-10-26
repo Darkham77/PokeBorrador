@@ -1,7 +1,16 @@
-import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { registerSW } from 'virtual:pwa-register';
-import { logger } from '@/logic/utils/logger';
+import {
+  ref,
+  computed,
+  onMounted,
+  onUnmounted,
+  type ComputedRef,
+  type Ref,
+  type WritableComputedRef
+} from 'vue';
+
 import { gameBus } from '@/logic/events/gameBus';
+import { logger } from '@/logic/utils/logger';
 import { useUpdateStore, type UpdateExecutionOptions } from '@/stores/update';
 
 export const PWA_INSTALL_OUTCOMES = ['accepted', 'dismissed'] as const;
@@ -25,7 +34,7 @@ const localNeedRefresh = ref(false);
 const updateServiceWorker = registerSW({
   immediate: true,
   onNeedRefresh() {
-    if (typeof window !== 'undefined' && window.__E2E__) {
+    if (typeof globalThis.window !== 'undefined' && globalThis.__E2E__) {
       logger.info('PWA', 'SW Update available but bypassed in E2E session');
       return;
     }
@@ -44,7 +53,19 @@ const updateServiceWorker = registerSW({
   }
 });
 
-export function usePWA() {
+export interface UsePWAReturn {
+  canInstall: Ref<boolean>;
+  isInstalled: Ref<boolean>;
+  installApp: () => Promise<boolean>;
+  needRefresh: WritableComputedRef<boolean>;
+  isUpdating: ComputedRef<boolean>;
+  progress: ComputedRef<number>;
+  progressText: ComputedRef<string>;
+  handleUpdate: (options?: UpdateExecutionOptions) => Promise<void>;
+  updateServiceWorker: (reloadPage?: boolean) => Promise<void>;
+}
+
+export function usePWA(): UsePWAReturn {
   const updateStore = useUpdateStore();
 
   const needRefresh = computed({
@@ -57,7 +78,7 @@ export function usePWA() {
   const progress = computed(() => updateStore.progress);
   const progressText = computed(() => updateStore.progressText);
 
-  const handleInstallPrompt = (e: Event) => {
+  const handleInstallPrompt = (e: Event): void => {
     const installEv = e as BeforeInstallPromptEvent;
     installEv.preventDefault();
     installEvent.value = installEv;
@@ -65,19 +86,19 @@ export function usePWA() {
     logger.info('PWA', 'PWA Install Prompt captured');
   };
 
-  const checkInstallState = () => {
-    if (typeof window === 'undefined') return;
+  const checkInstallState = (): void => {
+    if (typeof globalThis.window === 'undefined') return;
     if (
-      window.matchMedia('(display-mode: standalone)').matches ||
-      window.matchMedia('(display-mode: fullscreen)').matches ||
-      (window.navigator as Navigator & { standalone?: boolean }).standalone
+      globalThis.matchMedia('(display-mode: standalone)').matches ||
+      globalThis.matchMedia('(display-mode: fullscreen)').matches ||
+      (globalThis.navigator as Navigator & { standalone?: boolean }).standalone
     ) {
       isInstalled.value = true;
       canInstall.value = false;
     }
   };
 
-  const installApp = async () => {
+  const installApp = async (): Promise<boolean> => {
     if (!installEvent.value) return false;
 
     const event = installEvent.value;
@@ -92,17 +113,17 @@ export function usePWA() {
     return false;
   };
 
-  const handleUpdate = async (options?: UpdateExecutionOptions) => {
+  const handleUpdate = async (options?: UpdateExecutionOptions): Promise<void> => {
     await updateStore.executeCleanUpdate(options);
   };
 
-  const handleNeedRefresh = () => {
+  const handleNeedRefresh = (): void => {
     localNeedRefresh.value = true;
     updateStore.notifyServiceWorkerUpdate();
   };
 
-  const checkUpdatesOnWakeup = async () => {
-    if (typeof window === 'undefined' || !navigator.onLine) return;
+  const checkUpdatesOnWakeup = async (): Promise<void> => {
+    if (typeof globalThis.window === 'undefined' || !navigator.onLine) return;
     if (document.visibilityState === 'visible' && 'serviceWorker' in navigator) {
       try {
         const reg = await navigator.serviceWorker.getRegistration();
@@ -117,23 +138,23 @@ export function usePWA() {
   };
 
   onMounted(() => {
-    window.addEventListener('beforeinstallprompt', handleInstallPrompt);
-    window.addEventListener('appinstalled', () => {
+    globalThis.addEventListener('beforeinstallprompt', handleInstallPrompt);
+    globalThis.addEventListener('appinstalled', () => {
       isInstalled.value = true;
       canInstall.value = false;
       installEvent.value = null;
       logger.success('PWA', 'PWA installed successfully');
     });
     document.addEventListener('visibilitychange', checkUpdatesOnWakeup);
-    window.addEventListener('focus', checkUpdatesOnWakeup);
+    globalThis.addEventListener('focus', checkUpdatesOnWakeup);
     gameBus.on('PWA_NEED_REFRESH', handleNeedRefresh);
     checkInstallState();
   });
 
   onUnmounted(() => {
-    window.removeEventListener('beforeinstallprompt', handleInstallPrompt);
+    globalThis.removeEventListener('beforeinstallprompt', handleInstallPrompt);
     document.removeEventListener('visibilitychange', checkUpdatesOnWakeup);
-    window.removeEventListener('focus', checkUpdatesOnWakeup);
+    globalThis.removeEventListener('focus', checkUpdatesOnWakeup);
     gameBus.off('PWA_NEED_REFRESH', handleNeedRefresh);
   });
 

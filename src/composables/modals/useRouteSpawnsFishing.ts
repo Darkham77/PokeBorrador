@@ -1,10 +1,13 @@
-import { computed } from 'vue';
-import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
-import { useGameStore } from '@/stores/game';
-import { useEventStore } from '@/stores/events';
-import { useUIStore } from '@/stores/ui';
-import { getSpeciesEntries } from '@/logic/encounters/encounters';
+import type { DisplayText } from '@francogp/auditor';
+import { computed, type ComputedRef } from 'vue';
+
+import type { RouteSpawnsProps } from '@/composables/modals/useRouteSpawnsCalculation';
 import { type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import {
+  DEFAULT_EXCLUSIVE_SPAWN_WEIGHT,
+  DEFAULT_FISHING_RATE_WEIGHT
+} from '@/logic/constants/encounters';
+import { getSpeciesEntries } from '@/logic/encounters/encounters';
 import { safeParse, type EventConfig } from '@/logic/events/eventEngine';
 import {
   getSpawnStatus,
@@ -15,17 +18,18 @@ import {
   createPopulatedRouteSpawnItem,
   type RouteSpawnMappedItem
 } from '@/logic/utils/routeSpawnHelpers';
-
-import {
-  DEFAULT_EXCLUSIVE_SPAWN_WEIGHT,
-  DEFAULT_FISHING_RATE_WEIGHT
-} from '@/logic/constants/encounters';
-import type { RouteSpawnsProps } from '@/composables/modals/useRouteSpawnsCalculation';
+import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
+import { useEventStore } from '@/stores/events';
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
 
 const ROD_GOOD_BONUS_POINTS = 500;
 const ROD_SUPER_BONUS_POINTS = 1000;
 
-export function useRouteSpawnsFishing(props: RouteSpawnsProps) {
+export function useRouteSpawnsFishing(props: RouteSpawnsProps): {
+  fishingSpawns: ComputedRef<RouteSpawnMappedItem[]>;
+  getFishingSpawnTooltip: (poke: RouteSpawnMappedItem) => { title: string; description: string };
+} {
   const gameStore = useGameStore();
   const eventStore = useEventStore();
   const uiStore = useUIStore();
@@ -150,14 +154,17 @@ export function useRouteSpawnsFishing(props: RouteSpawnsProps) {
       });
   });
 
-  function getFishingSpawnTooltip(poke: RouteSpawnMappedItem) {
+  function getFishingSpawnTooltip(poke: RouteSpawnMappedItem): {
+    title: string;
+    description: string;
+  } {
     const lines: string[] = []; // no-domain: Non-domain utility collection or data structure
     lines.push(`Probabilidad Base: ${poke.basePercentage.toFixed(1)}%`);
     const rodType = gameStore.state.fishingRodType;
     const rodSecs = gameStore.state.fishingRodSecs || 0;
     if (rodType && rodSecs > 0) {
       // open-record: Fishing rod type display names mapping
-      const names: Record<string, string> = {
+      const names: Record<DisplayText, string> = {
         standard: 'Caña de pescar',
         good: 'Caña Buena',
         super: 'Supercaña'

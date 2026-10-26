@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+
 import { handlePoliceResolution } from '@/logic/battle/helpers/battleResolutionHelpers';
+import { useBattleStore } from '@/stores/battle/battle';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
-import { useBattleStore } from '@/stores/battle/battle';
 import type { BattleState } from '@/types/battle/battle';
 
 describe('policeResolution - handlePoliceResolution', () => {

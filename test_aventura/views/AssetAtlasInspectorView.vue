@@ -11,9 +11,10 @@
 
 import { ref, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAssetAtlas } from '../composables/studio/useAssetAtlas.ts';
-import MasterSheetCanvas from '../components/studio/MasterSheetCanvas.vue';
+
 import AssetGalleryPanel from '../components/studio/AssetGalleryPanel.vue';
+import MasterSheetCanvas from '../components/studio/MasterSheetCanvas.vue';
+import { useAssetAtlas } from '../composables/studio/useAssetAtlas.ts';
 import type { CanonicalAssetEntry } from '../logic/map/canonicalAssetsRegistry.ts';
 
 const router = useRouter();

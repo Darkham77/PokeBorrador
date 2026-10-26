@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { useUIStore } from '@/stores/ui';
-import { useProfileStore } from '@/stores/player/profile';
-import { useGameStore } from '@/stores/game';
-import { useAuthStore } from '@/stores/auth';
+
 import BaseModal from '@/components/common/BaseModal.vue';
 import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
 import { getDaysUntilIdentityChange, canChangeIdentity } from '@/logic/player/identityCooldown';
+import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { useProfileStore } from '@/stores/player/profile';
+import { useUIStore } from '@/stores/ui';
+import type { GenderId } from '@/types/system/game';
+
 import {
   validateRenameRequest,
   syncRemoteUsernameChange,
   updateLocalUserStorage
 } from './renameHelpers';
-import type { GenderId } from '@/types/system/game';
 
 interface Props {
   show?: boolean;
@@ -37,7 +39,7 @@ const selectedGender = ref<GenderId>('h');
 
 const SCALE_GENDER_CLICK = 0.85;
 
-const setGender = (newGender: GenderId, event: MouseEvent) => {
+const setGender = (newGender: GenderId, event: MouseEvent): void => {
   gsap.fromTo(
     event.currentTarget,
     { scale: SCALE_GENDER_CLICK },
@@ -46,7 +48,7 @@ const setGender = (newGender: GenderId, event: MouseEvent) => {
   selectedGender.value = newGender;
 };
 
-const syncState = () => {
+const syncState = (): void => {
   newUsername.value = profileStore.profileData.username || gameStore.state.trainer || '';
   selectedGender.value = gameStore.state.gender || 'h';
 };
@@ -89,7 +91,7 @@ const nameChanged = computed(() => {
   return targetName !== currentName;
 });
 
-const submitRename = async () => {
+const submitRename = async (): Promise<void> => {
   const targetName = newUsername.value.trim();
   const genderChanged = selectedGender.value !== gameStore.state.gender;
 
@@ -150,7 +152,7 @@ const submitRename = async () => {
 
     uiStore.notify('Cambios guardados con éxito.', '✨');
     emit('close');
-  } catch (_e: unknown) {
+  } catch {
     uiStore.notify('Error al guardar los cambios.', '⚠️');
   } finally {
     isRenaming.value = false;

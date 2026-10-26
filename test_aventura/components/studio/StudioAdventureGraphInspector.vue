@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useMapAdventureStudioStore } from '../../stores/mapAdventureStudio';
-import { CELL_BIOME, type CellBiomeType } from '../../types/map/kantoGridModel';
+
+import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
 import { STAMPING_PREFABS_CATALOG } from '../../data/map/regionRegistry.ts';
+import { useMapAdventureStudioStore } from '../../stores/mapAdventureStudio';
 import type {
   StampingPrefabDefinition,
   UrbanScale,
   AdventureProjectNode
 } from '../../types/map/adventureWorldTypes';
-import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+import { CELL_BIOME, type CellBiomeType } from '../../types/map/kantoGridModel';
 
 const store = useMapAdventureStudioStore();
 
@@ -112,7 +113,7 @@ const canonicalLocations = computed(() => {
 
 const WORLD_TELEPORT_COORD_SCALE = 2.5 as const;
 
-function handleTeleport(targetId: string) {
+function handleTeleport(targetId: string): void {
   const node = store.nodes[targetId];
   if (node) {
     store.selectedNodeId = targetId;
@@ -131,7 +132,7 @@ const connectedNeighbors = computed<string[]>(() => {
   return neighbors;
 });
 
-function handleCoordNudge(axis: CoordAxis, delta: number) {
+function handleCoordNudge(axis: CoordAxis, delta: number): void {
   if (!store.selectedNodeId || !selectedNode.value) return;
   const currentX = selectedNode.value.x;
   const currentY = selectedNode.value.y;
@@ -143,13 +144,13 @@ function handleCoordNudge(axis: CoordAxis, delta: number) {
   store.triggerRebake();
 }
 
-function handleStartConnect() {
+function handleStartConnect(): void {
   if (!store.selectedNodeId) return;
   store.activeTool = 'connect';
   store.connectSourceNodeId = store.selectedNodeId;
 }
 
-function handleDisconnect(neighborId: string) {
+function handleDisconnect(neighborId: string): void {
   if (!store.selectedNodeId) return;
   store.toggleConnection(store.selectedNodeId, neighborId);
   store.triggerRebake();
@@ -183,11 +184,11 @@ const selectedStructure = computed(() => {
   return store.customStructures[store.selectedStructureIndex] || null;
 });
 
-function handleSelectStampingPrefab(prefab: StampingPrefabDefinition) {
+function handleSelectStampingPrefab(prefab: StampingPrefabDefinition): void {
   store.stampingPrefab = prefab;
 }
 
-function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
+function handleStructureCoordNudge(axis: CoordAxis, delta: number): void {
   if (store.selectedStructureIndex === null || !selectedStructure.value) return;
   const s = selectedStructure.value;
   store.moveStructure(

@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * scripts/auditors/domain_data/validate_abilities.ts
  *
@@ -10,16 +11,22 @@ import { enableCompileCache } from 'node:module';
 import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
 import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
 import { ABILITY_TRANSLATIONS_ES } from '../../../src/data/battle/abilities.ts';
-import { Dex, toID } from '@pkmn/sim';
+import { Dex, toID, type ID } from '@pkmn/sim';
 import { isEnabledPokemonId } from '../../../src/data/system/constants.ts';
 
 enableCompileCache();
 
 const DATA_FILE = path.resolve(process.cwd(), 'src/data/pokemon/pokemonDB.ts');
-type AbilityTranslationId = keyof typeof ABILITY_TRANSLATIONS_ES;
+interface AbilityTranslationData {
+  readonly name: string;
+  readonly desc: string;
+  readonly icon?: string;
+}
 
-function hasAbilityTranslation(id: string): id is AbilityTranslationId {
-  return Object.hasOwn(ABILITY_TRANSLATIONS_ES, id);
+const TRANSLATIONS_MAP: Record<DisplayText, AbilityTranslationData> = ABILITY_TRANSLATIONS_ES;
+
+function hasAbilityTranslation(id: string): boolean {
+  return Object.hasOwn(TRANSLATIONS_MAP, id);
 }
 
 export type AbilityRuleId =
@@ -58,6 +65,7 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
       ruleIds: ABILITY_RULES,
       packageName: 'Habilidades',
       usesThirdPartyTool: false,
+      requiredPermissions: [],
       ruleDescriptions: {
         'ability-invalid-showdown': 'Habilidad no válida en Showdown',
         'ability-missing-translation': 'Traducción faltante en habilidad',
@@ -68,6 +76,7 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
         'ability-missing-translation': 'Add Spanish translation in src/data/battle/abilities.ts',
         'ability-empty-field': 'Fill required name/description fields in abilities.ts'
       },
+      remediationPhase: 'contracts',
       requiredFiles: [DATA_FILE],
       coverage: {
         include: [
@@ -79,14 +88,14 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
     });
   }
 
-  private extractGameAbilities(): Set<AbilityTranslationId> {
-    const gameAbilities = new Set<AbilityTranslationId>();
+  private extractGameAbilities(): Set<ID> {
+    const gameAbilities = new Set<ID>();
     for (const pokeId of Object.keys(POKEMON_DB)) {
       if (!isEnabledPokemonId(pokeId)) continue;
       const species = Dex.species.get(pokeId);
       if (species && species.exists) {
         Object.values(species.abilities).forEach((abiName) => {
-          gameAbilities.add(toID(abiName) as AbilityTranslationId);
+          gameAbilities.add(toID(abiName));
         });
       }
     }
@@ -97,8 +106,8 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
     this.recordScanned('src/data/battle/abilities.ts');
     this.recordScanned('src/data/battle/abilities.json');
 
-    let gameAbilities: Set<AbilityTranslationId> = new Set();
-    let abilitiesList: AbilityTranslationId[] = [];
+    let gameAbilities: Set<ID> = new Set();
+    let abilitiesList: ID[] = [];
 
     this.runSubAuditorSync('ability-invalid-showdown', () => {
       gameAbilities = this.extractGameAbilities();
@@ -136,7 +145,8 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
     this.runSubAuditorSync('ability-empty-field', () => {
       for (const abId of abilitiesList) {
         if (!hasAbilityTranslation(abId)) continue;
-        const trans = ABILITY_TRANSLATIONS_ES[abId];
+        const trans = TRANSLATIONS_MAP[abId];
+        if (!trans) continue;
         if (!trans.name?.trim()) {
           this.addViolation({
             ruleId: 'ability-empty-field',
@@ -175,10 +185,4 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (
-  process.argv[1] &&
-  import.meta.filename &&
-  path.basename(process.argv[1]) === path.basename(import.meta.filename)
-) {
-  await BaseAuditor.runCli(new AbilityAuditor());
-}
+await BaseAuditor.runCliIfMain(import.meta.url, new AbilityAuditor());

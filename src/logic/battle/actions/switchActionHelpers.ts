@@ -1,7 +1,9 @@
+import type { DisplayText } from '@francogp/auditor';
+
 import type { BattleStages } from '@/types/battle/battle';
 
 export function checkLockedVolatiles(
-  oldPoke: { volatileCounters?: Record<string, number> } | null | undefined // open-record: Dynamic Showdown volatile status counter dictionary
+  oldPoke: { volatileCounters?: Record<DisplayText, number> } | null | undefined // open-record: Dynamic Showdown volatile status counter dictionary
 ): boolean {
   if (!oldPoke || !oldPoke.volatileCounters) return false;
   const volatile = oldPoke.volatileCounters;

@@ -6,18 +6,18 @@
  * (ItemId, PokemonSpeciesId, AbilityId, PokemonMoveId) without raw string desyncs.
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
-import { RANDOM_SETS_DATA } from '../../../src/data/ai/randomSetsData.ts';
-import { ANIMATED_SPRITE_DATA } from '../../../src/data/pokemon/animatedSpriteData.ts';
-import { FEET_COORDINATES_DATA } from '../../../src/data/pokemon/feetCoordinatesData.ts';
-import { SPRITE_MAPPING_DATA } from '../../../src/data/pokemon/spriteMappingData.ts';
-import { EVOLUTION_TABLE } from '../../../src/data/pokemon/evolutionDataWrapper.ts';
+import { describe, it } from 'vite-plus/test';
 
+import { RANDOM_SETS_DATA } from '../../../src/data/ai/randomSetsData.ts';
 import { getItemById, requireItemId } from '../../../src/data/inventory/items.ts';
-import { SPECIES_METADATA } from '../../../src/data/pokemon/speciesMetadata.ts';
+import { ANIMATED_SPRITE_DATA } from '../../../src/data/pokemon/animatedSpriteData.ts';
+import { EVOLUTION_TABLE } from '../../../src/data/pokemon/evolutionDataWrapper.ts';
+import { FEET_COORDINATES_DATA } from '../../../src/data/pokemon/feetCoordinatesData.ts';
 import { PDEX_ORDER } from '../../../src/data/pokemon/pokedex.ts';
+import { SPECIES_METADATA } from '../../../src/data/pokemon/speciesMetadata.ts';
+import { SPRITE_MAPPING_DATA } from '../../../src/data/pokemon/spriteMappingData.ts';
 
 describe('JSON Typed Data Wrappers — Domain Integrity Audit', () => {
   describe('RANDOM_SETS_DATA', () => {

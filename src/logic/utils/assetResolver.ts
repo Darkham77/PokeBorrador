@@ -23,21 +23,36 @@ export const getResolutionSuffix = (): string => '';
  * Simply returns the original URL as multi-resolution is disabled.
  */
 export const resolveAsset = (url: string): string => {
-  if (!url) return '';
-  const base = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
-  let resolved = url;
-  if (url.startsWith('/')) {
-    const cleanBase = base.endsWith('/') ? base.slice(0, -1) : base;
-    resolved = `${cleanBase}${url}`;
+  if (!url || !url.trim()) return '';
+  const trimmed = url.trim().replace(/\\/g, '/');
+
+  if (
+    trimmed.startsWith('http://') ||
+    trimmed.startsWith('https://') ||
+    trimmed.startsWith('data:') ||
+    trimmed.startsWith('blob:')
+  ) {
+    return trimmed;
   }
+
+  const base = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
+  const cleanBase = base.endsWith('/') ? base.slice(0, -1) : base;
+  const normalizedPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  const resolved = `${cleanBase}${normalizedPath}`;
+
   return encodeURI(resolved);
 };
+
+export interface UseAssetResolverReturn {
+  readonly suffix: Ref<string>;
+  readonly resolve: (url: string) => string;
+}
 
 /**
  * Vue Composable for asset resolution.
  * Multi-resolution logic removed.
  */
-export function useAssetResolver() {
+export function useAssetResolver(): UseAssetResolverReturn {
   const currentSuffix = ref('');
 
   const resolve = (url: string): string => {

@@ -4,23 +4,24 @@
  * Modular injection and clearing helpers for rewards debug simulation.
  */
 
-import type { PendingAward } from '@/types/system/stores';
-import type { MarketListing } from '@/logic/economy/market';
-import type { AuthUser } from '@/types/auth/auth';
-import type { DBRouter } from '@/logic/db/dbRouter';
-import type { SeasonalThemeId } from '@/types/battle/pvp';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import {
   isRankedRewardMilestoneId,
   getSeasonalThemeForMonth,
   type RankedRewardMilestoneId
 } from '@/data/system/rankedData';
-import { safeStorage } from '@/logic/utils/storage';
-import { logger } from '@/logic/utils/logger';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import { findLatestPastEvent, pickRandomPrize } from './rewardsDebugOccurrenceHelper.ts';
+import type { DBRouter } from '@/logic/db/dbRouter';
+import type { MarketListing } from '@/logic/economy/market';
 import type { Event as GameEvent } from '@/logic/events/eventEngine';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { logger } from '@/logic/utils/logger';
+import { safeStorage } from '@/logic/utils/storage';
+import type { AuthUser } from '@/types/auth/auth';
+import type { SeasonalThemeId } from '@/types/battle/pvp';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { GameState } from '@/types/system/game';
+import type { PendingAward } from '@/types/system/stores';
+
+import { findLatestPastEvent, pickRandomPrize } from './rewardsDebugOccurrenceHelper.ts';
 
 export const DEFAULT_RESET_ELO = 1000 as const;
 const UUID_STRING_LENGTH = 36 as const;
@@ -512,11 +513,7 @@ export async function clearSimulatedGts(
   if (db) {
     try {
       await db.from('claim_queue').delete().ilike('id', 'test_claim_%');
-      await db
-        .from('market_listings')
-        .delete()
-        .eq('price', SIMULATED_SALE_PRICE)
-        .eq('status', 'sold');
+      await db.from('market_listings').delete().eq('price', SIMULATED_SALE_PRICE);
       const { persistSQLite } = await import('@/logic/db/sqliteEngine');
       await persistSQLite();
     } catch (err) {

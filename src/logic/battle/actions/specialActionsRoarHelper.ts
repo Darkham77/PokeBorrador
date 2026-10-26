@@ -1,7 +1,8 @@
+import { gameBus } from '@/logic/events/gameBus';
 import type { LogFn, BattleStages, BattleSide } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import { gameBus } from '@/logic/events/gameBus';
+
 import { callPokemonToBattle } from './specialActionsHelper.ts';
 
 const BATTLE_STAGE_RESET_KEYS = [

@@ -1,7 +1,9 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { DisplayText } from '@francogp/auditor';
+
 import { isPokemonType } from '@/data/battle/types';
+import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { getPokemonGeneration } from '@/logic/pokemon/pokemonSpeciesHelper.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export interface EloTier {
   id: RankedTierId;
@@ -35,9 +37,9 @@ import {
   type SeasonalThemeId
 } from '@/data/system/rankedData.ts';
 export type RankedTierCode = 'BRONCE' | 'PLATA' | 'ORO' | 'PLATINO' | 'DIAMANTE' | 'MAESTRO';
-import type { RankedSeasonMedal } from '@/types/battle/pvp.ts';
-import { GAME_TIMEZONE, getGMT3Date } from '@/logic/utils/timeUtils.ts';
 import { toID } from '@/logic/utils/strings.ts';
+import { GAME_TIMEZONE, getGMT3Date } from '@/logic/utils/timeUtils.ts';
+import type { RankedSeasonMedal } from '@/types/battle/pvp.ts';
 const RANKED_MAX_TIER_GAP = 1;
 
 const ELO_THRESHOLD_PLATA = 1200;
@@ -125,7 +127,7 @@ export interface SeasonalTierReward {
     species: PokemonSpeciesId;
     level: number;
     shiny: boolean;
-    ivs: Record<string, number>; // open-record: Generic key-value data dictionary container
+    ivs: Record<DisplayText, number>; // open-record: Generic key-value data dictionary container
   };
 }
 
@@ -188,7 +190,6 @@ export function getSeasonalPrizesForTier(tierInput: string): SeasonalTierReward 
         dungeonTickets: 1,
         tickets: { cuevaCeleste: 1, islasEspumas: 0 }
       };
-    case 'bronce':
     default:
       return {
         battleCoins: SEASONAL_BATTLE_COINS.BRONCE,
@@ -255,7 +256,7 @@ export function getEloTier(elo: number | string): EloTier {
  */
 function getEloTierIndex(elo: number | string): number {
   const tier = getEloTier(elo);
-  return RANKED_TIER_INDEX_MAP[tier.name as RankedTierName] ?? -1;
+  return RANKED_TIER_INDEX_MAP[tier.name] ?? -1;
 }
 
 /**

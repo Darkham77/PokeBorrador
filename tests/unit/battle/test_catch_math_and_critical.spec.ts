@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vite-plus/test';
+
 import {
   getPokedexCriticalFactor,
   calculateCriticalCaptureThreshold,

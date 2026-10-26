@@ -1,73 +1,44 @@
+import { gsap } from 'gsap';
 import { defineStore } from 'pinia';
 import { ref, reactive, getCurrentScope, onScopeDispose } from 'vue';
-import { gsap } from 'gsap';
+
+import { logger } from '@/logic/utils/logger.ts';
 
 type DelayedCall = { kill: () => void };
 
-import { useAuthStore } from '@/stores/auth.ts';
-import { useGameStore } from '@/stores/game.ts';
-import { useUIStore } from '@/stores/ui.ts';
-import { usePvPStore } from '@/stores/pvp.ts';
-import { useModalStore } from '@/stores/modals.ts';
-import { useBattleStore } from '@/stores/battle/battle.ts';
-import { gameBus } from '@/logic/events/gameBus.ts';
-import type { PvPAction } from '@/types/battle/pvp';
-import { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper.ts';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import { DEFAULT_INITIAL_ELO } from '@/logic/constants/gameplay.ts';
+import { gameBus } from '@/logic/events/gameBus.ts';
+import { getMatchmakingTimeoutSec } from '@/logic/pvp/livePvPMatchmakingHandler.ts';
+import {
+  createRoomAction,
+  cancelRoomAction,
+  joinRoomAction
+} from '@/logic/pvp/pvpRoomActionsHelper';
+import { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper.ts';
+import { useAuthStore } from '@/stores/auth.ts';
+import { useBattleStore } from '@/stores/battle/battle.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useModalStore } from '@/stores/modals.ts';
+import { usePvPStore } from '@/stores/pvp.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import type { PvPAction } from '@/types/battle/pvp';
 import {
   PVP_TURN_TIMEOUT_SEC,
   PVP_RECONNECT_WINDOW_SEC,
   type BattleInvite,
   type BattleReplayRecord,
   type PvpChallengeConfig,
+  type PvPMatchType,
   type PvpTurnStreamPayload,
   type PvpReconnectPayload,
   type PvpRoomCode
 } from '@/types/battle/pvp';
-import {
-  createRoomAction,
-  cancelRoomAction,
-  joinRoomAction
-} from '@/logic/pvp/pvpRoomActionsHelper';
-import { getMatchmakingTimeoutSec } from '@/logic/pvp/livePvPMatchmakingHandler.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const INVITE_POLL_INTERVAL_SEC = 4;
 const SEARCH_COUNTDOWN_TICK_SEC = 1;
 const MATCHMAKING_POLL_INTERVAL_SEC = 3;
 
-import { executeForfeit, executeEndBattle } from '@/logic/pvp/livePvPEndBattleHandler.ts';
-import type { PvpSpectateSyncPayload } from '@/logic/pvp/pvpSpectatorHelper';
-import {
-  executeReconnectBattle,
-  executeSpectateMatch,
-  executeHandleSpectateJoin,
-  executeHandleSpectateSync,
-  executeHandleOpponentReconnect
-} from '@/logic/pvp/livePvPReconnectionHandler';
-import {
-  executeStartPassiveBattle,
-  executeFallbackToPassiveBattle
-} from '@/logic/pvp/livePvPPassiveFallbackHandler';
-import type { ShowdownPlayerRequest } from '@/types/battle/battle';
-import {
-  executePollMatchmaking,
-  executeInitInvitePoller,
-  executeStartSearch,
-  executeCancelSearch,
-  executeSendInvite,
-  executeAcceptInvite,
-  executeDeclineInvite,
-  executeStartSearchCountdown
-} from '@/logic/pvp/livePvPMatchmakingHandler.ts';
-import {
-  executeResolveTurn,
-  executeHandleTurnStream,
-  executeCommitPick,
-  executeCheckReadyToResolve,
-  executeHandleTurnTimeout,
-  executeCheckPostTurn
-} from '@/logic/pvp/livePvPTurnExecutionHandler.ts';
 import {
   resolvePvpTeam as resolvePvpTeamHelper,
   executeStartBattle,
@@ -79,6 +50,38 @@ import {
   type LiveBattleState,
   type OpponentTeamBroadcastPayload
 } from '@/logic/pvp/livePvPBattleSetupHandler.ts';
+import { executeForfeit, executeEndBattle } from '@/logic/pvp/livePvPEndBattleHandler.ts';
+import {
+  executePollMatchmaking,
+  executeInitInvitePoller,
+  executeStartSearch,
+  executeCancelSearch,
+  executeSendInvite,
+  executeAcceptInvite,
+  executeDeclineInvite,
+  executeStartSearchCountdown
+} from '@/logic/pvp/livePvPMatchmakingHandler.ts';
+import {
+  executeStartPassiveBattle,
+  executeFallbackToPassiveBattle
+} from '@/logic/pvp/livePvPPassiveFallbackHandler';
+import {
+  executeReconnectBattle,
+  executeSpectateMatch,
+  executeHandleSpectateJoin,
+  executeHandleSpectateSync,
+  executeHandleOpponentReconnect
+} from '@/logic/pvp/livePvPReconnectionHandler';
+import {
+  executeResolveTurn,
+  executeHandleTurnStream,
+  executeCommitPick,
+  executeCheckReadyToResolve,
+  executeHandleTurnTimeout,
+  executeCheckPostTurn
+} from '@/logic/pvp/livePvPTurnExecutionHandler.ts';
+import type { PvpSpectateSyncPayload } from '@/logic/pvp/pvpSpectatorHelper';
+import type { ShowdownPlayerRequest } from '@/types/battle/battle';
 
 export const useLivePvPStore = defineStore('livePvP', () => {
   const authStore = useAuthStore();
@@ -90,11 +93,11 @@ export const useLivePvPStore = defineStore('livePvP', () => {
   const activeInvite = ref<BattleInvite | null>(null);
   const isSearching = ref(false);
   const searchSecondsRemaining = ref<number>(getMatchmakingTimeoutSec());
-  const searchPhase = ref<'human' | 'passive_fallback' | 'matched'>('human');
+  const searchPhase = ref<PvPMatchType>('human');
   let searchCountdownTween: DelayedCall | null = null;
   const activeReplay = ref<BattleReplayRecord | null>(null);
 
-  function watchReplay(replay: BattleReplayRecord) {
+  function watchReplay(replay: BattleReplayRecord): void {
     activeReplay.value = replay;
     modalStore.open('BattleReplay', { replay });
   }
@@ -131,7 +134,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
   let invitePoller: DelayedCall | null = null;
   let matchmakingPoller: DelayedCall | null = null;
 
-  function handleTurnTimeout(isForfeit: boolean) {
+  function handleTurnTimeout(isForfeit: boolean): void {
     executeHandleTurnTimeout(isForfeit, {
       uiStore,
       forfeit: _forfeit,
@@ -141,13 +144,15 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  function handleReconnectTimeout() {
+  function handleReconnectTimeout(): void {
     timerManager.stopReconnectCountdown();
     isReconnecting.value = false;
-    void endBattle(false, 'Tiempo de reconexión agotado.');
+    endBattle(false, 'Tiempo de reconexión agotado.').catch((err) => {
+      logger.warn('Handled promise rejection:', { cause: err });
+    });
   }
 
-  async function _pollMatchmaking() {
+  async function _pollMatchmaking(): Promise<void> {
     await executePollMatchmaking({
       db: gameStore.db,
       userId: authStore.currentUserId,
@@ -161,7 +166,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  function initInvitePoller() {
+  function initInvitePoller(): void {
     if (invitePoller) invitePoller.kill();
     invitePoller = executeInitInvitePoller({
       db: gameStore.db,
@@ -177,7 +182,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  function _startSearchCountdown() {
+  function _startSearchCountdown(): void {
     if (searchCountdownTween) searchCountdownTween.kill();
     searchCountdownTween = executeStartSearchCountdown({
       isSearching,
@@ -187,7 +192,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  async function startSearch() {
+  async function startSearch(): Promise<void> {
     if (matchmakingPoller) matchmakingPoller.kill();
     matchmakingPoller = await executeStartSearch({
       db: gameStore.db,
@@ -205,8 +210,8 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  function cancelSearch() {
-    void executeCancelSearch({
+  async function cancelSearch(): Promise<void> {
+    await executeCancelSearch({
       db: gameStore.db,
       userId: authStore.currentUserId,
       isSearching,
@@ -221,7 +226,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  async function _fallbackToPassiveBattle() {
+  async function _fallbackToPassiveBattle(): Promise<void> {
     if (!gameStore.db) return;
     const pvpStore = usePvPStore();
     await executeFallbackToPassiveBattle({
@@ -243,7 +248,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     opponentName: string;
     opponentElo: number;
     enemyTeam: Pokemon[];
-  }) {
+  }): void {
     executeStartPassiveBattle(params, {
       resolvePvpTeam,
       notify: (msg, icon) => uiStore.notify(msg, icon),
@@ -255,7 +260,11 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  async function sendInvite(opponentId: string, opponentName: string, config?: PvpChallengeConfig) {
+  async function sendInvite(
+    opponentId: string,
+    opponentName: string,
+    config?: PvpChallengeConfig
+  ): Promise<void> {
     await executeSendInvite({
       db: gameStore.db,
       userId: authStore.currentUserId,
@@ -267,7 +276,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  async function acceptInvite(inviteId: string, isRanked = false) {
+  async function acceptInvite(inviteId: string, isRanked = false): Promise<void> {
     await executeAcceptInvite({
       db: gameStore.db,
       inviteId,
@@ -278,7 +287,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  async function declineInvite(inviteId: string) {
+  async function declineInvite(inviteId: string): Promise<void> {
     await executeDeclineInvite({
       db: gameStore.db,
       inviteId,
@@ -286,7 +295,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  async function _commitPick(pick: PvPAction, isManual = true) {
+  async function _commitPick(pick: PvPAction, isManual = true): Promise<void> {
     await executeCommitPick(
       pick,
       {
@@ -300,15 +309,15 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     );
   }
 
-  const handlePvpCommitPickEvent = (e: Event) => {
+  const handlePvpCommitPickEvent = async (e: Event): Promise<void> => {
     const pick = (e as CustomEvent<PvPAction>).detail;
     if (pick) {
-      void _commitPick(pick);
+      await _commitPick(pick);
     }
   };
   gameBus.on('PVP_COMMIT_PICK', handlePvpCommitPickEvent);
 
-  const handlePvpReconnectBattleEvent = (e: Event) => {
+  const handlePvpReconnectBattleEvent = (e: Event): void => {
     const detail = (e as CustomEvent<unknown>).detail;
     if (detail) {
       reconnectBattle(detail);
@@ -323,11 +332,11 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  function _checkReadyToResolve() {
+  function _checkReadyToResolve(): void {
     executeCheckReadyToResolve(battleState, useBattleStore(), resolveTurn);
   }
 
-  function _forfeit() {
+  function _forfeit(): void {
     executeForfeit({
       battleState,
       timerManager,
@@ -335,7 +344,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  async function endBattle(won: boolean, reason: string) {
+  async function endBattle(won: boolean, reason: string): Promise<void> {
     const battleStore = useBattleStore();
     await executeEndBattle(won, reason, {
       battleState,
@@ -349,7 +358,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  async function resolveTurn() {
+  async function resolveTurn(): Promise<void> {
     const battleStore = useBattleStore();
     await executeResolveTurn({
       battleState,
@@ -365,7 +374,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     return resolvePvpTeamHelper(gameStore, format);
   }
 
-  function startBattle(invite: BattleInvite, flags: PvpBattleSeatFlags) {
+  function startBattle(invite: BattleInvite, flags: PvpBattleSeatFlags): void {
     executeStartBattle(invite, flags, {
       resolvePvpTeam,
       uiStore,
@@ -379,7 +388,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  function setupBattleChannel(inviteId: string) {
+  function setupBattleChannel(inviteId: string): void {
     executeSetupBattleChannel(inviteId, {
       db: gameStore.db,
       battleState,
@@ -399,14 +408,14 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  function handleOpponentTeam({ payload }: { payload: OpponentTeamBroadcastPayload }) {
+  function handleOpponentTeam({ payload }: { payload: OpponentTeamBroadcastPayload }): void {
     executeHandleOpponentTeam(payload, battleState, {
       timerManager,
       battleStore: useBattleStore()
     });
   }
 
-  function handleOpponentTeamOrder({ payload }: { payload: { orderedUids: string[] } }) {
+  function handleOpponentTeamOrder({ payload }: { payload: { orderedUids: string[] } }): void {
     executeHandleOpponentTeamOrder(payload, {
       battleState,
       myTeamConfirmed,
@@ -416,7 +425,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  function handleOpponentPick({ payload }: { payload: PvPAction }) {
+  function handleOpponentPick({ payload }: { payload: PvPAction }): void {
     battleState.enemyPick = payload;
     if (battleState.isHost) {
       _checkReadyToResolve();
@@ -427,7 +436,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     payload
   }: {
     payload: PvpTurnStreamPayload & { request?: ShowdownPlayerRequest };
-  }) {
+  }): Promise<void> {
     const battleStore = useBattleStore();
     await executeHandleTurnStream(payload, {
       battleState,
@@ -453,7 +462,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  async function cancelRoom() {
+  async function cancelRoom(): Promise<void> {
     await cancelRoomAction(activeRoomCode, gameStore.db, roomHostPoller, (p) => {
       roomHostPoller = p;
     });
@@ -468,7 +477,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  async function spectateMatch(matchId: string) {
+  async function spectateMatch(matchId: string): Promise<void> {
     executeSpectateMatch(matchId, {
       battleState,
       isSpectator,
@@ -478,15 +487,15 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  function handleSpectateJoin() {
+  function handleSpectateJoin(): void {
     executeHandleSpectateJoin({ battleState, battleStore: useBattleStore() });
   }
 
-  function handleSpectateSync({ payload }: { payload: PvpSpectateSyncPayload }) {
+  function handleSpectateSync({ payload }: { payload: PvpSpectateSyncPayload }): void {
     executeHandleSpectateSync(payload, isSpectator.value, useBattleStore());
   }
 
-  function handleOpponentReconnect({ payload }: { payload: PvpReconnectPayload }) {
+  function handleOpponentReconnect({ payload }: { payload: PvpReconnectPayload }): void {
     executeHandleOpponentReconnect(payload, {
       notify: (msg, icon) => uiStore.notify(msg, icon),
       timerManager,
@@ -494,11 +503,13 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  function handleOpponentForfeit() {
-    void endBattle(true, 'El oponente se ha rendido.');
+  function handleOpponentForfeit(): void {
+    endBattle(true, 'El oponente se ha rendido.').catch((err) => {
+      logger.warn('Handled promise rejection:', { cause: err });
+    });
   }
 
-  function reconnectBattle(restoredBattle: unknown) {
+  function reconnectBattle(restoredBattle: unknown): void {
     executeReconnectBattle(restoredBattle, {
       battleState,
       timerManager,
@@ -507,7 +518,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     });
   }
 
-  function _checkPostTurn() {
+  function _checkPostTurn(): void {
     executeCheckPostTurn({
       battleState,
       uiStore,
@@ -523,7 +534,11 @@ export const useLivePvPStore = defineStore('livePvP', () => {
       if (matchmakingPoller) matchmakingPoller.kill();
       if (roomHostPoller) roomHostPoller.kill();
       timerManager.destroy();
-      if (battleState.ch) void battleState.ch.unsubscribe();
+      if (battleState.ch) {
+        battleState.ch.unsubscribe().catch((err) => {
+          logger.warn('Handled promise rejection:', { cause: err });
+        });
+      }
     });
   }
 
@@ -556,7 +571,6 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     _commitPick,
     handleOpponentPick,
     _checkPostTurn,
-    // fallow-ignore-next-line unused-store-member
     _forfeit,
     endBattle
   };

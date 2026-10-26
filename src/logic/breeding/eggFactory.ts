@@ -1,10 +1,11 @@
 const EGG_HATCH_STEPS_BASE = 250;
 const EGG_HATCH_STEPS_VARIANCE = 51;
+import { requirePokemonMoveId } from '@/data/battle/moves';
+import { toNatureId } from '@/data/battle/natures';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
 import type { DaycareEgg } from '@/types/breeding/breeding';
 import type { PokemonEgg, PokemonIVs } from '@/types/pokemon/pokemon';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
-import { toNatureId } from '@/data/battle/natures';
-import { requirePokemonMoveId } from '@/data/battle/moves';
+
 import { getEggSpecies } from './breedingEngine.ts';
 
 interface DaycareEggParams {

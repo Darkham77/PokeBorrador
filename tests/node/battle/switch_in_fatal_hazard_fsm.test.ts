@@ -1,5 +1,7 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert';
+
+import { describe, it } from 'vite-plus/test';
+
 import {
   createBattleStateMachine,
   BATTLE_STATES,

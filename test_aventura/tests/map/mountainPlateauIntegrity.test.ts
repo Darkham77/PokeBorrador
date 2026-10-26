@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
+
+import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
 import { generateWildernessLayer } from '../../logic/map/wildernessVegetationEngine.ts';
-import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 
 describe('Mountain Plateau Integrity & Consolidation (Elimination of Grass Holes)', () => {
   const continent = generateContinentMap({

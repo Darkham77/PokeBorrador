@@ -1,3 +1,4 @@
+import type { DisplayText, HexColor, AssetUri } from '@francogp/auditor';
 import { POKEMON_TYPES, type PokemonType } from '../battle/types.ts';
 import type { PokemonSpeciesId } from '../pokemon/pokedex.ts';
 import { toID } from '@/logic/utils/strings.ts';
@@ -39,8 +40,8 @@ export const RANKED_TIER_INDEX_MAP: Readonly<Record<RankedTierName, number>> = O
 export interface RankedTierConfig {
   readonly id: RankedTierId;
   readonly name: RankedTierName;
-  readonly color: string; // domain-ok: Hex color code
-  readonly fallbackEmoji: string; // domain-ok: Unicode emoji character
+  readonly color: HexColor;
+  readonly fallbackEmoji: DisplayText;
 }
 
 export const RANKED_MEDAL_CONFIGS: Readonly<Record<RankedTierId, RankedTierConfig>> = Object.freeze(
@@ -227,10 +228,10 @@ export interface SeasonalRewardPokemonConfig {
 
 export interface SeasonalThemeConfig {
   readonly id: SeasonalThemeId;
-  readonly name: string; // domain-ok: Open dynamic text or non-domain string payload
-  readonly description: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly name: DisplayText;
+  readonly description: DisplayText;
   readonly monthIndex: number; // 1 to 12
-  readonly bannerImage: string; // domain-ok: Canonical banner asset identifier
+  readonly bannerImage: AssetUri;
   readonly allowedTypes?: readonly PokemonType[];
   readonly bannedPokemonIds?: readonly PokemonSpeciesId[];
   readonly allowedGenerations?: readonly number[];
@@ -453,17 +454,16 @@ export const SPANISH_MONTH_NAMES = [
   'Diciembre'
 ] as const;
 
-const THEMES_BY_LOOKUP_KEY: Readonly<Record<string, SeasonalThemeConfig>> = Object.freeze(
-  // open-record: Generic key-value data dictionary container
+const THEMES_BY_LOOKUP_KEY: Readonly<Record<DisplayText, SeasonalThemeConfig>> = Object.freeze(
   (() => {
-    const map: Record<string, SeasonalThemeConfig> = {}; // open-record: Generic key-value data dictionary container
+    const map: Partial<Record<DisplayText, SeasonalThemeConfig>> = {};
     for (const theme of SEASONAL_ANNUAL_THEMES) {
-      map[theme.id] = theme;
+      map[theme.id as DisplayText] = theme;
       map[theme.name] = theme;
-      map[toID(theme.name)] = theme;
-      map[toID(theme.id)] = theme;
+      map[toID(theme.name) as DisplayText] = theme;
+      map[toID(theme.id) as DisplayText] = theme;
     }
-    return map;
+    return map as Record<DisplayText, SeasonalThemeConfig>;
   })()
 );
 
@@ -473,7 +473,7 @@ export function findSeasonalTheme(identifier?: string | null): SeasonalThemeConf
   if (isSeasonalThemeId(identifier)) {
     return SEASONAL_THEMES_BY_ID[identifier];
   }
-  return THEMES_BY_LOOKUP_KEY[identifier] ?? THEMES_BY_LOOKUP_KEY[toID(identifier)];
+  return THEMES_BY_LOOKUP_KEY[identifier as DisplayText] ?? THEMES_BY_LOOKUP_KEY[toID(identifier) as DisplayText];
 }
 
 export function getSeasonalThemeConfig(id: SeasonalThemeId): SeasonalThemeConfig {

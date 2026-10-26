@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+
 import * as engine from './audioEngine.ts';
 
 type SoundDispatcher = (eng: typeof engine, ctx: AudioContext, dest: AudioNode) => void;
@@ -50,7 +52,7 @@ const SOUND_DISPATCH_MAP: Record<SoundDispatchType, SoundDispatcher> = {
 };
 
 export function dispatchSound(type: string, ctx: AudioContext, dest: AudioNode): void {
-  const dispatcher = (SOUND_DISPATCH_MAP as Record<string, SoundDispatcher | undefined>)[type]; // open-record: Sound dispatcher lookup
+  const dispatcher = (SOUND_DISPATCH_MAP as Record<DisplayText, SoundDispatcher | undefined>)[type]; // open-record: Sound dispatcher lookup
   if (dispatcher) {
     dispatcher(engine, ctx, dest);
   }

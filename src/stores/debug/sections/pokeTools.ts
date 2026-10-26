@@ -1,19 +1,20 @@
-import type { DebugSystem } from '@/types/system/debug.ts';
+import type { DisplayText } from '@francogp/auditor';
 
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
-import { useMapStore } from '@/stores/map';
-import { useBreedingStore } from '@/stores/breeding';
-import { useBattleStore } from '@/stores/battle/battle';
-import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon';
-import type { Pokemon, PokedexStatus } from '@/types/pokemon/pokemon';
-import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
+import { requireItemId } from '@/data/inventory/items';
 import { EVOLUTION_TABLE, TRADE_EVOLUTIONS, getStoneEvolution } from '@/data/pokemon/evolutionData';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { requireItemId } from '@/data/inventory/items';
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
 import { requireMapRouteId } from '@/data/world/map-assets';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useBreedingStore } from '@/stores/breeding';
+import { useGameStore } from '@/stores/game';
+import { useMapStore } from '@/stores/map';
+import { useUIStore } from '@/stores/ui';
+import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon';
+import type { Pokemon, PokedexStatus } from '@/types/pokemon/pokemon';
+import type { DebugSystem } from '@/types/system/debug.ts';
 
-export function registerPokeTools(debug: DebugSystem) {
+export function registerPokeTools(debug: DebugSystem): void {
   const game = useGameStore();
   const ui = useUIStore();
   const mapStore = useMapStore();
@@ -249,7 +250,7 @@ export function registerPokeTools(debug: DebugSystem) {
 
       if (!target) {
         // 1. Search level evolution table
-        const levelEvo = (EVOLUTION_TABLE as Record<string, { to: string }>)[pokemon.id]; // open-record: Generic key-value data dictionary container
+        const levelEvo = (EVOLUTION_TABLE as Record<DisplayText, { to: string }>)[pokemon.id]; // open-record: Generic key-value data dictionary container
         if (levelEvo) {
           target = requirePokemonSpeciesId(levelEvo.to);
         } else {
@@ -260,7 +261,7 @@ export function registerPokeTools(debug: DebugSystem) {
             item = stoneEvo.stone;
           } else {
             // 3. Search trade evolution table
-            const tradeEvo = (TRADE_EVOLUTIONS as Record<string, string>)[pokemon.id]; // open-record: Generic key-value data dictionary container
+            const tradeEvo = (TRADE_EVOLUTIONS as Record<DisplayText, string>)[pokemon.id]; // open-record: Generic key-value data dictionary container
             if (tradeEvo) {
               target = requirePokemonSpeciesId(tradeEvo);
             }
@@ -288,29 +289,35 @@ export function registerPokeTools(debug: DebugSystem) {
     action: () => {
       const db = POKEMON_DB;
 
-      const warehouse = breedingStore.warehouseEggs.map((e) => ({
-        id: e.id,
-        especie: db[e.species]?.name ?? e.species, // text-ok: UI text display localization string
-        nivel: e.level,
-        naturaleza: e.nature,
-        shiny: e.isShiny ? '✨ SÍ' : 'NO',
-        ivs: `HP: ${e.ivs.hp}, ATK: ${e.ivs.atk}, DEF: ${e.ivs.def}, SPA: ${e.ivs.spa}, SPD: ${e.ivs.spd}, SPE: ${e.ivs.spe}`,
-        costo: `₽${e.inherited_ivs?._cost || e.cost || 0}`,
-        escaneado: e.inherited_ivs?._scanned ? 'SÍ' : 'NO'
-      }));
+      const warehouse = breedingStore.warehouseEggs.map((e) => {
+        const speciesId = requirePokemonSpeciesId(e.species);
+        return {
+          id: e.id,
+          especie: db[speciesId].name,
+          nivel: e.level,
+          naturaleza: e.nature,
+          shiny: e.isShiny ? '✨ SÍ' : 'NO',
+          ivs: `HP: ${e.ivs.hp}, ATK: ${e.ivs.atk}, DEF: ${e.ivs.def}, SPA: ${e.ivs.spa}, SPD: ${e.ivs.spd}, SPE: ${e.ivs.spe}`,
+          costo: `₽${e.inherited_ivs?._cost || e.cost || 0}`,
+          escaneado: e.inherited_ivs?._scanned ? 'SÍ' : 'NO'
+        };
+      });
 
-      const backpack = (game.state.eggs || []).map((e) => ({
-        uid: e.uid,
-        especie: db[e.id]?.name ?? e.id, // text-ok: UI text display localization string
-        pasosRestantes: e.steps,
-        listo: e.ready ? '🐣 SÍ' : 'NO',
-        shiny: e.isShiny ? '✨ SÍ' : 'NO',
-        naturaleza: e.nature || 'N/A',
-        ivs: e.ivs
-          ? `HP: ${e.ivs.hp || 0}, ATK: ${e.ivs.atk || 0}, DEF: ${e.ivs.def || 0}, SPA: ${e.ivs.spa || 0}, SPD: ${e.ivs.spd || 0}, SPE: ${e.ivs.spe || 0}`
-          : 'Desconocido',
-        escaneado: e.scanned ? 'SÍ' : 'NO'
-      }));
+      const backpack = (game.state.eggs || []).map((e) => {
+        const speciesId = requirePokemonSpeciesId(e.id);
+        return {
+          uid: e.uid,
+          especie: db[speciesId].name,
+          pasosRestantes: e.steps,
+          listo: e.ready ? '🐣 SÍ' : 'NO',
+          shiny: e.isShiny ? '✨ SÍ' : 'NO',
+          naturaleza: e.nature || 'N/A',
+          ivs: e.ivs
+            ? `HP: ${e.ivs.hp || 0}, ATK: ${e.ivs.atk || 0}, DEF: ${e.ivs.def || 0}, SPA: ${e.ivs.spa || 0}, SPD: ${e.ivs.spd || 0}, SPE: ${e.ivs.spe || 0}`
+            : 'Desconocido',
+          escaneado: e.scanned ? 'SÍ' : 'NO'
+        };
+      });
 
       console.group('🥚 [DEBUG] DETALLES DE HUEVOS ACTIVOS');
       console.debug('--- EN ALMACÉN DE GUARDERÍA ---');
@@ -382,7 +389,7 @@ export function registerPokeTools(debug: DebugSystem) {
 
       if (scannedCount > 0) {
         ui.notify(`Se han escaneado ${scannedCount} huevo(s)`, '🔍');
-        void game.saveGame(false);
+        game.scheduleSave();
       } else {
         ui.notify('No se encontró ningún huevo para escanear', '❌');
       }
@@ -407,7 +414,7 @@ export function registerPokeTools(debug: DebugSystem) {
         e.ready = true;
       });
       ui.notify('¡Huevos en la mochila listos para eclosionar!', '🚶');
-      void game.saveGame(false);
+      game.scheduleSave();
     },
     description:
       'Reduce a 0 los pasos de todos los huevos en la mochila y los deja listos para abrir.'
@@ -456,7 +463,7 @@ export function registerPokeTools(debug: DebugSystem) {
       if (game.state.box) {
         game.state.box.forEach((p) => {
           if (p && p.id) {
-            const report = repairPokemonLegality(p as Pokemon);
+            const report = repairPokemonLegality(p);
             if (report.repaired) repairedCount++;
           }
         });
@@ -494,7 +501,7 @@ export function registerPokeTools(debug: DebugSystem) {
     action: async (uidOrTarget?: string) => {
       const { repairPokemonLegality } = await import('@/logic/pokemon/pokemonLegality');
       const allPokes = [...game.state.team, ...(game.state.box || [])].filter(
-        (p): p is Pokemon => p != null
+        (p): p is Pokemon => p !== null && p !== undefined
       );
 
       const targetPoke = uidOrTarget

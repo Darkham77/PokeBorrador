@@ -7,8 +7,10 @@
  * and PostgreSQL, preventing state leakage and unexpected modal triggers (e.g. MoveLearning).
  */
 
-import { it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { it } from 'vite-plus/test';
+
 import { describeWithDatabase } from '../../dbTestHelper.ts';
 
 describeWithDatabase('E2E Pre-test Cleanup Parity', (engine, getDb) => {

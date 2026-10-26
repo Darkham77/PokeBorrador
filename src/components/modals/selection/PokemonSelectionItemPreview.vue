@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import PVTooltip from '@/components/common/PVTooltip.vue';
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
 import { ASSET_TYPES, getAssetUrl } from '@/logic/services/assetService';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 

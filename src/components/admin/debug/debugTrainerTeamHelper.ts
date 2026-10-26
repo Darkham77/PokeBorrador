@@ -1,6 +1,6 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { pokemonDebugService } from '@/logic/debug/pokemonDebugService';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export const MIN_DEBUG_TEAM_SIZE = 1 as const;
 export const MAX_DEBUG_TEAM_SIZE = 6 as const;

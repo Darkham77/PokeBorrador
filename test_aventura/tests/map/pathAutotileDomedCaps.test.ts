@@ -13,6 +13,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import { resolvePathGrid, sanitizePathGridWidth } from '../../logic/map/pathAutotileEngine.ts';
 
 describe('pathAutotileDomedCaps', () => {

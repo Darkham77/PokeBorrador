@@ -1,7 +1,8 @@
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
-import { mount } from '@vue/test-utils';
+
 import LocalDebugPanel from '@/components/admin/LocalDebugPanel.vue';
 import { useAuthStore } from '@/stores/auth.ts';
 import { GAME_UI_EVENTS } from '@/types/system/gameEvents.ts';

@@ -1,13 +1,12 @@
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import gsap from 'gsap';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { useCombatShadowStore } from '@/stores/battle/combatShadows';
-import { useBattleStore } from '@/stores/battle/battle';
-import { gameBus } from '@/logic/events/gameBus';
-import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
-import type { BattleCombatantProps, BattleEscapeType } from '@/types/battle/battle';
+import { ref, computed, watch, onMounted, onUnmounted, type Ref, type ComputedRef } from 'vue';
+
 import type { ItemId } from '@/data/inventory/items';
+import type {
+  AnimatedVariationId,
+  AnimatedSpriteData
+} from '@/data/pokemon/animatedSpriteDatabase';
+import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
 import {
   POKEBALL_SHADOW_CANVAS_WIDTH_PX,
   POKEBALL_SHADOW_CANVAS_HEIGHT_PX,
@@ -16,9 +15,24 @@ import {
   SMOKE_PARTICLE_EXPANSION_RATE,
   FLEE_SLIDE_DISTANCE_PX
 } from '@/logic/constants/animations';
-import { useCombatantVisualSprite } from './useCombatantVisualSprite.ts';
+import { gameBus } from '@/logic/events/gameBus';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useCombatShadowStore } from '@/stores/battle/combatShadows';
+import {
+  type BattleCombatantProps,
+  type BattleEscapeType,
+  BATTLE_SEAT_SPECIAL_STATES,
+  type BattleSeatSpecialState
+} from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { animateCombatantTransform } from './helpers/combatantFeedbackAnims.ts';
-import { resolveCombatantFeetPoints } from './helpers/combatantFeetHelper.ts';
+import {
+  resolveCombatantFeetPoints,
+  type ResolvedFeetPoints
+} from './helpers/combatantFeetHelper.ts';
+import { useCombatantVisualSprite } from './useCombatantVisualSprite.ts';
 
 const SMOKE_BASE_SPEED = 1.5;
 const SMOKE_SPEED_VARIANCE = 3;
@@ -47,11 +61,53 @@ interface SmokeParticle {
 const pokeballCoordsCache = new Map<string, { top: string; left: string }>();
 const rawCoordsCache = new Map<string, { x: number; y: number }>();
 
+const BALL_VISIBLE_ANIM_STATES: ReadonlySet<BattleSeatSpecialState> =
+  new Set<BattleSeatSpecialState>(BATTLE_SEAT_SPECIAL_STATES);
+
+export interface UseBattleCombatantStateReturn {
+  naturalSize: Ref<{ w: number; h: number }>;
+  cacheKey: ComputedRef<string>;
+  isFloating: ComputedRef<boolean>;
+  isPlayer: ComputedRef<boolean>;
+  isEnemy: ComputedRef<boolean>;
+  imageUrl: ComputedRef<string>;
+  getAttackAnimClass: ComputedRef<string>;
+  pokeballShadowUrl: ComputedRef<string>;
+  localGroundY: ComputedRef<string>;
+  fxScale: ComputedRef<number>;
+  fxRadius: ComputedRef<number>;
+  debugShowPokeRadius: ComputedRef<boolean>;
+  pokeballSize: ComputedRef<number>;
+  isBallVisible: ComputedRef<boolean>;
+  wasCaptured: Ref<boolean>;
+  internalBallId: Ref<ItemId>;
+  memorizedBallCoords: Ref<{ top: string; left: string }>;
+  getSpriteFeetOrigin: () => string;
+  getBallTargetCoords: () => { x: number; y: number };
+  rawCoordsCache: Map<string, { x: number; y: number }>;
+  handleImageError: (e: Event) => void;
+  handleBallError: () => void;
+  handleLoad: (e: Event) => void;
+  smokeParticles: Ref<SmokeParticle[]>;
+  isAnimated: ComputedRef<boolean>;
+  frames: ComputedRef<number>;
+  frameSize: ComputedRef<number>;
+  scaleFactor: ComputedRef<number>;
+  speciesSizeScale: ComputedRef<number>;
+  displaySize: ComputedRef<number>;
+  currentShadow: ComputedRef<unknown>;
+  feetPoints: ComputedRef<ResolvedFeetPoints>;
+  idleKey: ComputedRef<string | null>;
+  variationKey: ComputedRef<AnimatedVariationId | null>;
+  variationMeta: ComputedRef<AnimatedSpriteData | null>;
+  runEscapeAnimation: (type: BattleEscapeType) => void;
+}
+
 export function useBattleCombatantState(
   props: BattleCombatantProps,
   emit: (e: 'load', size: { w: number; h: number }) => void,
   spriteRef: { value: HTMLElement | null }
-) {
+): UseBattleCombatantStateReturn {
   const naturalSize = ref({ w: 0, h: 0 });
   const seatKey = computed(() => `${props.side}-${props.position.x}-${props.position.y}`);
   const cacheKey = computed(() => {
@@ -162,9 +218,9 @@ export function useBattleCombatantState(
 
   const isBallVisible = computed(() => {
     return (
-      props.animState === 'trapped' ||
-      props.animState === 'catching' ||
-      props.animState === 'releasing' ||
+      (props.animState !== undefined &&
+        props.animState !== null &&
+        BALL_VISIBLE_ANIM_STATES.has(props.animState)) ||
       !!props.isCaptureSuccess
     );
   });
@@ -179,13 +235,13 @@ export function useBattleCombatantState(
       : WORLD_CONSTANTS.POKEBALL_SIZE_ENEMY;
   });
 
-  const getSpriteFeetOrigin = () => {
+  const getSpriteFeetOrigin = (): string => {
     return `50% ${localGroundY.value}`;
   };
 
   const BALL_TARGET_Y_OFFSET_RATIO = 0.35;
 
-  const getBallTargetCoords = () => {
+  const getBallTargetCoords = (): { x: number; y: number } => {
     const ballHeight = pokeballSize.value;
     const targetX = 0;
     const targetY = -ballHeight * BALL_TARGET_Y_OFFSET_RATIO;
@@ -212,17 +268,17 @@ export function useBattleCombatantState(
     { immediate: true, deep: true }
   );
 
-  const handleImageError = (e: Event) => {
+  const handleImageError = (e: Event): void => {
     (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'bush-1');
   };
 
-  const handleBallError = () => {
+  const handleBallError = (): void => {
     throw new Error(
       `[BattleCombatant] Failed to load Pokeball image asset for ID: ${props.ballId}`
     );
   };
 
-  const handleLoad = (e: Event) => {
+  const handleLoad = (e: Event): void => {
     const target = e.target as HTMLImageElement;
     naturalSize.value = { w: target.naturalWidth, h: target.naturalHeight };
     emit('load', naturalSize.value);
@@ -244,7 +300,7 @@ export function useBattleCombatantState(
   const GSAP_KNOCKBACK_DURATION_SEC = 0.35;
   const GSAP_FLEE_SCALE_TARGET = 0.7;
 
-  const runEscapeAnimation = (type: BattleEscapeType) => {
+  const runEscapeAnimation = (type: BattleEscapeType): void => {
     if (!spriteRef.value) return;
 
     if (type === 'teleport') {
@@ -325,7 +381,7 @@ export function useBattleCombatantState(
       }
       smokeParticles.value = list;
 
-      const updateTicker = () => {
+      const updateTicker = (): void => {
         let active = false;
         smokeParticles.value.forEach((p) => {
           p.x += p.vx;
@@ -366,7 +422,7 @@ export function useBattleCombatantState(
     }
   };
 
-  const handleEscapeEvent = (e: Event) => {
+  const handleEscapeEvent = (e: Event): void => {
     const data = (e as CustomEvent).detail as
       | { side: string; pokemon?: Pokemon | null; type: BattleEscapeType }
       | undefined;
@@ -379,7 +435,7 @@ export function useBattleCombatantState(
     }
   };
 
-  const handleTransformEvent = (e: Event) => {
+  const handleTransformEvent = (e: Event): void => {
     const data = (e as CustomEvent).detail as { side?: string } | undefined;
     if (data && data.side === props.side && spriteRef.value) {
       animateCombatantTransform(spriteRef.value);

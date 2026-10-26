@@ -1,22 +1,25 @@
+import type { DisplayText } from '@francogp/auditor';
 import { Battle, Pokemon, Side, type PokemonSet, type SideID } from '@pkmn/sim';
-import { statsMap, patchShowdownSpreadModify } from './engine/showdownSpreadModifyHelper.ts';
-import { parseToNumericSeed, formatToShowdownSeed } from './battleSeedManager.ts';
-import { TrainerTeamGenerator, RivalTeamGenerator } from './engine/rivalTeamGenerator.ts';
+
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
-import type { PokemonStatKey } from '@/types/pokemon/pokemon.ts';
 import type { CoreBattleStatKey } from '@/types/battle/battle.ts';
+import type { PokemonStatKey } from '@/types/pokemon/pokemon.ts';
+
+import { ACTIVE_SHOWDOWN_FORMAT } from '../../data/system/constants.ts';
+import { parseToNumericSeed, formatToShowdownSeed } from './battleSeedManager.ts';
 import {
   applyHealCheatToSide,
   applyStatusCheatToSide,
   syncRequestConditionsWithSimulator
 } from './cheats.ts';
-import { createShowdownBattle } from './helpers/showdownBattleFactory.ts';
-import { ShowdownTeamMapper } from './helpers/showdownTeamMapper.ts';
-import { ShowdownLogEnricher } from './helpers/showdownLogEnricher.ts';
-import { executeBattleTurn } from './helpers/showdownExecutor.ts';
-import { syncSidePokemon } from './helpers/showdownSyncHelper.ts';
-import { ACTIVE_SHOWDOWN_FORMAT } from '../../data/system/constants.ts';
+import { TrainerTeamGenerator, RivalTeamGenerator } from './engine/rivalTeamGenerator.ts';
+import { statsMap, patchShowdownSpreadModify } from './engine/showdownSpreadModifyHelper.ts';
 import { resetDeterministicMathRandom } from './helpers/seedInitializer.ts';
+import { createShowdownBattle } from './helpers/showdownBattleFactory.ts';
+import { executeBattleTurn } from './helpers/showdownExecutor.ts';
+import { ShowdownLogEnricher } from './helpers/showdownLogEnricher.ts';
+import { syncSidePokemon } from './helpers/showdownSyncHelper.ts';
+import { ShowdownTeamMapper } from './helpers/showdownTeamMapper.ts';
 
 interface ExtendedPokemon extends Pokemon {
   uid?: string;
@@ -39,13 +42,13 @@ const DEFAULT_GENERATED_TEAM_LEVEL = 50 as const;
 const DEFAULT_GENERATED_TEAM_SIZE = 3 as const;
 
 const debugLogs: string[] = []; // no-domain: Non-domain utility collection or data structure
-function logDebug(msg: string) {
+function logDebug(msg: string): void {
   debugLogs.push(msg);
   console.debug(msg);
 }
 
 function reportInitStage(stage: string): void {
-  self.postMessage({ type: 'WORKER_LOG', payload: { message: stage } });
+  globalThis.postMessage({ type: 'WORKER_LOG', payload: { message: stage } });
 }
 
 let isDeterministicSimulation = false; // singleton-ok: Singleton instance state container
@@ -97,7 +100,7 @@ function getSideTeamState(
   if (!side || !Array.isArray(side.pokemon)) return [];
   return side.pokemon.map((p: ExtendedPokemon | null) => {
     if (!p) return null;
-    const uid = (Reflect.get(p, 'uid') as string | undefined) || p.uid || '';
+    const uid = Reflect.get(p, 'uid') || p.uid || '';
     const status = p.status || '';
     const volatiles = p.volatiles ? Object.keys(p.volatiles) : [];
     return {
@@ -121,12 +124,12 @@ interface WorkerEventPayload {
   p1Skip?: boolean;
   p2Skip?: boolean;
   p1UsedBattleItem?: boolean;
-  p1Hps?: Record<string, number>; // open-record: Pokémon name/id to current HP
-  p2Hps?: Record<string, number>; // open-record: Pokémon name/id to current HP
-  p1Statuses?: Record<string, string>; // open-record: Pokémon name/id to status condition
-  p2Statuses?: Record<string, string>; // open-record: Pokémon name/id to status condition
-  p1MovesPP?: Record<string, Record<string, number>>; // open-record: Pokémon move PP counters
-  p2MovesPP?: Record<string, Record<string, number>>; // open-record: Pokémon move PP counters
+  p1Hps?: Record<DisplayText, number>; // open-record: Pokémon name/id to current HP
+  p2Hps?: Record<DisplayText, number>; // open-record: Pokémon name/id to current HP
+  p1Statuses?: Record<DisplayText, string>; // open-record: Pokémon name/id to status condition
+  p2Statuses?: Record<DisplayText, string>; // open-record: Pokémon name/id to status condition
+  p1MovesPP?: Record<DisplayText, Record<DisplayText, number>>; // open-record: Pokémon move PP counters
+  p2MovesPP?: Record<DisplayText, Record<DisplayText, number>>; // open-record: Pokémon move PP counters
   weather?: string;
   debugStatus?: { side: SideID; uid: string; status: string };
   side?: SideID;
@@ -157,7 +160,10 @@ interface WorkerEventData {
 }
 
 // open-record: Pokémon move PP tracking dictionary
-function syncSideMovesPP(side: Side, movesPPMap?: Record<string, Record<string, number>>): void {
+function syncSideMovesPP(
+  side: Side,
+  movesPPMap?: Record<DisplayText, Record<DisplayText, number>>
+): void {
   if (!movesPPMap || typeof movesPPMap !== 'object' || !Array.isArray(side.pokemon)) return;
   side.pokemon.forEach((pokemon) => {
     if (!pokemon) return;
@@ -295,11 +301,11 @@ function handleInitBattle(payload: WorkerEventPayload): void {
     currentBattle.field.setWeather(payload.weather, 'debug' as const);
   }
 
-  syncRequestConditionsWithSimulator(currentBattle.p1 as ExtendedSide);
-  syncRequestConditionsWithSimulator(currentBattle.p2 as ExtendedSide);
+  syncRequestConditionsWithSimulator(currentBattle.p1);
+  syncRequestConditionsWithSimulator(currentBattle.p2);
 
   const initLogs = getNewLogs();
-  self.postMessage({
+  globalThis.postMessage({
     type: 'INIT_BATTLE_SUCCESS',
     payload: {
       logs: initLogs,
@@ -328,7 +334,7 @@ function handleApplyCheats(payload: WorkerEventPayload): void {
       syncRequestConditionsWithSimulator(side);
     });
   }
-  self.postMessage({
+  globalThis.postMessage({
     type: 'APPLY_CHEATS_DONE',
     payload: {
       p1Request: injectUidsIntoRequest('p1', battle.p1.activeRequest),
@@ -346,7 +352,7 @@ function handleApplyDebugStatus(payload: WorkerEventPayload): void {
   const side = debugStatus.side === 'p1' ? currentBattle.p1 : currentBattle.p2;
   applyStatusCheatToSide(side, debugStatus.uid, debugStatus.status);
   syncRequestConditionsWithSimulator(side);
-  self.postMessage({
+  globalThis.postMessage({
     type: 'APPLY_DEBUG_STATUS_DONE',
     payload: {
       p1Request: injectUidsIntoRequest('p1', currentBattle.p1.activeRequest),
@@ -411,7 +417,7 @@ function handleExecuteTurn(payload: WorkerEventPayload): void {
   const p1ForceSwitch = !!battle.p1.activeRequest?.forceSwitch?.[0];
   const p2ForceSwitch = !!battle.p2.activeRequest?.forceSwitch?.[0];
 
-  self.postMessage({
+  globalThis.postMessage({
     type: 'TURN_SUCCESS',
     payload: {
       logs: turnLogs,
@@ -438,7 +444,7 @@ function handleCheckTrapped(): void {
   const trapped = Boolean(
     activeReq?.active?.[0]?.trapped || activeReq?.active?.[0]?.maybeTrapped || activeMon?.trapped
   );
-  self.postMessage({
+  globalThis.postMessage({
     type: 'CHECK_TRAPPED_RESPONSE',
     payload: { trapped }
   });
@@ -463,7 +469,7 @@ function handleGetSimulatorState(): void {
         fainted: p.fainted
       }))
     : [];
-  self.postMessage({
+  globalThis.postMessage({
     type: 'GET_SIMULATOR_STATE_RESPONSE',
     payload: { p1: p1State, p2: p2State }
   });
@@ -505,7 +511,7 @@ function handleGenerateTrainerTeam(payload: WorkerEventPayload): void {
     allowedSpecies: speciesSet,
     aceSpeciesId: aceSpeciesId ? requirePokemonSpeciesId(aceSpeciesId) : undefined
   });
-  self.postMessage({
+  globalThis.postMessage({
     type: 'GENERATE_TRAINER_TEAM_RESPONSE',
     payload: { requestId, team }
   });
@@ -526,14 +532,14 @@ function handleGenerateRivalTeam(payload: WorkerEventPayload): void {
     aceSpeciesId: requirePokemonSpeciesId(aceSpeciesId || 'dragonite'),
     allowedSpecies: speciesSet
   });
-  self.postMessage({
+  globalThis.postMessage({
     type: 'GENERATE_RIVAL_TEAM_RESPONSE',
     payload: { requestId, team }
   });
 }
 
 // open-record: Showdown worker event handlers dispatch table
-const WORKER_HANDLERS: Record<string, (payload: WorkerEventPayload) => void> = {
+const WORKER_HANDLERS: Record<DisplayText, (payload: WorkerEventPayload) => void> = {
   INIT_BATTLE: handleInitBattle,
   APPLY_CHEATS: handleApplyCheats,
   APPLY_DEBUG_STATUS: handleApplyDebugStatus,
@@ -546,7 +552,7 @@ const WORKER_HANDLERS: Record<string, (payload: WorkerEventPayload) => void> = {
   GENERATE_RIVAL_TEAM: handleGenerateRivalTeam
 };
 
-self.onmessage = (event: MessageEvent<WorkerEventData>) => {
+globalThis.onmessage = (event: MessageEvent<WorkerEventData>) => {
   const { type, payload } = event.data;
 
   try {
@@ -560,7 +566,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
     const errorMsg = (error as Error).message;
     const errorStack = (error as Error).stack || '';
     console.error('[Showdown Worker] CRITICAL ERROR IN WORKER:', error);
-    self.postMessage({
+    globalThis.postMessage({
       type: 'ERROR',
       payload: {
         message: `${errorMsg}\nStack: ${errorStack}\nPayload: ${JSON.stringify(payload || {})}`

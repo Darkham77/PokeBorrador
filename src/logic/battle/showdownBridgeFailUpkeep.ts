@@ -1,7 +1,8 @@
-import type { SBCtx } from './showdownBridgeCtx.ts';
-import { isForcedSwitchMove } from './helpers/forcedSwitchRegistry.ts';
 import { isPokemonMoveId } from '@/data/battle/moves';
 import type { VolatileStatusKey } from '@/types/pokemon/pokemon';
+
+import { isForcedSwitchMove } from './helpers/forcedSwitchRegistry.ts';
+import type { SBCtx } from './showdownBridgeCtx.ts';
 
 export function handleFailEvent(ctx: SBCtx): boolean {
   const { store, parts, line, p, getPoke } = ctx;

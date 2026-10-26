@@ -1,5 +1,7 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
+
 import { validateGtsListing, validateTradeOffer } from '../../../src/logic/validation/schemas.ts';
 
 describe('GTS & Trade Schemas Strict Validation', () => {

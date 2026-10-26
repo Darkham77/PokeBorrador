@@ -1,6 +1,8 @@
+import type { DisplayText } from '@francogp/auditor';
 import type { Battle, SideID } from '@pkmn/sim';
-import { findPokemonByShowdownName } from '../showdownUidMapper.ts';
+
 import { statsMap } from '../engine/showdownSpreadModifyHelper.ts';
+import { findPokemonByShowdownName } from '../showdownUidMapper.ts';
 
 export interface ShowdownRequestPokemon {
   ident?: string;
@@ -12,7 +14,7 @@ export interface ShowdownRequestPokemon {
   commanding?: boolean;
   canTerastallize?: boolean;
   // open-record: External Pokémon Showdown protocol stat payload dictionary
-  stats?: Record<string, number>;
+  stats?: Record<DisplayText, number>;
   moves?: unknown[];
   baseAbility?: string;
   item?: string;
@@ -29,7 +31,7 @@ export interface CustomPokemonSet {
   name: string;
   species: string;
   // open-record: Pokémon Showdown set stat record dictionary
-  stats?: Record<string, number>;
+  stats?: Record<DisplayText, number>;
   uid?: string;
 }
 
@@ -37,10 +39,10 @@ export class ShowdownTeamMapper {
   /**
    * Populates statsMap from sets to ensure Showdown patches can access pre-calculated stats.
    */
-  static populateStatsMap(
+  public static populateStatsMap(
     team:
       // open-record: Pokémon Showdown custom team set stats dictionary
-      | Array<{ name?: string; species: string; stats?: Record<string, number> | null } | null>
+      | Array<{ name?: string; species: string; stats?: Record<DisplayText, number> | null } | null>
       | null
       | undefined
   ): void {
@@ -58,7 +60,7 @@ export class ShowdownTeamMapper {
    * Synchronizes simulator side's Pokemon UIDs into active request side's Pokemon array.
    * This is required because Showdown does not natively persist custom client-side UIDs.
    */
-  static injectUidsIntoRequest(
+  public static injectUidsIntoRequest(
     battle: Battle | null,
     player: SideID,
     req: ShowdownRequest | null | undefined

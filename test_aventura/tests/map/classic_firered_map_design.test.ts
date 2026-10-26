@@ -10,15 +10,17 @@
  * 6. Gatehouse and front-yard residential micro-urbanism.
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import { describe, it, expect, beforeAll } from 'vitest';
+
+import { ProceduralMapGenerator } from '../../logic/map/proceduralMapGenerator.ts';
 import {
   TilesRegistryService,
   loadTilesRegistry,
   type TilesRegistryJson
 } from '../../logic/map/tilesRegistry.ts';
-import { ProceduralMapGenerator } from '../../logic/map/proceduralMapGenerator.ts';
 
 describe('Classic FireRed Map Design Principles (GBA Aesthetic & Topology)', () => {
   let registryService: TilesRegistryService;

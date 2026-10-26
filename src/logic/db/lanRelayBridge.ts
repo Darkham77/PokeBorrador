@@ -4,6 +4,7 @@
  * to forward realtime channel broadcasts across devices on the same local network.
  */
 import * as v from 'valibot';
+
 import { logger } from '../utils/logger.ts';
 
 export const LAN_RELAY_ACTIONS = ['subscribe', 'unsubscribe', 'broadcast'] as const;
@@ -26,20 +27,20 @@ class LanRelayBridge {
   private readonly channelListeners = new Map<string, Set<ChannelListener>>();
   private isConnecting = false;
 
-  constructor() {
+  public constructor() {
     this.clientId =
       typeof crypto !== 'undefined' && crypto.randomUUID
         ? crypto.randomUUID()
         : `client_${Math.random().toString(36).substring(2)}`;
   }
 
-  get isSupported(): boolean {
+  public get isSupported(): boolean {
     return (
       Boolean(import.meta.env.DEV) &&
       import.meta.env.MODE !== 'test' &&
-      typeof window !== 'undefined' &&
-      typeof window.WebSocket !== 'undefined' &&
-      !(window as { __VITEST__?: boolean }).__VITEST__ &&
+      typeof globalThis.window !== 'undefined' &&
+      typeof globalThis.WebSocket !== 'undefined' &&
+      !(globalThis as { __VITEST__?: boolean }).__VITEST__ &&
       !(typeof process !== 'undefined' && (process.env.VITEST || process.env.NODE_ENV === 'test'))
     );
   }
@@ -49,8 +50,8 @@ class LanRelayBridge {
 
     this.isConnecting = true;
     try {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const url = `${protocol}//${window.location.host}/api/dev-lan-relay`;
+      const protocol = globalThis.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const url = `${protocol}//${globalThis.location.host}/api/dev-lan-relay`;
       const socket = new WebSocket(url);
 
       socket.onopen = () => {
@@ -95,7 +96,7 @@ class LanRelayBridge {
     }
   }
 
-  subscribe(channel: string, listener: ChannelListener): () => void {
+  public subscribe(channel: string, listener: ChannelListener): () => void {
     if (!this.isSupported) return () => {};
 
     let set = this.channelListeners.get(channel);
@@ -119,7 +120,7 @@ class LanRelayBridge {
     };
   }
 
-  broadcast(channel: string, data: unknown): void {
+  public broadcast(channel: string, data: unknown): void {
     if (!this.isSupported) return;
 
     this.ensureConnected();

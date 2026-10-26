@@ -1,17 +1,19 @@
-import { GAME_RATIOS } from '@/data/system/constants';
 import { getActivePinia } from 'pinia';
+
+import type { AbilityId } from '@/data/battle/abilities';
+import type { NatureId } from '@/data/battle/natures';
+import type { ItemId } from '@/data/inventory/items';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { GAME_RATIOS } from '@/data/system/constants';
+import type { MapRouteId } from '@/data/world/map-assets';
 import {
   getSpeciesBoosts,
   getGlobalMultipliers,
   type Event as GameEvent
 } from '@/logic/events/eventEngine.ts';
 import type { ObtainedMethod, PokemonIVs, PokemonGender } from '@/types/pokemon/pokemon';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+
 import { generateIvPure } from './generationMath.ts';
-import type { ItemId } from '@/data/inventory/items';
-import type { MapRouteId } from '@/data/world/map-assets';
-import type { NatureId } from '@/data/battle/natures';
-import type { AbilityId } from '@/data/battle/abilities';
 
 export interface PokemonCreationOptions {
   isShiny?: boolean;
@@ -50,7 +52,7 @@ export function computeCreationIVs(
     options.mapId &&
     (piniaActive?.state?.value?.war as { activeFactions?: unknown } | undefined)?.activeFactions
   );
-  const rand = () => generateIvPure(Math.random, ivFloor, false, isGuardian);
+  const rand = (): number => generateIvPure(Math.random, ivFloor, false, isGuardian);
 
   return {
     hp: rand(),
@@ -69,12 +71,7 @@ export function computeCreationShiny(
 ): boolean {
   if (options.isShiny !== undefined) return options.isShiny;
 
-  const debugObj =
-    typeof window !== 'undefined'
-      ? (window.__VITE_DEBUG__ as
-          | { forceShiny100?: boolean; shinyRateOverride?: number | null }
-          | undefined)
-      : undefined;
+  const debugObj = typeof globalThis.window !== 'undefined' ? globalThis.__VITE_DEBUG__ : undefined;
   if (debugObj?.forceShiny100 || debugObj?.shinyRateOverride === 1) {
     return true;
   }

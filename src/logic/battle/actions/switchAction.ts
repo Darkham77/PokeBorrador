@@ -1,14 +1,15 @@
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import { isRevivingForceSwitchRequest } from '../helpers/requestHelper.ts';
+
 import { getActiveCombatTeam } from '../battleTeamCoordinator.ts';
+import { isRevivingForceSwitchRequest } from '../helpers/requestHelper.ts';
 import { checkLockedVolatiles, resetPlayerStages } from './switchActionHelpers.ts';
 
 export async function executeSwitch(
   ctx: BattleContext,
   targetIdentifier: number | string,
   isForced = false
-) {
+): Promise<void> {
   const active = ctx.activeBattle.value;
   if (!active) return;
   if (active.isExecutingSwitch) {
@@ -167,7 +168,7 @@ async function runSwitchSequence(
   ctx: BattleContext,
   targetIdentifier: number | string,
   isForced = false
-) {
+): Promise<void> {
   const { activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES, persistBattle } = ctx;
 
   const oldPoke = activeBattle.value?.player;
@@ -205,11 +206,7 @@ async function runSwitchSequence(
     return;
   }
 
-  if (
-    oldPoke &&
-    !reallyForced &&
-    checkLockedVolatiles(oldPoke as { volatileCounters?: Record<string, number> }) // open-record: Dynamic Showdown volatile status counter dictionary
-  ) {
+  if (oldPoke && !reallyForced && checkLockedVolatiles(oldPoke)) {
     // domain-ok: Open dynamic text or non-domain string payload
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
     return;

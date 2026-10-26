@@ -1,9 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useRouteSpawnsWild } from '@/composables/modals/useRouteSpawnsWild';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
 import { useRouteSpawnsFishing } from '@/composables/modals/useRouteSpawnsFishing';
-import { useEventStore } from '@/stores/events';
-import { useGameStore } from '@/stores/game';
+import { useRouteSpawnsWild } from '@/composables/modals/useRouteSpawnsWild';
 import { FIRE_RED_MAPS, getMapLocationById } from '@/data/world/maps';
 import {
   isEventActiveNow,
@@ -19,6 +18,8 @@ import {
   type Event as GameEvent
 } from '@/logic/events/eventEngine';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { useEventStore } from '@/stores/events';
+import { useGameStore } from '@/stores/game';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const ALL_SYSTEM_EVENTS: GameEvent[] = [

@@ -1,17 +1,18 @@
+import { mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test';
-import { mount } from '@vue/test-utils';
 import { defineComponent, ref } from 'vue';
-import { createPinia, setActivePinia } from 'pinia';
-import { useModalStore } from '@/stores/modals';
-import { useUIStore } from '@/stores/ui';
-import { useGameStore } from '@/stores/game';
-import { useBackNavigation } from '@/composables/system/useBackNavigation';
+
 import ModalHost from '@/components/common/ModalHost.vue';
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
-import HUD_Navigation from '@/components/ui/HUD_Navigation.vue';
-import TrainerPanel from '@/components/profile/TrainerPanel.vue';
 import InventoryPills from '@/components/inventory/InventoryPills.vue';
+import TrainerPanel from '@/components/profile/TrainerPanel.vue';
+import HUD_Navigation from '@/components/ui/HUD_Navigation.vue';
+import { useBackNavigation } from '@/composables/system/useBackNavigation';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
 
 // Mock router for HUD
 vi.mock('vue-router', () => ({

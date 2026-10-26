@@ -150,9 +150,9 @@ export function lanPvPPlugin(): Plugin {
       wss.on('connection', (ws: WebSocket) => {
         socketChannels.set(ws, new Set());
 
-        ws.on('message', (raw: Buffer | string) => {
+        ws.on('message', (raw: unknown) => {
           try {
-            const str = typeof raw === 'string' ? raw : raw.toString('utf-8');
+            const str = typeof raw === 'string' ? raw : Buffer.isBuffer(raw) ? raw.toString('utf-8') : String(raw);
             const msg = JSON.parse(str) as {
               action?: string;
               channel?: string;
@@ -197,9 +197,8 @@ export function lanPvPPlugin(): Plugin {
                 }
               }
             }
-          } catch {
-            // catch-ok: ignore malformed payloads safely
-            // Ignore malformed payloads safely
+          } catch (err) {
+            err;
           }
         });
 

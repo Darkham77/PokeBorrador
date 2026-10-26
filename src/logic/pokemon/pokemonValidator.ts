@@ -1,12 +1,13 @@
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { requireAbilityId, type AbilityId } from '@/data/battle/abilities';
 import { isNatureId, toNatureId } from '@/data/battle/natures';
+import { getItemById } from '@/data/inventory/items';
+import { isFossilPokemonSpeciesId, isLegendaryPokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { DEFAULT_MAX_PP_FALLBACK } from '@/logic/constants/gameplay';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import { isFossilPokemonSpeciesId, isLegendaryPokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { getItemById } from '@/data/inventory/items';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { toID } from '@/logic/utils/strings.ts';
-import { requireAbilityId, type AbilityId } from '@/data/battle/abilities';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+
 import { ensurePokemonGender, isGenderlessSpeciesId } from './pokemonGender.ts';
 import { canLearnMove } from './pokemonLearnset.ts';
 
@@ -210,8 +211,8 @@ export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
   if (!p.volatileCounters) p.volatileCounters = {};
 
   const isDebugEnv =
-    typeof window !== 'undefined' &&
-    Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
+    typeof globalThis.window !== 'undefined' &&
+    Boolean(globalThis.__VITE_DEBUG__ || globalThis.location?.search?.includes('debug'));
   const bypass = bypassWhitelist || Boolean(p.isIllegal) || isDebugEnv;
 
   validateSpeciesBaseData(p);

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { generateContinent } from '../../logic/map/continent/continentalEngine.ts';
 import { CELL_BIOME } from '../../types/map/kantoGridModel.ts';
 

@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useStorage } from '@vueuse/core';
-import { useAuthStore } from '@/stores/auth';
-import { useAudioStore } from '@/stores/audio';
-import { useLoadingStore } from '@/stores/loading';
-import { logger } from '@/logic/utils/logger';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
+
 import { usePWA } from '@/composables/system/usePWA';
 import { gameBus } from '@/logic/events/gameBus';
+import { logger } from '@/logic/utils/logger';
+import { useAudioStore } from '@/stores/audio';
+import { useAuthStore } from '@/stores/auth';
+import { useLoadingStore } from '@/stores/loading';
+
 import BaseModal from './BaseModal.vue';
 
 const authStore = useAuthStore();
@@ -18,8 +20,8 @@ const showPermissionsModal = ref(false);
 const hasAcceptedPermissions = useStorage('pwa_permissions_accepted', false);
 
 // Permission Management
-const checkPermissions = () => {
-  const notificationNeeded = 'Notification' in window && Notification.permission === 'default';
+const checkPermissions = (): void => {
+  const notificationNeeded = 'Notification' in globalThis && Notification.permission === 'default';
 
   // If previously accepted and notifications are unchanged, attempt enabling audio without modal
   if (hasAcceptedPermissions.value && !notificationNeeded) {
@@ -42,7 +44,7 @@ watch(
   { immediate: true }
 );
 
-const handlePermissions = async () => {
+const handlePermissions = async (): Promise<void> => {
   // Guardar que el usuario ya aceptó
   hasAcceptedPermissions.value = true;
 
@@ -51,14 +53,14 @@ const handlePermissions = async () => {
   await audioStore.resume();
 
   // 2. Pedir Notificaciones
-  if ('Notification' in window && Notification.permission === 'default') {
+  if ('Notification' in globalThis && Notification.permission === 'default') {
     await Notification.requestPermission();
   }
 
   showPermissionsModal.value = false;
 };
 
-const handleForceUpdate = () => {
+const handleForceUpdate = (): void => {
   logger.info(
     'PWA',
     'Received FORCE_PWA_UPDATE from GameBus. Delegating to atomic handleUpdate...'

@@ -1,11 +1,13 @@
+import type { DisplayText } from '@francogp/auditor';
+
 import type { GenderId } from '@/types/system/game';
 
 export const USER_ROLES = ['user', 'admin'] as const;
 export type UserRole = (typeof USER_ROLES)[number];
-const USER_ROLES_SET: ReadonlySet<string> = new Set(USER_ROLES); // runtime-set: Fast O(1) membership lookup set
+const USER_ROLES_SET: ReadonlySet<UserRole> = new Set<UserRole>(USER_ROLES);
 
 function isUserRole(value: string): value is UserRole {
-  return USER_ROLES_SET.has(value);
+  return USER_ROLES_SET.has(value as UserRole);
 }
 
 export function requireUserRole(value: string): UserRole {
@@ -14,16 +16,16 @@ export function requireUserRole(value: string): UserRole {
 }
 
 export interface AuthUser {
-  id: string; // domain-ok: Open dynamic text or non-domain string payload
-  email?: string; // domain-ok: Open dynamic text or non-domain string payload
+  id: DisplayText;
+  email?: DisplayText;
   user_metadata?: {
-    username?: string; // domain-ok: Open dynamic text or non-domain string payload
-    full_name?: string; // domain-ok: Open dynamic text or non-domain string payload
+    username?: DisplayText;
+    full_name?: DisplayText;
     role?: UserRole;
     gender?: GenderId;
-    [key: string]: unknown; // open-record: Generic key-value data dictionary container
+    [key: DisplayText]: unknown;
   };
-  last_save_id?: string; // domain-ok: Open dynamic text or non-domain string payload
+  last_save_id?: DisplayText;
   db_version?: number;
   role?: UserRole;
 }

@@ -1,13 +1,16 @@
+import type { DisplayText } from '@francogp/auditor';
 import type { SideID } from '@pkmn/sim';
-import { ChoiceRequest, requiresAction } from './requestHelper.ts';
+
+import type { PokemonMoveId } from '@/data/battle/moves.ts';
+
 import {
   isCertifiedBattleGameAction,
   type CertifiedBattleGameAction
 } from '../../../types/battle/certifiedBattleActions.ts';
-import { REPLAY_SEATS, isReplaySeat } from './showdownSeats.ts';
-import type { PokemonMoveId } from '@/data/battle/moves.ts';
+import { type ChoiceRequest, requiresAction } from './requestHelper.ts';
+import { SHOWDOWN_SEAT_KEYS, isReplaySeat } from './showdownSeats.ts';
 
-export { REPLAY_SEATS };
+export { SHOWDOWN_SEAT_KEYS };
 
 export interface CertifiedReplayHistoryEntry {
   p1Choice: string;
@@ -27,8 +30,8 @@ export interface CertifiedReplayHistoryEntry {
   p2Trapped?: boolean;
   p1Volatiles?: string[]; // no-domain: Non-domain utility collection or data structure
   p2Volatiles?: string[]; // no-domain: Non-domain utility collection or data structure
-  p1StatStages?: Record<string, number>; // open-record: Generic key-value data dictionary container
-  p2StatStages?: Record<string, number>; // open-record: Generic key-value data dictionary container
+  p1StatStages?: Record<DisplayText, number>; // open-record: Generic key-value data dictionary container
+  p2StatStages?: Record<DisplayText, number>; // open-record: Generic key-value data dictionary container
   p1Status?: string; // string-ok: Internal string formatting or DOM token identifier
   p2Status?: string; // string-ok: Internal string formatting or DOM token identifier
   p1Hp?: number;
@@ -67,10 +70,10 @@ export interface UiFsmReadiness {
  * and browser E2E test runs. Standardizes choice retrieval and index advancement.
  */
 export class ShowdownBattleRunner {
-  choicesBySeat: Map<string, string[]> = new Map();
-  indicesBySeat: Map<string, number> = new Map();
+  public choicesBySeat: Map<string, string[]> = new Map();
+  public indicesBySeat: Map<string, number> = new Map();
 
-  constructor(playerChoices: string[], enemyChoices: string[]) {
+  public constructor(playerChoices: string[], enemyChoices: string[]) {
     this.choicesBySeat.set('p1', playerChoices || []);
     this.choicesBySeat.set('p2', enemyChoices || []);
     this.indicesBySeat.set('p1', 0);
@@ -81,7 +84,7 @@ export class ShowdownBattleRunner {
    * The certified history is the atomic replay source: one entry represents
    * one Showdown submission, including P2-only forced replacements.
    */
-  static requireHistoryChoice(debug: object, seat: SideID): string {
+  public static requireHistoryChoice(debug: object, seat: SideID): string {
     if (seat !== 'p1' && seat !== 'p2') {
       throw new Error(
         `[ShowdownBattleRunner] Seat is not available in the current singles simulator request. context=${JSON.stringify({ seat })}`
@@ -108,7 +111,7 @@ export class ShowdownBattleRunner {
    * A terminal response must consume the whole certified history and cannot
    * manufacture a replacement action after the battle is already over.
    */
-  static requirePendingHistoryEntry(debug: object): CertifiedReplayHistoryEntry | null {
+  public static requirePendingHistoryEntry(debug: object): CertifiedReplayHistoryEntry | null {
     const history = Reflect.get(debug, 'history') as CertifiedReplayHistoryEntry[];
     const historyIndex = Reflect.get(debug, 'replayHistoryIdx') as number | undefined;
     if (!Array.isArray(history) || typeof historyIndex !== 'number') {
@@ -130,7 +133,7 @@ export class ShowdownBattleRunner {
     return this.requireHistoryEntry(history, historyIndex);
   }
 
-  static requireHistoryEntry(
+  public static requireHistoryEntry(
     history: unknown[],
     historyIndex: number
   ): CertifiedReplayHistoryEntry {
@@ -160,13 +163,11 @@ export class ShowdownBattleRunner {
       p1Choice,
       p2Choice,
       battleTurn,
-      ...(p1GameAction !== undefined
-        ? { p1GameAction: p1GameAction as CertifiedBattleGameAction }
-        : {})
+      ...(p1GameAction !== undefined ? { p1GameAction: p1GameAction } : {})
     };
   }
 
-  static advanceHistoryAfterAcceptedTurn(debug: object): void {
+  public static advanceHistoryAfterAcceptedTurn(debug: object): void {
     const historyIndex = Reflect.get(debug, 'replayHistoryIdx') as number | undefined;
     if (typeof historyIndex !== 'number') {
       throw new Error(
@@ -206,23 +207,23 @@ export class ShowdownBattleRunner {
     );
   }
 
-  get p1ChoiceIdx(): number {
+  public get p1ChoiceIdx(): number {
     return this.indicesBySeat.get('p1') || 0;
   }
 
-  set p1ChoiceIdx(val: number) {
+  public set p1ChoiceIdx(val: number) {
     this.indicesBySeat.set('p1', val);
   }
 
-  get p2ChoiceIdx(): number {
+  public get p2ChoiceIdx(): number {
     return this.indicesBySeat.get('p2') || 0;
   }
 
-  set p2ChoiceIdx(val: number) {
+  public set p2ChoiceIdx(val: number) {
     this.indicesBySeat.set('p2', val);
   }
 
-  setSeatChoices(seatId: string, choices: string[]): void {
+  public setSeatChoices(seatId: string, choices: string[]): void {
     this.choicesBySeat.set(seatId, choices || []);
     if (!this.indicesBySeat.has(seatId)) {
       this.indicesBySeat.set(seatId, 0);
@@ -234,7 +235,7 @@ export class ShowdownBattleRunner {
    * stream. Only the code path that submits the choice to Showdown may consume
    * it; previews must never alter replay state.
    */
-  peekNextChoice(player: SideID, activeRequest: unknown): string {
+  public peekNextChoice(player: SideID, activeRequest: unknown): string {
     if (!requiresAction(activeRequest)) return 'pass';
     if (!isReplaySeat(player)) {
       throw new Error(
@@ -319,7 +320,7 @@ export class ShowdownBattleRunner {
    * Resolves the next choice for the given side from the certified case choices
    * based on the active simulator request. If action is consumed, advances the choice index.
    */
-  resolveAndConsumeNextChoice(
+  public resolveAndConsumeNextChoice(
     player: SideID,
     activeRequest: ChoiceRequest | null | undefined,
     readiness?: UiFsmReadiness

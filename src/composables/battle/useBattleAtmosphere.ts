@@ -1,12 +1,15 @@
-import { computed, type Ref } from 'vue';
-import { useMapStore } from '@/stores/map';
+import type { DisplayText } from '@francogp/auditor';
+import { computed, type ComputedRef, type Ref } from 'vue';
+
 import { useWeatherVisuals } from '@/composables/effects/useWeatherVisuals';
-import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
-import { requireDayPhase, type DayPhase } from '@/logic/utils/timeUtils';
-import { getMapEnvironment } from '@/logic/environment/map/mapEnvironmentRegistry';
-import type { BaseMapEnvironment } from '@/logic/environment/map/baseMapEnvironment';
-import type { BattleState } from '@/types/battle/battle';
 import { requireWeatherSeasonId } from '@/data/world/weather-tables';
+import type { BaseMapEnvironment } from '@/logic/environment/map/baseMapEnvironment';
+import { getMapEnvironment } from '@/logic/environment/map/mapEnvironmentRegistry';
+import { requireDayPhase, type DayPhase } from '@/logic/utils/timeUtils';
+import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
+import { useMapStore } from '@/stores/map';
+import type { BattleState } from '@/types/battle/battle';
+
 import {
   resolveActiveFieldCondition,
   resolveActiveSideCondition,
@@ -14,7 +17,21 @@ import {
   resolveAmbientWeather
 } from './battleAtmosphereHelpers.ts';
 
-export function useBattleAtmosphere(battle: Ref<BattleState | null | undefined>) {
+export interface UseBattleAtmosphereReturn {
+  effectiveBattleVisual: ComputedRef<string>;
+  computedWeather: ComputedRef<WeatherId>;
+  effectiveCycle: ComputedRef<DayPhase>;
+  isAtmosphereLayerVisible: ComputedRef<boolean>;
+  arenaAtmosphereStyles: ComputedRef<Record<DisplayText, string>>; // open-record: Dynamic CSS atmosphere styling properties
+  isNaturalWeatherAllowed: ComputedRef<boolean>;
+  isGymOrPvP: ComputedRef<boolean>;
+  supportedCycles: ComputedRef<readonly DayPhase[]>;
+  mapSupportsCycles: ComputedRef<boolean>;
+}
+
+export function useBattleAtmosphere(
+  battle: Ref<BattleState | null | undefined>
+): UseBattleAtmosphereReturn {
   const mapStore = useMapStore();
 
   const environment = computed<BaseMapEnvironment | null>(() => {

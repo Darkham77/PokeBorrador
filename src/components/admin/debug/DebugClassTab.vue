@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useGameStore } from '@/stores/game';
+
 import { useDebugStore } from '@/stores/debug';
+import { useGameStore } from '@/stores/game';
 
 interface ViteDebugBridge extends Record<string, unknown> {
   // open-record: Generic key-value data dictionary container
@@ -20,17 +21,17 @@ const debugReputation = ref(game.state.classData?.reputation || 0);
 
 const isFastRanked = computed(() => debugStore.fastRankedDelay);
 
-const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge;
+const getDebugBridge = (): ViteDebugBridge => globalThis.__VITE_DEBUG__ as ViteDebugBridge;
 
-const setClassLevel = () => getDebugBridge().setClassLevel(debugClassLevel.value);
-const setReputation = () => getDebugBridge().setReputation(debugReputation.value);
-function setPlayerClass(c: string) {
+const setClassLevel = (): void => getDebugBridge().setClassLevel(debugClassLevel.value);
+const setReputation = (): void => getDebugBridge().setReputation(debugReputation.value);
+function setPlayerClass(c: string): void {
   getDebugBridge().setPlayerClass(c);
 }
-function clearClassCooldowns() {
+function clearClassCooldowns(): void {
   getDebugBridge().clearClassCooldowns();
 }
-function toggleFastRanked() {
+function toggleFastRanked(): void {
   debugStore.fastRankedDelay = !debugStore.fastRankedDelay;
 }
 </script>

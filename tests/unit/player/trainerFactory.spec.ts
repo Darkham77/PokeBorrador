@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
+
 import { buildTrainerTeam } from '@/logic/battle/trainerFactory';
 
 vi.mock('@/logic/evolution/evolutionLogic', () => ({

@@ -5,17 +5,19 @@
  * matching the exact SQLite profiles table schema.
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
-import { DatabaseSync } from 'node:sqlite';
-import path from 'node:path';
 import fs from 'node:fs';
 import os from 'node:os';
+import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
+
+import { describe, it } from 'vite-plus/test';
+
 import { syncUserProfileData } from '../../../src/logic/auth/profileSyncHelper.ts';
 import type { DBRouter } from '../../../src/logic/db/dbRouter.ts';
-import type { AuthUser } from '../../../src/types/auth/auth.ts';
-import type { SaveDataDto } from '../../../src/logic/validation/schemas.ts';
 import { splitSQLStatements } from '../../../src/logic/db/sqlTranslator.ts';
+import type { SaveDataDto } from '../../../src/logic/validation/schemas.ts';
+import type { AuthUser } from '../../../src/types/auth/auth.ts';
 
 const DB_PATH = path.resolve(process.cwd(), 'tests/fixtures/poke_local_ash.db');
 

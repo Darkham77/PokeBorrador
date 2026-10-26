@@ -13,16 +13,6 @@
  *   7. Applies bounded organic jitter (±2-4 tiles) while preserving 100% corridor orthogonality.
  */
 
-import type {
-  PokemonTopologyGraph,
-  TopologyGraphEdge,
-  EmbeddedTopologyNode,
-  EmbeddedCorridor,
-  EmbeddedCorridorWaypoint,
-  EmbeddedTopologyGraph
-} from '../../types/map/pokemonGraphTypes.ts';
-
-import { createMulberry32 } from './noise/simplexNoise.ts';
 import {
   LARGE_MAP_THRESHOLD_TILES,
   LARGE_MAP_MARGIN_RATIO,
@@ -51,6 +41,15 @@ import {
   CORRIDOR_SPLIT_SECONDARY_RATIO,
   CORNER_NODE_COLLISION_PENALTY
 } from '../../config/graphEmbeddingConfig.ts';
+import type {
+  PokemonTopologyGraph,
+  TopologyGraphEdge,
+  EmbeddedTopologyNode,
+  EmbeddedCorridor,
+  EmbeddedCorridorWaypoint,
+  EmbeddedTopologyGraph
+} from '../../types/map/pokemonGraphTypes.ts';
+import { createMulberry32 } from './noise/simplexNoise.ts';
 
 // ---------------------------------------------------------------------------
 // Configuration Constants
@@ -147,6 +146,28 @@ function cellKey(col: number, row: number): string {
   return `${col},${row}`;
 }
 
+function findNearestFreeCellOnGrid(
+  currentCell: CellCoord,
+  rows: number,
+  cols: number,
+  occupied: ReadonlySet<string>
+): CellCoord {
+  let bestDist = Infinity;
+  let candidate: CellCoord = { col: 0, row: 0 };
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (occupied.has(cellKey(c, r))) continue;
+      const dist = Math.abs(c - currentCell.col) + Math.abs(r - currentCell.row);
+      if (dist < bestDist) {
+        bestDist = dist;
+        candidate = { col: c, row: r };
+      }
+    }
+  }
+  return candidate;
+}
+
 function assignNodesToBands(
   graph: PokemonTopologyGraph,
   bandGrid: BandGridConfig,
@@ -200,20 +221,7 @@ function assignNodesToBands(
       nextCell = neighbors[Math.floor(prng() * neighbors.length)]!;
     } else {
       // Fallback: search nearest free cell on the grid
-      let bestDist = Infinity;
-      let candidate: CellCoord = { col: 0, row: 0 };
-
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          if (occupied.has(cellKey(c, r))) continue;
-          const dist = Math.abs(c - currentCell.col) + Math.abs(r - currentCell.row);
-          if (dist < bestDist) {
-            bestDist = dist;
-            candidate = { col: c, row: r };
-          }
-        }
-      }
-      nextCell = candidate;
+      nextCell = findNearestFreeCellOnGrid(currentCell, rows, cols, occupied);
     }
 
     assignments.set(nodeId, nextCell);
@@ -326,7 +334,7 @@ function embedNodes(
 function hashId(id: string): number {
   let h = 0;
   for (let i = 0; i < id.length; i++) {
-    h = (h * HASH_PRIME_FACTOR + id.charCodeAt(i)) | 0;
+    h = Math.trunc(h * HASH_PRIME_FACTOR + id.charCodeAt(i));
   }
   return Math.abs(h);
 }

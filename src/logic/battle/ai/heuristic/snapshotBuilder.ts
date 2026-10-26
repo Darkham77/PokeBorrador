@@ -4,19 +4,21 @@
 // Zero-Fallback: throws if critical state is unavailable
 // ============================================================
 
-import { toID } from '@/logic/utils/strings.ts';
 import type { SideID } from '@pkmn/sim';
-import type { BattleContext } from '@/types/battle/battleContext';
+
+import { requireAbilityId } from '@/data/battle/abilities';
+import { requirePokemonMoveId } from '@/data/battle/moves';
+import { requireItemId } from '@/data/inventory/items';
+import { toID } from '@/logic/utils/strings.ts';
 import {
   BATTLE_CONDITION_KEYS,
   type BattleState,
   type BattleStages,
   type BattleTimedCondition
 } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import { requireItemId } from '@/data/inventory/items';
-import { requireAbilityId } from '@/data/battle/abilities';
-import { requirePokemonMoveId } from '@/data/battle/moves';
+
 import type {
   HeuristicBattleSnapshot,
   HeuristicPokemonState,

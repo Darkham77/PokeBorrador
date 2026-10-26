@@ -1,5 +1,7 @@
-import { computed } from 'vue';
-import type { Ref } from 'vue';
+import { computed, type Ref, type ComputedRef } from 'vue';
+
+import type { MapLocation } from '@/types/pokemon/encounters';
+
 import {
   ADVENTURE_NODE_IDS,
   KANTO_NODE_POSITIONS,
@@ -9,8 +11,6 @@ import type {
   AdventureNodeId,
   GraphEdge
 } from '../../../test_aventura/logic/adventure/kantoGraph.ts';
-import type { MapLocation } from '@/types/pokemon/encounters';
-
 import {
   isPokemonCenterNodeId,
   CANVAS_W,
@@ -21,13 +21,51 @@ import {
 
 const MIN_CAMERA_OVERLAY_SCALE = 0.25 as const;
 
+export interface AdventureNodePosition {
+  readonly x: number;
+  readonly y: number;
+  readonly label: string;
+}
+
+export interface PokemonCenterOverlay {
+  readonly id: AdventureNodeId;
+  readonly label: string;
+  readonly x: number;
+  readonly y: number;
+}
+
+export interface AdjacentConnection {
+  readonly target: AdventureNodeId;
+  readonly mo?: string;
+  readonly label: string;
+}
+
+export interface AdjacentConnectionsMap {
+  readonly top: readonly AdjacentConnection[];
+  readonly bottom: readonly AdjacentConnection[];
+  readonly left: readonly AdjacentConnection[];
+  readonly right: readonly AdjacentConnection[];
+}
+
+export interface UseAdventureLayoutReturn {
+  readonly nodePositions: ComputedRef<Partial<Record<AdventureNodeId, AdventureNodePosition>>>;
+  readonly validNodeIds: ComputedRef<readonly AdventureNodeId[]>;
+  readonly worldOverlayScale: ComputedRef<number>;
+  readonly pokemonCenterOverlays: ComputedRef<readonly PokemonCenterOverlay[]>;
+  readonly adjacentConnections: ComputedRef<AdjacentConnectionsMap>;
+  readonly pathSet: ComputedRef<ReadonlySet<AdventureNodeId>>;
+  readonly pathEdgeSet: ComputedRef<ReadonlySet<string>>;
+  readonly isEdgeOnPath: (from: string, to: string) => boolean;
+  readonly isEdgeTraversable: (edge: GraphEdge) => boolean;
+}
+
 export function useAdventureLayout(options: {
   cameraScale: Ref<number>;
   calculatedPath: Ref<AdventureNodeId[]>;
   originMap: Ref<AdventureNodeId>;
   activeHMs: Ref<Set<string>>;
   mapLocationsById: Ref<Partial<Record<AdventureNodeId, MapLocation>>>;
-}) {
+}): UseAdventureLayoutReturn {
   const nodePositions = computed(() => {
     const result: Partial<Record<AdventureNodeId, { x: number; y: number; label: string }>> = {};
     for (const id of ADVENTURE_NODE_IDS) {
@@ -109,10 +147,11 @@ export function useAdventureLayout(options: {
     return set;
   });
 
-  const getEdgeKey = (from: string, to: string) => [from, to].sort().join('|');
-  const isEdgeOnPath = (from: string, to: string) => pathEdgeSet.value.has(getEdgeKey(from, to));
+  const getEdgeKey = (from: string, to: string): string => [from, to].sort().join('|');
+  const isEdgeOnPath = (from: string, to: string): boolean =>
+    pathEdgeSet.value.has(getEdgeKey(from, to));
 
-  const isEdgeTraversable = (edge: GraphEdge) => {
+  const isEdgeTraversable = (edge: GraphEdge): boolean => {
     if (!edge.mo) return true;
     const requirements = edge.mo.split(',');
     return requirements.every((req) => options.activeHMs.value.has(req));

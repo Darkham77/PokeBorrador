@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { handleCoreEvents } from '@/logic/battle/showdownBridgeCore';
-import { handleMiscEvents } from '@/logic/battle/showdownBridgeMisc';
-import { handleFieldEvents } from '@/logic/battle/showdownBridgeField';
-import { calculateCatchRatePure } from '@/logic/battle/battleCatchMath';
+
 import type { ItemId } from '@/data/inventory/items';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { calculateCatchRatePure } from '@/logic/battle/battleCatchMath';
+import { handleCoreEvents } from '@/logic/battle/showdownBridgeCore';
+import { handleFieldEvents } from '@/logic/battle/showdownBridgeField';
+import { handleMiscEvents } from '@/logic/battle/showdownBridgeMisc';
 
 // --- From test_bug025_player_name_mapping.spec.ts ---
 describe('Audit Parity - BUG-025: player token name→side mapping inverted lookup', () => {

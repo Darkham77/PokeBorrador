@@ -1,4 +1,5 @@
 import type { User, Session } from '@supabase/supabase-js';
+
 import { safeStorage, LOCAL_STORAGE_KEYS } from '../utils/storage.ts';
 
 const PERPETUAL_SESSION_EXPIRY_TIMESTAMP = 9999999999 as const;

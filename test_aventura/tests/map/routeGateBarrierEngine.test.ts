@@ -11,6 +11,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import { generatePokemonContinentalWorld } from '../../logic/map/continent/continentalEngine.ts';
 import { verifyRouteGateAntiBypass } from '../../logic/map/routeGateBarrierEngine.ts';
 

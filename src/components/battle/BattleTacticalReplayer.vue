@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useClipboard } from '@vueuse/core';
 import { gsap } from 'gsap';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
+
 import type { ITacticalReplayEngine } from '@/logic/battle/replay/tacticalReplayEngine.ts';
 import { CLIPBOARD_COPIED_DUR_MS } from '@/logic/constants/visuals';
 
@@ -47,13 +48,13 @@ const turnLabel = computed(() => {
   return `TURNO ${cur} / ${tot}`;
 });
 
-function updateState() {
+function updateState(): void {
   currentTurn.value = props.engine.getCurrentTurn();
   isPlaying.value = props.engine.isPlaying();
   emit('turn-change', currentTurn.value);
 }
 
-function handleNextTurn() {
+function handleNextTurn(): void {
   const advanced = props.engine.nextTurn();
   updateState();
   if (!advanced && autoPlayTween) {
@@ -61,13 +62,13 @@ function handleNextTurn() {
   }
 }
 
-function handleRestart() {
+function handleRestart(): void {
   stopAutoPlay();
   props.engine.restart();
   updateState();
 }
 
-function startAutoPlay() {
+function startAutoPlay(): void {
   isPlaying.value = true;
   props.engine.play();
 
@@ -87,7 +88,7 @@ function startAutoPlay() {
   );
 }
 
-function stopAutoPlay() {
+function stopAutoPlay(): void {
   isPlaying.value = false;
   props.engine.pause();
   if (autoPlayTween) {
@@ -96,7 +97,7 @@ function stopAutoPlay() {
   }
 }
 
-function togglePlayPause() {
+function togglePlayPause(): void {
   if (isPlaying.value) {
     stopAutoPlay();
   } else {
@@ -108,11 +109,11 @@ function togglePlayPause() {
   }
 }
 
-async function copyCode() {
+async function copyCode(): Promise<void> {
   await copy(battleCode.value);
 }
 
-function handleClose() {
+function handleClose(): void {
   stopAutoPlay();
   emit('close');
 }

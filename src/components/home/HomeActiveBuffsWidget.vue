@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
+
+import PVTooltip from '@/components/common/PVTooltip.vue';
 import { useBuffsStore, type ActiveBuffItem } from '@/stores/battle/buffs';
 import { useModalStore } from '@/stores/modals';
-import PVTooltip from '@/components/common/PVTooltip.vue';
+
 import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
 
 const buffsStore = useBuffsStore();
@@ -26,11 +28,11 @@ const formatTime = (secs: number): string => {
   return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
-const openInventory = () => {
+const openInventory = (): void => {
   modalStore.open('Inventory');
 };
 
-const handleBuffClick = (buff: ActiveBuffItem) => {
+const handleBuffClick = (buff: ActiveBuffItem): void => {
   if (buff.isEvent && buff.event) {
     modalStore.open('EventDetail', { event: buff.event });
   } else {

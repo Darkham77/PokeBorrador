@@ -1,12 +1,10 @@
+import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
-import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import { useAuthStore } from '@/stores/auth.ts';
-import { useGameStore } from '@/stores/game.ts';
-import { useUIStore } from '@/stores/ui.ts';
-import { useAudioStore } from '@/stores/audio.ts';
-import { logger } from '@/logic/utils/logger';
+
 import { setLatestCommittedSaveId } from '@/logic/auth/saveService.ts';
+import { GTS_MAX_PRICE_FILTER, MAX_TOTAL_IVS_STAT_SUM } from '@/logic/constants/gameplay.ts';
+import { isPokemonBusy } from '@/logic/constants/tags.ts';
 import {
   applyMarketFilters,
   markMarketSoldSeen,
@@ -17,11 +15,14 @@ import {
   GTS_SALES_HISTORY_LIMIT
 } from '@/logic/economy/market';
 import type { MarketFilters, MarketListing, MarketListingType } from '@/logic/economy/market';
-import type { GameState, ClaimItem } from '@/types/system/game';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
-import { isPokemonBusy } from '@/logic/constants/tags.ts';
-import { GTS_MAX_PRICE_FILTER, MAX_TOTAL_IVS_STAT_SUM } from '@/logic/constants/gameplay.ts';
+import { logger } from '@/logic/utils/logger';
+import { useAudioStore } from '@/stores/audio.ts';
+import { useAuthStore } from '@/stores/auth.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { GameState, ClaimItem } from '@/types/system/game';
 
 const MARKET_LISTING_COLUMNS =
   'id, seller_id, seller_name, buyer_id, listing_type, price, status, data, created_at';
@@ -93,7 +94,7 @@ export const useGTSStore = defineStore('gts', () => {
   });
 
   // Actions
-  async function fetchListings(force = false) {
+  async function fetchListings(force = false): Promise<void> {
     if (!force && isLoaded.value) return;
     if (inFlightPromise) return inFlightPromise;
 
@@ -122,7 +123,7 @@ export const useGTSStore = defineStore('gts', () => {
     return inFlightPromise;
   }
 
-  async function fetchUserData() {
+  async function fetchUserData(): Promise<void> {
     const currentUserUid = auth.currentUserId; // uuid-ok: User account auth identifier
     if (!game.db) return;
 
@@ -180,7 +181,7 @@ export const useGTSStore = defineStore('gts', () => {
           }
         });
         if (updatedStats) {
-          void game.save(false);
+          game.scheduleSave();
         }
       }
     } catch (err) {
@@ -188,7 +189,7 @@ export const useGTSStore = defineStore('gts', () => {
     }
   }
 
-  function initRealtime() {
+  function initRealtime(): void {
     if (auth.sessionMode === 'offline' || !auth.user) return;
     if (salesChannel) return;
 
@@ -206,34 +207,34 @@ export const useGTSStore = defineStore('gts', () => {
           table: 'market_listings',
           filter: `seller_id=eq.${auth.user.id}`
         },
-        (payload: RealtimePostgresChangesPayload<MarketListing>) => {
+        async (payload: RealtimePostgresChangesPayload<MarketListing>) => {
           const newRecord = payload.new as MarketListing | undefined;
           const oldRecord = payload.old as Partial<MarketListing> | undefined;
           if (newRecord?.status === 'sold' && oldRecord?.status !== 'sold') {
             ui.notify('¡ Venta realizada en el GTS !', '💰');
-            void audio.play('money');
+            await audio.play('money');
 
             if (!game.state.stats) {
               game.state.stats = {};
             }
             game.state.stats.tradeVolume = (Number(game.state.stats.tradeVolume) || 0) + 1;
-            void game.save(false);
+            game.scheduleSave();
 
-            void fetchUserData();
+            await fetchUserData();
           }
         }
       )
       .subscribe();
   }
 
-  function stopRealtime() {
+  async function stopRealtime(): Promise<void> {
     if (salesChannel) {
-      void salesChannel.unsubscribe();
+      await salesChannel.unsubscribe();
       salesChannel = null;
     }
   }
 
-  async function buyListing(listing: MarketListing) {
+  async function buyListing(listing: MarketListing): Promise<boolean> {
     if (game.state.money < listing.price) {
       ui.notify('Saldo insuficiente', '💸');
       return false;
@@ -274,7 +275,7 @@ export const useGTSStore = defineStore('gts', () => {
 
         ui.notify('¡ Compra exitosa ! Objeto enviado a tus Reclamos.', '✅');
         await game.fetchClaimQueue();
-        void fetchListings();
+        await fetchListings();
         return true;
       }
       return false;
@@ -292,7 +293,7 @@ export const useGTSStore = defineStore('gts', () => {
     type: MarketListingType,
     selection: Pokemon | { name: string; qty: number },
     price: number
-  ) {
+  ): Promise<boolean> {
     if (activeMyListings.value.length >= GTS_MAX_ACTIVE_LISTINGS) {
       ui.notify(`Límite de publicaciones alcanzado (${GTS_MAX_ACTIVE_LISTINGS})`, '⚠️');
       return false;
@@ -362,7 +363,7 @@ export const useGTSStore = defineStore('gts', () => {
     }
   }
 
-  async function cancelListing(listingId: string | number) {
+  async function cancelListing(listingId: string | number): Promise<boolean> {
     try {
       console.debug('[GTS] Accion: cancelListing iniciada para ID:', listingId, typeof listingId);
       ui.setLoading(true);
@@ -400,18 +401,18 @@ export const useGTSStore = defineStore('gts', () => {
   // Auto-initialize realtime sales and fetch data on user login
   watch(
     () => auth.user,
-    (newUser) => {
+    async (newUser) => {
       if (newUser) {
-        void fetchUserData();
+        await fetchUserData();
         if (auth.sessionMode !== 'offline') {
           initRealtime();
         } else {
-          stopRealtime();
+          await stopRealtime();
         }
       } else {
-        stopRealtime();
         myListings.value = [];
         salesHistory.value = [];
+        await stopRealtime();
       }
     },
     { immediate: true }

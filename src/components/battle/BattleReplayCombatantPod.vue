@@ -6,7 +6,9 @@
  */
 
 import { computed } from 'vue';
+
 import type { FogOfWarSideState } from '@/logic/battle/replay/tacticalReplayEngine.ts';
+
 import BattleReplayCombatantSprite from './BattleReplayCombatantSprite.vue';
 import BattleReplayFogInspectCard from './BattleReplayFogInspectCard.vue';
 

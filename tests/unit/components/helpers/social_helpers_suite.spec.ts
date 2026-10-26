@@ -1,14 +1,12 @@
 import { describe, it, expect } from 'vite-plus/test';
+
 import { mapDbRecordToBattleReplay } from '@/components/social/chatBattleCodeHelper';
-import { parseJsonSafe } from '@/logic/utils/jsonUtils';
 import {
   formatSoldDetails,
   getFriendlySourceType,
   getClaimAssetIcon,
   getClaimSpriteUrl
 } from '@/components/social/claimCardHelper';
-import type { ClaimItem } from '@/types/system/game';
-import type { MarketListing } from '@/logic/economy/market';
 import {
   extractBattleCode,
   canTrainerParticipateInGlobalChat,
@@ -16,15 +14,11 @@ import {
   GLOBAL_CHAT_MIN_LEVEL,
   GLOBAL_CHAT_MAX_CHARS
 } from '@/components/social/globalChatHelper';
-import type { ChatMessage } from '@/stores/social/chatPrivate';
-import type { ProfileCacheItem } from '@/stores/social/chatCosmetics';
 import { parseReplayRow } from '@/components/social/socialTheaterHelper';
-import type { BattleCode } from '@/types/battle/pvp';
 import {
   canFulfillTradeOffer,
   resolveTradeEmptyState
 } from '@/components/social/socialTradesHelper';
-import type { TradeOffer } from '@/types/system/stores';
 import {
   isTradeGiftMode,
   resolveTradePokemonButtonText,
@@ -34,6 +28,13 @@ import {
   getItemQuantity
 } from '@/components/social/tradeSidePanelHelper';
 import { requireItemId } from '@/data/inventory/items';
+import type { MarketListing } from '@/logic/economy/market';
+import { parseJsonSafe } from '@/logic/utils/jsonUtils';
+import type { ProfileCacheItem } from '@/stores/social/chatCosmetics';
+import type { ChatMessage } from '@/stores/social/chatPrivate';
+import type { BattleCode } from '@/types/battle/pvp';
+import type { ClaimItem } from '@/types/system/game';
+import type { TradeOffer } from '@/types/system/stores';
 
 describe('Social Component Helpers Domain Suite', () => {
   describe('chatBattleCodeHelper', () => {

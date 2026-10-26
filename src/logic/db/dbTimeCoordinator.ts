@@ -1,33 +1,36 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+import type { SessionMode } from '@/types/system/database';
+
 import { logger } from '../utils/logger.ts';
 import { GAME_TIMEZONE } from '../utils/timeUtils.ts';
-import type { SessionMode } from '@/types/system/database';
-import type { SupabaseClient } from '@supabase/supabase-js';
 
 const MIN_TIMESTAMP_MS_STRING_LENGTH = 10 as const;
 
 export class DBTimeCoordinator {
   private _timeOffset = 0;
 
-  constructor() {
+  public constructor() {
     this.getTimeOffset = this.getTimeOffset.bind(this);
-    if (typeof window !== 'undefined') {
-      window.__GET_DB_TIME_OFFSET__ = () => this.getTimeOffset();
+    const win = typeof globalThis.window !== 'undefined' ? globalThis.window : null;
+    if (win) {
+      win.__GET_DB_TIME_OFFSET__ = () => this.getTimeOffset();
     }
   }
 
-  get timeOffset(): number {
+  public get timeOffset(): number {
     return this._timeOffset;
   }
 
-  setTimeOffset(ms: number): void {
+  public setTimeOffset(ms: number): void {
     this._timeOffset = ms;
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('time-sync-update', { detail: { offset: ms } }));
+    if (typeof globalThis.window !== 'undefined') {
+      globalThis.dispatchEvent(new CustomEvent('time-sync-update', { detail: { offset: ms } }));
     }
     logger.info('DBRouter', `Time offset set to: ${ms}ms`);
   }
 
-  setMockTime(dateStr: string): void {
+  public setMockTime(dateStr: string): void {
     try {
       const clean = dateStr.trim();
       const num = Number(clean);
@@ -58,21 +61,24 @@ export class DBTimeCoordinator {
     }
   }
 
-  resetTime(): void {
+  public resetTime(): void {
     this.setTimeOffset(0);
   }
 
-  getTimeOffset(): number {
+  public getTimeOffset(): number {
     return this._timeOffset || 0;
   }
 
-  async getServerTime(mode: SessionMode, client: SupabaseClient | null): Promise<number> {
+  public async getServerTime(mode: SessionMode, client: SupabaseClient | null): Promise<number> {
     const baseTime = await this._getRawServerTime(mode, client);
     const offset = mode === 'offline' ? this._timeOffset || 0 : 0;
     return baseTime + offset;
   }
 
-  async _getRawServerTime(mode: SessionMode, client: SupabaseClient | null): Promise<number> {
+  public async _getRawServerTime(
+    mode: SessionMode,
+    client: SupabaseClient | null
+  ): Promise<number> {
     if (mode === 'offline' || !client) {
       return Temporal.Now.instant().epochMilliseconds;
     }

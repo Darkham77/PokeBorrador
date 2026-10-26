@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { usePlayerClassStore } from '@/stores/player/playerClass';
-import { useGameStore } from '@/stores/game';
-import { useBreedingStore } from '@/stores/breeding';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { useBreedingStore } from '@/stores/breeding';
+import { useGameStore } from '@/stores/game';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 let simulatedServerTime = 1700000000000;

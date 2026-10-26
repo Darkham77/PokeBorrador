@@ -1,31 +1,32 @@
 <script setup lang="ts">
-import { computed, watch, onMounted, onUnmounted, provide, ref, nextTick } from 'vue';
 import { gsap } from 'gsap';
 import { storeToRefs } from 'pinia';
-import { useBattleStore } from '@/stores/battle/battle';
-import { useUIStore } from '@/stores/ui';
-import { useMapStore } from '@/stores/map';
-import { useAudioStore } from '@/stores/audio';
-import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts';
-import { isMapRouteId } from '@/data/world/map-assets';
-import { requireWeatherSeasonId } from '@/data/world/weather-tables';
-import { useCombatCamera } from '@/composables/battle/useCombatCamera';
-import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
-import { MAX_PRNG_SEED_RANGE } from '@/logic/constants/visuals';
-import { GSAP_FAST_DURATION_SEC, ARENA_INITIAL_LOAD_DELAY_SEC } from '@/logic/constants/animations';
+import { computed, watch, onMounted, onUnmounted, provide, ref, nextTick } from 'vue';
 
-// Composables
-import { useBattleShadows } from '@/composables/battle/useBattleShadows';
 import { useBattleAnimations } from '@/composables/battle/useBattleAnimations';
+import { useBattleArenaCoordinator } from '@/composables/battle/useBattleArenaCoordinator';
+import { useBattleAtmosphere } from '@/composables/battle/useBattleAtmosphere';
+import { useBattleCombatants } from '@/composables/battle/useBattleCombatants';
 import { useBattleHud } from '@/composables/battle/useBattleHud';
 import { useBattleMinigames } from '@/composables/battle/useBattleMinigames';
-import { useBattleArenaCoordinator } from '@/composables/battle/useBattleArenaCoordinator';
-import { useBattleCombatants } from '@/composables/battle/useBattleCombatants';
+// Composables
+import { useBattleShadows } from '@/composables/battle/useBattleShadows';
 import { useBattleTrainerVisuals } from '@/composables/battle/useBattleTrainerVisuals';
-import { useBattleAtmosphere } from '@/composables/battle/useBattleAtmosphere';
-import type { BattleSide } from '@/types/battle/battle';
-import { createBattleAnimationsBridge } from './helpers/battleAnimationsBridge.ts';
+import { useCombatCamera } from '@/composables/battle/useCombatCamera';
 import { useGsapTransition } from '@/composables/ui/useGsapTransition';
+import { isMapRouteId } from '@/data/world/map-assets';
+import { requireWeatherSeasonId } from '@/data/world/weather-tables';
+import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
+import { GSAP_FAST_DURATION_SEC, ARENA_INITIAL_LOAD_DELAY_SEC } from '@/logic/constants/animations';
+import { MAX_PRNG_SEED_RANGE } from '@/logic/constants/visuals';
+import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts';
+import { useAudioStore } from '@/stores/audio';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useMapStore } from '@/stores/map';
+import { useUIStore } from '@/stores/ui';
+import type { BattleSide } from '@/types/battle/battle';
+
+import { createBattleAnimationsBridge } from './helpers/battleAnimationsBridge.ts';
 
 const {
   beforeEnter: beforeFadeOverlayEnter,
@@ -33,23 +34,24 @@ const {
   leave: onFadeOverlayLeave
 } = useGsapTransition({ type: 'fade', duration: 0.3 });
 
-// Componentes
-import VirtualSpace from './VirtualSpace.vue';
-import VirtualEntity from './VirtualEntity.vue';
-import BattleEnvironment from './BattleEnvironment.vue';
+import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue';
+
 import BattleArenaEnemyCombatant from './BattleArenaEnemyCombatant.vue';
+import BattleArenaHud from './BattleArenaHud.vue';
 import BattleArenaPlayerCombatant from './BattleArenaPlayerCombatant.vue';
 import BattleCombatantStatusOverlay from './BattleCombatantStatusOverlay.vue';
-import CombatGrass from './CombatGrass.vue';
-import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue';
-import CameraZoomControls from './CameraZoomControls.vue';
-import BattleArenaHud from './BattleArenaHud.vue';
-import BattleTrainerSpeechBubble from './BattleTrainerSpeechBubble.vue';
-import BattleTrainerEntities from './BattleTrainerEntities.vue';
-import PvPTurnTimerClock from './PvPTurnTimerClock.vue';
-import BattleSpectatorOverlay from './BattleSpectatorOverlay.vue';
+import BattleEnvironment from './BattleEnvironment.vue';
 import BattleReplayControls from './BattleReplayControls.vue';
+import BattleSpectatorOverlay from './BattleSpectatorOverlay.vue';
+import BattleTrainerEntities from './BattleTrainerEntities.vue';
+import BattleTrainerSpeechBubble from './BattleTrainerSpeechBubble.vue';
+import CameraZoomControls from './CameraZoomControls.vue';
+import CombatGrass from './CombatGrass.vue';
 import { playTrainerAnimation } from './helpers/trainerEntranceAnims.ts';
+import PvPTurnTimerClock from './PvPTurnTimerClock.vue';
+import VirtualEntity from './VirtualEntity.vue';
+// Componentes
+import VirtualSpace from './VirtualSpace.vue';
 
 const {
   BASE_ENTITY_SIZE_PLAYER,
@@ -235,8 +237,8 @@ watch(
   isIntroInProgress,
   (val) => {
     battleStore.isIntroAnimating = val;
-    if (window.__VITE_DEBUG__?.isScriptedReplayMode) {
-      window.__VITE_DEBUG__.certifiedReplayIntroDiagnostics = {
+    if (globalThis.__VITE_DEBUG__?.isScriptedReplayMode) {
+      globalThis.__VITE_DEBUG__.certifiedReplayIntroDiagnostics = {
         isIntroInProgress: val,
         isWildEntryAnimation: isWildEntryAnimation.value,
         wildRevealActive: wildRevealActive.value,
@@ -250,7 +252,7 @@ watch(
   { immediate: true }
 );
 
-const triggerPreloadCoords = () =>
+const triggerPreloadCoords = (): Promise<void> =>
   preloadCombatCoords(
     battle.value?.player || null,
     battle.value?.enemy || null,
@@ -336,7 +338,7 @@ watch(
       tl.to({}, { duration: GSAP_FAST_DURATION_SEC });
       tl.add(() => {
         if (arenaRef.value) {
-          window.dispatchEvent(new Event('resize'));
+          globalThis.dispatchEvent(new Event('resize'));
         }
       });
     }

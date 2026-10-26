@@ -1,10 +1,10 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { SeasonalThemeConfig } from '@/data/system/rankedData';
-import type { SeasonRules } from '@/types/battle/pvp';
 import type { PokemonType } from '@/data/battle/types';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { calculatePokemonStrengthScore } from '@/logic/pokemon/pokemonUtils';
+import type { SeasonalThemeConfig } from '@/data/system/rankedData';
 import { isLittleCupEligible, getPokemonGeneration } from '@/logic/pokemon/pokemonSpeciesHelper.ts';
+import { calculatePokemonStrengthScore } from '@/logic/pokemon/pokemonUtils';
+import type { SeasonRules } from '@/types/battle/pvp';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 const DEFAULT_TEAM_COUNT = 6 as const;
 
 export interface PokemonSeasonEvaluation {
@@ -151,7 +151,7 @@ export function buildAutoRankedTeam(
   count: number = DEFAULT_TEAM_COUNT
 ): Pokemon[] {
   const eligible = (pool || []).filter((p): p is Pokemon => {
-    return p != null && evaluatePokemonForSeason(p, rules).eligible;
+    return p !== null && p !== undefined && evaluatePokemonForSeason(p, rules).eligible;
   });
 
   if (eligible.length === 0) return [];

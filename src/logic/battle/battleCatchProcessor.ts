@@ -1,17 +1,19 @@
-import { cloneReactive } from '@/logic/utils/cloneUtils.ts';
-import { awaitAnimation } from '@/logic/utils/gsapHelpers';
 import gsap from 'gsap';
-import { calculateCatchRate } from './battleEngine.ts';
-import { gameBus } from '@/logic/events/gameBus';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { validatePokemon } from '@/logic/pokemon/pokemonFactory';
-import type { EventStore, BattleStore } from '@/types/system/stores';
-import type { LogFn } from '@/types/battle/battle';
-import type { BattleContext } from '@/types/battle/battleContext';
+
 import { getItemName, requireItemId, type ItemId } from '@/data/inventory/items';
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { gameBus } from '@/logic/events/gameBus';
+import { validatePokemon } from '@/logic/pokemon/pokemonFactory';
 import { initializePokemonVigor } from '@/logic/pokemon/pokemonUtils';
+import { cloneReactive } from '@/logic/utils/cloneUtils.ts';
+import { awaitAnimation } from '@/logic/utils/gsapHelpers';
 import { getServerInstant } from '@/logic/utils/timeUtils';
+import type { LogFn } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { EventStore, BattleStore } from '@/types/system/stores';
+
+import { calculateCatchRate } from './battleEngine.ts';
 
 const CATCH_ENERGY_FALLBACK_DELAY_SEC = 1.0;
 const CRITICAL_CAPTURE_FX_FALLBACK_DELAY_SEC = 0.8;
@@ -125,9 +127,7 @@ export function cleanCapturedPokemonForStorage(
   initialEnemy: Pokemon | null | undefined,
   ballId: ItemId
 ): Pokemon {
-  const capturedPoke: Pokemon = initialEnemy
-    ? (cloneReactive(initialEnemy) as Pokemon)
-    : (cloneReactive(enemy) as Pokemon);
+  const capturedPoke: Pokemon = initialEnemy ? cloneReactive(initialEnemy) : cloneReactive(enemy);
 
   if (initialEnemy) {
     const currentHpRatio = enemy.maxHp > 0 ? enemy.hp / enemy.maxHp : 1;
@@ -225,7 +225,7 @@ async function processCatchSuccess(
   const capturedPoke = cleanCapturedPokemonForStorage(enemy, initialEnemy, ballId);
 
   if (options.fsm) {
-    void options.fsm.transition('ACTIVE_BATTLE', 'ADD_TO_STORAGE');
+    await options.fsm.transition('ACTIVE_BATTLE', 'ADD_TO_STORAGE');
   }
   return { action: 'capture', pokemon: capturedPoke };
 }
@@ -286,7 +286,7 @@ export async function executePokeballCatchSequence(
   const pokedexCount = options.ctx?.gs?.state?.pokedex?.length ?? 0;
   const activeTeam = (options.ctx?.gs?.state?.team || [])
     .filter(Boolean)
-    .map((p) => ({ type1: p!.type, type2: p!.type2 }));
+    .map((p) => ({ type1: p.type, type2: p.type2 }));
   const ivTotal = enemy.ivs
     ? enemy.ivs.hp + enemy.ivs.atk + enemy.ivs.def + enemy.ivs.spa + enemy.ivs.spd + enemy.ivs.spe
     : 0;

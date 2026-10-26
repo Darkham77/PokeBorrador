@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+
+import { type StructureCollisionType } from '../../config/mapStructures';
+import { saveCustomTilesToStorage } from '../../logic/map/customAssetsStorage';
 import {
   type RawPixelGrid,
   type ProcessTilesetOptions,
@@ -12,9 +15,7 @@ import {
   TILE_SIZE
 } from '../../logic/map/inBrowserTileProcessor';
 import { type TileCategory, defaultTilesRegistry } from '../../logic/map/tilesRegistry';
-import { type StructureCollisionType } from '../../config/mapStructures';
 import { useMapStudioStore } from '../../stores/mapStudio';
-import { saveCustomTilesToStorage } from '../../logic/map/customAssetsStorage';
 
 const emit = defineEmits<{
   (e: 'close'): void;
@@ -193,7 +194,7 @@ async function handleImportTileset(): Promise<void> {
       `¡Tileset importado con éxito!\n- Total celdas: ${res.totalSliced}\n- Nuevos tiles: ${res.addedCount}\n- Reutilizados: ${res.reusedCount}\n- Descartados: ${res.discardedCount}`
     );
     emit('close');
-  } catch (_err) {
+  } catch {
     alert('Ocurrió un error al procesar el tileset.');
   } finally {
     isProcessing.value = false;
@@ -228,7 +229,7 @@ async function handleImportStructure(): Promise<void> {
       `¡Estructura "${res.template.name}" creada y registrada!\nHuella: ${res.footprint.width}x${res.footprint.height} tiles.\nHerramienta Estampador activada.`
     );
     emit('close');
-  } catch (_err) {
+  } catch {
     alert('Ocurrió un error al procesar la estructura.');
   } finally {
     isProcessing.value = false;

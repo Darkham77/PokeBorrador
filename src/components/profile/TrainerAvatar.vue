@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
 /**
  * TrainerAvatar.vue
  */
@@ -11,12 +12,14 @@ const SHADOW_WHITE_OPACITY_SUBTLE = 0.25;
 const BORDER_RADIUS_CIRCLE_PCT = '50%';
 const SQUARE_FRAME_BORDER_RADIUS_PX = 6;
 import { computed, type CSSProperties, ref } from 'vue';
+
 import { PLAYER_CLASSES, isPlayerClassId } from '@/data/player/playerClasses';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { Z_LAYERS } from '@/logic/constants/visuals';
 import { DEFAULT_AVATAR_SIZE_PX } from '@/logic/constants/animations';
-import { useTrainerAvatarAnim } from './useTrainerAvatarAnim.ts';
+import { Z_LAYERS } from '@/logic/constants/visuals';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import type { GenderId } from '@/types/system/game';
+
+import { useTrainerAvatarAnim } from './useTrainerAvatarAnim.ts';
 
 interface Props {
   playerClass?: string | null;
@@ -91,17 +94,12 @@ const shadowColor = computed(() => {
   return `rgba(255, 255, 255, ${SHADOW_WHITE_OPACITY_SUBTLE})`;
 });
 
+const EXEMPT_AVATAR_STYLE_VALUES = ['null', 'undefined', 'none', 'default', 'sin-marco'] as const;
+const EXEMPT_AVATAR_STYLES: ReadonlySet<string> = new Set<string>(EXEMPT_AVATAR_STYLE_VALUES);
+
 const avatarClass = computed(() => {
   const style = resolvedAvatarStyle.value;
-  if (
-    !style ||
-    style === 'null' ||
-    style === 'undefined' ||
-    style === 'none' ||
-    style === 'default' ||
-    style === 'sin-marco' ||
-    !style.trim()
-  ) {
+  if (!style || !style.trim() || EXEMPT_AVATAR_STYLES.has(style)) {
     return '';
   }
   return ` ${style}`;
@@ -201,7 +199,7 @@ const faceStyles = computed((): CSSProperties => {
 const containerRef = ref<HTMLElement | null>(null);
 const frameRef = ref<HTMLElement | null>(null);
 
-const ELEMENT_COLORS: Record<string, { base: string; light: string; frame: string }> = {
+const ELEMENT_COLORS: Record<DisplayText, { base: string; light: string; frame: string }> = {
   // open-record: Dynamic element colors dictionary
   normal: { base: '#9ca3af', light: '#cbd5e1', frame: '#9ca3af' },
   fire: { base: '#ef4444', light: '#f87171', frame: '#ef4444' },

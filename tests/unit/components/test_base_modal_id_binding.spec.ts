@@ -1,7 +1,8 @@
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
-import { mount } from '@vue/test-utils';
+
 import BaseModal from '@/components/common/BaseModal.vue';
 
 describe('BaseModal id attribute binding', () => {

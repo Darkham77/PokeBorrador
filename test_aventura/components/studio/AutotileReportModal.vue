@@ -7,8 +7,9 @@
  * formatted JSON payload, and 1-click clipboard export to feed Tier 1 RED-to-GREEN regression tests.
  */
 
-import { ref, computed } from 'vue';
 import { gsap } from 'gsap';
+import { ref, computed } from 'vue';
+
 import { COPY_FEEDBACK_DELAY_SEC } from '../../config/studioConstants.ts';
 import type { AutotileErrorReport } from '../../types/map/autotileStudioTypes.ts';
 

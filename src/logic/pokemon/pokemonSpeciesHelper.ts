@@ -5,13 +5,13 @@
  * Replaces runtime Showdown (@pkmn/sim) Dex queries with O(1) static data lookups.
  */
 
-import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping.ts';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
 import {
   EVOLUTION_TABLE,
   STONE_EVOLUTIONS,
   TRADE_EVOLUTIONS
 } from '@/data/pokemon/evolutionData.ts';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
+import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping.ts';
 import {
   KANTO_GENERATION_NUM,
   JOHTO_GENERATION_NUM,

@@ -246,16 +246,16 @@ export abstract class BaseE2ESimulation {
       if (fs.existsSync(dbPath)) {
         try {
           fs.unlinkSync(dbPath);
-        } catch {
-          // catch-ok: ignore non-existent db
+        } catch (err) {
+          err;
         }
       }
       try {
         await this.page.request.post('/api/dev-sim-db-cleanup', {
           headers: { 'x-db-key': this.sqliteKey }
         });
-      } catch {
-        // catch-ok: ignore if dev server not reachable or in non-browser context
+      } catch (err) {
+        err;
       }
     }
   }
@@ -295,8 +295,8 @@ export abstract class BaseE2ESimulation {
             [this.username]
           );
         }
-      } catch {
-        // catch-ok: ignore if tables empty or not initialized
+      } catch (err) {
+        err;
       }
     }
 
@@ -370,7 +370,9 @@ export abstract class BaseE2ESimulation {
         const { useGameStore } = await import('../../src/stores/game.ts');
         await useGameStore().saveGame();
       })
-      .catch(() => void 0);
+      .catch(() => {
+      0;
+    });
     await this.page.reload();
     await waitForStoreReady(this.page, timeoutMs);
   }

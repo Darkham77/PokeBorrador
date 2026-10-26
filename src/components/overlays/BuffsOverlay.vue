@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { gsap } from 'gsap';
-import { useBuffsStore, type ActiveBuffItem } from '@/stores/battle/buffs';
-import { useModalStore } from '@/stores/modals';
-import { useUIStore } from '@/stores/ui';
-import { usePlayerClassStore } from '@/stores/player/playerClass';
-import { CLASS_MISSIONS_BY_ID, isMissionId } from '@/data/player/playerClasses';
-import { getClassMissionDetails } from '@/logic/player/classMissionsData';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 import { useGsapTransition } from '@/composables/ui/useGsapTransition';
+import { CLASS_MISSIONS_BY_ID, isMissionId } from '@/data/player/playerClasses';
+import { getClassMissionDetails } from '@/logic/player/classMissionsData';
+import { useBuffsStore, type ActiveBuffItem } from '@/stores/battle/buffs';
+import { useModalStore } from '@/stores/modals';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { useUIStore } from '@/stores/ui';
 
 const buffsStore = useBuffsStore();
 const modalStore = useModalStore();
@@ -20,9 +21,13 @@ const { beforeEnter, enter, leave } = useGsapTransition({
   duration: 0.25
 });
 
-const isVisible = computed(
-  () => uiStore.activeTab === 'map' || uiStore.activeTab === 'home' || uiStore.activeTab === 'gyms'
+const BUFFS_VISIBLE_TAB_VALUES = ['map', 'home', 'gyms'] as const;
+type BuffsVisibleTabValue = (typeof BUFFS_VISIBLE_TAB_VALUES)[number];
+const BUFFS_VISIBLE_TABS: ReadonlySet<BuffsVisibleTabValue> = new Set<BuffsVisibleTabValue>(
+  BUFFS_VISIBLE_TAB_VALUES
 );
+
+const isVisible = computed(() => BUFFS_VISIBLE_TABS.has(uiStore.activeTab as BuffsVisibleTabValue));
 
 const now = ref(Temporal.Now.instant().epochMilliseconds);
 let classMissionTicker: gsap.core.Tween | null = null;
@@ -30,7 +35,7 @@ let classMissionTicker: gsap.core.Tween | null = null;
 onMounted(() => {
   buffsStore.initTick();
   const TICK_INTERVAL_SEC = 1;
-  const tickNow = () => {
+  const tickNow = (): void => {
     now.value = Temporal.Now.instant().epochMilliseconds;
     classMissionTicker = gsap.delayedCall(TICK_INTERVAL_SEC, tickNow);
   };
@@ -43,7 +48,7 @@ onUnmounted(() => {
   }
 });
 
-const formatTime = (secs: number) => {
+const formatTime = (secs: number): string => {
   if (secs <= 0) return '0:00';
   const h = Math.floor(secs / 3600);
   const m = Math.floor((secs % 3600) / 60);
@@ -77,17 +82,17 @@ const classMissionBadge = computed(() => {
   };
 });
 
-const handleImgError = (e: Event) => {
+const handleImgError = (e: Event): void => {
   (e.target as HTMLImageElement).style.display = 'none';
 };
 
-const handleBadgeClick = (buff: ActiveBuffItem) => {
+const handleBadgeClick = (buff: ActiveBuffItem): void => {
   if (buff.isEvent && buff.event) {
     modalStore.open('EventDetail', { event: buff.event });
   }
 };
 
-const handleClassMissionClick = () => {
+const handleClassMissionClick = (): void => {
   modalStore.open('EventMissions');
 };
 </script>

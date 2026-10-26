@@ -1,13 +1,14 @@
-import { clearVolatileStatus } from '../battleStatus.ts';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import { clearVolatileStatus } from '../battleStatus.ts';
 
 export async function processSwitchSwapAnimations(
   ctx: BattleContext,
   oldPoke: Pokemon,
   newPoke: Pokemon,
   _teamIndex: number
-) {
+): Promise<void> {
   const { activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES, addLog, exitingPlayer, animations } =
     ctx;
 
@@ -47,7 +48,7 @@ export async function processSwitchCallAnimations(
   ctx: BattleContext,
   newPoke: Pokemon,
   teamIndex: number
-) {
+): Promise<void> {
   const { activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES, animations } = ctx;
 
   if (!activeBattle.value) return;

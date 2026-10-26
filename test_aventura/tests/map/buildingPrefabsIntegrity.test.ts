@@ -10,10 +10,12 @@
  *   4. Zero (0) unkeyed background chroma artifacts (#9933cc purple / #ff00ff magenta).
  */
 
-import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+
 import sharp from 'sharp';
+import { describe, it, expect } from 'vitest';
+
 import { CANONICAL_BUILDINGS } from '../../logic/map/canonicalAssetsRegistry.ts';
 
 const ROOT_DIR = process.cwd();

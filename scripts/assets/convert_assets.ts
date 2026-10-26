@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * scripts/convert_assets.ts
  *
@@ -15,7 +16,6 @@ import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import { MAP_ROUTE_MAPPING } from '../../src/data/world/map-assets.ts';
 
-import { safeResolve, safeJoin } from '@francogp/auditor';
 import {
   findFeetPointsFromBuffer,
   analyzeImageBufferBounds
@@ -32,8 +32,8 @@ import {
 // Speed up execution
 enableCompileCache();
 
-const SOURCE_DIR = safeResolve(process.cwd(), '_raw-assets');
-const PUBLIC_ASSETS_DIR = safeResolve(process.cwd(), 'public', 'assets');
+const SOURCE_DIR = path.resolve(process.cwd(), '_raw-assets');
+const PUBLIC_ASSETS_DIR = path.resolve(process.cwd(), 'public', 'assets');
 const MAP_DESKTOP_RESIZE_WIDTH_PX = 600;
 const MAP_MOBILE_RESIZE_WIDTH_PX = 400;
 const REPORT_SEPARATOR_LENGTH = 80;
@@ -112,9 +112,9 @@ async function handleProcessFile(filePath: string) {
   }
 
   const relPath = path.relative(SOURCE_DIR, filePath);
-  const destPath = safeJoin(process.cwd(), relPath);
+  const destPath = path.join(process.cwd(), relPath);
   const destDir = path.dirname(destPath);
-  const destFile = safeJoin(destDir, `${path.parse(destPath).name}.webp`);
+  const destFile = path.join(destDir, `${path.parse(destPath).name}.webp`);
 
   await fs.mkdir(destDir, { recursive: true });
 
@@ -149,7 +149,7 @@ async function handleProcessFile(filePath: string) {
   await image.webp(webpOptions).toFile(destFile);
 
   if (isMap) {
-    const destMobileFile = safeJoin(destDir, `${path.parse(destPath).name}_mobile.webp`);
+    const destMobileFile = path.join(destDir, `${path.parse(destPath).name}_mobile.webp`);
     await sharp(filePath)
       .resize({ width: MAP_MOBILE_RESIZE_WIDTH_PX, kernel: 'nearest' })
       .webp(webpOptions)
@@ -245,7 +245,7 @@ async function getFilesToConvert(dir: string): Promise<string[]> {
   const pattern = '**/*.{png,jpg,jpeg,webp}';
 
   for await (const entry of fs.glob(pattern, { cwd: dir })) {
-    files.push(safeResolve(dir, entry));
+    files.push(path.resolve(dir, entry));
   }
   return files;
 }
@@ -307,7 +307,7 @@ interface ConversionResultsData {
   successfulFiles: number;
   generatedWebps: number;
   environmentFiles: string[];
-  pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }>;
+  pokemonFeetDatabase: Record<DisplayText, { feetY: number; feetX: number }>;
 }
 
 async function convertSourceFiles(
@@ -321,7 +321,7 @@ async function convertSourceFiles(
   let successfulFiles = 0;
   let generatedWebps = 0;
   const environmentFiles: string[] = [];
-  const pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }> = {};
+  const pokemonFeetDatabase: Record<DisplayText, { feetY: number; feetX: number }> = {};
 
   for (const r of results) {
     if (r.success) {
@@ -334,7 +334,7 @@ async function convertSourceFiles(
         const publicRel = path
           .relative(PUBLIC_ASSETS_DIR, r.destFiles[0] || '')
           .split(path.sep)
-          .join('/');
+          .join(path.posix.sep);
         const normalizedDbKey = `/assets/${publicRel}`;
         pokemonFeetDatabase[normalizedDbKey] = r.feetPoints;
       }
@@ -349,8 +349,8 @@ async function convertSourceFiles(
 
 function collectAnimatedResults(
   analyzeResults: AnalyzeResult[],
-  animatedDbData: Record<string, AnimatedSpriteData>,
-  animatedVariationFrames: Record<string, number>,
+  animatedDbData: Record<DisplayText, AnimatedSpriteData>,
+  animatedVariationFrames: Record<DisplayText, number>,
   pipelineErrors: string[]
 ): { maxAnimatedSizeFront: number; maxAnimatedSizeBack: number } {
   let maxAnimatedSizeFront = 0;
@@ -367,7 +367,10 @@ function collectAnimatedResults(
       pipelineErrors.push(`Análisis animado falló en ${res.filePath}: ${res.error}`);
       continue;
     }
-    const isBackFile = res.filePath.split(path.sep).join('/').includes('/animated/Back');
+    const isBackFile = res.filePath
+      .split(path.sep)
+      .join(path.posix.sep)
+      .includes('/animated/Back');
     const key = isBackFile ? `${res.spriteKey}_back` : res.spriteKey;
 
     animatedDbData[key] = res.animatedData;
@@ -387,7 +390,7 @@ function collectAnimatedResults(
 }
 
 function syncVariationFeetWithIdle(
-  animatedDbData: Record<string, AnimatedSpriteData>,
+  animatedDbData: Record<DisplayText, AnimatedSpriteData>,
   pipelineWarnings: string[]
 ): void {
   for (const key of Object.keys(animatedDbData)) {
@@ -421,16 +424,16 @@ async function processAnimatedSprites(
       `\n   📦 Generando base de datos de sprites animados en src/data/animatedSpriteDatabase.ts...`
     )
   );
-  const ANIMATED_FRONT_DIR = safeResolve(
+  const ANIMATED_FRONT_DIR = path.resolve(
     process.cwd(),
     'public/assets/sprites/pokemon/animated/Front'
   );
-  const ANIMATED_BACK_DIR = safeResolve(
+  const ANIMATED_BACK_DIR = path.resolve(
     process.cwd(),
     'public/assets/sprites/pokemon/animated/Back'
   );
-  const animatedDbData: Record<string, AnimatedSpriteData> = {};
-  const animatedVariationFrames: Record<string, number> = {};
+  const animatedDbData: Record<DisplayText, AnimatedSpriteData> = {};
+  const animatedVariationFrames: Record<DisplayText, number> = {};
   let maxAnimatedSizeFront = 0;
   let maxAnimatedSizeBack = 0;
 
@@ -443,18 +446,18 @@ async function processAnimatedSprites(
       backFiles = (await fs.readdir(ANIMATED_BACK_DIR)).filter(
         (f) => f.endsWith('.webp') || f.endsWith('.png')
       );
-    } catch {
-      // catch-ok: optional back directory might not exist yet
+    } catch (err) {
+      err;
     }
 
     const analyzeTasks: WorkerTask[] = [
       ...frontFiles.map((file) => ({
         type: 'analyzeAnimated' as const,
-        filePath: safeJoin(ANIMATED_FRONT_DIR, file)
+        filePath: path.join(ANIMATED_FRONT_DIR, file)
       })),
       ...backFiles.map((file) => ({
         type: 'analyzeAnimated' as const,
-        filePath: safeJoin(ANIMATED_BACK_DIR, file)
+        filePath: path.join(ANIMATED_BACK_DIR, file)
       }))
     ];
 
@@ -574,8 +577,8 @@ async function main() {
   await generateBushCatalog(environmentFiles);
   const battleMaps = await generateBattleMapCatalog(SOURCE_DIR, MAP_ROUTE_MAPPING);
 
-  const databaseDir = safeResolve(process.cwd(), 'src/data/pokemon');
-  const criesDir = safeResolve(process.cwd(), 'public/cries');
+  const databaseDir = path.resolve(process.cwd(), 'src/data/pokemon');
+  const criesDir = path.resolve(process.cwd(), 'public/cries');
   const packedFeetData = await generateFeetAndCriesDatabase(
     pokemonFeetDatabase,
     criesDir,
@@ -584,7 +587,7 @@ async function main() {
     pipelineErrors
   );
 
-  const npcCatalogPath = safeResolve(process.cwd(), 'src/data/pokemon/npcSpriteCatalog.ts');
+  const npcCatalogPath = path.resolve(process.cwd(), 'src/data/pokemon/npcSpriteCatalog.ts');
   const npcCatalogLists = await generateNpcSpriteCatalog(
     SOURCE_DIR,
     npcCatalogPath,

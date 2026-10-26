@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/pokemon/evMath.ts
  *
@@ -5,10 +6,10 @@
  * Zero browser, Vue, Pinia, or database dependencies.
  */
 
-import { POKEMON_STAT_KEYS, type PokemonEVs, type PokemonStatKey } from '@/types/pokemon/pokemon';
-import type { EvYield } from '@/data/pokemon/evYields';
 import type { ItemId } from '@/data/inventory/items';
+import type { EvYield } from '@/data/pokemon/evYields';
 import { MAXIMUM_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay';
+import { POKEMON_STAT_KEYS, type PokemonEVs, type PokemonStatKey } from '@/types/pokemon/pokemon';
 
 export const MAX_TOTAL_EVS = 510;
 export const MAX_STAT_EVS = 252;
@@ -138,7 +139,7 @@ export function applyEvGains(
 
   const isMachoBrace = heldItem === 'machobrace';
   const powerItemStat = heldItem
-    ? ((POWER_ITEMS as Record<string, PokemonStatKey | undefined>)[heldItem] ?? null) // open-record: Held item power item lookup
+    ? ((POWER_ITEMS as Record<DisplayText, PokemonStatKey | undefined>)[heldItem] ?? null) // open-record: Held item power item lookup
     : null;
 
   for (const stat of POKEMON_STAT_KEYS) {

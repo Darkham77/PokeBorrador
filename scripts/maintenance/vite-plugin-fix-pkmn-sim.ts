@@ -3,7 +3,9 @@
  * @description Shared Vite plugin to patch Pokemon Showdown static import syntax.
  */
 
-export function fixPkmnSimPlugin() {
+import type { Plugin } from 'vite-plus';
+
+export function fixPkmnSimPlugin(): Plugin {
   return {
     name: 'fix-pkmn-sim',
     enforce: 'pre' as const,

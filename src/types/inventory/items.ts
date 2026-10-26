@@ -1,6 +1,8 @@
-import type { PokemonMoveId } from '@/types/pokemon/pokemon';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { DisplayText, AssetUri } from '@francogp/auditor';
+
 import type { ItemId } from '@/data/inventory/items';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { PokemonMoveId } from '@/types/pokemon/pokemon';
 export const ITEM_CATEGORIES = [
   'pokeballs',
   'potions',
@@ -62,9 +64,9 @@ export type ItemEffectResultType = (typeof ITEM_EFFECT_RESULT_TYPES)[number];
 
 export interface Item {
   id: ItemId;
-  name: string; // domain-ok: Open dynamic text or non-domain string payload
-  desc?: string; // domain-ok: Open dynamic text or non-domain string payload
-  description?: string; // domain-ok: Open dynamic text or non-domain string payload
+  name: DisplayText;
+  desc?: DisplayText;
+  description?: DisplayText;
   price: number;
   cat: ItemCategory;
   market?: boolean;
@@ -76,15 +78,15 @@ export interface Item {
   showInWarShop?: boolean;
   unlockLv?: number;
   tier?: ItemTier;
-  icon?: string; // domain-ok: Open dynamic text or non-domain string payload
-  sprite?: string; // domain-ok: Open dynamic text or non-domain string payload
-  effect?: string; // domain-ok: Open dynamic text or non-domain string payload
+  icon?: DisplayText;
+  sprite?: AssetUri;
+  effect?: DisplayText;
   heal?: number;
-  boost?: string; // domain-ok: Open dynamic text or non-domain string payload
+  boost?: DisplayText;
   catchRate?: number;
   kind?: ItemKind;
   stoneType?: EvolutionStoneKind;
-  heldEffect?: string; // domain-ok: Open dynamic text or non-domain string payload
+  heldEffect?: DisplayText;
   isGlobal?: boolean;
   globalItem?: boolean;
   nonCombat?: boolean;
@@ -94,7 +96,7 @@ export interface Item {
 
 export interface ItemEffectResult {
   success: boolean;
-  message: string; // domain-ok: Open dynamic text or non-domain string payload
+  message: DisplayText;
   type?: ItemEffectResultType;
   resultType?: ItemEffectResultType;
   deferred?: boolean;
@@ -104,3 +106,5 @@ export interface ItemEffectResult {
 }
 
 export type Inventory = Partial<Record<ItemId, number>>;
+
+export type ShopMainTab = BagMainTab;

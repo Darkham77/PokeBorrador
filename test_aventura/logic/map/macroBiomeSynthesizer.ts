@@ -94,6 +94,72 @@ function classifyMacroBiome(temperature: number, moisture: number): MacroBiome {
   return 'temperate_meadow';
 }
 
+function visitClusterNeighbor(
+  nx: number,
+  ny: number,
+  currentBiome: MacroBiome,
+  grid: MacroBiome[][],
+  visited: boolean[][],
+  queue: { x: number; y: number }[],
+  neighborCounts: Map<MacroBiome, number>,
+  isLand: (x: number, y: number) => boolean,
+  width: number,
+  height: number
+): void {
+  if (nx < 0 || nx >= width || ny < 0 || ny >= height || !isLand(nx, ny)) return;
+  const nBiome = grid[ny]![nx]!;
+  if (nBiome === currentBiome) {
+    if (!visited[ny]![nx]) {
+      visited[ny]![nx] = true;
+      queue.push({ x: nx, y: ny });
+    }
+  } else {
+    neighborCounts.set(nBiome, (neighborCounts.get(nBiome) ?? 0) + 1);
+  }
+}
+
+function findDominantNeighborBiome(
+  counts: ReadonlyMap<MacroBiome, number>,
+  fallback: MacroBiome
+): MacroBiome {
+  let dominant = fallback;
+  let maxCount = -1;
+  for (const [b, count] of counts.entries()) {
+    if (count > maxCount) {
+      maxCount = count;
+      dominant = b;
+    }
+  }
+  return dominant;
+}
+
+function checkExtremeTouchesPlain(
+  x: number,
+  y: number,
+  radius: number,
+  width: number,
+  height: number,
+  grid: readonly (readonly MacroBiome[])[],
+  isBarrier: (x: number, y: number) => boolean,
+  isLand: (x: number, y: number) => boolean
+): boolean {
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      if (dx === 0 && dy === 0) continue;
+      const nx = x + dx;
+      const ny = y + dy;
+      if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
+      if (!isLand(nx, ny) || isBarrier(nx, ny)) continue;
+
+      const nBiome = grid[ny]![nx]!;
+      if (nBiome === 'temperate_meadow' || nBiome === 'mint_highland') {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 /**
  * Eradicates small patchwork clusters (< MIN_CLUSTER_SIZE cells) by absorbing them
  * into their most common neighboring biome.
@@ -121,41 +187,59 @@ function absorbSmallClusters(
         const curr = queue.shift()!;
         component.push(curr);
 
-        const offsets = [
-          { dx: 1, dy: 0 },
-          { dx: -1, dy: 0 },
-          { dx: 0, dy: 1 },
-          { dx: 0, dy: -1 }
-        ];
-
-        for (const { dx, dy } of offsets) {
-          const nx = curr.x + dx;
-          const ny = curr.y + dy;
-
-          if (nx < 0 || nx >= width || ny < 0 || ny >= height || !isLand(nx, ny)) continue;
-
-          const nBiome = grid[ny]![nx]!;
-          if (nBiome === currentBiome) {
-            if (!visited[ny]![nx]) {
-              visited[ny]![nx] = true;
-              queue.push({ x: nx, y: ny });
-            }
-          } else {
-            neighborBiomeCounts.set(nBiome, (neighborBiomeCounts.get(nBiome) ?? 0) + 1);
-          }
-        }
+        visitClusterNeighbor(
+          curr.x + 1,
+          curr.y,
+          currentBiome,
+          grid,
+          visited,
+          queue,
+          neighborBiomeCounts,
+          isLand,
+          width,
+          height
+        );
+        visitClusterNeighbor(
+          curr.x - 1,
+          curr.y,
+          currentBiome,
+          grid,
+          visited,
+          queue,
+          neighborBiomeCounts,
+          isLand,
+          width,
+          height
+        );
+        visitClusterNeighbor(
+          curr.x,
+          curr.y + 1,
+          currentBiome,
+          grid,
+          visited,
+          queue,
+          neighborBiomeCounts,
+          isLand,
+          width,
+          height
+        );
+        visitClusterNeighbor(
+          curr.x,
+          curr.y - 1,
+          currentBiome,
+          grid,
+          visited,
+          queue,
+          neighborBiomeCounts,
+          isLand,
+          width,
+          height
+        );
       }
 
       // If cluster is smaller than MIN_CLUSTER_SIZE, absorb into dominant neighbor
       if (component.length < MIN_CLUSTER_SIZE && neighborBiomeCounts.size > 0) {
-        let dominantBiome = currentBiome;
-        let maxCount = -1;
-        for (const [b, count] of neighborBiomeCounts.entries()) {
-          if (count > maxCount) {
-            maxCount = count;
-            dominantBiome = b;
-          }
-        }
+        const dominantBiome = findDominantNeighborBiome(neighborBiomeCounts, currentBiome);
         for (const cell of component) {
           grid[cell.y]![cell.x] = dominantBiome;
         }
@@ -186,28 +270,8 @@ function computeContainmentBuffer(
       if (!isExtreme) continue;
 
       // Check Chebyshev distance <= 2 for flat plains contact without barriers
-      let touchesPlain = false;
       const radius = BIOME_THRESHOLDS.CONTAINMENT_BUFFER_RADIUS;
-      for (let dy = -radius; dy <= radius; dy++) {
-        for (let dx = -radius; dx <= radius; dx++) {
-          if (dx === 0 && dy === 0) continue;
-          const nx = x + dx;
-          const ny = y + dy;
-
-          if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
-          if (!isLand(nx, ny)) continue;
-          if (isBarrier(nx, ny)) continue;
-
-          const nBiome = grid[ny]![nx]!;
-          if (nBiome === 'temperate_meadow' || nBiome === 'mint_highland') {
-            touchesPlain = true;
-            break;
-          }
-        }
-        if (touchesPlain) break;
-      }
-
-      if (touchesPlain) {
+      if (checkExtremeTouchesPlain(x, y, radius, width, height, grid, isBarrier, isLand)) {
         buffer[y]![x] = true;
       }
     }

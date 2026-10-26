@@ -1,21 +1,23 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import type { DisplayText } from '@francogp/auditor';
 import { gsap } from 'gsap';
+import { computed, ref, watch } from 'vue';
+
+import { useCombatantStatus } from '@/composables/battle/useCombatantStatus';
+import { getStatBreakdown } from '@/logic/battle/battleEngine';
+import { supabase } from '@/logic/db/supabase';
+import { calculateTotalIVs } from '@/logic/pokemon/statsMath';
+import { getPokemonTier } from '@/logic/pokemon/tierEngine';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useProfileStore } from '@/stores/player/profile';
+import type { PartySlotStatus } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import BattleInfoCardIvRadar from './BattleInfoCardIvRadar.vue';
 import BattleInfoCardLevelRow from './BattleInfoCardLevelRow.vue';
 import BattleInfoCardStatusContainer from './BattleInfoCardStatusContainer.vue';
-import BattleInfoCardIvRadar from './BattleInfoCardIvRadar.vue';
-import PartyPreviewGrid from './PartyPreviewGrid.vue';
 import HPBar from './HPBar.vue';
-import { useBattleStore } from '@/stores/battle/battle';
-import type { PartySlotStatus } from '@/types/battle/battle';
-import { useProfileStore } from '@/stores/player/profile';
-import { supabase } from '@/logic/db/supabase';
-import { getStatBreakdown } from '@/logic/battle/battleEngine';
-import { useCombatantStatus } from '@/composables/battle/useCombatantStatus';
-
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { getPokemonTier } from '@/logic/pokemon/tierEngine';
-import { calculateTotalIVs } from '@/logic/pokemon/statsMath';
+import PartyPreviewGrid from './PartyPreviewGrid.vue';
 
 interface Props {
   pokemon?: Pokemon | null;
@@ -51,7 +53,8 @@ const isIvScannerActive = computed(() => {
 const isAdmin = computed(() => {
   return (
     profileStore.profileData.isAdmin ||
-    (typeof window !== 'undefined' && Boolean(Reflect.get(window, '__ADMIN_DEBUG__'))) ||
+    (typeof globalThis.window !== 'undefined' &&
+      Boolean(Reflect.get(globalThis, '__ADMIN_DEBUG__'))) ||
     supabase.isLocal
   );
 });
@@ -125,15 +128,15 @@ const adminStatConfig = [
   { key: 'spe', label: 'SPE', icon: '⚡' }
 ];
 
-const getStatModifier = (key: string) => {
+const getStatModifier = (key: string): number => {
   const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages;
   if (!stages) return 0;
-  return (stages as Record<string, number>)[key] || 0; // open-record: Generic key-value data dictionary container
+  return (stages as Record<DisplayText, number>)[key as DisplayText] || 0;
 };
 
 import { isStatIdExceptHP, type StatIDExceptHP } from '@/logic/pokemon/statsMath';
 
-const getBreakdown = (key: string) => {
+const getBreakdown = (key: string): ReturnType<typeof getStatBreakdown> => {
   const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages;
   const weather = battleStore.state?.weather;
   const statKey: StatIDExceptHP = isStatIdExceptHP(key) ? key : 'atk';

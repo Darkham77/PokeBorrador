@@ -7,6 +7,9 @@
  * @module statsMath
  */
 
+import type { CoreBattleStatKey, BattleStages } from '@/types/battle/battle.ts';
+import { POKEMON_STAT_KEYS, type PokemonStatKey } from '@/types/pokemon/pokemon.ts';
+
 import { MAX_POKEMON_LEVEL } from '../../data/system/constants.ts';
 import {
   ROCKET_SELL_LEVEL_MULTIPLIER,
@@ -14,8 +17,6 @@ import {
   ROCKET_SELL_IV_BONUS_CAP,
   ROCKET_SELL_CUT_MULTIPLIER
 } from '../constants/gameplay.ts';
-import { POKEMON_STAT_KEYS, type PokemonStatKey } from '@/types/pokemon/pokemon.ts';
-import type { CoreBattleStatKey, BattleStages } from '@/types/battle/battle.ts';
 
 const MAX_SINGLE_STAT_EV = 252 as const;
 const HP_FORMULA_FLAT_ADDEND = 10 as const;
@@ -27,7 +28,7 @@ const METAL_POWDER_STAT_MULTIPLIER = 1.5 as const;
  */
 export function getExpNeededPure(level: number): number {
   if (level >= MAX_POKEMON_LEVEL) return 0;
-  return Math.floor(Math.pow(level + 1, 3) - Math.pow(level, 3));
+  return Math.floor((level + 1) ** 3 - level ** 3);
 }
 
 export interface BaseStats {
@@ -111,14 +112,14 @@ export function calcStatsPure(
     ev: number,
     lvl: number,
     statId: PokemonStatKey
-  ) => {
+  ): number => {
     let val = Math.floor(((baseVal * 2 + iv + Math.floor(ev / 4)) * lvl) / 100 + 5);
     if (natureData.up === statId) val = Math.floor(val * 1.1);
     if (natureData.down === statId) val = Math.floor(val * 0.9);
     return val;
   };
 
-  const clampEv = (val: number) => Math.min(MAX_SINGLE_STAT_EV, Math.max(0, val));
+  const clampEv = (val: number): number => Math.min(MAX_SINGLE_STAT_EV, Math.max(0, val));
 
   const hpEv = clampEv(evs?.hp ?? 0);
   const atkEv = clampEv(evs?.atk ?? 0);

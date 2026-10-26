@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/render/atmosphere.worker.ts
  *
@@ -81,6 +82,8 @@ const ATMOSPHERE_DRIFT = {
 const ATMOSPHERE_CYCLE_DURATION_CALM = 5;
 /** Pulse cycle base for strong weather (added to animSeed). */
 const ATMOSPHERE_CYCLE_DURATION_STRONG_BASE = 1.5;
+const SUNNY_WEATHER_VALUES = ['sun', 'intense_sun', 'heatwave'] as const;
+const SUNNY_WEATHERS: ReadonlySet<string> = new Set<string>(SUNNY_WEATHER_VALUES);
 
 let canvas: OffscreenCanvas | null = null; // singleton-ok: Singleton instance state container
 let ctx: OffscreenCanvasRenderingContext2D | null = null; // singleton-ok: Singleton instance state container
@@ -93,8 +96,8 @@ let params: AtmosphereParams = {
   speedMultiplier: 1
 };
 
-const patterns: Record<string, CanvasPattern> = {}; // open-record: Dynamic texture pattern cache keyed by asset URL
-const textures: Record<string, ImageBitmap> = {}; // open-record: Dynamic bitmap cache keyed by asset URL
+const patterns: Record<DisplayText, CanvasPattern> = {}; // open-record: Dynamic texture pattern cache keyed by asset URL
+const textures: Record<DisplayText, ImageBitmap> = {}; // open-record: Dynamic bitmap cache keyed by asset URL
 
 let lastTime = 0; // singleton-ok: Singleton instance state container
 const textureOffsets = {
@@ -175,7 +178,7 @@ function calculateAtmosphereDrift(
       driftY2: 0
     };
   }
-  if (w === 'sun' || w === 'intense_sun' || w === 'heatwave') {
+  if (SUNNY_WEATHERS.has(w)) {
     const heatFactor =
       w === 'heatwave'
         ? ATMOSPHERE_DRIFT.HEAT_FACTOR_HEATWAVE
@@ -276,7 +279,7 @@ function calculateAtmosphereOpacity(
   return { op1: ATMOSPHERE_OPACITY_PRESETS.WIND_MAX, op2: ATMOSPHERE_OPACITY_PRESETS.WIND_MIN };
 }
 
-function render(time: number) {
+function render(time: number): void {
   if (isPaused) return;
   const localCanvas = canvas;
   const localCtx = ctx;
@@ -312,7 +315,7 @@ function render(time: number) {
 
   // Target sizes based on original CSS
   const isSand = w === 'sandstorm';
-  const isHeat = w === 'sun' || w === 'intense_sun' || w === 'heatwave';
+  const isHeat = SUNNY_WEATHERS.has(w);
   const targetSize1 =
     isSand || isStrong || isHeat ? TEXTURE_TILE_SIZE_LARGE : TEXTURE_TILE_SIZE_BASE;
   const targetSize2 = TEXTURE_TILE_SIZE_LARGE;
@@ -384,7 +387,7 @@ function drawPattern(
   offsetX: number,
   offsetY: number,
   opacity: number
-) {
+): void {
   const localCanvas = canvas;
   const localCtx = ctx;
   if (!localCtx || !localCanvas) return;
@@ -464,7 +467,7 @@ function handleWorkerResume(): void {
   requestAnimationFrame(render);
 }
 
-self.onmessage = async (event: MessageEvent) => {
+globalThis.onmessage = async (event: MessageEvent) => {
   const data = event.data as AtmosphereWorkerMessage;
   const { type, payload } = data;
 

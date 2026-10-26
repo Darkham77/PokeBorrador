@@ -5,10 +5,11 @@
  * Handles worker lifecycle, message exchange, and graceful fallbacks when workers are unavailable.
  */
 
-import { logger } from '@/logic/utils/logger.ts';
-import { decompress, compress as syncCompress, isGzip } from '@/logic/utils/compression.ts';
 import { validateAndSanitize, type ValidateAndSanitizeResult } from '@/logic/auth/saveSanitizer.ts';
+import { decompress, compress as syncCompress, isGzip } from '@/logic/utils/compression.ts';
+import { logger } from '@/logic/utils/logger.ts';
 import type { GameState } from '@/types/system/game.ts';
+
 import type {
   WorkerProcessSaveMessage,
   WorkerCompressSaveMessage,
@@ -19,7 +20,11 @@ let saveWorkerInstance: Worker | null = null;
 
 export function getSaveWorker(): Worker | null {
   // result-ok: Operation result wrapper payload
-  if (!saveWorkerInstance && typeof window !== 'undefined' && typeof Worker !== 'undefined') {
+  if (
+    !saveWorkerInstance &&
+    typeof globalThis.window !== 'undefined' &&
+    typeof Worker !== 'undefined'
+  ) {
     try {
       saveWorkerInstance = new Worker(new URL('./save.worker.ts', import.meta.url), {
         type: 'module'
@@ -68,7 +73,7 @@ export async function processSaveInWorker(input: {
   }
 
   return new Promise((resolve, reject) => {
-    const handler = (e: MessageEvent<SaveWorkerOutgoingMessage>) => {
+    const handler = (e: MessageEvent<SaveWorkerOutgoingMessage>): void => {
       const data = e.data;
       if (!data) return;
 
@@ -91,9 +96,7 @@ export async function processSaveInWorker(input: {
   });
 }
 
-export async function compressSaveInWorker(
-  data: GameState | Record<string, unknown> | string
-): Promise<Uint8Array> {
+export async function compressSaveInWorker(data: string | object): Promise<Uint8Array> {
   const worker = getSaveWorker();
 
   if (!worker) {
@@ -101,7 +104,7 @@ export async function compressSaveInWorker(
   }
 
   return new Promise((resolve, reject) => {
-    const handler = (e: MessageEvent<SaveWorkerOutgoingMessage>) => {
+    const handler = (e: MessageEvent<SaveWorkerOutgoingMessage>): void => {
       const resp = e.data;
       if (!resp) return;
 

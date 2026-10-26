@@ -137,10 +137,11 @@ export function findFreePlacementSpot(
           continue;
         }
         const candidate = { x, y, width, height };
-        if (!checkBuildingCollision(existingBuildings, candidate)) {
-          if (!blocksGateway(poi, candidate)) {
-            return { x, y };
-          }
+        if (
+          !checkBuildingCollision(existingBuildings, candidate) &&
+          !blocksGateway(poi, candidate)
+        ) {
+          return { x, y };
         }
       }
     }

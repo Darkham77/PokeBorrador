@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+
 import type { MapNode, DijkstraPath } from './mapData.ts';
 
 export function getAdjacentNodes(
@@ -16,14 +18,14 @@ export function getAdjacentNodes(
 export function dijkstra(
   startId: string,
   targetId: string,
-  mapNodes: Record<string, MapNode>, // open-record: Node graph adjacency map keyed by node id
-  playerInventory: Record<string, boolean>, // open-record: Adventure inventory items and HMs state
+  mapNodes: Record<DisplayText, MapNode>, // open-record: Node graph adjacency map keyed by node id
+  playerInventory: Record<DisplayText, boolean>, // open-record: Adventure inventory items and HMs state
   discoveredNodes: string[],
   connections: readonly (readonly [string, string])[] | string[][],
   blockedEdge: string[] | null = null
 ): DijkstraPath | null {
-  const dist: Record<string, number> = {}; // open-record: Node distance lookup table
-  const prev: Record<string, string | null> = {}; // open-record: Preceding node path lookup table
+  const dist: Record<DisplayText, number> = {}; // open-record: Node distance lookup table
+  const prev: Record<DisplayText, string | null> = {}; // open-record: Preceding node path lookup table
   const pq = new Set(Object.keys(mapNodes));
 
   Object.keys(mapNodes).forEach((id) => {
@@ -86,8 +88,8 @@ export function dijkstra(
 export function getAlternativePaths(
   startId: string,
   targetId: string,
-  mapNodes: Record<string, MapNode>, // open-record: Node graph adjacency map keyed by node id
-  playerInventory: Record<string, boolean>, // open-record: Adventure inventory items and HMs state
+  mapNodes: Record<DisplayText, MapNode>, // open-record: Node graph adjacency map keyed by node id
+  playerInventory: Record<DisplayText, boolean>, // open-record: Adventure inventory items and HMs state
   discoveredNodes: string[],
   connections: readonly (readonly [string, string])[] | string[][]
 ): DijkstraPath[] {

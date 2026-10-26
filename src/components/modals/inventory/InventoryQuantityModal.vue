@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
 import BaseModal from '@/components/common/BaseModal.vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 interface InventoryItem {
   id: string;
@@ -32,23 +33,23 @@ const quantity = ref(1);
 const maxQuantity = computed(() => props.item.qty || 1);
 const sellPrice = computed(() => Math.floor((props.item.price || 0) * 0.5) * quantity.value);
 
-const setQuantity = (val: string | number) => {
-  const n = parseInt(val as string);
+const setQuantity = (val: string | number): void => {
+  const n = parseInt(val as string, 10);
   if (isNaN(n)) return;
   quantity.value = Math.max(1, Math.min(maxQuantity.value, n));
 };
 
-const increment = () => {
+const increment = (): void => {
   if (quantity.value < maxQuantity.value) quantity.value++;
 };
-const decrement = () => {
+const decrement = (): void => {
   if (quantity.value > 1) quantity.value--;
 };
-const setMax = () => {
+const setMax = (): void => {
   quantity.value = maxQuantity.value;
 };
 
-const handleConfirm = () => {
+const handleConfirm = (): void => {
   emit('confirm', quantity.value);
 };
 </script>

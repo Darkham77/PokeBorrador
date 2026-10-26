@@ -5,10 +5,10 @@
  */
 
 export function isLocalEnvironment(): boolean {
-  if (typeof window === 'undefined') return false;
+  if (typeof globalThis.window === 'undefined') return false;
   if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) return true;
 
-  const hostname = window.location.hostname;
+  const hostname = globalThis.location.hostname;
   return (
     hostname === 'localhost' ||
     hostname === '127.0.0.1' ||
@@ -20,6 +20,6 @@ export function isLocalEnvironment(): boolean {
 
 export function isE2EEnvironment(): boolean {
   if (typeof globalThis !== 'undefined' && Boolean(globalThis.__E2E__)) return true;
-  if (typeof window !== 'undefined' && Boolean(window.__E2E__)) return true;
+  if (typeof globalThis.window !== 'undefined' && Boolean(globalThis.__E2E__)) return true;
   return typeof process !== 'undefined' && process.env.VITE_E2E === 'true';
 }

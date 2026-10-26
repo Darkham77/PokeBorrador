@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import type { FogOfWarSideState } from '@/logic/battle/replay/tacticalReplayEngine.ts';
 
 const props = defineProps<{

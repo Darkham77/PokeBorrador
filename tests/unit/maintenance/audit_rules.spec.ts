@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeAll } from 'vite-plus/test';
 import { loadAuditConfig } from '@francogp/auditor';
 import {
   zeroTimerLogic as zeroTimerBattleLogic,
@@ -6,9 +5,10 @@ import {
   normalizeFilePath,
   noDomainIdFallbacks
 } from '@francogp/auditor/suites/architecture/audit_rules';
+import { ErrorSuppressionAuditor } from '@francogp/auditor/suites/architecture/validate_error_suppression';
 import { ValidateGsapAnimationsAuditor } from '@francogp/auditor/suites/architecture/validate_gsap_animations';
 import { TestHygieneAuditor } from '@francogp/auditor/suites/architecture/validate_test_hygiene';
-import { ErrorSuppressionAuditor } from '@francogp/auditor/suites/architecture/validate_error_suppression';
+import { describe, it, expect, beforeAll } from 'vite-plus/test';
 
 class TestGsapAuditor extends ValidateGsapAnimationsAuditor {
   public scan(relPath: string, content: string): void {
@@ -267,13 +267,13 @@ describe('audit_rules.ts - Zero-Timer & Anti-Pattern Rules', () => {
       expect(auditor.getErrorsByRule().get('gsap-no-layout-properties') ?? 0).toBe(0);
     });
 
-    it('respects justified ignore comment // layout-ok:', () => {
+    it('flags layout properties in GSAP without escape hatches', () => {
       const auditor = new TestGsapAuditor();
       auditor.scan(
         'src/components/common/ShimmerText.vue',
         `<script setup>\n// layout-ok: Text shimmer gradient clip requires backgroundPosition\ngsap.to(el, { backgroundPosition: '200% 0', duration: 1.5 })\n</script>`
       );
-      expect(auditor.getErrorsByRule().get('gsap-no-layout-properties') ?? 0).toBe(0);
+      expect(auditor.getErrorsByRule().get('gsap-no-layout-properties') ?? 0).toBe(1);
     });
 
     it('ignores test files and files outside src/', () => {

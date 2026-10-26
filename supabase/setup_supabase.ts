@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 /**
  * @file setup_supabase.ts
  * @description Orquestador CLI en TypeScript (Node.js 26+) para gestionar
@@ -9,17 +10,17 @@
  * - Compilación ultrarrápida nativa sin dependencias externas.
  * - Formato estandarizado mediante ANSI util 'styleText'.
  */
-
+import { spawnSync, type SpawnSyncReturns } from 'node:child_process';
+import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
+import { enableCompileCache } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
-import { Buffer } from 'node:buffer';
-import { styleText, parseArgs } from 'node:util';
-import { enableCompileCache } from 'node:module';
-import { spawnSync } from 'node:child_process';
-import crypto from 'node:crypto';
 import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
+import { styleText, parseArgs } from 'node:util';
+
+import type { DisplayText } from '@francogp/auditor';
 
 enableCompileCache();
 
@@ -72,7 +73,7 @@ RUN mkdir -p /etc/postgresql-custom/conf.d && chown -R postgres:postgres /etc/po
 `;
 
 // ── Helpers Visuales y de Consola ────────────────────────────────────────────
-function header(title: string, subtitle = '') {
+function header(title: string, subtitle = ''): void {
   console.log();
   const rawLength = Math.max(title.length, subtitle.length);
   const border = '━'.repeat(rawLength + 4);
@@ -94,15 +95,15 @@ function header(title: string, subtitle = '') {
   console.log(styleText('cyan', `┗${border}┛`));
 }
 
-function ok(msg: string) {
+function ok(msg: string): void {
   console.log(`  ${styleText('green', '✓')} ${msg}`);
 }
 
-function warn(msg: string) {
+function warn(msg: string): void {
   console.log(`  ${styleText('yellow', '⚠')} ${msg}`);
 }
 
-function info(msg: string) {
+function info(msg: string): void {
   console.log(`  ${styleText('dim', 'ℹ')} ${msg}`);
 }
 
@@ -133,7 +134,7 @@ function confirmPrompt(question: string, defaultYes = false): Promise<boolean> {
 }
 
 // ── Ejecución de Comandos Externos ───────────────────────────────────────────
-function run(cmd: string[], cwd?: string, check = true) {
+function run(cmd: string[], cwd?: string, check = true): SpawnSyncReturns<Buffer> {
   console.log(styleText('dim', `▶ ${cmd.join(' ')}`));
   const result = spawnSync(cmd[0]!, cmd.slice(1), {
     cwd,
@@ -158,23 +159,22 @@ function setEnvVar(content: string, key: string, value: string, afterHeader?: st
 
   if (pattern.test(content)) {
     return content.replace(pattern, replacement);
-  } else {
-    if (afterHeader) {
-      const escapedHeader = escapeRegExp(afterHeader);
-      const hPattern = new RegExp(`^${escapedHeader}\\s*$`, 'm');
-      if (hPattern.test(content)) {
-        return content.replace(hPattern, `${afterHeader}\n${replacement}`);
-      }
-    }
-
-    let res = content;
-    if (res && !res.endsWith('\n')) res += '\n';
-    return res + `${replacement}\n`;
   }
+  if (afterHeader) {
+    const escapedHeader = escapeRegExp(afterHeader);
+    const hPattern = new RegExp(`^${escapedHeader}\\s*$`, 'm');
+    if (hPattern.test(content)) {
+      return content.replace(hPattern, `${afterHeader}\n${replacement}`);
+    }
+  }
+
+  let res = content;
+  if (res && !res.endsWith('\n')) res += '\n';
+  return res + `${replacement}\n`;
 }
 
 // open-record: Master environment variables key-value dictionary parsed from .env file
-async function parseMasterEnv(): Promise<Record<string, string>> {
+async function parseMasterEnv(): Promise<Record<DisplayText, string>> {
   try {
     await fs.access(ARCHIVO_MAESTRO);
   } catch {
@@ -183,7 +183,7 @@ async function parseMasterEnv(): Promise<Record<string, string>> {
   await using fileHandle = await fs.open(ARCHIVO_MAESTRO, 'r');
   const content = await fileHandle.readFile({ encoding: 'utf-8' });
   // open-record: Master environment variables key-value dictionary parsed from .env file
-  const result: Record<string, string> = {};
+  const result: Record<DisplayText, string> = {};
   for (const line of content.split(/\r?\n/)) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#') || !trimmed.includes('=')) continue;
@@ -196,7 +196,7 @@ async function parseMasterEnv(): Promise<Record<string, string>> {
 }
 
 // open-record: Generic environment variables key-value dictionary parsed from .env files
-async function parseEnvFile(filePath: string): Promise<Record<string, string>> {
+async function parseEnvFile(filePath: string): Promise<Record<DisplayText, string>> {
   try {
     await fs.access(filePath);
   } catch {
@@ -205,7 +205,7 @@ async function parseEnvFile(filePath: string): Promise<Record<string, string>> {
   await using fileHandle = await fs.open(filePath, 'r');
   const content = await fileHandle.readFile({ encoding: 'utf-8' });
   // open-record: Generic environment variables key-value dictionary parsed from .env files
-  const result: Record<string, string> = {};
+  const result: Record<DisplayText, string> = {};
   for (const line of content.split(/\r?\n/)) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#') || !trimmed.includes('=')) continue;
@@ -219,7 +219,7 @@ async function parseEnvFile(filePath: string): Promise<Record<string, string>> {
 
 function getServerNames(
   // open-record: Environment variables key-value map for server discovery
-  envVars: Record<string, string>
+  envVars: Record<DisplayText, string>
 ): string[] {
   const names = new Set<string>();
   const SETUP_ENV_SUFFIXES = [
@@ -268,13 +268,13 @@ function getServerNames(
 // open-record: Server environment variables key-value dictionary extracted from master env
 function extractServerVars(
   // open-record: Environment variables key-value dictionary
-  envVars: Record<string, string>,
+  envVars: Record<DisplayText, string>,
   serverName: string
-): Record<string, string> {
+): Record<DisplayText, string> {
   // open-record: Server environment variables key-value dictionary
   const prefix = `SERVER_${serverName}_`;
   // open-record: Server environment variables key-value dictionary
-  const result: Record<string, string> = {};
+  const result: Record<DisplayText, string> = {};
   for (const [k, v] of Object.entries(envVars)) {
     if (k.startsWith(prefix)) {
       result[k.substring(prefix.length)] = v;
@@ -328,13 +328,13 @@ function isJwtValid(token: string | undefined, expectedRole: string, secret: str
 async function ensureServerKeys(
   serverName: string,
   // open-record: Environment variables key-value dictionary
-  envVars: Record<string, string>
-): Promise<Record<string, string>> {
+  envVars: Record<DisplayText, string>
+): Promise<Record<DisplayText, string>> {
   // open-record: Server credentials key-value dictionary
   const prefix = `SERVER_${serverName}_`;
   const existing = extractServerVars(envVars, serverName);
   // open-record: Generated server credentials key-value dictionary
-  const generated: Record<string, string> = {};
+  const generated: Record<DisplayText, string> = {};
 
   if (!existing.JWT_SECRET) {
     generated.JWT_SECRET = crypto.randomBytes(32).toString('base64');
@@ -362,7 +362,7 @@ async function ensureServerKeys(
   }
 
   // open-record: Cryptographic secret generation functions key-value dictionary
-  const simpleKeys: Record<string, () => string> = {
+  const simpleKeys: Record<DisplayText, () => string> = {
     POSTGRES_PASSWORD: () => crypto.randomBytes(20).toString('hex'),
     SECRET_KEY_BASE: () => crypto.randomBytes(48).toString('base64'),
     VAULT_ENC_KEY: () => crypto.randomBytes(16).toString('hex'),
@@ -399,7 +399,7 @@ async function ensureServerKeys(
 
 // ── Comandos CLI del Orquestador ─────────────────────────────────────────────
 
-async function listar() {
+async function listar(): Promise<void> {
   header('Servidores configurados');
   const varsEnv = await parseMasterEnv();
   const servidores = getServerNames(varsEnv);
@@ -422,7 +422,7 @@ async function listar() {
   console.log();
 }
 
-async function clonar() {
+async function clonar(): Promise<void> {
   header('Clonando Supabase oficial');
   try {
     await fs.access(CARPETA_DOCKER);
@@ -472,7 +472,7 @@ async function clonar() {
   ok('Estructura de Supabase y Dockerfile generados correctamente.');
 }
 
-async function generar() {
+async function generar(): Promise<void> {
   header('Generando archivos de despliegue');
   const varsEnv = await parseMasterEnv();
   const servidores = getServerNames(varsEnv);
@@ -650,7 +650,7 @@ async function generar() {
   }
 }
 
-async function agregar() {
+async function agregar(): Promise<void> {
   header('Agregar/Actualizar servidor');
 
   const nombreInput = await askPrompt('Nombre del servidor (ej: nas, vps)');
@@ -723,7 +723,7 @@ async function agregar() {
   }
 
   // open-record: Server environment variable updates key-value dictionary to write into master .env
-  const actualizaciones: Record<string, string> = {
+  const actualizaciones: Record<DisplayText, string> = {
     [`${prefix}ID`]: srv_id,
     [`${prefix}NAME`]: srv_name,
     [`${prefix}REGION`]: srv_region,
@@ -750,7 +750,7 @@ async function agregar() {
   info("Usá 'generar' cuando quieras producir el archivo .env final para el servidor remoto.");
 }
 
-async function construir(tag = 'latest') {
+async function construir(tag = 'latest'): Promise<void> {
   header('Docker: Construir');
   const env = await parseMasterEnv();
   const user = env.DOCKER_USER;
@@ -764,7 +764,7 @@ async function construir(tag = 'latest') {
   ok(`Imagen: ${img}`);
 }
 
-async function publicar(tag = 'latest') {
+async function publicar(tag = 'latest'): Promise<void> {
   header('Docker: Publicar');
   const env = await parseMasterEnv();
   const user = env.DOCKER_USER;
@@ -780,24 +780,24 @@ async function publicar(tag = 'latest') {
   ok(`Publicada: ${img}`);
 }
 
-async function liberar(tag = 'latest') {
+async function liberar(tag = 'latest'): Promise<void> {
   await construir(tag);
   await publicar(tag);
 }
 
-async function todo(tag = 'latest') {
+async function todo(tag = 'latest'): Promise<void> {
   await clonar();
   await generar();
   await construir(tag);
   await publicar(tag);
 }
 
-function syncOfficialServers() {
+function syncOfficialServers(): void {
   info('Sincronizando official_servers.ts con el .env maestro...');
   run(['npm', 'run', 'servers:configure'], undefined, false);
 }
 
-async function main() {
+async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const normalized = args.map((a: string) =>
     a.includes('=') && !a.startsWith('-') ? `--${a}` : a

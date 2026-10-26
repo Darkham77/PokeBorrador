@@ -1,8 +1,20 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { gsap } from 'gsap';
-import { useModalStore } from '@/stores/modals';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import EventCardCategoryPreview from '@/components/events/EventCardCategoryPreview.vue';
+import EventCardActionFooter from '@/components/modals/EventCardActionFooter.vue';
+import {
+  parseEventConfig,
+  formatEventRemainingTime,
+  extractCardSpeciesList,
+  resolveEventBannerKey,
+  resolveCardElementId,
+  resolveEventCardClasses
+} from '@/components/modals/eventCardHelper';
+import EventCardMetaTags from '@/components/modals/EventCardMetaTags.vue';
+import { type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import {
   resolveEventSubCompetitions,
   resolveWeeklyRotation,
@@ -12,26 +24,15 @@ import {
   type ResolvedSubCompetition,
   type WeeklyRotationEntry
 } from '@/logic/events/eventEngine';
-import { type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { UpcomingEventOccurrence } from '@/logic/events/eventEngine';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import {
   getServerTime,
   getServerInstant,
   getGMT3Date,
   normalizeZonedDateTime
 } from '@/logic/utils/timeUtils';
-import type { UpcomingEventOccurrence } from '@/logic/events/eventEngine';
-import {
-  parseEventConfig,
-  formatEventRemainingTime,
-  extractCardSpeciesList,
-  resolveEventBannerKey,
-  resolveCardElementId,
-  resolveEventCardClasses
-} from '@/components/modals/eventCardHelper';
-import PVTooltip from '@/components/common/PVTooltip.vue';
-import EventCardCategoryPreview from '@/components/events/EventCardCategoryPreview.vue';
-import EventCardMetaTags from '@/components/modals/EventCardMetaTags.vue';
-import EventCardActionFooter from '@/components/modals/EventCardActionFooter.vue';
+import { useModalStore } from '@/stores/modals';
 
 interface Props {
   event: GameEvent;
@@ -58,7 +59,7 @@ const now = ref(getServerTime());
 let timerTween: gsap.core.Tween | null = null;
 
 const TIME_TICK_INTERVAL_SEC = 1;
-const updateTime = () => {
+const updateTime = (): void => {
   now.value = getServerTime();
   timerTween = gsap.delayedCall(TIME_TICK_INTERVAL_SEC, updateTime);
 };
@@ -127,21 +128,21 @@ const showCategoryPreview = computed(() =>
   Boolean(!isUpcoming.value && props.event.type === 'competition' && resolvedSubComps.value.length)
 );
 
-const openEventDetail = () => {
+const openEventDetail = (): void => {
   modalStore.open('EventDetail', {
     event: props.event,
     occurrence: props.occurrence
   });
 };
 
-const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
+const openSpeciesDetail = (speciesId: PokemonSpeciesId): void => {
   modalStore.open('PokedexDetail', {
     speciesId,
     context: 'pokedex'
   });
 };
 
-const onCardHover = (event: MouseEvent, isEntering: boolean) => {
+const onCardHover = (event: MouseEvent, isEntering: boolean): void => {
   const card = event.currentTarget as HTMLElement;
   if (!card) return;
   const bannerImg = card.querySelector('.banner-box img') as HTMLElement | null;

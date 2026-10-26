@@ -9,7 +9,7 @@ export class ShowdownLogEnricher {
   /**
    * Overrides battle.add and battle.addMove to inject UIDs in real-time.
    */
-  static setupRealtimeEnrichment(battle: Battle): void {
+  public static setupRealtimeEnrichment(battle: Battle): void {
     const originalAdd = battle.add.bind(battle);
     battle.add = function (...parts: unknown[]) {
       originalAdd(...(parts as Parameters<typeof originalAdd>)); // domain-ok: Open dynamic text or non-domain string payload
@@ -58,7 +58,7 @@ export class ShowdownLogEnricher {
   /**
    * Retroactively enriches early logs (e.g. initial lead switch/drag lines).
    */
-  static enrichRetroactiveLeads(battle: Battle): void {
+  public static enrichRetroactiveLeads(battle: Battle): void {
     const enriched = battle.log.map((line) => {
       if (line.startsWith('|switch|') || line.startsWith('|drag|')) {
         const parts = line.split('|');

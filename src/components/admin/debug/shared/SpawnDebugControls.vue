@@ -8,9 +8,11 @@
  */
 
 import { computed } from 'vue';
+
 import { useDebugStore } from '@/stores/debug';
-import DebugNumericControlRow from './DebugNumericControlRow.vue';
+
 import type { DebugPresetOption } from './debugControlTypes.ts';
+import DebugNumericControlRow from './DebugNumericControlRow.vue';
 
 const debugStore = useDebugStore();
 

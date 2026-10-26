@@ -489,6 +489,21 @@ export function resolveMountainAutotileCell(
   };
 }
 
+function registerProjectedCliffFoot(
+  foot: CliffFootOverlay | null | undefined,
+  overlays: CliffFootOverlay[],
+  occupiedGrid: boolean[][],
+  W: number,
+  H: number
+): void {
+  if (!foot) return;
+  overlays.push(foot);
+  const { targetX, targetY } = foot;
+  if (targetY >= 0 && targetY < H && targetX >= 0 && targetX < W) {
+    occupiedGrid[targetY]![targetX] = true;
+  }
+}
+
 /**
  * Resolves an entire elevation matrix into a structured autotile result with:
  *   - Base primary tiles
@@ -526,13 +541,13 @@ export function resolveMountainMapGrid(
         cellDetails[y]![x] = resolved;
         primaryTiles[y]![x] = resolved.primaryTile;
 
-        if (resolved.projectedFoot) {
-          cliffFootOverlays.push(resolved.projectedFoot);
-          const { targetX, targetY } = resolved.projectedFoot;
-          if (targetY >= 0 && targetY < H && targetX >= 0 && targetX < W) {
-            occupiedFootCells[targetY]![targetX] = true;
-          }
-        }
+        registerProjectedCliffFoot(
+          resolved.projectedFoot,
+          cliffFootOverlays,
+          occupiedFootCells,
+          W,
+          H
+        );
       }
     }
   }
@@ -600,7 +615,7 @@ export function stampMountainStairs(
     pal === 'gray' ? CANONICAL_MOUNTAIN_BRUSH_GRAY_ROCK : CANONICAL_MOUNTAIN_BRUSH_BROWN_ROCK;
   const b = isRockTier ? rockBrush : grassBrush;
 
-  const newPrimaryTiles: string[][] = result.primaryTiles.map((r) => [...r]); // no-domain: Estructura o identificador procedural de aventura
+  const newPrimaryTiles = result.primaryTiles.map((r) => [...r]);
   const newCellDetails: (ResolvedMountainCell | null)[][] = result.cellDetails.map((r) => [...r]);
   const newOccupiedFootCells: boolean[][] = result.occupiedFootCells.map((r) => [...r]);
 
@@ -762,13 +777,7 @@ export function recalculateNeighborhoodBitmask(
         newCellDetails[y]![x] = resolved;
         newPrimaryTiles[y]![x] = resolved.primaryTile;
 
-        if (resolved.projectedFoot) {
-          newOverlays.push(resolved.projectedFoot);
-          const { targetX, targetY } = resolved.projectedFoot;
-          if (targetY >= 0 && targetY < H && targetX >= 0 && targetX < W) {
-            newOccupiedFootCells[targetY]![targetX] = true;
-          }
-        }
+        registerProjectedCliffFoot(resolved.projectedFoot, newOverlays, newOccupiedFootCells, W, H);
       } else {
         newCellDetails[y]![x] = null;
         newPrimaryTiles[y]![x] = '';

@@ -1,21 +1,7 @@
+import type { DisplayText } from '@francogp/auditor';
 // Kanto Regional World Generator - Procedural Canvas Tile/Sprite Engine (3600 x 4600 px)
 
-import type { ProceduralGenerationConfig } from '../../types/map/adventureWorldTypes.ts';
-import {
-  fillImpenetrableWorld,
-  carveSettlementClearings,
-  carveProceduralCoastlines,
-  carveProceduralMountainChains,
-  placeProceduralTownArchitectures,
-  placeProceduralReliefAndProps,
-  placeAllBridges
-} from './kantoProceduralCarver.ts';
-import { SimplexNoise } from './noise/simplexNoise.ts';
-import {
-  CONTINENT_DEFAULT_SEED,
-  MAX_PLACEMENT_SPIRAL_SEARCH_RADIUS,
-  DEFAULT_STRUCTURE_PX_SIZE
-} from '../../config/studioConstants.ts';
+import { DOOR_PATH_EXTENSION_STEPS } from '../../config/kantoCarverConfig.ts';
 import {
   MAX_CANONICAL_COORD_THRESHOLD,
   DEFAULT_ROAD_WIDTH,
@@ -49,12 +35,11 @@ import {
   KANTO_CANONICAL_BUILDINGS,
   KANTO_LEDGES_OFFSETS
 } from '../../config/kantoRegionalConfig.ts';
-import { DOOR_PATH_EXTENSION_STEPS } from '../../config/kantoCarverConfig.ts';
-import { DynamicCatalogLoader } from './kantoTileEngine.ts';
-import type {
-  PlacedStructure,
-  IRegionalWorldRendererSource
-} from '../../types/map/kantoTileEngineTypes.ts';
+import {
+  CONTINENT_DEFAULT_SEED,
+  MAX_PLACEMENT_SPIRAL_SEARCH_RADIUS
+} from '../../config/studioConstants.ts';
+import type { ProceduralGenerationConfig } from '../../types/map/adventureWorldTypes.ts';
 import {
   KANTO_TILE_SIZE,
   KANTO_SPACING_MULTIPLIER,
@@ -66,54 +51,213 @@ import {
   type KantoNodeCoordinate,
   type IKantoCarverWorldContext
 } from '../../types/map/kantoGridModel.ts';
+import type {
+  PlacedStructure,
+  IRegionalWorldRendererSource
+} from '../../types/map/kantoTileEngineTypes.ts';
+import { hasBuildingBoxOverlap } from './buildingPlacementSolver.ts';
+import {
+  fillImpenetrableWorld,
+  carveSettlementClearings,
+  carveProceduralCoastlines,
+  carveProceduralMountainChains,
+  placeProceduralTownArchitectures,
+  placeProceduralReliefAndProps,
+  placeAllBridges
+} from './kantoProceduralCarver.ts';
+import { DynamicCatalogLoader } from './kantoTileEngine.ts';
+import { SimplexNoise } from './noise/simplexNoise.ts';
+
+function countSurroundingMountainNeighbors(
+  g: readonly (readonly number[] | Uint8Array)[],
+  x: number,
+  y: number
+): number {
+  let count = 0;
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      if (dx === 0 && dy === 0) continue;
+      if (g[y + dy]?.[x + dx] === CELL_BIOME.MOUNTAIN_DIRT) count++;
+    }
+  }
+  return count;
+}
+
+function clearForestCorridorToGrass(
+  g: (number[] | Uint8Array)[],
+  minX: number,
+  maxX: number,
+  minY: number,
+  maxY: number
+): void {
+  for (let y = minY; y <= maxY; y++) {
+    const row = g[y];
+    if (!row || y < 0 || y >= KANTO_GRID_H) continue;
+    for (let x = minX; x <= maxX; x++) {
+      if (x >= 0 && x < KANTO_GRID_W && row[x] === CELL_BIOME.FOREST_WALL) {
+        row[x] = CELL_BIOME.GRASS;
+      }
+    }
+  }
+}
+
+function rasterizeRoadWaypointBrush(
+  cx: number,
+  cy: number,
+  width: number,
+  grid: Uint8Array[],
+  occupancy: OccupancyGrid
+): void {
+  const halfW = Math.floor(width / 2);
+  for (let wy = -halfW; wy <= halfW; wy++) {
+    for (let wx = -halfW; wx <= halfW; wx++) {
+      const px = cx + wx;
+      const py = cy + wy;
+      if (px < 0 || px >= KANTO_GRID_W || py < 0 || py >= KANTO_GRID_H) continue;
+      const row = grid[py];
+      if (!row || row[px] === CELL_BIOME.MOUNTAIN_DIRT) continue;
+
+      if (row[px] === CELL_BIOME.WATER) {
+        row[px] = CELL_BIOME.BRIDGE;
+        occupancy.set(px, py, OCCUPANCY_FLAGS.ROAD);
+      } else {
+        row[px] = CELL_BIOME.DIRT_PATH;
+        occupancy.set(px, py, OCCUPANCY_FLAGS.ROAD);
+        occupancy.reserveBuffer(
+          px,
+          py,
+          1,
+          1,
+          KANTO_ROAD_CONFIG.rasterizer.bufferSize,
+          OCCUPANCY_FLAGS.ROAD_BUFFER
+        );
+      }
+    }
+  }
+}
+
+function findSpiralSpot(
+  bx: number,
+  by: number,
+  maxRadius: number,
+  isValid: (x: number, y: number) => boolean
+): { readonly x: number; readonly y: number } | null {
+  for (let r = 1; r <= maxRadius; r++) {
+    for (let dy = -r; dy <= r; dy++) {
+      for (let dx = -r; dx <= r; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) === r && isValid(bx + dx, by + dy)) {
+          return { x: bx + dx, y: by + dy };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+export interface TileCoordPoint {
+  readonly tx: number;
+  readonly ty: number;
+}
+
+function pavePewterCivicPlaza(
+  pwT: TileCoordPoint,
+  g: Uint8Array[],
+  occupancy: OccupancyGrid
+): void {
+  const plaza = PEWTER_PLAZA_BOUNDS;
+  for (let dy = plaza.minDy; dy <= plaza.maxDy; dy++) {
+    for (let dx = plaza.minDx; dx <= plaza.maxDx; dx++) {
+      const gx = pwT.tx + dx;
+      const gy = pwT.ty + dy;
+      if (gx >= 0 && gx < KANTO_GRID_W && gy >= 0 && gy < KANTO_GRID_H) {
+        const row = g[gy];
+        if (
+          row &&
+          row[gx] !== CELL_BIOME.WATER &&
+          !occupancy.has(gx, gy, OCCUPANCY_FLAGS.CLIFF | OCCUPANCY_FLAGS.BUILDING)
+        ) {
+          row[gx] = CELL_BIOME.PLAZA_STONE;
+        }
+      }
+    }
+  }
+}
+
+function isNearCliffOrMountain(
+  gx: number,
+  gy: number,
+  occupancy: OccupancyGrid,
+  g: Uint8Array[]
+): boolean {
+  for (
+    let cdy = -BIOME_LATITUDE_TRANSITION.cliffBufferVert;
+    cdy <= BIOME_LATITUDE_TRANSITION.cliffBufferVert;
+    cdy++
+  ) {
+    for (let cdx = -1; cdx <= BIOME_LATITUDE_TRANSITION.cliffBufferHoriz; cdx++) {
+      const cx = gx + cdx;
+      const cy = gy + cdy;
+      if (cx < 0 || cx >= KANTO_GRID_W || cy < 0 || cy >= KANTO_GRID_H) continue;
+      if (
+        occupancy.has(cx, cy, OCCUPANCY_FLAGS.CLIFF) ||
+        g[cy]?.[cx] === CELL_BIOME.MOUNTAIN_DIRT
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
 export class KantoRegionalWorldGenerator
   implements IRegionalWorldRendererSource, IKantoCarverWorldContext
 {
-  readonly loader: DynamicCatalogLoader;
-  grid: Uint8Array[] = [];
-  elevation: Uint8Array[] = [];
-  occupancy: OccupancyGrid;
-  trees: PlacedStructure[] = [];
-  buildings: PlacedStructure[] = [];
-  bridges: PlacedStructure[] = [];
-  props: PlacedStructure[] = [];
-  nature: PlacedStructure[] = [];
-  seed = CONTINENT_DEFAULT_SEED;
+  public readonly loader: DynamicCatalogLoader;
+  public grid: Uint8Array[] = [];
+  public elevation: Uint8Array[] = [];
+  public occupancy: OccupancyGrid;
+  public trees: PlacedStructure[] = [];
+  public buildings: PlacedStructure[] = [];
+  public bridges: PlacedStructure[] = [];
+  public props: PlacedStructure[] = [];
+  public nature: PlacedStructure[] = [];
+  public seed = CONTINENT_DEFAULT_SEED;
 
-  constructor(loader: DynamicCatalogLoader) {
+  public constructor(loader: DynamicCatalogLoader) {
     this.loader = loader;
     this.occupancy = new OccupancyGrid(KANTO_GRID_W, KANTO_GRID_H);
   }
 
   private spacingMultiplier = KANTO_SPACING_MULTIPLIER;
 
-  nodeToTile(x: number, y: number): { tx: number; ty: number } {
+  public nodeToTile(x: number, y: number): { tx: number; ty: number } {
     return {
       tx: Math.floor((x * this.spacingMultiplier) / KANTO_TILE_SIZE),
       ty: Math.floor((y * this.spacingMultiplier) / KANTO_TILE_SIZE)
     };
   }
 
-  nodeToPx(x: number, y: number): { px: number; py: number } {
+  public nodeToPx(x: number, y: number): { px: number; py: number } {
     return {
       px: Math.round(x * this.spacingMultiplier),
       py: Math.round(y * this.spacingMultiplier)
     };
   }
 
-  hash(x: number, y: number, seed = 0): number {
-    let h = (Math.imul(x, HASH_MURMUR_PRIME_X) + Math.imul(y, HASH_MURMUR_PRIME_Y) + seed) | 0;
+  public hash(x: number, y: number, seed = 0): number {
+    let h = Math.trunc(
+      Math.imul(x, HASH_MURMUR_PRIME_X) + Math.imul(y, HASH_MURMUR_PRIME_Y) + seed
+    );
     h = Math.imul(h ^ (h >>> HASH_BIT_SHIFT_A), HASH_MURMUR_PRIME_Z);
-    return (h ^ (h >>> HASH_BIT_SHIFT_B)) | 0;
+    return Math.trunc(h ^ (h >>> HASH_BIT_SHIFT_B));
   }
 
-  hashF(x: number, y: number, seed = 0): number {
+  public hashF(x: number, y: number, seed = 0): number {
     return (this.hash(x, y, seed) & INT32_MASK) / INT32_MASK;
   }
 
-  generate(
-    nodes: Record<string, KantoNodeCoordinate>, // open-record: Procedural adventure nodes indexed by node id
+  public generate(
+    nodes: Record<DisplayText, KantoNodeCoordinate>, // open-record: Procedural adventure nodes indexed by node id
     connections: readonly (readonly [string, string])[],
     seed = CONTINENT_DEFAULT_SEED,
     config?: ProceduralGenerationConfig
@@ -173,7 +317,7 @@ export class KantoRegionalWorldGenerator
     placeAllBridges(this);
   }
 
-  private carveMountainChains(nodes: Record<string, KantoNodeCoordinate>): void {
+  private carveMountainChains(nodes: Record<DisplayText, KantoNodeCoordinate>): void {
     // open-record: Procedural adventure nodes indexed by node id
     const elev = this.elevation;
     const g = this.grid;
@@ -182,14 +326,14 @@ export class KantoRegionalWorldGenerator
       .filter((n) => n.type === 'city' && n.id !== 'indigo')
       .map((n) => this.nodeToTile(n.x, n.y));
 
-    const isNearSettlement = (tx: number, ty: number) =>
+    const isNearSettlement = (tx: number, ty: number): boolean =>
       settlementTiles.some(
         (st) => Math.hypot(st.tx - tx, st.ty - ty) < SETTLEMENT_CLEARANCE_RADIUS_TILES
       );
 
     const simplex = new SimplexNoise(this.seed);
 
-    const raiseRectPlateau = (x0: number, x1: number, y0: number, y1: number, level = 2) => {
+    const raiseRectPlateau = (x0: number, x1: number, y0: number, y1: number, level = 2): void => {
       const minX = Math.max(0, Math.min(x0, x1));
       const maxX = Math.min(KANTO_GRID_W - 1, Math.max(x0, x1));
       const minY = Math.max(0, Math.min(y0, y1));
@@ -221,7 +365,7 @@ export class KantoRegionalWorldGenerator
       }
     };
 
-    const raisePlateau = (x0: number, x1: number, y0: number, y1: number, level = 3) => {
+    const raisePlateau = (x0: number, x1: number, y0: number, y1: number, level = 3): void => {
       const cx = (x0 + x1) / 2;
       const cy = (y0 + y1) / 2;
       const rx = Math.max(MIN_PLATEAU_RADIUS, (x1 - x0) / 2);
@@ -438,13 +582,7 @@ export class KantoRegionalWorldGenerator
         if (!row) continue;
         for (let x = 1; x < KANTO_GRID_W - 1; x++) {
           if (row[x] !== CELL_BIOME.MOUNTAIN_DIRT) continue;
-          let mtCount = 0;
-          for (let dy = -1; dy <= 1; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-              if (dx === 0 && dy === 0) continue;
-              if (g[y + dy]?.[x + dx] === CELL_BIOME.MOUNTAIN_DIRT) mtCount++;
-            }
-          }
+          const mtCount = countSurroundingMountainNeighbors(g, x, y);
           if (mtCount <= KANTO_PLATEAU_RANGES.minNeighborThreshold) {
             toRemove.push({ x, y });
           }
@@ -458,12 +596,12 @@ export class KantoRegionalWorldGenerator
     }
   }
 
-  private carveOrganicHydrography(nodes: Record<string, KantoNodeCoordinate>): void {
+  private carveOrganicHydrography(nodes: Record<DisplayText, KantoNodeCoordinate>): void {
     // open-record: Procedural adventure nodes indexed by node id
     const g = this.grid;
     const elev = this.elevation;
 
-    const setWater = (x: number, y: number) => {
+    const setWater = (x: number, y: number): void => {
       if (x >= 0 && x < KANTO_GRID_W && y >= 0 && y < KANTO_GRID_H) {
         const row = g[y];
         const eRow = elev[y];
@@ -683,7 +821,7 @@ export class KantoRegionalWorldGenerator
   }
 
   private carveRoadNetwork(
-    nodes: Record<string, KantoNodeCoordinate>, // open-record: Procedural adventure nodes indexed by node id
+    nodes: Record<DisplayText, KantoNodeCoordinate>, // open-record: Procedural adventure nodes indexed by node id
     connections: readonly (readonly [string, string])[],
     roadWidth = 2
   ): void {
@@ -754,16 +892,13 @@ export class KantoRegionalWorldGenerator
       const r1 = KANTO_ROAD_CONFIG.route1Corridor;
 
       // Carve compact Route 1 grass corridor
-      for (let y = vn.ty + r1.startOffsetTy; y <= pt.ty + r1.endOffsetTy; y++) {
-        for (let x = pt.tx - r1.halfWidth; x <= pt.tx + r1.halfWidth; x++) {
-          if (x >= 0 && x < KANTO_GRID_W && y >= 0 && y < KANTO_GRID_H) {
-            const row = g[y];
-            if (row && row[x] === CELL_BIOME.FOREST_WALL) {
-              row[x] = CELL_BIOME.GRASS;
-            }
-          }
-        }
-      }
+      clearForestCorridorToGrass(
+        g,
+        pt.tx - r1.halfWidth,
+        pt.tx + r1.halfWidth,
+        vn.ty + r1.startOffsetTy,
+        pt.ty + r1.endOffsetTy
+      );
 
       const midY = Math.floor((pt.ty + vn.ty) / 2);
       this.rasterizePath(
@@ -829,57 +964,24 @@ export class KantoRegionalWorldGenerator
       KANTO_ROAD_CONFIG.rasterizer.minCorridorRadius,
       Math.floor(width / 2) + KANTO_ROAD_CONFIG.rasterizer.corridorPadding
     );
-    const stamp = (cx: number, cy: number) => {
-      for (let wy = -corridorRadius; wy <= corridorRadius; wy++) {
-        for (let wx = -corridorRadius; wx <= corridorRadius; wx++) {
-          const px = cx + wx;
-          const py = cy + wy;
-          if (px >= 0 && px < KANTO_GRID_W && py >= 0 && py < KANTO_GRID_H) {
-            const row = grid[py];
-            if (row && row[px] === CELL_BIOME.FOREST_WALL) {
-              row[px] = CELL_BIOME.GRASS;
-            }
-          }
-        }
-      }
-
-      for (let wy = -Math.floor(width / 2); wy <= Math.floor(width / 2); wy++) {
-        for (let wx = -Math.floor(width / 2); wx <= Math.floor(width / 2); wx++) {
-          const px = cx + wx;
-          const py = cy + wy;
-          if (px >= 0 && px < KANTO_GRID_W && py >= 0 && py < KANTO_GRID_H) {
-            const row = grid[py];
-            if (row) {
-              // Never carve roads over existing mountain cliffs
-              if (row[px] === CELL_BIOME.MOUNTAIN_DIRT) continue;
-              if (row[px] === CELL_BIOME.WATER) {
-                row[px] = CELL_BIOME.BRIDGE;
-                this.occupancy.set(px, py, OCCUPANCY_FLAGS.ROAD);
-              } else {
-                row[px] = CELL_BIOME.DIRT_PATH;
-                this.occupancy.set(px, py, OCCUPANCY_FLAGS.ROAD);
-                this.occupancy.reserveBuffer(
-                  px,
-                  py,
-                  1,
-                  1,
-                  KANTO_ROAD_CONFIG.rasterizer.bufferSize,
-                  OCCUPANCY_FLAGS.ROAD_BUFFER
-                );
-              }
-            }
-          }
-        }
-      }
+    const stamp = (cx: number, cy: number): void => {
+      clearForestCorridorToGrass(
+        grid,
+        cx - corridorRadius,
+        cx + corridorRadius,
+        cy - corridorRadius,
+        cy + corridorRadius
+      );
+      rasterizeRoadWaypointBrush(cx, cy, width, grid, this.occupancy);
     };
 
-    const drawLineH = (xStart: number, xEnd: number, y: number) => {
+    const drawLineH = (xStart: number, xEnd: number, y: number): void => {
       const minX = Math.min(xStart, xEnd);
       const maxX = Math.max(xStart, xEnd);
       for (let x = minX; x <= maxX; x++) stamp(x, y);
     };
 
-    const drawLineV = (yStart: number, yEnd: number, x: number) => {
+    const drawLineV = (yStart: number, yEnd: number, x: number): void => {
       const minY = Math.min(yStart, yEnd);
       const maxY = Math.max(yStart, yEnd);
       for (let y = minY; y <= maxY; y++) stamp(x, y);
@@ -901,10 +1003,10 @@ export class KantoRegionalWorldGenerator
       drawLineV(midY, y1, x1);
     }
   }
-  private carveTallGrassPatches(nodes: Record<string, KantoNodeCoordinate>): void {
+  private carveTallGrassPatches(nodes: Record<DisplayText, KantoNodeCoordinate>): void {
     // open-record: Procedural adventure nodes indexed by node id
     const g = this.grid;
-    const addPatch = (x0: number, x1: number, y0: number, y1: number) => {
+    const addPatch = (x0: number, x1: number, y0: number, y1: number): void => {
       for (let y = y0; y <= y1; y++) {
         for (let x = x0; x <= x1; x++) {
           if (x >= 0 && x < KANTO_GRID_W && y >= 0 && y < KANTO_GRID_H) {
@@ -951,7 +1053,7 @@ export class KantoRegionalWorldGenerator
     }
   }
 
-  private placeBridgesWithGuarantees(nodes: Record<string, KantoNodeCoordinate>): void {
+  private placeBridgesWithGuarantees(nodes: Record<DisplayText, KantoNodeCoordinate>): void {
     // open-record: Procedural adventure nodes indexed by node id
     this.bridges = [];
 
@@ -970,7 +1072,7 @@ export class KantoRegionalWorldGenerator
     this.bridges.push({ style: 'pier', x: vm.px + hp.dx, y: vm.py + hp.dy, w: hp.w, h: hp.h });
   }
 
-  private placeTownArchitectures(nodes: Record<string, KantoNodeCoordinate>): void {
+  private placeTownArchitectures(nodes: Record<DisplayText, KantoNodeCoordinate>): void {
     // open-record: Procedural adventure nodes indexed by node id
     this.buildings = [];
     const g = this.grid;
@@ -983,7 +1085,7 @@ export class KantoRegionalWorldGenerator
       w: number;
       h: number;
       door?: { x: number; y: number };
-    }) => {
+    }): void => {
       let bx = Math.floor(b.x / T);
       let by = Math.floor(b.y / T);
       const bw = Math.ceil(b.w / T);
@@ -993,7 +1095,7 @@ export class KantoRegionalWorldGenerator
       let bestY = by;
       let found = false;
 
-      const isSpotValid = (tx: number, ty: number) => {
+      const isSpotValid = (tx: number, ty: number): boolean => {
         if (tx < 1 || tx + bw >= KANTO_GRID_W - 1 || ty < 1 || ty + bh >= KANTO_GRID_H - 1)
           return false;
         for (let y = ty - 1; y <= ty + bh; y++) {
@@ -1021,14 +1123,8 @@ export class KantoRegionalWorldGenerator
               return false;
           }
         }
-        for (const eb of this.buildings) {
-          const ebx = Math.floor(eb.x / T);
-          const eby = Math.floor(eb.y / T);
-          const ebw = Math.ceil((eb.w ?? DEFAULT_STRUCTURE_PX_SIZE) / T);
-          const ebh = Math.ceil((eb.h ?? DEFAULT_STRUCTURE_PX_SIZE) / T);
-          if (tx < ebx + ebw + 1 && tx + bw + 1 > ebx && ty < eby + ebh + 1 && ty + bh + 1 > eby) {
-            return false;
-          }
+        if (hasBuildingBoxOverlap(tx, ty, bw, bh, this.buildings)) {
+          return false;
         }
         return true;
       };
@@ -1036,19 +1132,11 @@ export class KantoRegionalWorldGenerator
       if (isSpotValid(bx, by)) {
         found = true;
       } else {
-        for (let r = 1; r <= MAX_PLACEMENT_SPIRAL_SEARCH_RADIUS && !found; r++) {
-          for (let dy = -r; dy <= r; dy++) {
-            for (let dx = -r; dx <= r; dx++) {
-              if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
-              if (isSpotValid(bx + dx, by + dy)) {
-                bestX = bx + dx;
-                bestY = by + dy;
-                found = true;
-                break;
-              }
-            }
-            if (found) break;
-          }
+        const spot = findSpiralSpot(bx, by, MAX_PLACEMENT_SPIRAL_SEARCH_RADIUS, isSpotValid);
+        if (spot) {
+          bestX = spot.x;
+          bestY = spot.y;
+          found = true;
         }
       }
 
@@ -1358,27 +1446,11 @@ export class KantoRegionalWorldGenerator
     // Pewter City Civic Stone Plaza (authentically paves the open courtyard between Museum, Gym, Center & School)
     if (nodes.pewter) {
       const pwT = this.nodeToTile(nodes.pewter.x, nodes.pewter.y);
-      const plaza = PEWTER_PLAZA_BOUNDS;
-      for (let dy = plaza.minDy; dy <= plaza.maxDy; dy++) {
-        for (let dx = plaza.minDx; dx <= plaza.maxDx; dx++) {
-          const gx = pwT.tx + dx;
-          const gy = pwT.ty + dy;
-          if (gx >= 0 && gx < KANTO_GRID_W && gy >= 0 && gy < KANTO_GRID_H) {
-            const row = g[gy];
-            if (
-              row &&
-              row[gx] !== CELL_BIOME.WATER &&
-              !this.occupancy.has(gx, gy, OCCUPANCY_FLAGS.CLIFF | OCCUPANCY_FLAGS.BUILDING)
-            ) {
-              row[gx] = CELL_BIOME.PLAZA_STONE;
-            }
-          }
-        }
-      }
+      pavePewterCivicPlaza(pwT, g, this.occupancy);
     }
   }
 
-  private placeRouteInfrastructure(nodes?: Record<string, KantoNodeCoordinate>): void {
+  private placeRouteInfrastructure(nodes?: Record<DisplayText, KantoNodeCoordinate>): void {
     // open-record: Procedural adventure nodes indexed by node id
     const T = KANTO_TILE_SIZE;
     const ptTile = nodes?.pallet
@@ -1530,7 +1602,7 @@ export class KantoRegionalWorldGenerator
     }
   }
 
-  private placeLedges(nodes: Record<string, KantoNodeCoordinate>): void {
+  private placeLedges(nodes: Record<DisplayText, KantoNodeCoordinate>): void {
     // open-record: Procedural adventure nodes indexed by node id
     const T = KANTO_TILE_SIZE;
     const pt = nodes.pallet
@@ -1584,7 +1656,7 @@ export class KantoRegionalWorldGenerator
   }
 
   private placeNatureAndForests(
-    nodes: Record<string, KantoNodeCoordinate>, // open-record: Procedural adventure nodes indexed by node id
+    nodes: Record<DisplayText, KantoNodeCoordinate>, // open-record: Procedural adventure nodes indexed by node id
     _connections: readonly (readonly [string, string])[],
     _treeDensityMultiplier = 0.7
   ): void {
@@ -1610,26 +1682,7 @@ export class KantoRegionalWorldGenerator
           continue;
 
         // Buffer around cliffs: trees must not overlap cliff perimeters (1 tile horizontal, 2 tiles vertical)
-        let nearCliff = false;
-        for (
-          let cdy = -BIOME_LATITUDE_TRANSITION.cliffBufferVert;
-          cdy <= BIOME_LATITUDE_TRANSITION.cliffBufferVert && !nearCliff;
-          cdy++
-        ) {
-          for (let cdx = -1; cdx <= BIOME_LATITUDE_TRANSITION.cliffBufferHoriz; cdx++) {
-            const cx = gx + cdx;
-            const cy = gy + cdy;
-            if (cx < 0 || cx >= KANTO_GRID_W || cy < 0 || cy >= KANTO_GRID_H) continue;
-            if (
-              this.occupancy.has(cx, cy, OCCUPANCY_FLAGS.CLIFF) ||
-              g[cy]?.[cx] === CELL_BIOME.MOUNTAIN_DIRT
-            ) {
-              nearCliff = true;
-              break;
-            }
-          }
-        }
-        if (nearCliff) continue;
+        if (isNearCliffOrMountain(gx, gy, this.occupancy, g)) continue;
 
         // Organic biome species assignment:
         const elevVal = this.elevation[gy]?.[gx] ?? 1;
@@ -1696,7 +1749,7 @@ export class KantoRegionalWorldGenerator
     }
   }
 
-  private placePropsAndDetails(nodes: Record<string, KantoNodeCoordinate>): void {
+  private placePropsAndDetails(nodes: Record<DisplayText, KantoNodeCoordinate>): void {
     // open-record: Procedural adventure nodes indexed by node id
     // Snorlax on Route 12 and Route 16
     const r12 = nodes.route12 ? this.nodeToPx(nodes.route12.x, nodes.route12.y) : null;

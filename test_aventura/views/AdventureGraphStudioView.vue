@@ -8,10 +8,10 @@
  *   - Right: StudioAdventureGraphInspector (Inspector controls for nodes, biomes and structures)
  */
 
-import StudioAdventureGraphViewport from '../components/studio/StudioAdventureGraphViewport.vue';
 import StudioAdventureGraphInspector from '../components/studio/StudioAdventureGraphInspector.vue';
-import StudioTileCatalogDrawer from '../components/studio/StudioTileCatalogDrawer.vue';
+import StudioAdventureGraphViewport from '../components/studio/StudioAdventureGraphViewport.vue';
 import StudioConfirmModal from '../components/studio/StudioConfirmModal.vue';
+import StudioTileCatalogDrawer from '../components/studio/StudioTileCatalogDrawer.vue';
 </script>
 
 <template>

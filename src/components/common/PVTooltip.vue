@@ -4,10 +4,11 @@ let activeTooltipHide: ((immediate?: boolean) => void) | null = null; // singlet
 </script>
 
 <script setup lang="ts">
-import { ref, nextTick, inject, watch, onUnmounted, computed } from 'vue';
 import { gsap } from 'gsap';
-import { useTooltipPosition } from '@/composables/ui/useTooltipPosition';
+import { ref, nextTick, inject, watch, onUnmounted, computed } from 'vue';
+
 import PVTooltipDescriptionLine from '@/components/common/PVTooltipDescriptionLine.vue';
+import { useTooltipPosition } from '@/composables/ui/useTooltipPosition';
 
 const DEFAULT_TOOLTIP_DELAY_MS = 500;
 const TOUCH_DRAG_THRESHOLD_PX = 15;
@@ -49,7 +50,7 @@ const tooltipState = {
   clickBlockTimeout: null as gsap.core.Tween | null
 };
 
-const show = (immediate = false) => {
+const show = (immediate = false): void => {
   if (isSimplified.value || props.disabled || isBlockedByClick.value) return;
   if (tooltipState.timeout) tooltipState.timeout.kill();
 
@@ -65,7 +66,7 @@ const show = (immediate = false) => {
 
     if (trigger.value) {
       const rect = trigger.value.getBoundingClientRect();
-      isRightSide.value = rect.left + rect.width / 2 > window.innerWidth / 2;
+      isRightSide.value = rect.left + rect.width / 2 > globalThis.innerWidth / 2;
     }
 
     visibleLineCount.value = null;
@@ -80,17 +81,17 @@ const show = (immediate = false) => {
     updatePosition();
 
     // Auto-hide on scroll/wheel/click-outside/resize to prevent floating artifacts
-    window.addEventListener('scroll', hideScroll, { passive: true, capture: true });
-    window.addEventListener('wheel', hideScroll, { passive: true });
-    window.addEventListener('resize', hideScroll, { passive: true });
-    window.addEventListener('click', hideClickOutside, { capture: true });
-    window.addEventListener('touchstart', hideClickOutside, { capture: true });
+    globalThis.addEventListener('scroll', hideScroll, { passive: true, capture: true });
+    globalThis.addEventListener('wheel', hideScroll, { passive: true });
+    globalThis.addEventListener('resize', hideScroll, { passive: true });
+    globalThis.addEventListener('click', hideClickOutside, { capture: true });
+    globalThis.addEventListener('touchstart', hideClickOutside, { capture: true });
   });
 };
 
 const isBlockedByClick = ref(false);
 
-const hide = (immediate = false) => {
+const hide = (immediate = false): void => {
   if (tooltipState.timeout) tooltipState.timeout.kill();
   if (tooltipState.touchTimeout) {
     tooltipState.touchTimeout.kill();
@@ -108,22 +109,22 @@ const hide = (immediate = false) => {
   isVisible.value = false;
   visibleLineCount.value = null;
   isSlotTruncated.value = false;
-  window.removeEventListener('scroll', hideScroll, { capture: true });
-  window.removeEventListener('wheel', hideScroll);
-  window.removeEventListener('resize', hideScroll);
-  window.removeEventListener('click', hideClickOutside, { capture: true });
-  window.removeEventListener('touchstart', hideClickOutside, { capture: true });
+  globalThis.removeEventListener('scroll', hideScroll, { capture: true });
+  globalThis.removeEventListener('wheel', hideScroll);
+  globalThis.removeEventListener('resize', hideScroll);
+  globalThis.removeEventListener('click', hideClickOutside, { capture: true });
+  globalThis.removeEventListener('touchstart', hideClickOutside, { capture: true });
 };
 
-const hideInstanceLogic = (immediate = false) => {
+const hideInstanceLogic = (immediate = false): void => {
   hide(immediate);
 };
 
-const hideScroll = () => {
+const hideScroll = (): void => {
   hide(false);
 };
 
-const hideClickOutside = (event: Event) => {
+const hideClickOutside = (event: Event): void => {
   const target = event.target as Node;
   if (
     tooltip.value &&
@@ -135,11 +136,11 @@ const hideClickOutside = (event: Event) => {
   }
 };
 
-const updateTouchTime = () => {
+const updateTouchTime = (): void => {
   tooltipState.lastTouchTime = Temporal.Now.instant().epochMilliseconds;
 };
 
-const handleTouchStart = (e: TouchEvent) => {
+const handleTouchStart = (e: TouchEvent): void => {
   updateTouchTime();
   const touch = e.touches?.[0];
   if (touch) {
@@ -162,7 +163,7 @@ const handleTouchStart = (e: TouchEvent) => {
   }
 };
 
-const handleTouchEnd = () => {
+const handleTouchEnd = (): void => {
   updateTouchTime();
   if (tooltipState.touchTimeout) {
     tooltipState.touchTimeout.kill();
@@ -176,7 +177,7 @@ const handleTouchEnd = () => {
   }
 };
 
-const handleTouchMove = (e: TouchEvent) => {
+const handleTouchMove = (e: TouchEvent): void => {
   updateTouchTime();
   const touch = e.touches?.[0];
   if (!touch) return;
@@ -195,7 +196,7 @@ const handleTouchMove = (e: TouchEvent) => {
   }
 };
 
-const handleTriggerClick = (event: MouseEvent) => {
+const handleTriggerClick = (event: MouseEvent): void => {
   hide(true);
 
   if (!props.hideOnClick) return;
@@ -265,7 +266,7 @@ const isTruncated = computed(() => {
   return visibleLineCount.value !== null && visibleLineCount.value < descriptionLines.value.length;
 });
 
-const calculateFittingLines = () => {
+const calculateFittingLines = (): void => {
   if (!tooltip.value || maxHeight.value === null) return;
 
   const contentEl = tooltip.value.querySelector('.tooltip-content') as HTMLElement | null;
@@ -323,18 +324,18 @@ watch(
   }
 );
 
-const handleMouseEnter = () => {
+const handleMouseEnter = (): void => {
   if (
     Temporal.Now.instant().epochMilliseconds - tooltipState.lastTouchTime <
     TOUCH_HOVER_COOLDOWN_MS
   )
     return;
-  if (window.matchMedia('(hover: hover)').matches) {
+  if (globalThis.matchMedia('(hover: hover)').matches) {
     show(false);
   }
 };
 
-const handleContextMenu = (event: Event) => {
+const handleContextMenu = (event: Event): void => {
   event.preventDefault();
 };
 
@@ -346,7 +347,7 @@ watch(
 );
 
 // GSAP Hooks for custom animation on .tooltip-animate-wrapper
-const beforeEnter = (el: Element) => {
+const beforeEnter = (el: Element): void => {
   const wrapper = el.querySelector('.tooltip-animate-wrapper') as HTMLElement;
   if (!wrapper) return;
 
@@ -367,7 +368,7 @@ const beforeEnter = (el: Element) => {
 const GSAP_TOOLTIP_ENTER_DURATION_SEC = 0.15;
 const GSAP_TOOLTIP_LEAVE_DURATION_SEC = 0.08;
 
-const enter = (el: Element, done: () => void) => {
+const enter = (el: Element, done: () => void): void => {
   const wrapper = el.querySelector('.tooltip-animate-wrapper') as HTMLElement;
   if (!wrapper) {
     done();
@@ -384,7 +385,7 @@ const enter = (el: Element, done: () => void) => {
   });
 };
 
-const leave = (el: Element, done: () => void) => {
+const leave = (el: Element, done: () => void): void => {
   if (tooltipState.isImmediateLeave) {
     done();
     tooltipState.isImmediateLeave = false;

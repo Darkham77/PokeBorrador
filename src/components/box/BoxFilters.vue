@@ -1,13 +1,15 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
 import { gsap } from 'gsap';
-import { BOX_TIER_CONFIG } from '@/logic/pokemon/tierEngine';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 import PokemonSortBar from '@/components/pokemon/PokemonSortBar.vue';
 import PokemonTagBar from '@/components/pokemon/PokemonTagBar.vue';
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
 import { POKEMON_TYPES } from '@/data/battle/types';
-import type { PokemonFilterTagId } from '@/logic/constants/tags';
 import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
+import type { PokemonFilterTagId } from '@/logic/constants/tags';
+import { BOX_TIER_CONFIG } from '@/logic/pokemon/tierEngine';
 
 interface BoxFilters {
   tier: string;
@@ -63,26 +65,26 @@ const emit = defineEmits<{
   (e: 'reset'): void;
 }>();
 
-const toggleFilters = () => {
+const toggleFilters = (): void => {
   emit('update:isFiltersOpen', !props.isFiltersOpen);
 };
 
-const updateFilter = <K extends keyof BoxFilters>(key: K, val: BoxFilters[K]) => {
+const updateFilter = <K extends keyof BoxFilters>(key: K, val: BoxFilters[K]): void => {
   emit('update:filters', { ...props.filters, [key]: val });
 };
 
-const onSearchInput = (e: Event) => {
+const onSearchInput = (e: Event): void => {
   const val = (e.target as HTMLInputElement).value;
   updateFilter('search', val);
 };
 
-const onRangeInput = (key: keyof BoxFilters, e: Event) => {
+const onRangeInput = (key: keyof BoxFilters, e: Event): void => {
   const val = Number((e.target as HTMLInputElement).value);
   updateFilter(key, val as BoxFilters[keyof BoxFilters]); // domain-ok: Open dynamic text or non-domain string payload
 };
 
 // Standardized stat colors (Corrected with Hexadecimal values)
-const STAT_COLORS: Record<string, string> = {
+const STAT_COLORS: Record<DisplayText, string> = {
   // open-record: UI stat and range bar display colors
   HP: '#4ade80',
   ATK: '#f87171',
@@ -98,7 +100,7 @@ const MAX_INDIVIDUAL_IV_STAT = 31;
 const MAX_INDIVIDUAL_EV_STAT = 252;
 const MAX_POKEMON_BASE_STAT_TOTAL = 1000;
 
-const getSliderStyle = (val: number, max: number, color: string) => {
+const getSliderStyle = (val: number, max: number, color: string): { background: string } => {
   const percentage = (val / max) * PERCENT_BASE_MULTIPLIER;
   return {
     background: `Linear-Gradient(to right, ${color} 0%, ${color} ${percentage}%, Rgba(255,255,255,0.1) ${percentage}%, Rgba(255,255,255,0.1) 100%)`
@@ -108,7 +110,7 @@ const getSliderStyle = (val: number, max: number, color: string) => {
 const BOX_FILTERS_ENTER_DURATION_SEC = 0.35;
 const BOX_FILTERS_LEAVE_DURATION_SEC = 0.25;
 
-const beforeEnter = (el: Element) => {
+const beforeEnter = (el: Element): void => {
   gsap.set(el, {
     height: 0,
     opacity: 0,
@@ -116,8 +118,8 @@ const beforeEnter = (el: Element) => {
   });
 };
 
-const enter = (el: Element, done: () => void) => {
-  // layout-ok: Acordeon expand/collapse requiere animacion de altura en transicion de Vue SFC
+const enter = (el: Element, done: () => void): void => {
+  // layout-ok: Accordion expand/collapse requires height animation in Vue SFC transition
   gsap.fromTo(
     el,
     { height: 0, opacity: 0 },
@@ -134,8 +136,8 @@ const enter = (el: Element, done: () => void) => {
   );
 };
 
-const leave = (el: Element, done: () => void) => {
-  // layout-ok: Acordeon expand/collapse requiere animacion de altura en transicion de Vue SFC
+const leave = (el: Element, done: () => void): void => {
+  // layout-ok: Accordion expand/collapse requires height animation in Vue SFC transition
   gsap.to(el, {
     height: 0,
     opacity: 0,

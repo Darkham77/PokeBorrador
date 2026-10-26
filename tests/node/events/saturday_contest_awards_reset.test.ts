@@ -9,6 +9,7 @@
  */
 
 import { it, expect } from 'vite-plus/test';
+
 import { describeWithDatabase } from '../../dbTestHelper.ts';
 
 describeWithDatabase('Saturday Contest Awards Reset Parity', (engine) => {

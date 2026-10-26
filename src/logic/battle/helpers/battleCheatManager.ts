@@ -1,18 +1,19 @@
 import type { Battle, Side, Pokemon, SideID } from '@pkmn/sim';
-import { REPLAY_SEATS } from './showdownSeats.ts';
+
+import type { CertifiedBattleHistoryEntry } from '../../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
 import {
   applyHealCheatToSide,
   applyPpRefillCheatToSide,
   syncRequestConditionsWithSimulator
 } from '../cheats.ts';
-import type { CertifiedBattleHistoryEntry } from '../../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
 import type { CertifiedReplayHistoryEntry } from './showdownBattleRunner.ts';
+import { SHOWDOWN_SEAT_KEYS } from './showdownSeats.ts';
 
 export type CertifiedCheatHistoryStep =
   | CertifiedBattleHistoryEntry
   | CertifiedReplayHistoryEntry
   | number
-  | { [key: string]: unknown };
+  | Record<string, unknown>;
 
 type CheatMap = Map<number, Partial<Record<SideID, boolean>>>;
 
@@ -80,7 +81,7 @@ function shouldApplyPreHeal(
   entryPre?: Partial<Record<SideID, boolean>>,
   entryPost?: Partial<Record<SideID, boolean>>
 ): boolean {
-  const sideId = side.id as SideID;
+  const sideId = side.id;
   if (stepObj) {
     return Boolean(stepObj[`${sideId}PreHeal`]);
   }
@@ -100,7 +101,7 @@ export class BattleCheatManager {
 
   public readonly hasHistory: boolean;
 
-  constructor(history?: CertifiedBattleHistoryEntry[]) {
+  public constructor(history?: CertifiedBattleHistoryEntry[]) {
     const list = history ?? [];
     this.hasHistory = list.length > 0;
     for (let idx = 0; idx < list.length; idx++) {
@@ -109,7 +110,7 @@ export class BattleCheatManager {
       const targetTurns = resolveHistoryTargetTurns(h, stepOrdinal);
 
       for (const targetTurn of targetTurns) {
-        for (const sideId of REPLAY_SEATS) {
+        for (const sideId of SHOWDOWN_SEAT_KEYS) {
           recordSeatCheats(h, targetTurn, sideId, this.ppMap, this.preHealMap, this.postHealMap);
         }
       }
@@ -141,7 +142,7 @@ export class BattleCheatManager {
     targetTurn: number,
     stepObj: Record<string, unknown> | null
   ): void {
-    const sideId = side.id as SideID;
+    const sideId = side.id;
     const entryPp = !stepObj ? this.ppMap.get(targetTurn) : undefined;
     const needsPpRefill = stepObj
       ? Boolean(stepObj[`${sideId}PpRefill`])
@@ -161,7 +162,7 @@ export class BattleCheatManager {
     targetTurn: number,
     stepObj: Record<string, unknown> | null
   ): void {
-    const sideId = side.id as SideID;
+    const sideId = side.id;
     const entryPre = !stepObj ? this.preHealMap.get(targetTurn) : undefined;
     const entryPost = !stepObj ? this.postHealMap.get(targetTurn) : undefined;
     const needs = shouldApplyPreHeal(side, stepObj, entryPre, entryPost);
@@ -197,7 +198,7 @@ export class BattleCheatManager {
     for (const side of battle.sides) {
       if (!side) continue;
       const seatKey = `${side.id}Heal`;
-      const needs = stepObj ? Boolean(stepObj[seatKey]) : (entry?.[side.id as SideID] ?? false); // domain-ok: Open dynamic text or non-domain string payload
+      const needs = stepObj ? Boolean(stepObj[seatKey]) : (entry?.[side.id] ?? false); // domain-ok: Open dynamic text or non-domain string payload
       if (!needs) continue;
       const key = `post-${targetTurn}-${side.id}`;
       if (!stepObj && this.applied.has(key)) continue;
@@ -205,9 +206,7 @@ export class BattleCheatManager {
       side.pokemon.forEach((p: Pokemon) => {
         if (p) battle.add('-heal', p, `${p.hp}/${p.maxhp}`);
       });
-      syncRequestConditionsWithSimulator(
-        side as Parameters<typeof syncRequestConditionsWithSimulator>[0]
-      ); // domain-ok: Open dynamic text or non-domain string payload
+      syncRequestConditionsWithSimulator(side); // domain-ok: Open dynamic text or non-domain string payload
       this.applied.add(key);
     }
   }

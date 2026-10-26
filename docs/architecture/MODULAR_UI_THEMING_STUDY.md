@@ -52,7 +52,7 @@ Layer 6: Co-located Component Styles (117 files)
 An inexperienced approach would attempt to edit all 174 `.scss` files individually, creating hundreds of merge conflicts and breaking changes.
 The senior architectural approach recognizes that **80% of the game's UI is governed by just 4 root files**:
 
-1. `src/styles/tokens/_contracts.scss` (The new Semantic Theme Contract)
+1. `src/.../tokens/_contracts.scss` (The new Semantic Theme Contract)
 2. `src/styles/core/mixins/_shell.scss` (The Master Panel Mixin used by cards and views)
 3. `src/styles/core/mixins/_buttons.scss` (The Master Button Mixin used across all buttons)
 4. `src/styles/components/_base-modal.scss` (The Master Modal Stylesheet governing all 25+ modals)
@@ -178,7 +178,7 @@ A true GBA battle box cannot be achieved with a single CSS border because it has
 
 ## 4. Technical Implementation Specification
 
-### Layer 1: Abstract Theme Contract (`src/styles/tokens/_contracts.scss`)
+### Layer 1: Abstract Theme Contract (`src/.../tokens/_contracts.scss`)
 
 ```scss
 // All themes MUST provide definitions for these CSS Custom Properties:
@@ -213,7 +213,7 @@ A true GBA battle box cannot be achieved with a single CSS border because it has
 }
 ```
 
-### Layer 2: GBA Wingull Theme (`src/styles/tokens/_theme-gba-wingull.scss`)
+### Layer 2: GBA Wingull Theme (`src/.../tokens/_theme-gba-wingull.scss`)
 
 ```scss
 [data-theme='gba-wingull'] {
@@ -296,7 +296,7 @@ A true GBA battle box cannot be achieved with a single CSS border because it has
 }
 ```
 
-### Layer 3: Modern Glassmorphic Theme (`src/styles/tokens/_theme-modern.scss`)
+### Layer 3: Modern Glassmorphic Theme (`src/.../tokens/_theme-modern.scss`)
 
 ```scss
 [data-theme='modern'],
@@ -574,8 +574,8 @@ timeline
 
 ### Phase 1: Design Tokens & Contract Setup (Non-Breaking)
 
-- Create `src/styles/tokens/_contracts.scss` with universal defaults.
-- Create `src/styles/tokens/_theme-gba-wingull.scss` and `_theme-modern.scss`.
+- Create `src/.../tokens/_contracts.scss` with universal defaults.
+- Create `src/.../tokens/_theme-gba-wingull.scss` and `_theme-modern.scss`.
 - Wire tokens into `src/styles/_index.scss`.
 - **Impact**: Zero breaking changes, existing views continue functioning unchanged.
 
@@ -596,7 +596,7 @@ timeline
 
 ### Phase 4: Pinia `useThemeStore` & Runtime Switching
 
-- Create `src/stores/theme.ts`:
+- Create `src/.../stores/theme.ts`:
   - State: `activeTheme: 'gba-wingull' | 'modern' | 'cyber-neon'`, `pixelScale: 2 | 3 | 4`.
   - Effect: Synchronizes with `document.documentElement.setAttribute('data-theme', activeTheme)`.
   - Persistence: Saves choice in `safeStorage` (offline/online safe).

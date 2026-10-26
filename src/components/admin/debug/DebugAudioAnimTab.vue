@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, toValue } from 'vue';
-import { useBattleStore } from '@/stores/battle/battle';
+
 import { gameBus } from '@/logic/events/gameBus';
+import { useBattleStore } from '@/stores/battle/battle';
+
 import DebugActionList from './DebugActionList.vue';
 import { isDebugEffectActive } from './debugAudioAnimHelper';
-
 import {
   DEBUG_SOUNDS,
   DEBUG_STATUS_CONDITIONS,
@@ -36,17 +37,17 @@ const battleStore = useBattleStore();
 
 const activeSide = ref<'player' | 'enemy'>('enemy');
 
-const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge;
+const getDebugBridge = (): ViteDebugBridge => globalThis.__VITE_DEBUG__ as ViteDebugBridge;
 
-const setStatStage = (side: string, stat: string, val: number) => {
+const setStatStage = (side: string, stat: string, val: number): void => {
   getDebugBridge().setStatStage(side, stat, val);
 };
 
-const playSound = (id: string) => {
+const playSound = (id: string): void => {
   getDebugBridge().playSound(id);
 };
 
-const triggerAnim = (id: string, options = {}) => {
+const triggerAnim = (id: string, options = {}): void => {
   const bridge = getDebugBridge();
   if (bridge && typeof bridge.triggerAnim === 'function') {
     bridge.triggerAnim(id, activeSide.value, options);
@@ -58,7 +59,7 @@ const triggerAnim = (id: string, options = {}) => {
   }
 };
 
-const triggerAttack = (cat?: string) => {
+const triggerAttack = (cat?: string): void => {
   if (!cat) return;
   if (cat === 'recoil') {
     gameBus.emit('PLAY_RECOIL', { side: activeSide.value });
@@ -70,27 +71,27 @@ const triggerAttack = (cat?: string) => {
   }
 };
 
-const setStatus = async (status: string) => {
+const setStatus = async (status: string): Promise<void> => {
   await getDebugBridge().setStatus(activeSide.value, status);
 };
 
-const toggleSecondary = (type: string) => {
+const toggleSecondary = (type: string): void => {
   getDebugBridge().setSecondaryStatus(activeSide.value, type);
 };
 
-const modifyStat = (stat: string, delta: number) => {
+const modifyStat = (stat: string, delta: number): void => {
   getDebugBridge().modifyStatStage(activeSide.value, stat, delta);
 };
 
-const setField = (effect: string, val: number) => {
+const setField = (effect: string, val: number): void => {
   getDebugBridge().setFieldEffect(activeSide.value, effect, val);
 };
 
-const toggleSilhouette = () => {
+const toggleSilhouette = (): void => {
   getDebugBridge().toggleSilhouette();
 };
 
-const isEffectActive = (type: string, category: string) => {
+const isEffectActive = (type: string, category: string): boolean => {
   const side = activeSide.value;
   const poke = side === 'player' ? battleStore.state?.player : battleStore.state?.enemy;
   const stages = side === 'player' ? battleStore.playerStages : battleStore.enemyStages;

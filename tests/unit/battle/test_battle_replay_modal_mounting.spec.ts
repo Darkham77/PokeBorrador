@@ -1,7 +1,8 @@
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
-import { mount } from '@vue/test-utils';
+
 import BattleReplayModal from '@/components/battle/BattleReplayModal.vue';
 
 describe('BattleReplayModal mounting & DOM elements', () => {

@@ -1,14 +1,15 @@
+import { RADIX_DECIMAL } from '@/logic/constants/gameplay.ts';
+import { gameBus } from '@/logic/events/gameBus';
+import { gsapSleep } from '@/logic/utils/gsapHelpers';
+import type { BattleState, BattleSide } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleState, BattleSide } from '@/types/battle/battle';
+
 import { findBestSwitchIndex } from './ai/battleAI.ts';
-import { ShowdownTeamResolver } from './showdownTeamResolver.ts';
-import { registerRewardCombatant } from './rewardsDistributor.ts';
 import { syncTeamHP } from './battleStateSync.ts';
-import { gameBus } from '@/logic/events/gameBus';
+import { registerRewardCombatant } from './rewardsDistributor.ts';
+import { ShowdownTeamResolver } from './showdownTeamResolver.ts';
 import { isMatchingUid } from './showdownUidMapper.ts';
-import { gsapSleep } from '@/logic/utils/gsapHelpers';
-import { RADIX_DECIMAL } from '@/logic/constants/gameplay.ts';
 
 const FAINT_ANIMATION_FALLBACK_DELAY_MS = 1300;
 const WITHDRAW_ANIMATION_FALLBACK_DELAY_MS = 800;
@@ -23,7 +24,7 @@ interface EnemyFaintResolutionActions {
 function getFsmStateString(state: unknown): string {
   if (typeof state === 'string') return state;
   if (state && typeof state === 'object') {
-    if ('value' in state && typeof (state as { value: unknown }).value === 'string') {
+    if ('value' in state && typeof state.value === 'string') {
       return (state as { value: string }).value;
     }
   }
@@ -71,7 +72,7 @@ function validateReplayCandidateOrThrow(
   targetChoice: string
 ): void {
   if (candidate || !hasLiveEnemy) return;
-  if (window.__VITE_DEBUG__?.certifiedReplayWorkerEnded === true) return;
+  if (globalThis.__VITE_DEBUG__?.certifiedReplayWorkerEnded === true) return;
   throw new Error(
     `[battleFaintSequence] Certified enemy replacement does not resolve to a live Pokémon. context=${JSON.stringify({ choice: targetChoice })}`
   );
@@ -97,7 +98,7 @@ function extractReplayTarget(
 
 async function resolveReplayEnemyReplacement(active: BattleState): Promise<Pokemon | null> {
   const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts');
-  const debugObj = window.__VITE_DEBUG__!;
+  const debugObj = globalThis.__VITE_DEBUG__!;
   const pendingEntry = ShowdownBattleRunner.requirePendingHistoryEntry(debugObj);
   const { choice, uid } = extractReplayTarget(debugObj, pendingEntry);
   const candidate = selectCandidateFromTeam(active, choice, uid);
@@ -143,7 +144,10 @@ function selectCandidateFromTeam(
 }
 
 function isScriptedReplay(): boolean {
-  return typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__?.isScriptedReplayMode);
+  return (
+    typeof globalThis.window !== 'undefined' &&
+    Boolean(globalThis.__VITE_DEBUG__?.isScriptedReplayMode)
+  );
 }
 
 function pickAiEnemyReplacement(
@@ -230,7 +234,7 @@ function shouldAdvanceReplayEntry(
 
 async function advanceReplayAfterReplacement(_active: BattleState): Promise<void> {
   if (!isScriptedReplay()) return;
-  const debugObj = window.__VITE_DEBUG__ as {
+  const debugObj = globalThis.__VITE_DEBUG__ as {
     history?: Array<{ p2ForceSwitch?: boolean; p1Choice?: string; p2Choice?: string }>;
     replayHistoryIdx?: number;
   };
@@ -335,7 +339,7 @@ export async function processEnemyFaintSequence(
   registerRewardCombatant(active, pokemon);
 
   const { BATTLE_STATES, BATTLE_SUBSTATES, fsm } = ctx;
-  const isCurrentActiveBattle = () =>
+  const isCurrentActiveBattle = (): boolean =>
     ctx.activeBattle.value === active &&
     getFsmStateString(fsm.currentState) === BATTLE_STATES.ACTIVE_BATTLE;
   const isTr = Boolean(active.isTrainer);

@@ -1,16 +1,16 @@
-import { logger } from '@/logic/utils/logger';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { useModalStore } from '@/stores/modals';
-import type { ItemId } from '@/data/inventory/items';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { MapRouteId } from '@/data/world/map-assets';
-import { resetBattleMinigameFlags } from '@/logic/battle/battleMinigames';
-import type { BattleMinigame, CoreBattleStatKey } from '@/types/battle/battle';
 import {
   applyFishingLevelAndIvBonus,
   type FishingDifficultyKey,
   FISHING_DIFFICULTIES
 } from '@/components/modals/fishingGameHelper';
+import type { ItemId } from '@/data/inventory/items';
+import type { MapRouteId } from '@/data/world/map-assets';
+import { resetBattleMinigameFlags } from '@/logic/battle/battleMinigames';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { logger } from '@/logic/utils/logger';
+import { useModalStore } from '@/stores/modals';
+import type { BattleMinigame, CoreBattleStatKey } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 interface BattleStoreMinigameRef {
   state?: {
@@ -40,8 +40,14 @@ export function useBattleMinigames(
   uiStore: UIStoreMinigameRef,
   enemy: { value: Pokemon | null | undefined },
   resetAll: () => void
-) {
-  const resetBattleMinigameState = () => {
+): {
+  handleMinigameCancel: () => Promise<void>;
+  handleFishingSuccess: (difficulty?: FishingDifficultyKey) => Promise<void>;
+  handleFishingFail: () => Promise<void>;
+  handleArchaeologySuccess: (difficulty: string) => Promise<void>;
+  handleArchaeologyFail: () => Promise<void>;
+} {
+  const resetBattleMinigameState = (): void => {
     if (battleStore.state) {
       resetBattleMinigameFlags(battleStore.state);
     }
@@ -64,13 +70,13 @@ export function useBattleMinigames(
     };
   };
 
-  const handleMinigameCancel = async () => {
+  const handleMinigameCancel = async (): Promise<void> => {
     logger.warn('BattleArenaView', 'Minigame CANCELLED by user');
     resetBattleMinigameState();
     await battleStore.completeBattleFlow('search');
   };
 
-  const handleFishingSuccess = async (difficulty: FishingDifficultyKey = 'easy') => {
+  const handleFishingSuccess = async (difficulty: FishingDifficultyKey = 'easy'): Promise<void> => {
     logger.success('BattleArenaView', `Fishing SUCCESS (${difficulty})`);
     useModalStore().close('Fishing');
 
@@ -105,7 +111,7 @@ export function useBattleMinigames(
     await battleStore.startEncounter();
   };
 
-  const handleFishingFail = async () => {
+  const handleFishingFail = async (): Promise<void> => {
     logger.warn('BattleArenaView', 'Fishing FAIL');
     useModalStore().close('Fishing');
     uiStore.notify('El Pokémon escapó...', '💨');
@@ -116,7 +122,7 @@ export function useBattleMinigames(
     await battleStore.completeBattleFlow('search');
   };
 
-  const handleArchaeologySuccess = async (difficulty: string) => {
+  const handleArchaeologySuccess = async (difficulty: string): Promise<void> => {
     logger.success('BattleArenaView', `Archaeology SUCCESS: ${difficulty}`);
     useModalStore().close('Archaeology');
     const locId = battleStore.state?.locationId || 'route1';
@@ -127,7 +133,7 @@ export function useBattleMinigames(
     await battleStore.completeBattleFlow('search');
   };
 
-  const handleArchaeologyFail = async () => {
+  const handleArchaeologyFail = async (): Promise<void> => {
     logger.warn('BattleArenaView', 'Archaeology FAIL');
     useModalStore().close('Archaeology');
     const enemyId = enemy.value?.id;

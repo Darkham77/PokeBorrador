@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
-import { calculateBattleRewards } from '@/logic/battle/rewardsDistributor';
+
 import { handleNpcBabyEggReward } from '@/logic/battle/rewards/npcEggRewardsHandler';
+import { calculateBattleRewards } from '@/logic/battle/rewardsDistributor';
 import { NPC_BABY_POKEMON_POOL, NPC_EGG_TINT } from '@/logic/constants/gameplay';
-import { useBreedingActions } from '@/stores/game/actions/breedingActions';
 import { incrementRecordKey } from '@/logic/utils/mapUtils';
+import { useBreedingActions } from '@/stores/game/actions/breedingActions';
 import type { BattleContext } from '@/types/battle/battleContext';
-import type { GameState } from '@/types/system/game';
 import type { PokemonEgg } from '@/types/pokemon/pokemon';
+import type { GameState } from '@/types/system/game';
 
 vi.mock('@/logic/utils/gsapHelpers', () => ({
   gsapSleep: vi.fn().mockResolvedValue(true)

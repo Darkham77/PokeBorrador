@@ -4,12 +4,12 @@
  * Debug capture animation and state resolution pipeline.
  */
 
-import { gsapSleep } from '@/logic/utils/gsapHelpers.ts';
 import { getItemName, type ItemId } from '@/data/inventory/items.ts';
 import { gameBus } from '@/logic/events/gameBus.ts';
+import { gsapSleep } from '@/logic/utils/gsapHelpers.ts';
+import type { useAudioStore } from '@/stores/audio.ts';
 import type { useBattleStore } from '@/stores/battle/battle.ts';
 import type { useGameStore } from '@/stores/game.ts';
-import type { useAudioStore } from '@/stores/audio.ts';
 
 const DEBUG_CATCH_FALLBACK_SLEEP_MS = 1000;
 const DEBUG_CATCH_SHAKE_COUNT = 3;
@@ -31,9 +31,9 @@ async function playThrowAndHit(
   isCritical: boolean
 ): Promise<void> {
   if (isCritical) {
-    void audio.play('criticalThrow');
+    await audio.play('criticalThrow');
   }
-  void audio.play('ballHit');
+  await audio.play('ballHit');
 
   if (anims?.handleCatchRequest) {
     await anims.handleCatchRequest({ side: 'enemy', ballId, isCritical });
@@ -60,7 +60,7 @@ async function playShakes(
   shakeCount: number
 ): Promise<void> {
   for (let i = 0; i < shakeCount; i++) {
-    void audio.play('wobble');
+    await audio.play('wobble');
     if (anims?.handleShakeRequest) {
       await anims.handleShakeRequest({ side: 'enemy' });
     } else {
@@ -111,7 +111,7 @@ export async function executeDebugCaptureFlow(options: DebugCaptureOptions): Pro
   const shakeCount = isCritical ? 1 : DEBUG_CATCH_SHAKE_COUNT;
   await playShakes(audio, anims, shakeCount);
 
-  void audio.play('caught');
+  await audio.play('caught');
   const successMessage = isCritical
     ? `¡Ya está! ¡${enemy.name} atrapado con captura crítica!`
     : `¡Ya está! ¡${enemy.name} atrapado!`;

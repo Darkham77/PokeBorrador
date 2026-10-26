@@ -1,7 +1,7 @@
 import os from 'node:os';
 import process from 'node:process';
-import { defineConfig, devices } from '@playwright/test';
 
+import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './scripts/e2e',
   testMatch: '**/*.simulation.ts',
@@ -37,7 +37,7 @@ export default defineConfig({
     }
   ],
   webServer: {
-    command: 'npx vite --port 5174 --strictPort',
+    command: 'vp dev --port 5174 --strictPort',
     url: 'https://localhost:5174',
     ignoreHTTPSErrors: true,
     reuseExistingServer: !process.env.CI,

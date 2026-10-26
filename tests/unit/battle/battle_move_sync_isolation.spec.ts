@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vite-plus/test';
+
+import { buildAttackTimeline } from '@/components/battle/helpers/combatantActionAnims.ts';
 import { syncActiveMovesFromRequest } from '@/stores/battle/battleMoveSync.ts';
 import type { BattleState } from '@/types/battle/battle';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import { buildAttackTimeline } from '@/components/battle/helpers/combatantActionAnims.ts';
 
 describe('Battle Move Sync & Animation Isolation', () => {
   it('bypasses move synchronization when request belongs to a different Pokémon UID (preventing cross-contamination)', () => {

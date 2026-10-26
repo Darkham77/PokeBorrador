@@ -1,14 +1,14 @@
-import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
+import { getSpeciesEggMoves } from '@/data/pokemon/eggMoves';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
-import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
 import {
   POKEMON_DB,
   isPokemonDbSpeciesId,
   type PokemonDbSpeciesId
 } from '@/data/pokemon/pokemonDB';
-import { getSpeciesEggMoves } from '@/data/pokemon/eggMoves';
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
+import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
+import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
 
 const MAX_LEGAL_RANDOM_MOVE_SLOTS = 4 as const;
 

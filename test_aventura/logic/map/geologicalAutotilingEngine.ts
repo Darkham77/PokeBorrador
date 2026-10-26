@@ -7,9 +7,17 @@
  * and cell details on the final, carved terrain and heightmap matrices.
  */
 
+import { DEFAULT_MOUNTAIN_PALETTE } from '../../config/studioConstants.ts';
+import type { ProceduralRiverDrainageResult } from './continent/riverHydrographyEngine.ts';
+import {
+  resolveMacroBiomeAutotile,
+  type ResolvedMacroBiomeMapResult
+} from './macroBiomeAutotileEngine.ts';
+import type { MacroBiomeResult, MacroBiome } from './macroBiomeSynthesizer.ts';
 import {
   resolveMountainMapGrid,
   type ResolvedMountainMapResult,
+  type ResolvedMountainCell,
   type MountainPalette,
   type MountainStairLocation,
   type MountainRole
@@ -22,13 +30,6 @@ import {
   type ResolvedWaterMapResult,
   type WaterAutotileRole
 } from './waterAutotileEngine.ts';
-import type { MacroBiomeResult, MacroBiome } from './macroBiomeSynthesizer.ts';
-import {
-  resolveMacroBiomeAutotile,
-  type ResolvedMacroBiomeMapResult
-} from './macroBiomeAutotileEngine.ts';
-import type { ProceduralRiverDrainageResult } from './continent/riverHydrographyEngine.ts';
-import { DEFAULT_MOUNTAIN_PALETTE } from '../../config/studioConstants.ts';
 
 export interface ContinentCellDetails {
   readonly x: number;
@@ -50,6 +51,49 @@ export interface GeologicalAutotilingPassOptions {
   readonly paletteMatrix?: readonly (readonly MountainPalette[])[];
   readonly placedStairs?: readonly MountainStairLocation[];
   readonly riverDrainage?: ProceduralRiverDrainageResult;
+}
+
+function applyMountainCellLayers(
+  mtnCell: ResolvedMountainCell,
+  elev: number,
+  layerStack: string[]
+): { isWalkable: boolean; isStair: boolean } {
+  const isStair = mtnCell.role === 'stairs_l' || mtnCell.role === 'stairs_r';
+  if (elev > 0) {
+    layerStack.push(mtnCell.primaryTile);
+    if (mtnCell.overlayTiles && mtnCell.overlayTiles.length > 0) {
+      layerStack.push(...mtnCell.overlayTiles);
+    }
+  }
+  let isWalkable = true;
+  if (
+    mtnCell.role === 'peak_isolated' ||
+    mtnCell.role.startsWith('edge_') ||
+    mtnCell.role.startsWith('corner_outer_')
+  ) {
+    isWalkable = false;
+  }
+  if (isStair) {
+    isWalkable = true;
+  }
+  return { isWalkable, isStair };
+}
+
+function applyNorthCliffFootOverlay(
+  northMtn: ResolvedMountainCell | null | undefined,
+  isRiverChannel: boolean,
+  terrain: WaterTerrainKind,
+  layerStack: string[]
+): { overrideWalkable?: boolean; overrideStair?: boolean } {
+  if (!northMtn?.projectedFoot || isRiverChannel) return {};
+  layerStack.push(northMtn.projectedFoot.tile);
+  if (northMtn.projectedFoot.occupiesCell && terrain !== 'water') {
+    return { overrideWalkable: false };
+  }
+  if (!northMtn.projectedFoot.occupiesCell) {
+    return { overrideWalkable: true, overrideStair: true };
+  }
+  return {};
 }
 
 /**
@@ -102,36 +146,27 @@ export function compileGeologicalAutotiling(
       if (waterCell?.primaryTile) layerStack.push(waterCell.primaryTile);
       if (mtnCell) {
         mtnRole = mtnCell.role;
-        isStair = mtnCell.role === 'stairs_l' || mtnCell.role === 'stairs_r';
-        if (elev > 0) {
-          layerStack.push(mtnCell.primaryTile);
-          if (mtnCell.overlayTiles && mtnCell.overlayTiles.length > 0) {
-            layerStack.push(...mtnCell.overlayTiles);
-          }
-        }
-        if (
-          mtnCell.role === 'peak_isolated' ||
-          mtnCell.role.startsWith('edge_') ||
-          mtnCell.role.startsWith('corner_outer_')
-        ) {
+        const mtnStatus = applyMountainCellLayers(mtnCell, elev, layerStack);
+        isStair = mtnStatus.isStair;
+        if (!mtnStatus.isWalkable) {
           isWalkable = false;
-        }
-        if (isStair) {
-          isWalkable = true;
         }
       }
 
       if (y > 0) {
         const northMtn = mountainResult.cellDetails[y - 1]![x];
         const isRiverChannel = options?.riverDrainage?.riverGrid?.[y]?.[x] ?? false;
-        if (northMtn && northMtn.projectedFoot && !isRiverChannel) {
-          layerStack.push(northMtn.projectedFoot.tile);
-          if (northMtn.projectedFoot.occupiesCell && terrain !== 'water') {
-            isWalkable = false;
-          } else if (!northMtn.projectedFoot.occupiesCell) {
-            isStair = true;
-            isWalkable = true;
-          }
+        const footStatus = applyNorthCliffFootOverlay(
+          northMtn,
+          isRiverChannel,
+          terrain,
+          layerStack
+        );
+        if (footStatus.overrideWalkable !== undefined) {
+          isWalkable = footStatus.overrideWalkable;
+        }
+        if (footStatus.overrideStair !== undefined) {
+          isStair = footStatus.overrideStair;
         }
       }
 

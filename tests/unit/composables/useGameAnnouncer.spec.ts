@@ -5,6 +5,7 @@
  */
 
 import { describe, it, expect } from 'vite-plus/test';
+
 import { useGameAnnouncer } from '@/composables/ui/useGameAnnouncer';
 
 describe('useGameAnnouncer', () => {

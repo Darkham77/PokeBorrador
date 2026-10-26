@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
-import { useGameStore } from '@/stores/game';
-import { useLivePvPStore } from '@/stores/livePvP';
-import { useUIStore } from '@/stores/ui';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { getSeasonalThemeForMonth } from '@/data/system/rankedData';
 import { isPokemonLegalForTheme, autoFillLegalTeamForTheme } from '@/logic/pvp/pvpTeamHelper';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
+import { useGameStore } from '@/stores/game';
+import { useLivePvPStore } from '@/stores/livePvP';
 import type { Friend } from '@/stores/social/social';
+import { useUIStore } from '@/stores/ui';
 import type {
   PvpMatchFormat,
   PvpLevelRule,
@@ -53,7 +54,7 @@ const isOpponentOffline = computed(() => props.friend?.isOnline === false);
 const currentMonth = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE).month;
 const currentTheme = computed(() => getSeasonalThemeForMonth(currentMonth));
 
-function setMode(mode: PvpMatchMode) {
+function setMode(mode: PvpMatchMode): void {
   selectedMode.value = mode;
   if (mode === 'ranked') {
     selectedFormat.value = '6v6';
@@ -119,11 +120,11 @@ const canSend = computed(() => {
   );
 });
 
-function handleAutoFillLegalTeam() {
+function handleAutoFillLegalTeam(): void {
   const allPokes = [
     ...((gameStore.state.team || []) as (Pokemon | null)[]),
     ...((gameStore.state.box || []) as (Pokemon | null)[])
-  ].filter((p): p is Pokemon => p != null);
+  ].filter((p): p is Pokemon => p !== null && p !== undefined);
 
   const legalPokes = autoFillLegalTeamForTheme(allPokes, currentTheme.value, requiredCount.value);
   if (legalPokes.length < requiredCount.value) {
@@ -148,12 +149,12 @@ function getSpriteUrl(pokemon: Pokemon | null | undefined): string {
   return getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id);
 }
 
-function openTeamManagement() {
+function openTeamManagement(): void {
   emit('close');
   uiStore.toggleTeamManagement();
 }
 
-async function handleSendChallenge() {
+async function handleSendChallenge(): Promise<void> {
   if (!canSend.value || !targetId.value) return;
 
   const config: PvpChallengeConfig = {

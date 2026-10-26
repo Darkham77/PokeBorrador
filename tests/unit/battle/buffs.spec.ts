@@ -1,9 +1,10 @@
+import { setActivePinia, createPinia } from 'pinia';
 /**
  * tests/unit/buffsStore.spec.js
  * Unit tests for the Global Buffs and Timers Store
  */
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
+
 import { useBuffsStore } from '@/stores/battle/buffs';
 import { useGameStore } from '@/stores/game';
 
@@ -23,6 +24,7 @@ describe('Buffs Store', () => {
 
     // Mock save function so it doesn't trigger side effects
     gameStore.save = vi.fn();
+    gameStore.scheduleSave = vi.fn();
 
     // Setup fake timers for interval testing
     vi.useFakeTimers();
@@ -40,7 +42,7 @@ describe('Buffs Store', () => {
   it('should add a buff and persist to game state', () => {
     buffsStore.addBuff('repel', 600);
     expect(gameStore.state.repelSecs).toBe(600);
-    expect(gameStore.save).toHaveBeenCalled();
+    expect(gameStore.scheduleSave).toHaveBeenCalled();
     expect(buffsStore.activeBuffs).toHaveLength(1);
     expect(buffsStore.activeBuffs[0]!.id).toBe('repel');
     expect(buffsStore.activeBuffs[0]!.secs).toBe(600);

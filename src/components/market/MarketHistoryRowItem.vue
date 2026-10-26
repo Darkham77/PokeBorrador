@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import { formatCurrency } from '@/logic/utils/formatters';
 import { formatDisplayDate } from '@/logic/utils/timeUtils';
 import type { ClaimItem } from '@/types/system/game';
+
 import {
   type MarketHistoryRow,
   getSoldItemName,

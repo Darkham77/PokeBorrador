@@ -1,7 +1,8 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import PastEventsList from '@/components/modals/PastEventsList.vue';
 import { useEventStore } from '@/stores/events';
 import type { PastEventHistoryItem } from '@/types/system/stores';

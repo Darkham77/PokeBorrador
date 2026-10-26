@@ -1,8 +1,7 @@
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils';
-
 import { isItemId } from '@/data/inventory/items';
 import { CANONICAL_CHOICE_ITEMS_SET } from '@/logic/constants/gameplay';
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
 export interface ShowdownMoveRequest {
   id: string;

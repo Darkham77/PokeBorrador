@@ -15,13 +15,15 @@ const DEFENSIVE_SAFE_SCORE_INCREMENT = 0.2;
 const MAX_DEFENSIVE_SCORE_CAP = 0.2;
 const MAX_THREATS_REMAINING_COUNT = 3;
 
-import { toID } from '@/logic/utils/strings.ts';
-import type { HeuristicBattleSnapshot, WinCondition } from './types.ts';
-import type { HeuristicDamageCalculator } from './damageCalculator.ts';
-import type { InferenceEngine } from './inferenceEngine.ts';
 import type { SideID } from '@pkmn/sim';
 
 import { SETUP_MOVES, PRIORITY_MOVES } from '@/logic/constants/encounters';
+import { logger } from '@/logic/utils/logger';
+import { toID } from '@/logic/utils/strings.ts';
+
+import type { HeuristicDamageCalculator } from './damageCalculator.ts';
+import type { InferenceEngine } from './inferenceEngine.ts';
+import type { HeuristicBattleSnapshot, WinCondition } from './types.ts';
 
 interface OpponentMatchupEvaluation {
   hasSpeedAdvantage: boolean;
@@ -53,8 +55,10 @@ function evaluateOpponentMatchup(
         break;
       }
       if (dmg.is2HKO) coverageBonus += COVERAGE_2HKO_SCORE_INCREMENT;
-    } catch {
-      /* catch-ok: Hypothetical move exploration probe skip */
+    } catch (err) {
+      logger.debug('[WinConditions] Salto de cálculo hipotético de daño', {
+        cause: err instanceof Error ? err.message : String(err)
+      });
     }
   }
 
@@ -70,8 +74,10 @@ function evaluateOpponentMatchup(
     try {
       const dmg = calc.calcDamage(opp, pokemon, mv, snapshot.field);
       if (dmg.isOHKO) threats.push(`${opp.name}: ${mv}`);
-    } catch {
-      /* catch-ok: Hypothetical move exploration probe skip */
+    } catch (err) {
+      logger.debug('[WinConditions] Salto de cálculo hipotético de daño', {
+        cause: err instanceof Error ? err.message : String(err)
+      });
     }
   }
 

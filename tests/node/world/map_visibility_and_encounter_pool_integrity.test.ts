@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
+
 import { FIRE_RED_MAPS, VISIBLE_WORLD_MAPS, getMapLocationById } from '@/data/world/maps.ts';
 import { hasMapEncounterSpawns, isMapVisibleInWorld } from '@/logic/encounters/encounterHelpers.ts';
 import { generateEncounter } from '@/logic/encounters/encounters.ts';

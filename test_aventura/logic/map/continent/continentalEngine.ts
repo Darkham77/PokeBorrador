@@ -14,45 +14,45 @@ export {
   generateContinent,
   type GeneratedContinentResult
 } from './parametricContinentGenerator.ts';
-import { generatePokemonTopology } from '../pokemonGraphTopology.ts';
-import { embedPokemonTopology } from '../orthogonalGraphEmbedding.ts';
-import { type ContinentGeneratorOptions, type ContinentMapResult } from '../continentGenerator.ts';
-import { sculptContinentFromGraph } from '../continentSculptingEngine.ts';
-import { enrichCorridorProperties } from '../corridorPropertyEngine.ts';
-import { applyProgressionBarriers, type ProgressionResult } from '../progressionBarrierEngine.ts';
-import { exportPokemonTopologyToSvg } from './svgRouteAdapter.ts';
+import {
+  DEFAULT_CONTINENTAL_WORLD_WIDTH,
+  DEFAULT_CONTINENTAL_WORLD_HEIGHT
+} from '../../../config/continentalEngineConfig.ts';
+import {
+  DEFAULT_PROCEDURAL_SEED,
+  STANDARD_GBA_TILE_SIZE
+} from '../../../config/proceduralMapConfig.ts';
+import type { POINode } from '../../../types/map/poiTypes.ts';
 import type {
   PokemonTopologyGraph,
   EmbeddedTopologyGraph,
   EnrichedCorridorProperties
 } from '../../../types/map/pokemonGraphTypes.ts';
-import type { POINode } from '../../../types/map/poiTypes.ts';
 import type { SettlementTerrainContext } from '../cityLayoutEngine.ts';
-import { computeTransitableGrid } from '../transitableGridEngine.ts';
-import {
-  generateWildernessLayer,
-  type WildernessLayerResult
-} from '../wildernessVegetationEngine.ts';
-import { generateRouteLedges, type LedgeRun } from '../routeLedgeEngine.ts';
-import {
-  generateProgressionObstacles,
-  type ProgressionObstacle
-} from '../progressionObstacleEngine.ts';
+import { type ContinentGeneratorOptions, type ContinentMapResult } from '../continentGenerator.ts';
+import { sculptContinentFromGraph } from '../continentSculptingEngine.ts';
+import { enrichCorridorProperties } from '../corridorPropertyEngine.ts';
 import {
   generateMicroVignettes,
   sweepStrayPathTiles,
   type MicroVignette
 } from '../microVignetteEngine.ts';
+import { embedPokemonTopology } from '../orthogonalGraphEmbedding.ts';
+import { generatePokemonTopology } from '../pokemonGraphTopology.ts';
+import { applyProgressionBarriers, type ProgressionResult } from '../progressionBarrierEngine.ts';
 import {
-  DEFAULT_PROCEDURAL_SEED,
-  STANDARD_GBA_TILE_SIZE
-} from '../../../config/proceduralMapConfig.ts';
+  generateProgressionObstacles,
+  type ProgressionObstacle
+} from '../progressionObstacleEngine.ts';
+import { generateRouteLedges, type LedgeRun } from '../routeLedgeEngine.ts';
+import { computeTransitableGrid } from '../transitableGridEngine.ts';
 import {
-  DEFAULT_CONTINENTAL_WORLD_WIDTH,
-  DEFAULT_CONTINENTAL_WORLD_HEIGHT
-} from '../../../config/continentalEngineConfig.ts';
-import { compileContinentalSettlementPois } from './continentalSettlementCompiler.ts';
+  generateWildernessLayer,
+  type WildernessLayerResult
+} from '../wildernessVegetationEngine.ts';
 import { carveContinentalCorridorsAndPaths } from './continentalCorridorCarver.ts';
+import { compileContinentalSettlementPois } from './continentalSettlementCompiler.ts';
+import { exportPokemonTopologyToSvg } from './svgRouteAdapter.ts';
 
 // ---------------------------------------------------------------------------
 // Master Graph-First Pipeline Integration (T6.1)
@@ -93,6 +93,33 @@ interface WildernessLayerOptions {
   seed: number;
 }
 
+function reserveFlankingPropsCells(
+  flankingProps: readonly { readonly x: number; readonly y: number }[],
+  reservedCells: Set<string>
+): void {
+  for (const fp of flankingProps) {
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        reservedCells.add(`${fp.x + dx},${fp.y + dy}`);
+      }
+    }
+  }
+}
+
+function reserveAreaWithMargin(
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  reservedCells: Set<string>
+): void {
+  for (let dy = -1; dy <= h; dy++) {
+    for (let dx = -1; dx <= w; dx++) {
+      reservedCells.add(`${x + dx},${y + dy}`);
+    }
+  }
+}
+
 function compileWildernessAndFramingLayer(
   options: WildernessLayerOptions
 ): WildernessAndFramingLayerResult {
@@ -120,28 +147,20 @@ function compileWildernessAndFramingLayer(
   }
 
   for (const obs of progressionObstacles) {
-    for (let dy = -1; dy <= obs.height; dy++) {
-      for (let dx = -1; dx <= obs.width; dx++) {
-        reservedEntityCells.add(`${obs.x + dx},${obs.y + dy}`);
-      }
-    }
+    reserveAreaWithMargin(obs.x, obs.y, obs.width, obs.height, reservedEntityCells);
     if (obs.flankingProps) {
-      for (const fp of obs.flankingProps) {
-        for (let dy = -1; dy <= 1; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            reservedEntityCells.add(`${fp.x + dx},${fp.y + dy}`);
-          }
-        }
-      }
+      reserveFlankingPropsCells(obs.flankingProps, reservedEntityCells);
     }
   }
 
   for (const vig of microVignettes) {
-    for (let dy = -1; dy <= vig.bounds.h; dy++) {
-      for (let dx = -1; dx <= vig.bounds.w; dx++) {
-        reservedEntityCells.add(`${vig.bounds.x + dx},${vig.bounds.y + dy}`);
-      }
-    }
+    reserveAreaWithMargin(
+      vig.bounds.x,
+      vig.bounds.y,
+      vig.bounds.w,
+      vig.bounds.h,
+      reservedEntityCells
+    );
   }
 
   const transitableGrid = computeTransitableGrid(continent, pathGrid, bridgeGrid, pois);

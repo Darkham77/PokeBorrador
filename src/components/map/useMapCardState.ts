@@ -1,16 +1,15 @@
-import { computed, type Ref } from 'vue';
+import { computed, type ComputedRef, type Ref } from 'vue';
+
+import { toPokemonType, translateType, type PokemonType } from '@/data/battle/types';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { MAP_ROUTE_MAPPING } from '@/data/world/map-assets';
+import { requireWeatherSeasonId } from '@/data/world/weather-tables';
+import { MOBILE_SCREEN_BREAKPOINT_PX } from '@/logic/constants/gameplay';
+import { getSpeciesEntries } from '@/logic/encounters/encounters';
+import { getMapWeatherConfig } from '@/logic/encounters/routeWeatherDomainHelpers';
+import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { MAP_ROUTE_MAPPING } from '@/data/world/map-assets';
-import { toPokemonType, translateType, type PokemonType } from '@/data/battle/types';
-import { useUIStore } from '@/stores/ui';
-import { useGameStore } from '@/stores/game';
-import { useMapStore } from '@/stores/map';
-import {
-  getRouteWeather,
-  getWeatherMultiplier,
-  getWeatherModifiersDescription
-} from '@/logic/weather/weatherUtils';
 import {
   getMechanicalWeather,
   requireWeatherId,
@@ -18,15 +17,17 @@ import {
   WEATHER_VISUAL_METADATA,
   type WeatherId
 } from '@/logic/weather/weatherRegistry';
-import { requireWeatherSeasonId } from '@/data/world/weather-tables';
-import { DAY_PHASES, type DayPhase } from '@/types/system/time';
-import { getSpeciesEntries } from '@/logic/encounters/encounters';
-import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper';
-import { getMapWeatherConfig } from '@/logic/encounters/routeWeatherDomainHelpers';
+import {
+  getRouteWeather,
+  getWeatherMultiplier,
+  getWeatherModifiersDescription
+} from '@/logic/weather/weatherUtils';
+import { useGameStore } from '@/stores/game';
+import { useMapStore } from '@/stores/map';
+import { useUIStore } from '@/stores/ui';
 import type { MapLocation } from '@/types/pokemon/encounters';
 import type { DominanceInfo } from '@/types/system/stores';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { MOBILE_SCREEN_BREAKPOINT_PX } from '@/logic/constants/gameplay';
+import { DAY_PHASES, type DayPhase } from '@/types/system/time';
 
 const DEFAULT_SPAWN_RATE_PERCENT = 10 as const;
 
@@ -49,11 +50,63 @@ interface MapCardProps {
   forcedWeather?: WeatherId | null;
 }
 
+export interface ProcessedGuardianInfo {
+  id: string;
+  isSeen: boolean;
+  isCaught: boolean;
+  name: string;
+  typeInfo: string;
+  captured: boolean;
+  sprite: string;
+  seed: number;
+}
+
+export interface ProcessedGridItem {
+  id: string | null;
+  key: string;
+  name?: string;
+  sprite?: string;
+  isSeen?: boolean;
+  isCaught?: boolean;
+  isRare?: boolean;
+  isAtmospheric?: boolean;
+  tooltipTitle?: string;
+  tooltipDesc?: string;
+  seed?: number;
+}
+
+export interface UseMapCardStateReturn {
+  computedWeather: ComputedRef<WeatherId>;
+  imgPath: ComputedRef<string>;
+  cycleEmoji: ComputedRef<string>;
+  cycleName: ComputedRef<string>;
+  seasonName: ComputedRef<string>;
+  seasonEmoji: ComputedRef<string>;
+  weatherEmoji: ComputedRef<string>;
+  weatherName: ComputedRef<string>;
+  weatherModifiersDescription: ComputedRef<string>;
+  cardSeed: ComputedRef<number>;
+  processedGuardian: ComputedRef<ProcessedGuardianInfo | null>;
+  isPlayerWinner: ComputedRef<boolean>;
+  allSpawns: ComputedRef<PokemonSpeciesId[]>;
+  spawnGrid: ComputedRef<{
+    slots: Array<PokemonSpeciesId | null>;
+    rows: number;
+    cols: number;
+    totalSlots: number;
+  }>;
+  processedGrid: ComputedRef<ProcessedGridItem[]>;
+  showBg: ComputedRef<boolean>;
+  lockReason: ComputedRef<string>;
+  isCardLocked: ComputedRef<boolean>;
+  lockDescription: ComputedRef<string>;
+}
+
 export function useMapCardState(
   props: MapCardProps,
   currentCols: Ref<number>,
   isVisible: Ref<boolean>
-) {
+): UseMapCardStateReturn {
   const uiStore = useUIStore();
   const gameStore = useGameStore();
   const mapStore = useMapStore();
@@ -82,9 +135,7 @@ export function useMapCardState(
 
   const cycleEmoji = computed(() => {
     const emojis: Record<DayPhase, string> = { morning: '🌅', day: '🌞', dusk: '🌇', night: '🌙' };
-    return (
-      (props.cycle && props.cycle in emojis ? emojis[props.cycle as DayPhase] : undefined) || '🌞'
-    );
+    return (props.cycle && props.cycle in emojis ? emojis[props.cycle] : undefined) || '🌞';
   });
 
   const cycleName = computed(() => {
@@ -95,9 +146,7 @@ export function useMapCardState(
       dusk: 'Atardecer',
       night: 'Noche'
     };
-    return (
-      (props.cycle && props.cycle in names ? names[props.cycle as DayPhase] : undefined) || 'Normal'
-    );
+    return (props.cycle && props.cycle in names ? names[props.cycle] : undefined) || 'Normal';
   });
 
   const seasonName = computed(() => mapStore.currentSeason.label);
@@ -129,7 +178,7 @@ export function useMapCardState(
     return (sum % 100) / 100;
   });
 
-  const getPokemonSprite = (id: string) => getAssetUrl(ASSET_TYPES.POKEMON, id);
+  const getPokemonSprite = (id: string): string => getAssetUrl(ASSET_TYPES.POKEMON, id);
 
   const getFormattedTypes = (data: { type: string | string[]; type2?: string }): string => {
     const types: PokemonType[] = [];
@@ -249,7 +298,17 @@ export function useMapCardState(
     return { isSeen, isCaught };
   }
 
-  function resolveWeatherSpawnFlags(id: PokemonSpeciesId, map: MapLocation, weather: WeatherId) {
+  function resolveWeatherSpawnFlags(
+    id: PokemonSpeciesId,
+    map: MapLocation,
+    weather: WeatherId
+  ): {
+    isVisitor: boolean;
+    isExclusive: boolean;
+    isSpecialWeatherSpawn: boolean;
+    isBoosted: boolean;
+    isDebuffed: boolean;
+  } {
     const weatherConfig = getMapWeatherConfig(map, weather);
     const isVisitor =
       !!weatherConfig?.visitors &&

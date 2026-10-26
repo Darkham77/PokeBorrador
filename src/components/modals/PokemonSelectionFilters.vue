@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useUIStore } from '@/stores/ui';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 import PokemonSortBar from '@/components/pokemon/PokemonSortBar.vue';
 import PokemonTagBar from '@/components/pokemon/PokemonTagBar.vue';
 import type { PokemonFilterTagId } from '@/logic/constants/tags';
+import { useUIStore } from '@/stores/ui';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 interface Props {
@@ -28,7 +29,7 @@ const sortOrder = defineModel<string>('sortOrder', { required: true });
 const activeTags = defineModel<PokemonFilterTagId[]>('activeTags', { required: true });
 const filterCompatibleOnly = defineModel<boolean>('filterCompatibleOnly', { required: true });
 
-function clearFilters() {
+function clearFilters(): void {
   searchQuery.value = '';
   sortBy.value = 'recent';
   sortOrder.value = 'desc';

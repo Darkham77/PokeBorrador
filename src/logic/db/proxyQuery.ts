@@ -1,13 +1,12 @@
-import { initSQLite, queryLocal, persistSQLite, type SQLiteDatabase } from './sqliteEngine.ts';
-import type { DBRouter } from './dbRouter.ts';
 import type {
   DBResponse,
   ProxyQueryChainItem,
   SqlProxyAction,
   SqlProxyCountMode
 } from '@/types/system/database';
+
 import { logger } from '../utils/logger.ts';
-import { isLanDevPvP, executeLanDev } from './proxyQueryLanDev.ts';
+import type { DBRouter } from './dbRouter.ts';
 import {
   hydrateLocalRows,
   buildSelectWhereAndParams,
@@ -17,6 +16,8 @@ import {
   executeAllUpsertRows,
   resolveUpsertSelectResult
 } from './proxyQueryHelpers.ts';
+import { isLanDevPvP, executeLanDev } from './proxyQueryLanDev.ts';
+import { initSQLite, queryLocal, persistSQLite, type SQLiteDatabase } from './sqliteEngine.ts';
 
 export type DBQueryResultShape = 'single' | 'maybeSingle';
 
@@ -77,15 +78,15 @@ function applyOnlineFinal(
   return query;
 }
 
-function notifyOnlineNetworkError(err: unknown) {
+function notifyOnlineNetworkError(err: unknown): void {
   const errMsg = (err instanceof Error ? err.message : String(err)).toLowerCase();
   if (
     errMsg.includes('fetch') ||
     errMsg.includes('network') ||
     errMsg.includes('failed to fetch')
   ) {
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('db-connection-error'));
+    if (typeof globalThis.window !== 'undefined') {
+      globalThis.dispatchEvent(new CustomEvent('db-connection-error'));
     }
   }
 }
@@ -95,14 +96,14 @@ function notifyOnlineNetworkError(err: unknown) {
  */
 
 export class ProxyQuery {
-  router: DBRouter;
-  table: string;
-  chain: ProxyQueryChainItem[];
-  action: SqlProxyAction;
-  actionData: unknown;
-  actionOpts: unknown;
+  public router: DBRouter;
+  public table: string;
+  public chain: ProxyQueryChainItem[];
+  public action: SqlProxyAction;
+  public actionData: unknown;
+  public actionOpts: unknown;
 
-  constructor(router: DBRouter, table: string) {
+  public constructor(router: DBRouter, table: string) {
     this.router = router;
     this.table = table;
     this.chain = [];
@@ -111,102 +112,105 @@ export class ProxyQuery {
     this.actionOpts = null;
   }
 
-  select(cols: string = '*', opts: { count?: SqlProxyCountMode | null; head?: boolean } = {}) {
+  public select(
+    cols: string = '*',
+    opts: { count?: SqlProxyCountMode | null; head?: boolean } = {}
+  ): this {
     this.chain.push({ type: 'select', args: [cols, opts] });
     return this;
   }
-  eq(c: string, v: unknown) {
+  public eq(c: string, v: unknown): this {
     this.chain.push({ type: 'eq', args: [c, v] });
     return this;
   }
-  neq(c: string, v: unknown) {
+  public neq(c: string, v: unknown): this {
     this.chain.push({ type: 'neq', args: [c, v] });
     return this;
   }
-  gt(c: string, v: unknown) {
+  public gt(c: string, v: unknown): this {
     this.chain.push({ type: 'gt', args: [c, v] });
     return this;
   }
-  lt(c: string, v: unknown) {
+  public lt(c: string, v: unknown): this {
     this.chain.push({ type: 'lt', args: [c, v] });
     return this;
   }
-  gte(c: string, v: unknown) {
+  public gte(c: string, v: unknown): this {
     this.chain.push({ type: 'gte', args: [c, v] });
     return this;
   }
-  lte(c: string, v: unknown) {
+  public lte(c: string, v: unknown): this {
     this.chain.push({ type: 'lte', args: [c, v] });
     return this;
   }
-  in(c: string, arr: unknown[]) {
+  public in(c: string, arr: unknown[]): this {
     this.chain.push({ type: 'in', args: [c, arr] });
     return this;
   }
-  is(c: string, v: unknown) {
+  public is(c: string, v: unknown): this {
     this.chain.push({ type: 'is', args: [c, v] });
     return this;
   }
-  not(c: string, op: string, v: unknown) {
+  public not(c: string, op: string, v: unknown): this {
     this.chain.push({ type: 'not', args: [c, op, v] });
     return this;
   }
-  or(c: string) {
+  public or(c: string): this {
     this.chain.push({ type: 'or', args: [c] });
     return this;
   }
-  order(c: string, opts: { ascending?: boolean } = {}) {
+  public order(c: string, opts: { ascending?: boolean } = {}): this {
     this.chain.push({ type: 'order', args: [c, opts] });
     return this;
   }
-  limit(n: number) {
+  public limit(n: number): this {
     this.chain.push({ type: 'limit', args: [n] });
     return this;
   }
-  match(obj: Record<string, unknown>) {
+  public match(obj: Record<string, unknown>): this {
     // open-record: Dynamic query filter criteria dictionary
     this.chain.push({ type: 'match', args: [obj] });
     return this;
   }
-  ilike(c: string, v: string) {
+  public ilike(c: string, v: string): this {
     this.chain.push({ type: 'ilike', args: [c, v] });
     return this;
   }
 
-  upsert(data: unknown, opts?: unknown) {
+  public upsert(data: unknown, opts?: unknown): this {
     this.action = 'upsert';
     this.actionData = data;
     this.actionOpts = opts;
     return this;
   }
 
-  insert(data: unknown) {
+  public insert(data: unknown): this {
     this.action = 'insert';
     this.actionData = data;
     return this;
   }
 
-  update(data: unknown) {
+  public update(data: unknown): this {
     this.action = 'update';
     this.actionData = data;
     return this;
   }
 
-  delete() {
+  public delete(): this {
     this.action = 'delete';
     return this;
   }
 
-  async maybeSingle(): Promise<DBResponse> {
+  public async maybeSingle(): Promise<DBResponse> {
     return this.execute('maybeSingle');
   }
-  async single(): Promise<DBResponse> {
+  public async single(): Promise<DBResponse> {
     return this.execute('single');
   }
 
   // compatibility with 'await q'
   // eslint-disable-next-line unicorn/no-thenable
-  async then<T = DBResponse>(
+  public async then<T = DBResponse>(
     onFulfilled?: (value: DBResponse) => T | Promise<T>,
     onRejected?: (reason: unknown) => T | Promise<T>
   ): Promise<T | DBResponse> {
@@ -219,7 +223,7 @@ export class ProxyQuery {
     }
   }
 
-  async execute(final: DBQueryResultShape | null = null): Promise<DBResponse> {
+  public async execute(final: DBQueryResultShape | null = null): Promise<DBResponse> {
     if (this.router.mode === 'online') {
       return this.executeOnline(final);
     }
@@ -246,7 +250,7 @@ export class ProxyQuery {
     }
   }
 
-  async executeLocal(final: DBQueryResultShape | null = null): Promise<DBResponse> {
+  public async executeLocal(final: DBQueryResultShape | null = null): Promise<DBResponse> {
     if (isLanDevPvP(this.table)) {
       return executeLanDev(this.table, this.action, this.actionData, this.chain, final);
     }
@@ -294,7 +298,7 @@ export class ProxyQuery {
     return formatLocalResult(data, final, count);
   }
 
-  async _executeLocalUpsert(
+  public async _executeLocalUpsert(
     sqliteDb: SQLiteDatabase,
     final: DBQueryResultShape | null = null
   ): Promise<DBResponse> {
@@ -316,7 +320,7 @@ export class ProxyQuery {
     }
   }
 
-  async _executeLocalUpdate(sqliteDb: SQLiteDatabase): Promise<DBResponse> {
+  public async _executeLocalUpdate(sqliteDb: SQLiteDatabase): Promise<DBResponse> {
     try {
       const data = this.actionData as Record<string, unknown>; // open-record: Generic key-value data dictionary container
       const setClause = Object.keys(data)
@@ -353,7 +357,7 @@ export class ProxyQuery {
     }
   }
 
-  async _executeLocalDelete(sqliteDb: SQLiteDatabase): Promise<DBResponse> {
+  public async _executeLocalDelete(sqliteDb: SQLiteDatabase): Promise<DBResponse> {
     try {
       const params: unknown[] = [];
       const where: string[] = []; // no-domain: Non-domain utility collection or data structure
@@ -369,6 +373,10 @@ export class ProxyQuery {
             where.push(`${String(s.args[0])} IN (${marks})`);
             params.push(...list);
           }
+        }
+        if (s.type === 'like' || s.type === 'ilike') {
+          where.push(`${String(s.args[0])} LIKE ?`);
+          params.push(s.args[1]);
         }
       });
 

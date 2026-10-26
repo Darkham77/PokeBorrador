@@ -1,8 +1,9 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
+import { ref } from 'vue';
+
 import { parseShowdownLogLine } from '@/logic/battle/showdownBridge';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import { ref } from 'vue';
 
 describe('Showdown Protocol Coverage (-cant & flinch) - Unit Tests', () => {
   it('parses |-cant|...|flinch lines without unhandled visual parser warnings and triggers flinch animation', async () => {

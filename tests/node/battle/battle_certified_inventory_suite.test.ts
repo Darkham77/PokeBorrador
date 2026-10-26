@@ -1,20 +1,22 @@
 import assert from 'node:assert/strict';
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import fs from 'node:fs';
 import path from 'node:path';
-import { Battle } from '@pkmn/sim';
 
-import { requireCertifiedBagItemResponse } from '@/logic/battle/helpers/certifiedBagItemActionResolver';
-import { createCertifiedBattleInventory } from '../../../scripts/e2e/fuzzer/core/certifiedBattleInventory.ts';
-import { createCertifiedItemBattleCases } from '../../../scripts/e2e/fuzzer/core/fuzzer_engine.ts';
-import { generateItemBatches } from '../../../scripts/e2e/fuzzer/generators/fuzzer_item_generator.ts';
-import { runMedicineFuzzer } from '../../../scripts/e2e/fuzzer/core/fuzzer_medicine_cases.ts';
-import { fuzzerMemoryStore } from '../../../scripts/e2e/fuzzer/core/fuzzerMemoryStore.ts';
-import { executeBattleTurn } from '@/logic/battle/helpers/showdownExecutor';
+import { Battle } from '@pkmn/sim';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
 import { patchShowdownSpreadModify } from '@/logic/battle/engine/showdownSpreadModifyHelper';
+import { requireCertifiedBagItemResponse } from '@/logic/battle/helpers/certifiedBagItemActionResolver';
 import { ShowdownBattleAgent } from '@/logic/battle/helpers/showdownBattleAgent';
+import { executeBattleTurn } from '@/logic/battle/helpers/showdownExecutor';
 import { ShowdownTeamResolver } from '@/logic/battle/showdownTeamResolver';
 import type { ShowdownPlayerRequest } from '@/types/battle/battle';
+
+import { createCertifiedBattleInventory } from '../../../scripts/e2e/fuzzer/core/certifiedBattleInventory.ts';
+import { createCertifiedItemBattleCases } from '../../../scripts/e2e/fuzzer/core/fuzzer_engine.ts';
+import { runMedicineFuzzer } from '../../../scripts/e2e/fuzzer/core/fuzzer_medicine_cases.ts';
+import { fuzzerMemoryStore } from '../../../scripts/e2e/fuzzer/core/fuzzerMemoryStore.ts';
+import { generateItemBatches } from '../../../scripts/e2e/fuzzer/generators/fuzzer_item_generator.ts';
 
 patchShowdownSpreadModify(() => true);
 

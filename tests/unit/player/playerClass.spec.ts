@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+
 import { useGameStore } from '@/stores/game';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
 import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 vi.mock('@/logic/db/supabase', () => ({
   supabase: {

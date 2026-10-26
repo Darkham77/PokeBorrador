@@ -1,7 +1,9 @@
+import type { DisplayText } from '@francogp/auditor';
+
 import { TYPE_TRANSLATIONS, type PokemonType } from '@/data/battle/types';
 import { GAME_RATIOS } from '@/data/system/constants';
-import type { MapLocation } from '@/types/pokemon/encounters';
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import type { MapLocation } from '@/types/pokemon/encounters';
 
 export const ARCHAEOLOGY_CAVE_BASE_WEIGHT = 10;
 export const ARCHAEOLOGY_MOUNTAIN_BASE_WEIGHT = 5;
@@ -138,7 +140,7 @@ export function computeActiveWeights(
 
 const SPANISH_TYPE_ENTRIES = Object.entries(TYPE_TRANSLATIONS) as [PokemonType, string][];
 // open-record: Spanish type name mapping to PokemonType
-const SPANISH_TYPE_MAP: Record<string, PokemonType> = Object.fromEntries([
+const SPANISH_TYPE_MAP: Record<DisplayText, PokemonType> = Object.fromEntries([
   ...SPANISH_TYPE_ENTRIES.map(([eng, esp]) => [esp.toLowerCase(), eng]), // text-ok: UI text display localization string
   ['electrico', 'electric'],
   ['dragon', 'dragon'],

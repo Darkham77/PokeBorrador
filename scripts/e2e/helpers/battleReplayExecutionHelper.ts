@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 import type { Page } from '@playwright/test';
 import { awaitBattleReadyForInput, type CertifiedTestBatch } from '../e2e_helpers.ts';
 import type { BattleReadyForInputDetail } from '../../../src/types/battle/battleEvents.ts';
@@ -193,7 +194,7 @@ export async function executeReplayStepHelper(
         (store?.state as { value?: unknown } | undefined)?.value ||
         store?.state) as
         | {
-            player?: { volatileCounters?: Record<string, number> };
+            player?: { volatileCounters?: Record<DisplayText, number> };
             playerRequest?: {
               active?: Array<{ trapped?: boolean; moves?: Array<{ id?: string }> }>;
             };

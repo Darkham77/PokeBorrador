@@ -5,23 +5,25 @@
  * item usage with Showdown turn skipping, and counter switching.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
-import { ref } from 'vue';
+import { Dex, toID } from '@pkmn/sim';
 import { setActivePinia, createPinia } from 'pinia';
-import '../../helpers/battleMockSetup';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
+import '../../helpers/battleMockSetup.ts';
+import { ref } from 'vue';
+
 import { TRAINER_TYPES, getArchetypePool, type TrainerTypeKey } from '@/data/player/trainerTypes';
 import { ENABLED_POKEMON_IDS_SET, MAX_POKEMON_LEVEL } from '@/data/system/constants';
-import { Dex, toID } from '@pkmn/sim';
-import { RivalTeamGenerator } from '@/logic/battle/engine/rivalTeamGenerator.ts';
-import { handleRivalSpecialDrops } from '@/logic/battle/rewards/classRewardsHandler';
 import { decideEnemyMove } from '@/logic/battle/ai/battleAI';
-import { executeTurn } from '@/logic/battle/battleTurn';
-import { processFaint } from '@/logic/battle/resolution';
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
+import { executeTurn } from '@/logic/battle/battleTurn';
+import { RivalTeamGenerator } from '@/logic/battle/engine/rivalTeamGenerator.ts';
+import { processFaint } from '@/logic/battle/resolution';
+import { handleRivalSpecialDrops } from '@/logic/battle/rewards/classRewardsHandler';
 import { useBattleStore } from '@/stores/battle/battle';
+import type { BattleStages, BattleState } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleStages, BattleState } from '@/types/battle/battle';
 
 // Hoisted Mocks for Showdown Worker & AI
 const mockExecuteTurn = vi.hoisted(() =>

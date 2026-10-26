@@ -1,53 +1,24 @@
+import { isMainModule, type AssetUri, type DisplayText } from '@francogp/auditor';
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
-import { parseArgs, styleText } from 'node:util';
+import { styleText } from 'node:util';
+import { defineCommand, runMain } from 'citty';
 import { TABLES_SCHEMA } from '../../src/logic/db/schema.ts';
 import { SHOP_ITEMS } from '../../src/data/inventory/items.ts';
 
-console.log(styleText('bold', '\n--- 📥 IMPORTADOR DE RESPALDOS A SQLITE LOCAL ---'));
-
-const args = process.argv.slice(2);
-const normalized = args.map((a) => (a.includes('=') && !a.startsWith('-') ? `--${a}` : a));
-
-const { values, positionals } = parseArgs({
-  args: normalized,
-  options: {
-    server: { type: 'string', short: 's' },
-    file: { type: 'string', short: 'f' },
-    help: { type: 'boolean', short: 'h' }
-  },
-  allowPositionals: true,
-  strict: false
-});
-
-const isHelp =
-  values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
-if (isHelp) {
-  console.log(
-    styleText(
-      'cyan',
-      `\n📖 USO: npm run database:local-import [server=<perfil> | file=<ruta_json>]`
-    )
-  );
-  console.log(styleText('gray', '\nOpciones disponibles:'));
-  console.log(
-    styleText(
-      'gray',
-      '  server=<perfil> : Nombre del perfil para importar su respaldo más reciente.'
-    )
-  );
-  console.log(
-    styleText('gray', '  file=<ruta>     : Ruta directa al archivo JSON de respaldo a importar.')
-  );
-  process.exit(0);
+export interface ImportBackupToSqliteOptions {
+  readonly server?: DisplayText;
+  readonly file?: AssetUri;
 }
 
-let backupPath = typeof values.file === 'string' ? values.file : undefined; // singleton-ok: Singleton instance state container
+async function runImportBackupToSqlite(options: ImportBackupToSqliteOptions): Promise<void> {
+  console.log(styleText('bold', '\n--- 📥 IMPORTADOR DE RESPALDOS A SQLITE LOCAL ---'));
 
-if (!backupPath) {
-  const serverNameInput =
-    typeof values.server === 'string' ? values.server : positionals[0] || 'official_prod';
+  let backupPath: string | undefined = options.file as string | undefined;
+
+  if (!backupPath) {
+    const serverNameInput = options.server || 'official_prod';
   let serverName = serverNameInput;
   const envPath = path.resolve(process.cwd(), '.env');
   if (fs.existsSync(envPath)) {
@@ -101,6 +72,11 @@ if (!backupPath) {
     process.exit(1);
   }
   console.log(styleText('cyan', `📂 Importando archivo específico: ${backupPath}`));
+}
+
+if (!backupPath) {
+  console.error(styleText('red', '❌ Error: No se definió la ruta del archivo de backup.'));
+  process.exit(1);
 }
 
 let backupContent: string;
@@ -184,7 +160,7 @@ function replaceUserIds(value: unknown, mapping: Map<string, string>): unknown {
   return value;
 }
 
-const INVENTORY_ALIASES: Readonly<Record<string, string>> = {
+const INVENTORY_ALIASES: Readonly<Record<DisplayText, string>> = {
   potion: 'Poción',
   pocion: 'Poción',
   pocian: 'Poción',
@@ -250,15 +226,15 @@ function resolveNormalizedItemName(name: string): string {
   return INVENTORY_ALIASES[norm] || name;
 }
 
-function migrateInventoryKeys(inventory: Record<string, number>): Record<string, number> {
-  const itemMapping: Record<string, string> = {};
+function migrateInventoryKeys(inventory: Record<DisplayText, number>): Record<DisplayText, number> {
+  const itemMapping: Record<DisplayText, string> = {};
   for (const item of SHOP_ITEMS) {
     itemMapping[item.name] = item.id;
   }
   const validIds = new Set<string>(SHOP_ITEMS.map((i) => i.id));
   validIds.add('bicycle');
 
-  const newInv: Record<string, number> = {};
+  const newInv: Record<DisplayText, number> = {};
   for (const [key, qty] of Object.entries(inventory)) {
     const resolvedName = resolveNormalizedItemName(key);
     let mappedId = itemMapping[resolvedName];
@@ -285,7 +261,7 @@ function isTimestampedSaveDataPayload(val: unknown): val is TimestampedSaveDataP
 function transformSaveData(val: unknown, mapping: Map<string, string>): unknown {
   try {
     const parsed = (typeof val === 'string' ? JSON.parse(val) : val) as {
-      inventory?: Record<string, number>;
+      inventory?: Record<DisplayText, number>;
     } | null;
     if (parsed?.inventory && typeof parsed.inventory === 'object') {
       parsed.inventory = migrateInventoryKeys(parsed.inventory);
@@ -344,6 +320,15 @@ function normalizeSqliteColumnValue(val: unknown): unknown {
   return val;
 }
 
+const EMAIL_COLUMN_NAMES = [
+  'email',
+  'winner_email',
+  'player_email'
+] as const;
+const EMAIL_COLUMNS: ReadonlySet<string> = new Set<string>(
+  EMAIL_COLUMN_NAMES
+);
+
 // Función de transformación de fila
 function transformRow(
   row: Record<string, unknown>,
@@ -361,7 +346,7 @@ function transformRow(
 
     const rawVal = rowCopy[col];
     if (col === 'id' && hasIntPkId && typeof rawVal === 'string') continue;
-    if (col === 'email' || col === 'winner_email' || col === 'player_email') {
+    if (EMAIL_COLUMNS.has(col)) {
       newRow[col] = rawVal;
       continue;
     }
@@ -488,18 +473,46 @@ for (const tableName of Object.keys(backupData.data)) {
   } catch (err) {
     try {
       db.exec('ROLLBACK;');
-    } catch {
-      // catch-ok: ignore rollback error if transaction was not active
-      // Ignorar si no había transacción activa
+    } catch (rollbackErr) {
+      rollbackErr;
     }
     console.error(`❌ Error al importar la tabla [${tableName}]: ${(err as Error).message}`);
   }
 }
 
-db.exec('PRAGMA foreign_keys = ON;');
-db.close();
+  db.exec('PRAGMA foreign_keys = ON;');
+  db.close();
 
-console.log('\n==================================================');
-console.log('🎉 PROCESO DE IMPORTACIÓN A SQLITE COMPLETADO CON ÉXITO');
-console.log(`📂 Archivo listo para el navegador en: scratch/database/manual_user_backup_import.db`);
-console.log('==================================================\n');
+  console.log('\n==================================================');
+  console.log('🎉 PROCESO DE IMPORTACIÓN A SQLITE COMPLETADO CON ÉXITO');
+  console.log(`📂 Archivo listo para el navegador en: scratch/database/manual_user_backup_import.db`);
+  console.log('==================================================\n');
+}
+
+export const command = defineCommand({
+  meta: {
+    name: 'import-backup-to-sqlite',
+    description: 'Importador de respaldos a SQLite local'
+  },
+  args: {
+    server: {
+      type: 'string',
+      description: 'Nombre del perfil para importar su respaldo más reciente',
+      alias: 's'
+    },
+    file: {
+      type: 'string',
+      description: 'Ruta directa al archivo JSON de respaldo a importar',
+      alias: 'f'
+    }
+  },
+  async run({ args }) {
+    await runImportBackupToSqlite({
+      server: args.server,
+      file: args.file
+    });
+  }
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
+}

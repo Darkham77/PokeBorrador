@@ -9,11 +9,11 @@ export function useWindowListener<E extends Event = Event>(
   event: string,
   callback: GeneralEventListener<E>,
   options: boolean | AddEventListenerOptions = {}
-) {
+): () => void {
   return useEventListener(
-    typeof window !== 'undefined' ? window : null,
+    typeof globalThis.window !== 'undefined' ? globalThis : null,
     event,
-    callback as GeneralEventListener<Event>,
+    callback as GeneralEventListener,
     options
   );
 }
@@ -26,11 +26,11 @@ export function useDocumentListener<E extends Event = Event>(
   event: string,
   callback: GeneralEventListener<E>,
   options: boolean | AddEventListenerOptions = {}
-) {
+): () => void {
   return useEventListener(
     typeof document !== 'undefined' ? document : null,
     event,
-    callback as GeneralEventListener<Event>,
+    callback as GeneralEventListener,
     options
   );
 }

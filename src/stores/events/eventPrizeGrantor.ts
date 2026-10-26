@@ -1,30 +1,32 @@
+import type { DisplayText } from '@francogp/auditor';
+
+import { isNatureId, type NatureId } from '@/data/battle/natures';
 import { getItemName, isItemId, type ItemId } from '@/data/inventory/items';
-import { incrementRecordKey } from '@/logic/utils/mapUtils';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { makePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
-import { isNatureId } from '@/data/battle/natures';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { POKEMON_STAT_KEYS, type Pokemon, type PokemonIVs } from '@/types/pokemon/pokemon';
-import type { useGameStore } from '@/stores/game.ts';
-import type { useUIStore } from '@/stores/ui.ts';
-import type { PendingAward } from '@/types/system/stores.ts';
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import {
   DEFAULT_POKEMON_BOX_COUNT,
   POKEMON_BOX_SLOT_CAPACITY,
   MAX_POKEMON_TEAM_SIZE
 } from '@/logic/constants/gameplay.ts';
+import { makePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { incrementRecordKey } from '@/logic/utils/mapUtils';
+import type { useGameStore } from '@/stores/game.ts';
+import type { useUIStore } from '@/stores/ui.ts';
+import { POKEMON_STAT_KEYS, type Pokemon, type PokemonIVs } from '@/types/pokemon/pokemon';
+import type { PendingAward } from '@/types/system/stores.ts';
 
 export type EventPrizeGameStore = ReturnType<typeof useGameStore>;
 export type EventPrizeUIStore = ReturnType<typeof useUIStore>;
 
 export function getAvailablePokemonStorageSlots(gameStore: EventPrizeGameStore): number {
   const teamOccupied = gameStore.state?.team
-    ? gameStore.state.team.filter((p) => p != null).length
+    ? gameStore.state.team.filter((p) => p !== null && p !== undefined).length
     : 0;
   const boxCount = gameStore.state?.boxCount || DEFAULT_POKEMON_BOX_COUNT;
   const boxCapacity = boxCount * POKEMON_BOX_SLOT_CAPACITY;
   const boxOccupied = gameStore.state?.box
-    ? gameStore.state.box.filter((p) => p != null).length
+    ? gameStore.state.box.filter((p) => p !== null && p !== undefined).length
     : 0;
   const totalCapacity = MAX_POKEMON_TEAM_SIZE + boxCapacity;
   const totalOccupied = teamOccupied + boxOccupied;
@@ -163,7 +165,7 @@ function grantMultipleItemsEntry(
 ): number {
   if (!prize.items || typeof prize.items !== 'object') return 0;
   let count = 0;
-  for (const [key, qty] of Object.entries(prize.items as Record<string, number>)) {
+  for (const [key, qty] of Object.entries(prize.items as Record<DisplayText, number>)) {
     // open-record: Generic key-value data dictionary container
     if (isItemId(key) && qty && qty > 0) {
       grantSingleItem(gameStore, uiStore, key, qty, silent);
@@ -195,7 +197,14 @@ function applyCustomIvs(poke: Pokemon, rawIvs: Partial<PokemonIVs> | null): void
   recalcPokemonStats(poke);
 }
 
-function parsePokemonPrizeOptions(prize: Record<string, unknown>) {
+function parsePokemonPrizeOptions(prize: Record<string, unknown>): {
+  speciesId: PokemonSpeciesId;
+  level: number;
+  isShiny: boolean;
+  nature: NatureId | undefined;
+  rawIvs: Record<DisplayText, number> | null;
+  ivFloor: number;
+} | null {
   const rawSpecies = typeof prize.species === 'string' ? prize.species : '';
   if (!rawSpecies || !pokemonDataProvider.getPokemonData(rawSpecies)) return null;
   const speciesId = requirePokemonSpeciesId(rawSpecies);
@@ -204,7 +213,7 @@ function parsePokemonPrizeOptions(prize: Record<string, unknown>) {
   const nature =
     typeof prize.nature === 'string' && isNatureId(prize.nature) ? prize.nature : undefined;
   const rawIvs =
-    prize.ivs && typeof prize.ivs === 'object' ? (prize.ivs as Record<string, number>) : null; // open-record: Generic key-value data dictionary container
+    prize.ivs && typeof prize.ivs === 'object' ? (prize.ivs as Record<DisplayText, number>) : null; // open-record: Generic key-value data dictionary container
   const ivFloor = rawIvs
     ? Math.min(...Object.values(rawIvs).filter((v: number) => typeof v === 'number'))
     : 0;

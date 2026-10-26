@@ -13,8 +13,9 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateSettlementLayout } from '../../logic/map/cityLayoutEngine.ts';
+
 import { buildMapBlitInstructions, CANVAS_TILE_SIZE } from '../../logic/map/canvasTileRenderer.ts';
+import { generateSettlementLayout } from '../../logic/map/cityLayoutEngine.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';

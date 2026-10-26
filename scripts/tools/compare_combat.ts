@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 import fs from 'node:fs';
 import path from 'node:path';
 import { Battle, Dex } from '@pkmn/sim';
@@ -29,7 +30,7 @@ import type {
 } from '../../src/logic/battle/battleMathTypes.ts';
 
 // Diccionario para traducir habilidades de nuestro motor (Español) a Showdown (Inglés)
-const ABILITY_MAP_ES_TO_EN: Record<string, string> = {
+const ABILITY_MAP_ES_TO_EN: Record<DisplayText, string> = {
   Espesura: 'overgrow',
   Clorofila: 'chlorophyll',
   'Mar llamas': 'blaze',
@@ -91,7 +92,7 @@ const ABILITY_MAP_ES_TO_EN: Record<string, string> = {
   'Chorro Arena': 'sandstream'
 };
 
-const COMPARE_COMBAT_WEATHER_MAP: Record<string, string> = {
+const COMPARE_COMBAT_WEATHER_MAP: Record<DisplayText, string> = {
   clear: 'clear',
   sun: 'sunnyday',
   rain: 'raindance',
@@ -100,7 +101,7 @@ const COMPARE_COMBAT_WEATHER_MAP: Record<string, string> = {
   snow: 'hail'
 };
 
-const ITEMS_MAP: Record<string, string> = {
+const ITEMS_MAP: Record<DisplayText, string> = {
   charcoal: 'charcoal',
   magnet: 'magnet',
   mysticwater: 'mysticwater',

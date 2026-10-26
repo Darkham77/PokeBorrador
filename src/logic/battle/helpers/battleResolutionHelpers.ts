@@ -1,16 +1,16 @@
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants.ts';
 import { gameBus } from '@/logic/events/gameBus';
-import type { BattleContext } from '@/types/battle/battleContext';
-import type { BattleOutcomeFlags } from '@/types/battle/battle';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { calculatePoliceBail, POLICE_STEAL_CHANCE_PERCENT } from '@/logic/player/classMath.ts';
 import type { useUIStore } from '@/stores/ui';
+import type { BattleOutcomeFlags } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { findBestSwitchIndex } from '../ai/battleAI.ts';
+import { parseShowdownLogLine, filterShowdownLogs } from '../showdownBridge.ts';
 import { ShowdownTeamResolver } from '../showdownTeamResolver.ts';
 import { getShowdownWorker, executeTurnInWorker } from '../showdownWorkerClient.ts';
-import { parseShowdownLogLine, filterShowdownLogs } from '../showdownBridge.ts';
 import { ShowdownBattleRunner } from './showdownBattleRunner.ts';
-
-import { calculatePoliceBail, POLICE_STEAL_CHANCE_PERCENT } from '@/logic/player/classMath.ts';
-import { MAX_POKEMON_LEVEL } from '@/data/system/constants.ts';
 
 const DEFAULT_STOLEN_POKEMON_LEVEL = 5 as const;
 
@@ -65,7 +65,7 @@ async function handlePoliceTheft(
     uiStore.notify(`¡Robaste un ${clone.name}!`, '🏴‍☠️');
 
     const audioStore = await import('@/stores/audio').then((m) => m.useAudioStore());
-    void audioStore.play('steal');
+    await audioStore.play('steal');
   }
 }
 
@@ -180,8 +180,11 @@ async function executeWorkerEnemySwitch(
   if (!getShowdownWorker() || !active.enemyTeam) return;
 
   let p2Choice = `switch ${ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)}`;
-  if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-    const certifiedChoice = ShowdownBattleRunner.requireHistoryChoice(window.__VITE_DEBUG__, 'p2');
+  if (typeof globalThis.window !== 'undefined' && globalThis.__VITE_DEBUG__?.isScriptedReplayMode) {
+    const certifiedChoice = ShowdownBattleRunner.requireHistoryChoice(
+      globalThis.__VITE_DEBUG__,
+      'p2'
+    );
     if (certifiedChoice.startsWith('switch ')) {
       p2Choice = certifiedChoice;
     }
@@ -194,8 +197,8 @@ async function executeWorkerEnemySwitch(
   for (const logLine of filteredLogs) {
     await parseShowdownLogLine(ctx, logLine, filteredLogs);
   }
-  if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-    ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__);
+  if (typeof globalThis.window !== 'undefined' && globalThis.__VITE_DEBUG__?.isScriptedReplayMode) {
+    ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(globalThis.__VITE_DEBUG__);
   }
 }
 

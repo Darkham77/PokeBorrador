@@ -1,13 +1,15 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
-import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
+
+import { describe, it } from 'vite-plus/test';
+
+import { ACTIVE_SHOWDOWN_FORMAT } from '../../../src/data/system/constants.ts';
 import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
+import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
 import {
   ShowdownTeamMapper,
   type CustomPokemonSet
 } from '../../../src/logic/battle/helpers/showdownTeamMapper.ts';
 import { ShowdownTeamResolver } from '../../../src/logic/battle/showdownTeamResolver.ts';
-import { ACTIVE_SHOWDOWN_FORMAT } from '../../../src/data/system/constants.ts';
 import { getShowdownNickname } from '../../../src/logic/battle/showdownUidMapper.ts';
 import type { ShowdownPlayerRequest } from '../../../src/types/battle/battle.ts';
 

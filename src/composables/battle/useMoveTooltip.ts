@@ -1,11 +1,12 @@
-import { computed, toValue } from 'vue';
+import { computed, toValue, type ComputedRef } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
-import type { Move, Pokemon } from '@/types/pokemon/pokemon';
-import { useBattleStore } from '@/stores/battle/battle';
-import { getMoveDescription } from '@/logic/pokemon/pokemonUtils';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+
 import type { PurePokemon } from '@/logic/battle/battleMath';
 import { calculateMoveModifierInfo, parseStatusEffectInfo } from '@/logic/battle/moveTooltipMath';
+import { getMoveDescription } from '@/logic/pokemon/pokemonUtils';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { useBattleStore } from '@/stores/battle/battle';
+import type { Move, Pokemon } from '@/types/pokemon/pokemon';
 
 import {
   applyChoiceItemModifier,
@@ -13,10 +14,17 @@ import {
   computeMoveActiveDetails
 } from './moveTooltipCalculator.ts';
 
+export interface UseMoveTooltipReturn {
+  readonly modifierInfo: ComputedRef<ReturnType<typeof calculateMoveModifierInfo> | null>;
+  readonly activeDetails: ComputedRef<ReturnType<typeof computeMoveActiveDetails> | null>;
+  readonly parsedStatusEffect: ComputedRef<ReturnType<typeof parseStatusEffectInfo> | null>;
+  readonly moveDescriptionText: ComputedRef<string>;
+}
+
 export function useMoveTooltip(
   moveInput: MaybeRefOrGetter<Move>,
   playerInfoInput?: MaybeRefOrGetter<Pokemon | null | undefined>
-) {
+): UseMoveTooltipReturn {
   const battleStore = useBattleStore();
 
   const modifierInfo = computed(() => {
@@ -66,7 +74,7 @@ export function useMoveTooltip(
 
     return parseStatusEffectInfo(
       move,
-      attacker as PurePokemon, // domain-ok: Open dynamic text or non-domain string payload
+      attacker, // domain-ok: Open dynamic text or non-domain string payload
       defender as PurePokemon | null, // domain-ok: Open dynamic text or non-domain string payload
       battleStore.playerStages,
       battleStore.enemyStages

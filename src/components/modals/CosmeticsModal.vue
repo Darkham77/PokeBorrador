@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useUIStore } from '@/stores/ui';
-import { useCosmeticsStore } from '@/stores/player/cosmetics';
-import { useProfileStore } from '@/stores/player/profile';
-import { useGameStore } from '@/stores/game';
-import { useAuthStore } from '@/stores/auth';
+
 import BaseModal from '@/components/common/BaseModal.vue';
 import AvatarFrameSelector from '@/components/modals/AvatarFrameSelector.vue';
+import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { useCosmeticsStore } from '@/stores/player/cosmetics';
+import { useProfileStore } from '@/stores/player/profile';
+import { useUIStore } from '@/stores/ui';
+
 import CosmeticsNickStyleCard from './CosmeticsNickStyleCard.vue';
 
 interface Props {
@@ -37,7 +39,7 @@ const previewUsername = computed(() => {
   );
 });
 
-const closeCosmetics = () => {
+const closeCosmetics = (): void => {
   emit('close');
 };
 
@@ -50,7 +52,7 @@ import {
 } from './cosmeticsFilterHelper';
 
 const isLocal = computed(() => {
-  const hn = typeof window !== 'undefined' ? window.location.hostname : undefined;
+  const hn = typeof globalThis.window !== 'undefined' ? globalThis.location.hostname : undefined;
   return checkIsLocalEnvironment(import.meta.env.DEV, hn);
 });
 
@@ -66,11 +68,11 @@ const playerContext = computed<CosmeticPlayerContext>(() => ({
   isAdmin: isAdmin.value
 }));
 
-const isNickLocked = (style: LockableCosmeticStyle) => {
+const isNickLocked = (style: LockableCosmeticStyle): boolean => {
   return isCosmeticStyleLocked(style, playerContext.value);
 };
 
-const selectNick = (style: LockableCosmeticStyle) => {
+const selectNick = (style: LockableCosmeticStyle): void => {
   const lockNotice = resolveCosmeticLockNotification(style, 'estilo', playerContext.value);
   if (lockNotice) {
     uiStore.notify(lockNotice, '🔒');

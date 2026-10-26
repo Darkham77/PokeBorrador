@@ -1,15 +1,17 @@
-import { Pokemon, type PokemonMoveId } from '@/types/pokemon/pokemon';
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
-import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
-import type { Inventory } from '@/types/inventory/items';
-import type { ItemId } from '@/data/inventory/items';
-import type { GymId } from '@/data/world/gyms';
-import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
-import type { PlayerClassId, GenderId } from '@/types/system/game';
-import type { MapRouteId } from '@/data/world/map-assets';
-import type { MoveCategory } from '@/data/battle/moves';
-import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { DisplayText } from '@francogp/auditor';
 import type { SideID } from '@pkmn/sim';
+
+import type { MoveCategory } from '@/data/battle/moves';
+import type { ItemId } from '@/data/inventory/items';
+import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
+import type { GymId } from '@/data/world/gyms';
+import type { MapRouteId } from '@/data/world/map-assets';
+import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
+import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import type { Inventory } from '@/types/inventory/items';
+import type { Pokemon, PokemonMoveId } from '@/types/pokemon/pokemon';
+import type { PlayerClassId, GenderId } from '@/types/system/game';
 
 /** Canonical Showdown PRNG 4-word integer seed tuple ([w, x, y, z]) */
 export type NumericSeed = [number, number, number, number];
@@ -31,6 +33,10 @@ export const BATTLE_SIDES = ['player', 'enemy'] as const;
 export type BattleSide = (typeof BATTLE_SIDES)[number];
 const BATTLE_SEATS = ['seat1', 'seat2', 'seat3', 'seat4'] as const;
 export type BattleSeatId = (typeof BATTLE_SEATS)[number];
+const BATTLE_SEAT_SET: ReadonlySet<string> = new Set<string>(BATTLE_SEATS);
+export function isBattleSeatId(seat: unknown): seat is BattleSeatId {
+  return typeof seat === 'string' && BATTLE_SEAT_SET.has(seat);
+}
 export const BATTLE_WINNER_RESULTS = ['player', 'enemy', 'tie'] as const;
 export type BattleWinnerResult = (typeof BATTLE_WINNER_RESULTS)[number];
 export const BATTLE_MINIGAMES = ['fishing', 'archaeology'] as const;
@@ -145,6 +151,9 @@ export interface BattleTimedCondition {
   meta?: Partial<Record<BattleConditionMetaKey, unknown>>;
 }
 
+export const BATTLE_STAGE_KEYS = ['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva'] as const;
+export type BattleStageKey = (typeof BATTLE_STAGE_KEYS)[number];
+
 export type BattleStages = Partial<Record<CoreBattleStatKey, number>> & {
   atk: number;
   def: number;
@@ -211,7 +220,7 @@ export interface BattleState {
   gymId?: GymId;
   fixedCycle?: DayPhase;
   fixedWeather?: WeatherId;
-  returnTab?: string; // domain-ok: UI navigation tab identifier
+  returnTab?: DisplayText;
   weather: BattleWeather;
   turnCount: number;
   over: boolean;
@@ -223,7 +232,7 @@ export interface BattleState {
   escapeAttempts: number;
   initialMapWeather?: WeatherId | null;
   rarity?: number;
-  terrain?: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  terrain?: DisplayText | null;
   fieldConditions?: Partial<Record<BattleConditionKey, BattleTimedCondition>>;
   pendingSlotEffects?: PendingSlotEffect[];
   playerSideConditions?: Partial<Record<BattleConditionKey, BattleTimedCondition>>;
@@ -254,23 +263,23 @@ export interface BattleState {
   learnQueue?: unknown[];
   isPvP?: boolean;
   isRanked?: boolean;
-  pvpMatchId?: string; // domain-ok: Open dynamic text or non-domain string payload
+  pvpMatchId?: DisplayText;
   pvpIsHost?: boolean;
-  pvpOpponentId?: string; // domain-ok: Open dynamic text or non-domain string payload
-  pvpOpponentName?: string; // domain-ok: Open dynamic text or non-domain string payload
+  pvpOpponentId?: DisplayText;
+  pvpOpponentName?: DisplayText;
   inSearchPhase?: boolean;
   difficulty?: BattleDifficulty;
   _lastActivePlayer?: Pokemon | null;
   seed?: number[];
   battleHistory?: Array<{
     turnCount: number;
-    p1Choice: string; // domain-ok: Open dynamic text or non-domain string payload
-    p2Choice: string; // domain-ok: Open dynamic text or non-domain string payload
+    p1Choice: DisplayText;
+    p2Choice: DisplayText;
     p1Hps?: Partial<Record<BattleParticipantUid, number>> | number[];
     p2Hps?: Partial<Record<BattleParticipantUid, number>> | number[];
   }>;
   playerFled?: boolean;
-  quote?: string; // domain-ok: Open dynamic text or non-domain string payload
+  quote?: DisplayText;
   wasSearching?: boolean;
   cannotEscape?: boolean;
   isGuardian?: boolean;
@@ -278,30 +287,30 @@ export interface BattleState {
     money: number;
     items: Inventory;
   };
-  initialFriendships?: Record<string, number>; // domain-ok: Map of Pokemon UID to baseline friendship at battle start
-  p1SlotOrder?: string[]; // domain-ok: Open dynamic text or non-domain string payload
-  p2SlotOrder?: string[]; // domain-ok: Open dynamic text or non-domain string payload
+  initialFriendships?: Partial<Record<BattleParticipantUid, number>>;
+  p1SlotOrder?: DisplayText[];
+  p2SlotOrder?: DisplayText[];
   switchingToEnemy?: Pokemon | null;
-  rawShowdownLogs?: string[]; // domain-ok: Open dynamic text or non-domain string payload
+  rawShowdownLogs?: DisplayText[];
 }
 
-export type BattleSource = Pokemon | string;
+export type BattleSource = Pokemon | DisplayText;
 
 export interface BattleLog {
-  id: string; // domain-ok: Open dynamic text or non-domain string payload
-  msg: string; // domain-ok: Open dynamic text or non-domain string payload
-  type: string; // domain-ok: Open dynamic text or non-domain string payload
+  id: DisplayText;
+  msg: DisplayText;
+  type: DisplayText;
   side: BattleSide | null;
-  icon?: string | null; // domain-ok: Open dynamic text or non-domain string payload
-  iconType?: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  icon?: DisplayText | null;
+  iconType?: DisplayText | null;
   source?: BattleSource;
 }
 
 import type { BattleContext } from '@/types/battle/battleContext';
 
 export type LogFn = (
-  msg: string, // domain-ok: Open dynamic text or non-domain string payload
-  type?: string, // domain-ok: Open dynamic text or non-domain string payload
+  msg: DisplayText,
+  type?: DisplayText,
   actor?: BattleSource | null,
   side?: BattleSide | null
 ) => void;
@@ -316,15 +325,15 @@ export type MoveAction = (
 ) => void;
 
 export interface SparkleData {
-  id: string | number; // domain-ok: Open dynamic text or non-domain string payload
+  id: DisplayText | number;
   tx: number;
   ty: number;
   tf: number;
   scale: number;
-  delay: string; // domain-ok: Open dynamic text or non-domain string payload
+  delay: DisplayText;
 }
 
-export type StyleZIndex = number | string; // string-ok: Internal string formatting or DOM token identifier
+export type StyleZIndex = number | DisplayText;
 
 export interface BattleCombatantProps {
   side: BattleSide;
@@ -332,8 +341,8 @@ export interface BattleCombatantProps {
   position: { x: number; y: number };
   targetPosition?: { x: number; y: number } | null;
   baseSize: number;
-  groundY?: string; // domain-ok: Open dynamic text or non-domain string payload
-  shadowKey?: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  groundY?: DisplayText;
+  shadowKey?: DisplayText | null;
   animState?: BattleSeatSpecialState | null;
   ballId?: ItemId;
   isShaking?: boolean;
@@ -345,7 +354,7 @@ export interface BattleCombatantProps {
     id?: PokemonMoveId;
     side: BattleSide;
     cat: MoveCategory;
-    name: string; // domain-ok: Open dynamic text or non-domain string payload
+    name: DisplayText;
     selfKO?: boolean;
     recoil?: boolean | number;
   } | null;
@@ -367,8 +376,8 @@ export interface ShowdownPlayerRequest {
   active?: {
     moves?: {
       id?: PokemonMoveId;
-      move?: string; // domain-ok: Open dynamic text or non-domain string payload
-      target?: string; // domain-ok: Showdown target token
+      move?: DisplayText;
+      target?: DisplayText;
       disabled?: boolean | 'pp';
       pp?: number;
       maxpp?: number;
@@ -378,12 +387,12 @@ export interface ShowdownPlayerRequest {
   }[];
   forceSwitch?: boolean[];
   side?: {
-    name?: string; // domain-ok: Open dynamic text or non-domain string payload
+    name?: DisplayText;
     id?: SideID;
     pokemon: {
-      ident: string; // domain-ok: Open dynamic text or non-domain string payload
-      details: string; // domain-ok: Open dynamic text or non-domain string payload
-      condition: string; // domain-ok: Open dynamic text or non-domain string payload
+      ident: DisplayText;
+      details: DisplayText;
+      condition: DisplayText;
       active: boolean;
       stats?: {
         hp?: number;
@@ -393,11 +402,11 @@ export interface ShowdownPlayerRequest {
         spd?: number;
         spe?: number;
       };
-      moves?: string[]; // domain-ok: Open dynamic text or non-domain string payload
-      baseAbility?: string; // domain-ok: Open dynamic text or non-domain string payload
-      item?: string; // domain-ok: Open dynamic text or non-domain string payload
-      pokeball?: string; // domain-ok: Open dynamic text or non-domain string payload
-      uid?: string; // domain-ok: Open dynamic text or non-domain string payload
+      moves?: DisplayText[];
+      baseAbility?: DisplayText;
+      item?: DisplayText;
+      pokeball?: DisplayText;
+      uid?: DisplayText;
     }[];
   };
   wait?: boolean;

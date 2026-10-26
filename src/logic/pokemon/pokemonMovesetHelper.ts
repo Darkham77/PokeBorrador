@@ -4,13 +4,12 @@
  * Resolves learnsets and move progression at given level.
  */
 
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
 import { isEnabledPokemonId } from '@/data/system/constants';
-import type { MoveCategory } from '@/data/battle/moves';
+import { MAX_LEARNED_MOVES_SLOTS, DEFAULT_ACCURACY_BASE_STAT } from '@/logic/constants/gameplay';
+import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import type { Move } from '@/types/pokemon/pokemon';
 import type { LearnsetMove } from '@/types/system/database';
-import { MAX_LEARNED_MOVES_SLOTS, DEFAULT_ACCURACY_BASE_STAT } from '@/logic/constants/gameplay';
 
 /**
  * Get moves a pokemon knows at a given level (up to 4, most recent)
@@ -24,7 +23,7 @@ export function getMovesAtLevel(id: string, level: number, bypassWhitelist = fal
     if (!bypassWhitelist && !isEnabledPokemonId(spId)) return;
     const db = pokemonDataProvider.getPokemonData(spId, bypassWhitelist);
     if (db && db.learnset) {
-      (db.learnset as LearnsetMove[]).forEach((m) => {
+      db.learnset.forEach((m) => {
         if (m.lv <= level) {
           allPotentialMoves.push(m);
         }
@@ -58,7 +57,7 @@ export function getMovesAtLevel(id: string, level: number, bypassWhitelist = fal
       type: moveData.type || 'normal',
       power: moveData.power || 0,
       acc: moveData.acc || DEFAULT_ACCURACY_BASE_STAT,
-      cat: moveData.cat as MoveCategory,
+      cat: moveData.cat,
       priority: moveData.priority,
       effect: moveData.effect,
       recoil: moveData.recoil,

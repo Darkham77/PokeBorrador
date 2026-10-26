@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/stores/mapAdventureStudio.ts
  *
@@ -9,16 +10,36 @@
  * - Direct drag and visual stamping of GBA buildings and props
  * - Parametric procedural generation configuration & destructive regeneration modal
  */
-
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+
 import { cloneReactive } from '@/logic/utils/cloneUtils';
+
+import { getAllStructureTemplates, registerStructureTemplate } from '../config/mapStructures.ts';
+import { STUDIO_MAX_HISTORY_STEPS, CONTINENT_DEFAULT_SEED } from '../config/studioConstants.ts';
+import { dijkstra } from '../logic/adventure/adventurePathfinding.ts';
 import {
   type MapNode,
   connections as defaultConnections,
   officialMapIdMap as defaultOfficialMapIdMap
 } from '../logic/adventure/mapData.ts';
-import { dijkstra } from '../logic/adventure/adventurePathfinding.ts';
+import {
+  getKantoDefaultProject,
+  getJohtoDefaultProject,
+  getBlankDefaultProject
+} from '../logic/map/adventureProjectFactory.ts';
+import {
+  generateCompleteContinentalWorld,
+  exportContinentalRoutesBundle,
+  type ContinentalWorldGenOptions
+} from '../logic/map/continentalWorldGenerator.ts';
+import {
+  saveCustomTilesToStorage,
+  saveCustomStructuresToStorage
+} from '../logic/map/customAssetsStorage.ts';
+import { generateLocalMapForNode } from '../logic/map/nodeLocalMapGenerator.ts';
+import type { GeneratedMap } from '../logic/map/proceduralMapGenerator.ts';
+import { defaultTilesRegistry } from '../logic/map/tilesRegistry.ts';
 import {
   type AdventureProject,
   type AdventureProjectNode,
@@ -30,29 +51,15 @@ import {
   type StampingPrefabDefinition,
   type ContinentalRoutesExportBundle
 } from '../types/map/adventureWorldTypes.ts';
-import {
-  generateCompleteContinentalWorld,
-  exportContinentalRoutesBundle,
-  type ContinentalWorldGenOptions
-} from '../logic/map/continentalWorldGenerator.ts';
-import {
-  getKantoDefaultProject,
-  getJohtoDefaultProject,
-  getBlankDefaultProject
-} from '../logic/map/adventureProjectFactory.ts';
 import { CELL_BIOME, type CellBiomeType } from '../types/map/kantoGridModel.ts';
 import type { PlacedStructure } from '../types/map/kantoTileEngineTypes.ts';
-import type { GeneratedMap } from '../logic/map/proceduralMapGenerator.ts';
-import { defaultTilesRegistry } from '../logic/map/tilesRegistry.ts';
-import { getAllStructureTemplates, registerStructureTemplate } from '../config/mapStructures.ts';
-import {
-  saveCustomTilesToStorage,
-  saveCustomStructuresToStorage
-} from '../logic/map/customAssetsStorage.ts';
-import { generateLocalMapForNode } from '../logic/map/nodeLocalMapGenerator.ts';
-import { useMapStudioStore } from './mapStudio.ts';
 
-import { STUDIO_MAX_HISTORY_STEPS, CONTINENT_DEFAULT_SEED } from '../config/studioConstants.ts';
+const NON_METROPOLIS_SCALE_LIST = ['hamlet', 'village', 'town', 'city'] as const;
+type NonMetropolisScale = (typeof NON_METROPOLIS_SCALE_LIST)[number];
+const NON_METROPOLIS_SCALES: ReadonlySet<NonMetropolisScale> = new Set<NonMetropolisScale>(
+  NON_METROPOLIS_SCALE_LIST
+);
+import { useMapStudioStore } from './mapStudio.ts';
 
 export type GraphStudioTool = 'pointer' | 'add_node' | 'connect' | 'delete' | 'test_gps' | 'stamp';
 
@@ -91,7 +98,7 @@ const INITIAL_CONTINENT_PAN_Y = -70;
 
 export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () => {
   // 1. Projects Management & Persistence
-  const projects = ref<Record<string, AdventureProject>>({
+  const projects = ref<Record<DisplayText, AdventureProject>>({
     // open-record: Adventure projects dictionary keyed by project id
     kanto_canonical: getKantoDefaultProject(),
     johto_canonical: getJohtoDefaultProject()
@@ -103,16 +110,18 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
   const activeEditingNodeId = ref<string | null>(null);
 
   // 3. Core Graph Data (Synched to Active Project)
-  const nodes = ref<Record<string, AdventureProjectNode>>( // open-record: Adventure project nodes keyed by node id
+  const nodes = ref<Record<DisplayText, AdventureProjectNode>>( // open-record: Adventure project nodes keyed by node id
     cloneReactive(projects.value[activeProjectId.value]!.nodes)
   );
   const connections = ref<[string, string][]>(cloneReactive(defaultConnections));
-  const officialMapMapping = ref<Record<string, string>>(cloneReactive(defaultOfficialMapIdMap)); // open-record: Map node to official map id mapping
+  const officialMapMapping = ref<Record<DisplayText, string>>(
+    cloneReactive(defaultOfficialMapIdMap)
+  ); // open-record: Map node to official map id mapping
 
   // 4. Terrain Painting Mode State
   const brushSize = ref<BrushSize>(2);
   const selectedBiome = ref<CellBiomeType>(CELL_BIOME.DIRT_PATH);
-  const customTerrain = ref<Record<string, CellBiomeType>>({}); // open-record: Coordinate key string (col,row) to biome mapping
+  const customTerrain = ref<Record<DisplayText, CellBiomeType>>({}); // open-record: Coordinate key string (col,row) to biome mapping
   const terrainPaintTrigger = ref<{
     gx: number;
     gy: number;
@@ -315,13 +324,17 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
         parsed.id = parsed.id || `imported_${Temporal.Now.instant().epochMilliseconds}`;
         if (parsed.customTiles && parsed.customTiles.length > 0) {
           defaultTilesRegistry.registerTiles(parsed.customTiles);
-          void saveCustomTilesToStorage(parsed.customTiles);
+          saveCustomTilesToStorage(parsed.customTiles).catch((err) => {
+            console.warn('Handled promise rejection:', err);
+          });
         }
         if (parsed.customStructures && parsed.customStructures.length > 0) {
           for (const s of parsed.customStructures) {
             registerStructureTemplate(s);
           }
-          void saveCustomStructuresToStorage(parsed.customStructures);
+          saveCustomStructuresToStorage(parsed.customStructures).catch((err) => {
+            console.warn('Handled promise rejection:', err);
+          });
         }
         projects.value[parsed.id] = parsed;
         selectProject(parsed.id);
@@ -526,7 +539,7 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
     gpsTargetNodeId.value = tId;
 
     const allDiscovered = Object.keys(nodes.value);
-    const mockInventory: Record<string, boolean> = {
+    const mockInventory: Record<DisplayText, boolean> = {
       // open-record: Mock inventory state for testing pathfinding
       Corte: true, // spanish-ok: Estructura o identificador procedural de aventura
       Surf: true, // spanish-ok: Estructura o identificador procedural de aventura
@@ -617,8 +630,8 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
         selectProject(targetId);
         return true;
       }
-    } catch {
-      // catch-ok: Fallback to defaults when projects JSON in localStorage is corrupted
+    } catch (err) {
+      console.warn('Handled controlled exception:', err);
     }
     return false;
   }
@@ -653,7 +666,7 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
     node.urbanScale = scale;
     if (scale === 'metropolis') {
       node.type = 'league';
-    } else if (scale === 'hamlet' || scale === 'village' || scale === 'town' || scale === 'city') {
+    } else if (NON_METROPOLIS_SCALES.has(scale)) {
       if (node.type === 'league') {
         node.type = 'city';
       }
@@ -697,7 +710,7 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
   }
 
   function downloadRoutesBundleJSON(): void {
-    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    if (typeof globalThis.window === 'undefined' || typeof document === 'undefined') return;
     const bundle = exportRoutesBundle();
     const jsonStr = JSON.stringify(bundle, null, 2);
     const blob = new Blob([jsonStr], { type: 'application/json' });
@@ -712,7 +725,7 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
   }
 
   function exportContinentalMapPng(canvasElement?: HTMLCanvasElement | null): string | null {
-    if (typeof window === 'undefined' || typeof document === 'undefined') return null;
+    if (typeof globalThis.window === 'undefined' || typeof document === 'undefined') return null;
     const canvas =
       canvasElement ||
       (document.getElementById('regional-tile-canvas') as HTMLCanvasElement) ||

@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import PokemonSummaryTab from '@/components/pokemon-detail/PokemonSummaryTab.vue';
-import PokemonStatsTab from '@/components/pokemon-detail/PokemonStatsTab.vue';
-import PokemonMovesTab from '@/components/pokemon-detail/PokemonMovesTab.vue';
-import PokemonTmsTab from '@/components/pokemon-detail/PokemonTmsTab.vue';
 import PokemonEvolutionsTab from '@/components/pokemon-detail/PokemonEvolutionsTab.vue';
+import PokemonMovesTab from '@/components/pokemon-detail/PokemonMovesTab.vue';
+import PokemonStatsTab from '@/components/pokemon-detail/PokemonStatsTab.vue';
+import PokemonSummaryTab from '@/components/pokemon-detail/PokemonSummaryTab.vue';
+import PokemonTmsTab from '@/components/pokemon-detail/PokemonTmsTab.vue';
 import PokemonTrophiesTab from '@/components/pokemon-detail/PokemonTrophiesTab.vue';
-import type { Pokemon, PokemonSelectionSource, Move } from '@/types/pokemon/pokemon';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { usePokemonDetail } from '@/composables/pokemon/usePokemonDetail';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { Pokemon, PokemonSelectionSource, Move } from '@/types/pokemon/pokemon';
 
 type PokemonDetailReturn = ReturnType<typeof usePokemonDetail>;
 

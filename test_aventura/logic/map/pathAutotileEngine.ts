@@ -190,7 +190,7 @@ export function resolvePathGrid(
       const hasE = (foreignMask & BITMASK_2D_DIRECTIONS.E) !== 0;
 
       let primaryTile = getTileForRole(brush, role);
-      const overlays: string[] = innerOverlays.map((ov) => getTileForRole(brush, ov)); // no-domain: Estructura o identificador procedural de aventura
+      const overlays = innerOverlays.map((ov) => getTileForRole(brush, ov));
 
       // Dual-edge narrow path support: if opposing sides are both grass/foreign, provide borders on both sides
       if (hasN && hasS) {

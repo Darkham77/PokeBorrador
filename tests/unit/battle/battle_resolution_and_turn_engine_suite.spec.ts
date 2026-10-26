@@ -1,17 +1,18 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { ref } from 'vue';
-import { terminateBattle } from '@/logic/battle/resolution';
-import { calculateDamage, getEffectiveSpeed } from '@/logic/battle/battleEngine';
-import { gameBus } from '@/logic/events/gameBus';
-import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
-import { startEncounter, handleBattleFlowCompletion } from '@/logic/battle/searchLoop';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { dispatchMoveEffect } from '@/logic/battle/actions/actionRegistry';
+
 import { requirePokemonMoveId } from '@/data/battle/moves';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+import { dispatchMoveEffect } from '@/logic/battle/actions/actionRegistry';
+import { calculateDamage, getEffectiveSpeed } from '@/logic/battle/battleEngine';
+import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
+import { terminateBattle } from '@/logic/battle/resolution';
+import { startEncounter, handleBattleFlowCompletion } from '@/logic/battle/searchLoop';
+import { gameBus } from '@/logic/events/gameBus';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import type { BattleStages } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type { MoveBaseData } from '@/types/system/database';
 
 vi.mock('@/logic/events/gameBus', () => ({
@@ -77,6 +78,7 @@ describe('Battle Resolution, Engine & Turn Flow Suite', () => {
       gs: {
         state: { activeBattle: unknown };
         save: () => Promise<void>;
+        scheduleSave: () => void;
       };
       BATTLE_STATES: typeof BATTLE_STATES;
       BATTLE_SUBSTATES: typeof BATTLE_SUBSTATES;
@@ -109,7 +111,8 @@ describe('Battle Resolution, Engine & Turn Flow Suite', () => {
         },
         gs: {
           state: { activeBattle: {} },
-          save: vi.fn(async () => {})
+          save: vi.fn(async () => {}),
+          scheduleSave: vi.fn()
         },
         BATTLE_STATES,
         BATTLE_SUBSTATES,
@@ -372,7 +375,8 @@ describe('Battle Resolution, Engine & Turn Flow Suite', () => {
             team: [playerMon],
             map: { currentMap: 'route1' }
           },
-          save: vi.fn(async () => {})
+          save: vi.fn(async () => {}),
+          scheduleSave: vi.fn()
         },
         fsm: {
           currentState,

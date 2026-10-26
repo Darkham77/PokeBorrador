@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
 import { gsap } from 'gsap';
+
 import { ANIM_TIMINGS } from '@/logic/utils/animationRegistry';
 
 withDefaults(
   defineProps<{
     show?: boolean;
-    overlayClasses?: Record<string, boolean> | string[]; // open-record: Dynamic CSS class boolean flags
+    overlayClasses?: Record<DisplayText, boolean> | string[]; // open-record: Dynamic CSS class boolean flags
   }>(),
   {
     show: false,
@@ -17,7 +19,7 @@ const emit = defineEmits<{
   (e: 'click'): void;
 }>();
 
-const onOverlayEnter = (el: Element, done: () => void) => {
+const onOverlayEnter = (el: Element, done: () => void): void => {
   gsap.fromTo(
     el,
     { opacity: 0 },
@@ -25,7 +27,7 @@ const onOverlayEnter = (el: Element, done: () => void) => {
   );
 };
 
-const onOverlayLeave = (el: Element, done: () => void) => {
+const onOverlayLeave = (el: Element, done: () => void): void => {
   gsap.to(el, { opacity: 0, duration: ANIM_TIMINGS.MODAL_CLOSE, ease: 'none', onComplete: done });
 };
 </script>

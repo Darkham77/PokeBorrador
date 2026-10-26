@@ -59,8 +59,8 @@ function collectAgentsFiles(dir: string): string[] {
   for (const entry of entries) {
     if (entry.isFile() && entry.name === 'AGENTS.md') {
       const parent = entry.parentPath ?? dir;
-      const rel = path.relative(dir, parent).replace(/\\/g, '/');
-      const parts = rel.split('/');
+      const rel = path.relative(dir, parent);
+      const parts = rel.split(path.sep);
       const isIgnored = parts.some((p) => IGNORED_DIRS.has(p) || (p.startsWith('.') && p !== '.'));
       if (!isIgnored) {
         list.push(path.join(parent, entry.name));
@@ -187,6 +187,12 @@ interface DoxData {
   childIndexText: string;
 }
 
+const CHILD_INDEX_SECTION_NAMES: ReadonlySet<string> = new Set<string>([
+  'child dox index',
+  'dox directory navigation index',
+  'child index'
+]);
+
 function assignCanonicalSection(s: ParsedSection, body: string, data: DoxData): boolean {
   const norm = s.normalizedTitle;
   if (norm === 'purpose' || norm.startsWith('purpose &') || norm.startsWith('purpose:')) {
@@ -217,11 +223,7 @@ function assignCanonicalSection(s: ParsedSection, body: string, data: DoxData): 
     data.verificationText = body;
     return true;
   }
-  if (
-    norm === 'child dox index' ||
-    norm === 'dox directory navigation index' ||
-    norm === 'child index'
-  ) {
+  if (CHILD_INDEX_SECTION_NAMES.has(norm)) {
     data.childIndexText = body;
     return true;
   }

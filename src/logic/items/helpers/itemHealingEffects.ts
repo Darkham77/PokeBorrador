@@ -1,5 +1,3 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { ItemEffectResult } from '@/types/inventory/items';
 import type { ItemId } from '@/data/inventory/items';
 import {
   POTION_HEAL_HP,
@@ -12,8 +10,10 @@ import {
   ETHER_PP_RESTORE,
   MAX_PP_RESTORE_CAP
 } from '@/logic/constants/items';
-import { healHp, revive, clearStatus, curaTotal, restorePP } from '../itemEffectHandlers.ts';
+import type { ItemEffectResult } from '@/types/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
+import { healHp, revive, clearStatus, curaTotal, restorePP } from '../itemEffectHandlers.ts';
 import { buildItemResult } from './itemEffectResultHelper.ts';
 
 const pokeEffect = (fn: (p: Pokemon) => ItemEffectResult) => (p: unknown) => fn(p as Pokemon);

@@ -1,18 +1,19 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import HomeRankedWidget from '@/components/home/HomeRankedWidget.vue';
-import { usePvPStore } from '@/stores/pvp';
-import { useLivePvPStore } from '@/stores/livePvP';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
-import { useAuthStore } from '@/stores/auth';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { getSeasonalThemeForMonth } from '@/data/system/rankedData';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
+import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { useLivePvPStore } from '@/stores/livePvP';
+import { usePvPStore } from '@/stores/pvp';
+import { useUIStore } from '@/stores/ui';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Ranked Format and Team Selection Protocol', () => {
   let pinia: ReturnType<typeof createPinia>;

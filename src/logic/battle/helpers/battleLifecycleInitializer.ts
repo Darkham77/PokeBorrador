@@ -1,14 +1,15 @@
-import { handleEntryAbilities } from '../battleFlow.ts';
-import { getMapBiomeAndTags } from '../biomeHelper.ts';
-import { logger } from '../../utils/logger.ts';
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
+import type { BattleState } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleState } from '@/types/battle/battle';
-import { resetActiveBattleState } from '../orchestratorStateHelper.ts';
-import { processRocketStealMechanics } from '../orchestratorRocketHelper.ts';
-import { initWorkerForBattle } from '../orchestratorWorkerInitHelper.ts';
+
+import { logger } from '../../utils/logger.ts';
+import { handleEntryAbilities } from '../battleFlow.ts';
+import { getMapBiomeAndTags } from '../biomeHelper.ts';
 import type { BattleOptions } from '../orchestrator.ts';
-import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
+import { processRocketStealMechanics } from '../orchestratorRocketHelper.ts';
+import { resetActiveBattleState } from '../orchestratorStateHelper.ts';
+import { initWorkerForBattle } from '../orchestratorWorkerInitHelper.ts';
 import {
   runTrainerIntroSequence,
   runWildSearchIntroSequence,
@@ -121,8 +122,8 @@ async function applyPostIntroSetup(
   options: PostIntroSetupOptions
 ): Promise<void> {
   const { isTrainer, isGym, trainerName, battleState } = options;
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new Event('resize'));
+  if (typeof globalThis.window !== 'undefined') {
+    globalThis.dispatchEvent(new Event('resize'));
   }
 
   ctx.attackerSide.value = null;
@@ -168,7 +169,7 @@ async function finalizeBattleInitialization(
 export async function initBattleSequence(
   ctx: BattleContext,
   options?: Partial<BattleOptions & { initialEnemy: Pokemon | null; initialPlayer: Pokemon | null }>
-) {
+): Promise<void> {
   const { initialPlayer, initialEnemy } = resolveInitialCombatants(ctx, options);
   if (!initialPlayer || !initialEnemy) return;
 

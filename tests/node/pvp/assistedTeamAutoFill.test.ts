@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { isPokemonLegalForTheme, autoFillLegalTeamForTheme } from '@/logic/pvp/pvpTeamHelper.ts';
+
 import { getSeasonalThemeConfig } from '@/data/system/rankedData.ts';
+import { isPokemonLegalForTheme, autoFillLegalTeamForTheme } from '@/logic/pvp/pvpTeamHelper.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Assisted Legal Team Auto-Fill', () => {

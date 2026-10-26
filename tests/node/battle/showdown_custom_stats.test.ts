@@ -1,6 +1,8 @@
-import { describe, it, beforeAll, vi } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
 import { Battle } from '@pkmn/sim';
+import { describe, it, beforeAll, vi } from 'vite-plus/test';
+
 import { getShowdownFormatId } from '../../../src/logic/battle/showdownAdapter.ts';
 
 describe('Showdown Custom Stats Injection Unit Tests', () => {

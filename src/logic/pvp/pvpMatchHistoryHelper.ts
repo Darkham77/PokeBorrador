@@ -1,4 +1,5 @@
 import type { DBRouter } from '@/logic/db/dbRouter';
+import { logger } from '@/logic/utils/logger.ts';
 import {
   appendPersonalMatchHistory,
   type PersonalPvPMatchSummary,
@@ -67,6 +68,7 @@ export async function fetchOnlineMatchHistory(
 export interface MatchHistoryPersistentStore {
   state: GameState;
   save(force?: boolean): Promise<unknown>;
+  scheduleSave?(delayMs?: number, forceRemote?: boolean): void;
 }
 
 export function recordLocalMatch(
@@ -77,7 +79,13 @@ export function recordLocalMatch(
     gameStore.state.pvpMatchHistory,
     match
   );
-  void gameStore.save(false);
+  if (typeof gameStore.scheduleSave === 'function') {
+    gameStore.scheduleSave();
+  } else {
+    gameStore.save(false).catch((err) => {
+      logger.warn('Handled promise rejection:', { cause: err });
+    });
+  }
 }
 
 export function mergeMatchHistories(

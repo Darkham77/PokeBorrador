@@ -1,6 +1,6 @@
-import type { Pokemon, PokemonStatus } from '@/types/pokemon/pokemon';
-import type { BattleContext } from '@/types/battle/battleContext';
 import type { BattleSide } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon, PokemonStatus } from '@/types/pokemon/pokemon';
 
 const BAD_POISON_DENOMINATOR = 16;
 const REGULAR_POISON_DENOMINATOR = 8;

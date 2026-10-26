@@ -1,23 +1,25 @@
-import { describe, it, expect } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { Battle, type ID } from '@pkmn/sim';
+import { describe, it, expect } from 'vite-plus/test';
+
 import type { CertifiedBattleCase } from '../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
+import { ACTIVE_SHOWDOWN_FORMAT } from '../../../src/data/system/constants.ts';
 import {
   statsMap,
   patchShowdownSpreadModify
 } from '../../../src/logic/battle/engine/showdownSpreadModifyHelper.ts';
+import { resetDeterministicMathRandom } from '../../../src/logic/battle/helpers/seedInitializer.ts';
 import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
+import { ShowdownBattleRunner } from '../../../src/logic/battle/helpers/showdownBattleRunner.ts';
+import { executeBattleTurn } from '../../../src/logic/battle/helpers/showdownExecutor.ts';
+import { ShowdownLogEnricher } from '../../../src/logic/battle/helpers/showdownLogEnricher.ts';
 import {
   ShowdownTeamMapper,
   type CustomPokemonSet
 } from '../../../src/logic/battle/helpers/showdownTeamMapper.ts';
-import { ShowdownLogEnricher } from '../../../src/logic/battle/helpers/showdownLogEnricher.ts';
-import { ShowdownBattleRunner } from '../../../src/logic/battle/helpers/showdownBattleRunner.ts';
-import { executeBattleTurn } from '../../../src/logic/battle/helpers/showdownExecutor.ts';
-import { ACTIVE_SHOWDOWN_FORMAT } from '../../../src/data/system/constants.ts';
-import { resetDeterministicMathRandom } from '../../../src/logic/battle/helpers/seedInitializer.ts';
 
 patchShowdownSpreadModify(() => true);
 

@@ -9,24 +9,25 @@
  * - GameStore O(1) reactive lookups (pokemonByUid, getPokemonByUid, pokedex seen/caught).
  */
 
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { usePlayerSearchStore } from '@/stores/player/playerSearch';
-import { useLeaderboardStore } from '@/stores/leaderboard';
-import { useEventStore } from '@/stores/events';
-import { useSocialStore } from '@/stores/social/social';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
+import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { useAuthStore } from '@/stores/auth';
 import { enrichAuthUser, type VerifiedProfileData } from '@/stores/auth/authSessionVerifier';
-import type { AuthUser } from '@/types/auth/auth';
 import {
   buildActivePlayerItemBuffs,
   formatEventBonusDescription
 } from '@/stores/battle/buffsHelper';
-import type { GameState } from '@/types/system/game';
-import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine';
+import { useEventStore } from '@/stores/events';
 import { useGameStore } from '@/stores/game';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { useLeaderboardStore } from '@/stores/leaderboard';
+import { usePlayerSearchStore } from '@/stores/player/playerSearch';
+import { useSocialStore } from '@/stores/social/social';
+import type { AuthUser } from '@/types/auth/auth';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { GameState } from '@/types/system/game';
 
 describe('Stores Domain Suite', () => {
   beforeEach(() => {

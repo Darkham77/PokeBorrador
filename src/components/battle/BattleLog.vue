@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import type { DisplayText } from '@francogp/auditor';
 import { gsap } from 'gsap';
-import { useBattleStore } from '@/stores/battle/battle';
-import { useGameStore } from '@/stores/game';
-import { PLAYER_CLASSES } from '@/data/player/playerClasses';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
+
 import EggSprite from '@/components/common/EggSprite.vue';
+import { PLAYER_CLASSES } from '@/data/player/playerClasses';
 import { NPC_EGG_TINT } from '@/logic/constants/gameplay';
 import { sanitizeHtml } from '@/logic/utils/sanitizeHtml';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
 
 const battleStore = useBattleStore();
 const gameStore = useGameStore();
@@ -17,10 +19,10 @@ const logs = computed(() => battleStore.battleLogs);
 
 const playerClassColor = computed(() => {
   const pClass = gameStore.state.playerClass || 'entrenador';
-  return (PLAYER_CLASSES as Record<string, { color: string }>)[pClass]?.color || '#3b82f6'; // open-record: Generic dynamic key-value JSON container
+  return (PLAYER_CLASSES as Record<DisplayText, { color: string }>)[pClass]?.color || '#3b82f6'; // open-record: Generic dynamic key-value JSON container
 });
 
-const scrollToBottom = async (isInstant = false) => {
+const scrollToBottom = async (isInstant = false): Promise<void> => {
   await nextTick();
   if (!logContainer.value) return;
 
@@ -73,7 +75,7 @@ watch(
   { deep: true, immediate: true }
 );
 
-const handleImgError = (e: Event) => {
+const handleImgError = (e: Event): void => {
   const target = e.target as HTMLImageElement;
   console.error(`[BattleLog] Fallo al cargar sprite del log de combate: ${target.src}`);
   target.style.display = 'none';

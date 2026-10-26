@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import type { EvolutionStep } from './evolutionTypes';
 
 const props = withDefaults(

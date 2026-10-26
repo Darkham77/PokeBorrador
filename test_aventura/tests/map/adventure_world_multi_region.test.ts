@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { STAMPING_PREFABS_CATALOG } from '../../data/map/regionRegistry.ts';
 import {
   getKantoDefaultProject,
@@ -6,8 +7,8 @@ import {
   getBlankDefaultProject
 } from '../../logic/map/adventureProjectFactory.ts';
 import { JohtoRegionalWorldGenerator } from '../../logic/map/johtoRegionalGenerator.ts';
-import { CELL_BIOME, OCCUPANCY_FLAGS, OccupancyGrid } from '../../types/map/kantoGridModel.ts';
 import { DynamicCatalogLoader } from '../../logic/map/kantoTileEngine.ts';
+import { CELL_BIOME, OCCUPANCY_FLAGS, OccupancyGrid } from '../../types/map/kantoGridModel.ts';
 
 describe('Multi-Region World Projects & Regional Registry', () => {
   it('instantiates Kanto and Johto canonical projects with valid contracts', () => {

@@ -21,6 +21,8 @@ import type { ContinentMapResult } from './continentGenerator.ts';
 
 const MAX_OCEAN_DEPTH_SCAN = 14 as const;
 const MIN_OCEAN_DEPTH_REQUIRED = 6 as const;
+const SOUTH_FACING_PORT_SCORE_BIAS = 6 as const;
+const INLAND_CLEAR_CELL_WEIGHT = 3 as const;
 
 export interface HarborPlacementContext {
   readonly continentMap: ContinentMapResult;
@@ -106,6 +108,219 @@ function countInlandClearCells(
   return inlandCount;
 }
 
+function isCandidateOnArchipelago(
+  x: number,
+  y: number,
+  candW: number,
+  candH: number,
+  archipelagoIslands: readonly {
+    bounds: { minX: number; maxX: number; minY: number; maxY: number };
+  }[]
+): boolean {
+  for (const island of archipelagoIslands) {
+    if (
+      x + candW >= island.bounds.minX - 2 &&
+      x <= island.bounds.maxX + 2 &&
+      y + candH >= island.bounds.minY - 2 &&
+      y <= island.bounds.maxY + 2
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function checkFootprintFlatLand(
+  x: number,
+  y: number,
+  candW: number,
+  candH: number,
+  continentMap: ContinentMapResult
+): { allLand: boolean; touchesCoast: boolean } {
+  let allLand = true;
+  let touchesCoast = false;
+  for (let dy = 0; dy < candH; dy++) {
+    for (let dx = 0; dx < candW; dx++) {
+      const terr = continentMap.terrainMatrix[y + dy]?.[x + dx];
+      const elev = continentMap.heightmap[y + dy]?.[x + dx] ?? 0;
+      if ((terr !== 'sand' && terr !== 'grass') || elev !== 0) {
+        allLand = false;
+        break;
+      }
+      if (terr === 'sand') {
+        touchesCoast = true;
+      }
+    }
+    if (!allLand) break;
+  }
+  return { allLand, touchesCoast };
+}
+
+function measureOpenWaterDepth(
+  x: number,
+  y: number,
+  candW: number,
+  candH: number,
+  dir: CardinalDirection,
+  W: number,
+  H: number,
+  continentMap: ContinentMapResult
+): number {
+  let depth = 0;
+  for (let step = 1; step <= MAX_OCEAN_DEPTH_SCAN; step++) {
+    let allW = true;
+    if (dir === 'south') {
+      const py = y + candH - 1 + step;
+      if (py >= H) break;
+      for (let dx = 0; dx < candW; dx++) {
+        if (continentMap.terrainMatrix[py]?.[x + dx] !== 'water') {
+          allW = false;
+          break;
+        }
+      }
+    } else if (dir === 'north') {
+      const py = y - step;
+      if (py < 0) break;
+      for (let dx = 0; dx < candW; dx++) {
+        if (continentMap.terrainMatrix[py]?.[x + dx] !== 'water') {
+          allW = false;
+          break;
+        }
+      }
+    } else if (dir === 'east') {
+      const px = x + candW - 1 + step;
+      if (px >= W) break;
+      for (let dy = 0; dy < candH; dy++) {
+        if (continentMap.terrainMatrix[y + dy]?.[px] !== 'water') {
+          allW = false;
+          break;
+        }
+      }
+    } else if (dir === 'west') {
+      const px = x - step;
+      if (px < 0) break;
+      for (let dy = 0; dy < candH; dy++) {
+        if (continentMap.terrainMatrix[y + dy]?.[px] !== 'water') {
+          allW = false;
+          break;
+        }
+      }
+    }
+    if (!allW) break;
+    depth++;
+  }
+  return depth;
+}
+
+interface HarborCandidateParams {
+  readonly x: number;
+  readonly y: number;
+  readonly dir: CardinalDirection;
+  readonly candW: number;
+  readonly candH: number;
+  readonly continentMap: ContinentMapResult;
+  readonly width: number;
+  readonly height: number;
+  readonly isAreaFree: (x: number, y: number, w: number, h: number, pad?: number) => boolean;
+}
+
+function evaluateHarborCandidate(params: HarborCandidateParams): number | null {
+  const { x, y, dir, candW, candH, continentMap, width: W, height: H, isAreaFree } = params;
+  if (x + candW >= W - 3 || y + candH >= H - 3) return null;
+  if (!isAreaFree(x, y, candW, candH, 1)) return null;
+
+  if (
+    continentMap.archipelagoIslands &&
+    continentMap.archipelagoIslands.length > 0 &&
+    isCandidateOnArchipelago(x, y, candW, candH, continentMap.archipelagoIslands)
+  ) {
+    return null;
+  }
+
+  const { allLand, touchesCoast } = checkFootprintFlatLand(x, y, candW, candH, continentMap);
+  if (!allLand || !touchesCoast) return null;
+
+  const depth = measureOpenWaterDepth(x, y, candW, candH, dir, W, H, continentMap);
+  if (depth < MIN_OCEAN_DEPTH_REQUIRED) return null;
+
+  let gwX = x;
+  let gwY = y;
+  if (dir === 'south') {
+    gwX = x + Math.floor(candW / 2);
+    gwY = y - 1;
+  } else if (dir === 'north') {
+    gwX = x + Math.floor(candW / 2);
+    gwY = y + candH;
+  } else if (dir === 'east') {
+    gwX = x - 1;
+    gwY = y + Math.floor(candH / 2);
+  } else if (dir === 'west') {
+    gwX = x + candW;
+    gwY = y + Math.floor(candH / 2);
+  }
+
+  if (gwX < 0 || gwX >= W || gwY < 0 || gwY >= H) return null;
+  const cell = continentMap.cells[gwY]?.[gwX];
+  if (
+    !cell ||
+    !cell.isWalkable ||
+    cell.elevation !== 0 ||
+    continentMap.resolvedMountain.occupiedFootCells[gwY]?.[gwX] ||
+    continentMap.terrainMatrix[gwY]?.[gwX] === 'water'
+  ) {
+    return null;
+  }
+
+  const inlandCount = countInlandClearCells(continentMap, dir, x, y, candW, candH, W, H);
+  return (
+    (dir === 'south' ? SOUTH_FACING_PORT_SCORE_BIAS : 0) +
+    depth +
+    inlandCount * INLAND_CLEAR_CELL_WEIGHT
+  );
+}
+
+function findBestPortLocation(
+  continentMap: ContinentMapResult,
+  W: number,
+  H: number,
+  isAreaFree: (x: number, y: number, w: number, h: number, margin?: number) => boolean,
+  getMinDistanceToPlaced: (x: number, y: number) => number
+): { readonly x: number; readonly y: number; readonly facing: CardinalDirection } | null {
+  let bestPort: { x: number; y: number; facing: CardinalDirection } | null = null;
+  let bestScore = -Infinity;
+
+  for (let y = 3; y < H - 10; y += 1) {
+    for (let x = 3; x < W - 10; x += 1) {
+      for (const dir of GEO_CARDINAL_DIRECTIONS) {
+        const candW = dir === 'west' || dir === 'east' ? 6 : 7;
+        const candH = dir === 'west' || dir === 'east' ? 7 : 6;
+        const bonusScore = evaluateHarborCandidate({
+          x,
+          y,
+          dir,
+          candW,
+          candH,
+          continentMap,
+          width: W,
+          height: H,
+          isAreaFree
+        });
+        if (bonusScore === null) continue;
+
+        const d = getMinDistanceToPlaced(x, y);
+        const totalScore = d + bonusScore;
+        const minPortDist = Math.min(W, H) <= 128 ? 6 : 8;
+        if (d >= minPortDist && totalScore > bestScore) {
+          bestScore = totalScore;
+          bestPort = { x, y, facing: dir };
+        }
+      }
+    }
+  }
+
+  return bestPort;
+}
+
 /**
  * Places coastal harbor port docks with ferry piers facing open ocean waters.
  */
@@ -120,156 +335,7 @@ export function placeCoastalHarborDocks(ctx: HarborPlacementContext): void {
     const portId = 'vermilion_port';
     const portName = 'Puerto Carmín';
 
-    let bestPort: { x: number; y: number; facing: CardinalDirection } | null = null;
-    let bestScore = -Infinity;
-
-    for (let y = 3; y < H - 10; y += 1) {
-      for (let x = 3; x < W - 10; x += 1) {
-        for (const dir of GEO_CARDINAL_DIRECTIONS) {
-          const candW = dir === 'west' || dir === 'east' ? 6 : 7;
-          const candH = dir === 'west' || dir === 'east' ? 7 : 6;
-          if (x + candW >= W - 3 || y + candH >= H - 3) continue;
-          if (!isAreaFree(x, y, candW, candH, 1)) continue;
-
-          // Exclude offshore archipelago islands to guarantee mainland port placement
-          if (continentMap.archipelagoIslands && continentMap.archipelagoIslands.length > 0) {
-            let onIsland = false;
-            for (const island of continentMap.archipelagoIslands) {
-              if (
-                x + candW >= island.bounds.minX - 2 &&
-                x <= island.bounds.maxX + 2 &&
-                y + candH >= island.bounds.minY - 2 &&
-                y <= island.bounds.maxY + 2
-              ) {
-                onIsland = true;
-                break;
-              }
-            }
-            if (onIsland) continue;
-          }
-
-          // 1. Entire building footprint MUST sit on flat land (sand or grass)
-          let allLand = true;
-          let touchesCoast = false;
-          for (let dy = 0; dy < candH; dy++) {
-            for (let dx = 0; dx < candW; dx++) {
-              const terr = continentMap.terrainMatrix[y + dy]?.[x + dx];
-              const elev = continentMap.heightmap[y + dy]?.[x + dx] ?? 0;
-              if ((terr !== 'sand' && terr !== 'grass') || elev !== 0) {
-                allLand = false;
-                break;
-              }
-              if (terr === 'sand') {
-                touchesCoast = true;
-              }
-            }
-            if (!allLand) break;
-          }
-          if (!allLand || !touchesCoast) continue;
-
-          // 2. Check open water depth in dir (require at least 6 tiles of open ocean)
-          let depth = 0;
-          if (dir === 'south') {
-            for (let dy = 1; dy <= MAX_OCEAN_DEPTH_SCAN; dy++) {
-              const py = y + candH - 1 + dy;
-              if (py >= H) break;
-              let allW = true;
-              for (let dx = 0; dx < candW; dx++) {
-                if (continentMap.terrainMatrix[py]?.[x + dx] !== 'water') {
-                  allW = false;
-                  break;
-                }
-              }
-              if (!allW) break;
-              depth++;
-            }
-          } else if (dir === 'north') {
-            for (let dy = 1; dy <= MAX_OCEAN_DEPTH_SCAN; dy++) {
-              const py = y - dy;
-              if (py < 0) break;
-              let allW = true;
-              for (let dx = 0; dx < candW; dx++) {
-                if (continentMap.terrainMatrix[py]?.[x + dx] !== 'water') {
-                  allW = false;
-                  break;
-                }
-              }
-              if (!allW) break;
-              depth++;
-            }
-          } else if (dir === 'east') {
-            for (let dx = 1; dx <= MAX_OCEAN_DEPTH_SCAN; dx++) {
-              const px = x + candW - 1 + dx;
-              if (px >= W) break;
-              let allW = true;
-              for (let dy = 0; dy < candH; dy++) {
-                if (continentMap.terrainMatrix[y + dy]?.[px] !== 'water') {
-                  allW = false;
-                  break;
-                }
-              }
-              if (!allW) break;
-              depth++;
-            }
-          } else if (dir === 'west') {
-            for (let dx = 1; dx <= MAX_OCEAN_DEPTH_SCAN; dx++) {
-              const px = x - dx;
-              if (px < 0) break;
-              let allW = true;
-              for (let dy = 0; dy < candH; dy++) {
-                if (continentMap.terrainMatrix[y + dy]?.[px] !== 'water') {
-                  allW = false;
-                  break;
-                }
-              }
-              if (!allW) break;
-              depth++;
-            }
-          }
-
-          if (depth < MIN_OCEAN_DEPTH_REQUIRED) continue;
-
-          // 3. Check doorway clearance inland
-          let gwX = x;
-          let gwY = y;
-          if (dir === 'south') {
-            gwX = x + Math.floor(candW / 2);
-            gwY = y - 1;
-          } else if (dir === 'north') {
-            gwX = x + Math.floor(candW / 2);
-            gwY = y + candH;
-          } else if (dir === 'east') {
-            gwX = x - 1;
-            gwY = y + Math.floor(candH / 2);
-          } else if (dir === 'west') {
-            gwX = x + candW;
-            gwY = y + Math.floor(candH / 2);
-          }
-
-          if (gwX < 0 || gwX >= W || gwY < 0 || gwY >= H) continue;
-          const cell = continentMap.cells[gwY]?.[gwX];
-          if (
-            !cell ||
-            !cell.isWalkable ||
-            cell.elevation !== 0 ||
-            continentMap.resolvedMountain.occupiedFootCells[gwY]?.[gwX] ||
-            continentMap.terrainMatrix[gwY]?.[gwX] === 'water'
-          ) {
-            continue;
-          }
-
-          const inlandCount = countInlandClearCells(continentMap, dir, x, y, candW, candH, W, H);
-
-          const d = getMinDistanceToPlaced(x, y);
-          const totalScore = d + (dir === 'south' ? 6 : 0) + depth + inlandCount * 3;
-          const minPortDist = Math.min(W, H) <= 128 ? 6 : 8;
-          if (d >= minPortDist && totalScore > bestScore) {
-            bestScore = totalScore;
-            bestPort = { x, y, facing: dir };
-          }
-        }
-      }
-    }
+    const bestPort = findBestPortLocation(continentMap, W, H, isAreaFree, getMinDistanceToPlaced);
 
     if (bestPort) {
       const portWidth = bestPort.facing === 'west' || bestPort.facing === 'east' ? 6 : 7;

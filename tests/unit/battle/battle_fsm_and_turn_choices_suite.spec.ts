@@ -7,14 +7,15 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { ref } from 'vue';
+
 import {
   createBattleStateMachine,
   BATTLE_STATES,
   BATTLE_SUBSTATES
 } from '@/logic/battle/battleStateMachine';
 import { resolveTurnChoices } from '@/logic/battle/battleTurnChoiceHelper';
-import { handleBattleFlowCompletion } from '@/logic/battle/searchLoop';
 import { processFaint } from '@/logic/battle/resolution';
+import { handleBattleFlowCompletion } from '@/logic/battle/searchLoop';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 

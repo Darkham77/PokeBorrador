@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { formatCurrency } from '@/logic/utils/formatters';
 import { useStatHover } from '@/composables/ui/useStatHover';
+import { formatCurrency } from '@/logic/utils/formatters';
 
 interface Stats {
   wins?: number;
@@ -17,7 +17,7 @@ interface Props {
 
 defineProps<Props>();
 
-const formatNum = (num: number) => formatCurrency(num);
+const formatNum = (num: number): string => formatCurrency(num);
 
 const { handleStatEnter, handleStatLeave } = useStatHover({
   money: {

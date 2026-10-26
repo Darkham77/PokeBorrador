@@ -11,19 +11,25 @@
  *   Layer 4b: Procedural Jumpable Route Ledges
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
+import { CANVAS_RENDERER } from '../../config/canvasRendererConfig.ts';
+import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
+import { resolveCanonicalBridges } from './canonicalBridgeEngine.ts';
+import type { BuildMapBlitOptions } from './canvasTileRenderer.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
+import { resolveMacroBiomeAutotile } from './macroBiomeAutotileEngine.ts';
 import {
   resolvePathGrid,
   sanitizePathGridWidth,
   CANONICAL_STONE_PLAZA_BRUSH
 } from './pathAutotileEngine.ts';
-import { resolveMacroBiomeAutotile } from './macroBiomeAutotileEngine.ts';
-import { resolveCanonicalBridges } from './canonicalBridgeEngine.ts';
 import { getCanonicalUrbanRoadTile } from './urbanPavingEngine.ts';
-import { CANVAS_RENDERER } from '../../config/canvasRendererConfig.ts';
-import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
-import type { BuildMapBlitOptions } from './canvasTileRenderer.ts';
+
+const DIRT_SETTLEMENT_TYPE_LIST = ['town', 'dungeon_forest', 'route_gate'] as const;
+type DirtSettlementType = (typeof DIRT_SETTLEMENT_TYPE_LIST)[number];
+const DIRT_SETTLEMENT_TYPES: ReadonlySet<DirtSettlementType> = new Set<DirtSettlementType>(
+  DIRT_SETTLEMENT_TYPE_LIST
+);
 
 export interface TerrainPathBlitContext {
   readonly continent: ContinentMapResult;
@@ -33,6 +39,21 @@ export interface TerrainPathBlitContext {
   readonly buildingFootprintMask: readonly (readonly boolean[])[];
   readonly addBlit: (filename: string, px: number, py: number) => void;
   readonly options?: BuildMapBlitOptions;
+}
+
+function blitTileWithOverlays(
+  primaryTile: string,
+  overlayTiles: readonly string[] | undefined,
+  px: number,
+  py: number,
+  addBlit: (filename: string, px: number, py: number) => void
+): void {
+  addBlit(primaryTile, px, py);
+  if (overlayTiles) {
+    for (const ov of overlayTiles) {
+      addBlit(ov, px, py);
+    }
+  }
 }
 
 /**
@@ -55,7 +76,7 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
         )
       : null);
 
-  const renderCellBaseTerrain = (r: number, c: number) => {
+  const renderCellBaseTerrain = (r: number, c: number): void => {
     const px = c * CANVAS_TILE_SIZE;
     const py = r * CANVAS_TILE_SIZE;
 
@@ -189,7 +210,7 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
     }
   }
 
-  const renderUrbanCurbs = (poi: POINode) => {
+  const renderUrbanCurbs = (poi: POINode): void => {
     if (!poi.urbanLayout || poi.type === 'pokemon_league') return;
     const internalStreets = poi.urbanLayout.internalStreets;
     const pavedPlazaCells = poi.urbanLayout.pavedPlazaCells;
@@ -226,9 +247,7 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
     if (!poi.urbanLayout) continue;
 
     const isDirtSettlement =
-      poi.type === 'town' ||
-      poi.type === 'dungeon_forest' ||
-      poi.type === 'route_gate' ||
+      DIRT_SETTLEMENT_TYPES.has(poi.type as DirtSettlementType) ||
       poi.urbanLayout.roadMaterial === 'dirt' ||
       /island|canela|cinnabar|isla/i.test(poi.id) ||
       /isla|island/i.test(poi.name) ||
@@ -279,12 +298,13 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
     for (let c = 0; c < W; c++) {
       const plCell = plazaAutotile.pathDetails[r]?.[c];
       if (plCell) {
-        addBlit(plCell.primaryTile, c * CANVAS_TILE_SIZE, r * CANVAS_TILE_SIZE);
-        if (plCell.overlayTiles) {
-          for (const ov of plCell.overlayTiles) {
-            addBlit(ov, c * CANVAS_TILE_SIZE, r * CANVAS_TILE_SIZE);
-          }
-        }
+        blitTileWithOverlays(
+          plCell.primaryTile,
+          plCell.overlayTiles,
+          c * CANVAS_TILE_SIZE,
+          r * CANVAS_TILE_SIZE,
+          addBlit
+        );
       }
     }
   }
@@ -343,12 +363,7 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
       const py = r * CANVAS_TILE_SIZE;
 
       if (!urbanRoadSet.has(`${c}_${r}`)) {
-        addBlit(pCell.primaryTile, px, py);
-        if (pCell.overlayTiles) {
-          for (const ov of pCell.overlayTiles) {
-            addBlit(ov, px, py);
-          }
-        }
+        blitTileWithOverlays(pCell.primaryTile, pCell.overlayTiles, px, py, addBlit);
       }
     }
   }
@@ -364,7 +379,7 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
           return t === 'water' || t === 'water_deep';
         };
 
-        const collectSouthPier = (node: POINode, pierLen: number) => {
+        const collectSouthPier = (node: POINode, pierLen: number): void => {
           const startY = node.gridY + node.footprint.height;
           const px =
             node.gridX +
@@ -379,7 +394,7 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
           }
         };
 
-        const collectNorthPier = (node: POINode, pierLen: number) => {
+        const collectNorthPier = (node: POINode, pierLen: number): void => {
           const startY = node.gridY - 1;
           const px =
             node.gridX +
@@ -403,7 +418,7 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
           }
         };
 
-        const collectEastPier = (node: POINode, pierLen: number) => {
+        const collectEastPier = (node: POINode, pierLen: number): void => {
           const startX = node.gridX + node.footprint.width;
           const py = node.gridY + 2;
           for (let dx = 0; dx < pierLen; dx++) {
@@ -416,7 +431,7 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
           }
         };
 
-        const collectWestPier = (node: POINode, pierLen: number) => {
+        const collectWestPier = (node: POINode, pierLen: number): void => {
           const startX = node.gridX - 1;
           const py = node.gridY + 2;
           for (let dx = 0; dx < pierLen; dx++) {
@@ -452,7 +467,7 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
   }
 
   // 4. Mountain Cliffs, Stairs, South Feet & Plateau Rock Textures
-  const renderCellCliffs = (r: number, c: number) => {
+  const renderCellCliffs = (r: number, c: number): void => {
     if (buildingFootprintMask[r]?.[c]) return;
 
     const mCell = continent.resolvedMountain.cellDetails[r]?.[c];

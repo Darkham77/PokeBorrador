@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { RankedSeasonMedal } from '@/types/battle/pvp.ts';
+
 import { useStatHover } from '@/composables/ui/useStatHover';
 import { RANKED_MEDAL_CONFIGS } from '@/data/system/rankedData.ts';
 import { resolveMedalTournamentInfo } from '@/logic/pvp/rankedEngine.ts';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { useModalStore } from '@/stores/modals';
 import { useUIStore } from '@/stores/ui';
+import type { RankedSeasonMedal } from '@/types/battle/pvp.ts';
 
 interface Props {
   medal: RankedSeasonMedal;
@@ -44,7 +45,7 @@ const titleText = computed(() => {
     : `Torneo ${info.tournamentName} (Finalizado)`;
 });
 
-function handleMedalClick() {
+function handleMedalClick(): void {
   const info = medalInfo.value;
   if (info.isAvailable) {
     modalStore.open('RankedTournamentDetail', {

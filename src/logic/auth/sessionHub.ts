@@ -18,8 +18,8 @@ const sessionState: {
   isLocked: false
 };
 
-export function initSessionHub(userId: string) {
-  if (typeof window === 'undefined') return;
+export function initSessionHub(userId: string): void {
+  if (typeof globalThis.window === 'undefined') return;
   sessionState.userId = userId;
   logger.info('SessionHub', `Initializing for user ${userId} | Session: ${SESSION_ID}`);
 
@@ -40,32 +40,34 @@ export function initSessionHub(userId: string) {
 
   // 2. Global Synchronization (Supabase)
   if (supabase.mode === 'online') {
-    void supabase.initSession(userId, SESSION_ID);
+    supabase.initSession(userId, SESSION_ID).catch((err) => {
+      logger.error('SessionHub', 'Error initializing global session', err);
+    });
 
     // Listen for conflict event from DBRouter
-    window.addEventListener('session-conflict', () => {
+    globalThis.addEventListener('session-conflict', () => {
       logger.warn('SessionHub', 'Global session conflict detected!');
       triggerLock();
     });
   }
 }
 
-function triggerLock() {
+function triggerLock(): void {
   if (sessionState.isLocked) return;
   sessionState.isLocked = true;
 
   logger.warn('SessionHub', 'WRITE PERMISSIONS REVOKED. Instance is now Read-Only.');
 
   // Notify UI via GameBus or Custom Event
-  window.dispatchEvent(new CustomEvent('pv-save-lock'));
+  globalThis.dispatchEvent(new CustomEvent('pv-save-lock'));
   gameBus.emit('SESSION_LOCKED');
 }
 
-export function getSessionId() {
+export function getSessionId(): `${string}-${string}-${string}-${string}-${string}` {
   return SESSION_ID;
 }
 
-export function isSaveLocked() {
+export function isSaveLocked(): boolean {
   return sessionState.isLocked;
 }
 
@@ -73,7 +75,7 @@ export function isSaveLocked() {
  * Re-claims control of the session for the current tab.
  * Updates the database and notifies other tabs.
  */
-export async function reclaimControl() {
+export async function reclaimControl(): Promise<void> {
   if (!sessionState.userId) return;
 
   sessionState.isLocked = false;
@@ -88,5 +90,5 @@ export async function reclaimControl() {
   }
 
   // Notify UI
-  window.dispatchEvent(new CustomEvent('pv-save-unlock'));
+  globalThis.dispatchEvent(new CustomEvent('pv-save-unlock'));
 }

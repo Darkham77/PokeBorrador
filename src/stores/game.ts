@@ -1,35 +1,34 @@
 import { defineStore } from 'pinia';
-import { reactive, ref, shallowRef, computed, watch, type Ref } from 'vue';
-import { logger } from '@/logic/utils/logger';
-import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage';
-import { useAuthStore } from '@/stores/auth.ts';
-import { supabase } from '@/logic/db/supabase';
-import { createInitialGameState } from '@/stores/gameInitialState.ts';
-import type { GameState } from '@/types/system/game';
-import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon';
+import { reactive, ref, shallowRef, computed, watch } from 'vue';
+
 import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { isGymId, type GymId } from '@/data/world/gyms';
-import { DURATION_24_HOURS_MS, BUFF_DURATION_30_MIN_MS } from '@/logic/constants/items.ts';
-import { MAX_NOTIFICATION_HISTORY_ITEMS } from '@/logic/constants/gameplay.ts';
-
-// Actions Modules
-import { useSaveActions } from '@/stores/game/actions/saveActions.ts';
-import { usePokemonActions } from '@/stores/game/actions/pokemonActions.ts';
-import { useTrainerActions } from '@/stores/game/actions/trainerActions.ts';
-import { useBreedingActions } from '@/stores/game/actions/breedingActions.ts';
-import { useTeamActions } from '@/stores/game/actions/teamActions.ts';
-
-import { DBRouter } from '@/logic/db/dbRouter';
 import { requireMapRouteId } from '@/data/world/map-assets';
-import { getGMT3Date } from '@/logic/utils/timeUtils';
-import { GAME_UI_EVENTS, type GameStoreReadyDetail } from '@/types/system/gameEvents.ts';
-import { gameBus } from '@/logic/events/gameBus.ts';
 import { saveCoordinator } from '@/logic/auth/saveCoordinator.ts';
+import { MAX_NOTIFICATION_HISTORY_ITEMS } from '@/logic/constants/gameplay.ts';
+import { DURATION_24_HOURS_MS, BUFF_DURATION_30_MIN_MS } from '@/logic/constants/items.ts';
+import { DBRouter } from '@/logic/db/dbRouter';
+import { supabase } from '@/logic/db/supabase';
+import { gameBus } from '@/logic/events/gameBus.ts';
+import { logger } from '@/logic/utils/logger';
+import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage';
+import { getGMT3Date } from '@/logic/utils/timeUtils';
+import { useAuthStore } from '@/stores/auth.ts';
+import { useBreedingActions } from '@/stores/game/actions/breedingActions.ts';
+import { usePokemonActions } from '@/stores/game/actions/pokemonActions.ts';
 import { saveSandboxLocalState } from '@/stores/game/actions/saveActionHelpers.ts';
+// Actions Modules
+import { useSaveActions, type UseSaveActionsReturn } from '@/stores/game/actions/saveActions.ts';
+import { useTeamActions } from '@/stores/game/actions/teamActions.ts';
+import { useTrainerActions } from '@/stores/game/actions/trainerActions.ts';
+import { createInitialGameState } from '@/stores/gameInitialState.ts';
+import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon';
+import type { GameState } from '@/types/system/game';
+import { GAME_UI_EVENTS, type GameStoreReadyDetail } from '@/types/system/gameEvents.ts';
 
 export const useGameStore = defineStore('game', () => {
   const authStore = useAuthStore();
-  const state = reactive<GameState>(createInitialGameState());
+  const state: GameState = reactive(createInitialGameState());
 
   const db = shallowRef<DBRouter>(supabase);
   const isDataLoaded = ref(false);
@@ -40,14 +39,14 @@ export const useGameStore = defineStore('game', () => {
   const realStateBackup = ref<GameState | null>(null);
 
   watch(isReady, (ready) => {
-    if (!ready || typeof window === 'undefined') return;
+    if (!ready || typeof globalThis.window === 'undefined') return;
     const detail: GameStoreReadyDetail = { ready: true };
-    window.dispatchEvent(
+    globalThis.dispatchEvent(
       new CustomEvent<GameStoreReadyDetail>(GAME_UI_EVENTS.STORE_READY, { detail })
     );
   });
 
-  function updateState(newData: Partial<GameState>) {
+  function updateState(newData: Partial<GameState>): void {
     if (newData.team && newData.team.length > 0) newData.starterChosen = true;
     Object.assign(state, newData);
     // Standard state updates
@@ -57,6 +56,13 @@ export const useGameStore = defineStore('game', () => {
   // --- ACTIONS INITIALIZATION ---
 
   // 1. Save Actions (Basics needed for others)
+  const saveActions: UseSaveActionsReturn = useSaveActions(
+    state,
+    authStore,
+    db,
+    updateState,
+    isSandboxActive
+  );
   const {
     loadGame: rawLoad,
     save,
@@ -66,7 +72,7 @@ export const useGameStore = defineStore('game', () => {
     fetchClaimQueue,
     saveBlocked,
     validationErrorDetails
-  } = useSaveActions(state, authStore, db as Ref<DBRouter>, updateState, isSandboxActive);
+  } = saveActions;
 
   saveCoordinator.setPreLogoutHandler(async () => {
     const store = useGameStore();
@@ -118,7 +124,7 @@ export const useGameStore = defineStore('game', () => {
       if (state.notificationHistory.length > MAX_NOTIFICATION_HISTORY_ITEMS) {
         state.notificationHistory.shift();
       }
-      void scheduleSave();
+      scheduleSave();
     }
   });
 
@@ -145,11 +151,11 @@ export const useGameStore = defineStore('game', () => {
         const { initSessionHub } = await import('@/logic/auth/sessionHub');
         initSessionHub(authStore.user.id);
 
-        window.addEventListener('pv-save-lock', () => {
+        globalThis.addEventListener('pv-save-lock', () => {
           isSaveLocked.value = true;
         });
 
-        window.addEventListener('pv-save-unlock', () => {
+        globalThis.addEventListener('pv-save-unlock', () => {
           isSaveLocked.value = false;
         });
       }
@@ -194,23 +200,23 @@ export const useGameStore = defineStore('game', () => {
     }
 
     if (changed) {
-      void scheduleSave();
+      scheduleSave();
     }
   }
 
-  async function reclaimControl() {
+  async function reclaimControl(): Promise<void> {
     const { reclaimControl: rawReclaim } = await import('@/logic/auth/sessionHub');
     await rawReclaim();
     isSaveLocked.value = false;
   }
 
-  function enterSandboxMode() {
+  function enterSandboxMode(): void {
     if (isSandboxActive.value) return;
-    realStateBackup.value = structuredClone(state) as GameState;
+    realStateBackup.value = structuredClone(state);
 
     // Clear current state and load sandbox save if it exists
     Object.keys(state).forEach((key) => {
-      delete (state as Record<string, unknown>)[key]; // open-record: Generic key-value data dictionary container
+      Reflect.deleteProperty(state, key);
     });
 
     let initialSandbox = createInitialGameState();
@@ -228,7 +234,7 @@ export const useGameStore = defineStore('game', () => {
     logger.info('SANDBOX', 'Modo Sandbox activado para Test Aventura. Partida real respaldada.');
   }
 
-  function exitSandboxMode() {
+  function exitSandboxMode(): void {
     if (!isSandboxActive.value) return;
 
     // Save sandbox state locally before exiting
@@ -236,7 +242,7 @@ export const useGameStore = defineStore('game', () => {
 
     // Clear and restore real save
     Object.keys(state).forEach((key) => {
-      delete (state as Record<string, unknown>)[key]; // open-record: Generic key-value data dictionary container
+      Reflect.deleteProperty(state, key);
     });
 
     if (realStateBackup.value) {
@@ -345,15 +351,11 @@ export const useGameStore = defineStore('game', () => {
     pokemonByUid,
     allPokemonList,
     getPokemonByUid,
-    // fallow-ignore-next-line unused-store-members
     caughtSpeciesSet,
-    // fallow-ignore-next-line unused-store-members
     seenSpeciesSet,
     isSpeciesCaught,
     isSpeciesSeen,
-    // fallow-ignore-next-line unused-store-members
     defeatedGymsSet,
-    // fallow-ignore-next-line unused-store-members
     isGymDefeated,
     updateState,
     registerPokedex,
@@ -367,9 +369,7 @@ export const useGameStore = defineStore('game', () => {
     isEngineReady,
     isReady,
     isSaveLocked,
-    // fallow-ignore-next-line unused-store-member
     saveBlocked,
-    // fallow-ignore-next-line unused-store-member
     validationErrorDetails,
     chooseStarter,
     addTrainerExp,
@@ -383,7 +383,6 @@ export const useGameStore = defineStore('game', () => {
     addPokemon,
     removePokemon,
     autoFillPvpTeam,
-    // fallow-ignore-next-line unused-store-member
     autoFillPvpTeam6,
     swapPvpSlot,
     swapPvp6Slot,
@@ -401,10 +400,6 @@ export const useGameStore = defineStore('game', () => {
   };
 });
 
-if (typeof window !== 'undefined') {
-  (
-    window as Window & {
-      __VITE_DEBUG_GAME_STORE_RESOLVER__?: () => ReturnType<typeof useGameStore>;
-    }
-  ).__VITE_DEBUG_GAME_STORE_RESOLVER__ = () => useGameStore();
+if (typeof globalThis.window !== 'undefined') {
+  globalThis.window.__VITE_DEBUG_GAME_STORE_RESOLVER__ = () => useGameStore();
 }

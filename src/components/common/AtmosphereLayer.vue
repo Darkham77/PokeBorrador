@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted, nextTick, onMounted } from 'vue';
 import { useResizeObserver } from '@vueuse/core';
 import { gsap } from 'gsap';
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import { ref, computed, watch, onUnmounted, nextTick, onMounted } from 'vue';
+
 import type { WeatherSeasonId } from '@/data/world/weather-tables';
 import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
+
 import type { AtmosphereLayerDepth } from './atmosphereParticleHelper';
 
 interface AtmosphereLayerProps {
@@ -22,6 +24,7 @@ interface AtmosphereLayerProps {
 }
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
 import { GOLDEN_RATIO_FACTOR } from './atmosphereSandstormHelper';
 
 // Cache for weather noise textures
@@ -110,7 +113,7 @@ const applyParallaxLayer = (
   moveY: number,
   duration: number,
   seed?: number
-) => {
+): void => {
   if (!layer || !weatherTimeline) return;
   gsap.killTweensOf(layer);
 
@@ -131,7 +134,7 @@ const applyParallaxLayer = (
   }
 };
 
-const initWorker = async () => {
+const initWorker = async (): Promise<void> => {
   if (!canvasRef.value) return;
 
   // If worker is already active, just update parameters instead of re-creating worker & re-transferring canvas
@@ -233,7 +236,7 @@ const initWorker = async () => {
   stopResizeObserver = stop;
 };
 
-const updateWorkerParams = () => {
+const updateWorkerParams = (): void => {
   if (!worker) return;
   const isVirtual = Boolean(containerRef.value?.closest('.map-virtual-world'));
   worker.postMessage({
@@ -248,13 +251,13 @@ const updateWorkerParams = () => {
   worker.postMessage({ type: 'RESUME' });
 };
 
-const pauseWorker = () => {
+const pauseWorker = (): void => {
   if (worker) {
     worker.postMessage({ type: 'PAUSE' });
   }
 };
 
-const destroyWorker = () => {
+const destroyWorker = (): void => {
   if (worker) {
     worker.terminate();
     worker = null;
@@ -265,7 +268,7 @@ const destroyWorker = () => {
   }
 };
 
-const initWeatherAnim = () => {
+const initWeatherAnim = (): void => {
   if (weatherTimeline) weatherTimeline.kill();
   cleanUpLightning();
 
@@ -352,7 +355,7 @@ const shouldRenderAtmosphere = computed<boolean>(() => {
   return props.isVisible && !isFastModeActive.value && !props.isLocked && hasActiveWeather.value;
 });
 
-const cleanUpAtmosphere = () => {
+const cleanUpAtmosphere = (): void => {
   if (atmosphereContext) {
     atmosphereContext.revert();
     atmosphereContext = null;
@@ -362,7 +365,7 @@ const cleanUpAtmosphere = () => {
   pauseWorker();
 };
 
-const initAtmosphere = () => {
+const initAtmosphere = (): void => {
   cleanUpAtmosphere();
 
   if (!shouldRenderAtmosphere.value) {
@@ -416,9 +419,9 @@ defineExpose({});
 
 // Weather Animations
 import { useAtmosphereLeafAnim } from './useAtmosphereLeafAnim.ts';
+import { useAtmosphereRainAnim } from './useAtmosphereRainAnim.ts';
 import { useAtmosphereSandstormAnim } from './useAtmosphereSandstormAnim.ts';
 import { useAtmosphereSnowAnim } from './useAtmosphereSnowAnim.ts';
-import { useAtmosphereRainAnim } from './useAtmosphereRainAnim.ts';
 
 const { initLeafAnim: initLeafAnimFn } = useAtmosphereLeafAnim(containerRef, props);
 const { initSandstormAnim } = useAtmosphereSandstormAnim(
@@ -435,6 +438,7 @@ const { initRainAnim, cleanUpLightning } = useAtmosphereRainAnim(
   lightningPos
 );
 
+import AtmosphereLeavesOverlay from './AtmosphereLeavesOverlay.vue';
 import {
   isRainWeather,
   isLightningWeather,
@@ -444,9 +448,8 @@ import {
   resolveSnowLayerClass,
   resolveWeatherOverlayStyles
 } from './atmosphereParticleHelper';
-import AtmosphereLeavesOverlay from './AtmosphereLeavesOverlay.vue';
 
-const initLeafAnim = (ctxVal: gsap.Context) => {
+const initLeafAnim = (ctxVal: gsap.Context): void => {
   initLeafAnimFn(ctxVal);
 };
 

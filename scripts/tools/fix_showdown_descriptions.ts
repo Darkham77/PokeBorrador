@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 import fs from 'node:fs';
 
 const DB_PATH = './showdown/sandbox_db/data/showdown_db_es.json';
@@ -16,11 +17,11 @@ interface DBMove {
 
 interface ShowdownDB {
   pokemon: Record<string, unknown>;
-  moves: Record<string, DBMove>;
+  moves: Record<DisplayText, DBMove>;
   abilities: Record<string, unknown>;
 }
 
-const CLEAN_DESCRIPTIONS: Record<string, string> = {
+const CLEAN_DESCRIPTIONS: Record<DisplayText, string> = {
   assist: 'El usuario realiza un movimiento elegido al azar de entre los de su equipo.',
   bide: 'El usuario aguanta golpes durante dos turnos y devuelve el doble del daño recibido.',
   feintattack: 'Ataque rápido y garantizado que no puede fallar.',

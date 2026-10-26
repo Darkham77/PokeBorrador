@@ -6,6 +6,7 @@
  */
 
 import { computed } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 
 interface ProcessedGuardianInfo {

@@ -1,9 +1,3 @@
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { canLearnMove, getMaxAllowedMoves } from './pokemonLearnset.ts';
-import { recalcPokemonStats } from './pokemonFactory.ts';
-import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
-import { toID } from '@/logic/utils/strings.ts';
-import { MAX_POKEMON_LEVEL, isEnabledPokemonId } from '@/data/system/constants';
 import { requireAbilityId } from '@/data/battle/abilities';
 import { requirePokemonMoveId } from '@/data/battle/moves';
 import {
@@ -12,7 +6,14 @@ import {
   isPokemonSpeciesId,
   type PokemonSpeciesId
 } from '@/data/pokemon/pokedex';
+import { MAX_POKEMON_LEVEL, isEnabledPokemonId } from '@/data/system/constants';
+import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { toID } from '@/logic/utils/strings.ts';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+
+import { recalcPokemonStats } from './pokemonFactory.ts';
+import { canLearnMove, getMaxAllowedMoves } from './pokemonLearnset.ts';
 
 export interface PokemonLegalityReport {
   isLegal: boolean;
@@ -49,8 +50,8 @@ function validateSpeciesLegality(
 
   const allowUnreleased =
     options?.allowUnreleased ||
-    (typeof window !== 'undefined' &&
-      Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug')));
+    Boolean(globalThis.__VITE_DEBUG__) ||
+    Boolean(globalThis.location?.search?.includes('debug'));
   if (!allowUnreleased && !isEnabledPokemonId(speciesKey)) {
     return { error: `La especie "${speciesKey}" no está habilitada por la whitelist global.` };
   }
@@ -201,7 +202,7 @@ function repairVigor(p: Pokemon, changes: string[]): void {
 
 function repairAbility(p: Pokemon, changes: string[]): void {
   const validAbilities = pokemonDataProvider.getSpeciesAbilities(p.id);
-  if (p.ability && !validAbilities.includes(p.ability as (typeof validAbilities)[number])) {
+  if (p.ability && !validAbilities.includes(p.ability)) {
     const fallbackAbility = validAbilities[0]
       ? requireAbilityId(validAbilities[0])
       : requireAbilityId('overgrow');

@@ -7,6 +7,9 @@
 export { getTypeEffectiveness } from '../pokemon/typeEngine.ts';
 export { getStatMultiplier } from '../pokemon/statEngine.ts';
 
+import type { BattleStages, BattleWeather } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import {
   getEffectiveStat,
   getStatBreakdown,
@@ -15,9 +18,6 @@ import {
   calculateCatchRate,
   calculateEscapeChance
 } from './battleFormulas.ts';
-
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleStages, BattleWeather } from '@/types/battle/battle';
 
 export {
   getEffectiveStat,
@@ -32,7 +32,7 @@ export function getEffectiveSpeed(
   pokemon: Pokemon,
   stages: Partial<BattleStages>,
   options: { weather?: BattleWeather | null } = {}
-) {
+): number {
   // Uses fallback pattern to avoid runtime crashes
   return getEffectiveStat(pokemon, 'spe', stages, options.weather || null);
 }

@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vite-plus/test';
-import { queryLocal, resetSQLite } from '@/logic/db/sqliteEngine.ts';
+
 import { DBRouter } from '@/logic/db/dbRouter.ts';
+import { queryLocal, resetSQLite } from '@/logic/db/sqliteEngine.ts';
 import { injectSimulatedGtsClaimsAndListings } from '@/logic/debug/rewardsDebugSimulationHelpers.ts';
-import type { GameState } from '@/types/system/game.ts';
 import type { AuthUser } from '@/types/auth/auth.ts';
+import type { GameState } from '@/types/system/game.ts';
 
 describe('Rewards Debug Simulation Market Listings DB Insertion', () => {
   beforeEach(async () => {

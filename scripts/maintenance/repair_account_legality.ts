@@ -1,10 +1,11 @@
+import { isMainModule } from '@francogp/auditor';
 import { enableCompileCache } from 'node:module';
 enableCompileCache?.();
 
 import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 import fs from 'node:fs';
-import { parseArgs } from 'node:util';
+import { defineCommand, runMain } from 'citty';
 import postgres from 'postgres';
 import {
   repairPokemonLegality,
@@ -332,6 +333,14 @@ function isMarketListingRow(row: unknown): row is MarketListingRow {
   return typeof candidate.id === 'string' && typeof candidate.data === 'string';
 }
 
+function filterRows<T>(rows: Iterable<unknown>, guard: (item: unknown) => item is T): T[] {
+  const result: T[] = [];
+  for (const item of rows) {
+    if (guard(item)) result.push(item);
+  }
+  return result;
+}
+
 function repairSingleClaimQueueItem(
   claimRow: ClaimQueueRow,
   db: DatabaseSync,
@@ -373,8 +382,8 @@ function repairSingleClaimQueueItem(
 
 function repairSqliteClaimQueue(db: DatabaseSync, isSilent: boolean, summary: RepairSummary): void {
   try {
-    const rawRows = db.prepare('SELECT id, asset_data FROM claim_queue').all() as unknown[]; // open-record: raw sqlite records
-    const claimRows: ClaimQueueRow[] = rawRows.filter(isClaimQueueRow);
+    const rawRows = db.prepare('SELECT id, asset_data FROM claim_queue').all();
+    const claimRows: ClaimQueueRow[] = filterRows(rawRows, isClaimQueueRow);
     if (!isSilent) console.log(`📦 Auditando claim_queue (${claimRows.length} registros)...`);
     for (const claimRow of claimRows) {
       repairSingleClaimQueueItem(claimRow, db, isSilent, summary);
@@ -415,9 +424,8 @@ function repairSingleMarketListingItem(
           );
       }
     }
-  } catch {
-    // catch-ok: ignore corrupt market listing json parse error
-    // ignore
+  } catch (err) {
+    err;
   }
 }
 
@@ -429,14 +437,13 @@ function repairSqliteMarketListings(
   try {
     const rawRows = db
       .prepare("SELECT id, data FROM market_listings WHERE listing_type = 'pokemon'")
-      .all() as unknown[]; // open-record: raw sqlite records
-    const marketRows: MarketListingRow[] = rawRows.filter(isMarketListingRow);
+      .all();
+    const marketRows: MarketListingRow[] = filterRows(rawRows, isMarketListingRow);
     for (const mRow of marketRows) {
       repairSingleMarketListingItem(mRow, db, isSilent, summary);
     }
-  } catch {
-    // catch-ok: market_listings table might not exist
-    // market_listings table might not exist
+  } catch (err) {
+    err;
   }
 }
 
@@ -750,112 +757,57 @@ export async function repairAccountsInDatabase(
   return repairAccountsInSqlite(options);
 }
 
-async function main() {
-  const args = process.argv.slice(2);
-  const normalized = args.map((a) =>
-    a.includes('=') && !a.startsWith('-')
-      ? `--${a}`
-      : ['all', 'fix', 'help'].includes(a)
-        ? `--${a}`
-        : a
-  );
-  const { values, positionals } = parseArgs({
-    args: normalized,
-    options: {
-      user: { type: 'string', short: 'u' },
-      all: { type: 'boolean', short: 'a' },
-      'all-accounts': { type: 'boolean' },
-      server: { type: 'string', short: 's' },
-      db: { type: 'string', short: 'd' },
-      help: { type: 'boolean', short: 'h' }
+export const command = defineCommand({
+  meta: {
+    name: 'repair-account-legality',
+    description: 'Herramienta de reparación y legalización de Pokémon en partidas'
+  },
+  args: {
+    user: {
+      type: 'string',
+      description: 'ID, nombre de usuario o email de la cuenta a reparar',
+      alias: 'u'
     },
-    allowPositionals: true
-  });
+    all: {
+      type: 'boolean',
+      description: 'Corrige los Pokémon ilegales de TODAS las cuentas registradas',
+      alias: 'a'
+    },
+    server: {
+      type: 'string',
+      description: 'Perfil de servidor Supabase (ej: server_franco, cloud)',
+      alias: 's'
+    },
+    db: {
+      type: 'string',
+      description: 'Ruta a la base de datos SQLite (.db)',
+      alias: 'd'
+    }
+  },
+  async run({ args }) {
+    const isAll = Boolean(args.all || args.user === 'all');
+    const targetUserId = isAll ? null : (args.user ?? null);
 
-  const isHelp =
-    values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
-  if (isHelp) {
-    console.log(`
-Uso:
-  # Base de datos local (SQLite):
-  npm run database:repair-account user=<userId>
-  npm run database:repair-account all
-
-  # Servidor remoto / Supabase (PostgreSQL):
-  npm run database:repair-account server=<perfil> user=<userId>
-  npm run database:repair-account server=<perfil> all
-
-Opciones:
-  user=<userId>            ID, nombre de usuario o email de la cuenta a reparar.
-  all                      Corrige los Pokémon ilegales de TODAS las cuentas registradas, una por una.
-  server=<perfil>          Perfil de servidor Supabase (ej: server_franco, cloud).
-  db=<path>                Ruta a la base de datos SQLite (.db). Por defecto busca poke_local.db.
-  help                     Muestra esta ayuda.
-
-Ejemplos:
-  npm run database:repair-account user=Ash
-  npm run database:repair-account all
-  npm run database:repair-account server=server_franco user=kenviota@gmail.com
-  npm run database:repair-account server=server_franco all
-`);
-    process.exit(0);
-  }
-
-  let targetServer = values.server;
-  const remainingPositionals = [...positionals];
-
-  if (!targetServer) {
-    try {
-      const { baseProfiles, allAvailable } = await getValidatedServerConfigs();
-      const serverIdx = remainingPositionals.findIndex(
-        (p) => allAvailable.includes(p) || baseProfiles.includes(p)
+    if (!isAll && !targetUserId) {
+      console.error(
+        `❌ Debes especificar un usuario (ej: npm run database:repair-account user=<userId>) o utilizar all para corregir todas las cuentas registradas.`
       );
-      if (serverIdx !== -1) {
-        targetServer = remainingPositionals[serverIdx];
-        remainingPositionals.splice(serverIdx, 1);
-      }
-    } catch {
-      // catch-ok: ignored if .env cannot be read in offline mode
-      // Ignored if .env cannot be read in offline mode
+      process.exit(1);
+    }
+
+    try {
+      await repairAccountsInDatabase({
+        userId: targetUserId,
+        all: isAll,
+        server: args.server,
+        dbPath: args.db
+      });
+    } catch (err) {
+      console.error(`❌ Error al reparar cuentas:`, (err as Error).message);
+      process.exit(1);
     }
   }
-
-  const isAll =
-    Boolean(values.all) ||
-    Boolean(values['all-accounts']) ||
-    remainingPositionals.some((p) => p === 'all' || p === '--all');
-  const rawUserId =
-    values.user ||
-    (remainingPositionals.find((p) => p !== 'all' && p !== '--all')
-      ? String(remainingPositionals.find((p) => p !== 'all' && p !== '--all'))
-      : null);
-  const targetUserId = isAll ? null : rawUserId;
-
-  if (!isAll && !targetUserId) {
-    console.error(
-      `❌ Debes especificar un usuario (ej: npm run database:repair-account <userId> o --user <userId>) o utilizar --all (o el argumento 'all') para corregir todas las cuentas registradas.`
-    );
-    console.log(`Usa --help para más información.\n`);
-    process.exit(1);
-  }
-
-  try {
-    await repairAccountsInDatabase({
-      userId: targetUserId,
-      all: isAll,
-      server: targetServer,
-      dbPath: values.db
-    });
-  } catch (err) {
-    console.error(`❌ Error al reparar cuentas:`, (err as Error).message);
-    process.exit(1);
-  }
-}
-
-// Ejecutar CLI solo si se llama directamente
-if (process.argv[1] && import.meta.url.endsWith(path.basename(process.argv[1]))) {
-  main().catch((err) => {
-    console.error('Error fatal al reparar cuentas:', err);
-    process.exit(1);
-  });
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
 }

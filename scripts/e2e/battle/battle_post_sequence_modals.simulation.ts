@@ -104,7 +104,7 @@ test.describe('Post-Battle Sequential Modal Coordinator E2E Simulation', () => {
       // Launch sequence asynchronously
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const battleStore = useBattleStore();
-      void postBattleCoordinator.runSequence(battleStore.getContext());
+      postBattleCoordinator.runSequence(battleStore.getContext());
     });
 
     // 1. First: MoveLearningModal MUST appear (Priority 100)
@@ -180,7 +180,7 @@ test.describe('Post-Battle Sequential Modal Coordinator E2E Simulation', () => {
 
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const battleStore = useBattleStore();
-      void postBattleCoordinator.runSequence(battleStore.getContext());
+      postBattleCoordinator.runSequence(battleStore.getContext());
     });
 
     // 1. Move learning opens
@@ -251,7 +251,7 @@ test.describe('Post-Battle Sequential Modal Coordinator E2E Simulation', () => {
 
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const battleStore = useBattleStore();
-      void postBattleCoordinator.runSequence(battleStore.getContext());
+      postBattleCoordinator.runSequence(battleStore.getContext());
     });
 
     const moveModal = page.locator('#move-learning-modal');
@@ -324,7 +324,7 @@ test.describe('Post-Battle Sequential Modal Coordinator E2E Simulation', () => {
 
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const battleStore = useBattleStore();
-      void postBattleCoordinator.runSequence(battleStore.getContext());
+      postBattleCoordinator.runSequence(battleStore.getContext());
     });
 
     // 1. Priority 100: Move Learning Modal

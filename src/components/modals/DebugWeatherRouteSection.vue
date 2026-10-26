@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import type { WeatherTableRouteId } from '@/data/world/weather-tables';
+
 import DebugWeatherSeasonCard from './debug-weather/DebugWeatherSeasonCard.vue';
 import type { PrecomputedRouteData } from './debugWeatherTypes.ts';
-import type { WeatherTableRouteId } from '@/data/world/weather-tables';
 
 defineProps<{
   route: PrecomputedRouteData;

@@ -1,18 +1,21 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import MapCard from './MapCard.vue';
-import { useEventStore } from '@/stores/events';
-import { getGuardianData } from '@/logic/war/guardianEngine';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { getRouteWeather } from '@/logic/weather/weatherUtils';
-import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
-import { requireWeatherSeasonId } from '@/data/world/weather-tables';
-import { useMapStore } from '@/stores/map';
-import { type MapRouteId } from '@/data/world/map-assets';
-import { type DayPhase } from '@/logic/utils/timeUtils';
+
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { MapLocation } from '@/types/pokemon/encounters';
+import { type MapRouteId } from '@/data/world/map-assets';
+import { requireWeatherSeasonId } from '@/data/world/weather-tables';
 import { getMapSpawnPoolData, isMapVisibleInWorld } from '@/logic/encounters/encounterHelpers';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { type DayPhase } from '@/logic/utils/timeUtils';
+import { getGuardianData } from '@/logic/war/guardianEngine';
+import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
+import { getRouteWeather } from '@/logic/weather/weatherUtils';
+import { useEventStore } from '@/stores/events';
+import { useMapStore } from '@/stores/map';
+import type { MapLocation } from '@/types/pokemon/encounters';
+import type { DominanceInfo } from '@/types/system/stores';
+
+import MapCard from './MapCard.vue';
 
 const ROCKET_EXTORT_DURATION_MS = 24 * 3600 * 1000;
 const TRAINER_OFFICIAL_DURATION_MS = 30 * 60 * 1000;
@@ -26,7 +29,7 @@ interface Props {
   classData?: Record<string, unknown>;
   safariTicketSecs?: number;
   ceruleanTicketSecs?: number;
-  dominanceData?: Partial<Record<MapRouteId, import('@/types/system/stores').DominanceInfo>>;
+  dominanceData?: Partial<Record<MapRouteId, DominanceInfo>>;
   dailyGuardianCaptures?: MapRouteId[];
 }
 
@@ -83,13 +86,13 @@ const getMapData = (loc: MapLocation): SpawnPoolData => {
   return { generic, specific, rates: ratesMap, weather: activeWeather };
 };
 
-const isMapLocked = (loc: MapLocation) => {
+const isMapLocked = (loc: MapLocation): boolean => {
   if (loc.id === 'safari_zone') return props.safariTicketSecs <= 0;
   if (loc.id === 'cerulean_cave' && (props.ceruleanTicketSecs || 0) > 0) return false;
   return (props.badgeCount || 0) < (loc.badges || 0);
 };
 
-const getDominanceForMap = (mapId: MapRouteId) => {
+const getDominanceForMap = (mapId: MapRouteId): DominanceInfo => {
   const data = props.dominanceData?.[mapId];
   const captured = (props.dailyGuardianCaptures || []).includes(mapId);
 
@@ -105,7 +108,7 @@ const getDominanceForMap = (mapId: MapRouteId) => {
   }
 
   return {
-    winner: data?.winner || null,
+    winner: data?.winner ?? null,
     guardian
   };
 };

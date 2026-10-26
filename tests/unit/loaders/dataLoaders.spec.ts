@@ -8,16 +8,17 @@
  * - mapDataLoader (/)
  */
 
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useSocialDataLoader } from '@/loaders/socialDataLoader';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
 import { useBagDataLoader } from '@/loaders/bagDataLoader';
-import { usePokedexDataLoader } from '@/loaders/pokedexDataLoader';
 import { useMapDataLoader } from '@/loaders/mapDataLoader';
-import { useSocialStore } from '@/stores/social/social';
-import { useInventoryStore } from '@/stores/inventory/inventory';
+import { usePokedexDataLoader } from '@/loaders/pokedexDataLoader';
+import { useSocialDataLoader } from '@/loaders/socialDataLoader';
 import { useGameStore } from '@/stores/game';
+import { useInventoryStore } from '@/stores/inventory/inventory';
 import { useMapStore } from '@/stores/map';
+import { useSocialStore } from '@/stores/social/social';
 
 describe('declarative route data loaders suite', () => {
   beforeEach(() => {

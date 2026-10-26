@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
 import type { CSSProperties } from 'vue';
 
 const props = withDefaults(
@@ -6,12 +7,12 @@ const props = withDefaults(
     hideHeader?: boolean;
     title?: string;
     headerIconEmoji?: string;
-    headerStyles?: CSSProperties | Record<string, string | number>; // open-record: Dynamic CSS inline style properties
-    titleStyles?: CSSProperties | Record<string, string | number>; // open-record: Dynamic CSS inline style properties
+    headerStyles?: CSSProperties | Record<DisplayText, string | number>; // open-record: Dynamic CSS inline style properties
+    titleStyles?: CSSProperties | Record<DisplayText, string | number>; // open-record: Dynamic CSS inline style properties
     showCloseButton?: boolean;
     closeBtnId?: string; // infra-id-ok: DOM element identifier for testing locators
     floatingCloseBtnId?: string; // infra-id-ok: DOM element identifier for floating close button
-    closeBtnClass?: Record<string, boolean>; // open-record: Dynamic CSS class boolean flags
+    closeBtnClass?: Record<DisplayText, boolean>; // open-record: Dynamic CSS class boolean flags
     preventClose?: boolean;
   }>(),
   {
@@ -32,7 +33,7 @@ const emit = defineEmits<{
   (e: 'close'): void;
 }>();
 
-const handleClose = () => {
+const handleClose = (): void => {
   if (props.preventClose) return;
   emit('close');
 };

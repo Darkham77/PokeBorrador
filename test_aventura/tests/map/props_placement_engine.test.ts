@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import {
   MAP_PROPS_REGISTRY,
   STREET_LAMP,
@@ -6,6 +7,12 @@ import {
   MAILBOX,
   FLOWERS_RED
 } from '../../config/mapProps.ts';
+import type {
+  MapCell,
+  MapSpawn,
+  MapWarp,
+  GeneratedMap
+} from '../../logic/map/proceduralMapGenerator.ts';
 import {
   placeScenicProps,
   canPlacePropAt,
@@ -14,12 +21,6 @@ import {
   type PropsPlacementOptions
 } from '../../logic/map/propsPlacementEngine.ts';
 import type { TileCollision } from '../../logic/map/tilesRegistry.ts';
-import type {
-  MapCell,
-  MapSpawn,
-  MapWarp,
-  GeneratedMap
-} from '../../logic/map/proceduralMapGenerator.ts';
 import type { UrbanLot } from '../../logic/map/urbanZoningEngine.ts';
 
 function createMockMapContext(width = 30, height = 30) {

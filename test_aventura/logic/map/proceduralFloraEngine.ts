@@ -1,9 +1,5 @@
 // Procedural Flora, Jumpable Ledges & Scenic Props Engine for Overworld Maps
 
-import type { TileCollision } from './tilesRegistry.ts';
-import type { MapCell, MapWarp, MapSpawn, MapType } from '../../types/map/proceduralMapTypes.ts';
-import type { ThemeBiomePalette } from './proceduralBiomePalettes.ts';
-import { placeScenicProps } from './propsPlacementEngine.ts';
 import {
   ROUTE_LEDGE_ALT_CHANCE,
   ROUTE_LEDGE_WEST_RATIO,
@@ -14,6 +10,10 @@ import {
   SCATTER_ROCK_CHANCE,
   DEFAULT_ROUTE_PROPS_DENSITY
 } from '../../config/proceduralMapConfig.ts';
+import type { MapCell, MapWarp, MapSpawn, MapType } from '../../types/map/proceduralMapTypes.ts';
+import type { ThemeBiomePalette } from './proceduralBiomePalettes.ts';
+import { placeScenicProps } from './propsPlacementEngine.ts';
+import type { TileCollision } from './tilesRegistry.ts';
 
 export interface FloraAndPropsOptions {
   readonly width: number;
@@ -35,6 +35,40 @@ export interface FloraAndPropsOptions {
   readonly propsDensity?: number;
   readonly includeFences?: boolean;
   readonly makeCell: (tileId: string, collision: TileCollision) => MapCell;
+}
+
+function stampTallGrassPatch(
+  px0: number,
+  py0: number,
+  patchW: number,
+  patchH: number,
+  width: number,
+  height: number,
+  prng: () => number,
+  isPathCell: readonly (readonly boolean[])[],
+  elevationLayer: readonly (readonly (MapCell | null)[])[],
+  objectLayer: (MapCell | null)[][],
+  collisionGrid: readonly (readonly TileCollision[])[],
+  tallGrassTile: string,
+  makeCell: (tileId: string, collision: TileCollision) => MapCell
+): void {
+  for (let gy = 0; gy < patchH; gy++) {
+    for (let gx = 0; gx < patchW; gx++) {
+      if (prng() < TALL_GRASS_SKIP_CHANCE) continue;
+      const px = px0 + gx;
+      const py = py0 + gy;
+      if (
+        px < width &&
+        py < height &&
+        !isPathCell[py]![px] &&
+        elevationLayer[py]![px] === null &&
+        objectLayer[py]![px] === null &&
+        collisionGrid[py]![px] !== 'ledge'
+      ) {
+        objectLayer[py]![px] = makeCell(tallGrassTile, false);
+      }
+    }
+  }
 }
 
 export function stampFloraLedgesAndProps(options: FloraAndPropsOptions): void {
@@ -163,23 +197,21 @@ export function stampFloraLedgesAndProps(options: FloraAndPropsOptions): void {
         py0 = 4 + Math.floor(prng() * Math.max(1, height - patchH - PATCH_RANDOM_MARGIN_Y));
       }
 
-      for (let gy = 0; gy < patchH; gy++) {
-        for (let gx = 0; gx < patchW; gx++) {
-          if (prng() < TALL_GRASS_SKIP_CHANCE) continue;
-          const px = px0 + gx;
-          const py = py0 + gy;
-          if (
-            px < width &&
-            py < height &&
-            !isPathCell[py]![px] &&
-            elevationLayer[py]![px] === null &&
-            objectLayer[py]![px] === null &&
-            collisionGrid[py]![px] !== 'ledge'
-          ) {
-            objectLayer[py]![px] = makeCell(palette.props.tallGrass, false);
-          }
-        }
-      }
+      stampTallGrassPatch(
+        px0,
+        py0,
+        patchW,
+        patchH,
+        width,
+        height,
+        prng,
+        isPathCell,
+        elevationLayer,
+        objectLayer,
+        collisionGrid,
+        palette.props.tallGrass,
+        makeCell
+      );
     }
   }
 

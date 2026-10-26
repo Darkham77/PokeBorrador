@@ -18,5 +18,5 @@ export function toBrand<T, B extends string>(value: T): Brand<T, B> {
  * Strips the nominal brand tag, returning the underlying primitive value.
  */
 export function unbrand<T, B extends string>(branded: Brand<T, B>): T {
-  return branded as T;
+  return branded;
 }

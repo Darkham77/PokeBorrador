@@ -1,7 +1,8 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
 import DebugPokemonCreator from '@/components/admin/debug/DebugPokemonCreator.vue';
 import {
   validatePokemonLegality,

@@ -1,5 +1,6 @@
-import { vi, beforeEach, afterEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { vi, beforeEach, afterEach } from 'vite-plus/test';
+
 import { setupTestTeamGenerators, setupTemporalMock } from './helpers/setupTestEnvironment.ts';
 
 setupTestTeamGenerators();

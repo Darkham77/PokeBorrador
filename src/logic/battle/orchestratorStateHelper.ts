@@ -1,13 +1,14 @@
+import { getMapEnvironment } from '@/logic/environment/map/mapEnvironmentRegistry.ts';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { resolveCurrentWeather } from '../weather/weatherRegistry.ts';
-import { getMapEnvironment } from '@/logic/environment/map/mapEnvironmentRegistry.ts';
 
 export async function resetActiveBattleState(
   ctx: BattleContext,
   initialPlayer: Pokemon,
   isGym: boolean
-) {
+): Promise<void> {
   if (ctx.activeBattle.value) {
     const active = ctx.activeBattle.value;
     const locId = active.locationId;

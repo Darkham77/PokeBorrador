@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { ItemId } from '@/data/inventory/items';
-import PokemonDisplayCard from '@/components/pokemon/PokemonDisplayCard.vue';
+
 import InventoryItemCard from '@/components/modals/inventory/InventoryItemCard.vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { Inventory } from '@/types/inventory/items';
+import PokemonDisplayCard from '@/components/pokemon/PokemonDisplayCard.vue';
 import {
   isTradeGiftMode,
   resolveTradePokemonButtonText,
@@ -13,6 +11,9 @@ import {
   mapInventoryItems,
   getItemQuantity
 } from '@/components/social/tradeSidePanelHelper';
+import type { ItemId } from '@/data/inventory/items';
+import type { Inventory } from '@/types/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const DEFAULT_MAX_MONEY = 999999;
 
@@ -54,16 +55,20 @@ const maxMoneyText = computed(() => formatTradeMaxMoney(props.maxMoney));
 
 const mappedItems = computed(() => mapInventoryItems(props.inventory));
 
-const handleMoneyInput = (e: Event) => {
-  const val = parseInt((e.target as HTMLInputElement).value) || 0;
+const handleMoneyInput = (e: Event): void => {
+  const val = parseInt((e.target as HTMLInputElement).value, 10) || 0;
   emit('update:money', val);
 };
 
-const getItemQty = (itemId: ItemId) => getItemQuantity(props.selectedItems, itemId);
-const isItemDecDisabled = (itemId: ItemId) => getItemQty(itemId) <= 1;
-const isItemIncDisabled = (itemId: ItemId, maxQty: number) => getItemQty(itemId) >= maxQty;
-const handleDecrement = (itemId: ItemId) => emit('update-item-qty', itemId, getItemQty(itemId) - 1);
-const handleIncrement = (itemId: ItemId) => emit('update-item-qty', itemId, getItemQty(itemId) + 1);
+const getItemQty = (itemId: ItemId): number => getItemQuantity(props.selectedItems, itemId);
+const isItemDecDisabled = (itemId: ItemId): boolean => getItemQty(itemId) <= 1;
+const isItemIncDisabled = (itemId: ItemId, maxQty: number): boolean => getItemQty(itemId) >= maxQty;
+const handleDecrement = (itemId: ItemId): void => {
+  emit('update-item-qty', itemId, getItemQty(itemId) - 1);
+};
+const handleIncrement = (itemId: ItemId): void => {
+  emit('update-item-qty', itemId, getItemQty(itemId) + 1);
+};
 </script>
 
 <template>

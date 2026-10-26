@@ -1,15 +1,17 @@
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+import { getActivePinia } from 'pinia';
+
+import { getTrainerAIPreset } from '@/data/player/trainerTypes.ts';
 import type { BattleState } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
-import type { AIConfig, HeuristicMoveInfo, HeuristicBattleSnapshot } from './types.ts';
-import { AI_CONFIG_PRESETS } from './types.ts';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
+import { heuristicDecision } from './heuristicEngine.ts';
 import type { InferenceEngine } from './inferenceEngine.ts';
 import { buildSnapshot } from './snapshotBuilder.ts';
 import { evaluateStrategicState } from './strategyEvaluator.ts';
-import { heuristicDecision } from './heuristicEngine.ts';
-import { getTrainerAIPreset } from '@/data/player/trainerTypes.ts';
-import { getActivePinia } from 'pinia';
+import type { AIConfig, HeuristicMoveInfo, HeuristicBattleSnapshot } from './types.ts';
+import { AI_CONFIG_PRESETS } from './types.ts';
 
 interface InternalPiniaStore {
   state?: {

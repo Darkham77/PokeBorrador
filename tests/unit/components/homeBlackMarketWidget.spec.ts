@@ -1,13 +1,14 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
-import { useGameStore } from '@/stores/game';
-import { useModalStore } from '@/stores/modals';
-import { getGMT3Date } from '@/logic/utils/timeUtils';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
+import PVTooltip from '@/components/common/PVTooltip.vue';
 import HomeBlackMarketWidget from '@/components/home/HomeBlackMarketWidget.vue';
 import BlackMarketModal from '@/components/modals/BlackMarketModal.vue';
-import PVTooltip from '@/components/common/PVTooltip.vue';
+import { getGMT3Date } from '@/logic/utils/timeUtils';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
 
 describe('HomeBlackMarketWidget.vue and BlackMarketModal.vue', () => {
   beforeEach(() => {

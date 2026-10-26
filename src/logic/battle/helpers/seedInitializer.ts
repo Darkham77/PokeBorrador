@@ -37,7 +37,7 @@ export function parseShowdownSeedForBattle(seed: unknown): `${number},${string}`
 const DEFAULT_RNG_INITIAL_SEED = 12345;
 const DETERMINISTIC_RNG_AMPLIFIER = 10000 as const;
 let rngSeed = DEFAULT_RNG_INITIAL_SEED; // singleton-ok: Singleton instance state container
-export function resetDeterministicMathRandom(initialSeed = DEFAULT_RNG_INITIAL_SEED) {
+export function resetDeterministicMathRandom(initialSeed = DEFAULT_RNG_INITIAL_SEED): void {
   rngSeed = initialSeed;
   Math.random = () => {
     const x = Math.sin(rngSeed++) * DETERMINISTIC_RNG_AMPLIFIER;

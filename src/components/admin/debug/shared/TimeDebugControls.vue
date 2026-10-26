@@ -7,10 +7,9 @@
  */
 
 import { ref } from 'vue';
-import { useGameStore } from '@/stores/game';
-import { useMapStore } from '@/stores/map';
-import { useModalStore } from '@/stores/modals';
-import { useBattleStore } from '@/stores/battle/battle';
+
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { getGMT3Date } from '@/logic/utils/timeUtils.ts';
 import {
   getMechanicalWeather,
   requireWeatherId,
@@ -18,9 +17,12 @@ import {
   WEATHER_VISUAL_METADATA,
   type WeatherId
 } from '@/logic/weather/weatherRegistry';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
+import { useMapStore } from '@/stores/map';
+import { useModalStore } from '@/stores/modals';
+
 import { DEBUG_WEATHER_EFFECTS } from '../debugConstants.ts';
-import PVTooltip from '@/components/common/PVTooltip.vue';
-import { getGMT3Date } from '@/logic/utils/timeUtils.ts';
 
 const game = useGameStore();
 const mapStore = useMapStore();
@@ -38,7 +40,7 @@ interface GameDB {
   getTimeOffset?: () => number;
 }
 
-const getDB = () => game.db as GameDB; // domain-ok: Open dynamic text or non-domain string payload
+const getDB = (): GameDB => game.db as GameDB; // domain-ok: Open dynamic text or non-domain string payload
 const timeOffsetLabel = ref(`${getDB()?.getTimeOffset?.() || 0}ms`);
 
 interface ViteDebugBridge extends Record<string, unknown> {
@@ -51,47 +53,47 @@ interface ViteDebugBridge extends Record<string, unknown> {
   setCycle: (c: string | null) => void;
 }
 
-const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge;
+const getDebugBridge = (): ViteDebugBridge => globalThis.__VITE_DEBUG__ as ViteDebugBridge;
 
-function updateMockTime() {
+function updateMockTime(): void {
   getDebugBridge().setMockTime(debugDate.value);
   timeOffsetLabel.value = `${getDB()?.getTimeOffset?.() || 0}ms`;
-  window.dispatchEvent(new CustomEvent('time-sync-update'));
+  globalThis.dispatchEvent(new CustomEvent('time-sync-update'));
 }
 
-function resetTime() {
+function resetTime(): void {
   getDebugBridge().resetTime();
   timeOffsetLabel.value = '0ms';
   debugDate.value = getGMT3Date()
     .toPlainDateTime()
     .toString()
     .slice(0, TEMPORAL_DATETIME_SLICE_LENGTH);
-  window.dispatchEvent(new CustomEvent('time-sync-update'));
+  globalThis.dispatchEvent(new CustomEvent('time-sync-update'));
   mapStore.setGlobalCycle(null);
   mapStore.setGlobalSeason(null);
 }
 
-function addHours(h: number) {
+function addHours(h: number): void {
   getDebugBridge().addHours(h);
   timeOffsetLabel.value = `${getDB()?.getTimeOffset?.() || 0}ms`;
   debugDate.value = getGMT3Date()
     .toPlainDateTime()
     .toString()
     .slice(0, TEMPORAL_DATETIME_SLICE_LENGTH);
-  window.dispatchEvent(new CustomEvent('time-sync-update'));
+  globalThis.dispatchEvent(new CustomEvent('time-sync-update'));
 }
 
-function addWeeks(w: number) {
+function addWeeks(w: number): void {
   getDebugBridge().addWeeks(w);
   timeOffsetLabel.value = `${getDB()?.getTimeOffset?.() || 0}ms`;
   debugDate.value = getGMT3Date()
     .toPlainDateTime()
     .toString()
     .slice(0, TEMPORAL_DATETIME_SLICE_LENGTH);
-  window.dispatchEvent(new CustomEvent('time-sync-update'));
+  globalThis.dispatchEvent(new CustomEvent('time-sync-update'));
 }
 
-function toggleWeather(w: WeatherId | null) {
+function toggleWeather(w: WeatherId | null): void {
   const next = mapStore.globalWeather === w ? null : w;
   getDebugBridge().setWeather(next);
 
@@ -108,12 +110,12 @@ function toggleWeather(w: WeatherId | null) {
   }
 }
 
-function toggleCycle(c: string | null) {
+function toggleCycle(c: string | null): void {
   const next = mapStore.forcedCycle === c ? null : c;
   getDebugBridge().setCycle(next);
 }
 
-function toggleSeason(s: string | null) {
+function toggleSeason(s: string | null): void {
   const next = mapStore.forcedSeason?.id === s ? null : s;
   mapStore.setGlobalSeason(next);
 }

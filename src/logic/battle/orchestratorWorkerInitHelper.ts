@@ -1,14 +1,15 @@
-import { logger } from '../utils/logger.ts';
-import { generateRandomSeed } from './battleSeedManager.ts';
+import type { ShowdownPlayerRequest } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { ShowdownPlayerRequest } from '@/types/battle/battle';
+
+import { logger } from '../utils/logger.ts';
+import { generateRandomSeed } from './battleSeedManager.ts';
+import { prepareSeatPayload } from './orchestratorPayloadHelper.ts';
 import {
   getShowdownWorker,
   preloadShowdownWorker,
   getSimulatorState
 } from './showdownWorkerClient.ts';
-import { prepareSeatPayload } from './orchestratorPayloadHelper.ts';
 
 interface WorkerInitResponsePayload {
   debugLogs?: string[];
@@ -19,8 +20,8 @@ interface WorkerInitResponsePayload {
 }
 
 function resolveWindowDebugSeed(): number[] | null {
-  if (typeof window !== 'undefined') {
-    const debugSeed = window.__VITE_DEBUG__?.battleSeed ?? null;
+  if (typeof globalThis.window !== 'undefined') {
+    const debugSeed = globalThis.__VITE_DEBUG__?.battleSeed ?? null;
     console.debug(
       `[E2E-SEED-ORCHESTRATOR-DEBUG] Read seed directly from window: ${JSON.stringify(debugSeed)}`
     );
@@ -34,7 +35,10 @@ function resolveBattleTeams(
   initialPlayer: Pokemon,
   initialEnemy: Pokemon,
   debugSeed: number[] | null
-) {
+): {
+  p1Data: ReturnType<typeof prepareSeatPayload>;
+  p2Data: ReturnType<typeof prepareSeatPayload>;
+} {
   const battleState = ctx.activeBattle.value;
   const effectiveTeam =
     battleState?.isPvP && battleState?.playerTeam && battleState.playerTeam.length > 0
@@ -66,7 +70,23 @@ function buildInitPayload(
   p2Data: ReturnType<typeof prepareSeatPayload>,
   initialWeather: string,
   seedArr: number[]
-) {
+): {
+  type: string;
+  payload: {
+    p1: { name: string; team: ReturnType<typeof prepareSeatPayload>['team'] };
+    p2: { name: string; team: ReturnType<typeof prepareSeatPayload>['team'] };
+    p1Hps: ReturnType<typeof prepareSeatPayload>['hps'];
+    p2Hps: ReturnType<typeof prepareSeatPayload>['hps'];
+    p1Statuses: ReturnType<typeof prepareSeatPayload>['statuses'];
+    p2Statuses: ReturnType<typeof prepareSeatPayload>['statuses'];
+    p1MovesPP: ReturnType<typeof prepareSeatPayload>['movesPP'];
+    p2MovesPP: ReturnType<typeof prepareSeatPayload>['movesPP'];
+    weather: string;
+    seed: number[];
+    isDeterministicSimulation: boolean;
+    history: unknown[];
+  };
+} {
   return {
     type: 'INIT_BATTLE',
     payload: {
@@ -81,13 +101,11 @@ function buildInitPayload(
       weather: initialWeather,
       seed: seedArr,
       isDeterministicSimulation: Boolean(
-        typeof window !== 'undefined' && window.__VITE_DEBUG__?.isDeterministicSimulation
+        typeof globalThis.window !== 'undefined' &&
+        globalThis.__VITE_DEBUG__?.isDeterministicSimulation
       ),
       history:
-        (typeof window !== 'undefined' &&
-          window.__VITE_DEBUG__ &&
-          ((window.__VITE_DEBUG__ as Record<string, unknown>).history as unknown[])) ||
-        [] // open-record: Generic key-value data dictionary container // no-domain: Non-domain utility collection or data structure
+        (typeof globalThis.window !== 'undefined' && globalThis.__VITE_DEBUG__?.history) || []
     }
   };
 }
@@ -108,8 +126,8 @@ function detachWorkerInitListeners(
 function handleWorkerLogMessage(responsePayload?: { message?: string }): void {
   const stage = responsePayload?.message ?? 'missing-stage';
   console.debug(`[WORKER] ${stage}`);
-  if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-    window.__VITE_DEBUG__.lastWorkerInitStage = stage;
+  if (typeof globalThis.window !== 'undefined' && globalThis.__VITE_DEBUG__) {
+    globalThis.__VITE_DEBUG__.lastWorkerInitStage = stage;
   }
 }
 
@@ -159,10 +177,10 @@ async function handleInitBattleSuccess(
     targetCtx.activeBattle.value.playerRequest = responsePayload.p1Request;
     targetCtx.activeBattle.value.enemyRequest = responsePayload.p2Request;
   }
-  if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-    window.__VITE_DEBUG__.p1ChoiceIdx = window.__VITE_DEBUG__.p1ChoiceIdx ?? 0;
-    window.__VITE_DEBUG__.p2ChoiceIdx = window.__VITE_DEBUG__.p2ChoiceIdx ?? 0;
-    window.dispatchEvent(new CustomEvent('worker-init-complete'));
+  if (typeof globalThis.window !== 'undefined' && globalThis.__VITE_DEBUG__) {
+    globalThis.__VITE_DEBUG__.p1ChoiceIdx = globalThis.__VITE_DEBUG__.p1ChoiceIdx ?? 0;
+    globalThis.__VITE_DEBUG__.p2ChoiceIdx = globalThis.__VITE_DEBUG__.p2ChoiceIdx ?? 0;
+    globalThis.dispatchEvent(new CustomEvent('worker-init-complete'));
   }
   cleanup();
   onResolve();
@@ -175,8 +193,8 @@ async function handleInitBattleError(
 ): Promise<void> {
   const errorText = responsePayload?.message || 'Error desconocido';
   logger.error('ShowdownWorker', `Error del simulador al inicializar batalla: ${errorText}`);
-  if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-    window.__VITE_DEBUG__.lastWorkerInitError = errorText;
+  if (typeof globalThis.window !== 'undefined' && globalThis.__VITE_DEBUG__) {
+    globalThis.__VITE_DEBUG__.lastWorkerInitError = errorText;
   }
   cleanup();
   const { useErrorStore } = await import('@/stores/errorStore');
@@ -193,11 +211,11 @@ function attachWorkerInitListeners(
   resolve: () => void,
   reject: (reason?: unknown) => void
 ): void {
-  const handleWorkerError = (event: ErrorEvent) => {
+  const handleWorkerError = (event: ErrorEvent): void => {
     const errorText = event.message || 'Showdown worker failed before initializing the battle';
     logger.error('ShowdownWorker', `Error del worker al inicializar batalla: ${errorText}`);
-    if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-      window.__VITE_DEBUG__.lastWorkerInitError = errorText;
+    if (typeof globalThis.window !== 'undefined' && globalThis.__VITE_DEBUG__) {
+      globalThis.__VITE_DEBUG__.lastWorkerInitError = errorText;
     }
     detachWorkerInitListeners(worker, initHandler, handleWorkerError);
     reject(new Error(errorText));
@@ -206,7 +224,7 @@ function attachWorkerInitListeners(
     worker.addEventListener('error', handleWorkerError);
   }
 
-  const initHandler = async (e: MessageEvent) => {
+  const initHandler = async (e: MessageEvent): Promise<void> => {
     const data = e.data as {
       type: string;
       payload?: WorkerInitResponsePayload;
@@ -216,7 +234,7 @@ function attachWorkerInitListeners(
       handleWorkerLogMessage(responsePayload);
       return;
     }
-    const cleanup = () => detachWorkerInitListeners(worker, initHandler, handleWorkerError);
+    const cleanup = (): void => detachWorkerInitListeners(worker, initHandler, handleWorkerError);
     if (responseType === 'INIT_BATTLE_SUCCESS' || responseType === 'INIT_SUCCESS') {
       await handleInitBattleSuccess(ctx, responsePayload, cleanup, resolve);
     } else if (responseType === 'ERROR') {
@@ -235,16 +253,18 @@ export async function initWorkerForBattle(
   ctx: BattleContext,
   initialPlayer: Pokemon,
   initialEnemy: Pokemon
-) {
-  if (typeof window === 'undefined' || typeof Worker === 'undefined') return;
+): Promise<void> {
+  if (typeof globalThis.window === 'undefined' || typeof Worker === 'undefined') return;
 
   preloadShowdownWorker();
   const workerInstance = getShowdownWorker()!;
-  if (typeof window !== 'undefined') {
-    window.__showdownWorker__ = workerInstance;
-  }
-  if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-    window.__VITE_DEBUG__.getSimulatorState = getSimulatorState;
+  const winObj = typeof globalThis.window !== 'undefined' ? globalThis.window : null;
+  if (winObj) {
+    winObj.__showdownWorker__ = workerInstance;
+    const viteDebug = winObj.__VITE_DEBUG__;
+    if (viteDebug) {
+      viteDebug.getSimulatorState = getSimulatorState;
+    }
   }
 
   const debugSeed = resolveWindowDebugSeed();

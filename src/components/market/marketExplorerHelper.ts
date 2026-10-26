@@ -1,5 +1,7 @@
-import type { ItemTier } from '@/types/inventory/items';
+import type { DisplayText } from '@francogp/auditor';
+
 import { getItemById } from '@/data/inventory/items';
+import type { ItemTier } from '@/types/inventory/items';
 
 const TIER_LABELS: Record<ItemTier, string> = {
   common: 'COMÚN',
@@ -24,11 +26,11 @@ export function resolveItemDisplayName(name?: string): string {
 }
 
 export function resolveTierLabel(tier?: string): string {
-  return (TIER_LABELS as Record<string, string>)[tier || 'common'] || 'COMÚN'; // open-record: Item tier labels dictionary
+  return (TIER_LABELS as Record<DisplayText, string>)[tier || 'common'] || 'COMÚN'; // open-record: Item tier labels dictionary
 }
 
 export function resolveTierColor(tier?: string): string {
-  return (TIER_COLORS as Record<string, string>)[tier || 'common'] || '#94a3b8'; // open-record: Item tier colors dictionary
+  return (TIER_COLORS as Record<DisplayText, string>)[tier || 'common'] || '#94a3b8'; // open-record: Item tier colors dictionary
 }
 
 export interface BuyButtonState {

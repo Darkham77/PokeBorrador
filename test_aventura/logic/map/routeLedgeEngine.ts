@@ -16,9 +16,10 @@
  *      - Strictly excludes water shores, mountain feet, settlement footprints, and gatehouse avenues.
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
-import type { POINode } from '../../types/map/poiTypes.ts';
 import { DECORATION_DEFAULT_SEED } from '../../config/studioConstants.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
+import { createLcgRng } from './noise/lcgRng.ts';
 
 export type LedgeFacing = 'south' | 'east' | 'west';
 
@@ -59,11 +60,7 @@ export function generateRouteLedges(options: GenerateLedgesOptions): readonly Le
   const W = continent.width;
   const H = continent.height;
 
-  let rngSeed = (options.seed ?? DECORATION_DEFAULT_SEED) | 0;
-  const nextRng = (): number => {
-    rngSeed = (rngSeed * 1664525 + 1013904223) | 0;
-    return (rngSeed >>> 0) / 4294967296;
-  };
+  const nextRng = createLcgRng(options.seed ?? DECORATION_DEFAULT_SEED);
 
   // Build exclusion mask around POIs, water, cliffs, and gates
   const excluded = Array.from({ length: H }, () => Array(W).fill(false));

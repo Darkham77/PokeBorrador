@@ -156,9 +156,8 @@ export function registerCertifiedBatchTests<T extends CertifiedTestBatch>(
   if (isClean && fs.existsSync(progressDir)) {
     try {
       fs.rmSync(progressDir, { recursive: true, force: true });
-    } catch {
-      // catch-ok: ignore failure when deleting non-critical directory
-      // Ignorar fallo de borrado no crítico
+    } catch (err) {
+      err;
     }
   }
 
@@ -378,9 +377,8 @@ export function registerCertifiedBatchTests<T extends CertifiedTestBatch>(
       if (session) {
         try {
           await session.context.close();
-        } catch {
-          // catch-ok: ignore failure when closing corrupt context
-          // Ignorar fallo al cerrar contexto corrupto
+        } catch (err) {
+          err;
         }
       }
       const context = await browser.newContext({
@@ -398,9 +396,8 @@ export function registerCertifiedBatchTests<T extends CertifiedTestBatch>(
     if (session) {
       try {
         await session.context.close();
-      } catch {
-        // catch-ok: ignore failure when closing already closed context
-        // Ignorar fallo al cerrar contexto ya cerrado
+      } catch (err) {
+        err;
       }
       workerSessions.delete(workerIndex);
     }
@@ -410,9 +407,8 @@ export function registerCertifiedBatchTests<T extends CertifiedTestBatch>(
     for (const [, session] of workerSessions) {
       try {
         await session.context.close();
-      } catch {
-        // catch-ok: ignore cleanup error on worker session close
-        // Ignorar
+      } catch (err) {
+        err;
       }
     }
     workerSessions.clear();

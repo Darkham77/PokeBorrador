@@ -1,11 +1,12 @@
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { toRef } from 'vue';
-import { useBattleStore } from '@/stores/battle/battle';
-import { useMapStore } from '@/stores/map';
-import { useGameStore } from '@/stores/game';
+
 import { useBattleAtmosphere } from '@/composables/battle/useBattleAtmosphere';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
+import { useMapStore } from '@/stores/map';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Integration: Gym vs Normal Route Atmosphere Lifecycle', () => {

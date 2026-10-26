@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 import { Dex, toID, type PokemonSet, type ID, type GenderName } from '@pkmn/sim';
 import crypto from 'node:crypto';
 import { EXCLUDED_FROM_SINGLES_REPORT } from '../scenarios/fuzzer_excluded_abilities.ts';
@@ -42,7 +43,7 @@ export interface FuzzerPokemonSet extends Omit<
   nature: NatureId;
   moves: PokemonMoveId[];
   uid?: string;
-  stats?: CalculatedStats | Record<string, number>;
+  stats?: CalculatedStats | Record<DisplayText, number>;
 }
 
 export const CERTIFIED_BATTLE_WINNERS = ['p1', 'p2', 'tie'] as const;
@@ -177,7 +178,7 @@ interface TriggerConfig {
   statDrop?: string;
 }
 
-export const ABILITY_TRIGGER_MAP: Readonly<Record<string, TriggerConfig>> = {
+export const ABILITY_TRIGGER_MAP: Readonly<Record<DisplayText, TriggerConfig>> = {
   // Inmunidades de tipo — el rival ataca con el tipo que la habilidad absorbe/bloquea
   voltabsorb: { enemyMove: 'thunderbolt' },
   lightningrod: { enemyMove: 'thunderbolt' },
@@ -329,6 +330,15 @@ export function getTriggerSlot(abilityId: string): number | null {
 
 import { ACTIVE_GENERATION } from '../../../../src/data/system/constants.ts';
 
+const EXCLUDED_NONSTANDARD_STATUS_VALUES = [
+  'CAP',
+  'Custom',
+  'Future'
+] as const;
+const EXCLUDED_NONSTANDARD_STATUSES: ReadonlySet<string> = new Set<string>(
+  EXCLUDED_NONSTANDARD_STATUS_VALUES
+);
+
 export function findLegalSpeciesAndGenderForAbility(
   abilityId: string,
   dexGen: ReturnType<typeof Dex.forGen>
@@ -337,9 +347,7 @@ export function findLegalSpeciesAndGenderForAbility(
   const match = dexGen.species.all().find((s) => {
     if (
       !s.exists ||
-      s.isNonstandard === 'CAP' ||
-      s.isNonstandard === 'Custom' ||
-      s.isNonstandard === 'Future' ||
+      (s.isNonstandard && EXCLUDED_NONSTANDARD_STATUSES.has(s.isNonstandard)) ||
       s.forme?.includes('Totem')
     )
       return false;

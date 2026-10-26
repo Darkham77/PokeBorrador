@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/events/eventEligibility.ts
  *
@@ -5,12 +6,13 @@
  * Validates species constraints, capture timeframes, and filter criteria.
  */
 
-import type { Pokemon, PokemonGender } from '@/types/pokemon/pokemon';
 import { logger } from '@/logic/utils/logger.ts';
 import { normalizeZonedDateTime } from '@/logic/utils/timeUtils.ts';
-import { safeParse, resolveWeeklyRotation, getEventCurrentWindow } from './eventSchedules.ts';
-import type { Event, EventConfig } from './eventEngine.ts';
+import type { Pokemon, PokemonGender } from '@/types/pokemon/pokemon';
+
 import type { SubCompetitionConfig } from './eventCompetitions.ts';
+import type { Event, EventConfig } from './eventEngine.ts';
+import { safeParse, resolveWeeklyRotation, getEventCurrentWindow } from './eventSchedules.ts';
 
 /**
  * Validates if a Pokémon is eligible to be entered/presented into an event based on its species and capture date.
@@ -171,13 +173,12 @@ function checkGenderFilter(
 function checkLevelFilter(
   minLevel?: number,
   maxLevel?: number,
-  pokeLevel?: number
+  pokeLevel: number = 1
 ): { eligible: boolean; reason?: string } {
-  const currentLevel = pokeLevel || 1;
-  if (minLevel !== undefined && currentLevel < minLevel) {
+  if (minLevel !== undefined && pokeLevel < minLevel) {
     return { eligible: false, reason: `Nivel insuficiente. Mínimo requerido: Nv. ${minLevel}` };
   }
-  if (maxLevel !== undefined && currentLevel > maxLevel) {
+  if (maxLevel !== undefined && pokeLevel > maxLevel) {
     return { eligible: false, reason: `Nivel excedido. Máximo permitido: Nv. ${maxLevel}` };
   }
   return { eligible: true };
@@ -259,7 +260,7 @@ export function getEligiblePokemonForSubCompetition(
 export function isPokemonEnrolledInOtherSubCompetition(
   userEntries: Record<
     // open-record: Composite event_id:categoryId key
-    string,
+    DisplayText,
     { event_id?: string; category_id?: string; pokemon_uid?: string } | undefined
   >,
   eventId: string,

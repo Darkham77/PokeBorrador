@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue';
-import FriendshipSealBadge from '@/components/pokemon/FriendshipSealBadge.vue';
 import PVTooltip from '@/components/common/PVTooltip.vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import FriendshipSealBadge from '@/components/pokemon/FriendshipSealBadge.vue';
+import type { CardStatusIndicator } from '@/components/pokemon/pokemonDisplayCardHelper.ts';
+import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue';
 import type { PokemonTagId } from '@/logic/constants/tags';
 import type { TierConfig } from '@/logic/pokemon/tierEngine.ts';
-import type { CardStatusIndicator } from '@/components/pokemon/pokemonDisplayCardHelper.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 interface Props {
   pokemon: Pokemon;

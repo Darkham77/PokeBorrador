@@ -196,6 +196,7 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
       ruleIds: FSM_IMPLEMENTATION_RULES,
       packageName: 'FSM',
       usesThirdPartyTool: false,
+      requiredPermissions: [],
       ruleDescriptions: {
         'fsm-mermaid-missing-in-js': 'Estado Mermaid no implementado',
         'fsm-unused-constant': 'Constante de estado sin uso',
@@ -227,6 +228,7 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
           'Fix reference to undefined state key in battleStateMachine',
         'fsm-invalid-suppression': 'Provide descriptive reason for fsm suppression comment'
       },
+      remediationPhase: 'behavior',
       requiredFiles: [IMPL_MANUAL_PATH, IMPL_FSM_PATH],
       coverage: {
         include: [
@@ -523,10 +525,4 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (
-  process.argv[1] &&
-  import.meta.filename &&
-  path.basename(process.argv[1]) === path.basename(import.meta.filename)
-) {
-  await BaseAuditor.runCli(new FsmImplementationAuditor());
-}
+await BaseAuditor.runCliIfMain(import.meta.url, new FsmImplementationAuditor());

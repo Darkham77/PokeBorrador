@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useGTSStore } from '@/stores/gts';
-import { useGameStore } from '@/stores/game';
-import { useAudioStore } from '@/stores/audio';
+import { ref, computed, onMounted } from 'vue';
+
 import { formatCurrency } from '@/logic/utils/formatters';
+import { useAudioStore } from '@/stores/audio';
+import { useGameStore } from '@/stores/game';
+import { useGTSStore } from '@/stores/gts';
 import { useUIStore } from '@/stores/ui';
 import type { ClaimItem } from '@/types/system/game';
-import MarketMyListingCard from './MarketMyListingCard.vue';
+
 import MarketHistoryRowItem from './MarketHistoryRowItem.vue';
 import { type MarketHistoryRow, buildDisplayHistory } from './marketMyItemsHelper.ts';
+import MarketMyListingCard from './MarketMyListingCard.vue';
 
 const gtsStore = useGTSStore();
 const gameStore = useGameStore();
@@ -51,7 +53,7 @@ const displayHistory = computed<MarketHistoryRow[]>(() => {
   );
 });
 
-async function handleClaimSale(claim: ClaimItem, saleName: string) {
+async function handleClaimSale(claim: ClaimItem, saleName: string): Promise<void> {
   if (isClaimingId.value) return;
   isClaimingId.value = claim.id;
   try {
@@ -76,7 +78,7 @@ async function handleClaimSale(claim: ClaimItem, saleName: string) {
   }
 }
 
-async function handleClaimAll() {
+async function handleClaimAll(): Promise<void> {
   if (isClaimingAll.value) return;
   isClaimingAll.value = true;
   try {
@@ -114,10 +116,10 @@ async function handleClaimAll() {
 }
 
 onMounted(() => {
-  void gtsStore.fetchUserData();
+  gtsStore.fetchUserData();
 });
 
-function handleCancel(listingId: string | number) {
+function handleCancel(listingId: string | number): void {
   console.debug('[GTS] UI: handleCancel disparado para ID:', listingId);
   uiStore.openConfirm({
     title: '¿CANCELAR PUBLICACIÓN?',

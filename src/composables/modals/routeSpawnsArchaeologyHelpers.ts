@@ -1,5 +1,7 @@
-import type { ArchaeologyWeights } from '@/logic/utils/archaeologyHelpers.ts';
+import type { DisplayText } from '@francogp/auditor';
+
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import type { ArchaeologyWeights } from '@/logic/utils/archaeologyHelpers.ts';
 
 export interface ArchaeologyRewardData {
   name: string;
@@ -21,14 +23,14 @@ const TOOL_BUDGET_GOOD = 500 as const;
 const TOOL_BUDGET_SUPER = 1000 as const;
 
 // open-record: Archaeology brush tool tier names mapping
-const BRUSH_NAMES: Readonly<Record<string, string>> = {
+const BRUSH_NAMES: Readonly<Record<DisplayText, string>> = {
   standard: 'Pincel de excavación',
   good: 'Pincel Bueno',
   super: 'Superpincel'
 };
 
 // open-record: Archaeology pickaxe tool tier names mapping
-const PICKAXE_NAMES: Readonly<Record<string, string>> = {
+const PICKAXE_NAMES: Readonly<Record<DisplayText, string>> = {
   standard: 'Pico de excavación',
   good: 'Pico Bueno',
   super: 'Superpico'

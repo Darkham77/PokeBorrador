@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { createPinia, setActivePinia } from 'pinia';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
 import { useNavigationState } from '@/composables/navigation/useNavigationState';
+import { useBreedingStore } from '@/stores/breeding';
 import { useEventStore } from '@/stores/events';
 import { useGameStore } from '@/stores/game';
-import { useBreedingStore } from '@/stores/breeding';
 import { usePvPStore } from '@/stores/pvp';
 
 describe('useNavigationState homeTooltipDescription', () => {

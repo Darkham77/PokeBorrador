@@ -1,3 +1,4 @@
+import { isMainModule } from '@francogp/auditor';
 /**
  * @file generate_migrations.js
  * @description Generador automático de manifiesto de migraciones SQL.
@@ -19,6 +20,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
+import { defineCommand, runMain } from 'citty';
 
 enableCompileCache();
 
@@ -27,7 +29,10 @@ const OUTPUT_FILE = path.resolve(process.cwd(), 'src/logic/db/migrations_data.ts
 const VERSION_OUTPUT_FILE = path.resolve(process.cwd(), 'src/logic/db/migrations_version.ts');
 
 export async function generateMigrations() {
-  const relOutputDir = path.relative(process.cwd(), OUTPUT_FILE).replace(/\\/g, '/');
+  const relOutputDir = path
+    .relative(process.cwd(), OUTPUT_FILE)
+    .split(path.sep)
+    .join(path.posix.sep);
 
   try {
     await fs.access(MIGRATIONS_DIR);
@@ -58,7 +63,7 @@ export async function generateMigrations() {
 
   const migrations = await Promise.all(
     files.map(async (filename) => {
-      const id = filename.replace(/\.sql$/, '');
+      const id = path.basename(filename, '.sql');
       const content = await fs.readFile(path.join(MIGRATIONS_DIR, filename), 'utf-8');
 
       // Check for SQLite companion file
@@ -177,9 +182,8 @@ export const LATEST_MIGRATION_ID = '${latestId}';
       );
       return;
     }
-  } catch {
-    // catch-ok: the manifest does not exist yet and must be created below
-    // The manifest does not exist yet and must be created below.
+  } catch (err) {
+    err;
   }
 
   {
@@ -191,10 +195,9 @@ export const LATEST_MIGRATION_ID = '${latestId}';
   );
 }
 
-async function runDirectCliPipeline(): Promise<void> {
+async function runDirectCliPipeline(skipTests = false): Promise<void> {
   await generateMigrations();
 
-  const skipTests = process.argv.includes('--no-test') || process.argv.includes('skip-test=true');
   if (skipTests) {
     console.log(
       styleText(
@@ -301,17 +304,25 @@ async function runDirectCliPipeline(): Promise<void> {
   );
 }
 
-// Support running directly
-const isDirectRun =
-  process.argv[1] &&
-  (process.argv[1].endsWith('generate_migrations.ts') ||
-    process.argv[1].includes('generate_migrations.ts'));
-
-if (isDirectRun) {
-  runDirectCliPipeline().catch((err: unknown) => {
-    console.error(
-      styleText('red', `❌ [Migrations Generator] Error fatal: ${(err as Error).message}`)
-    );
-    process.exit(1);
-  });
+export const command = defineCommand({
+  meta: {
+    name: 'generate-migrations',
+    description: 'Generador automático de manifiesto de migraciones SQL'
+  },
+  args: {
+    'no-test': {
+      type: 'boolean',
+      description: 'Omitir pruebas de migración'
+    },
+    'skip-test': {
+      type: 'boolean',
+      description: 'Omitir pruebas de migración'
+    }
+  },
+  async run({ args }) {
+    await runDirectCliPipeline(Boolean(args['no-test'] || args['skip-test']));
+  }
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
 }

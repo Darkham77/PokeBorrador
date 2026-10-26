@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia';
 import { ref, shallowRef } from 'vue';
-import { logger } from '@/logic/utils/logger';
-import { gameBus } from '@/logic/events/gameBus';
-import { AUDIO_MASTER_GAIN_VOLUME } from '@/logic/constants/audio';
-import { dispatchSound } from '@/logic/audio/soundDispatchMap';
+
 import { playPokemonCry } from '@/logic/audio/pokemonCryPlayer';
+import { dispatchSound } from '@/logic/audio/soundDispatchMap';
+import { AUDIO_MASTER_GAIN_VOLUME } from '@/logic/constants/audio';
+import { gameBus } from '@/logic/events/gameBus';
+import { logger } from '@/logic/utils/logger';
 
 const AUDIO_DEBOUNCE_WINDOW_MS = 60;
 
@@ -21,13 +22,13 @@ export const useAudioStore = defineStore('audio', () => {
   /**
    * Initializes the audio context.
    */
-  const init = () => {
+  const init = (): void => {
     if (isInitialized.value) return;
 
     try {
       const AudioContextClass =
-        window.AudioContext ||
-        (window as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+        globalThis.AudioContext ||
+        (globalThis as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!AudioContextClass) return;
       const ctx = new AudioContextClass();
       context.value = ctx;
@@ -45,14 +46,14 @@ export const useAudioStore = defineStore('audio', () => {
   /**
    * Resumes the context.
    */
-  const resume = async () => {
+  const resume = async (): Promise<void> => {
     if (!context.value) init();
     if (context.value && context.value.state === 'suspended') {
       await context.value.resume();
     }
   };
 
-  const playCry = async (pokemonName: string, isFaint = false) => {
+  const playCry = async (pokemonName: string, isFaint = false): Promise<void> => {
     if (!isInitialized.value) init();
     await resume();
 
@@ -63,15 +64,15 @@ export const useAudioStore = defineStore('audio', () => {
     await playPokemonCry(pokemonName, ctx, dest, isFaint);
   };
 
-  const initListeners = () => {
-    gameBus.on('PLAY_SOUND', (e: Event) => {
+  const initListeners = (): void => {
+    gameBus.on('PLAY_SOUND', async (e: Event) => {
       const type = (e as CustomEvent).detail as string;
-      if (type) void play(type);
+      if (type) await play(type);
     });
-    gameBus.on('PLAY_CRY', (e: Event) => {
+    gameBus.on('PLAY_CRY', async (e: Event) => {
       const detail = (e as CustomEvent).detail as { name: string; isFaint?: boolean } | undefined;
       if (detail && detail.name) {
-        void playCry(detail.name, detail.isFaint || false);
+        await playCry(detail.name, detail.isFaint || false);
       }
     });
   };
@@ -79,7 +80,7 @@ export const useAudioStore = defineStore('audio', () => {
   /**
    * Plays a sound using the centralized engine.
    */
-  const play = async (type: string) => {
+  const play = async (type: string): Promise<void> => {
     const now =
       typeof performance !== 'undefined'
         ? performance.now()

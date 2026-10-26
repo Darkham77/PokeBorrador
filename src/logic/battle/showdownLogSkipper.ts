@@ -6,6 +6,9 @@
 
 import type { BattleState } from '@/types/battle/battle.ts';
 
+const RESUME_LOG_TYPE_VALUES = ['turn', 'upkeep', 'win', 'tie'] as const;
+const RESUME_LOG_TYPES: ReadonlySet<string> = new Set<string>(RESUME_LOG_TYPE_VALUES);
+
 export function updateLogSkippingState(
   battle: BattleState,
   type: string | undefined,
@@ -21,7 +24,7 @@ export function updateLogSkippingState(
     const isPlayerMove =
       type === 'move' && (parts[2]?.startsWith('p1a:') || parts[2]?.startsWith('p1:'));
     const isSwitchOrDrag = type === 'switch' || type === 'drag';
-    const isTurnOrUpkeep = type === 'turn' || type === 'upkeep' || type === 'win' || type === 'tie';
+    const isTurnOrUpkeep = type !== undefined && RESUME_LOG_TYPES.has(type);
 
     if (isPlayerMove || isSwitchOrDrag || isTurnOrUpkeep) {
       Reflect.set(battle, 'ignoreEnemyLogs', false);

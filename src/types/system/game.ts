@@ -1,15 +1,17 @@
-import { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon';
-import type { DaycareMission, DaycareWarehouseItem } from '@/types/breeding/breeding';
-import type { BattleState } from '@/types/battle/battle';
-import type { Inventory } from '@/types/inventory/items';
+import type { AssetUri, DisplayText, IsoDateString } from '@francogp/auditor';
+
+import type { ItemId } from '@/data/inventory/items';
+import type { PlayerClassId, MissionId } from '@/data/player/playerClasses';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { GymId } from '@/data/world/gyms';
 import type { MapRouteId } from '@/data/world/map-assets';
-import type { PlayerClassId, MissionId } from '@/data/player/playerClasses';
-import type { ItemId } from '@/data/inventory/items';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { RankedSeasonMedal, PersonalPvPMatchSummary } from '@/types/battle/pvp';
 import type { MarketAssetType } from '@/logic/economy/market';
+import type { BattleState } from '@/types/battle/battle';
+import type { RankedSeasonMedal, PersonalPvPMatchSummary } from '@/types/battle/pvp';
+import type { DaycareMission, DaycareWarehouseItem } from '@/types/breeding/breeding';
+import type { Inventory } from '@/types/inventory/items';
 import type { GatheringToolTier } from '@/types/pokemon/encounters';
+import type { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon';
 
 export const CLAIM_ITEM_TYPES = ['pokemon', 'item', 'currency'] as const;
 export type ClaimItemType = (typeof CLAIM_ITEM_TYPES)[number];
@@ -24,38 +26,38 @@ export const CARDINAL_DIRECTIONS = ['left', 'top', 'bottom', 'right'] as const;
 export type CardinalDirection = (typeof CARDINAL_DIRECTIONS)[number];
 
 export interface NotificationItem {
-  id: string; // domain-ok: Open dynamic text or non-domain string payload
-  type: string; // domain-ok: Open dynamic text or non-domain string payload
-  title: string; // domain-ok: Open dynamic text or non-domain string payload
-  message: string; // domain-ok: Open dynamic text or non-domain string payload
+  id: DisplayText;
+  type: DisplayText;
+  title: DisplayText;
+  message: DisplayText;
   timestamp: number;
   read: boolean;
-  meta?: Record<string, unknown>; // open-record: Generic key-value data dictionary container
+  meta?: Record<DisplayText, unknown>;
 }
 
 export interface PokedexItem {
   id: PokemonSpeciesId;
-  dexNum: string; // domain-ok: Open dynamic text or non-domain string payload
+  dexNum: DisplayText;
   rawDexNum: number;
-  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  name: DisplayText;
   isSeen: boolean;
   isCaught: boolean;
-  spriteUrl: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  spriteUrl: AssetUri | null;
 }
 
 export interface ClaimItem {
-  id: string | number; // domain-ok: Open dynamic text or non-domain string payload
-  user_id?: string; // domain-ok: Open dynamic text or non-domain string payload
+  id: DisplayText | number;
+  user_id?: DisplayText;
   type?: ClaimItemType;
   asset_data: {
     type: MarketAssetType;
-    data: unknown; // open-record: Generic key-value data dictionary container
-    sold_item?: { name?: string; qty?: number };
-    sold_pokemon?: { name?: string; level?: number; isShiny?: boolean };
+    data: unknown;
+    sold_item?: { name?: DisplayText; qty?: number };
+    sold_pokemon?: { name?: DisplayText; level?: number; isShiny?: boolean };
   };
-  source_type: string; // domain-ok: Open dynamic text or non-domain string payload
-  source_id: string; // domain-ok: Open dynamic text or non-domain string payload
-  created_at: string; // domain-ok: Open dynamic text or non-domain string payload
+  source_type: DisplayText;
+  source_id: DisplayText;
+  created_at: IsoDateString;
 }
 
 export interface GymProgressEntry {
@@ -111,6 +113,9 @@ export const FACTION_LABELS: Readonly<Record<FactionId, string>> = Object.freeze
   poder: 'Equipo Poder'
 });
 
+const NIL_FACTION_STRING_VALUES = ['null', 'NULL', 'undefined'] as const;
+export const NIL_FACTION_STRINGS: ReadonlySet<string> = new Set(NIL_FACTION_STRING_VALUES);
+
 export const FACTION_COLORS: Readonly<Record<FactionId, string>> = Object.freeze({
   union: 'rgba(59, 130, 246, 1)',
   poder: 'rgba(239, 68, 68, 1)'
@@ -143,9 +148,9 @@ export type RankingSortKey = (typeof _RANKING_SORT_KEYS)[number];
 export type PillFxType = 'glow' | 'drift' | 'shake' | '';
 
 export interface GameState {
-  trainer: string; // domain-ok: Open dynamic text or non-domain string payload
+  trainer: DisplayText;
   gender?: GenderId;
-  last_renamed_at?: string; // domain-ok: Open dynamic text or non-domain string payload
+  last_renamed_at?: IsoDateString;
   playtime?: number;
   badges: number;
   balls: number;
@@ -159,7 +164,7 @@ export interface GameState {
   inventory: Inventory;
   map: {
     currentMap: MapRouteId;
-    region: string; // domain-ok: Open dynamic text or non-domain string payload
+    region: DisplayText;
     lastNavigateAt: number;
   };
   team: Pokemon[];
@@ -173,18 +178,18 @@ export interface GameState {
   battle: BattleState | null;
   starterChosen: boolean;
   lastPokemonCenterHeal?: number;
-  lastRankedSeason: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  lastRankedSeason: DisplayText | null;
   rankedMedals?: RankedSeasonMedal[];
-  nick_style: string | null; // domain-ok: Open dynamic text or non-domain string payload
-  avatar_style: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  nick_style: DisplayText | null;
+  avatar_style: DisplayText | null;
   stats: Partial<Record<GameStatKey, number>>;
   guardianCaptures?: Partial<Record<MapRouteId, ISODateKey>>;
   eloRating: number;
   pvpStats: { wins: number; losses: number; draws: number };
   rankedMaxElo: number;
-  passiveTeamUids: string[]; // domain-ok: Open dynamic text or non-domain string payload
+  passiveTeamUids: DisplayText[];
   passiveTeamActive: boolean;
-  rankedRewardsClaimed: string[]; // domain-ok: Open dynamic text or non-domain string payload
+  rankedRewardsClaimed: DisplayText[];
   activeBattle: BattleState | null;
   daycare_missions: DaycareMission[];
   daycare_mission_refreshes: number;
@@ -208,7 +213,7 @@ export interface GameState {
   daycare_berry_egg_time: number;
   daycareWarehouse?: DaycareWarehouseItem[];
   boxCount: number;
-  chats: Record<string, unknown>; // open-record: Generic key-value data dictionary container
+  chats: Record<DisplayText, unknown>;
   playerClass: PlayerClassId | null;
   classLevel: number;
   classXP: number;
@@ -220,32 +225,32 @@ export interface GameState {
   warDailyCoins: Partial<Record<ISODateKey, number>>;
   warMyPtsLocal: Partial<Record<MapRouteId, number>>;
   warPointsAccumulator?: number;
-  lastResolvedWeek?: string; // domain-ok: Open dynamic text or non-domain string payload
+  lastResolvedWeek?: DisplayText;
   notificationHistory: NotificationItem[];
-  marketSoldSeenIds: string[]; // domain-ok: Open dynamic text or non-domain string payload
+  marketSoldSeenIds: DisplayText[];
   claimQueue: ClaimItem[];
-  pvpTeam: string[]; // domain-ok: Open dynamic text or non-domain string payload
-  pvpTeam6: string[]; // domain-ok: Open dynamic text or non-domain string payload
+  pvpTeam: DisplayText[];
+  pvpTeam6: DisplayText[];
   pvpMatchHistory?: PersonalPvPMatchSummary[];
-  lastResolvedSeasonId?: string; // domain-ok: Open dynamic text or non-domain string payload
-  dailyGymRematches?: Partial<Record<GymId, string>>;
-  warTeam: string[]; // domain-ok: Open dynamic text or non-domain string payload
+  lastResolvedSeasonId?: DisplayText;
+  dailyGymRematches?: Partial<Record<GymId, IsoDateString>>;
+  warTeam: DisplayText[];
   warSlots: number;
   isOverlayLoading?: boolean;
-  overlayMessage?: string; // domain-ok: Open dynamic text or non-domain string payload
+  overlayMessage?: DisplayText;
 }
 
 export interface ActiveMission {
   readonly id: MissionId;
   readonly startedAt: number;
   readonly endsAt: number;
-  readonly targetPokemonUid?: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly targetPokemonUid?: DisplayText;
   readonly targetPokemonIdx?: number;
   readonly targetPokemonSpecies?: PokemonSpeciesId;
-  readonly targetZone?: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly targetZone?: DisplayText;
   readonly streak?: number;
   readonly projectedReward?: number;
-  readonly rewards?: Partial<Record<ItemId | 'money' | 'battleCoins', number>>; // domain-ok: Open dynamic text or non-domain string payload
+  readonly rewards?: Partial<Record<ItemId | 'money' | 'battleCoins', number>>;
 }
 
 export interface PlayerClassState {
@@ -254,13 +259,13 @@ export interface PlayerClassState {
   reputation: number;
   blackMarketSales: number;
   criminality: number;
-  blackMarketDaily: { date: string; items: ItemId[]; purchased: ItemId[] };
+  blackMarketDaily: { date: IsoDateString; items: ItemId[]; purchased: ItemId[] };
   activeMission?: ActiveMission | null;
   extortedRouteId?: MapRouteId | null;
-  extortedRouteTimestamp?: string | null; // domain-ok: Open dynamic text or non-domain string payload
-  lastEggScanDate?: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  extortedRouteTimestamp?: IsoDateString | null;
+  lastEggScanDate?: IsoDateString | null;
   officialRouteId?: MapRouteId | null;
-  officialRouteTimestamp?: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  officialRouteTimestamp?: IsoDateString | null;
   kitCaptures?: number;
 }
 

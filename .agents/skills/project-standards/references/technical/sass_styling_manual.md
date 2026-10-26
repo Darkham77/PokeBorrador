@@ -480,6 +480,7 @@ For full-screen wallpapers or map backgrounds where vertical visibility is prior
 
 For battle sprites, standard 2px/3px outlines may be too thin. Specialized status effects (like Freeze) MUST use dedicated SVG filters to maintain pixel-art sharpness at larger scales.
 
+- **DOM Placement**: All SVG filter shaders MUST reside inline in the active document DOM via `SVGFilters.vue` (mounted in `App.vue`). Externalizing SVG filter shaders into standalone `.svg` asset files breaks `filter: url(#id)` on HTML elements across modern browsers.
 - **Standard**: Use `#pixel-outline-ice` or similar filters with `feMorphology`.
 - **Radius**: Battle status outlines should use a **8px radius** to ensure high visibility and a "premium" feel.
 - **Sharpness**: Avoid `feGaussianBlur` in these filters to preserve a strict pixelated look.

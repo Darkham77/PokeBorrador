@@ -9,17 +9,17 @@
  * - Terrestrial routes: roads, vegetation, tall grass, and perimeter trees.
  */
 
-import {
-  generateProceduralMap,
-  type GeneratedMap,
-  type MapType
-} from './proceduralMapGenerator.ts';
-import type { MapNode } from '../adventure/mapData.ts';
 import type {
   CityGenerationConfig,
   UrbanScale,
   CanonicalThemeSource
 } from '../../types/map/adventureWorldTypes.ts';
+import type { MapNode } from '../adventure/mapData.ts';
+import {
+  generateProceduralMap,
+  type GeneratedMap,
+  type MapType
+} from './proceduralMapGenerator.ts';
 
 export interface NodeLocalMapOptions {
   readonly width?: number;
@@ -38,6 +38,22 @@ export const SCALE_DIMENSIONS: Record<UrbanScale, { width: number; height: numbe
   city: { width: 58, height: 42 },
   metropolis: { width: 70, height: 50 }
 };
+
+const VILLAGE_NODE_ID_LIST = ['lavender', 'cherrygrove', 'azalea'] as const;
+type VillageNodeId = (typeof VILLAGE_NODE_ID_LIST)[number];
+const VILLAGE_NODE_IDS: ReadonlySet<VillageNodeId> = new Set<VillageNodeId>(VILLAGE_NODE_ID_LIST);
+
+function isVillageNodeId(value: string): value is VillageNodeId {
+  return (VILLAGE_NODE_IDS as ReadonlySet<string>).has(value);
+}
+
+const CITY_NODE_ID_LIST = ['celadon', 'fuchsia', 'goldenrod'] as const;
+type CityNodeId = (typeof CITY_NODE_ID_LIST)[number];
+const CITY_NODE_IDS: ReadonlySet<CityNodeId> = new Set<CityNodeId>(CITY_NODE_ID_LIST);
+
+function isCityNodeId(value: string): value is CityNodeId {
+  return (CITY_NODE_IDS as ReadonlySet<string>).has(value);
+}
 
 const DEFAULT_LOCAL_MAP_WIDTH = 40;
 const DEFAULT_LOCAL_MAP_HEIGHT = 30;
@@ -66,12 +82,7 @@ export function inferCanonicalCityConfig(
     };
   }
 
-  if (
-    id === 'lavender' ||
-    id === 'cherrygrove' ||
-    id === 'azalea' ||
-    /lavanda|cerezo|azalea|lavender/i.test(name)
-  ) {
+  if (isVillageNodeId(id) || /lavanda|cerezo|azalea|lavender/i.test(name)) {
     return {
       scale: 'village',
       buildingDensity: 5,
@@ -91,12 +102,7 @@ export function inferCanonicalCityConfig(
     };
   }
 
-  if (
-    id === 'celadon' ||
-    id === 'fuchsia' ||
-    id === 'goldenrod' ||
-    /azulona|fucsia|trigal|celadon|fuchsia/i.test(name)
-  ) {
+  if (isCityNodeId(id) || /azulona|fucsia|trigal|celadon|fuchsia/i.test(name)) {
     return {
       scale: 'city',
       buildingDensity: DENSITY_CITY,

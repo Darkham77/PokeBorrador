@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { gsap } from 'gsap';
 import { storeToRefs } from 'pinia';
+
+import RewardPillsGroup from '@/components/shared/RewardPillsGroup.vue';
+import { parsePrize } from '@/composables/events/usePastEventAwards';
+import { resolveAwardCategory } from '@/logic/events/eventCompetitions';
+import { getEventDisplayName as getEventDisplayNameCore } from '@/logic/events/eventEngine';
+import { isAwardClaimable } from '@/logic/events/eventValidators';
+import { logger } from '@/logic/utils/logger';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
 import { useEventStore } from '@/stores/events';
 import { useUIStore } from '@/stores/ui';
-import { isAwardClaimable } from '@/logic/events/eventValidators';
-import { getEventDisplayName as getEventDisplayNameCore } from '@/logic/events/eventEngine';
-import { resolveAwardCategory } from '@/logic/events/eventCompetitions';
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
-import { logger } from '@/logic/utils/logger';
 import type { PendingAward } from '@/types/system/stores';
-import { parsePrize } from '@/composables/events/usePastEventAwards';
-import RewardPillsGroup from '@/components/shared/RewardPillsGroup.vue';
 
 const eventStore = useEventStore();
 const uiStore = useUIStore();
@@ -30,7 +31,7 @@ const getEventDisplayName = (eventId: string, awardedAt?: string): string => {
   return getEventDisplayNameCore(ev);
 };
 
-const getAwardCategory = (award: PendingAward) => {
+const getAwardCategory = (award: PendingAward): ReturnType<typeof resolveAwardCategory> => {
   const ev = (allEvents.value || []).find((e) => e.id === award.event_id);
   const pastEv = (eventStore.pastEvents || []).find((pe) => pe.event_id === award.event_id);
   return resolveAwardCategory(award, ev, pastEv?.winners);
@@ -61,7 +62,7 @@ const checkIfClaimable = (award: PendingAward): boolean => {
   return isAwardClaimable(award, allEvents.value);
 };
 
-const onBtnHover = (e: MouseEvent, enter: boolean) => {
+const onBtnHover = (e: MouseEvent, enter: boolean): void => {
   const el = e.currentTarget as HTMLElement;
   if (!el) return;
   if (enter) {
@@ -77,11 +78,11 @@ const onBtnHover = (e: MouseEvent, enter: boolean) => {
   }
 };
 
-const onDiscardHover = (e: MouseEvent, enter: boolean) => {
+const onDiscardHover = (e: MouseEvent, enter: boolean): void => {
   onBtnHover(e, enter);
 };
 
-const confirmDiscard = (awardId: string, eventName: string) => {
+const confirmDiscard = (awardId: string, eventName: string): void => {
   uiStore.openConfirm({
     title: '¿DESCARTAR RECOMPENSA?',
     message: `¿Estás seguro de que deseas descartar la recompensa de "${eventName}"? Esta acción es irreversible y no podrás reclamarla más adelante.`,

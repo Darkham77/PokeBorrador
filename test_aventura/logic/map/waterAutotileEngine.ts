@@ -109,6 +109,7 @@ export const CANONICAL_SAND_BEACH_BRUSH: Readonly<WaterCoastBrushSet> = {
 };
 
 export const BASE_GRASS_TILE = 'poke_grass_plain.png';
+const CANONICAL_OCEAN_CENTER_TILE = 'poke_water_ocean_center.png' as const;
 const MIN_ABYSSAL_LAKE_DISTANCE = 2.4;
 const ABYSSAL_SEARCH_RADIUS = 3;
 
@@ -310,6 +311,59 @@ function getBridgeShoreCornerTile(
   return null;
 }
 
+function processOceanNeighbor(
+  nx: number,
+  ny: number,
+  W: number,
+  H: number,
+  matrix: readonly (readonly WaterTerrainKind[])[],
+  visited: boolean[][],
+  isOceanGrid: boolean[][],
+  oceanQueue: { x: number; y: number }[],
+  cellTouchesGrass: (x: number, y: number) => boolean
+): void {
+  if (nx < 0 || nx >= W || ny < 0 || ny >= H) return;
+  const nType = matrix[ny]![nx]!;
+  if ((nType !== 'water' && nType !== 'water_deep') || visited[ny]![nx]) return;
+  visited[ny]![nx] = true;
+  if (!cellTouchesGrass(nx, ny)) {
+    isOceanGrid[ny]![nx] = true;
+    oceanQueue.push({ x: nx, y: ny });
+  }
+}
+
+function buildShoreLayerStack(
+  baseLayers: readonly string[],
+  brushCenter: string,
+  role: string,
+  primaryTile: string,
+  overlayTiles: readonly string[],
+  extraTile?: string | null
+): string[] {
+  const stack = [...baseLayers];
+  if (role.startsWith('corner_inner')) {
+    stack.push(brushCenter);
+  }
+  stack.push(primaryTile);
+  if (overlayTiles.length > 0) {
+    stack.push(...overlayTiles);
+  }
+  if (extraTile) {
+    stack.push(extraTile);
+  }
+  return stack;
+}
+
+function getProjectedWaterShadowTile(role: string, oneRowSouthOfNorthBank: boolean): string | null {
+  if (role === 'corner_outer_nw') return 'poke_water_shadow_corner_nw.png';
+  if (role === 'edge_north' || role === 'corner_outer_ne') return 'poke_water_shadow_shore_n.png';
+  if (role === 'edge_west' || role === 'corner_outer_sw') return 'poke_water_shadow_shore_w.png';
+  if (oneRowSouthOfNorthBank && (role === 'center' || role.startsWith('corner_inner'))) {
+    return 'poke_water_shadow_full.png';
+  }
+  return null;
+}
+
 /**
  * Resolves a full terrain matrix into a complete autotiled water & coast result,
  * adhering strictly to the Layer Stacking hierarchy: Grass -> Sand -> Water -> Foam.
@@ -380,18 +434,17 @@ export function resolveWaterCoastGrid(
     for (let dy = -1; dy <= 1; dy++) {
       for (let dx = -1; dx <= 1; dx++) {
         if (dx === 0 && dy === 0) continue;
-        const nx = cur.x + dx;
-        const ny = cur.y + dy;
-        if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
-          const nType = matrix[ny]![nx]!;
-          if ((nType === 'water' || nType === 'water_deep') && !visited[ny]![nx]) {
-            visited[ny]![nx] = true;
-            if (!cellTouchesGrass(nx, ny)) {
-              isOceanGrid[ny]![nx] = true;
-              oceanQueue.push({ x: nx, y: ny });
-            }
-          }
-        }
+        processOceanNeighbor(
+          cur.x + dx,
+          cur.y + dy,
+          W,
+          H,
+          matrix,
+          visited,
+          isOceanGrid,
+          oceanQueue,
+          cellTouchesGrass
+        );
       }
     }
   }
@@ -460,14 +513,13 @@ export function resolveWaterCoastGrid(
             getTileForRole(CANONICAL_SAND_OCEAN_SHORE_BRUSH, r)
           );
 
-          const layerStack: string[] = [BASE_GRASS_TILE, 'poke_water_ocean_center.png']; // no-domain: Estructura o identificador procedural de aventura
-          if (role.startsWith('corner_inner')) {
-            layerStack.push(CANONICAL_SAND_OCEAN_SHORE_BRUSH.center);
-          }
-          layerStack.push(primaryTile);
-          if (overlayTiles.length > 0) {
-            layerStack.push(...overlayTiles);
-          }
+          const layerStack = buildShoreLayerStack(
+            [BASE_GRASS_TILE, CANONICAL_OCEAN_CENTER_TILE],
+            CANONICAL_SAND_OCEAN_SHORE_BRUSH.center,
+            role,
+            primaryTile,
+            overlayTiles
+          );
 
           const cell: ResolvedWaterCell = {
             x,
@@ -492,14 +544,13 @@ export function resolveWaterCoastGrid(
           getTileForRole(CANONICAL_SAND_BEACH_BRUSH, r)
         );
 
-        const layerStack: string[] = [BASE_GRASS_TILE]; // no-domain: Estructura o identificador procedural de aventura
-        if (role.startsWith('corner_inner')) {
-          layerStack.push(CANONICAL_SAND_BEACH_BRUSH.center);
-        }
-        layerStack.push(primaryTile);
-        if (overlayTiles.length > 0) {
-          layerStack.push(...overlayTiles);
-        }
+        const layerStack = buildShoreLayerStack(
+          [BASE_GRASS_TILE],
+          CANONICAL_SAND_BEACH_BRUSH.center,
+          role,
+          primaryTile,
+          overlayTiles
+        );
 
         const cell: ResolvedWaterCell = {
           x,
@@ -527,30 +578,16 @@ export function resolveWaterCoastGrid(
             getTileForRole(CANONICAL_LAKE_SHORE_BRUSH, r)
           );
 
-          const layerStack: string[] = [BASE_GRASS_TILE]; // no-domain: Estructura o identificador procedural de aventura
-          if (role.startsWith('corner_inner')) {
-            layerStack.push(CANONICAL_LAKE_SHORE_BRUSH.center);
-          }
-          layerStack.push(primaryTile);
-          if (overlayTiles.length > 0) {
-            layerStack.push(...overlayTiles);
-          }
-
-          // 2.5D Projected Shadows (Option 4): Northern and Western land banks project shadows into water
           const oneRowSouthOfNorthBank = y > 1 && matrix[y - 2]![x]! === 'grass';
-
-          if (role === 'corner_outer_nw') {
-            layerStack.push('poke_water_shadow_corner_nw.png');
-          } else if (role === 'edge_north' || role === 'corner_outer_ne') {
-            layerStack.push('poke_water_shadow_shore_n.png');
-          } else if (role === 'edge_west' || role === 'corner_outer_sw') {
-            layerStack.push('poke_water_shadow_shore_w.png');
-          } else if (
-            oneRowSouthOfNorthBank &&
-            (role === 'center' || role.startsWith('corner_inner'))
-          ) {
-            layerStack.push('poke_water_shadow_full.png');
-          }
+          const shadowTile = getProjectedWaterShadowTile(role, oneRowSouthOfNorthBank);
+          const layerStack = buildShoreLayerStack(
+            [BASE_GRASS_TILE],
+            CANONICAL_LAKE_SHORE_BRUSH.center,
+            role,
+            primaryTile,
+            overlayTiles,
+            shadowTile
+          );
 
           const cell: ResolvedWaterCell = {
             x,
@@ -572,12 +609,10 @@ export function resolveWaterCoastGrid(
           // Ocean water is a continuous layer of waves; sand provides the foam border on top
           const primaryTile =
             terrain === 'water_deep' ? 'poke_water_deep.png' : 'poke_water_ocean_center.png';
-          const layerStack: string[] = [BASE_GRASS_TILE, primaryTile]; // no-domain: Estructura o identificador procedural de aventura
-
           const bridgeShoreCorner = getBridgeShoreCornerTile(matrix, bridgeGrid, x, y);
-          if (bridgeShoreCorner) {
-            layerStack.push(bridgeShoreCorner);
-          }
+          const layerStack = bridgeShoreCorner
+            ? [BASE_GRASS_TILE, primaryTile, bridgeShoreCorner]
+            : [BASE_GRASS_TILE, primaryTile];
 
           const cell: ResolvedWaterCell = {
             x,
@@ -599,7 +634,7 @@ export function resolveWaterCoastGrid(
 
         const isDeepWater = isAbyssalCenter || terrain === 'water_deep';
         const primaryTile = isDeepWater ? 'poke_water_deep.png' : CANONICAL_LAKE_SHORE_BRUSH.center;
-        const layerStack: string[] = [BASE_GRASS_TILE, primaryTile]; // no-domain: Estructura o identificador procedural de aventura
+        const layerStack = [BASE_GRASS_TILE, primaryTile];
 
         const oneRowSouthOfNorthBank = y > 1 && matrix[y - 2]![x]! === 'grass';
         if (oneRowSouthOfNorthBank) {
@@ -638,6 +673,41 @@ export interface WaterSanitizerOptions {
   readonly minThickness?: number;
 }
 
+const SLIVER_CANDIDATE_TERRAIN_LIST = ['water', 'water_deep', 'sand'] as const;
+type SliverCandidateTerrain = (typeof SLIVER_CANDIDATE_TERRAIN_LIST)[number];
+const SLIVER_CANDIDATE_TERRAINS: ReadonlySet<SliverCandidateTerrain> =
+  new Set<SliverCandidateTerrain>(SLIVER_CANDIDATE_TERRAIN_LIST);
+
+function pruneSliverCell(
+  sanitized: WaterTerrainKind[][],
+  x: number,
+  y: number,
+  W: number,
+  H: number,
+  minThickness: number
+): boolean {
+  const val = sanitized[y]![x]!;
+  if (!SLIVER_CANDIDATE_TERRAINS.has(val as SliverCandidateTerrain)) return false;
+
+  const leftIsDiff = x === 0 || sanitized[y]![x - 1] !== val;
+  const rightIsDiff = x === W - 1 || sanitized[y]![x + 1] !== val;
+  if (leftIsDiff && rightIsDiff && minThickness >= 2) {
+    const replacement = x > 0 ? sanitized[y]![x - 1]! : (sanitized[y]![x + 1] ?? 'grass');
+    sanitized[y]![x] = replacement === val ? 'grass' : replacement;
+    return true;
+  }
+
+  const topIsDiff = y === 0 || sanitized[y - 1]![x] !== val;
+  const bottomIsDiff = y === H - 1 || sanitized[y + 1]![x] !== val;
+  if (topIsDiff && bottomIsDiff && minThickness >= 2) {
+    const replacement = y > 0 ? sanitized[y - 1]![x]! : (sanitized[y + 1]![x] ?? 'grass');
+    sanitized[y]![x] = replacement === val ? 'grass' : replacement;
+    return true;
+  }
+
+  return false;
+}
+
 /**
  * Sanitizes a WaterTerrainMatrix to ensure water bodies and beach buffers
  * maintain a minimum thickness of >= 2 cells, eliminating 1-cell slivers
@@ -661,28 +731,8 @@ export function sanitizeWaterTerrainMatrix(
 
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) {
-        const val = sanitized[y]![x]!;
-        if (val === 'water' || val === 'water_deep' || val === 'sand') {
-          // Check horizontal thickness
-          const leftIsDiff = x === 0 || sanitized[y]![x - 1] !== val;
-          const rightIsDiff = x === W - 1 || sanitized[y]![x + 1] !== val;
-          if (leftIsDiff && rightIsDiff && minThickness >= 2) {
-            // 1-cell wide horizontal sliver -> prune to adjacent land
-            const replacement = x > 0 ? sanitized[y]![x - 1]! : (sanitized[y]![x + 1] ?? 'grass');
-            sanitized[y]![x] = replacement === val ? 'grass' : replacement;
-            changed = true;
-            continue;
-          }
-
-          // Check vertical thickness
-          const topIsDiff = y === 0 || sanitized[y - 1]![x] !== val;
-          const bottomIsDiff = y === H - 1 || sanitized[y + 1]![x] !== val;
-          if (topIsDiff && bottomIsDiff && minThickness >= 2) {
-            // 1-cell wide vertical sliver -> prune to adjacent land
-            const replacement = y > 0 ? sanitized[y - 1]![x]! : (sanitized[y + 1]![x] ?? 'grass');
-            sanitized[y]![x] = replacement === val ? 'grass' : replacement;
-            changed = true;
-          }
+        if (pruneSliverCell(sanitized, x, y, W, H, minThickness)) {
+          changed = true;
         }
       }
     }

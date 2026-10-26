@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { gsap } from 'gsap';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import BattleInfoCard from './BattleInfoCard.vue';
+
 import {
   HUD_TRANSITION_X_OFFSET_PX,
   HUD_TRANSITION_INITIAL_SCALE,
   HUD_TRANSITION_DURATION_SEC
 } from '@/logic/constants/animations';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import BattleInfoCard from './BattleInfoCard.vue';
 
 defineProps<{
   activeEnemyData: unknown;
@@ -16,11 +18,11 @@ defineProps<{
   shouldScrambleEnemyData: boolean;
 }>();
 
-const onHudEnemyBeforeEnter = (el: Element) => {
+const onHudEnemyBeforeEnter = (el: Element): void => {
   gsap.set(el, { opacity: 0, x: -HUD_TRANSITION_X_OFFSET_PX, scale: HUD_TRANSITION_INITIAL_SCALE });
 };
 
-const onHudEnemyEnter = (el: Element, done: () => void) => {
+const onHudEnemyEnter = (el: Element, done: () => void): void => {
   gsap.to(el, {
     opacity: 1,
     x: 0,
@@ -31,7 +33,7 @@ const onHudEnemyEnter = (el: Element, done: () => void) => {
   });
 };
 
-const onHudEnemyLeave = (el: Element, done: () => void) => {
+const onHudEnemyLeave = (el: Element, done: () => void): void => {
   gsap.to(el, {
     opacity: 0,
     x: -HUD_TRANSITION_X_OFFSET_PX,
@@ -42,11 +44,11 @@ const onHudEnemyLeave = (el: Element, done: () => void) => {
   });
 };
 
-const onHudPlayerBeforeEnter = (el: Element) => {
+const onHudPlayerBeforeEnter = (el: Element): void => {
   gsap.set(el, { opacity: 0, x: HUD_TRANSITION_X_OFFSET_PX, scale: HUD_TRANSITION_INITIAL_SCALE });
 };
 
-const onHudPlayerEnter = (el: Element, done: () => void) => {
+const onHudPlayerEnter = (el: Element, done: () => void): void => {
   gsap.to(el, {
     opacity: 1,
     x: 0,
@@ -57,7 +59,7 @@ const onHudPlayerEnter = (el: Element, done: () => void) => {
   });
 };
 
-const onHudPlayerLeave = (el: Element, done: () => void) => {
+const onHudPlayerLeave = (el: Element, done: () => void): void => {
   gsap.to(el, {
     opacity: 0,
     x: HUD_TRANSITION_X_OFFSET_PX,

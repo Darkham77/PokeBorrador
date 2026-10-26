@@ -1,14 +1,15 @@
+import { createPinia, setActivePinia } from 'pinia';
 /**
  * @vitest-environment jsdom
  */
 import { beforeEach, describe, expect, it } from 'vite-plus/test';
-import { createPinia, setActivePinia } from 'pinia';
+
+import { executeCanonicalTurn } from '@/logic/battle/helpers/canonicalTurnRunner.ts';
 import {
   executeTurnInWorker,
   setShowdownWorker,
   testResetShowdownWorker
 } from '@/logic/battle/showdownWorkerClient.ts';
-import { executeCanonicalTurn } from '@/logic/battle/helpers/canonicalTurnRunner.ts';
 import type { BattleContext } from '@/types/battle/battleContext';
 
 class MockWorker {

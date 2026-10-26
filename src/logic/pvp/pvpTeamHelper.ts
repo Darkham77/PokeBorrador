@@ -1,11 +1,11 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { MAX_PVP_SLOTS, MAX_PVP6_SLOTS, type PvpMatchFormat } from '@/types/battle/pvp';
-import type { SeasonalThemeConfig, SeasonalThemeId } from '@/data/system/rankedData.ts';
 import type { PokemonType } from '@/data/battle/types';
 import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { calculatePokemonStrengthScore } from '@/logic/pokemon/pokemonUtils';
+import type { SeasonalThemeConfig, SeasonalThemeId } from '@/data/system/rankedData.ts';
 import { serializePokemonTeam } from '@/logic/auth/savePokemonSerializer.ts';
 import { isLittleCupEligible, getPokemonDexNumber } from '@/logic/pokemon/pokemonSpeciesHelper.ts';
+import { calculatePokemonStrengthScore } from '@/logic/pokemon/pokemonUtils';
+import { MAX_PVP_SLOTS, MAX_PVP6_SLOTS, type PvpMatchFormat } from '@/types/battle/pvp';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 /**
  * Resolves the 6 defending Pokémon for passive defense from saved team data.
@@ -56,33 +56,33 @@ export function fillPvpSlotsFromAvailable(
 ): string[] {
   // no-domain: Non-domain utility collection or data structure
   const validPokes = (allPokemon || []).filter(
-    (p): p is Pokemon => p != null && !p.isIllegal && Boolean(p.uid)
+    (p): p is Pokemon => p !== null && p !== undefined && !p.isIllegal && Boolean(p.uid)
   );
   if (validPokes.length === 0) return [];
 
   const existingUidsSet = new Set(validPokes.map((p) => p.uid));
-  const result: string[] = (currentUids || []).filter((uid) => existingUidsSet.has(uid)); // no-domain: Non-domain utility collection or data structure
+  const results = (currentUids || []).filter((uid) => existingUidsSet.has(uid));
 
   const targetCount = Math.min(maxSlots, validPokes.length);
-  if (result.length < targetCount) {
+  if (results.length < targetCount) {
     for (const p of validPokes) {
-      if (result.length >= targetCount) break;
-      if (!result.includes(p.uid)) {
-        result.push(p.uid);
+      if (results.length >= targetCount) break;
+      if (!results.includes(p.uid)) {
+        results.push(p.uid);
       }
     }
   }
 
-  return result.slice(0, maxSlots);
+  return results.slice(0, maxSlots);
 }
 
 function collectValidPokemon(team?: (Pokemon | null)[], box?: (Pokemon | null)[]): Pokemon[] {
   const result: Pokemon[] = [];
   for (const p of team || []) {
-    if (p != null && !p.isIllegal && Boolean(p.uid)) result.push(p);
+    if (p !== null && p !== undefined && !p.isIllegal && Boolean(p.uid)) result.push(p);
   }
   for (const p of box || []) {
-    if (p != null && !p.isIllegal && Boolean(p.uid)) result.push(p);
+    if (p !== null && p !== undefined && !p.isIllegal && Boolean(p.uid)) result.push(p);
   }
   return result;
 }
@@ -121,7 +121,9 @@ export function resolveOfflineRivalTeam(
   const filledUids = fillPvpSlotsFromAvailable(rawUids, allPokes, maxSlots);
   const pokesByUid = new Map<string, Pokemon>(allPokes.map((p) => [p.uid, p]));
 
-  return filledUids.map((uid) => pokesByUid.get(uid)).filter((p): p is Pokemon => p != null);
+  return filledUids
+    .map((uid) => pokesByUid.get(uid))
+    .filter((p): p is Pokemon => p !== null && p !== undefined);
 }
 
 const KANTO_MAX_DEX_NUM = 151;
@@ -129,8 +131,8 @@ const JOHTO_MAX_DEX_NUM = 251;
 
 function checkAllowedTypes(pokemon: Pokemon, allowedTypes: readonly PokemonType[]): boolean {
   const pokeTypes: PokemonType[] = [];
-  if (pokemon.type) pokeTypes.push(pokemon.type as PokemonType);
-  if (pokemon.type2 && pokemon.type2 !== pokemon.type) pokeTypes.push(pokemon.type2 as PokemonType);
+  if (pokemon.type) pokeTypes.push(pokemon.type);
+  if (pokemon.type2 && pokemon.type2 !== pokemon.type) pokeTypes.push(pokemon.type2);
   return pokeTypes.some((t) => allowedTypes.includes(t));
 }
 
@@ -183,8 +185,8 @@ export function isPokemonLegalForTheme(
 function findBestMonotypeTeam(sortedCandidates: Pokemon[], targetCount: number): Pokemon[] {
   const allTypesInPool = new Set<PokemonType>();
   for (const p of sortedCandidates) {
-    if (p.type) allTypesInPool.add(p.type as PokemonType);
-    if (p.type2) allTypesInPool.add(p.type2 as PokemonType);
+    if (p.type) allTypesInPool.add(p.type);
+    if (p.type2) allTypesInPool.add(p.type2);
   }
 
   let bestTeam: Pokemon[] = [];
@@ -219,7 +221,7 @@ export function autoFillLegalTeamForTheme(
   targetCount: number = MAX_PVP_SLOTS
 ): Pokemon[] {
   const validCandidates = (availablePokemon || [])
-    .filter((p): p is Pokemon => p != null && !p.isIllegal && Boolean(p.uid))
+    .filter((p): p is Pokemon => p !== null && p !== undefined && !p.isIllegal && Boolean(p.uid))
     .filter((p) => isPokemonLegalForTheme(p, theme));
 
   if (validCandidates.length === 0) return [];

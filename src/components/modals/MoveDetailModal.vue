@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { getMoveDescription } from '@/logic/pokemon/pokemonUtils';
+import { isPokemonMoveId, type PokemonMoveId, type MoveCategory } from '@/data/battle/moves';
 import { toPokemonType } from '@/data/battle/types';
 import { PDEX_TYPE_COLORS as TYPE_COLORS } from '@/logic/constants/pokedexConstants';
-
-import { isPokemonMoveId, type PokemonMoveId, type MoveCategory } from '@/data/battle/moves';
+import { getMoveDescription } from '@/logic/pokemon/pokemonUtils';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
 interface Props {
   show?: boolean;

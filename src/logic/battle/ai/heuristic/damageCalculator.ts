@@ -1,8 +1,9 @@
+import type { DisplayText } from '@francogp/auditor';
 // ============================================================
 // Damage Calculator — wraps @smogon/calc
 // Adapted from external/pokemon-showdown-ai/src/calculator/damage.ts
 // ============================================================
-
+import type { SideID } from '@pkmn/sim';
 import {
   Generations,
   Pokemon,
@@ -12,12 +13,14 @@ import {
   type Result,
   type GenerationNum
 } from '@smogon/calc';
-import type { SideID } from '@pkmn/sim';
-import { toID } from '@/logic/utils/strings.ts';
-import { requireItemId } from '../../../../data/inventory/items.ts';
-import { requireAbilityId } from '../../../../data/battle/abilities.ts';
+
 import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
 import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
+import { logger } from '@/logic/utils/logger';
+import { toID } from '@/logic/utils/strings.ts';
+
+import { requireAbilityId } from '../../../../data/battle/abilities.ts';
+import { requireItemId } from '../../../../data/inventory/items.ts';
 import type {
   HeuristicPokemonState,
   HeuristicFieldState,
@@ -86,11 +89,11 @@ export class HeuristicDamageCalculator {
   private readonly cache = new Map<string, DamageResult>();
   private readonly cacheOrder: string[] = [];
 
-  constructor(generation: GenerationNum = ACTIVE_GENERATION as GenerationNum) {
+  public constructor(generation: GenerationNum = ACTIVE_GENERATION) {
     this.gen = Generations.get(generation);
   }
 
-  calcDamage(
+  public calcDamage(
     attacker: HeuristicPokemonState,
     defender: HeuristicPokemonState,
     moveId: PokemonMoveId,
@@ -116,7 +119,7 @@ export class HeuristicDamageCalculator {
     }
   }
 
-  calcMatchup(
+  public calcMatchup(
     snapshot: HeuristicBattleSnapshot,
     availableMoves: HeuristicMoveInfo[],
     inferredOpponentMoves?: Map<string, number>
@@ -142,8 +145,10 @@ export class HeuristicDamageCalculator {
     for (const mv of oppMoves) {
       try {
         oppAttacking.push(this.calcDamage(opp, my, mv, snapshot.field));
-      } catch {
-        /* catch-ok: Hypothetical move exploration probe skip */
+      } catch (err) {
+        logger.debug('[DamageCalculator] Salto de cálculo hipotético de movimiento', {
+          cause: err instanceof Error ? err.message : String(err)
+        });
       }
     }
 
@@ -153,7 +158,7 @@ export class HeuristicDamageCalculator {
     };
   }
 
-  getEffectiveSpeed(
+  public getEffectiveSpeed(
     pokemon: HeuristicPokemonState,
     field: HeuristicFieldState,
     side: SideID
@@ -170,7 +175,7 @@ export class HeuristicDamageCalculator {
     return spd;
   }
 
-  clearCache(): void {
+  public clearCache(): void {
     this.cache.clear();
     this.cacheOrder.length = 0;
   }
@@ -236,7 +241,7 @@ export class HeuristicDamageCalculator {
     const opts: Record<string, unknown> = {};
     if (f.weather) {
       // open-record: Move-based weather string mapped to Smogon field weather
-      const wmap: Record<string, string> = {
+      const wmap: Record<DisplayText, string> = {
         sunnyday: 'Sun',
         desolateland: 'Harsh Sunshine',
         raindance: 'Rain',
@@ -250,7 +255,7 @@ export class HeuristicDamageCalculator {
     }
     if (f.terrain) {
       // open-record: Move-based terrain string mapped to Smogon field terrain
-      const tmap: Record<string, string> = {
+      const tmap: Record<DisplayText, string> = {
         electricterrain: 'Electric',
         grassyterrain: 'Grassy',
         mistyterrain: 'Misty',
@@ -264,7 +269,7 @@ export class HeuristicDamageCalculator {
 
   private resolveSpecies(species: string): string {
     // open-record: Special-case Showdown species names normalization map
-    const map: Record<string, string> = {
+    const map: Record<DisplayText, string> = {
       nidoranf: 'Nidoran-F',
       nidoranm: 'Nidoran-M',
       farfetchd: "Farfetch'd",
@@ -286,7 +291,8 @@ export class HeuristicDamageCalculator {
       max = 0;
 
     if (typeof damage === 'number') {
-      min = max = damage;
+      min = damage;
+      max = damage;
     } else if (Array.isArray(damage)) {
       if (Array.isArray(damage[0])) {
         const hits = damage as number[][];

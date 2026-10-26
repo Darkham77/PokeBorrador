@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useBattleStore } from '@/stores/battle/battle';
-import BattleMoveSlot from './BattleMoveSlot.vue';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils';
+
 import { toPokemonType } from '@/data/battle/types';
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { useBattleStore } from '@/stores/battle/battle';
 import type { Move } from '@/types/pokemon/pokemon';
+
+import BattleMoveSlot from './BattleMoveSlot.vue';
 
 const battleStore = useBattleStore();
 const player = computed(() => battleStore.player);

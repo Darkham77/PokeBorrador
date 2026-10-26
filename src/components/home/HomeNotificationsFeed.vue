@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed, useTemplateRef, onMounted, onUnmounted, nextTick } from 'vue';
 import { gsap } from 'gsap';
-import { useGameStore } from '@/stores/game';
+import { computed, useTemplateRef, onMounted, onUnmounted, nextTick } from 'vue';
+
 import { formatTime } from '@/logic/utils/timeUtils';
+import { useGameStore } from '@/stores/game';
 import type { NotificationItem } from '@/types/system/game';
+
 import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
 
 const gameStore = useGameStore();
@@ -37,7 +39,7 @@ function getTimestamp(n: NotificationItem): number {
   return n.timestamp || 0;
 }
 
-function animateList() {
+function animateList(): void {
   if (gsapCtx) {
     gsapCtx.revert();
   }

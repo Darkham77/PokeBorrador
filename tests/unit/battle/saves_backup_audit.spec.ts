@@ -1,10 +1,12 @@
-import { describe, it, expect } from 'vite-plus/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
+
 import { Dex } from '@pkmn/sim';
-import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
+import { describe, it, expect } from 'vite-plus/test';
+
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
+import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
 import { splitSQLStatements } from '../../../src/logic/db/sqlTranslator.ts';
 
 const BACKUP_FILE = path.resolve(
@@ -183,5 +185,5 @@ describe('Player Saves Migration & Compatibility Audit', () => {
 
     const { errors } = auditMigratedSaves(migratedSaves);
     expect(errors.length).toBe(0);
-  }, 240000);
+  });
 });

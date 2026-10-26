@@ -4,17 +4,18 @@
  * Decomposed helpers for search loop battle completion, encounters, and state management.
  */
 
-import type { BattleContext } from '@/types/battle/battleContext';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleMinigame } from '@/types/battle/battle.ts';
+import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import type { MapRouteId } from '@/data/world/map-assets';
 import { requireMapRouteId } from '@/data/world/map-assets';
-import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
-import { emitBattleFlowCompleted } from '@/logic/events/battleUiEvents';
-import { setBattleMinigame, resetBattleMinigameFlags } from './battleMinigames.ts';
 import { buildRivalEncounter, buildTrainerEncounter } from '@/logic/battle/trainerSpawner';
+import { emitBattleFlowCompleted } from '@/logic/events/battleUiEvents';
 import { cloneReactive } from '@/logic/utils/cloneUtils.ts';
 import { useUIStore } from '@/stores/ui';
+import type { BattleMinigame } from '@/types/battle/battle.ts';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import { setBattleMinigame, resetBattleMinigameFlags } from './battleMinigames.ts';
 
 export async function handleExitToMap(ctx: BattleContext): Promise<void> {
   const { BATTLE_STATES } = ctx;
@@ -170,7 +171,7 @@ export function applyWildOrMinigameEncounter(
       poke.isGuardian = true;
     }
     if (encounter.type === 'fishing' || encounter.type === 'archaeology') {
-      minigame = encounter.type as BattleMinigame;
+      minigame = encounter.type;
       if (typeof encounter.rarity === 'number') {
         b.rarity = encounter.rarity;
       }
@@ -207,7 +208,7 @@ export async function executeSearchPhaseTransitions(
   const fsm = ctx.fsm;
 
   if (minigame) {
-    setBattleMinigame(ctx.activeBattle.value!, minigame);
+    setBattleMinigame(ctx.activeBattle.value, minigame);
     ctx.isProcessing.value = false;
     await fsm.transition(BATTLE_STATES.INITIALIZING);
     await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MINIGAME_CHECK);
@@ -236,7 +237,7 @@ export async function executeSearchPhaseTransitions(
   await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.REORDER_TEAM);
 
   if (ctx.activeBattle.value?.trainerArchetype === 'policeman') {
-    void ctx.audio.play('siren');
+    await ctx.audio.play('siren');
   }
 
   await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE);

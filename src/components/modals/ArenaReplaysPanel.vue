@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+
+import { parseBattleReplayRecord } from '@/logic/pvp/replayCodeGenerator';
+import { logger } from '@/logic/utils/logger';
 import { useGameStore } from '@/stores/game';
 import { useLivePvPStore } from '@/stores/livePvP';
 import { useUIStore } from '@/stores/ui';
 import type { BattleReplayRecord } from '@/types/battle/pvp';
-import { parseBattleReplayRecord } from '@/logic/pvp/replayCodeGenerator';
-import { logger } from '@/logic/utils/logger';
+
 import ArenaMatchHistorySection from './ArenaMatchHistorySection.vue';
 
 const gameStore = useGameStore();
@@ -20,7 +22,7 @@ const isSearching = ref(false);
 const recentReplays = ref<BattleReplayRecord[]>([]);
 const activeLiveMatches = ref<{ id: string; p1Name: string; p2Name: string; turns: number }[]>([]);
 
-async function loadReplays() {
+async function loadReplays(): Promise<void> {
   if (!gameStore.db) return;
   try {
     const { data } = await gameStore.db
@@ -36,7 +38,7 @@ async function loadReplays() {
   }
 }
 
-async function searchByCode() {
+async function searchByCode(): Promise<void> {
   const code = searchBattleCode.value.trim().toUpperCase();
   if (!code) return;
   isSearching.value = true;
@@ -61,11 +63,11 @@ async function searchByCode() {
   }
 }
 
-function handleWatchReplay(replay: BattleReplayRecord) {
+function handleWatchReplay(replay: BattleReplayRecord): void {
   livePvP.watchReplay(replay);
 }
 
-function handleSpectateLive(matchId: string) {
+function handleSpectateLive(matchId: string): void {
   ui.notify('Conectando como espectador a la batalla...', '📺');
   livePvP.spectateMatch(matchId);
 }

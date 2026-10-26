@@ -1,11 +1,14 @@
-import type { SBCtx } from './showdownBridgeCtx.ts';
-import type { Move, Pokemon } from '../../types/pokemon/pokemon.ts';
+import type { DisplayText } from '@francogp/auditor';
+
+import { gameBus } from '@/logic/events/gameBus.ts';
 import { toID } from '@/logic/utils/strings.ts';
-import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
+import type { BattleSide } from '@/types/battle/battle.ts';
+
 import { requireAbilityId } from '../../data/battle/abilities.ts';
 import { requirePokemonSpeciesId } from '../../data/pokemon/pokedex.ts';
-import type { BattleSide } from '@/types/battle/battle.ts';
-import { gameBus } from '@/logic/events/gameBus.ts';
+import type { Move, Pokemon } from '../../types/pokemon/pokemon.ts';
+import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
+import type { SBCtx } from './showdownBridgeCtx.ts';
 
 function applyTransformToUser(user: Pokemon, targetPoke: Pokemon): void {
   if (!user.isTransformed) {
@@ -168,7 +171,7 @@ function handleFormeChange(ctx: SBCtx): boolean {
   return true;
 }
 
-const GIMMICK_HANDLERS: Readonly<Record<string, (ctx: SBCtx) => boolean>> = {
+const GIMMICK_HANDLERS: Readonly<Record<DisplayText, (ctx: SBCtx) => boolean>> = {
   // open-record: Showdown gimmick event dispatch table
   '-terastallize': handleTerastallize,
   '-mega': handleMega,

@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import PokemonStatusSection from '@/components/pokemon-detail/PokemonStatusSection.vue';
 import PokemonSummaryPhysicalGrid from '@/components/pokemon-detail/PokemonSummaryPhysicalGrid.vue';
 import PokemonSummaryTrophiesSection from '@/components/pokemon-detail/PokemonSummaryTrophiesSection.vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { SpeciesSummaryData } from './pokemonSummaryTypes.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import type { PhysicalData } from './pokemonSummaryHelper.ts';
+import type { SpeciesSummaryData } from './pokemonSummaryTypes.ts';
 
 const props = defineProps<{
   species: SpeciesSummaryData;

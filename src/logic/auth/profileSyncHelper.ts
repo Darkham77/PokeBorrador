@@ -5,10 +5,10 @@
  */
 
 import type { DBRouter } from '@/logic/db/dbRouter';
-import type { AuthUser } from '@/types/auth/auth';
+import { logger } from '@/logic/utils/logger';
 import type { SaveDataDto } from '@/logic/validation/schemas';
 import { validateUserProfile } from '@/logic/validation/schemas';
-import { logger } from '@/logic/utils/logger';
+import type { AuthUser } from '@/types/auth/auth';
 
 export async function syncUserProfileData(
   db: DBRouter,

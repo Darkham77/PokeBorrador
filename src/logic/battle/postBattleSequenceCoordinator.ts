@@ -1,13 +1,14 @@
 import { ref, type Ref } from 'vue';
-import type { BattleContext } from '@/types/battle/battleContext';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
-import { useEvolutionStore } from '@/stores/evolution';
-import { useEventStore } from '@/stores/events';
 import { gsapSleep } from '@/logic/utils/gsapHelpers';
 import { logger } from '@/logic/utils/logger';
+import { useEventStore } from '@/stores/events';
+import { useEvolutionStore } from '@/stores/evolution';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
 export type PostBattleTaskType = 'move_learning' | 'evolution' | 'event_auto_enroll' | 'custom';
 

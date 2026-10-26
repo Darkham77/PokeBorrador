@@ -13,16 +13,7 @@
  *   - Collision Matrix: 0: transitable, 1: solid obstacle, 2: water
  */
 
-import {
-  type TilesRegistryService,
-  type TileCollision,
-  defaultTilesRegistry
-} from './tilesRegistry.ts';
 import type { StructureTemplate } from '../../config/mapStructures.ts';
-import { computeBiomeDistribution } from './biomeDistributionEngine.ts';
-import type { CityGenerationConfig } from '../../types/map/adventureWorldTypes.ts';
-import { generateUrbanLayout } from './urbanZoningEngine.ts';
-import { createMulberry32 } from './noise/simplexNoise.ts';
 import {
   DEFAULT_CITY_PROPS_DENSITY,
   STANDARD_GBA_TILE_SIZE,
@@ -31,6 +22,15 @@ import {
   ROUTE_LEDGE_NORTH_RATIO,
   ROUTE_LEDGE_SOUTH_RATIO
 } from '../../config/proceduralMapConfig.ts';
+import type { CityGenerationConfig } from '../../types/map/adventureWorldTypes.ts';
+import { computeBiomeDistribution } from './biomeDistributionEngine.ts';
+import { createMulberry32 } from './noise/simplexNoise.ts';
+import {
+  type TilesRegistryService,
+  type TileCollision,
+  defaultTilesRegistry
+} from './tilesRegistry.ts';
+import { generateUrbanLayout } from './urbanZoningEngine.ts';
 
 export type {
   CollisionType,
@@ -51,14 +51,16 @@ import type {
   MapCell,
   GeneratedMap
 } from '../../types/map/proceduralMapTypes.ts';
-import { stampStructure } from './structureStamper.ts';
 import { resolvePathAutotiling } from './proceduralAutotileEngine.ts';
 import {
-  stampOrganicWaterBodies,
-  stampElevationCliffsAndCones
-} from './proceduralTopographyEngine.ts';
-import { stampPerimeterForestAndCanopy } from './proceduralForestEngine.ts';
+  CANONICAL_PALETTES,
+  getBiomePalette,
+  type Autotile9Slice,
+  type MultitileTemplate,
+  type ThemeBiomePalette
+} from './proceduralBiomePalettes.ts';
 import { stampFloraLedgesAndProps } from './proceduralFloraEngine.ts';
+import { stampPerimeterForestAndCanopy } from './proceduralForestEngine.ts';
 import {
   resolveMapSettings,
   initBaseLayers,
@@ -70,14 +72,11 @@ import {
   resolveMapSpawns,
   countTotalTilesPlaced
 } from './proceduralMapHelpers.ts';
-
 import {
-  CANONICAL_PALETTES,
-  getBiomePalette,
-  type Autotile9Slice,
-  type MultitileTemplate,
-  type ThemeBiomePalette
-} from './proceduralBiomePalettes.ts';
+  stampOrganicWaterBodies,
+  stampElevationCliffsAndCones
+} from './proceduralTopographyEngine.ts';
+import { stampStructure } from './structureStamper.ts';
 export {
   CANONICAL_PALETTES,
   getBiomePalette,
@@ -92,7 +91,7 @@ export {
 export class ProceduralMapGenerator {
   private readonly registry: TilesRegistryService;
 
-  constructor(registry: TilesRegistryService = defaultTilesRegistry) {
+  public constructor(registry: TilesRegistryService = defaultTilesRegistry) {
     this.registry = registry;
   }
 

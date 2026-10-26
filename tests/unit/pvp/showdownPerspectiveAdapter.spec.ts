@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
+
 import { ShowdownPerspectiveAdapter } from '@/logic/battle/helpers/showdownPerspectiveAdapter';
 import type { ShowdownPlayerRequest } from '@/types/battle/battle';
 

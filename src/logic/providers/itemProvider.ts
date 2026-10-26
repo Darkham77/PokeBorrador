@@ -1,7 +1,8 @@
-import { itemEffects } from '../items/itemEffects.ts';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import { getItemById, requireItemId, type ItemId } from '@/data/inventory/items';
 import type { Item } from '@/types/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import { itemEffects } from '../items/itemEffects.ts';
 
 /**
  * Central Item Logic Provider

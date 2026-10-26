@@ -1,20 +1,23 @@
 import type { Ref } from 'vue';
+
+import { logger } from '@/logic/utils/logger.ts';
 export type DelayedCall = { kill: () => void };
-import { parseInstantSafe } from '@/logic/utils/timeUtils.ts';
 import { DEFAULT_INITIAL_ELO, ONLINE_PRESENCE_WINDOW_MS } from '@/logic/constants/gameplay.ts';
 import { isAllowedRankGap } from '@/logic/pvp/rankedEngine.ts';
+import { parseInstantSafe } from '@/logic/utils/timeUtils.ts';
 import {
   PVP_INVITE_EXPIRY_MS,
   MATCHMAKING_TIMEOUT_SEC,
   FAST_MATCHMAKING_TIMEOUT_SEC,
   type BattleInvite,
-  type PvpChallengeConfig
+  type PvpChallengeConfig,
+  type PvPMatchType
 } from '@/types/battle/pvp';
 
 export function getMatchmakingTimeoutSec(): number {
   const debugObj =
-    typeof window !== 'undefined'
-      ? window.__VITE_DEBUG__
+    typeof globalThis.window !== 'undefined'
+      ? globalThis.__VITE_DEBUG__
       : typeof globalThis !== 'undefined'
         ? globalThis.__VITE_DEBUG__
         : undefined;
@@ -23,8 +26,8 @@ export function getMatchmakingTimeoutSec(): number {
   }
   return MATCHMAKING_TIMEOUT_SEC;
 }
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { DBRouter } from '@/logic/db/dbRouter.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export interface RankedQueueEntry {
   user_id: string;
@@ -64,7 +67,7 @@ export async function executePollMatchmaking(ctx: {
   userId?: string;
   myElo?: number;
   isSearching: Ref<boolean>;
-  searchPhase: Ref<'human' | 'passive_fallback' | 'matched'>;
+  searchPhase: Ref<PvPMatchType>;
   killSearchCountdown: () => void;
   onMatched: (invite: BattleInvite) => void;
 }): Promise<void> {
@@ -113,13 +116,13 @@ export function executeInitInvitePoller(ctx: {
   db: DBRouter | null;
   userId?: string;
   isSearching: Ref<boolean>;
-  searchPhase: Ref<'human' | 'passive_fallback' | 'matched'>;
+  searchPhase: Ref<PvPMatchType>;
   activeInvite: Ref<BattleInvite | null>;
   killSearchCountdown: () => void;
   onAcceptRankedInvite: (inviteId: string) => void;
   scheduleNext: (cb: () => void) => DelayedCall;
 }): DelayedCall | null {
-  const poll = async () => {
+  const poll = async (): Promise<void> => {
     if (!ctx.userId || !ctx.db) return;
     const { data } = (await ctx.db
       .from('battle_invites')
@@ -171,7 +174,7 @@ export async function executeStartSearch(ctx: {
   notify: (msg: string, icon?: string) => void;
   isSearching: Ref<boolean>;
   searchSecondsRemaining: Ref<number>;
-  searchPhase: Ref<'human' | 'passive_fallback' | 'matched'>;
+  searchPhase: Ref<PvPMatchType>;
   startSearchCountdown: () => void;
   pollMatchmaking: () => Promise<void>;
   scheduleMatchmakingPoll: (cb: () => void) => DelayedCall;
@@ -206,7 +209,7 @@ export async function executeStartSearch(ctx: {
   ctx.startSearchCountdown();
 
   let poller: DelayedCall | null = null;
-  const poll = async () => {
+  const poll = async (): Promise<void> => {
     await ctx.pollMatchmaking();
     if (ctx.isSearching.value && ctx.searchPhase.value === 'human') {
       poller = ctx.scheduleMatchmakingPoll(poll);
@@ -221,7 +224,7 @@ export async function executeCancelSearch(ctx: {
   db: DBRouter | null;
   userId?: string;
   isSearching: Ref<boolean>;
-  searchPhase: Ref<'human' | 'passive_fallback' | 'matched'>;
+  searchPhase: Ref<PvPMatchType>;
   searchSecondsRemaining: Ref<number>;
   killSearchCountdown: () => void;
   killMatchmakingPoller: () => void;
@@ -327,11 +330,13 @@ export function executeStartSearchCountdown(ctx: {
   scheduleNext: (cb: () => void) => DelayedCall;
 }): DelayedCall {
   let timer: DelayedCall;
-  const tick = () => {
+  const tick = (): void => {
     if (!ctx.isSearching.value) return;
     ctx.searchSecondsRemaining.value--;
     if (ctx.searchSecondsRemaining.value <= 0) {
-      void ctx.fallbackToPassiveBattle();
+      ctx.fallbackToPassiveBattle().catch((err) => {
+        logger.warn('Handled promise rejection:', { cause: err });
+      });
     } else {
       timer = ctx.scheduleNext(tick);
     }

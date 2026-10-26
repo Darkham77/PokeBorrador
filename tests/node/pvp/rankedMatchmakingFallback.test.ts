@@ -1,18 +1,19 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { ref } from 'vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import { deserializePokemonTeam } from '@/logic/auth/savePokemonSerializer';
 import type { DBRouter } from '@/logic/db/dbRouter';
 import {
   executePollMatchmaking,
   getMatchmakingTimeoutSec
 } from '@/logic/pvp/livePvPMatchmakingHandler';
-import { executePassiveMatchmakingFallback } from '@/logic/pvp/passiveMatchmakingHelper';
-import { deserializePokemonTeam } from '@/logic/auth/savePokemonSerializer';
 import { executeStartPassiveBattle } from '@/logic/pvp/livePvPPassiveFallbackHandler';
+import { executePassiveMatchmakingFallback } from '@/logic/pvp/passiveMatchmakingHelper';
 import { createPassiveTeamSnapshot } from '@/logic/pvp/pvpTeamHelper';
-import { useDebugStore } from '@/stores/debug';
 import { useAuthStore } from '@/stores/auth';
+import { useDebugStore } from '@/stores/debug';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Ranked Matchmaking & Passive Fallback (No Team Preview, Strict ELO, Zero Bots)', () => {
   const createFakePoke = (uid: string, name: string): Pokemon => {

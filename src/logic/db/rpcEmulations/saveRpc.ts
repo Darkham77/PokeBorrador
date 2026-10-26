@@ -1,6 +1,7 @@
+import type { DBResponse } from '@/types/system/database';
+
 import { queryLocal, persistSQLite } from '../sqliteEngine.ts';
 import type { SQLiteDatabase } from '../sqliteEngine.ts';
-import type { DBResponse } from '@/types/system/database';
 
 export async function emulateSaveGameTrusted(
   sqliteDb: SQLiteDatabase,

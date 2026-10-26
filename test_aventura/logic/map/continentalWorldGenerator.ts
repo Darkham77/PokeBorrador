@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/map/continentalWorldGenerator.ts
  *
@@ -11,17 +12,6 @@
  * 5. Clean export pipeline (Game Data JSON + SVG vector routes for PokéVicio Dijkstra navigation).
  */
 
-import { SimplexNoise, fbm2D } from './noise/simplexNoise.ts';
-import {
-  KANTO_WORLD_WIDTH,
-  KANTO_WORLD_HEIGHT,
-  KANTO_TILE_SIZE,
-  KANTO_SPACING_MULTIPLIER,
-  CELL_BIOME,
-  type CellBiomeType
-} from '../../types/map/kantoGridModel.ts';
-import { defaultPrefabsRegistry } from './prefabsRegistry.ts';
-import { CANONICAL_PALETTES, type ThemeBiomePalette } from './proceduralMapGenerator.ts';
 import {
   MULBERRY32_CONFIG,
   CONTINENTAL_SEED_OFFSETS,
@@ -42,6 +32,17 @@ import type {
   CanonicalThemeSource,
   ContinentalRoutesExportBundle
 } from '../../types/map/adventureWorldTypes.ts';
+import {
+  KANTO_WORLD_WIDTH,
+  KANTO_WORLD_HEIGHT,
+  KANTO_TILE_SIZE,
+  KANTO_SPACING_MULTIPLIER,
+  CELL_BIOME,
+  type CellBiomeType
+} from '../../types/map/kantoGridModel.ts';
+import { SimplexNoise, fbm2D } from './noise/simplexNoise.ts';
+import { defaultPrefabsRegistry } from './prefabsRegistry.ts';
+import { CANONICAL_PALETTES, type ThemeBiomePalette } from './proceduralMapGenerator.ts';
 
 export interface ContinentalWorldGenOptions {
   readonly width?: number;
@@ -61,9 +62,9 @@ export interface ContinentalWorldGenResult {
   readonly config: ProceduralGenerationConfig;
   readonly themeSource: CanonicalThemeSource;
   readonly themePalette: ThemeBiomePalette;
-  readonly nodes: Record<string, AdventureProjectNode>; // open-record: Procedural adventure nodes indexed by node id
+  readonly nodes: Record<DisplayText, AdventureProjectNode>; // open-record: Procedural adventure nodes indexed by node id
   readonly connections: [string, string][];
-  readonly customTerrain: Record<string, CellBiomeType>; // open-record: Coordinate key string (col,row) to biome mapping
+  readonly customTerrain: Record<DisplayText, CellBiomeType>; // open-record: Coordinate key string (col,row) to biome mapping
   readonly svgPathData: string;
 }
 
@@ -88,7 +89,6 @@ export function getCanonicalTileForBiome(
       return palette.mountainCone2x3.tiles[1]?.[1] ?? 'tile_elevation_e5a5b972eb';
     case CELL_BIOME.TALL_GRASS:
       return palette.props.tallGrass;
-    case CELL_BIOME.GRASS:
     default:
       return palette.grass;
   }
@@ -168,9 +168,9 @@ export function generateProceduralContinentalTerrain(
   height: number,
   seed: number,
   config?: ProceduralGenerationConfig
-): Record<string, CellBiomeType> {
+): Record<DisplayText, CellBiomeType> {
   // open-record: Coordinate key string (col,row) to biome mapping
-  const customTerrain: Record<string, CellBiomeType> = {}; // open-record: Coordinate key string (col,row) to biome mapping
+  const customTerrain: Record<DisplayText, CellBiomeType> = {}; // open-record: Coordinate key string (col,row) to biome mapping
   const gridW = Math.ceil(width / KANTO_TILE_SIZE);
   const gridH = Math.ceil(height / KANTO_TILE_SIZE);
 
@@ -296,16 +296,16 @@ export function scatterUrbanNodes(
   width: number,
   height: number,
   seed: number,
-  terrain: Record<string, CellBiomeType>, // open-record: Coordinate key string (col,row) to biome mapping
+  terrain: Record<DisplayText, CellBiomeType>, // open-record: Coordinate key string (col,row) to biome mapping
   targetCount: number = CONTINENTAL_URBAN_SCATTER_CONFIG.defaultTargetCount
-): Record<string, AdventureProjectNode> {
+): Record<DisplayText, AdventureProjectNode> {
   // open-record: Procedural adventure nodes indexed by node id
   const prng = mulberry32(seed + CONTINENTAL_SEED_OFFSETS.urbanScatter);
   const gridW = Math.ceil(width / KANTO_TILE_SIZE);
   const gridH = Math.ceil(height / KANTO_TILE_SIZE);
 
   const uCfg = CONTINENTAL_URBAN_SCATTER_CONFIG;
-  const nodes: Record<string, AdventureProjectNode> = {}; // open-record: Procedural adventure nodes indexed by node id
+  const nodes: Record<DisplayText, AdventureProjectNode> = {}; // open-record: Procedural adventure nodes indexed by node id
   const placedPositions: { x: number; y: number }[] = [];
 
   // Urban scales hierarchy distribution
@@ -399,7 +399,7 @@ export function scatterUrbanNodes(
  * Guarantees 100% graph connectivity with 0 orphan nodes and rich alternative routes.
  */
 export function generateRoadNetwork(
-  nodes: Record<string, AdventureProjectNode> // open-record: Procedural adventure nodes indexed by node id
+  nodes: Record<DisplayText, AdventureProjectNode> // open-record: Procedural adventure nodes indexed by node id
 ): [string, string][] {
   const nodeIds = Object.keys(nodes);
   const n = nodeIds.length;
@@ -430,13 +430,13 @@ export function generateRoadNetwork(
   allEdges.sort((a, b) => a.weight - b.weight);
 
   // 2. Kruskal's MST algorithm with Disjoint-Set / Union-Find
-  const parent: Record<string, string> = {}; // open-record: Disjoint-set union-find parent mapping
+  const parent: Record<DisplayText, string> = {}; // open-record: Disjoint-set union-find parent mapping
   for (const id of nodeIds) parent[id] = id;
 
   function find(i: string): string {
     if (parent[i] === i) return i;
     parent[i] = find(parent[i]!);
-    return parent[i]!;
+    return parent[i];
   }
 
   function union(i: string, j: string): boolean {
@@ -484,7 +484,7 @@ export function generateRoadNetwork(
  * 4. Generate SVG Path Data String for Vector Road Connections
  */
 export function generateSvgRoadPathData(
-  nodes: Record<string, AdventureProjectNode>, // open-record: Procedural adventure nodes indexed by node id
+  nodes: Record<DisplayText, AdventureProjectNode>, // open-record: Procedural adventure nodes indexed by node id
   connections: [string, string][]
 ): string {
   const pathCommands: string[] = []; // no-domain: Estructura o identificador procedural de aventura
@@ -504,6 +504,34 @@ export function generateSvgRoadPathData(
   return pathCommands.join(' ');
 }
 
+function avoidMountainWaypoint(
+  wx: number,
+  wy: number,
+  perpX: number,
+  perpY: number,
+  maxShifts: number,
+  terrain: Record<DisplayText, CellBiomeType>
+): { readonly x: number; readonly y: number } {
+  const wgx = Math.round(wx);
+  const wgy = Math.round(wy);
+  if (terrain[`${wgx}_${wgy}`] !== CELL_BIOME.MOUNTAIN_DIRT) {
+    return { x: wx, y: wy };
+  }
+
+  for (let shift = 1; shift <= maxShifts; shift++) {
+    const testA = terrain[`${Math.round(wx + perpX * shift)}_${Math.round(wy + perpY * shift)}`];
+    if (testA !== CELL_BIOME.MOUNTAIN_DIRT && testA !== undefined) {
+      return { x: wx + perpX * shift, y: wy + perpY * shift };
+    }
+    const testB = terrain[`${Math.round(wx - perpX * shift)}_${Math.round(wy - perpY * shift)}`];
+    if (testB !== CELL_BIOME.MOUNTAIN_DIRT && testB !== undefined) {
+      return { x: wx - perpX * shift, y: wy - perpY * shift };
+    }
+  }
+
+  return { x: wx, y: wy };
+}
+
 /**
  * 4. Rasterize Natural Roads and Bridges on the Terrain Grid
  *
@@ -514,8 +542,8 @@ export function generateSvgRoadPathData(
  * - BRIDGE over water, DIRT_PATH over walkable terrain
  */
 export function rasterizeRoadsOnTerrain(
-  terrain: Record<string, CellBiomeType>, // open-record: Coordinate key string (col,row) to biome mapping
-  nodes: Record<string, AdventureProjectNode>, // open-record: Procedural adventure nodes indexed by node id
+  terrain: Record<DisplayText, CellBiomeType>, // open-record: Coordinate key string (col,row) to biome mapping
+  nodes: Record<DisplayText, AdventureProjectNode>, // open-record: Procedural adventure nodes indexed by node id
   connections: readonly (readonly [string, string])[],
   gridW: number,
   gridH: number,
@@ -627,27 +655,16 @@ export function rasterizeRoadsOnTerrain(
       wy += perpY * displacement;
 
       // Mountain avoidance: if waypoint lands on mountain, shift perpendicular
-      const wgx = Math.round(wx);
-      const wgy = Math.round(wy);
-      if (terrain[`${wgx}_${wgy}`] === CELL_BIOME.MOUNTAIN_DIRT) {
-        // Try shifting perpendicular in both directions
-        for (let shift = 1; shift <= rCfg.maxMountainPerpShifts; shift++) {
-          const testA =
-            terrain[`${Math.round(wx + perpX * shift)}_${Math.round(wy + perpY * shift)}`];
-          if (testA !== CELL_BIOME.MOUNTAIN_DIRT && testA !== undefined) {
-            wx += perpX * shift;
-            wy += perpY * shift;
-            break;
-          }
-          const testB =
-            terrain[`${Math.round(wx - perpX * shift)}_${Math.round(wy - perpY * shift)}`];
-          if (testB !== CELL_BIOME.MOUNTAIN_DIRT && testB !== undefined) {
-            wx -= perpX * shift;
-            wy -= perpY * shift;
-            break;
-          }
-        }
-      }
+      const shifted = avoidMountainWaypoint(
+        wx,
+        wy,
+        perpX,
+        perpY,
+        rCfg.maxMountainPerpShifts,
+        terrain
+      );
+      wx = shifted.x;
+      wy = shifted.y;
 
       waypoints.push({ x: wx, y: wy });
     }
@@ -741,7 +758,7 @@ export function bakeUrbanMaquette(
     h: plazaSizePx
   };
 
-  const layout = CONTINENTAL_MAQUETTE_LAYOUTS[scale] ?? CONTINENTAL_MAQUETTE_LAYOUTS.town!;
+  const layout = CONTINENTAL_MAQUETTE_LAYOUTS[scale] ?? CONTINENTAL_MAQUETTE_LAYOUTS.town;
 
   const h =
     Math.abs(
@@ -753,7 +770,7 @@ export function bakeUrbanMaquette(
     ) >>> 0;
   const allB = defaultPrefabsRegistry.getByCategory('buildings');
   const housePrefabs = allB.filter((b) => b.id.includes('house') || b.id.includes('cottage'));
-  const getHouse = (offset: number, fallback: string) => {
+  const getHouse = (offset: number, fallback: string): string => {
     if (housePrefabs.length === 0) return fallback;
     return housePrefabs[(h + offset) % housePrefabs.length]!.id;
   };
@@ -779,14 +796,68 @@ export function bakeUrbanMaquette(
   return { plazaRect, buildings, props };
 }
 
+export interface WorldRectBounds {
+  readonly x: number;
+  readonly y: number;
+  readonly w: number;
+  readonly h: number;
+}
+
+function paveBuildingDoorwaySidewalk(
+  b: WorldRectBounds,
+  maxSteps: number,
+  gridW: number,
+  gridH: number,
+  terrain: Record<DisplayText, CellBiomeType>
+): void {
+  const bx = Math.floor(b.x / KANTO_TILE_SIZE);
+  const by = Math.floor(b.y / KANTO_TILE_SIZE);
+  const bw = Math.ceil(b.w / KANTO_TILE_SIZE);
+  const bh = Math.ceil(b.h / KANTO_TILE_SIZE);
+
+  const doorX = bx + Math.floor(bw / 2);
+  const doorY = by + bh;
+  for (let step = 0; step <= maxSteps; step++) {
+    const cy = doorY + step;
+    if (doorX >= 0 && doorX < gridW && cy >= 0 && cy < gridH) {
+      const key = `${doorX}_${cy}`;
+      if (terrain[key] !== CELL_BIOME.WATER) {
+        terrain[key] = CELL_BIOME.DIRT_PATH;
+      }
+    }
+  }
+}
+
+function paveSettlementPlazaAvenue(
+  plazaRect: WorldRectBounds,
+  gridW: number,
+  gridH: number,
+  terrain: Record<DisplayText, CellBiomeType>
+): void {
+  const ptx = Math.floor(plazaRect.x / KANTO_TILE_SIZE);
+  const pty = Math.floor(plazaRect.y / KANTO_TILE_SIZE);
+  const ptw = Math.ceil(plazaRect.w / KANTO_TILE_SIZE);
+  const pth = Math.ceil(plazaRect.h / KANTO_TILE_SIZE);
+
+  for (let y = pty; y < pty + pth; y++) {
+    for (let x = ptx; x < ptx + ptw; x++) {
+      if (x < 0 || x >= gridW || y < 0 || y >= gridH) continue;
+      const key = `${x}_${y}`;
+      if (terrain[key] !== CELL_BIOME.WATER) {
+        terrain[key] = CELL_BIOME.PLAZA_STONE;
+      }
+    }
+  }
+}
+
 /**
  * 6. Stamp Urban Plazas on the Terrain Grid
  * Paves PLAZA_STONE strictly under building footprints, 1-tile entrance sidewalks,
  * and compact central civic squares for metropolises/cities (no giant empty helipads).
  */
 function stampUrbanPlazasOnTerrain(
-  terrain: Record<string, CellBiomeType>, // open-record: Coordinate key string (col,row) to biome mapping
-  nodes: Record<string, AdventureProjectNode>, // open-record: Procedural adventure nodes indexed by node id
+  terrain: Record<DisplayText, CellBiomeType>, // open-record: Coordinate key string (col,row) to biome mapping
+  nodes: Record<DisplayText, AdventureProjectNode>, // open-record: Procedural adventure nodes indexed by node id
   gridW: number,
   gridH: number
 ): void {
@@ -799,40 +870,18 @@ function stampUrbanPlazasOnTerrain(
 
     // 1. Pave 1-tile sidewalk immediately in front of each building
     for (const b of maquette.buildings) {
-      const bx = Math.floor(b.x / KANTO_TILE_SIZE);
-      const by = Math.floor(b.y / KANTO_TILE_SIZE);
-      const bw = Math.ceil(b.w / KANTO_TILE_SIZE);
-      const bh = Math.ceil(b.h / KANTO_TILE_SIZE);
-
-      const doorX = bx + Math.floor(bw / 2);
-      const doorY = by + bh;
-      for (let step = 0; step <= CONTINENTAL_MAQUETTE_CONFIG.sidewalkMaxSteps; step++) {
-        const cy = doorY + step;
-        if (doorX >= 0 && doorX < gridW && cy >= 0 && cy < gridH) {
-          const key = `${doorX}_${cy}`;
-          if (terrain[key] !== CELL_BIOME.WATER) {
-            terrain[key] = CELL_BIOME.DIRT_PATH;
-          }
-        }
-      }
+      paveBuildingDoorwaySidewalk(
+        b,
+        CONTINENTAL_MAQUETTE_CONFIG.sidewalkMaxSteps,
+        gridW,
+        gridH,
+        terrain
+      );
     }
 
     // 2. Compact central connecting avenues for metropolis and city
     if (node.urbanScale === 'metropolis' || node.urbanScale === 'city') {
-      const ptx = Math.floor(maquette.plazaRect.x / KANTO_TILE_SIZE);
-      const pty = Math.floor(maquette.plazaRect.y / KANTO_TILE_SIZE);
-      const ptw = Math.ceil(maquette.plazaRect.w / KANTO_TILE_SIZE);
-      const pth = Math.ceil(maquette.plazaRect.h / KANTO_TILE_SIZE);
-
-      for (let y = pty; y < pty + pth; y++) {
-        for (let x = ptx; x < ptx + ptw; x++) {
-          if (x < 0 || x >= gridW || y < 0 || y >= gridH) continue;
-          const key = `${x}_${y}`;
-          if (terrain[key] !== CELL_BIOME.WATER) {
-            terrain[key] = CELL_BIOME.PLAZA_STONE;
-          }
-        }
-      }
+      paveSettlementPlazaAvenue(maquette.plazaRect, gridW, gridH, terrain);
     }
   }
 }

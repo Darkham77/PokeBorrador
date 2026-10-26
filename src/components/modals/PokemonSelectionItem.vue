@@ -1,23 +1,24 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
 import PVTooltip from '@/components/common/PVTooltip.vue';
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
-import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue';
-import { getPokemonTier } from '@/logic/pokemon/tierEngine';
-import { calculateTotalIVs } from '@/logic/pokemon/statsMath';
-import { useUIStore } from '@/stores/ui';
-import { useBreedingStore } from '@/stores/breeding';
-import { checkCompatibility } from '@/logic/breeding/breedingEngine';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type { Pokemon, PokemonSelectionSource } from '@/types/pokemon/pokemon';
 import { toPokemonType, type PokemonType } from '@/data/battle/types';
+import { checkCompatibility } from '@/logic/breeding/breedingEngine';
+import { calculateTotalIVs } from '@/logic/pokemon/statsMath';
+import { getPokemonTier } from '@/logic/pokemon/tierEngine';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { useBreedingStore } from '@/stores/breeding';
+import { useUIStore } from '@/stores/ui';
+import type { Pokemon, PokemonSelectionSource } from '@/types/pokemon/pokemon';
+
 import PokemonSelectionItemBattleHp from './selection/PokemonSelectionItemBattleHp.vue';
-import PokemonSelectionItemDaycare from './selection/PokemonSelectionItemDaycare.vue';
 import PokemonSelectionItemCompetition from './selection/PokemonSelectionItemCompetition.vue';
-import PokemonSelectionItemPreview from './selection/PokemonSelectionItemPreview.vue';
+import PokemonSelectionItemDaycare from './selection/PokemonSelectionItemDaycare.vue';
 import PokemonSelectionItemHeaderActions from './selection/PokemonSelectionItemHeaderActions.vue';
+import PokemonSelectionItemPreview from './selection/PokemonSelectionItemPreview.vue';
 
 const uiStore = useUIStore();
 const breedingStore = useBreedingStore();
@@ -99,13 +100,13 @@ const seasonEvaluation = computed(() => {
   return evaluatePokemonForSeason(props.item.pokemon, props.seasonRules);
 });
 
-function handleOpenDetail() {
+function handleOpenDetail(): void {
   uiStore.openPokemonDetail(props.item.pokemon, props.item.index, props.item._source, {
     source: 'selection'
   });
 }
 
-function handleClick() {
+function handleClick(): void {
   if (seasonEvaluation.value && !seasonEvaluation.value.eligible) {
     uiStore.notify(
       `Este Pokémon no cumple las reglas de la temporada: ${seasonEvaluation.value.reason || ''}`,

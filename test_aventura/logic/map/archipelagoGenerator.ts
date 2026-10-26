@@ -10,9 +10,6 @@
  *   4. Safe maritime navigation channels (open ocean surrounding all islands, zero outer border spills).
  */
 
-import { SimplexNoise } from './noise/simplexNoise.ts';
-import type { WaterTerrainKind } from './waterAutotileEngine.ts';
-import { computeGridDistanceField, type GridBfsQueueItem } from '../utils/gridBfsUtils.ts';
 import {
   ARCHIPELAGO_NOISE_SEED_OFFSET,
   PORT_ISLAND_MASSIVE_RX,
@@ -70,6 +67,9 @@ import {
   ARCHIPELAGO_FINE_NOISE_WEIGHT,
   ISLAND_CORE_GRASS_THRESHOLD
 } from '../../config/archipelagoConfig.ts';
+import { computeGridDistanceField, type GridBfsQueueItem } from '../utils/gridBfsUtils.ts';
+import { SimplexNoise } from './noise/simplexNoise.ts';
+import type { WaterTerrainKind } from './waterAutotileEngine.ts';
 
 const _ARCHIPELAGO_ISLAND_ROLES = [
   'port_city',
@@ -125,6 +125,115 @@ interface IslandTemplate {
     readonly minY: number;
     readonly maxY: number;
   };
+}
+
+function isIslandSeparationValid(
+  x: number,
+  y: number,
+  rx: number,
+  placedIslands: readonly ArchipelagoIslandSpec[],
+  minExtraSeparation: number
+): boolean {
+  for (const p of placedIslands) {
+    const sep = Math.hypot(x - p.cx, y - p.cy);
+    if (sep < rx + p.radiusX + minExtraSeparation) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function doesCellTouchWater(
+  x: number,
+  y: number,
+  matrix: readonly (readonly WaterTerrainKind[])[]
+): boolean {
+  return (
+    matrix[y - 1]![x] === 'water' ||
+    matrix[y - 1]![x] === 'water_deep' ||
+    matrix[y + 1]![x] === 'water' ||
+    matrix[y + 1]![x] === 'water_deep' ||
+    matrix[y]![x - 1] === 'water' ||
+    matrix[y]![x - 1] === 'water_deep' ||
+    matrix[y]![x + 1] === 'water' ||
+    matrix[y]![x + 1] === 'water_deep'
+  );
+}
+
+function updateBoundsWithCell(
+  x: number,
+  y: number,
+  bounds: { minX: number; maxX: number; minY: number; maxY: number }
+): void {
+  if (x < bounds.minX) bounds.minX = x;
+  if (x > bounds.maxX) bounds.maxX = x;
+  if (y < bounds.minY) bounds.minY = y;
+  if (y > bounds.maxY) bounds.maxY = y;
+}
+
+function findRelaxedIslandPlacement(
+  tmpl: IslandTemplate,
+  matrix: readonly (readonly WaterTerrainKind[])[],
+  distToLand: readonly (readonly number[])[],
+  placedIslands: readonly ArchipelagoIslandSpec[],
+  noise: SimplexNoise,
+  W: number,
+  H: number
+): { bestX: number; bestY: number } {
+  const relaxedContinent = Math.max(6, tmpl.minContinentDist - 4);
+  const relaxedBorder = Math.max(6, tmpl.minBorderDist - 4);
+  let bestScore = -Infinity;
+  let bestX = -1;
+  let bestY = -1;
+
+  for (let y = tmpl.minBorderDist; y < H - tmpl.minBorderDist; y += 3) {
+    for (let x = tmpl.minBorderDist; x < W - tmpl.minBorderDist; x += 3) {
+      if (matrix[y]![x] !== 'water') continue;
+      const dLand = distToLand[y]![x]!;
+      if (dLand < relaxedContinent + tmpl.rx) continue;
+      const borderDist = Math.min(x, W - 1 - x, y, H - 1 - y);
+      if (borderDist < relaxedBorder + tmpl.rx) continue;
+      if (!isIslandSeparationValid(x, y, tmpl.rx, placedIslands, ISLAND_INTER_SEPARATION_RELAXED)) {
+        continue;
+      }
+
+      const n = noise.noise2D(
+        x * ARCHIPELAGO_COARSE_NOISE_SCALE,
+        y * ARCHIPELAGO_COARSE_NOISE_SCALE
+      );
+      const score = dLand + n * 8;
+      if (score > bestScore) {
+        bestScore = score;
+        bestX = x;
+        bestY = y;
+      }
+    }
+  }
+  return { bestX, bestY };
+}
+
+function applyIslandBeachBuffer(
+  matrix: WaterTerrainKind[][],
+  bounds: PlacedArchipelagoIslandLike['bounds'],
+  W: number,
+  H: number,
+  iterations: number,
+  padding: number
+): void {
+  for (let iter = 0; iter < iterations; iter++) {
+    const minY = Math.max(1, bounds.minY - padding);
+    const maxY = Math.min(H - padding, bounds.maxY + padding);
+    const minX = Math.max(1, bounds.minX - padding);
+    const maxX = Math.min(W - padding, bounds.maxX + padding);
+
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        if (matrix[y]![x] === 'grass' && doesCellTouchWater(x, y, matrix)) {
+          matrix[y]![x] = 'sand';
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -305,15 +414,11 @@ export function generateArchipelagoIslands(
         if (borderDist < tmpl.minBorderDist + tmpl.rx) continue;
 
         // Check separation from already placed islands
-        let tooClose = false;
-        for (const p of placedIslands) {
-          const sep = Math.hypot(x - p.cx, y - p.cy);
-          if (sep < tmpl.rx + p.radiusX + ISLAND_INTER_SEPARATION_STRICT) {
-            tooClose = true;
-            break;
-          }
+        if (
+          !isIslandSeparationValid(x, y, tmpl.rx, placedIslands, ISLAND_INTER_SEPARATION_STRICT)
+        ) {
+          continue;
         }
-        if (tooClose) continue;
 
         const n = noise.noise2D(
           x * ARCHIPELAGO_COARSE_NOISE_SCALE,
@@ -330,48 +435,23 @@ export function generateArchipelagoIslands(
 
     // Fallback search with relaxed clearance if strict didn't find a spot
     if (bestX === -1) {
-      const relaxedContinent = Math.max(6, tmpl.minContinentDist - 4);
-      const relaxedBorder = Math.max(6, tmpl.minBorderDist - 4);
-
-      for (let y = tmpl.minBorderDist; y < H - tmpl.minBorderDist; y += 3) {
-        for (let x = tmpl.minBorderDist; x < W - tmpl.minBorderDist; x += 3) {
-          if (matrix[y]![x] !== 'water') continue;
-          const dLand = distToLand[y]![x]!;
-          if (dLand < relaxedContinent + tmpl.rx) continue;
-          const borderDist = Math.min(x, W - 1 - x, y, H - 1 - y);
-          if (borderDist < relaxedBorder + tmpl.rx) continue;
-
-          let tooClose = false;
-          for (const p of placedIslands) {
-            const sep = Math.hypot(x - p.cx, y - p.cy);
-            if (sep < tmpl.rx + p.radiusX + ISLAND_INTER_SEPARATION_RELAXED) {
-              tooClose = true;
-              break;
-            }
-          }
-          if (tooClose) continue;
-
-          const n = noise.noise2D(
-            x * ARCHIPELAGO_COARSE_NOISE_SCALE,
-            y * ARCHIPELAGO_COARSE_NOISE_SCALE
-          );
-          const score = dLand + n * 8;
-          if (score > bestScore) {
-            bestScore = score;
-            bestX = x;
-            bestY = y;
-          }
-        }
-      }
+      const relaxed = findRelaxedIslandPlacement(
+        tmpl,
+        matrix,
+        distToLand,
+        placedIslands,
+        noise,
+        W,
+        H
+      );
+      bestX = relaxed.bestX;
+      bestY = relaxed.bestY;
     }
 
     if (bestX === -1) continue;
 
     // Stamp the organic island onto matrix as solid landmass (grass)
-    let minX = bestX;
-    let maxX = bestX;
-    let minY = bestY;
-    let maxY = bestY;
+    const bounds = { minX: bestX, maxX: bestX, minY: bestY, maxY: bestY };
 
     const spanX = tmpl.rx + 2;
     const spanY = tmpl.ry + 2;
@@ -392,30 +472,16 @@ export function generateArchipelagoIslands(
         if (effectiveD <= 1.0) {
           const isCore = effectiveD <= ISLAND_CORE_GRASS_THRESHOLD;
           matrix[y]![x] = isCore ? 'grass' : 'sand';
-          if (x < minX) minX = x;
-          if (x > maxX) maxX = x;
-          if (y < minY) minY = y;
-          if (y > maxY) maxY = y;
+          updateBoundsWithCell(x, y, bounds);
         }
       }
     }
 
     // Ensure zero grass cells on the island touch ocean water directly
-    for (let y = minY; y <= maxY; y++) {
-      for (let x = minX; x <= maxX; x++) {
-        if (matrix[y]![x] === 'grass') {
-          const touchesWater =
-            matrix[y - 1]![x] === 'water' ||
-            matrix[y - 1]![x] === 'water_deep' ||
-            matrix[y + 1]![x] === 'water' ||
-            matrix[y + 1]![x] === 'water_deep' ||
-            matrix[y]![x - 1] === 'water' ||
-            matrix[y]![x - 1] === 'water_deep' ||
-            matrix[y]![x + 1] === 'water' ||
-            matrix[y]![x + 1] === 'water_deep';
-          if (touchesWater) {
-            matrix[y]![x] = 'sand';
-          }
+    for (let y = bounds.minY; y <= bounds.maxY; y++) {
+      for (let x = bounds.minX; x <= bounds.maxX; x++) {
+        if (matrix[y]![x] === 'grass' && doesCellTouchWater(x, y, matrix)) {
+          matrix[y]![x] = 'sand';
         }
       }
     }
@@ -428,7 +494,7 @@ export function generateArchipelagoIslands(
       cy: bestY,
       radiusX: tmpl.rx,
       radiusY: tmpl.ry,
-      bounds: { minX, maxX, minY, maxY }
+      bounds
     });
   }
 
@@ -457,30 +523,6 @@ export function applyArchipelagoBeachBuffers(
   padding = 2
 ): void {
   for (const island of islands) {
-    for (let iter = 0; iter < iterations; iter++) {
-      const minY = Math.max(1, island.bounds.minY - padding);
-      const maxY = Math.min(H - padding, island.bounds.maxY + padding);
-      const minX = Math.max(1, island.bounds.minX - padding);
-      const maxX = Math.min(W - padding, island.bounds.maxX + padding);
-
-      for (let y = minY; y <= maxY; y++) {
-        for (let x = minX; x <= maxX; x++) {
-          if (matrix[y]![x] === 'grass') {
-            const touchesWater =
-              matrix[y - 1]![x] === 'water' ||
-              matrix[y - 1]![x] === 'water_deep' ||
-              matrix[y + 1]![x] === 'water' ||
-              matrix[y + 1]![x] === 'water_deep' ||
-              matrix[y]![x - 1] === 'water' ||
-              matrix[y]![x - 1] === 'water_deep' ||
-              matrix[y]![x + 1] === 'water' ||
-              matrix[y]![x + 1] === 'water_deep';
-            if (touchesWater) {
-              matrix[y]![x] = 'sand';
-            }
-          }
-        }
-      }
-    }
+    applyIslandBeachBuffer(matrix, island.bounds, W, H, iterations, padding);
   }
 }

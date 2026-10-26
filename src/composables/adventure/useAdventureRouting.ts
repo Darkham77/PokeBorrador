@@ -1,18 +1,10 @@
-import { ref, computed, watch, type Ref } from 'vue';
-import {
-  findShortestPath,
-  requireAdventureNodeId,
-  type AdventureNodeId
-} from '../../../test_aventura/logic/adventure/kantoGraph.ts';
-import { MAPS_BY_ROUTE_ID } from '@/data/world/maps';
+import type { DisplayText } from '@francogp/auditor';
+import { ref, computed, watch, type ComputedRef, type Ref } from 'vue';
+
 import { SHOP_ITEMS, requireItemId, type ItemId } from '@/data/inventory/items';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type { ShopItemData } from '@/data/inventory/items';
-import { useGameStore } from '@/stores/game';
-import { useMapStore } from '@/stores/map';
-import { useShopStore } from '@/stores/inventory/shop';
-import { useInventoryStore } from '@/stores/inventory/inventory';
-import { useBuffsStore } from '@/stores/battle/buffs';
+import { isMapRouteId } from '@/data/world/map-assets';
+import { MAPS_BY_ROUTE_ID } from '@/data/world/maps';
 import {
   TRAVEL_BUFF_REPEL_DURATION_SEC,
   TRAVEL_BUFF_SUPER_REPEL_DURATION_SEC,
@@ -26,7 +18,53 @@ import {
   calculateActiveTravelModifiers,
   type TravelBuffItemId
 } from '@/logic/utils/routeSpawnHelpers';
-import { isMapRouteId } from '@/data/world/map-assets';
+import { useBuffsStore } from '@/stores/battle/buffs';
+import { useGameStore } from '@/stores/game';
+import { useInventoryStore } from '@/stores/inventory/inventory';
+import { useShopStore } from '@/stores/inventory/shop';
+import { useMapStore } from '@/stores/map';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+
+import {
+  findShortestPath,
+  requireAdventureNodeId,
+  type AdventureNodeId
+} from '../../../test_aventura/logic/adventure/kantoGraph.ts';
+
+const REPEL_ITEM_ID_VALUES = ['repel', 'superrepel', 'maxrepel'] as const;
+const REPEL_ITEM_IDS_SET: ReadonlySet<string> = new Set<string>(REPEL_ITEM_ID_VALUES);
+
+export interface UseAdventureRoutingReturn {
+  originMap: Ref<AdventureNodeId>;
+  destinationMap: Ref<AdventureNodeId>;
+  activeHMs: Ref<Set<string>>;
+  showPreTravelModal: Ref<boolean>;
+  selectedTravelItems: Ref<Set<TravelBuffItemId>>;
+  pendingManualDestination: Ref<AdventureNodeId | null>;
+  activeSweetScent: Ref<boolean>;
+  isTraveling: Ref<boolean>;
+  calculatedPath: Ref<AdventureNodeId[]>;
+  hasBicycle: ComputedRef<boolean>;
+  isBikeActive: ComputedRef<boolean>;
+  toggleTravelItem: (item: TravelBuffItemId) => void;
+  activeTravelModifiers: ComputedRef<ReturnType<typeof calculateActiveTravelModifiers>>;
+  availableActiveMoves: ComputedRef<
+    {
+      pokemonUid: string;
+      pokemonName: string;
+      moveName: string;
+      pp: number;
+      maxPP: number;
+    }[]
+  >;
+  useActiveRouteMove: (pokemonUid: string, moveName: string) => void;
+  startManualTravel: (destId: AdventureNodeId) => void;
+  cancelPreTravel: () => void;
+  confirmPreTravel: () => void;
+  filteredBuffItems: ComputedRef<Array<ShopItemData & { id: TravelBuffItemId }>>;
+  toggleHM: (hm: string) => void;
+  calculateRoute: () => void;
+}
 
 export function useAdventureRouting(options: {
   gameStore: ReturnType<typeof useGameStore>;
@@ -37,7 +75,7 @@ export function useAdventureRouting(options: {
   hasHealthyTeam: Ref<boolean>;
   startTravel: () => void;
   cancelTravel: () => void;
-}) {
+}): UseAdventureRoutingReturn {
   const originMap = ref<AdventureNodeId>('route1');
   const destinationMap = ref<AdventureNodeId>('route3');
   const activeHMs = ref<Set<string>>(new Set());
@@ -66,7 +104,7 @@ export function useAdventureRouting(options: {
     }
   });
 
-  const toggleTravelItem = (itemId: ItemId) => {
+  const toggleTravelItem = (itemId: ItemId): void => {
     const travelItemId = requireItemId(itemId);
     if (!isTravelBuffItemId(travelItemId)) {
       throw new Error(`[useAdventureRouting] Invalid travel buff item id: ${itemId}`);
@@ -75,11 +113,7 @@ export function useAdventureRouting(options: {
     if (next.has(travelItemId)) {
       next.delete(travelItemId);
     } else {
-      if (
-        travelItemId === 'repel' ||
-        travelItemId === 'superrepel' ||
-        travelItemId === 'maxrepel'
-      ) {
+      if (REPEL_ITEM_IDS_SET.has(travelItemId)) {
         next.delete('repel');
         next.delete('superrepel');
         next.delete('maxrepel');
@@ -129,7 +163,7 @@ export function useAdventureRouting(options: {
     return list;
   });
 
-  const useActiveRouteMove = (pokemonUid: string, moveName: string) => {
+  const useActiveRouteMove = (pokemonUid: string, moveName: string): void => {
     const team = options.gameStore.state.team || [];
     const pkmn = team.find((p: Pokemon) => p.uid === pokemonUid);
     if (!pkmn) return;
@@ -143,7 +177,7 @@ export function useAdventureRouting(options: {
     }
 
     move.pp -= 1;
-    void options.gameStore.save(false);
+    options.gameStore.scheduleSave();
 
     if (move.id === 'teleport') {
       options.travelLog.value.push(
@@ -155,7 +189,7 @@ export function useAdventureRouting(options: {
       if (isMapRouteId(originNode)) options.mapStore.currentMap = originNode;
       options.shopStore.healAllPokemon(0);
       const originName =
-        (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[originNode]?.name || originNode; // open-record: Generic key-value data dictionary container
+        (MAPS_BY_ROUTE_ID as Record<DisplayText, { name: string }>)[originNode]?.name || originNode; // open-record: Generic key-value data dictionary container
       options.travelLog.value.push(
         `🏥 ¡Llegada segura a ${originName}! Tu equipo ha sido completamente curado.`
       );
@@ -167,7 +201,7 @@ export function useAdventureRouting(options: {
     }
   };
 
-  const startManualTravel = (targetId: string) => {
+  const startManualTravel = (targetId: string): void => {
     if (isTraveling.value) return;
     const targetMapId = requireAdventureNodeId(targetId);
 
@@ -192,13 +226,13 @@ export function useAdventureRouting(options: {
     showPreTravelModal.value = true;
   };
 
-  const cancelPreTravel = () => {
+  const cancelPreTravel = (): void => {
     showPreTravelModal.value = false;
     pendingManualDestination.value = null;
     selectedTravelItems.value.clear();
   };
 
-  const calculateRoute = () => {
+  const calculateRoute = (): void => {
     const path = findShortestPath(originMap.value, destinationMap.value, activeHMs.value);
     if (path) {
       calculatedPath.value = path;
@@ -216,7 +250,7 @@ export function useAdventureRouting(options: {
     }
   };
 
-  const confirmPreTravel = () => {
+  const confirmPreTravel = (): void => {
     if (!pendingManualDestination.value) return;
     destinationMap.value = pendingManualDestination.value;
 
@@ -269,7 +303,7 @@ export function useAdventureRouting(options: {
     });
   });
 
-  const toggleHM = (hmName: string) => {
+  const toggleHM = (hmName: string): void => {
     const next = new Set(activeHMs.value);
     if (next.has(hmName)) {
       next.delete(hmName);

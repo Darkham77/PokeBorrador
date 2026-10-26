@@ -13,6 +13,8 @@
 // 1. Node Roles
 // ---------------------------------------------------------------------------
 
+import type { DisplayText } from '@francogp/auditor';
+
 /** Roles that a node can play in the abstract topology graph. */
 export const GRAPH_NODE_ROLES = [
   'starter',
@@ -68,7 +70,7 @@ export type BarrierType = (typeof BARRIER_TYPES)[number];
 
 export interface TopologyGraphNode {
   /** Unique deterministic identifier (e.g. "node_0", "node_5"). */
-  readonly id: string; // domain-ok: dynamic graph node identifier
+  readonly id: DisplayText;
   /** Role in the abstract topology. */
   readonly role: GraphNodeRole;
   /** Which gym number this node hosts (1-8), or undefined if not a gym city. */
@@ -85,17 +87,17 @@ export interface TopologyGraphNode {
 
 export interface TopologyGraphEdge {
   /** Unique deterministic identifier (e.g. "edge_0_1"). */
-  readonly id: string; // domain-ok: dynamic graph edge identifier
+  readonly id: DisplayText;
   /** Source node id. */
-  readonly fromId: string; // domain-ok: Identificador o estructura procedural de aventura
+  readonly fromId: DisplayText;
   /** Destination node id. */
-  readonly toId: string; // domain-ok: Identificador o estructura procedural de aventura
+  readonly toId: DisplayText;
   /** Classification of this edge in the topology. */
   readonly kind: GraphEdgeKind;
   /** Barrier gating this edge, if any. */
   barrier?: BarrierType;
   /** For wormhole tunnels: shared pair identifier linking two cave entrances. */
-  readonly tunnelPairId?: string; // domain-ok: Identificador o estructura procedural de aventura
+  readonly tunnelPairId?: DisplayText;
 }
 
 // ---------------------------------------------------------------------------
@@ -108,7 +110,7 @@ export interface PokemonTopologyGraph {
   /** All edges (undirected, each listed once). */
   readonly edges: readonly TopologyGraphEdge[];
   /** Ordered list of node IDs forming the main progression chain (Starter → League). */
-  readonly mainChainOrder: readonly string[]; // domain-ok: Identificador o estructura procedural de aventura
+  readonly mainChainOrder: readonly DisplayText[];
   /** The seed used to generate this topology. */
   readonly seed: number;
 }
@@ -142,9 +144,9 @@ export interface EmbeddedCorridorWaypoint {
 }
 
 export interface EmbeddedCorridor {
-  readonly id: string; // domain-ok: Identificador o estructura procedural de aventura
-  readonly fromId: string; // domain-ok: Identificador o estructura procedural de aventura
-  readonly toId: string; // domain-ok: Identificador o estructura procedural de aventura
+  readonly id: DisplayText;
+  readonly fromId: DisplayText;
+  readonly toId: DisplayText;
   readonly kind: GraphEdgeKind;
   readonly barrier?: BarrierType;
   /** Orthogonal waypoints from source center to target center (pure H, V, or single right-angle L-turn). */
@@ -152,7 +154,7 @@ export interface EmbeddedCorridor {
   /** Continuous tiles occupied by the corridor center line. */
   readonly pathCells: readonly EmbeddedCorridorWaypoint[];
   /** For wormholes: tunnel identifier (has empty waypoints / pathCells on surface). */
-  readonly tunnelPairId?: string; // domain-ok: Identificador o estructura procedural de aventura
+  readonly tunnelPairId?: DisplayText;
 }
 
 export interface EmbeddedTopologyGraph {
@@ -160,7 +162,7 @@ export interface EmbeddedTopologyGraph {
   readonly height: number;
   readonly nodes: readonly EmbeddedTopologyNode[];
   readonly corridors: readonly EmbeddedCorridor[];
-  readonly mainChainOrder: readonly string[]; // domain-ok: Identificador o estructura procedural de aventura
+  readonly mainChainOrder: readonly DisplayText[];
   readonly gridCols: number;
   readonly gridRows: number;
   readonly seed: number;
@@ -174,9 +176,9 @@ export const TERRAIN_INFLUENCES = ['plains', 'mountain', 'coastal', 'forest'] as
 export type TerrainInfluence = (typeof TERRAIN_INFLUENCES)[number];
 
 export interface EnrichedCorridorProperties {
-  readonly corridorId: string; // domain-ok: Identificador o estructura procedural de aventura
-  readonly fromId: string; // domain-ok: Identificador o estructura procedural de aventura
-  readonly toId: string; // domain-ok: Identificador o estructura procedural de aventura
+  readonly corridorId: DisplayText;
+  readonly fromId: DisplayText;
+  readonly toId: DisplayText;
   /** Playable corridor width in tiles (emergent 3 to 10 tiles). */
   readonly width: number;
   /** Normalized difficulty metric (0.0 = tutorial to 1.0 = pre-league climax). */

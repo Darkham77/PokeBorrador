@@ -23,7 +23,7 @@ let state: RenderState = {
 };
 
 // Request Animation Frame loop inside Worker
-function renderLoop() {
+function renderLoop(): void {
   const context = ctx;
   if (!context || !canvas) return;
 
@@ -102,7 +102,7 @@ interface RenderWorkerMessage {
 }
 
 // Message Router
-self.onmessage = (event: MessageEvent) => {
+globalThis.onmessage = (event: MessageEvent) => {
   const data = event.data as RenderWorkerMessage;
   const { type, payload } = data;
 

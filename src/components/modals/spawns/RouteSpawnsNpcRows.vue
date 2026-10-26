@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { NpcChanceInfo } from '@/logic/weather/weatherUtils';
+
 import RouteSpawnsNpcRow from './RouteSpawnsNpcRow.vue';
 
 interface Props {

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import StudioToolbar from '../components/studio/StudioToolbar.vue';
-import StudioGeographicViewport from '../components/studio/StudioGeographicViewport.vue';
+
 import StudioConnectionsViewport from '../components/studio/StudioConnectionsViewport.vue';
+import StudioGeographicViewport from '../components/studio/StudioGeographicViewport.vue';
+import StudioToolbar from '../components/studio/StudioToolbar.vue';
 import { useContinentStudioStore } from '../stores/continentStudio';
 
 const store = useContinentStudioStore();

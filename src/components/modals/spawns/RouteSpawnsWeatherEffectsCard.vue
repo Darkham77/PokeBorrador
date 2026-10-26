@@ -5,11 +5,12 @@
  * Modular card showing combat weather effects, type modifiers, terrain details, and class actions.
  */
 
-import RouteSpawnsWeatherCombatEffects from './RouteSpawnsWeatherCombatEffects.vue';
-import RouteSpawnsTerrainFeatures from './RouteSpawnsTerrainFeatures.vue';
-import type { MapLocation } from '@/types/pokemon/encounters';
-import type { MapRouteId } from '@/data/world/map-assets';
 import type { PokemonType } from '@/data/battle/types';
+import type { MapRouteId } from '@/data/world/map-assets';
+import type { MapLocation } from '@/types/pokemon/encounters';
+
+import RouteSpawnsTerrainFeatures from './RouteSpawnsTerrainFeatures.vue';
+import RouteSpawnsWeatherCombatEffects from './RouteSpawnsWeatherCombatEffects.vue';
 
 interface ParsedDescriptionSegment {
   text: string;

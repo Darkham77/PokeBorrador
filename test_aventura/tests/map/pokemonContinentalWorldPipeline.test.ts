@@ -12,12 +12,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import {
   generatePokemonContinentalWorld,
   generateContinent
 } from '../../logic/map/continent/continentalEngine.ts';
-import { validateGraphInvariants } from '../../logic/map/pokemonGraphTopology.ts';
 import { validateEmbeddedGraphInvariants } from '../../logic/map/orthogonalGraphEmbedding.ts';
+import { validateGraphInvariants } from '../../logic/map/pokemonGraphTopology.ts';
 
 describe('Pokemon Continental World Pipeline (Integration)', () => {
   it('executes full 6-phase pipeline generating terrain, graph, and SVG for seed 42', () => {

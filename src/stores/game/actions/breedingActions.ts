@@ -1,19 +1,23 @@
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type { GameState } from '@/types/system/game';
-import type { Pokemon, PokemonEgg, PokemonStorageLocation } from '@/types/pokemon/pokemon';
 import { CRIADOR_VIGOR_RESTORE_CHANCE } from '@/logic/constants/gameplay';
 import { gameBus } from '@/logic/events/gameBus.ts';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import type { Pokemon, PokemonEgg, PokemonStorageLocation } from '@/types/pokemon/pokemon';
+import type { GameState } from '@/types/system/game';
+
+export interface UseBreedingActionsReturn {
+  readonly executeHatch: (egg: PokemonEgg) => Promise<Pokemon>;
+}
 
 export function useBreedingActions(
   state: GameState,
-  scheduleSave: () => Promise<void>,
+  scheduleSave: (delayMs?: number, forceRemote?: boolean) => void,
   addPokemon: (
     pokemon: Pokemon,
     options?: { notify: boolean }
   ) => { success: boolean; target: PokemonStorageLocation | null }
-) {
-  async function executeHatch(egg: PokemonEgg) {
+): UseBreedingActionsReturn {
+  async function executeHatch(egg: PokemonEgg): Promise<Pokemon> {
     const { recalcPokemonStats } = await import('@/logic/pokemon/pokemonFactory');
     const { getEggSpecies } = await import('@/logic/breeding/breedingEngine');
 
@@ -23,8 +27,7 @@ export function useBreedingActions(
     }
     const speciesId = getEggSpecies(rawSpeciesId);
     const isDebugMode =
-      typeof window !== 'undefined' &&
-      Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
+      Boolean(globalThis.__VITE_DEBUG__) || Boolean(globalThis.location?.search?.includes('debug'));
     const p = makePokemon(speciesId, 1, {
       isShiny: egg.isShiny,
       isGuardian: egg.isGuardian,
@@ -71,7 +74,7 @@ export function useBreedingActions(
       gameBus.emit('CRIADOR_ECLOSION_VIGOR');
     }
 
-    await scheduleSave();
+    scheduleSave();
     return p;
   }
 

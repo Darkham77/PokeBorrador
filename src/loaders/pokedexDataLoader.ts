@@ -7,6 +7,7 @@
  */
 
 import { defineBasicLoader } from 'vue-router/experimental';
+
 import { useGameStore } from '@/stores/game';
 
 interface PokedexLoaderData {

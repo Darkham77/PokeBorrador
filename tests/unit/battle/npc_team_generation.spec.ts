@@ -11,10 +11,10 @@
  * source of truth for what Showdown considers legal.
  */
 
-import { describe, it, expect } from 'vite-plus/test';
 import { TeamGenerators } from '@pkmn/randoms';
 import { Dex, toID } from '@pkmn/sim';
 import type { PokemonSet } from '@pkmn/sim';
+import { describe, it, expect } from 'vite-plus/test';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -75,9 +75,9 @@ function validateSet(set: PokemonSet): string[] {
   return violations;
 }
 
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { getRandomSetForSpecies } from '@/logic/battle/engine/rivalTeamGenerator.ts';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Generator under test

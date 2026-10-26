@@ -88,6 +88,24 @@ export function stripBackground(
   return { width, height, data: outData };
 }
 
+function enqueueSpriteConnectedNeighbor(
+  nx: number,
+  ny: number,
+  width: number,
+  height: number,
+  visited: Uint8Array,
+  data: Uint8ClampedArray | Uint8Array,
+  queue: number[]
+): void {
+  if (nx < 0 || nx >= width || ny < 0 || ny >= height) return;
+  const nIdx = ny * width + nx;
+  if (visited[nIdx] !== 0) return;
+  visited[nIdx] = 1;
+  if (data[nIdx * 4 + 3]! > SPRITE_PIPELINE.NON_TRANSPARENT_ALPHA_THRESHOLD) {
+    queue.push(nx, ny);
+  }
+}
+
 /**
  * Slices contiguous non-transparent pixel clusters into tight bounding boxes.
  */
@@ -130,25 +148,10 @@ export function sliceConnectedSprites(
         if (cy < minY) minY = cy;
         if (cy > maxY) maxY = cy;
 
-        // Check 4-connected neighbors
-        const neighbors = [
-          [cx + 1, cy],
-          [cx - 1, cy],
-          [cx, cy + 1],
-          [cx, cy - 1]
-        ];
-
-        for (const [nx, ny] of neighbors) {
-          if (nx! >= 0 && nx! < width && ny! >= 0 && ny! < height) {
-            const nIdx = ny! * width + nx!;
-            if (visited[nIdx] === 0) {
-              visited[nIdx] = 1;
-              if (data[nIdx * 4 + 3]! > SPRITE_PIPELINE.NON_TRANSPARENT_ALPHA_THRESHOLD) {
-                queue.push(nx!, ny!);
-              }
-            }
-          }
-        }
+        enqueueSpriteConnectedNeighbor(cx + 1, cy, width, height, visited, data, queue);
+        enqueueSpriteConnectedNeighbor(cx - 1, cy, width, height, visited, data, queue);
+        enqueueSpriteConnectedNeighbor(cx, cy + 1, width, height, visited, data, queue);
+        enqueueSpriteConnectedNeighbor(cx, cy - 1, width, height, visited, data, queue);
       }
 
       const boxW = maxX - minX + 1;

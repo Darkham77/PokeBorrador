@@ -1,20 +1,21 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useSocialStore } from '@/stores/social/social';
-import { useSocialDataLoader } from '@/loaders/socialDataLoader';
 import { gsap } from 'gsap';
+import { ref } from 'vue';
+
+import { useSocialDataLoader } from '@/loaders/socialDataLoader';
 import {
   VIEW_TAB_FADE_OUT_DURATION_SEC,
   VIEW_TAB_FADE_IN_DURATION_SEC
 } from '@/logic/constants/animations.ts';
+import { useSocialStore } from '@/stores/social/social';
 
 const VIEW_TAB_TRANSITION_Y_OFFSET_PX = 8;
 
 // Components
 import SocialFriendsTab from '@/components/social/SocialFriendsTab.vue';
-import SocialSearchTab from '@/components/social/SocialSearchTab.vue';
-import SocialRequestsTab from '@/components/social/SocialRequestsTab.vue';
 import SocialRankings from '@/components/social/SocialRankings.vue';
+import SocialRequestsTab from '@/components/social/SocialRequestsTab.vue';
+import SocialSearchTab from '@/components/social/SocialSearchTab.vue';
 
 const socialStore = useSocialStore();
 const { data: _socialSummary } = useSocialDataLoader();
@@ -24,7 +25,7 @@ const contentRef = ref<HTMLElement | null>(null);
 // 'friends', 'rankings', 'search', 'requests'
 const activeTab = ref('friends');
 
-function selectTab(tab: string) {
+function selectTab(tab: string): void {
   if (activeTab.value === tab) return;
   if (!contentRef.value) {
     activeTab.value = tab;

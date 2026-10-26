@@ -1,6 +1,7 @@
+import { mount, config } from '@vue/test-utils';
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vite-plus/test';
-import { mount, config } from '@vue/test-utils';
+
 import PokemonTagBar from '@/components/pokemon/PokemonTagBar.vue';
 import type { PokemonFilterTagId } from '@/logic/constants/tags';
 

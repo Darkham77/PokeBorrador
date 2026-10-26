@@ -5,6 +5,7 @@
  * Environmental cycle and weather status pill for MapCard header.
  */
 import { computed } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 
 const props = defineProps<{

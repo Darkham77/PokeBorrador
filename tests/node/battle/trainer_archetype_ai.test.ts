@@ -1,5 +1,7 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
+
 import { getTrainerAIPreset, TRAINER_TYPE_KEYS } from '../../../src/data/player/trainerTypes.ts';
 import { AI_CONFIG_PRESETS } from '../../../src/logic/battle/ai/heuristic/types.ts';
 import { HeuristicAI } from '../../../src/logic/battle/ai/heuristicAI.ts';

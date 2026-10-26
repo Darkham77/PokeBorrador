@@ -1,17 +1,17 @@
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { isMapRouteId } from '@/data/world/map-assets';
+import { MAPS_BY_ROUTE_ID } from '@/data/world/maps';
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine.ts';
+import { isNaturalWeatherAllowedInLocation } from '@/logic/battle/battleTeamCoordinator.ts';
+import { findMatchingPokemon } from '@/logic/battle/showdownUidMapper.ts';
+import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry.ts';
+import type { BattleState } from '@/types/battle/battle';
 import {
   createBattleUiConfig,
   type BattleMode,
   type BattleUiConfig
 } from '@/types/battle/battleConfig';
-import type { BattleState } from '@/types/battle/battle';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry.ts';
-import { isNaturalWeatherAllowedInLocation } from '@/logic/battle/battleTeamCoordinator.ts';
-import { isMapRouteId } from '@/data/world/map-assets';
-import { MAPS_BY_ROUTE_ID } from '@/data/world/maps';
-import { findMatchingPokemon } from '@/logic/battle/showdownUidMapper.ts';
 
 export const ACTIVE_BATTLE_STATES: ReadonlySet<string> = new Set([
   BATTLE_STATES.CONTEXT_SETUP,

@@ -9,11 +9,11 @@
  * - Item translations and localization integrity (SHOP_ITEMS Spanish names & descriptions, 0 English leak patterns).
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
 import { reactive } from 'vue';
-import { useItemOnPokemon } from '../../../src/logic/providers/itemProvider.ts';
-import { isValidTarget } from '../../../src/logic/items/itemEffects.ts';
+
 import randomSets from '../../../src/data/ai/random-sets.json';
 import {
   getItemById,
@@ -21,9 +21,11 @@ import {
   SHOP_ITEMS,
   type ItemId
 } from '../../../src/data/inventory/items.ts';
+import type { PokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
+import { isValidTarget } from '../../../src/logic/items/itemEffects.ts';
+import { useItemOnPokemon } from '../../../src/logic/providers/itemProvider.ts';
 import { calculateArchaeologyWeights } from '../../../src/logic/utils/archaeologyHelpers.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
-import type { PokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
 
 function createToxicPokemon(): Pokemon {
   return {

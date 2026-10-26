@@ -4,22 +4,17 @@
 // One instance per battle (InferenceEngine tracks state).
 // ============================================================
 
-import type { Pokemon, Move } from '../../../types/pokemon/pokemon.ts';
+import { ACTIVE_GENERATION } from '../../../data/system/constants.ts';
 import type { BattleStages } from '../../../types/battle/battle.ts';
 import type { BattleContext } from '../../../types/battle/battleContext.ts';
+import type { Pokemon, Move } from '../../../types/pokemon/pokemon.ts';
 import type { CombatAI } from './combatAI.ts';
-import type { AIConfig, HeuristicBattleSnapshot } from './heuristic/types.ts';
 import { HeuristicDamageCalculator } from './heuristic/damageCalculator.ts';
-import { InferenceEngine } from './heuristic/inferenceEngine.ts';
-import { buildSnapshot } from './heuristic/snapshotBuilder.ts';
-import { evaluateStrategicState } from './heuristic/strategyEvaluator.ts';
 import {
   pickBestSwitch,
   hasViableSwitchCounter,
   type SwitchEvaluationMode
 } from './heuristic/heuristicEngine.ts';
-import { ACTIVE_GENERATION } from '../../../data/system/constants.ts';
-import type { GenerationNum } from '@smogon/calc';
 import {
   resolveAIConfig,
   pickBestMoveByPower,
@@ -31,18 +26,22 @@ import {
   resolvePokemonActiveTurns,
   shouldSwitchByDamageMatchup
 } from './heuristic/heuristicExecutionHelpers.ts';
+import { InferenceEngine } from './heuristic/inferenceEngine.ts';
+import { buildSnapshot } from './heuristic/snapshotBuilder.ts';
+import { evaluateStrategicState } from './heuristic/strategyEvaluator.ts';
+import type { AIConfig, HeuristicBattleSnapshot } from './heuristic/types.ts';
 
 export class HeuristicAI implements CombatAI {
-  private readonly calc = new HeuristicDamageCalculator(ACTIVE_GENERATION as GenerationNum);
+  private readonly calc = new HeuristicDamageCalculator(ACTIVE_GENERATION);
   private readonly inference = new InferenceEngine();
   private readonly activeTurnsByUid = new Map<string, number>();
   private readonly entryTurnByUid = new Map<string, number>();
 
-  notifyTurnAdvanced(activeUid: string): void {
+  public notifyTurnAdvanced(activeUid: string): void {
     this.activeTurnsByUid.set(activeUid, (this.activeTurnsByUid.get(activeUid) ?? 0) + 1);
   }
 
-  getConfig(store?: BattleContext): AIConfig {
+  public getConfig(store?: BattleContext): AIConfig {
     const battle = store?.activeBattle?.value ?? null;
     return resolveAIConfig(battle);
   }
@@ -51,7 +50,7 @@ export class HeuristicAI implements CombatAI {
   // CombatAI interface
   // ──────────────────────────────────────────
 
-  decideMove(
+  public decideMove(
     enemy: Pokemon,
     _player: Pokemon,
     _playerStages: BattleStages,
@@ -80,7 +79,7 @@ export class HeuristicAI implements CombatAI {
     return pickHeuristicMoveChoice(snapshot, validMoves, config, enemy, this.calc, this.inference);
   }
 
-  shouldSwitch(
+  public shouldSwitch(
     _enemy: Pokemon,
     _player: Pokemon,
     enemyTeam: Pokemon[] | undefined,
@@ -124,7 +123,7 @@ export class HeuristicAI implements CombatAI {
     return shouldSwitchByDamageMatchup(snapshot, this.calc, config);
   }
 
-  findBestSwitchIndex(
+  public findBestSwitchIndex(
     enemyTeam: Pokemon[],
     _player: Pokemon,
     currentEnemyUid: string,
@@ -170,7 +169,7 @@ export class HeuristicAI implements CombatAI {
     return this.fallbackSwitchIndex(enemyTeam, currentEnemyUid);
   }
 
-  async evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promise<boolean> {
+  public async evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promise<boolean> {
     const { evaluateAndUseItem } = await import('./heuristic/aiItemEvaluator.ts');
     return evaluateAndUseItem(ctx, e);
   }

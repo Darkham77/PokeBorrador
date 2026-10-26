@@ -1,4 +1,4 @@
-﻿-- Global Chat (persistente) - maximo 50 mensajes
+-- Global Chat (persistente) - maximo 50 mensajes
 -- Ejecutar en Supabase SQL Editor
 
 create table if not exists public.global_chat_messages (

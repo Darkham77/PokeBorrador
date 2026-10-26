@@ -1,8 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { useAuthStore } from '@/stores/auth';
+
 import { logger } from '@/logic/utils/logger';
-import { safeStorage, safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage';
 import { resilientRouteComponent } from '@/logic/utils/resilientComponent';
+import { safeStorage, safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage';
+import { useAuthStore } from '@/stores/auth';
 import LoginView from '@/views/auth/LoginView.vue';
 
 const router = createRouter({
@@ -91,7 +92,7 @@ router.beforeEach(async (to, _from) => {
       'Router',
       'Importación de DB completada. Limpiando sesión para inicio limpio en login.'
     );
-    void authStore.logout(); // Deep logout handles clean redirect via page reload
+    await authStore.logout(); // Deep logout handles clean redirect via page reload
     return false;
   }
 
@@ -109,7 +110,7 @@ router.beforeEach(async (to, _from) => {
         'Router',
         'Usuario logueado intentando entrar a /login de forma directa. Forzando logout limpio.'
       );
-      void authStore.logout(); // Deep logout handles clean redirect via page reload
+      await authStore.logout(); // Deep logout handles clean redirect via page reload
       return true;
     }
     safeStorage.removeItem('pokevicio_local_user');
@@ -124,7 +125,7 @@ router.beforeEach(async (to, _from) => {
   return true;
 });
 
-router.onError((error, to) => {
+router.onError(async (error, to) => {
   const msg =
     error && typeof error === 'object' && 'message' in error
       ? String(error.message)
@@ -138,21 +139,13 @@ router.onError((error, to) => {
       'Router',
       `Fallo al cargar módulo/chunk dinámico hacia ${to?.fullPath || 'ruta'}. Emitiendo actualización...`
     );
-    void import('@/stores/update')
-      .then(({ useUpdateStore }) => {
-        try {
-          useUpdateStore().notifyChunkLoadError(error);
-        } catch {
-          void import('@/logic/events/gameBus.ts').then(({ gameBus }) => {
-            gameBus.emit('PWA_NEED_REFRESH');
-          });
-        }
-      })
-      .catch(() => {
-        void import('@/logic/events/gameBus.ts').then(({ gameBus }) => {
-          gameBus.emit('PWA_NEED_REFRESH');
-        });
-      });
+    try {
+      const { useUpdateStore } = await import('@/stores/update');
+      useUpdateStore().notifyChunkLoadError(error);
+    } catch {
+      const { gameBus } = await import('@/logic/events/gameBus.ts');
+      gameBus.emit('PWA_NEED_REFRESH');
+    }
   }
 });
 

@@ -7,6 +7,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
+import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import {
   compute8NeighborElevationMask,
   resolveMountainAutotileCell,
@@ -17,7 +19,6 @@ import {
   CANONICAL_MOUNTAIN_BRUSH_GRAY,
   type ElevationMatrix
 } from '../../logic/map/mountainAutotileEngine.ts';
-import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 
 describe('mountainAutotileEngine', () => {
   describe('compute8NeighborElevationMask', () => {

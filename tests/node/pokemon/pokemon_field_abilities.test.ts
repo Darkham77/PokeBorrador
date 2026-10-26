@@ -1,5 +1,8 @@
-import { describe, test } from 'vite-plus/test';
 import assert from 'node:assert';
+
+import { describe, test } from 'vite-plus/test';
+
+import { requirePokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
 import {
   resolveSynchronizeNature,
   resolveCuteCharmGender,
@@ -18,7 +21,6 @@ import {
   HELD_ITEM_BOOSTED_RATES
 } from '../../../src/logic/pokemon/pokemonFieldAbilities.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
-import { requirePokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
 
 function createMockPokemon(partial: Partial<Pokemon> = {}): Pokemon {
   return {

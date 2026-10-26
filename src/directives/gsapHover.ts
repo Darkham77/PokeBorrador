@@ -1,5 +1,5 @@
-import type { Directive } from 'vue';
 import gsap from 'gsap';
+import type { Directive } from 'vue';
 
 const DEFAULT_HOVER_DURATION_SEC = 0.2;
 const DEFAULT_HOVER_PRESS_DURATION_SEC = 0.08;
@@ -15,6 +15,9 @@ const DEFAULT_HOVER_DEFAULT_Y_OFFSET_PX = -2;
 
 // Map to track active tweens/timelines for cleanup
 const activeTweens = new Map<HTMLElement, gsap.core.Tween>();
+
+export type GsapHoverPreset = 'card' | 'widget' | 'button' | 'pill';
+export type GsapHoverValue = GsapHoverPreset | GsapHoverOptions;
 
 interface GsapHoverOptions {
   scale?: number;
@@ -43,15 +46,13 @@ interface GsapHoverElement extends HTMLElement {
 export const gsapHover: Directive = {
   mounted(el: HTMLElement, binding) {
     const hoverEl = el as GsapHoverElement;
-    const options: GsapHoverOptions = getOptions(
-      binding.value as string | GsapHoverOptions | undefined
-    );
+    const options: GsapHoverOptions = getOptions(binding.value as GsapHoverValue | undefined);
     el.dataset.gsapHover = 'true';
 
     // Save original styles/values if needed for resets
     const originalTransform = el.style.transform;
 
-    const onMouseEnter = () => {
+    const onMouseEnter = (): void => {
       // Clear previous tween on enter to avoid conflicts
       cleanupTween(el);
 
@@ -68,7 +69,7 @@ export const gsapHover: Directive = {
       if (options.opacity !== undefined) targetVars.opacity = options.opacity;
 
       // Inject inline-block for inline elements to support transforms
-      const computedStyle = window.getComputedStyle(el);
+      const computedStyle = globalThis.getComputedStyle(el);
       if (computedStyle.display === 'inline') {
         el.style.display = 'inline-block';
       }
@@ -77,7 +78,7 @@ export const gsapHover: Directive = {
       activeTweens.set(el, tween);
     };
 
-    const onMouseLeave = () => {
+    const onMouseLeave = (): void => {
       cleanupTween(el);
 
       const tween = gsap.to(el, {
@@ -99,7 +100,7 @@ export const gsapHover: Directive = {
       activeTweens.set(el, tween);
     };
 
-    const onMouseDown = () => {
+    const onMouseDown = (): void => {
       if (options.pressEffect === false) return;
       cleanupTween(el);
       const tween = gsap.to(el, {
@@ -111,7 +112,7 @@ export const gsapHover: Directive = {
       activeTweens.set(el, tween);
     };
 
-    const onMouseUp = () => {
+    const onMouseUp = (): void => {
       if (options.pressEffect === false) return;
       cleanupTween(el);
       // Re-trigger hover animation state on mouse release
@@ -146,7 +147,7 @@ export const gsapHover: Directive = {
   }
 };
 
-function cleanupTween(el: HTMLElement) {
+function cleanupTween(el: HTMLElement): void {
   const tween = activeTweens.get(el);
   if (tween) {
     tween.kill();
@@ -156,7 +157,7 @@ function cleanupTween(el: HTMLElement) {
 
 const DEFAULT_HOVER_TWEEN_DURATION_SEC = 0.15;
 
-function getOptions(value: string | GsapHoverOptions | undefined): GsapHoverOptions {
+function getOptions(value: GsapHoverValue | undefined): GsapHoverOptions {
   const defaults: GsapHoverOptions = {
     scale: DEFAULT_HOVER_PILL_SCALE,
     y: DEFAULT_HOVER_DEFAULT_Y_OFFSET_PX,

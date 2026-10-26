@@ -1,15 +1,16 @@
+import { setActivePinia, createPinia } from 'pinia';
 import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { ref, computed } from 'vue';
-import { setActivePinia, createPinia } from 'pinia';
+
+import { useBattleCombatants } from '@/composables/battle/useBattleCombatants';
+import { useBattleHud } from '@/composables/battle/useBattleHud';
+import type { AbilityId } from '@/data/battle/abilities';
 import { HeuristicAI } from '@/logic/battle/ai/heuristicAI';
 import { cleanCapturedPokemonForStorage } from '@/logic/battle/battleCatchProcessor';
 import { makePokemon, validatePokemon } from '@/logic/pokemon/pokemonFactory';
 import { cloneReactive } from '@/logic/utils/cloneUtils';
-import { useBattleCombatants } from '@/composables/battle/useBattleCombatants';
-import { useBattleHud } from '@/composables/battle/useBattleHud';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import type { AbilityId } from '@/data/battle/abilities';
 import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
 describe('Wild Encounters, Visibility & Ditto Combat Domain Suite', () => {
   beforeEach(() => {

@@ -1,7 +1,7 @@
-import type { LogFn, BattleSide } from '@/types/battle/battle';
+import { gameBus } from '@/logic/events/gameBus';
+import type { LogFn, BattleSide, BattleSource } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import { gameBus } from '@/logic/events/gameBus';
 
 const POKEMON_CALL_FALLBACK_DELAY_MS = 800;
 
@@ -9,10 +9,10 @@ export async function callPokemonToBattle(
   side: BattleSide,
   pokemon: Pokemon,
   logMsg: string,
-  logTarget: Pokemon | string | null,
+  logTarget: BattleSource | null,
   addLogFn: LogFn,
   battleCtx: BattleContext
-) {
+): Promise<void> {
   const fsm = battleCtx.fsm;
   const { BATTLE_STATES, BATTLE_SUBSTATES } = battleCtx;
   addLogFn(logMsg, 'log-info', logTarget);

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import CombatantSpriteAnimated from './CombatantSpriteAnimated.vue';
-import CombatantSpriteDebugGuides from './CombatantSpriteDebugGuides.vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { AnimatedSpriteData } from '@/data/pokemon/animatedSpriteDatabase';
 import type { CombatantSpriteMode } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import CombatantSpriteAnimated from './CombatantSpriteAnimated.vue';
+import CombatantSpriteDebugGuides from './CombatantSpriteDebugGuides.vue';
 
 interface Props {
   pokemon: Pokemon | null;

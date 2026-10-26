@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
+import { saveCoordinator } from '@/logic/auth/saveCoordinator';
+import { useAuthStore } from '@/stores/auth';
 import { useGameStore } from '@/stores/game';
 import { usePvPStore } from '@/stores/pvp';
-import { useAuthStore } from '@/stores/auth';
-import { saveCoordinator } from '@/logic/auth/saveCoordinator';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Passive Defense Logout & Rollback Prevention Suite', () => {

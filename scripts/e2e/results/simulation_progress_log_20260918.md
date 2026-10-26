@@ -88,7 +88,7 @@ Ejecución completa del pipeline de simulación del juego (`/game-simulation`), 
 
 ## 🔍 Active Failure / Investigation
 
-- **Suite**: Ninguna (100% de las 60 suites certificadas en modo dual).
+- **Suite**: None (100% of the 60 suites certified in dual mode).
 - **Test**: N/A
 - **Driver**: N/A
 - **Failure**: N/A
@@ -123,11 +123,11 @@ Ejecución completa del pipeline de simulación del juego (`/game-simulation`), 
 
 ## 💡 Critical Decisions
 
-- Fuzzer regenerado desde cero con `npm run sim:fuzzer` (227 casos certificados validados).
-- Tabla dinámica de simulación generada vía `npm run sim:e2e:table` (60 suites, 523 tests totales).
-- 60 suites de simulación E2E (523 tests totales) certificadas exitosamente en modo dual SQLite + PostgreSQL (60/60 DUAL PASS).
-- Suite 49 (`pvp_passive_defense_lifecycle.simulation.ts`) reparada y certificada tras corregir el consumo de recordatorios en `src/stores/pvp.ts`.
-- Suite 52 (`battle_anti_cheat_refresh.simulation.ts`) reparada y certificada tras incorporar `persistBattleAndSave()` por herencia en `BaseE2ESimulation` para forzar guardado remoto sin throttling de 60s antes de recargas de página en PostgreSQL.
+- Regenerated fuzzer from scratch via `npm run sim:fuzzer` (227 certified cases validated).
+- Generated dynamic simulation table via `npm run sim:e2e:table` (60 suites, 523 total tests).
+- Certified 60 E2E simulation suites (523 total tests) successfully in dual SQLite + PostgreSQL mode (60/60 DUAL PASS).
+- Repaired and certified Suite 49 (`pvp_passive_defense_lifecycle.simulation.ts`) after fixing login reminder consumption in `src/stores/pvp.ts`.
+- Repaired and certified Suite 52 (`battle_anti_cheat_refresh.simulation.ts`) after adding `persistBattleAndSave()` inheritance in `BaseE2ESimulation` to bypass 60s remote save throttling before page reloads on PostgreSQL.
 
 ---
 

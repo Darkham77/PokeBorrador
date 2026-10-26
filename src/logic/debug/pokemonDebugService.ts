@@ -1,24 +1,28 @@
+import type { DisplayText } from '@francogp/auditor';
+
+import { requireAbilityId, type AbilityId } from '@/data/battle/abilities';
+import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
+import { toNatureId, type NatureId } from '@/data/battle/natures';
+import type { ItemId } from '@/data/inventory/items';
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
 import { makePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import { getExpNeededPure } from '@/logic/pokemon/statsMath.ts';
-import { useGameStore } from '@/stores/game';
-import { useBattleStore } from '@/stores/battle/battle';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import type { MinigameDifficultySelection } from '@/types/battle/battle';
+import type { DaycareEgg } from '@/types/breeding/breeding';
 import type {
   Pokemon,
   PokemonEgg,
   PokemonGender,
   PokemonGenderName
 } from '@/types/pokemon/pokemon';
+
 import { logger } from '../utils/logger.ts';
-import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
-import { requirePokemonMoveId, type MoveCategory, type PokemonMoveId } from '@/data/battle/moves';
-import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { requireAbilityId, type AbilityId } from '@/data/battle/abilities';
-import { toNatureId, type NatureId } from '@/data/battle/natures';
-import type { ItemId } from '@/data/inventory/items';
-import type { MinigameDifficultySelection } from '@/types/battle/battle';
 
 const DEFAULT_DEBUG_MOVE_PP = 35;
 const DEFAULT_DEBUG_MOVE_ACC = 100;
@@ -27,6 +31,8 @@ const FISHING_DEBUG_DIFFICULTY = 50;
 const ARCHAEOLOGY_DEBUG_DIFFICULTY = 50;
 const EGG_TICKET_BONUS_HOURS = 24;
 const SECS_PER_HOUR = 3600;
+const EGG_OBTAIN_PROTOCOL_VALUES = ['hatch', 'hatch_anim', 'egg_anim', 'egg_silent'] as const;
+const EGG_OBTAIN_PROTOCOLS: ReadonlySet<string> = new Set<string>(EGG_OBTAIN_PROTOCOL_VALUES);
 
 interface DebugPokemon extends Pokemon {
   mapId?: MapRouteId | null;
@@ -54,7 +60,7 @@ interface GenerateParams {
   minigameDifficulty?: MinigameDifficultySelection | null;
 }
 
-function requireMoveIdsForDebugEgg(pokemon: Pokemon) {
+function requireMoveIdsForDebugEgg(pokemon: Pokemon): PokemonMoveId[] {
   return pokemon.moves.map((move) => {
     if (!move?.id) {
       throw new Error(
@@ -65,7 +71,7 @@ function requireMoveIdsForDebugEgg(pokemon: Pokemon) {
   });
 }
 
-const GENDER_MAP: Record<string, PokemonGender> = {
+const GENDER_MAP: Record<DisplayText, PokemonGender> = {
   // open-record: Loose user/debug gender input normalization map
   male: 'm',
   female: 'f',
@@ -92,7 +98,7 @@ function buildDebugMoves(moves: PokemonMoveId[]): Pokemon['moves'] {
         type: mData?.type || 'normal',
         power: mData?.power || 0,
         acc: mData?.acc || DEFAULT_DEBUG_MOVE_ACC,
-        cat: (mData?.cat || 'physical') as MoveCategory
+        cat: mData?.cat || 'physical'
       };
     })
     .slice(0, 4);
@@ -206,7 +212,7 @@ async function executeEggWarehouseProtocol(
     cost: 0
   });
 
-  breedingStore.warehouseEggs.push(egg);
+  (breedingStore.warehouseEggs as DaycareEgg[]).push(egg);
   if (breedingStore.saveWarehouseEggs) {
     breedingStore.saveWarehouseEggs();
   }
@@ -223,8 +229,8 @@ async function executeHatchAnimProtocol(
   const eggSpecies = getEggSpecies(p.id);
   const { makePokemon, recalcPokemonStats } = await import('@/logic/pokemon/pokemonFactory');
   const isDebugMode =
-    typeof window !== 'undefined' &&
-    Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
+    typeof globalThis.window !== 'undefined' &&
+    Boolean(globalThis.__VITE_DEBUG__ || globalThis.location?.search?.includes('debug'));
 
   let babyPokemon = p;
   if (p.id !== eggSpecies || p.level !== 1) {
@@ -339,11 +345,7 @@ export const pokemonDebugService = {
     } = params;
 
     const mappedGender = gender ? GENDER_MAP[gender] : undefined;
-    const isEgg =
-      protocol === 'hatch' ||
-      protocol === 'hatch_anim' ||
-      protocol === 'egg_anim' ||
-      protocol === 'egg_silent';
+    const isEgg = protocol !== null && EGG_OBTAIN_PROTOCOLS.has(protocol);
     const p = makePokemon(id, level, {
       isShiny,
       nature: nature || undefined,

@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { onUnmounted } from 'vue';
 import { gsap } from 'gsap';
+import { onUnmounted } from 'vue';
+
 import { useAuthStore } from '@/stores/auth';
 
 const authStore = useAuthStore();
 let pulseTween: gsap.core.Tween | null = null;
 
-const onEnter = (el: Element, done: () => void) => {
+const onEnter = (el: Element, done: () => void): void => {
   gsap.fromTo(
     el,
     { y: -20, opacity: 0 },
@@ -32,7 +33,7 @@ const onEnter = (el: Element, done: () => void) => {
   );
 };
 
-const onLeave = (el: Element, done: () => void) => {
+const onLeave = (el: Element, done: () => void): void => {
   if (pulseTween) {
     pulseTween.kill();
     pulseTween = null;

@@ -1,10 +1,11 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
 import EventCard from '@/components/modals/EventCard.vue';
-import { useModalStore } from '@/stores/modals';
 import type { Event as GameEvent, UpcomingEventOccurrence } from '@/logic/events/eventEngine';
+import { useModalStore } from '@/stores/modals';
 
 describe('EventCard.vue', () => {
   let pinia: ReturnType<typeof createPinia>;

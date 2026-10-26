@@ -1,9 +1,4 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
-import { getItemById, requireItemId, type ItemId } from '../../../data/inventory/items.ts';
-import { DEFAULT_MAX_VIGOR } from '@/logic/pokemon/pokemonUtils';
-import { canHeal, canClearStatus, canRevive, canFullRestore, canRestorePP } from '../itemMath.ts';
-import { handleStone } from '../itemEffectHandlers.ts';
 import {
   EV_BERRIES,
   VITAMINS,
@@ -13,6 +8,12 @@ import {
   canUseEvBerry,
   calculateTotalEvs
 } from '@/logic/pokemon/evMath.ts';
+import { DEFAULT_MAX_VIGOR } from '@/logic/pokemon/pokemonUtils';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import { getItemById, requireItemId, type ItemId } from '../../../data/inventory/items.ts';
+import { handleStone } from '../itemEffectHandlers.ts';
+import { canHeal, canClearStatus, canRevive, canFullRestore, canRestorePP } from '../itemMath.ts';
 import { getDynamicItemEffect } from './itemEffectsHelpers.ts';
 
 const EVOLUTION_STONES = [

@@ -5,23 +5,24 @@
  */
 
 import { watch, type Ref, type ComputedRef } from 'vue';
+
+import {
+  BATTLE_STATES,
+  BATTLE_SUBSTATES,
+  createBattleStateMachine
+} from '@/logic/battle/battleStateMachine.ts';
+import { isBattleCompletionReady } from '@/logic/battle/helpers/battleCompletionReadiness.ts';
+import { nextBattleReadyEventKey } from '@/logic/battle/helpers/battleReadyEventKey.ts';
+import { projectBattleReadySwitchSlots } from '@/logic/battle/helpers/battleReadySwitchSlots.ts';
+import { classifyRequest, requiresAction } from '@/logic/battle/helpers/requestHelper.ts';
+import { canExecuteScriptedReplayAction } from '@/logic/battle/helpers/scriptedReplayReadiness.ts';
+import type { BattleState, ShowdownPlayerRequest } from '@/types/battle/battle';
 import {
   BATTLE_UI_EVENTS,
   type BattleForcedSwitchDetail,
   type BattleReadyForInputDetail,
   type BattleReadySubState
 } from '@/types/battle/battleEvents.ts';
-import {
-  BATTLE_STATES,
-  BATTLE_SUBSTATES,
-  createBattleStateMachine
-} from '@/logic/battle/battleStateMachine.ts';
-import { classifyRequest, requiresAction } from '@/logic/battle/helpers/requestHelper.ts';
-import { canExecuteScriptedReplayAction } from '@/logic/battle/helpers/scriptedReplayReadiness.ts';
-import { isBattleCompletionReady } from '@/logic/battle/helpers/battleCompletionReadiness.ts';
-import { nextBattleReadyEventKey } from '@/logic/battle/helpers/battleReadyEventKey.ts';
-import { projectBattleReadySwitchSlots } from '@/logic/battle/helpers/battleReadySwitchSlots.ts';
-import type { BattleState, ShowdownPlayerRequest } from '@/types/battle/battle';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export type BattleStateMachine = ReturnType<typeof createBattleStateMachine>;
@@ -51,10 +52,11 @@ export function setupBattleEventWatchers(ctx: BattleEventWatchersContext): void 
       lastForcedSwitchUid = '';
       return;
     }
-    if (lastForcedSwitchUid === activePlayer.uid || typeof window === 'undefined') return;
+    if (lastForcedSwitchUid === activePlayer.uid || typeof globalThis.window === 'undefined')
+      return;
     lastForcedSwitchUid = activePlayer.uid;
     const detail: BattleForcedSwitchDetail = { side: 'player' };
-    window.dispatchEvent(
+    globalThis.dispatchEvent(
       new CustomEvent<BattleForcedSwitchDetail>(BATTLE_UI_EVENTS.FORCED_SWITCH_REQUIRED, { detail })
     );
   });
@@ -105,9 +107,9 @@ export function setupBattleEventWatchers(ctx: BattleEventWatchersContext): void 
     turnCount: number,
     lastEmittedKey: string
   ): string | null {
-    if (typeof window === 'undefined') return null;
-    const p1Idx = window.__VITE_DEBUG__?.p1ChoiceIdx ?? 0;
-    const p2Idx = window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0;
+    if (typeof globalThis.window === 'undefined') return null;
+    const p1Idx = globalThis.__VITE_DEBUG__?.p1ChoiceIdx ?? 0;
+    const p2Idx = globalThis.__VITE_DEBUG__?.p2ChoiceIdx ?? 0;
     const reqRqid = (req as { rqid?: number } | undefined)?.rqid ?? 0;
     const emitKey = `${subState}_${kind}_${p1Idx}_${p2Idx}_${reqRqid}_${turnCount}`;
     const nextKey = nextBattleReadyEventKey(lastEmittedKey, true, emitKey);
@@ -120,7 +122,7 @@ export function setupBattleEventWatchers(ctx: BattleEventWatchersContext): void 
       over: false,
       playerSwitchSlots: projectBattleReadySwitchSlots(req ?? undefined)
     };
-    window.dispatchEvent(
+    globalThis.dispatchEvent(
       new CustomEvent<BattleReadyForInputDetail>(BATTLE_UI_EVENTS.READY_FOR_INPUT, {
         detail
       })
@@ -188,7 +190,7 @@ export function setupBattleEventWatchers(ctx: BattleEventWatchersContext): void 
     [() => activeBattle.value?.over, fsm.currentState, fsm.currentSubState],
     ([isOver, fsmState, fsmSubState]) => {
       if (
-        typeof window !== 'undefined' &&
+        typeof globalThis.window !== 'undefined' &&
         isBattleCompletionReady({
           hasActiveBattle: activeBattle.value !== null,
           isOver: isOver === true,
@@ -198,12 +200,12 @@ export function setupBattleEventWatchers(ctx: BattleEventWatchersContext): void 
       ) {
         const detail: BattleReadyForInputDetail = {
           subState: '',
-          p1ChoiceIdx: window.__VITE_DEBUG__?.p1ChoiceIdx ?? 0,
-          p2ChoiceIdx: window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0,
+          p1ChoiceIdx: globalThis.__VITE_DEBUG__?.p1ChoiceIdx ?? 0,
+          p2ChoiceIdx: globalThis.__VITE_DEBUG__?.p2ChoiceIdx ?? 0,
           over: true,
           playerSwitchSlots: []
         };
-        window.dispatchEvent(
+        globalThis.dispatchEvent(
           new CustomEvent<BattleReadyForInputDetail>(BATTLE_UI_EVENTS.READY_FOR_INPUT, {
             detail
           })

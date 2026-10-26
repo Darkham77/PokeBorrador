@@ -73,6 +73,7 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
       ruleIds: SPAWN_WHITELIST_RULES,
       packageName: 'Spawns',
       usesThirdPartyTool: false,
+      requiredPermissions: [],
       ruleDescriptions: {
         'spawns-species-whitelist': 'Pokémon fuera de la whitelist',
         'spawns-level-range-integrity': 'Rango de niveles inválido',
@@ -86,6 +87,7 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
         'spawns-encounter-rates-parity':
           'Ensure encounter rates sum to expected percentages across time slots'
       },
+      remediationPhase: 'contracts',
       requiredFiles: [
         path.resolve(process.cwd(), MAPS_FILE_PATH),
         path.resolve(process.cwd(), GYMS_FILE_PATH),
@@ -342,10 +344,4 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (
-  process.argv[1] &&
-  import.meta.filename &&
-  path.basename(process.argv[1]) === path.basename(import.meta.filename)
-) {
-  await BaseAuditor.runCli(new SpawnsWhitelistAuditor());
-}
+await BaseAuditor.runCliIfMain(import.meta.url, new SpawnsWhitelistAuditor());

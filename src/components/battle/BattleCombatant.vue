@@ -6,18 +6,20 @@ const SPRITE_SWAP_SQUEEZE_X = 0.15;
 const SPRITE_SWAP_IN_DURATION_SEC = 0.18;
 const SPRITE_SWAP_OUT_DURATION_SEC = 0.25;
 import gsap from 'gsap';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import VirtualEntity from './VirtualEntity.vue';
-import CombatShadow from './CombatShadow.vue';
+
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import type { BattleCombatantProps, CombatantAnimTrigger } from '@/types/battle/battle';
-import { useBattleCombatantAnims } from './useBattleCombatantAnims.ts';
-import { useBattleCombatantState, FX_RADIUS_MULTIPLIER } from './useBattleCombatantState.ts';
-import { useBattleCombatantSpriteLoop } from './useBattleCombatantSpriteLoop.ts';
-import { computeCombatantVolatiles } from './combatantVolatilesHelper.ts';
+
 import BattleGroundHazards from './BattleGroundHazards.vue';
 import CombatantSpriteLayer from './CombatantSpriteLayer.vue';
 import CombatantTrappedBall from './CombatantTrappedBall.vue';
+import { computeCombatantVolatiles } from './combatantVolatilesHelper.ts';
+import CombatShadow from './CombatShadow.vue';
+import { useBattleCombatantAnims } from './useBattleCombatantAnims.ts';
+import { useBattleCombatantSpriteLoop } from './useBattleCombatantSpriteLoop.ts';
+import { useBattleCombatantState, FX_RADIUS_MULTIPLIER } from './useBattleCombatantState.ts';
+import VirtualEntity from './VirtualEntity.vue';
 
 // Referencias DOM
 const spriteRef = useTemplateRef<HTMLElement>('spriteRef');
@@ -109,7 +111,7 @@ const { currentMode, idleCyclesTarget, animateSpritesheet } = useBattleCombatant
   variationMeta
 });
 
-const updateAnimatedImageUrls = () => {
+const updateAnimatedImageUrls = (): void => {
   if (!props.pokemon) return;
 
   const spriteId =
@@ -122,7 +124,7 @@ const updateAnimatedImageUrls = () => {
     isAnimated: true
   });
 
-  const getAnimatedUrl = (baseUrl: string, key: string | null) => {
+  const getAnimatedUrl = (baseUrl: string, key: string | null): string => {
     if (!key || !baseUrl) return '';
     const filename = key.replace(/_back$/, '');
     return baseUrl.replace(/\/([^/]+)\.webp$/i, `/${filename}.webp`);
@@ -194,7 +196,7 @@ useBattleCombatantAnims(
   wasCaptured
 );
 
-const setPokeballImgRef = (el: HTMLImageElement | null) => {
+const setPokeballImgRef = (el: HTMLImageElement | null): void => {
   pokeballImgRef.value = el;
 };
 

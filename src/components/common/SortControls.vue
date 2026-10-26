@@ -22,7 +22,7 @@ const emit = defineEmits<{
   (e: 'update:sortOrder', val: SortOrder): void;
 }>();
 
-const setSort = (key: SortKey) => {
+const setSort = (key: SortKey): void => {
   if (props.modelValue === key) {
     emit('update:sortOrder', props.sortOrder === 'asc' ? 'desc' : 'asc');
   } else {

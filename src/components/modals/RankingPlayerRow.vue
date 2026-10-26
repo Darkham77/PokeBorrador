@@ -1,13 +1,15 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
 import { computed } from 'vue';
+
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { getEloTier } from '@/logic/pvp/rankedEngine';
 import { useRankCardHover } from '@/composables/arena/useRankCardHover';
-import { useUIStore } from '@/stores/ui';
+import { getEloTier } from '@/logic/pvp/rankedEngine';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import type { LeaderboardEntry } from '@/stores/social/social';
+import { useUIStore } from '@/stores/ui';
 import type { RankingSortKey } from '@/types/system/game';
-import { PODIUM_MEDALS } from '@/types/system/game';
+import { PODIUM_MEDALS, NIL_FACTION_STRINGS } from '@/types/system/game';
 
 interface Props {
   player: LeaderboardEntry;
@@ -20,8 +22,8 @@ const props = defineProps<Props>();
 const uiStore = useUIStore();
 const { handleCardEnter, handleCardLeave } = useRankCardHover();
 
-const getFactionColor = (faction?: string) => {
-  const colors: Record<string, string> = {
+const getFactionColor = (faction?: string): string => {
+  const colors: Record<DisplayText, string> = {
     // open-record: Extended faction colors palette
     union: 'rgba(59, 130, 246, 1)',
     poder: 'rgba(239, 68, 68, 1)',
@@ -33,16 +35,9 @@ const getFactionColor = (faction?: string) => {
   return colors[faction?.toLowerCase() || ''] || 'rgba(156, 163, 175, 1)';
 };
 
-const getFactionLabel = (faction?: string) => {
-  if (
-    !faction ||
-    faction === 'null' ||
-    faction === 'NULL' ||
-    faction === 'undefined' ||
-    faction.trim() === ''
-  )
-    return '';
-  const labels: Record<string, string> = {
+const getFactionLabel = (faction?: string): string => {
+  if (!faction || faction.trim() === '' || NIL_FACTION_STRINGS.has(faction)) return '';
+  const labels: Record<DisplayText, string> = {
     // open-record: Extended faction display labels
     union: 'Unión',
     poder: 'Poder',
@@ -54,7 +49,7 @@ const getFactionLabel = (faction?: string) => {
   return labels[faction?.toLowerCase() || ''] || faction;
 };
 
-const openTrainerProfile = (userId: string) => {
+const openTrainerProfile = (userId: string): void => {
   uiStore.open('TrainerProfile', { userId });
 };
 

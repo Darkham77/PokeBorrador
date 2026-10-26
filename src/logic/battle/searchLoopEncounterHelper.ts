@@ -1,18 +1,19 @@
-import type { BattleContext } from '@/types/battle/battleContext';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
 import { generateEncounter } from '@/logic/encounters/encounters';
+import { requireDayPhase, getDayCycle } from '@/logic/utils/timeUtils';
+import { resolveCurrentWeather } from '@/logic/weather/weatherRegistry';
 import { useEventStore } from '@/stores/events';
 import { useWarStore } from '@/stores/war';
-import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
-import { resolveCurrentWeather } from '@/logic/weather/weatherRegistry';
-import { requireDayPhase, getDayCycle } from '@/logic/utils/timeUtils';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Encounter, EncounterOptions } from '@/types/pokemon/encounters';
 
 const BUG_ATTRACT_SPECIES: readonly PokemonSpeciesId[] = ['scyther', 'pinsir'];
 const CAZABICHOS_SPECIAL_ENCOUNTER_CHANCE = 0.005;
 
 function getDebugMultiplier(key: string): number {
-  if (typeof window === 'undefined') return 1;
-  const mults = window.__VITE_DEBUG__?.multipliers as Record<string, number> | undefined; // open-record: Generic key-value data dictionary container
+  if (typeof globalThis.window === 'undefined') return 1;
+  const mults = globalThis.__VITE_DEBUG__?.multipliers; // open-record: Generic key-value data dictionary container
   return mults?.[key] ?? 1;
 }
 
@@ -24,21 +25,24 @@ function resolveMultiplier(globalVal: number | undefined, debugKey: string): num
 function buildSearchEncounterOptions(
   eventStore: ReturnType<typeof useEventStore>,
   warStore: ReturnType<typeof useWarStore>
-) {
-  const global = eventStore.globalMultipliers;
+): EncounterOptions {
+  const globalMultipliers = eventStore.globalMultipliers;
   return {
     activeEvents: eventStore.activeEvents,
     dominanceData: warStore.mapDominance,
-    shinyMultiplier: resolveMultiplier(global?.shiny, 'shiny'),
-    eventTrainerBonus: resolveMultiplier(global?.trainer, 'trainer'),
-    eventFishingBonus: resolveMultiplier(global?.fishing, 'fishing'),
-    eventRivalBonus: resolveMultiplier(global?.rival, 'rival'),
+    shinyMultiplier: resolveMultiplier(globalMultipliers?.shiny, 'shiny'),
+    eventTrainerBonus: resolveMultiplier(globalMultipliers?.trainer, 'trainer'),
+    eventFishingBonus: resolveMultiplier(globalMultipliers?.fishing, 'fishing'),
+    eventRivalBonus: resolveMultiplier(globalMultipliers?.rival, 'rival'),
     weather: resolveCurrentWeather(),
     cycle: requireDayPhase(getDayCycle())
   };
 }
 
-async function tryGenerateCazabichosEncounter(ctx: BattleContext, routeId: MapRouteId) {
+async function tryGenerateCazabichosEncounter(
+  ctx: BattleContext,
+  routeId: MapRouteId
+): Promise<Encounter | null> {
   if (
     ctx.gs.state.playerClass !== 'cazabichos' ||
     Math.random() >= CAZABICHOS_SPECIAL_ENCOUNTER_CHANCE
@@ -61,7 +65,10 @@ async function tryGenerateCazabichosEncounter(ctx: BattleContext, routeId: MapRo
   return null;
 }
 
-export async function generateSearchLoopEncounter(ctx: BattleContext, locId: MapRouteId) {
+export async function generateSearchLoopEncounter(
+  ctx: BattleContext,
+  locId: MapRouteId
+): Promise<Encounter | null> {
   const routeId = requireMapRouteId(locId);
   const cazabichosEncounter = await tryGenerateCazabichosEncounter(ctx, routeId);
   if (cazabichosEncounter) {

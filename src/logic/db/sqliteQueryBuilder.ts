@@ -114,42 +114,46 @@ export interface QueryBuilder {
 }
 
 export class SQLiteQueryBuilder implements QueryBuilder {
-  _table: string;
-  _filters: QueryFilter[] = [];
-  _rawClauses: RawClause[] = [];
-  _limit: number | null = null;
-  _order: string | null = null;
-  _select: string = '*';
+  public _table: string;
+  public _filters: QueryFilter[] = [];
+  public _rawClauses: RawClause[] = [];
+  public _limit: number | null = null;
+  public _order: string | null = null;
+  public _select: string = '*';
   private getDb: () => SQLiteDatabase | null;
   private persist: () => Promise<void>;
 
-  constructor(table: string, getDb: () => SQLiteDatabase | null, persist: () => Promise<void>) {
+  public constructor(
+    table: string,
+    getDb: () => SQLiteDatabase | null,
+    persist: () => Promise<void>
+  ) {
     this._table = table;
     this.getDb = getDb;
     this.persist = persist;
   }
 
-  select(fields: string): QueryBuilder {
+  public select(fields: string): QueryBuilder {
     this._select = fields;
     return this;
   }
 
-  eq(col: string, val: unknown): QueryBuilder {
+  public eq(col: string, val: unknown): QueryBuilder {
     this._filters.push({ col, val, op: '=' });
     return this;
   }
 
-  neq(col: string, val: unknown): QueryBuilder {
+  public neq(col: string, val: unknown): QueryBuilder {
     this._filters.push({ col, val, op: '!=' });
     return this;
   }
 
-  in(col: string, vals: unknown[]): QueryBuilder {
+  public in(col: string, vals: unknown[]): QueryBuilder {
     this._filters.push({ col, val: vals, op: 'IN' });
     return this;
   }
 
-  or(clause: string): QueryBuilder {
+  public or(clause: string): QueryBuilder {
     const params: unknown[] = [];
     const sql = parseOrClause(clause, params);
     if (sql) {
@@ -158,19 +162,19 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     return this;
   }
 
-  order(col: string, { ascending = true } = {}): QueryBuilder {
+  public order(col: string, { ascending = true } = {}): QueryBuilder {
     this._order = `${col} ${ascending ? 'ASC' : 'DESC'}`;
     return this;
   }
 
-  limit(n: number): QueryBuilder {
+  public limit(n: number): QueryBuilder {
     this._limit = n;
     return this;
   }
 
-  async single() {
+  public async single(): Promise<{ data: Record<string, unknown> | null; error: string | null }> {
     const res = await this.then();
-    return { data: res[0] || null, error: null };
+    return { data: (res[0] as Record<string, unknown>) || null, error: null };
   }
 
   private _buildWhereClause(params: unknown[]): string {
@@ -179,8 +183,9 @@ export class SQLiteQueryBuilder implements QueryBuilder {
       whereParts.push(
         ...this._filters.map((f: QueryFilter) => {
           if (f.op === 'IN') {
-            const placeholders = (f.val as unknown[]).map(() => '?').join(','); // open-record: Generic key-value data dictionary container
-            (f.val as unknown[]).forEach((v) => params.push(v)); // open-record: Generic key-value data dictionary container
+            const list = Array.isArray(f.val) ? f.val : [f.val];
+            const placeholders = list.map(() => '?').join(',');
+            list.forEach((v) => params.push(v));
             return `"${f.col}" IN (${placeholders})`;
           }
           params.push(f.val);
@@ -198,7 +203,7 @@ export class SQLiteQueryBuilder implements QueryBuilder {
   }
 
   // eslint-disable-next-line unicorn/no-thenable
-  async then(
+  public async then(
     resolve?: (val: Record<string, unknown>[]) => void
   ): Promise<Record<string, unknown>[]> {
     const db = this.getDb();
@@ -227,7 +232,7 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     return data;
   }
 
-  async insert(payload: unknown) {
+  public async insert(payload: unknown): Promise<{ data: unknown; error: string | null }> {
     const db = this.getDb();
     if (!db) return { data: payload, error: 'DB not ready' };
     const items = Array.isArray(payload) ? payload : [payload];
@@ -245,7 +250,9 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     return { data: payload, error: null };
   }
 
-  async update(payload: Record<string, unknown>) {
+  public async update(
+    payload: Record<string, unknown>
+  ): Promise<{ data: Record<string, unknown>; error: string | null }> {
     const db = this.getDb();
     if (!db) return { data: payload, error: 'DB not ready' };
     const cols = Object.keys(payload);
@@ -260,7 +267,7 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     return { data: payload, error: null };
   }
 
-  async delete() {
+  public async delete(): Promise<{ data: boolean; error: string | null }> {
     const db = this.getDb();
     if (!db) return { data: false, error: 'DB not ready' };
     let sql = `DELETE FROM ${this._table}`;
@@ -271,7 +278,7 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     return { data: true, error: null };
   }
 
-  async rpc(_fn: string, _params: unknown) {
+  public async rpc(_fn: string, _params: unknown): Promise<{ data: boolean; error: null }> {
     return { data: true, error: null };
   }
 }

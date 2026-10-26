@@ -1,6 +1,7 @@
 import type { SQLiteDatabase } from '@/types/database/sqlite.ts';
-import { TABLES_SCHEMA } from './schema.ts';
+
 import { logger } from '../utils/logger.ts';
+import { TABLES_SCHEMA } from './schema.ts';
 
 function upgradeTradeOffersPrimaryKey(db: SQLiteDatabase): void {
   try {

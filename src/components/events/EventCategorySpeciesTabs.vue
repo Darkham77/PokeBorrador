@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
 import type { SpeciesTabItem } from './eventCardTypes';
 
 interface Props {

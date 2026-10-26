@@ -1,28 +1,31 @@
 import { gsap } from 'gsap';
-import { cloneReactive } from '@/logic/utils/cloneUtils.ts';
+
+import type { PlayerClassId } from '@/data/player/playerClasses';
+import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases';
+import { DEFAULT_INITIAL_ELO } from '@/logic/constants/gameplay.ts';
+import type { DBRouter } from '@/logic/db/dbRouter.ts';
 import { saveActivePvPSession } from '@/logic/pvp/pvpReconnectHelper';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { PvpSpectateSyncPayload } from '@/logic/pvp/pvpSpectatorHelper';
+import { cloneReactive } from '@/logic/utils/cloneUtils.ts';
+import { logger } from '@/logic/utils/logger.ts';
+import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
+import type { useBattleStore } from '@/stores/battle/battle.ts';
+import type { useGameStore } from '@/stores/game.ts';
+import type { useUIStore } from '@/stores/ui.ts';
+import type { ShowdownPlayerRequest } from '@/types/battle/battle';
 import type {
   BattleInvite,
+  LiveChannelHandle,
   PvPBattleState,
   PvpChallengeConfig,
   PvPAction,
   PvpTurnStreamPayload,
   PvpReconnectPayload
 } from '@/types/battle/pvp';
-import type { ShowdownPlayerRequest } from '@/types/battle/battle';
-import type { PvpSpectateSyncPayload } from '@/logic/pvp/pvpSpectatorHelper';
-import type { RealtimeChannel } from '@supabase/supabase-js';
-import type { DBRouter } from '@/logic/db/dbRouter.ts';
-import { DEFAULT_INITIAL_ELO } from '@/logic/constants/gameplay.ts';
-import type { PvPTimerManager } from './pvpTimerHelper.ts';
-import type { useBattleStore } from '@/stores/battle/battle.ts';
-import type { useUIStore } from '@/stores/ui.ts';
-import type { useGameStore } from '@/stores/game.ts';
-import type { PlayerClassId } from '@/data/player/playerClasses';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { GenderId } from '@/types/system/game';
-import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
-import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases';
+
+import type { PvPTimerManager } from './pvpTimerHelper.ts';
 
 const BROADCAST_TEAM_INITIAL_DELAY_SEC = 0.5;
 const BROADCAST_TEAM_RETRY_DELAY_SEC = 2.0;
@@ -35,7 +38,7 @@ export interface LiveBattleState extends PvPBattleState {
   opponentClass?: PlayerClassId;
   opponentGender?: GenderId;
   deadline: number | null;
-  ch: Pick<RealtimeChannel, 'send' | 'unsubscribe'> | null;
+  ch: LiveChannelHandle | null;
   inviteId: string | null;
   config?: PvpChallengeConfig;
   myPick: PvPAction | null;
@@ -174,7 +177,7 @@ export function resolvePvpTeam(gameStore: GameStoreForPvpTeam, format?: string):
   const resolved: Pokemon[] = [];
   for (const uid of uids || []) {
     const poke = pokesByUid.get(uid);
-    if (poke) resolved.push(cloneReactive(poke) as Pokemon);
+    if (poke) resolved.push(cloneReactive(poke));
   }
   return resolved;
 }
@@ -185,7 +188,7 @@ export function executeCheckBothTeamsConfirmed(ctx: CheckBothTeamsConfirmedConte
 
     const enemyLeader = ctx.battleState.enemyTeam[0];
     if (enemyLeader) {
-      void ctx.battleStore
+      ctx.battleStore
         .startBattle(enemyLeader, {
           isPvP: true,
           pvpMatchId: ctx.battleState.inviteId || undefined,
@@ -206,6 +209,9 @@ export function executeCheckBothTeamsConfirmed(ctx: CheckBothTeamsConfirmedConte
           if (ctx.battleState.active) {
             ctx.timerManager.startTurnTimer();
           }
+        })
+        .catch((err) => {
+          logger.warn('Handled promise rejection:', { cause: err });
         });
     }
   }
@@ -218,13 +224,17 @@ export function executeConfirmTeamPreview(
   ctx.battleState.myTeam = orderedPicks;
   ctx.myTeamConfirmed.value = true;
   if (ctx.battleState.ch) {
-    void ctx.battleState.ch.send({
-      type: 'broadcast',
-      event: 'pvp_team_order',
-      payload: {
-        orderedUids: orderedPicks.map((p) => p.uid)
-      }
-    });
+    ctx.battleState.ch
+      .send({
+        type: 'broadcast',
+        event: 'pvp_team_order',
+        payload: {
+          orderedUids: orderedPicks.map((p) => p.uid)
+        }
+      })
+      .catch((err) => {
+        logger.warn('Handled promise rejection:', { cause: err });
+      });
   }
   executeCheckBothTeamsConfirmed(ctx);
 }
@@ -257,7 +267,7 @@ export function executeHandleOpponentTeam(
 
     const enemyLeader = battleState.enemyTeam[0];
     if (enemyLeader) {
-      void ctx.battleStore
+      ctx.battleStore
         .startBattle(enemyLeader, {
           isPvP: true,
           isRanked: battleState.isRanked,
@@ -279,6 +289,9 @@ export function executeHandleOpponentTeam(
           if (battleState.active) {
             ctx.timerManager.startTurnTimer();
           }
+        })
+        .catch((err) => {
+          logger.warn('Handled promise rejection:', { cause: err });
         });
     }
   }
@@ -353,19 +366,23 @@ export function executeStartBattle(
 
   ctx.setupBattleChannel(invite.id);
 
-  const broadcastTeam = () => {
+  const broadcastTeam = (): void => {
     if (ctx.battleState.ch) {
-      void ctx.battleState.ch.send({
-        type: 'broadcast',
-        event: 'pvp_team',
-        payload: {
-          team: cloneReactive(ctx.battleState.myTeam),
-          format: invite.config?.format,
-          trainerName: ctx.gameStore.state.trainer || 'Entrenador',
-          playerClass: ctx.gameStore.state.playerClass,
-          gender: ctx.gameStore.state.gender
-        }
-      });
+      ctx.battleState.ch
+        .send({
+          type: 'broadcast',
+          event: 'pvp_team',
+          payload: {
+            team: cloneReactive(ctx.battleState.myTeam),
+            format: invite.config?.format,
+            trainerName: ctx.gameStore.state.trainer || 'Entrenador',
+            playerClass: ctx.gameStore.state.playerClass,
+            gender: ctx.gameStore.state.gender
+          }
+        })
+        .catch((err) => {
+          logger.warn('Handled promise rejection:', { cause: err });
+        });
     }
   };
   gsap.delayedCall(BROADCAST_TEAM_INITIAL_DELAY_SEC, broadcastTeam);
@@ -406,15 +423,19 @@ export function executeSetupBattleChannel(inviteId: string, ctx: SetupBattleChan
     .on('broadcast' as const, { event: 'pvp_spectate_sync' }, ctx.handlers.onSpectateSync)
     .subscribe((status: string) => {
       if (status === 'SUBSCRIBED') {
-        void ch.send({
-          type: 'broadcast',
-          event: 'pvp_team',
-          payload: {
-            team: cloneReactive(ctx.battleState.myTeam),
-            trainerName: ctx.trainerName || 'Entrenador',
-            playerClass: ctx.playerClass,
-            gender: ctx.gender
-          }
+        Promise.resolve(
+          ch.send({
+            type: 'broadcast',
+            event: 'pvp_team',
+            payload: {
+              team: cloneReactive(ctx.battleState.myTeam),
+              trainerName: ctx.trainerName || 'Entrenador',
+              playerClass: ctx.playerClass,
+              gender: ctx.gender
+            }
+          })
+        ).catch((err: unknown) => {
+          logger.warn('Handled promise rejection:', { cause: err });
         });
       }
     });

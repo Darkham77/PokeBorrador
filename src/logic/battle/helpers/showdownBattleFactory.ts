@@ -1,7 +1,8 @@
 // src/logic/battle/helpers/showdownBattleFactory.ts
 import { Battle } from '@pkmn/sim';
-import { getShowdownFormatId } from '../showdownAdapter.ts';
+
 import { patchShowdownSpreadModify } from '../engine/showdownSpreadModifyHelper.ts';
+import { getShowdownFormatId } from '../showdownAdapter.ts';
 import { parseShowdownSeedForBattle } from './seedInitializer.ts';
 
 /**

@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useSocialStore } from '@/stores/social/social';
-import { useLivePvPStore } from '@/stores/livePvP';
-import { useAuthStore } from '@/stores/auth';
-import { useGameStore } from '@/stores/game';
-import { usePvPStore } from '@/stores/pvp';
+
 import SocialRankingsLeaderboardTab from '@/components/social/SocialRankingsLeaderboardTab.vue';
 import SocialRankingsPodium from '@/components/social/SocialRankingsPodium.vue';
-import SocialRankingsTheater from '@/components/social/SocialRankingsTheater.vue';
 import SocialRankingsSeasonTab from '@/components/social/SocialRankingsSeasonTab.vue';
-import { getEloTier, RANKED_TIERS } from '@/logic/pvp/rankedEngine';
+import SocialRankingsTheater from '@/components/social/SocialRankingsTheater.vue';
 import { DEFAULT_INITIAL_ELO } from '@/logic/constants/gameplay';
+import { getEloTier, RANKED_TIERS } from '@/logic/pvp/rankedEngine';
 import { logger } from '@/logic/utils/logger';
+import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { useLivePvPStore } from '@/stores/livePvP';
+import { usePvPStore } from '@/stores/pvp';
+import { useSocialStore } from '@/stores/social/social';
 import type { RankedPodiumWinner, SocialRankingsTab } from '@/types/battle/pvp';
 
 const COMPETITION_RESULTS_LIMIT = 20 as const;
@@ -70,7 +71,7 @@ onMounted(() => {
   socialStore.fetchLeaderboard();
 });
 
-async function fetchPodium() {
+async function fetchPodium(): Promise<void> {
   if (!gameStore.db) return;
   podiumLoading.value = true;
   try {
@@ -100,18 +101,18 @@ async function fetchPodium() {
   }
 }
 
-function setTab(tab: SocialRankingsTab) {
+function setTab(tab: SocialRankingsTab): void {
   activeTab.value = tab;
   if (tab === 'podium' && podiumWinners.value.length === 0) {
     fetchPodium();
   }
 }
 
-function handleSearchRanked() {
+function handleSearchRanked(): void {
   livePvPStore.startSearch();
 }
 
-function handleCancelSearch() {
+function handleCancelSearch(): void {
   livePvPStore.cancelSearch();
 }
 </script>

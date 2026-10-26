@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { gsap } from 'gsap';
 /**
  * PVAuraFX.vue
  * Manages screen auras (Reflect/Light Screen/Safeguard).
  * Shiny sparkles are rendered via PVStatusFX as a secondary effect.
  */
 import { ref, watch, nextTick, onUnmounted } from 'vue';
-import { gsap } from 'gsap';
+
 import { Z_LAYERS } from '@/logic/constants/visuals';
 
 const props = defineProps({
@@ -20,7 +21,7 @@ const GSAP_SCREEN_AURA_DURATION_SEC = 2;
 const SCALE_MIN_AURA = 0.95;
 const SCALE_MAX_AURA = 1.05;
 
-const initScreenAuraFX = () => {
+const initScreenAuraFX = (): void => {
   const container = rootRef.value?.closest('.pv-fx-wrapper');
   if (!container) return;
   const screens = container.querySelectorAll('.pv-fx-screen-overlay');

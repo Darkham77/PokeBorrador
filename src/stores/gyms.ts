@@ -1,18 +1,18 @@
-import { computed } from 'vue';
 import { defineStore } from 'pinia';
-import { useGameStore } from '@/stores/game.ts';
-import { useBattleStore } from '@/stores/battle/battle.ts';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { computed } from 'vue';
 
-import { GYMS, GYMS_BY_ID, requireGymId, type GymId } from '@/data/world/gyms.ts';
-import type { BattleDifficulty } from '@/types/battle/battle';
 import {
   GYM_REMATCHES,
   getAvailableGymRematches,
   isGymRematchAvailable,
   isGymRematchCompletedToday
 } from '@/data/world/gymRematches';
+import { GYMS, GYMS_BY_ID, requireGymId, type GymId } from '@/data/world/gyms.ts';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { useBattleStore } from '@/stores/battle/battle.ts';
+import { useGameStore } from '@/stores/game.ts';
+import type { BattleDifficulty } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const DEFAULT_REMATCH_LEVEL = 70 as const;
 

@@ -3,8 +3,8 @@
  * Centralized constant definitions for levels, ELO, stats, minigames, and damage variance.
  */
 
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { ItemId } from '@/data/inventory/items';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 /** Minimum legal level for Pokémon in the engine. */
 export const MINIMUM_POKEMON_LEVEL = 1;

@@ -1,6 +1,7 @@
-import { describe, it, vi, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
+
+import { describe, it, vi, beforeEach } from 'vite-plus/test';
 
 let memoryDb: DatabaseSync;
 

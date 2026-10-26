@@ -10,12 +10,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
+import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
+import { executeRegionalGenerationJob } from '../../logic/map/continentGenerator.worker.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
-import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
-import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
-import { executeRegionalGenerationJob } from '../../logic/map/continentGenerator.worker.ts';
 import {
   resolveWaterCoastGrid,
   type WaterTerrainMatrix

@@ -1,8 +1,9 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
+
 import { processPlayerFaintSequence } from '../../../src/logic/battle/battleFaintSequence.ts';
+import { BATTLE_STATES, BATTLE_SUBSTATES } from '../../../src/logic/battle/battleStateMachine.ts';
 import type { BattleContext } from '../../../src/types/battle/battleContext.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
-import { BATTLE_STATES, BATTLE_SUBSTATES } from '../../../src/logic/battle/battleStateMachine.ts';
 
 describe('processPlayerFaintSequence - Final Turn Double Faint Fix', () => {
   it('does NOT open SWITCH_MENU when the last enemy has already fainted and player wins', async () => {

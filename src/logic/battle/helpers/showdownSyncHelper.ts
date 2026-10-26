@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 // src/logic/battle/helpers/showdownSyncHelper.ts
 import type { Side, ID } from '@pkmn/sim';
 
@@ -26,14 +27,14 @@ export function clearPokemonFromFaintQueue(side: unknown, p: unknown): void {
  */
 export function extractTeamHpAndStatus(team: Array<MinimalPokemonState | null>): {
   // open-record: Dynamic Pokemon UID mapped to HP
-  hps: Record<string, number>;
+  hps: Record<DisplayText, number>;
   // open-record: Dynamic Pokemon UID mapped to status ID
-  statuses: Record<string, string>;
+  statuses: Record<DisplayText, string>;
 } {
   // open-record: Dynamic Pokemon UID mapped to HP accumulator
-  const hps: Record<string, number> = {};
+  const hps: Record<DisplayText, number> = {};
   // open-record: Dynamic Pokemon UID mapped to status ID accumulator
-  const statuses: Record<string, string> = {};
+  const statuses: Record<DisplayText, string> = {};
   team.forEach((p) => {
     if (p && p.uid) {
       hps[p.uid] = p.hp ?? 0;
@@ -57,7 +58,7 @@ function syncPokemonStatus(
   p: NonNullable<Side['pokemon'][number]>,
   uid: string,
   // open-record: Dynamic Pokemon UID mapped to status ID
-  statuses?: Record<string, string>
+  statuses?: Record<DisplayText, string>
 ): void {
   const rawStatus = statuses ? findMatchingValue(uid, statuses) : undefined;
   if (rawStatus !== undefined) {
@@ -91,7 +92,7 @@ function syncLivingPokemon(
   uid: string,
   clientHp: number,
   // open-record: Dynamic Pokemon UID mapped to status ID
-  statuses?: Record<string, string>
+  statuses?: Record<DisplayText, string>
 ): void {
   p.hp = Math.min(clientHp, p.maxhp);
   p.fainted = false;
@@ -107,9 +108,9 @@ function syncLivingPokemon(
 export function syncSidePokemon(
   side: Side,
   // open-record: Dynamic Pokemon UID mapped to HP
-  hps: Record<string, number>,
+  hps: Record<DisplayText, number>,
   // open-record: Dynamic Pokemon UID mapped to status ID
-  statuses?: Record<string, string>
+  statuses?: Record<DisplayText, string>
 ): void {
   console.debug(
     `[SYNC-SIDE] Side ${side.id}: before sync, pokemon:`,

@@ -1,6 +1,7 @@
 import type { DBResponse, ProxyQueryChainItem, SqlProxyAction } from '@/types/system/database';
-import type { DBQueryResultShape } from './proxyQuery.ts';
+
 import { logger } from '../utils/logger.ts';
+import type { DBQueryResultShape } from './proxyQuery.ts';
 import {
   buildSelectWhereAndParams,
   buildOrderAndLimit,
@@ -13,8 +14,8 @@ export function isLanDevPvP(table: string): boolean {
     (table === 'ranked_queue' || table === 'battle_invites') &&
     Boolean(import.meta.env.DEV) &&
     import.meta.env.MODE !== 'test' &&
-    typeof window !== 'undefined' &&
-    !(window as { __VITEST__?: boolean }).__VITEST__ &&
+    typeof globalThis.window !== 'undefined' &&
+    !(globalThis as { __VITEST__?: boolean }).__VITEST__ &&
     !(typeof process !== 'undefined' && (process.env.VITEST || process.env.NODE_ENV === 'test'))
   );
 }

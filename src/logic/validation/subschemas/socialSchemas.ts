@@ -22,8 +22,9 @@ import {
   type InferOutput
 } from 'valibot';
 
-import { pokemonSchema } from './pokemonSchemas.ts';
 import { MARKET_LISTING_STATUSES } from '@/logic/economy/market.ts';
+
+import { pokemonSchema } from './pokemonSchemas.ts';
 
 export const gtsItemDataSchema = object({
   id: union([string(), number()]),

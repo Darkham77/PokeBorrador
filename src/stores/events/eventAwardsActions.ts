@@ -1,24 +1,23 @@
+import type { DisplayText } from '@francogp/auditor';
 import type { Ref } from 'vue';
+
+import { parseAwardPrizePayload } from '@/logic/events/eventCompetitionsHelper.ts';
+import { getEventDisplayName, type Event as GameEvent } from '@/logic/events/eventEngine';
+import { isAwardClaimable } from '@/logic/events/eventValidators';
+import { healStuckEventPokemon } from '@/logic/player/eventRecovery';
 import { logger } from '@/logic/utils/logger';
+import { GAME_TIMEZONE, getGMT3Date } from '@/logic/utils/timeUtils';
+import type { useAuthStore } from '@/stores/auth.ts';
+import type { useGameStore } from '@/stores/game.ts';
+import type { useUIStore } from '@/stores/ui.ts';
+import type { PokemonCompetitionTrophy, PokemonCompetitionRank } from '@/types/pokemon/pokemon';
 import type {
   PendingAward,
   PastEventHistoryItem,
   PastCompetitionWinner,
   CompetitionEntry
 } from '@/types/system/stores';
-import { getEventDisplayName, type Event as GameEvent } from '@/logic/events/eventEngine';
-import { GAME_TIMEZONE, getGMT3Date } from '@/logic/utils/timeUtils';
-import type { PokemonCompetitionTrophy, PokemonCompetitionRank } from '@/types/pokemon/pokemon';
-import { isAwardClaimable } from '@/logic/events/eventValidators';
-import { healStuckEventPokemon } from '@/logic/player/eventRecovery';
-import {
-  grantMoneyAward,
-  grantBattleCoinsAward,
-  grantItemsAward,
-  grantPokemonAward,
-  validateStorageCapacityForAwards
-} from './eventPrizeGrantor.ts';
-import { parseAwardPrizePayload } from '@/logic/events/eventCompetitionsHelper.ts';
+
 import {
   updateTrophyStats,
   insertOrUpdatePokemonTrophy,
@@ -26,9 +25,13 @@ import {
   findTargetAward,
   mutatePastEventsAwards
 } from './eventAwardsHelper.ts';
-import type { useGameStore } from '@/stores/game.ts';
-import type { useAuthStore } from '@/stores/auth.ts';
-import type { useUIStore } from '@/stores/ui.ts';
+import {
+  grantMoneyAward,
+  grantBattleCoinsAward,
+  grantItemsAward,
+  grantPokemonAward,
+  validateStorageCapacityForAwards
+} from './eventPrizeGrantor.ts';
 
 const MAX_PAST_EVENTS_COUNT = 20;
 const AWARDS_COLUMNS =
@@ -43,14 +46,14 @@ export interface EventAwardsContext {
   allEvents: Ref<GameEvent[]>;
   pastEvents: Ref<PastEventHistoryItem[]>;
   pendingAwards: Ref<PendingAward[]>;
-  userEntries: Ref<Record<string, CompetitionEntry>>; // open-record: Composite event_id:catId index
+  userEntries: Ref<Record<DisplayText, CompetitionEntry>>; // open-record: Composite event_id:catId index
 }
 
 function grantTrophyToPokemon(
   ctx: EventAwardsContext,
   trophy: PokemonCompetitionTrophy,
   pokemonUid?: string
-) {
+): void {
   if (!pokemonUid) return;
   const { gameStore } = ctx;
   const targetPoke = gameStore.getPokemonByUid(pokemonUid);
@@ -79,7 +82,7 @@ function applyAwardPrize(
   ctx: EventAwardsContext,
   rawPrize: unknown,
   options: { autoSave?: boolean; silent?: boolean } = {}
-) {
+): void {
   const prize = parseAwardPrizePayload(rawPrize);
   if (!prize) return;
 
@@ -103,7 +106,10 @@ function applyAwardPrize(
   }
 }
 
-export async function checkPendingAwards(ctx: EventAwardsContext, notifyOnPending = false) {
+export async function checkPendingAwards(
+  ctx: EventAwardsContext,
+  notifyOnPending = false
+): Promise<void> {
   const { authStore, gameStore, pendingAwards, uiStore } = ctx;
   if (!authStore.user || !gameStore.db) return;
 
@@ -174,7 +180,10 @@ function resolveEventDisplayName(
   return getEventDisplayName(eventCfg, eventDate);
 }
 
-function evaluateUserAwardStatus(matchingAwards: PendingAward[], isWinner: boolean) {
+function evaluateUserAwardStatus(
+  matchingAwards: PendingAward[],
+  isWinner: boolean
+): { matchingAward: PendingAward | null; hasUnclaimedAward: boolean; isClaimed: boolean } {
   const unClaimedAward = matchingAwards.find((a) => a.received_at === null);
   const matchingAward = unClaimedAward || matchingAwards[0] || null;
   const hasUnclaimedAward =
@@ -203,7 +212,7 @@ function resolveTrophyEventName(
 }
 
 function findUserEntryPokemonUid(
-  userEntries: Record<string, CompetitionEntry>, // open-record: Composite event_id:catId index
+  userEntries: Record<DisplayText, CompetitionEntry>, // open-record: Composite event_id:catId index
   eventId: string,
   catId: string
 ): string | undefined {
@@ -220,7 +229,7 @@ function processUserWinnerTrophy(
   eventCfg: GameEvent | undefined,
   eventDate: Temporal.ZonedDateTime,
   fallbackEventName: string
-) {
+): void {
   const { authStore, userEntries, gameStore } = ctx;
   if (!authStore.user || winner.player_id !== authStore.user.id) return;
 
@@ -259,7 +268,7 @@ function processWinnerTrophies(
   eventCfg: GameEvent | undefined,
   eventDate: Temporal.ZonedDateTime,
   fallbackEventName: string
-) {
+): void {
   if (!ctx.authStore.user) return;
   for (const winner of winners) {
     processUserWinnerTrophy(
@@ -316,7 +325,7 @@ function buildPastEventHistoryItem(
   };
 }
 
-export async function fetchPastEvents(ctx: EventAwardsContext) {
+export async function fetchPastEvents(ctx: EventAwardsContext): Promise<void> {
   const { gameStore, authStore, allEvents, userEntries, pastEvents } = ctx;
   if (!gameStore.db) return;
 
@@ -381,13 +390,16 @@ function updatePastEventsAwardClaimed(
   pastEvents: Ref<PastEventHistoryItem[]>,
   awardId: string,
   claimedTimestamp: string
-) {
+): void {
   mutatePastEventsAwards(pastEvents, awardId, (currentAwards) =>
     currentAwards.map((a) => (a.id === awardId ? { ...a, received_at: claimedTimestamp } : a))
   );
 }
 
-function updatePastEventsAwardDiscarded(pastEvents: Ref<PastEventHistoryItem[]>, awardId: string) {
+function updatePastEventsAwardDiscarded(
+  pastEvents: Ref<PastEventHistoryItem[]>,
+  awardId: string
+): void {
   mutatePastEventsAwards(pastEvents, awardId, (currentAwards) =>
     currentAwards.filter((a) => a.id !== awardId)
   );
@@ -400,7 +412,7 @@ function finalizeClaimAward(
   prize: unknown,
   nowIso: string,
   options: { autoSave?: boolean; silent?: boolean }
-) {
+): void {
   const { pendingAwards, pastEvents, gameStore, allEvents, userEntries } = ctx;
   pendingAwards.value = pendingAwards.value.filter((a) => a.id !== awardId);
   updatePastEventsAwardClaimed(pastEvents, awardId, nowIso);
@@ -569,7 +581,7 @@ export async function discardAward(ctx: EventAwardsContext, awardId: string): Pr
         userEntries.value
       );
       if (typeof gameStore.scheduleSave === 'function') {
-        void gameStore.scheduleSave();
+        gameStore.scheduleSave();
       }
       uiStore.notify('Recompensa descartada correctamente.', '🗑️');
       return true;

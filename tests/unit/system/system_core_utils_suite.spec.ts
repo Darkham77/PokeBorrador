@@ -1,12 +1,15 @@
+import fs from 'node:fs';
+
+import { setActivePinia, createPinia } from 'pinia';
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test';
-import fs from 'node:fs';
-import { setActivePinia, createPinia } from 'pinia';
-import { formatPlayerClass, formatFaction } from '@/logic/utils/formatters';
-import { useLibraryStore } from '@/stores/library';
-import { useLoadingStore } from '@/stores/loading';
-import { getPokemonTier } from '@/logic/pokemon/tierEngine';
+
+import { calculateDamageForTooltip } from '@/logic/battle/smogonAdapter';
+import { calculateButtonHoverEnterVars } from '@/logic/hover/hoverEnterChildren';
+import { resolveCssColor } from '@/logic/hover/hoverHelpers';
 import { getSellPrice, filterInventoryByCategory } from '@/logic/inventory/inventoryEngine';
+import { getPokemonTier } from '@/logic/pokemon/tierEngine';
+import { formatPlayerClass, formatFaction } from '@/logic/utils/formatters';
 import {
   some,
   none,
@@ -16,16 +19,16 @@ import {
   err,
   matchResult
 } from '@/logic/utils/resultUtils';
+import { useLibraryStore } from '@/stores/library';
+import { useLoadingStore } from '@/stores/loading';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+
 import { generateMigrations } from '../../../scripts/database/generate_migrations.ts';
 import { restoreSupabaseDb } from '../../../scripts/database/restore_supabase_db.ts';
 import { updateSupabaseDb } from '../../../scripts/database/update_supabase_db.ts';
-import { calculateDamageForTooltip } from '@/logic/battle/smogonAdapter';
-import { calculateButtonHoverEnterVars } from '@/logic/hover/hoverEnterChildren';
-import { resolveCssColor } from '@/logic/hover/hoverHelpers';
-import { createTestDBRouter, cleanupTestDB } from '../../dbTestHelper.ts';
 import { FuzzerRunnerLogger } from '../../../scripts/e2e/logging/fuzzer_runner_logger.ts';
 import { SimulationRunnerLogger } from '../../../scripts/e2e/logging/simulation_runner_logger.ts';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+import { createTestDBRouter, cleanupTestDB } from '../../dbTestHelper.ts';
 
 describe('System Core Utilities Domain Suite', () => {
   beforeEach(() => {

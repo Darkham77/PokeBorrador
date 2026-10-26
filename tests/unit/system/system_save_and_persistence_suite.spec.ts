@@ -1,25 +1,28 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
+
 /**
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
-import fs from 'node:fs';
-import path from 'node:path';
-import { DatabaseSync } from 'node:sqlite';
-import { setupLocalStorageMock } from './localStorageMock.ts';
-import { serializeState, saveGame } from '@/logic/auth/saveService';
+
 import { loadBestSave } from '@/logic/auth/loadService';
 import { validateAndSanitize } from '@/logic/auth/saveSanitizer';
+import { serializeState, saveGame } from '@/logic/auth/saveService';
+import type { DBRouter } from '@/logic/db/dbRouter';
+import { DATABASE_MIGRATIONS } from '@/logic/db/migrations_data';
 import { isOPFSSupported, saveToOPFS, loadFromOPFS } from '@/logic/db/opfsHelper';
 import { TABLES_SCHEMA } from '@/logic/db/schema';
-import { DATABASE_MIGRATIONS } from '@/logic/db/migrations_data';
 import { splitSQLStatements, translatePostgresToSqlite } from '@/logic/db/sqlTranslator';
-import { INITIAL_STATE } from '@/stores/gameInitialState';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import type { GameState } from '@/types/system/game';
-import type { BattleState } from '@/types/battle/battle';
-import type { DBRouter } from '@/logic/db/dbRouter';
-import type { AuthUser } from '@/types/auth/auth';
 import type { SaveDataDto } from '@/logic/validation/schemas';
+import { INITIAL_STATE } from '@/stores/gameInitialState';
+import type { AuthUser } from '@/types/auth/auth';
+import type { BattleState } from '@/types/battle/battle';
+import type { GameState } from '@/types/system/game';
+
+import { setupLocalStorageMock } from './localStorageMock.ts';
 
 vi.mock('@/logic/utils/opfsStorage', () => ({
   readOpfsFile: vi.fn(() => Promise.resolve(null)),
@@ -560,6 +563,6 @@ describe('System Save & Persistence Domain Suite', () => {
       }
 
       expect(verifiedCount).toBe(saves.length);
-    }, 300000);
+    });
   });
 });

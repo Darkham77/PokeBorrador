@@ -1,3 +1,4 @@
+import { isMainModule } from '@francogp/auditor';
 /**
  * scripts/tools/tag_canon_items.ts
  *
@@ -12,19 +13,29 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { styleText } from 'node:util';
+import { defineCommand, runMain } from 'citty';
 import { Dex, toID } from '@pkmn/sim';
 
-const CUSTOM_CATEGORIES = new Set([
-  // runtime-set: Fast O(1) membership lookup set
+const CANON_CATEGORY_LIST = [
+  'pokeballs',
+  'stones',
+  'potions',
+  'combat_held'
+] as const;
+type CanonCategory = (typeof CANON_CATEGORY_LIST)[number];
+const CANON_CATEGORIES: ReadonlySet<CanonCategory> = new Set<CanonCategory>(CANON_CATEGORY_LIST);
+
+const CUSTOM_CATEGORY_LIST = [
   'raw_material',
   'refined_material',
   'component',
   'machinery',
   'tools'
-]);
+] as const;
+type CustomCategory = (typeof CUSTOM_CATEGORY_LIST)[number];
+const CUSTOM_CATEGORIES: ReadonlySet<CustomCategory> = new Set<CustomCategory>(CUSTOM_CATEGORY_LIST);
 
-const CUSTOM_ITEM_IDS = new Set([
-  // runtime-set: Fast O(1) membership lookup set
+const CUSTOM_ITEM_ID_LIST = [
   'ticketsafari',
   'ticketshiny',
   'ticketcerulean',
@@ -41,10 +52,11 @@ const CUSTOM_ITEM_IDS = new Set([
   'berrygold',
   'berrybronze',
   'ironingot'
-]);
+] as const;
+type CustomItemId = (typeof CUSTOM_ITEM_ID_LIST)[number];
+const CUSTOM_ITEM_IDS: ReadonlySet<CustomItemId> = new Set<CustomItemId>(CUSTOM_ITEM_ID_LIST);
 
-const CANON_SPECIAL_IDS = new Set([
-  // runtime-set: Fast O(1) membership lookup set
+const CANON_SPECIAL_ID_LIST = [
   'hpup',
   'protein',
   'iron',
@@ -145,7 +157,25 @@ const CANON_SPECIAL_IDS = new Set([
   'everstone',
   'abilitycapsule',
   'abilitypatch'
-]);
+] as const;
+type CanonSpecialId = (typeof CANON_SPECIAL_ID_LIST)[number];
+const CANON_SPECIAL_IDS: ReadonlySet<CanonSpecialId> = new Set<CanonSpecialId>(CANON_SPECIAL_ID_LIST);
+
+function isCustomCategory(value: string): value is CustomCategory {
+  return (CUSTOM_CATEGORIES as ReadonlySet<string>).has(value);
+}
+
+function isCustomItemId(value: string): value is CustomItemId {
+  return (CUSTOM_ITEM_IDS as ReadonlySet<string>).has(value);
+}
+
+function isCanonSpecialId(value: string): value is CanonSpecialId {
+  return (CANON_SPECIAL_IDS as ReadonlySet<string>).has(value);
+}
+
+function isCanonCategory(value: string): value is CanonCategory {
+  return (CANON_CATEGORIES as ReadonlySet<string>).has(value);
+}
 
 interface ItemEntry {
   id: string;
@@ -167,7 +197,7 @@ export function tagAllItems(): { canonCount: number; customCount: number; total:
     const cat = item.cat || '';
 
     // Check if definitely custom
-    if (CUSTOM_CATEGORIES.has(cat) || CUSTOM_ITEM_IDS.has(id)) {
+    if (isCustomCategory(cat) || isCustomItemId(id)) {
       item.isCanon = false;
       customCount++;
       continue;
@@ -184,11 +214,8 @@ export function tagAllItems(): { canonCount: number; customCount: number; total:
     const dexItem = Dex.items.get(toID(id));
     if (
       dexItem.exists ||
-      CANON_SPECIAL_IDS.has(id) ||
-      cat === 'pokeballs' ||
-      cat === 'stones' ||
-      cat === 'potions' ||
-      cat === 'combat_held'
+      isCanonSpecialId(id) ||
+      (cat && isCanonCategory(cat))
     ) {
       item.isCanon = true;
       canonCount++;
@@ -210,6 +237,15 @@ export function tagAllItems(): { canonCount: number; customCount: number; total:
   return { canonCount, customCount, total: db.SHOP_ITEMS.length };
 }
 
-if (process.argv[1]?.endsWith('tag_canon_items.ts')) {
-  tagAllItems();
+export const command = defineCommand({
+  meta: {
+    name: 'tag-canon-items',
+    description: 'Agrega o actualiza isCanon en src/data/inventory/items.json'
+  },
+  run() {
+    tagAllItems();
+  }
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
 }

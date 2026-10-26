@@ -1,5 +1,5 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { AbilityId } from '@/data/battle/abilities';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const HP_HIGH_THRESHOLD_RATIO = 0.5 as const;
 const HP_MID_THRESHOLD_RATIO = 0.25 as const;
@@ -141,7 +141,8 @@ export function resolvePokemonCardClasses(
   pokemon: Pick<Pokemon, 'onMission' | 'onEvent' | 'aura' | 'isShiny' | 'isGuardian'>,
   options: CardClassOptions
 ): string[] {
-  const classes: string[] = ['pokemon-display-card']; // domain-ok: Open dynamic CSS class names list
+  const classes: string[] = [];
+  classes.push('pokemon-display-card');
   if (pokemon.onMission) classes.push('on-mission');
   if (pokemon.onEvent) classes.push('on-event');
   if (options.hasBadges) classes.push('with-badges');

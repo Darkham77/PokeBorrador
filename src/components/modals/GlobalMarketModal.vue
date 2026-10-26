@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { useUIStore } from '@/stores/ui';
-import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue';
 import { gsap } from 'gsap';
+import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue';
+
+import BaseModal from '@/components/common/BaseModal.vue';
+import { formatCurrency } from '@/logic/utils/formatters';
 import { useAuthStore } from '@/stores/auth';
 import { useGameStore } from '@/stores/game';
 import { useGTSStore } from '@/stores/gts';
-import BaseModal from '@/components/common/BaseModal.vue';
-import { formatCurrency } from '@/logic/utils/formatters';
+import { useUIStore } from '@/stores/ui';
 
 const MARKET_ANIM_CARD_Y_OFFSET_PX = 12;
 const MARKET_ANIM_MYCARD_X_OFFSET_PX = -15;
@@ -18,8 +19,8 @@ const MARKET_ANIM_MYCARD_STAGGER_SEC = 0.03;
 // Subcomponents
 import MarketExplorer from '../market/MarketExplorer.vue';
 import MarketFilters from '../market/MarketFilters.vue';
-import MarketPublish from '../market/MarketPublish.vue';
 import MarketMyItems from '../market/MarketMyItems.vue';
+import MarketPublish from '../market/MarketPublish.vue';
 
 interface Props {
   show?: boolean;
@@ -75,7 +76,7 @@ onUnmounted(() => {
 const MARKET_ANIM_CARD_SCALE_START = 0.98;
 
 // GSAP Grid stagger animation
-const animateGrid = () => {
+const animateGrid = (): void => {
   nextTick(() => {
     // 1. Target explorer cards
     const explorerCards = document.querySelectorAll('.listing-card');
@@ -127,7 +128,7 @@ watch([activeTab, () => gtsStore.listings, () => gtsStore.myListings], () => {
   animateGrid();
 });
 
-const close = () => {
+const close = (): void => {
   emit('close');
 };
 </script>

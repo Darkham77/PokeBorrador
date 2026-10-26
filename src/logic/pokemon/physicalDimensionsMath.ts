@@ -10,8 +10,8 @@
  * @module physicalDimensionsMath
  */
 
-import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 import type { Pokemon } from '../../types/pokemon/pokemon.ts';
+import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 
 /** FNV-1a 32-bit offset basis. */
 const FNV1A_OFFSET_BASIS = 2166136261;

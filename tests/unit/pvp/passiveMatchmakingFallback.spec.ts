@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vite-plus/test';
+
+import { deserializePokemonTeam } from '@/logic/auth/savePokemonSerializer';
 import {
   selectPassiveOpponent,
   computePassiveEnemyChoice,
   type PassiveTeamCandidate
 } from '@/logic/pvp/passiveMatchmakingHelper';
-import { deserializePokemonTeam } from '@/logic/auth/savePokemonSerializer';
 
 describe('passiveMatchmakingHelper', () => {
   describe('selectPassiveOpponent', () => {

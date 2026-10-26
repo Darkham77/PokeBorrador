@@ -1,5 +1,5 @@
-import { logger } from '@/logic/utils/logger';
 import { getPokemonCryFilename } from '@/data/pokemon/pokemonCriesDatabase.ts';
+import { logger } from '@/logic/utils/logger';
 import { toID } from '@/logic/utils/strings.ts';
 
 const cryCache = new Map<string, AudioBuffer>();
@@ -10,7 +10,8 @@ async function fetchCryBuffer(name: string, ctx: AudioContext): Promise<AudioBuf
   const safeBase = import.meta.env.BASE_URL.endsWith('/')
     ? import.meta.env.BASE_URL
     : `${import.meta.env.BASE_URL}/`;
-  const cryUrl = new URL(`${safeBase}cries/${safeName}.mp3`, window.location.origin);
+  const cryUrl = new URL(globalThis.location.origin);
+  cryUrl.pathname = `${safeBase}cries/${safeName}.mp3`;
   // fallow-ignore-next-line security-sink
   const response = await fetch(cryUrl.href);
   if (!response.ok) {

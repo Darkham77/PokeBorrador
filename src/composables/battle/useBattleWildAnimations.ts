@@ -1,5 +1,6 @@
-import { ref, toValue, type MaybeRefOrGetter } from 'vue';
 import { gsap } from 'gsap';
+import { ref, toValue, type MaybeRefOrGetter, type Ref } from 'vue';
+
 import { gameBus } from '@/logic/events/gameBus';
 import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -8,7 +9,24 @@ const WILD_EMERGE_JUMP_DURATION_SEC = 0.5;
 const WILD_EMERGE_SETTLE_DURATION_SEC = 0.3;
 const REVEAL_DURATION_SEC = 0.6;
 
-export function useBattleWildAnimations(enemyRef: MaybeRefOrGetter<Pokemon | null | undefined>) {
+export interface UseBattleWildAnimationsReturn {
+  readonly isWildEntryAnimation: Ref<boolean>;
+  readonly isEmerging: Ref<boolean>;
+  readonly isWildSilhouette: Ref<boolean>;
+  readonly wildRevealActive: Ref<boolean>;
+  readonly upcomingIsEmerging: Ref<boolean>;
+  readonly isWildSilhouetteHalfway: Ref<boolean>;
+  readonly isInitialLoad: Ref<boolean>;
+  readonly silhouetteOpacity: Ref<number>;
+  readonly revealWildPokemon: (isInstant?: boolean) => Promise<void>;
+  readonly triggerWildEmergence: () => Promise<void>;
+  readonly triggerSearchEncounter: () => Promise<void>;
+  readonly resetWildStates: () => void;
+}
+
+export function useBattleWildAnimations(
+  enemyRef: MaybeRefOrGetter<Pokemon | null | undefined>
+): UseBattleWildAnimationsReturn {
   // Wild / Entry visual states
   const isWildEntryAnimation = ref(false);
   const isEmerging = ref(false);
@@ -19,7 +37,7 @@ export function useBattleWildAnimations(enemyRef: MaybeRefOrGetter<Pokemon | nul
   const isInitialLoad = ref(true);
   const silhouetteOpacity = ref(0);
 
-  const revealWildPokemon = async (isInstant = false) => {
+  const revealWildPokemon = async (isInstant = false): Promise<void> => {
     if (isInstant) {
       isWildSilhouette.value = false;
       isWildEntryAnimation.value = false;
@@ -50,9 +68,9 @@ export function useBattleWildAnimations(enemyRef: MaybeRefOrGetter<Pokemon | nul
     return awaitAnimation(tl);
   };
 
-  const triggerWildEmergence = () => Promise.resolve();
+  const triggerWildEmergence = (): Promise<void> => Promise.resolve();
 
-  const triggerSearchEncounter = () => {
+  const triggerSearchEncounter = (): Promise<void> => {
     const tl = createTimeline();
 
     isWildEntryAnimation.value = true;
@@ -94,7 +112,7 @@ export function useBattleWildAnimations(enemyRef: MaybeRefOrGetter<Pokemon | nul
     return awaitAnimation(tl);
   };
 
-  const resetWildStates = () => {
+  const resetWildStates = (): void => {
     isWildEntryAnimation.value = false;
     isEmerging.value = false;
     isWildSilhouette.value = false;

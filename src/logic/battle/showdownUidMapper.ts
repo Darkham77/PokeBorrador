@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * showdownUidMapper.ts
  *
@@ -55,7 +56,10 @@ export function findPokemonByShowdownName<T extends { uid?: string }>(
  * Finds a value in a Record<string, T> map where keys may be full or Showdown UIDs.
  */
 // open-record: Generic UID-indexed dictionary lookup
-export function findMatchingValue<T>(targetUid: string, map: Record<string, T>): T | undefined {
+export function findMatchingValue<T>(
+  targetUid: string,
+  map: Record<DisplayText, T>
+): T | undefined {
   if (!targetUid || !map) return undefined;
   if (map[targetUid] !== undefined) return map[targetUid];
   for (const k in map) {

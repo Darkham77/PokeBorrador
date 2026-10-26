@@ -5,17 +5,18 @@
 const CRIADOR_CLASS_MIN_LEVEL = 20;
 const MAX_INVENTORY_EGGS_LIMIT = 6;
 const MAX_WAREHOUSE_EGGS_CAPACITY = 30;
-import { useBreedingStore } from '@/stores/breeding';
-import { useUIStore } from '@/stores/ui';
-import { useGameStore } from '@/stores/game';
-import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { DaycareEgg } from '@/types/breeding/breeding';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import EggWarehouseCard from './EggWarehouseCard.vue';
-
-import { ref, computed, watch, onUnmounted } from 'vue';
 import { gsap } from 'gsap';
+import { ref, computed, watch, onUnmounted } from 'vue';
+
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useBreedingStore } from '@/stores/breeding';
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
+import type { DaycareEgg } from '@/types/breeding/breeding';
+
+import EggWarehouseCard from './EggWarehouseCard.vue';
 
 const breedingStore = useBreedingStore();
 const uiStore = useUIStore();
@@ -26,7 +27,7 @@ const isLevelAdequate = computed(
   () => (gameStore.state.classLevel || 1) >= CRIADOR_CLASS_MIN_LEVEL
 );
 
-const getPokemonName = (id: string) => {
+const getPokemonName = (id: string): string => {
   const specId = requirePokemonSpeciesId(id);
   return POKEMON_DB[specId]?.name || 'Huevo';
 };
@@ -35,7 +36,7 @@ const getPokemonName = (id: string) => {
 const cooldownText = ref('');
 let cooldownTicker: gsap.core.Tween | null = null;
 
-const checkCooldown = () => {
+const checkCooldown = (): void => {
   if (!isCriador.value || !isLevelAdequate.value) {
     cooldownText.value = '';
     return;
@@ -90,7 +91,7 @@ onUnmounted(() => {
   if (cooldownTicker) cooldownTicker.kill();
 });
 
-const handleClaim = (egg: DaycareEgg) => {
+const handleClaim = (egg: DaycareEgg): void => {
   // Early slot guard — show toast immediately without opening any dialog
   const regularEggs = (gameStore.state.eggs || []).filter((e) => !e.isNpc);
   if (regularEggs.length >= MAX_INVENTORY_EGGS_LIMIT) {
@@ -138,7 +139,7 @@ const handleClaim = (egg: DaycareEgg) => {
   });
 };
 
-const handleDeleteEgg = (egg: DaycareEgg) => {
+const handleDeleteEgg = (egg: DaycareEgg): void => {
   const isScanned = !!egg.inherited_ivs?._scanned;
   const displayName = isScanned ? `huevo de ${getPokemonName(egg.species)}` : 'Huevo Pokémon';
   uiStore.openConfirm({

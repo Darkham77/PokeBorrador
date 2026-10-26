@@ -7,13 +7,13 @@
  * pixel-sharp scaling, background ocean fill, and optional viewport culling.
  */
 
-import type { ContinentMapResult } from './continentGenerator.ts';
-import type { POINode } from '../../types/map/poiTypes.ts';
-import type { WildernessLayerResult } from './wildernessVegetationEngine.ts';
-import { preloadTileImages, getImageCache } from './canvasImageLoader.ts';
 import { CANVAS_RENDERER } from '../../config/canvasRendererConfig.ts';
 import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+import type { POINode } from '../../types/map/poiTypes.ts';
+import { preloadTileImages, getImageCache } from './canvasImageLoader.ts';
 import { buildMapBlitInstructions } from './canvasTileRenderer.ts';
+import type { ContinentMapResult } from './continentGenerator.ts';
+import type { WildernessLayerResult } from './wildernessVegetationEngine.ts';
 
 export interface VisibleViewportBounds {
   readonly minX: number;

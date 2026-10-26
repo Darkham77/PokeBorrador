@@ -8,6 +8,7 @@
  */
 
 import { describe, it, expect } from 'vite-plus/test';
+
 import {
   SpanishIdAuditor,
   SPANISH_ID_RULES,

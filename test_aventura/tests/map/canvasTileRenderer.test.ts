@@ -11,6 +11,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import { resolveTileUrl } from '../../logic/map/canvasImageLoader.ts';
 import { buildMapBlitInstructions, CANVAS_TILE_SIZE } from '../../logic/map/canvasTileRenderer.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';

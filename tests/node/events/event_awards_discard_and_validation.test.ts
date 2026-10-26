@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { ref } from 'vue';
+
+import type { Event as GameEvent } from '@/logic/events/eventEngine';
 import { isAwardClaimable } from '@/logic/events/eventValidators';
 import { discardAward, checkPendingAwards } from '@/stores/events/eventAwardsActions';
 import type { EventAwardsContext } from '@/stores/events/eventAwardsActions';
 import type { PendingAward, PastEventHistoryItem } from '@/types/system/stores';
-import type { Event as GameEvent } from '@/logic/events/eventEngine';
 
 describe('Event Awards Validation and Discard System', () => {
   const mockAllEvents: GameEvent[] = [

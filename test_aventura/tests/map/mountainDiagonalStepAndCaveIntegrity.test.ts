@@ -7,6 +7,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import { executeRegionalGenerationJob } from '../../logic/map/continentGenerator.worker.ts';
 import { resolveMountainAutotileCell } from '../../logic/map/mountainAutotileEngine.ts';
 

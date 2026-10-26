@@ -1,6 +1,6 @@
-import { requireCertifiedBattleTeamSlot } from '@/types/battle/certifiedBattleActions.ts';
 import type { ShowdownPlayerRequest } from '@/types/battle/battle.ts';
 import type { BattleReadySwitchSlot } from '@/types/battle/battleEvents.ts';
+import { requireCertifiedBattleTeamSlot } from '@/types/battle/certifiedBattleActions.ts';
 
 const SHOWDOWN_SLOT_INDEX_OFFSET = 1;
 

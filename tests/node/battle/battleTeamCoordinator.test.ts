@@ -1,4 +1,7 @@
 import { describe, it, expect } from 'vite-plus/test';
+import { ref } from 'vue';
+
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import {
   resolveGameBattleMode,
   resolveBattleFormat,
@@ -13,10 +16,8 @@ import {
   shouldPersistPlayerState,
   shouldPersistHpToAdventure
 } from '@/logic/battle/battleTeamCoordinator';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { BattleContext } from '@/types/battle/battleContext';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { ref } from 'vue';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 function createMockPokemon(uid: string, name: string, overrides: Partial<Pokemon> = {}): Pokemon {
   const speciesId = requirePokemonSpeciesId(name.toLowerCase());

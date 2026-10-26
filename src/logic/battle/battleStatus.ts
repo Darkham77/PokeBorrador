@@ -3,9 +3,10 @@
  * Ported from js/07_battle.js to comply with modular standard v6.
  */
 
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleContext } from '@/types/battle/battleContext';
 import type { BattleSide, BattleConditionKey } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { getStatusIcon, processPrimaryStatusDamage } from './status/primaryStatusEngine.ts';
 import {
   processVolatileCounters,
@@ -63,7 +64,7 @@ export async function tickStatus(
   pokemon: Pokemon,
   ctx: BattleContext,
   role: BattleSide | 'info' = 'info'
-) {
+): Promise<boolean> {
   if (!pokemon) return false;
 
   // 0. Process Volatile Counters (e.g. yawn, partiallytrapped)
@@ -88,7 +89,11 @@ export async function tickStatus(
 /**
  * Processes field effects like Leech Seed.
  */
-export async function tickLeechSeed(pokemon: Pokemon, opponent: Pokemon, ctx: BattleContext) {
+export async function tickLeechSeed(
+  pokemon: Pokemon,
+  opponent: Pokemon,
+  ctx: BattleContext
+): Promise<boolean> {
   if (!pokemon || !pokemon.seeded || pokemon.hp <= 0) return false;
 
   const sideSelf = pokemon.uid === ctx.activeBattle.value?.player?.uid ? 'player' : 'enemy';
@@ -223,7 +228,7 @@ function revertCastformForm(poke: Pokemon): void {
 /**
  * Clears all temporary/volatile statuses from a Pokémon upon switching out or entering battle.
  */
-export function clearVolatileStatus(poke: Pokemon) {
+export function clearVolatileStatus(poke: Pokemon): void {
   if (!poke) return;
   resetBasicVolatiles(poke);
   restoreTransformedOriginalStats(poke);

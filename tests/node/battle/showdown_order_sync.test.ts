@@ -1,9 +1,11 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
-import { ShowdownBattleRunner } from '../../../src/logic/battle/helpers/showdownBattleRunner.ts';
+
+import { describe, it } from 'vite-plus/test';
+
+import { ACTIVE_SHOWDOWN_FORMAT } from '../../../src/data/system/constants.ts';
 import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
 import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
-import { ACTIVE_SHOWDOWN_FORMAT } from '../../../src/data/system/constants.ts';
+import { ShowdownBattleRunner } from '../../../src/logic/battle/helpers/showdownBattleRunner.ts';
 
 describe('Showdown Battle Choice Index Centralization', () => {
   it('guarantees single-source index advancement: explicit choice execution in ShowdownBattleEngine must not double-advance runner indices', () => {

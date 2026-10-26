@@ -1,10 +1,3 @@
-/**
- * War Engine - Faction Dominance Logic
- * Handles time-cycles, point calculations, and world-state rules.
- *
- * Absolute isolation: This module does not store state or connect to DB.
- */
-import { normalizeZonedDateTime } from '../utils/timeUtils.ts';
 import {
   DAYS_PER_WEEK,
   ISO_DAY_MONDAY,
@@ -13,6 +6,13 @@ import {
   DOMINANCE_BONUS_EXP_MULT,
   DOMINANCE_BONUS_IV_BOOST
 } from '../constants/gameplay.ts';
+/**
+ * War Engine - Faction Dominance Logic
+ * Handles time-cycles, point calculations, and world-state rules.
+ *
+ * Absolute isolation: This module does not store state or connect to DB.
+ */
+import { normalizeZonedDateTime } from '../utils/timeUtils.ts';
 
 const WAR_PTS_CAPTURE_WIN = 5;
 const WAR_PTS_CAPTURE_LOSE = 1;

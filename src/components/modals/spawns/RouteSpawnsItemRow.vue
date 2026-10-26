@@ -5,6 +5,7 @@
  * Atomic row component rendering a single archaeology reward entry in the route spawns table.
  */
 import { computed } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 import type { ArchaeologyRewardData } from '@/composables/modals/useRouteSpawnsArchaeology';
 import { PROBABILITY_BAR_SCALE_FACTOR } from '@/logic/constants/encounters';

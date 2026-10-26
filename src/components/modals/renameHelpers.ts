@@ -1,3 +1,4 @@
+import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage';
 /**
  * src/components/modals/renameHelpers.ts
  *
@@ -5,9 +6,8 @@
  * and remote username update.
  */
 import { validateTrainerName } from '@/logic/validation/schemas';
-import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage';
-import type { GenderId } from '@/types/system/game';
 import type { useGameStore } from '@/stores/game';
+import type { GenderId } from '@/types/system/game';
 
 export interface RenameValidationError {
   message: string;

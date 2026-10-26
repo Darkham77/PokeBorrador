@@ -1,15 +1,16 @@
+import { setActivePinia, createPinia } from 'pinia';
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
-import { makePokemon, validatePokemon } from '@/logic/pokemon/pokemonFactory';
-import { handleItemUsage } from '@/logic/battle/battleItems';
-import { useGameStore } from '@/stores/game';
-import { serializeState } from '@/logic/auth/saveSerializer';
-import { restoreBattleState } from '@/logic/battle/orchestratorRestoreHelper';
-import { validateAndSanitize } from '@/logic/auth/saveSanitizer';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleContext } from '@/types/battle/battleContext';
 import { ref } from 'vue';
+
+import { validateAndSanitize } from '@/logic/auth/saveSanitizer';
+import { serializeState } from '@/logic/auth/saveSerializer';
+import { handleItemUsage } from '@/logic/battle/battleItems';
+import { restoreBattleState } from '@/logic/battle/orchestratorRestoreHelper';
+import { makePokemon, validatePokemon } from '@/logic/pokemon/pokemonFactory';
+import { useGameStore } from '@/stores/game';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 vi.mock('@/logic/battle/orchestratorWorkerInitHelper.ts', () => ({
   initWorkerForBattle: vi.fn(async () => {})

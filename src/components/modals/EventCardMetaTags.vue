@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import type { EventConfig, UpcomingEventOccurrence } from '@/logic/events/eventEngine';
 import type { EventTypeKind } from '@/types/system/stores.ts';
 

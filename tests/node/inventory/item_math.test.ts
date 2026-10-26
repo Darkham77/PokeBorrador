@@ -7,8 +7,9 @@
  * All data is passed inline — zero mocks, zero Pinia, zero Vue.
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
 
 import {
   canHeal,
@@ -21,7 +22,6 @@ import {
   calcTotalPower,
   calcRocketSellPrice
 } from '../../../src/logic/items/itemMath.ts';
-
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

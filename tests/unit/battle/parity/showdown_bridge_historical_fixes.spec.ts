@@ -1,26 +1,29 @@
+import assert from 'node:assert/strict';
+
 import { describe, it, expect, vi } from 'vite-plus/test';
+import { ref } from 'vue';
+
+import { ACTIVE_GENERATION } from '@/data/system/constants.ts';
+import { HeuristicDamageCalculator } from '@/logic/battle/ai/heuristic/damageCalculator.ts';
 import {
   calculateCatchRatePure,
   calculateEscapeChancePure
 } from '@/logic/battle/battleCatchMath.ts';
 import { calculateDamagePure, getEffectiveStatPure } from '@/logic/battle/battleMath.ts';
-import { ref } from 'vue';
-import { Pokemon, SHOWDOWN_BOOST_STAT_KEYS } from '@/types/pokemon/pokemon';
-import { BattleContext } from '@/types/battle/battleContext';
-import { handleStageEvents } from '@/logic/battle/showdownBridgeStages';
-import { SBCtx } from '@/logic/battle/showdownBridgeCtx';
-import { BattleStages } from '@/types/battle/battle';
-import assert from 'node:assert/strict';
-import { calcStatsPure } from '@/logic/pokemon/statsMath.ts';
-import { filterShowdownLogs } from '@/logic/battle/showdownBridge.ts';
-import { ShowdownBattleRunner } from '@/logic/battle/helpers/showdownBattleRunner.ts';
-import { ACTIVE_GENERATION } from '@/data/system/constants.ts';
-import { HeuristicDamageCalculator } from '@/logic/battle/ai/heuristic/damageCalculator.ts';
-import { syncSidePokemon } from '@/logic/battle/helpers/showdownSyncHelper.ts';
-import { BattleAgent } from '../../../../scripts/e2e/fuzzer/core/fuzzer_agent.ts';
-import { ActiveSlotRequest } from '@/logic/battle/helpers/showdownBattleAgent.ts';
-import { ChoiceRequest, classifyRequest } from '@/logic/battle/helpers/requestHelper.ts';
 import type { PureMove, PurePokemon, PureDamageOptions } from '@/logic/battle/battleMathTypes.ts';
+import { type ChoiceRequest, classifyRequest } from '@/logic/battle/helpers/requestHelper.ts';
+import type { ActiveSlotRequest } from '@/logic/battle/helpers/showdownBattleAgent.ts';
+import { ShowdownBattleRunner } from '@/logic/battle/helpers/showdownBattleRunner.ts';
+import { syncSidePokemon } from '@/logic/battle/helpers/showdownSyncHelper.ts';
+import { filterShowdownLogs } from '@/logic/battle/showdownBridge.ts';
+import type { SBCtx } from '@/logic/battle/showdownBridgeCtx';
+import { handleStageEvents } from '@/logic/battle/showdownBridgeStages';
+import { calcStatsPure } from '@/logic/pokemon/statsMath.ts';
+import type { BattleStages } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
+import { SHOWDOWN_BOOST_STAT_KEYS, type Pokemon } from '@/types/pokemon/pokemon';
+
+import { BattleAgent } from '../../../../scripts/e2e/fuzzer/core/fuzzer_agent.ts';
 
 function purePokemon(pokemon: PurePokemon): PurePokemon {
   return pokemon;

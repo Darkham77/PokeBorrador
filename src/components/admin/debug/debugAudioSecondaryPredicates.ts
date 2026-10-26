@@ -1,11 +1,13 @@
+import type { DisplayText } from '@francogp/auditor';
+
 import type { Pokemon, VolatileStatusKey } from '@/types/pokemon/pokemon';
 
 export type SecondaryPredicate = (
   p: Pokemon & Record<string, unknown>, // open-record: Flexible pokemon debug inspection
-  vc: Partial<Record<VolatileStatusKey, number>>
+  vc: Partial<Record<VolatileStatusKey, number>> & Record<DisplayText, number | undefined>
 ) => boolean;
 
-export const SECONDARY_EFFECT_PREDICATES: Record<string, SecondaryPredicate> = {
+export const SECONDARY_EFFECT_PREDICATES: Record<DisplayText, SecondaryPredicate> = {
   // open-record: Secondary volatile effect condition predicates
   confusion: (p, vc) => (Number(p.confused) || 0) > 0 || (vc.confusion || 0) > 0,
   taunt: (p, vc) =>

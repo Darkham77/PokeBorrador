@@ -6,9 +6,12 @@
  * 2. Player Class Missions: Mission recovery / heal stuck pokemon, mission metadata & rules audit across classes.
  */
 
-import { describe, it, test } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
+import { describe, it, test } from 'vite-plus/test';
+
+import { isItemId } from '../../../src/data/inventory/items.ts';
+import { CLASS_MISSIONS, type PlayerClassId } from '../../../src/data/player/playerClasses.ts';
 import {
   calculateQuickStealChance,
   calculateBugSymmetryBonus,
@@ -16,10 +19,8 @@ import {
   hasDoubleRivalChance,
   calculateMaxNpcRobberyLimit
 } from '../../../src/logic/player/classMath.ts';
-import { healStuckMissions } from '../../../src/logic/player/missionRecovery.ts';
 import { getClassMissionDetails } from '../../../src/logic/player/classMissionsData.ts';
-import { CLASS_MISSIONS, type PlayerClassId } from '../../../src/data/player/playerClasses.ts';
-import { isItemId } from '../../../src/data/inventory/items.ts';
+import { healStuckMissions } from '../../../src/logic/player/missionRecovery.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 
 describe('Player Progression Suite', () => {

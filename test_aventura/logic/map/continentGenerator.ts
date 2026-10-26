@@ -11,7 +11,24 @@
  *   5. Strict Non-Destructive Render Stacking: Base Ground -> Water/Coast -> Mountain/Cliffs/Stairs.
  */
 
-import { SimplexNoise, fbm2DNormalized } from './noise/simplexNoise.ts';
+import {
+  CONTINENT_DEFAULT_SEED,
+  DEFAULT_BEACH_WIDTH,
+  DEFAULT_LAKE_COUNT,
+  DEFAULT_MOUNTAIN_PALETTE
+} from '../../config/studioConstants.ts';
+import { floodFillGrid, type GridPoint } from '../utils/gridBfsUtils.ts';
+import type { GeologicalClusterResult } from './geologicalClusterEngine.ts';
+import {
+  resolveMacroBiomeAutotile,
+  type ResolvedMacroBiomeMapResult,
+  type ResolvedMacroBiomeCell
+} from './macroBiomeAutotileEngine.ts';
+import {
+  synthesizeMacroBiomes,
+  type MacroBiomeResult,
+  type MacroBiome
+} from './macroBiomeSynthesizer.ts';
 import {
   resolveMountainMapGrid,
   type ResolvedMountainMapResult,
@@ -19,12 +36,7 @@ import {
   type MountainStairLocation,
   type MountainRole
 } from './mountainAutotileEngine.ts';
-import {
-  CONTINENT_DEFAULT_SEED,
-  DEFAULT_BEACH_WIDTH,
-  DEFAULT_LAKE_COUNT,
-  DEFAULT_MOUNTAIN_PALETTE
-} from '../../config/studioConstants.ts';
+import { SimplexNoise, fbm2DNormalized } from './noise/simplexNoise.ts';
 import {
   resolveWaterCoastGrid,
   sanitizeWaterTerrainMatrix,
@@ -33,18 +45,6 @@ import {
   type ResolvedWaterMapResult,
   type ResolvedWaterCell
 } from './waterAutotileEngine.ts';
-import { floodFillGrid, type GridPoint } from '../utils/gridBfsUtils.ts';
-import {
-  synthesizeMacroBiomes,
-  type MacroBiomeResult,
-  type MacroBiome
-} from './macroBiomeSynthesizer.ts';
-import type { GeologicalClusterResult } from './geologicalClusterEngine.ts';
-import {
-  resolveMacroBiomeAutotile,
-  type ResolvedMacroBiomeMapResult,
-  type ResolvedMacroBiomeCell
-} from './macroBiomeAutotileEngine.ts';
 export type {
   ResolvedMountainMapResult,
   MountainPalette,

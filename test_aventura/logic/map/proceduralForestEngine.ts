@@ -1,11 +1,11 @@
 // Procedural Forest Border & Wilderness Canopy Stamping Engine
 
-import type { TileCollision } from './tilesRegistry.ts';
+import { MIN_INTERIOR_TREES_MAP_DIMENSION } from '../../config/proceduralMapConfig.ts';
 import type { MapCell, MapType } from '../../types/map/proceduralMapTypes.ts';
-import type { ThemeBiomePalette } from './proceduralBiomePalettes.ts';
 import type { BiomeDistributionResult } from './biomeDistributionEngine.ts';
 import { overlapsPath, canStamp, stampMultitile } from './proceduralAutotileEngine.ts';
-import { MIN_INTERIOR_TREES_MAP_DIMENSION } from '../../config/proceduralMapConfig.ts';
+import type { ThemeBiomePalette } from './proceduralBiomePalettes.ts';
+import type { TileCollision } from './tilesRegistry.ts';
 
 export interface ForestAndCanopyOptions {
   readonly withVegetation: boolean;
@@ -72,27 +72,54 @@ export function stampPerimeterForestAndCanopy(options: ForestAndCanopyOptions): 
     }
   }
 
+  function markCorridorAroundPath(
+    px: number,
+    py: number,
+    corridorRadius: number,
+    width: number,
+    height: number,
+    isCorridor: boolean[][]
+  ): void {
+    for (let dy = -corridorRadius; dy <= corridorRadius; dy++) {
+      for (let dx = -corridorRadius; dx <= corridorRadius; dx++) {
+        const cy = py + dy;
+        const cx = px + dx;
+        if (cx >= 0 && cx < width && cy >= 0 && cy < height) {
+          if (Math.abs(dx) + Math.abs(dy) <= corridorRadius + 1) {
+            isCorridor[cy]![cx] = true;
+          }
+        }
+      }
+    }
+  }
+
+  function checkTreeOverlapsCorridor(
+    x: number,
+    y: number,
+    treeW: number,
+    treeH: number,
+    isCorridor: readonly (readonly boolean[])[],
+    isPathCell: readonly (readonly boolean[])[]
+  ): boolean {
+    for (let ty = 0; ty < treeH; ty++) {
+      for (let tx = 0; tx < treeW; tx++) {
+        if (isCorridor[y + ty]?.[x + tx] || isPathCell[y + ty]?.[x + tx]) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   // In Route mode: fill the entire negative space outside the route corridor with dense interlocking tree walls
   if (mapType === 'route') {
     const corridorRadius = 4;
     const isCorridor: boolean[][] = Array.from({ length: height }, () => Array(width).fill(false));
-    const markCorridorCell = (px: number, py: number, dx: number, dy: number) => {
-      const cy = py + dy;
-      const cx = px + dx;
-      if (cx < 0 || cx >= width || cy < 0 || cy >= height) return;
-      if (Math.abs(dx) + Math.abs(dy) <= corridorRadius + 1) {
-        isCorridor[cy]![cx] = true;
-      }
-    };
 
     for (let py = 0; py < height; py++) {
       for (let px = 0; px < width; px++) {
         if (!isPathCell[py]![px]) continue;
-        for (let dy = -corridorRadius; dy <= corridorRadius; dy++) {
-          for (let dx = -corridorRadius; dx <= corridorRadius; dx++) {
-            markCorridorCell(px, py, dx, dy);
-          }
-        }
+        markCorridorAroundPath(px, py, corridorRadius, width, height, isCorridor);
       }
     }
 
@@ -100,18 +127,17 @@ export function stampPerimeterForestAndCanopy(options: ForestAndCanopyOptions): 
     for (let y = 1; y <= height - treeTpl.height - 1; y += 2) {
       const xOffset = Math.floor(y / 2) % 2 === 1 ? 1 : 0;
       for (let x = 1 + xOffset; x <= width - treeTpl.width - 1; x += 2) {
-        let overlapsCorridor = false;
-        for (let ty = 0; ty < treeTpl.height && !overlapsCorridor; ty++) {
-          for (let tx = 0; tx < treeTpl.width; tx++) {
-            if (isCorridor[y + ty]?.[x + tx] || isPathCell[y + ty]?.[x + tx]) {
-              overlapsCorridor = true;
-              break;
-            }
-          }
-        }
+        const overlaps = checkTreeOverlapsCorridor(
+          x,
+          y,
+          treeTpl.width,
+          treeTpl.height,
+          isCorridor,
+          isPathCell
+        );
 
         if (
-          !overlapsCorridor &&
+          !overlaps &&
           canStamp(objectLayer, elevationLayer, isPathCell, treeTpl.width, treeTpl.height, x, y)
         ) {
           stampMultitile(objectLayer, collisionGrid, treeTpl, x, y, width, height, makeCell);

@@ -1,9 +1,11 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
 import { Battle } from '@pkmn/sim';
-import { getShowdownFormatId } from '../../../src/logic/battle/showdownAdapter.ts';
-import { executeBattleTurn } from '../../../src/logic/battle/helpers/showdownExecutor.ts';
+import { describe, it } from 'vite-plus/test';
+
 import { buildTurnSeats } from '../../../src/logic/battle/engine/showdownSeatSyncHelper.ts';
+import { executeBattleTurn } from '../../../src/logic/battle/helpers/showdownExecutor.ts';
+import { getShowdownFormatId } from '../../../src/logic/battle/showdownAdapter.ts';
 
 describe('Showdown Skipped Seat Choice - Reproduction Test', () => {
   const p1Team = [

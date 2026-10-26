@@ -1,5 +1,5 @@
 /**
- * tests/node/auditors/audit_item_sprite_collisions.test.ts
+ * tests/node/auditors/validate_item_sprite_collisions.test.ts
  *
  * Dedicated unit test suite for ItemSpriteCollisionAuditor:
  * - Audits item sprites catalog for missing physical assets
@@ -8,6 +8,7 @@
  */
 
 import { describe, it, expect } from 'vite-plus/test';
+
 import {
   ItemSpriteCollisionAuditor,
   ITEM_SPRITE_COLLISION_RULES,
@@ -15,13 +16,13 @@ import {
   findMissingSprites,
   type ItemSpriteCollisionRuleId,
   type ShopItem
-} from '../../../scripts/auditors/assets/audit_item_sprite_collisions.ts';
+} from '../../../scripts/auditors/assets/validate_item_sprite_collisions.ts';
 
 describe('ItemSpriteCollisionAuditor', () => {
   describe('Metadata & Configuration', () => {
     it('initializes with correct auditor ID and assets family', () => {
       const auditor = new ItemSpriteCollisionAuditor();
-      expect(auditor.id).toBe('audit_item_sprite_collisions');
+      expect(auditor.id).toBe('validate_item_sprite_collisions');
       expect(auditor.family).toBe('assets');
       expect(auditor.description.length).toBeLessThanOrEqual(60);
     });

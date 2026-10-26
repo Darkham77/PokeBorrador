@@ -1,7 +1,6 @@
-import { computed } from 'vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { requirePokemonSpriteValue } from '@/data/pokemon/spriteMapping';
+import { computed, type ComputedRef } from 'vue';
+
+import { toPokemonType, type PokemonType } from '@/data/battle/types';
 import {
   MAX_ANIMATED_SPRITE_SIZE_FRONT,
   MAX_ANIMATED_SPRITE_SIZE_BACK,
@@ -10,16 +9,19 @@ import {
   requireAnimatedSpriteData,
   requireAnimatedVariationFrameCount,
   type AnimatedSpriteId,
-  type AnimatedVariationId
+  type AnimatedVariationId,
+  type AnimatedSpriteData
 } from '@/data/pokemon/animatedSpriteDatabase';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type { BattleSide } from '@/types/battle/battle';
+import { requirePokemonSpriteValue } from '@/data/pokemon/spriteMapping';
 import {
   COMBATANT_DISPLAY_SIZE_ENEMY_MULT,
   COMBATANT_DISPLAY_SIZE_PLAYER_MULT,
   DEFAULT_FRAME_SIZE_PX
 } from '@/logic/constants/animations';
-import { toPokemonType, type PokemonType } from '@/data/battle/types';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import type { BattleSide } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export interface CombatantVisualSpriteProps {
   pokemon?: Pokemon | null;
@@ -85,7 +87,28 @@ function determineIdleSpriteKey(
   return null;
 }
 
-export function useCombatantVisualSprite(props: CombatantVisualSpriteProps) {
+export interface UseCombatantVisualSpriteReturn {
+  isFloating: ComputedRef<boolean>;
+  isPlayer: ComputedRef<boolean>;
+  isEnemy: ComputedRef<boolean>;
+  spriteKey: ComputedRef<string | null>;
+  idleKey: ComputedRef<string | null>;
+  variationKey: ComputedRef<AnimatedVariationId | null>;
+  isAnimated: ComputedRef<boolean>;
+  animatedMeta: ComputedRef<AnimatedSpriteData | null>;
+  variationMeta: ComputedRef<AnimatedSpriteData | null>;
+  frames: ComputedRef<number>;
+  frameSize: ComputedRef<number>;
+  scaleFactor: ComputedRef<number>;
+  speciesSizeScale: ComputedRef<number>;
+  displaySize: ComputedRef<number>;
+  imageUrl: ComputedRef<string>;
+  variationUrl: ComputedRef<string | null>;
+}
+
+export function useCombatantVisualSprite(
+  props: CombatantVisualSpriteProps
+): UseCombatantVisualSpriteReturn {
   const isFloating = computed(() => checkPokemonFloating(props.pokemon));
   const isPlayer = computed(() => props.side === 'player');
   const isEnemy = computed(() => props.side === 'enemy');

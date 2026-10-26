@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useShopStore } from '@/stores/inventory/shop';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
+
+import type { ItemId } from '@/data/inventory/items';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { formatCurrency } from '@/logic/utils/formatters';
 import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver';
-import type { ItemId } from '@/data/inventory/items';
+import { useGameStore } from '@/stores/game';
+import { useShopStore } from '@/stores/inventory/shop';
+import { useUIStore } from '@/stores/ui';
 
 interface ShopItem {
   id: ItemId;
@@ -47,7 +48,7 @@ const hasEnoughBC = computed(() => {
   return (gameStore.state.battleCoins || 0) >= itemBCPrice.value;
 });
 
-const buy = () => {
+const buy = (): void => {
   if (!isUnlocked.value) {
     uiStore.notify('¡Objeto bloqueado! Sube tu nivel de entrenador.', '🔒');
     return;
@@ -63,7 +64,7 @@ const tierLabel = computed(() => getItemTierLabel(props.item.tier));
 
 const tierColor = computed(() => getItemTierColor(props.item.tier));
 
-const handleImageError = (e: Event) => {
+const handleImageError = (e: Event): void => {
   if (e.target) {
     (e.target as HTMLImageElement).style.display = 'none';
   }

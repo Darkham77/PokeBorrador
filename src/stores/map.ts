@@ -1,22 +1,21 @@
+import { gsap } from 'gsap';
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
-import { gameBus } from '@/logic/events/gameBus';
-import { logger } from '@/logic/utils/logger';
-import { VISIBLE_WORLD_MAPS } from '@/data/world/maps';
-import { getDayCycle, getSeason, getServerTime } from '@/logic/utils/timeUtils';
-import { getRouteWeather } from '@/logic/weather/weatherUtils';
-import { useGameStore } from '@/stores/game.ts';
-import type { Event } from '@/logic/events/eventEngine';
-import type { DayPhase, Season } from '@/logic/utils/timeUtils';
 
 import type { MapRouteId } from '@/data/world/map-assets';
-import { registerWeatherResolver, type WeatherId } from '@/logic/weather/weatherRegistry';
 import { requireMapRouteId } from '@/data/world/map-assets';
+import { VISIBLE_WORLD_MAPS } from '@/data/world/maps';
 import { requireWeatherSeasonId } from '@/data/world/weather-tables';
-import type { DominanceInfo } from '@/types/system/stores';
 import { ONE_HOUR_MS } from '@/logic/constants/items.ts';
-
-import { gsap } from 'gsap';
+import type { Event } from '@/logic/events/eventEngine';
+import { gameBus } from '@/logic/events/gameBus';
+import { logger } from '@/logic/utils/logger';
+import { getDayCycle, getSeason, getServerTime } from '@/logic/utils/timeUtils';
+import type { DayPhase, Season } from '@/logic/utils/timeUtils';
+import { registerWeatherResolver, type WeatherId } from '@/logic/weather/weatherRegistry';
+import { getRouteWeather } from '@/logic/weather/weatherUtils';
+import { useGameStore } from '@/stores/game.ts';
+import type { DominanceInfo } from '@/types/system/stores';
 
 const TIME_TICK_SAMPLE_INTERVAL_SEC = 10 as const;
 
@@ -36,28 +35,28 @@ export const useMapStore = defineStore('map', () => {
   const currentEpochHour = ref(Math.floor(Temporal.Now.instant().epochMilliseconds / ONE_HOUR_MS));
 
   // Reactive Epoch Hour computation on demand & time-sync-update events (Zero-Timer Event-Driven Architecture)
-  const updateEpochHour = () => {
+  const updateEpochHour = (): void => {
     currentEpochHour.value = Math.floor(getServerTime() / ONE_HOUR_MS);
   };
 
-  const setFreezeClock = (freeze: boolean) => {
+  const setFreezeClock = (freeze: boolean): void => {
     isTimeTickerFrozen.value = freeze;
-    if (typeof window !== 'undefined') {
-      if (!window.__VITE_DEBUG__) {
-        window.__VITE_DEBUG__ = {};
+    if (typeof globalThis.window !== 'undefined') {
+      if (!globalThis.__VITE_DEBUG__) {
+        globalThis.__VITE_DEBUG__ = {};
       }
-      window.__VITE_DEBUG__.freezeClock = freeze;
+      globalThis.__VITE_DEBUG__.freezeClock = freeze;
     }
   };
 
-  if (typeof window !== 'undefined') {
-    window.addEventListener('time-sync-update', () => {
+  if (typeof globalThis.window !== 'undefined') {
+    globalThis.addEventListener('time-sync-update', () => {
       logger.info('MapStore', 'Time sync detected');
       updateEpochHour();
     });
 
     let lastCheckedSec = 0;
-    const onTimeTick = (time: number) => {
+    const onTimeTick = (time: number): void => {
       // Sample every 10 seconds of GSAP timeline execution
       if (time - lastCheckedSec < TIME_TICK_SAMPLE_INTERVAL_SEC) return;
       lastCheckedSec = time;
@@ -65,9 +64,9 @@ export const useMapStore = defineStore('map', () => {
       const isFrozen =
         isTimeTickerFrozen.value ||
         Boolean(
-          window.__VITE_DEBUG__?.freezeClock ||
-          window.__VITE_DEBUG__?.isScriptedReplayMode ||
-          window.__VITE_DEBUG__?.isDeterministicSimulation
+          globalThis.__VITE_DEBUG__?.freezeClock ||
+          globalThis.__VITE_DEBUG__?.isScriptedReplayMode ||
+          globalThis.__VITE_DEBUG__?.isDeterministicSimulation
         );
 
       if (isFrozen) return;
@@ -131,7 +130,7 @@ export const useMapStore = defineStore('map', () => {
   const lastTrainerChanceIncrementAt = ref(Temporal.Now.instant().epochMilliseconds);
   const mapWinners = ref<Partial<Record<MapRouteId, DominanceInfo>>>({}); // locId -> winner
 
-  const setGlobalSeason = (s: string | null) => {
+  const setGlobalSeason = (s: string | null): void => {
     if (!s) {
       forcedSeason.value = null;
       return;
@@ -145,14 +144,14 @@ export const useMapStore = defineStore('map', () => {
     forcedSeason.value = seasons.find((sea) => sea.id === s) || null;
   };
 
-  const setGlobalWeather = (w: WeatherId | null) => {
+  const setGlobalWeather = (w: WeatherId | null): void => {
     globalWeather.value = w;
   };
-  const setGlobalCycle = (c: DayPhase | null) => {
+  const setGlobalCycle = (c: DayPhase | null): void => {
     forcedCycle.value = c;
   };
 
-  const navigate = async (locId: MapRouteId) => {
+  const navigate = async (locId: MapRouteId): Promise<void> => {
     const targetWeather = globalWeather.value
       ? globalWeather.value
       : getRouteWeather(
@@ -192,7 +191,10 @@ export const useMapStore = defineStore('map', () => {
     );
   };
 
-  const triggerArchaeologyRewards = async (locId: MapRouteId, difficulty?: string) => {
+  const triggerArchaeologyRewards = async (
+    locId: MapRouteId,
+    difficulty?: string
+  ): Promise<void> => {
     const { executeArchaeologyRewards } = await import('./mapActions');
     await executeArchaeologyRewards(locId, gs, difficulty);
   };
@@ -220,6 +222,6 @@ export const useMapStore = defineStore('map', () => {
   };
 });
 
-if (typeof window !== 'undefined') {
-  window.__VITE_DEBUG_MAP_STORE_RESOLVER__ = () => useMapStore();
+if (typeof globalThis.window !== 'undefined') {
+  globalThis.window.__VITE_DEBUG_MAP_STORE_RESOLVER__ = () => useMapStore();
 }

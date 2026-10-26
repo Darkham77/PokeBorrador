@@ -1,7 +1,8 @@
-// @vitest-environment jsdom
-import { describe, it, expect } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia } from 'pinia';
+// @vitest-environment jsdom
+import { describe, it, expect } from 'vite-plus/test';
+
 import PokemonSummaryTab from '@/components/pokemon-detail/PokemonSummaryTab.vue';
 import type { SpeciesSummaryData } from '@/components/pokemon-detail/pokemonSummaryTypes.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';

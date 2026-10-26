@@ -1,12 +1,13 @@
 <script setup lang="ts">
+import gsap from 'gsap';
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
+
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { COMPAT_TEXT } from '@/data/breeding/breedingConstants';
+import { getGeneticsForecast, type GeneticsForecast } from '@/logic/breeding/breedingInheritance';
+import { getServerTime } from '@/logic/utils/timeUtils';
 import { useBreedingStore } from '@/stores/breeding';
 import { usePlayerClassStore } from '@/stores/player/playerClass';
-import { getGeneticsForecast, type GeneticsForecast } from '@/logic/breeding/breedingInheritance';
-import { COMPAT_TEXT } from '@/data/breeding/breedingConstants';
-import gsap from 'gsap';
-import PVTooltip from '@/components/common/PVTooltip.vue';
-import { getServerTime } from '@/logic/utils/timeUtils';
 
 const breedingStore = useBreedingStore();
 const classStore = usePlayerClassStore();
@@ -14,7 +15,7 @@ const classStore = usePlayerClassStore();
 const heartRef = ref<HTMLElement | null>(null);
 let pulseTween: gsap.core.Tween | null = null;
 
-const startPulse = () => {
+const startPulse = (): void => {
   if (pulseTween) return;
   if (!heartRef.value) return;
 
@@ -36,7 +37,7 @@ const startPulse = () => {
   });
 };
 
-const stopPulse = () => {
+const stopPulse = (): void => {
   if (pulseTween) {
     pulseTween.kill();
     pulseTween = null;
@@ -116,7 +117,7 @@ const formatMs = (ms: number | null): string => {
 // GSAP Ticker: updates timer display every frame without setInterval
 const displayTime = ref(formatMs(breedingStore.nextEggTime));
 
-const tickerFn = () => {
+const tickerFn = (): void => {
   displayTime.value = formatMs(breedingStore.nextEggTime);
 
   // Capa 3: Check in real-time if timer hit zero while active
@@ -142,7 +143,7 @@ onUnmounted(() => {
   gsap.ticker.remove(tickerFn);
 });
 
-const getCompatEmoji = (label: string) => {
+const getCompatEmoji = (label: string): string => {
   if (!label) return '';
   const emojiRegex =
     /^([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF])/;
@@ -150,7 +151,7 @@ const getCompatEmoji = (label: string) => {
   return match ? match[0] : '';
 };
 
-const getCompatText = (label: string) => {
+const getCompatText = (label: string): string => {
   if (!label) return '';
   const emoji = getCompatEmoji(label);
   return emoji ? label.replace(emoji, '').trim() : label;

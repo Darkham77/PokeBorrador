@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { useGymsStore } from '@/stores/gyms';
+
 import { getItemById } from '@/data/inventory/items';
 import type { Gym } from '@/data/world/gyms';
-import type { BattleDifficulty } from '@/types/battle/battle';
 import {
   GYM_REWARD_BASE_MONEY_FACTOR,
   GYM_REWARD_BASE_EXP_FACTOR
 } from '@/logic/constants/gameplay';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useGymsStore } from '@/stores/gyms';
+import type { BattleDifficulty } from '@/types/battle/battle';
 
 const props = defineProps<{
   gym: Gym;

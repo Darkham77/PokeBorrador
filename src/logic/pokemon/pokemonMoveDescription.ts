@@ -1,12 +1,13 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/pokemon/pokemonMoveDescription.ts
  *
  * Move description resolver and special mechanics text formatter.
  */
 
+import { MOVE_TRANSLATIONS_ES } from '@/data/battle/moves';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { toID } from '@/logic/utils/strings.ts';
-import { MOVE_TRANSLATIONS_ES } from '@/data/battle/moves';
 import type { MoveBaseData } from '@/types/system/database';
 
 function resolveMoveBaseData(id: string, mdProvided?: MoveBaseData | null): MoveBaseData {
@@ -51,7 +52,8 @@ function getMoveEffectOrTranslationText(md: MoveBaseData): string | null {
   const cleanId = toID(md.id);
   if (cleanId) {
     const translated =
-      (MOVE_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId] || {}; // open-record: Generic key-value data dictionary container
+      (MOVE_TRANSLATIONS_ES as Record<DisplayText, { name?: string; desc?: string }>)[cleanId] ||
+      {}; // open-record: Generic key-value data dictionary container
     if (translated.desc) return translated.desc;
   }
   return null;

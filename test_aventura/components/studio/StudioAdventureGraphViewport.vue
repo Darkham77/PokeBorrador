@@ -1,26 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
-import { useMapAdventureStudioStore } from '../../stores/mapAdventureStudio';
-import {
-  KANTO_WORLD_WIDTH,
-  KANTO_WORLD_HEIGHT,
-  KANTO_TILE_SIZE,
-  KANTO_GRID_W,
-  KANTO_GRID_H,
-  CELL_BIOME,
-  OCCUPANCY_FLAGS
-} from '../../types/map/kantoGridModel';
-import {
-  DynamicCatalogLoader,
-  UniversalAutotiler,
-  SemanticPrefabRenderer
-} from '../../logic/map/kantoTileEngine';
-import { ChunkManager } from '../../logic/map/kantoChunkManager';
-import { KantoRegionalWorldGenerator } from '../../logic/map/kantoRegionalGenerator';
-import { JohtoRegionalWorldGenerator } from '../../logic/map/johtoRegionalGenerator.ts';
-import { bakeUrbanMaquette } from '../../logic/map/continentalWorldGenerator';
-import { findValidBuildingPlacementSpot } from '../../logic/map/buildingPlacementSolver';
-import { computeViewportWheelZoom } from '../../logic/utils/svgCoordinateUtils';
+
 import {
   VIEWPORT_ZOOM_IN_STEP,
   VIEWPORT_ZOOM_OUT_STEP,
@@ -46,6 +26,103 @@ import {
   LCG_PRIME_Y,
   UINT32_DIVISOR
 } from '../../config/studioConstants.ts';
+import { findValidBuildingPlacementSpot } from '../../logic/map/buildingPlacementSolver';
+import { bakeUrbanMaquette } from '../../logic/map/continentalWorldGenerator';
+import { JohtoRegionalWorldGenerator } from '../../logic/map/johtoRegionalGenerator.ts';
+import { ChunkManager } from '../../logic/map/kantoChunkManager';
+import { KantoRegionalWorldGenerator } from '../../logic/map/kantoRegionalGenerator';
+import {
+  DynamicCatalogLoader,
+  UniversalAutotiler,
+  SemanticPrefabRenderer
+} from '../../logic/map/kantoTileEngine';
+import { computeViewportWheelZoom } from '../../logic/utils/svgCoordinateUtils';
+import { useMapAdventureStudioStore } from '../../stores/mapAdventureStudio';
+import {
+  KANTO_WORLD_WIDTH,
+  KANTO_WORLD_HEIGHT,
+  KANTO_TILE_SIZE,
+  KANTO_GRID_W,
+  KANTO_GRID_H,
+  CELL_BIOME,
+  OCCUPANCY_FLAGS
+} from '../../types/map/kantoGridModel';
+
+function setTerrainCellWithOccupancy(
+  gen: KantoRegionalWorldGenerator | JohtoRegionalWorldGenerator,
+  px: number,
+  py: number,
+  biome: number
+): void {
+  const row = gen.grid[py];
+  if (!row) return;
+  row[px] = biome;
+  if (biome === CELL_BIOME.WATER) {
+    gen.occupancy.set(px, py, OCCUPANCY_FLAGS.WATER);
+    gen.occupancy.clear(px, py, OCCUPANCY_FLAGS.ROAD);
+  } else if (biome === CELL_BIOME.MOUNTAIN_DIRT) {
+    gen.occupancy.set(px, py, OCCUPANCY_FLAGS.CLIFF);
+    gen.occupancy.clear(px, py, OCCUPANCY_FLAGS.ROAD);
+  } else if (
+    biome === CELL_BIOME.DIRT_PATH ||
+    biome === CELL_BIOME.PLAZA_STONE ||
+    biome === CELL_BIOME.BRIDGE
+  ) {
+    gen.occupancy.clear(px, py, OCCUPANCY_FLAGS.WATER | OCCUPANCY_FLAGS.CLIFF);
+    gen.occupancy.set(px, py, OCCUPANCY_FLAGS.ROAD);
+  } else {
+    gen.occupancy.clear(
+      px,
+      py,
+      OCCUPANCY_FLAGS.WATER | OCCUPANCY_FLAGS.CLIFF | OCCUPANCY_FLAGS.ROAD
+    );
+  }
+}
+
+function paveBuildingSidewalkFootprint(
+  g: (Uint8Array | number[])[],
+  occupancy: { set: (x: number, y: number, flag: number) => void },
+  b: { x: number; y: number; w: number; h: number },
+  tileSize: number
+): void {
+  const bx = Math.floor(b.x / tileSize);
+  const by = Math.floor(b.y / tileSize);
+  const bw = Math.ceil(b.w / tileSize);
+  const bh = Math.ceil(b.h / tileSize);
+  for (let y = by - 1; y <= by + bh; y++) {
+    for (let x = bx - 1; x <= bx + bw; x++) {
+      if (x < 0 || x >= KANTO_GRID_W || y < 0 || y >= KANTO_GRID_H) continue;
+      const row = g[y];
+      if (!row || row[x] === CELL_BIOME.WATER) continue;
+      row[x] = CELL_BIOME.PLAZA_STONE;
+      occupancy.set(x, y, OCCUPANCY_FLAGS.ROAD);
+    }
+  }
+}
+
+function populateTallGrassRowTrees(
+  gen: KantoRegionalWorldGenerator | JohtoRegionalWorldGenerator,
+  gy: number,
+  seed: number,
+  mult: number
+): void {
+  const row = gen.grid[gy];
+  if (!row) return;
+  for (let gx = 0; gx < KANTO_GRID_W; gx++) {
+    if (row[gx] !== CELL_BIOME.TALL_GRASS) continue;
+    const rnd =
+      ((gx * HASH_PRIME_X + gy * HASH_PRIME_Y + seed * HASH_SEED_PRIME) >>> 0) / UINT32_DIVISOR;
+    if (rnd < TREE_SPAWN_BASE_THRESHOLD * mult) {
+      const styleRnd = ((gx * LCG_PRIME_X + gy * LCG_PRIME_Y + seed) >>> 0) / UINT32_DIVISOR;
+      const style = styleRnd > PINE_TREE_THRESHOLD ? 'pine' : 'oak';
+      gen.trees.push({
+        style,
+        x: gx * KANTO_TILE_SIZE,
+        y: gy * KANTO_TILE_SIZE
+      });
+    }
+  }
+}
 
 const store = useMapAdventureStudioStore();
 
@@ -89,7 +166,7 @@ const activeGenerator = computed(() => {
   return store.activeProject?.archetype === 'johto' ? johtoWorldGenerator : kantoWorldGenerator;
 });
 
-function screenToWorld(clientX: number, clientY: number) {
+function screenToWorld(clientX: number, clientY: number): { x: number; y: number } {
   if (!viewportRef.value) return { x: 0, y: 0 };
   const rect = viewportRef.value.getBoundingClientRect();
   const screenX = clientX - rect.left;
@@ -102,7 +179,7 @@ function screenToWorld(clientX: number, clientY: number) {
   };
 }
 
-function handleWheelZoom(e: WheelEvent) {
+function handleWheelZoom(e: WheelEvent): void {
   e.preventDefault();
   if (!viewportRef.value) return;
 
@@ -122,7 +199,7 @@ function handleWheelZoom(e: WheelEvent) {
   store.setPan(result.newPanX, result.newPanY);
 }
 
-function handleViewportPointerDown(e: PointerEvent) {
+function handleViewportPointerDown(e: PointerEvent): void {
   // Panning: middle-click, space pressed, or graph mode pointer tool click on empty space
   if (
     e.button === 1 ||
@@ -149,7 +226,7 @@ function handleViewportPointerDown(e: PointerEvent) {
   }
 }
 
-function handleViewportPointerMove(e: PointerEvent) {
+function handleViewportPointerMove(e: PointerEvent): void {
   const worldPos = screenToWorld(e.clientX, e.clientY);
   worldCursor.value = worldPos;
 
@@ -202,13 +279,13 @@ function safeBakeTerrain(): void {
   });
 }
 
-function handleViewportPointerUp(e: PointerEvent) {
+function handleViewportPointerUp(e: PointerEvent): void {
   if (isPanning.value) {
     isPanning.value = false;
     try {
       (e.currentTarget as HTMLElement)?.releasePointerCapture(e.pointerId);
-    } catch {
-      // catch-ok: Pointer capture release fails gracefully if pointer was lost
+    } catch (err) {
+      console.warn('Handled controlled exception:', err);
     }
   }
 
@@ -225,8 +302,8 @@ function handleViewportPointerUp(e: PointerEvent) {
     store.pushHistory();
     try {
       (e.currentTarget as HTMLElement)?.releasePointerCapture(e.pointerId);
-    } catch {
-      // catch-ok: Pointer capture release fails gracefully if pointer was lost
+    } catch (err) {
+      console.warn('Handled controlled exception:', err);
     }
   }
 
@@ -237,13 +314,13 @@ function handleViewportPointerUp(e: PointerEvent) {
     safeBakeTerrain();
     try {
       (e.currentTarget as HTMLElement)?.releasePointerCapture(e.pointerId);
-    } catch {
-      // catch-ok: Pointer capture release fails gracefully if pointer was lost
+    } catch (err) {
+      console.warn('Handled controlled exception:', err);
     }
   }
 }
 
-function handleCanvasClick(e: MouseEvent) {
+function handleCanvasClick(e: MouseEvent): void {
   if (isPanning.value) return;
 
   if ((store.activeTool === 'stamp' || store.activeMode === 'structures') && store.stampingPrefab) {
@@ -270,7 +347,7 @@ function handleCanvasClick(e: MouseEvent) {
   }
 }
 
-function handleNodePointerDown(e: PointerEvent, nodeId: string) {
+function handleNodePointerDown(e: PointerEvent, nodeId: string): void {
   e.stopPropagation();
 
   if (store.activeTool === 'pointer') {
@@ -319,7 +396,7 @@ function handleNodePointerDown(e: PointerEvent, nodeId: string) {
   }
 }
 
-function handleNodeClick(e: MouseEvent, nodeId: string) {
+function handleNodeClick(e: MouseEvent, nodeId: string): void {
   e.stopPropagation();
   store.selectedNodeId = nodeId;
 }
@@ -393,30 +470,7 @@ function paintBrushAt(gx: number, gy: number): void {
       const px = gx + dx;
       const py = gy + dy;
       if (px >= 0 && px < KANTO_GRID_W && py >= 0 && py < KANTO_GRID_H) {
-        const row = gen.grid[py];
-        if (row) {
-          row[px] = biome;
-          if (biome === CELL_BIOME.WATER) {
-            gen.occupancy.set(px, py, OCCUPANCY_FLAGS.WATER);
-            gen.occupancy.clear(px, py, OCCUPANCY_FLAGS.ROAD);
-          } else if (biome === CELL_BIOME.MOUNTAIN_DIRT) {
-            gen.occupancy.set(px, py, OCCUPANCY_FLAGS.CLIFF);
-            gen.occupancy.clear(px, py, OCCUPANCY_FLAGS.ROAD);
-          } else if (
-            biome === CELL_BIOME.DIRT_PATH ||
-            biome === CELL_BIOME.PLAZA_STONE ||
-            biome === CELL_BIOME.BRIDGE
-          ) {
-            gen.occupancy.clear(px, py, OCCUPANCY_FLAGS.WATER | OCCUPANCY_FLAGS.CLIFF);
-            gen.occupancy.set(px, py, OCCUPANCY_FLAGS.ROAD);
-          } else {
-            gen.occupancy.clear(
-              px,
-              py,
-              OCCUPANCY_FLAGS.WATER | OCCUPANCY_FLAGS.CLIFF | OCCUPANCY_FLAGS.ROAD
-            );
-          }
-        }
+        setTerrainCellWithOccupancy(gen, px, py, biome);
       }
     }
   }
@@ -511,19 +565,7 @@ function syncUrbanMaquettesToGen(gen: KantoRegionalWorldGenerator): void {
 
     // 1. Organic paving: 1-tile sidewalk directly under building footprints
     for (const b of maquette.buildings) {
-      const bx = Math.floor(b.x / T);
-      const by = Math.floor(b.y / T);
-      const bw = Math.ceil(b.w / T);
-      const bh = Math.ceil(b.h / T);
-      for (let y = by - 1; y <= by + bh; y++) {
-        for (let x = bx - 1; x <= bx + bw; x++) {
-          if (x < 0 || x >= KANTO_GRID_W || y < 0 || y >= KANTO_GRID_H) continue;
-          const row = g[y];
-          if (!row || row[x] === CELL_BIOME.WATER) continue;
-          row[x] = CELL_BIOME.PLAZA_STONE;
-          gen.occupancy.set(x, y, OCCUPANCY_FLAGS.ROAD);
-        }
-      }
+      paveBuildingSidewalkFootprint(g, gen.occupancy, b, T);
     }
 
     // 2. Compact central civic square for Metropolises and Cities only (not towns/villages)
@@ -593,30 +635,7 @@ async function bakeTerrainTiles(): Promise<void> {
       const gx = Number(xStr);
       const gy = Number(yStr);
       if (gx >= 0 && gx < KANTO_GRID_W && gy >= 0 && gy < KANTO_GRID_H) {
-        const row = gen.grid[gy];
-        if (row) {
-          row[gx] = biome;
-          if (biome === CELL_BIOME.WATER) {
-            gen.occupancy.set(gx, gy, OCCUPANCY_FLAGS.WATER);
-            gen.occupancy.clear(gx, gy, OCCUPANCY_FLAGS.ROAD);
-          } else if (biome === CELL_BIOME.MOUNTAIN_DIRT) {
-            gen.occupancy.set(gx, gy, OCCUPANCY_FLAGS.CLIFF);
-            gen.occupancy.clear(gx, gy, OCCUPANCY_FLAGS.ROAD);
-          } else if (
-            biome === CELL_BIOME.DIRT_PATH ||
-            biome === CELL_BIOME.PLAZA_STONE ||
-            biome === CELL_BIOME.BRIDGE
-          ) {
-            gen.occupancy.clear(gx, gy, OCCUPANCY_FLAGS.WATER | OCCUPANCY_FLAGS.CLIFF);
-            gen.occupancy.set(gx, gy, OCCUPANCY_FLAGS.ROAD);
-          } else {
-            gen.occupancy.clear(
-              gx,
-              gy,
-              OCCUPANCY_FLAGS.WATER | OCCUPANCY_FLAGS.CLIFF | OCCUPANCY_FLAGS.ROAD
-            );
-          }
-        }
+        setTerrainCellWithOccupancy(gen, gx, gy, biome);
       }
     }
 
@@ -630,25 +649,7 @@ async function bakeTerrainTiles(): Promise<void> {
       (store.proceduralConfig?.forestPercent ?? DEFAULT_FOREST_PERCENT) / DEFAULT_FOREST_PERCENT
     );
     for (let gy = 0; gy < KANTO_GRID_H; gy++) {
-      const row = gen.grid[gy];
-      if (!row) continue;
-      for (let gx = 0; gx < KANTO_GRID_W; gx++) {
-        if (row[gx] === CELL_BIOME.TALL_GRASS) {
-          const rnd =
-            ((gx * HASH_PRIME_X + gy * HASH_PRIME_Y + store.seed * HASH_SEED_PRIME) >>> 0) /
-            UINT32_DIVISOR;
-          if (rnd < TREE_SPAWN_BASE_THRESHOLD * mult) {
-            const styleRnd =
-              ((gx * LCG_PRIME_X + gy * LCG_PRIME_Y + store.seed) >>> 0) / UINT32_DIVISOR;
-            const style = styleRnd > PINE_TREE_THRESHOLD ? 'pine' : 'oak';
-            gen.trees.push({
-              style,
-              x: gx * KANTO_TILE_SIZE,
-              y: gy * KANTO_TILE_SIZE
-            });
-          }
-        }
-      }
+      populateTallGrassRowTrees(gen, gy, store.seed, mult);
     }
 
     // Strict tree clearance: remove any tree within perimeter tiles of roads, bridges, plazas, water or buildings
@@ -702,7 +703,7 @@ watch(
   }
 );
 
-function onKeyDown(e: KeyboardEvent) {
+function onKeyDown(e: KeyboardEvent): void {
   if (e.code === 'Space') isSpacePressed.value = true;
   if (e.key === 'p' || e.key === 'P') store.activeTool = 'pointer';
   if (e.key === 'a' || e.key === 'A') store.activeTool = 'add_node';
@@ -711,22 +712,22 @@ function onKeyDown(e: KeyboardEvent) {
   if (e.key === 'g' || e.key === 'G') store.activeTool = 'test_gps';
 }
 
-function onKeyUp(e: KeyboardEvent) {
+function onKeyUp(e: KeyboardEvent): void {
   if (e.code === 'Space') isSpacePressed.value = false;
 }
 
 onMounted(() => {
-  if (typeof window !== 'undefined') {
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('keyup', onKeyUp);
+  if (typeof globalThis.window !== 'undefined') {
+    globalThis.addEventListener('keydown', onKeyDown);
+    globalThis.addEventListener('keyup', onKeyUp);
   }
   safeBakeTerrain();
 });
 
 onUnmounted(() => {
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('keydown', onKeyDown);
-    window.removeEventListener('keyup', onKeyUp);
+  if (typeof globalThis.window !== 'undefined') {
+    globalThis.removeEventListener('keydown', onKeyDown);
+    globalThis.removeEventListener('keyup', onKeyUp);
   }
 });
 

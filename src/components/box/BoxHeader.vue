@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, useTemplateRef } from 'vue';
 import { gsap } from 'gsap';
+import { onMounted, useTemplateRef } from 'vue';
 
 defineProps<{
   count: number;

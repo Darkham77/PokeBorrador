@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/stores/continentStudioStore.ts
  *
@@ -9,26 +10,19 @@
  *   3. Optimized Drag & Drop: 60 FPS local visual drag on pointermove + targeted incident A* on pointerup.
  *   4. Zero-Copy Memory Transfer: Receives raw transferable ArrayBuffer from Worker.
  */
-
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { ContinentMapResult } from '../logic/map/continentGenerator.ts';
-import type { POINode, RouteEdge, UrbanElementType } from '../types/map/poiTypes.ts';
-import type { WildernessLayerResult } from '../logic/map/wildernessVegetationEngine.ts';
-import type { ContinentRenderMode } from '../types/map/continentTypes.ts';
-import {
-  executeRegionalGenerationJob,
-  executeRerouteJob,
-  type RegionalGenerationOptions,
-  type WorkerInboundMessage,
-  type WorkerOutboundResponse
-} from '../logic/map/continentGenerator.worker.ts';
+
+import { DEFAULT_POI_TARGET_COUNT } from '../config/poiPlacementConfig.ts';
 import {
   CANVAS_TILE_SIZE,
   CONTINENT_DEFAULT_SEED,
   DEFAULT_LAKE_COUNT
 } from '../config/studioConstants.ts';
-import { DEFAULT_POI_TARGET_COUNT } from '../config/poiPlacementConfig.ts';
+import {
+  buildCanonicalRegionMap,
+  type CanonicalPresetId
+} from '../logic/map/continent/canonicalRegionPresets.ts';
 import {
   loadProfileListFromStorage,
   saveProjectToStorage,
@@ -37,10 +31,17 @@ import {
   parseProjectJson,
   type ContinentProjectExportPayload
 } from '../logic/map/continent/regionalPersistenceHelper.ts';
+import type { ContinentMapResult } from '../logic/map/continentGenerator.ts';
 import {
-  buildCanonicalRegionMap,
-  type CanonicalPresetId
-} from '../logic/map/continent/canonicalRegionPresets.ts';
+  executeRegionalGenerationJob,
+  executeRerouteJob,
+  type RegionalGenerationOptions,
+  type WorkerInboundMessage,
+  type WorkerOutboundResponse
+} from '../logic/map/continentGenerator.worker.ts';
+import type { WildernessLayerResult } from '../logic/map/wildernessVegetationEngine.ts';
+import type { ContinentRenderMode } from '../types/map/continentTypes.ts';
+import type { POINode, RouteEdge, UrbanElementType } from '../types/map/poiTypes.ts';
 
 const DEFAULT_DEBOUNCE_DELAY_MS = 250;
 const MAX_SEED_RANDOM_VALUE = 999999;
@@ -74,7 +75,7 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
 
   // Drag & Drop visual state (transient 60 FPS local position overrides)
   const draggedNodeId = ref<string | null>(null);
-  const dragVisualPositions = ref<Record<string, DragVisualPosition>>({}); // open-record: Transient drag visual coordinates dictionary indexed by node id
+  const dragVisualPositions = ref<Record<DisplayText, DragVisualPosition>>({}); // open-record: Transient drag visual coordinates dictionary indexed by node id
 
   // Urban elements & project profiles state
   const selectedUrbanElement = ref<{ readonly type: UrbanElementType; readonly id: string } | null>(
@@ -121,7 +122,7 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
    */
   function ensureWorker(): Worker | null {
     if (workerInstance) return workerInstance;
-    if (typeof window !== 'undefined' && typeof Worker !== 'undefined') {
+    if (typeof globalThis.window !== 'undefined' && typeof Worker !== 'undefined') {
       try {
         workerInstance = new Worker(
           new URL('../logic/map/continentGenerator.worker.ts', import.meta.url),

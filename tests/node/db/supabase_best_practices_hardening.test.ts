@@ -8,10 +8,11 @@
  * 5. System automated awarding RPC execution restriction.
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
+
 import postgres from 'postgres';
+import { describe, it } from 'vite-plus/test';
 
 describe('Supabase Postgres Best Practices Hardening & Public Profile Parity', () => {
   it('computes public trainer profile metrics dynamically from save_data in SQLite with zero data duplication', () => {

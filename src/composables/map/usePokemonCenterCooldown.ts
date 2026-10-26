@@ -4,19 +4,27 @@
  * Composable to manage Pokemon Center cooldown timers and state.
  */
 
-import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { gsap } from 'gsap';
+import { ref, computed, onMounted, onUnmounted, type Ref, type ComputedRef } from 'vue';
+
+import { calculatePokemonCenterRemainingSeconds } from '@/logic/economy/economyFormulas';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
-import { calculatePokemonCenterRemainingSeconds } from '@/logic/economy/economyFormulas';
 
-export function usePokemonCenterCooldown() {
+export interface UsePokemonCenterCooldownReturn {
+  cooldownSecondsLeft: Ref<number>;
+  cooldownFormatted: ComputedRef<string>;
+  updateCooldown: () => void;
+  handleCooldownClick: () => void;
+}
+
+export function usePokemonCenterCooldown(): UsePokemonCenterCooldownReturn {
   const gameStore = useGameStore();
   const uiStore = useUIStore();
   const cooldownSecondsLeft = ref(0);
   let cooldownTween: gsap.core.Tween | null = null;
 
-  const updateCooldown = () => {
+  const updateCooldown = (): void => {
     cooldownSecondsLeft.value = calculatePokemonCenterRemainingSeconds(
       gameStore.state.lastPokemonCenterHeal || 0,
       gameStore.state.trainerLevel || 1
@@ -24,12 +32,12 @@ export function usePokemonCenterCooldown() {
   };
 
   const COOLDOWN_TICK_INTERVAL_SEC = 1;
-  const tickCooldown = () => {
+  const tickCooldown = (): void => {
     updateCooldown();
     cooldownTween = gsap.delayedCall(COOLDOWN_TICK_INTERVAL_SEC, tickCooldown);
   };
 
-  const handleCooldownClick = () => {
+  const handleCooldownClick = (): void => {
     uiStore.notify(
       `El Centro Pokémon está cerrado por mantenimiento. Reabre en ${cooldownFormatted.value}.`,
       '🏥'

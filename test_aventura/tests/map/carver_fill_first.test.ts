@@ -1,11 +1,13 @@
+import type { DisplayText } from '@francogp/auditor';
 import { describe, it, expect } from 'vitest';
+
 import { KantoRegionalWorldGenerator } from '../../logic/map/kantoRegionalGenerator.ts';
 import { DynamicCatalogLoader } from '../../logic/map/kantoTileEngine.ts';
 import { CELL_BIOME, KANTO_GRID_W, KANTO_GRID_H } from '../../types/map/kantoGridModel.ts';
 
 describe('Fill-First Regional Map Generator & Carver Pipeline', () => {
   it('defines CELL_BIOME.FOREST_WALL as 8', () => {
-    expect((CELL_BIOME as Record<string, number>).FOREST_WALL).toBe(8);
+    expect((CELL_BIOME as Record<DisplayText, number>).FOREST_WALL).toBe(8);
   });
 
   it('populates uncarved inland terrain as dense FOREST_WALL instead of raw empty GRASS', () => {
@@ -29,7 +31,7 @@ describe('Fill-First Regional Map Generator & Carver Pipeline', () => {
       if (!row) continue;
       for (let x = 0; x < KANTO_GRID_W; x++) {
         const cell = row[x];
-        if (cell === (CELL_BIOME as Record<string, number>).FOREST_WALL) forestCount++;
+        if (cell === (CELL_BIOME as Record<DisplayText, number>).FOREST_WALL) forestCount++;
         else if (cell === CELL_BIOME.GRASS) grassCount++;
       }
     }
@@ -98,7 +100,7 @@ describe('Fill-First Regional Map Generator & Carver Pipeline', () => {
       const c = row?.[x];
       if (c === CELL_BIOME.DIRT_PATH) hasPath = true;
       if (c === CELL_BIOME.TALL_GRASS) hasTallGrass = true;
-      if (c === (CELL_BIOME as Record<string, number>).FOREST_WALL) hasForestWall = true;
+      if (c === (CELL_BIOME as Record<DisplayText, number>).FOREST_WALL) hasForestWall = true;
     }
 
     expect(hasPath).toBe(true);

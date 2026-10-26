@@ -1,8 +1,12 @@
-import type { GymId } from '@/data/world/gyms';
-import type { MapRouteId } from '@/data/world/map-assets';
+import type { DisplayText, AssetUri } from '@francogp/auditor';
 import type { SideID } from '@pkmn/sim';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleStages, BattleActionType } from '@/types/battle/battle';
+import type { RealtimeChannel } from '@supabase/supabase-js';
+
+export type LiveChannelHandle = Pick<RealtimeChannel, 'send' | 'unsubscribe'>;
+
+const PVP_MATCH_TYPES = ['human', 'matched', 'passive_fallback'] as const;
+export type PvPMatchType = (typeof PVP_MATCH_TYPES)[number];
+
 import {
   SEASONAL_THEME_IDS,
   type SeasonalThemeId,
@@ -12,6 +16,10 @@ import {
   requireSeasonalThemeId,
   type RankedTierId
 } from '@/data/system/rankedData.ts';
+import type { GymId } from '@/data/world/gyms';
+import type { MapRouteId } from '@/data/world/map-assets';
+import type { BattleStages, BattleActionType } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export const PVP_BATTLE_PHASES = [
   'sync',
@@ -28,7 +36,7 @@ export interface PvPAction {
   type: BattleActionType;
   moveIndex?: number;
   switchIndex?: number;
-  choiceString?: string; // domain-ok: Open dynamic text or non-domain string payload
+  choiceString?: DisplayText;
 }
 
 export interface PvPBattleState {
@@ -45,7 +53,7 @@ export interface PvPBattleState {
   enemyStages: BattleStages;
   myPick: PvPAction | null;
   enemyPick: PvPAction | null;
-  logs: string[]; // domain-ok: Open dynamic text or non-domain string payload
+  logs: DisplayText[];
 }
 
 export const PVP_TURN_TIMEOUT_SEC = 45 as const;
@@ -160,12 +168,12 @@ export interface PvpChallengeConfig {
 }
 
 export interface BattleInvite {
-  id: string; // domain-ok: Open dynamic text or non-domain string payload
-  sender_id: string; // domain-ok: Open dynamic text or non-domain string payload
-  challenger_id?: string; // domain-ok: Open dynamic text or non-domain string payload
-  opponent_id: string; // domain-ok: Open dynamic text or non-domain string payload
+  id: DisplayText;
+  sender_id: DisplayText;
+  challenger_id?: DisplayText;
+  opponent_id: DisplayText;
   status: PvpInviteStatus;
-  created_at: string; // domain-ok: Open dynamic text or non-domain string payload
+  created_at: DisplayText;
   config?: PvpChallengeConfig;
 }
 
@@ -173,18 +181,18 @@ import type { PokemonType } from '@/data/battle/types';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 export interface RankedSeasonRulesConfig {
-  name: string; // domain-ok: Open dynamic text or non-domain string payload
-  season_name?: string; // domain-ok: Open dynamic text or non-domain string payload
-  startDate?: string; // domain-ok: Open dynamic text or non-domain string payload
-  endDate?: string; // domain-ok: Open dynamic text or non-domain string payload
+  name: DisplayText;
+  season_name?: DisplayText;
+  startDate?: DisplayText;
+  endDate?: DisplayText;
   levelCap?: number;
   maxPokemon?: number;
   allowedTypes?: PokemonType[];
   bannedPokemonIds?: PokemonSpeciesId[];
   themeId?: SeasonalThemeId;
-  themeName?: string; // domain-ok: Open dynamic text or non-domain string payload
-  themeDescription?: string; // domain-ok: Open dynamic text or non-domain string payload
-  last_awarded_at?: string; // domain-ok: Open dynamic text or non-domain string payload
+  themeName?: DisplayText;
+  themeDescription?: DisplayText;
+  last_awarded_at?: DisplayText;
 }
 
 export const PASSIVE_BATTLE_RESULTS = ['victory', 'defeat'] as const;
@@ -214,40 +222,40 @@ export function isBattleCode(value: unknown): value is BattleCode {
 }
 
 export function requireBattleCode(value: unknown): BattleCode {
-  if (isBattleCode(value)) return value as BattleCode;
+  if (isBattleCode(value)) return value;
   throw new Error(`[PVP] Invalid battle code format: ${String(value)}`);
 }
 
 export interface ReplayCombatantPokemonSummary {
   id: PokemonSpeciesId;
-  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  name: DisplayText;
   level: number;
-  sprite: string; // domain-ok: Asset path URI string
-  revealedMoves: string[]; // domain-ok: Moves revealed via fog of war
-  revealedItem?: string; // domain-ok: Item revealed via fog of war
-  revealedAbility?: string; // domain-ok: Ability revealed via fog of war
+  sprite: AssetUri;
+  revealedMoves: DisplayText[];
+  revealedItem?: DisplayText;
+  revealedAbility?: DisplayText;
 }
 
 export interface ReplayCombatantSummary {
-  userId: string; // domain-ok: Open dynamic text or non-domain string payload
-  username: string; // domain-ok: Open dynamic text or non-domain string payload
+  userId: DisplayText;
+  username: DisplayText;
   tier: RankedTierId;
   elo: number;
-  avatar?: string; // domain-ok: Asset path URI string
+  avatar?: AssetUri;
   team: ReplayCombatantPokemonSummary[];
 }
 
 export interface ReplayChoiceStep {
   turnNumber: number;
-  p1Choice: string; // domain-ok: Choice string
-  p2Choice: string; // domain-ok: Choice string
-  logLines: string[]; // domain-ok: Battle log output for turn
+  p1Choice: DisplayText;
+  p2Choice: DisplayText;
+  logLines: DisplayText[];
 }
 
 export interface BattleReplayRecord {
-  id: string; // domain-ok: Open dynamic text or non-domain string payload
+  id: DisplayText;
   battleCode: BattleCode;
-  seasonId: string; // domain-ok: Open dynamic text or non-domain string payload
+  seasonId: DisplayText;
   themeId: SeasonalThemeId;
   p1: ReplayCombatantSummary;
   p2: ReplayCombatantSummary;
@@ -257,7 +265,7 @@ export interface BattleReplayRecord {
   initialSeed: [number, number, number, number];
   isTop10Archived: boolean;
   viewsCount: number;
-  createdAt: string; // domain-ok: Open dynamic text or non-domain string payload
+  createdAt: DisplayText;
 }
 
 export const MAX_PERSONAL_MATCH_HISTORY = 20;
@@ -266,17 +274,17 @@ export const PERSONAL_PVP_MATCH_RESULTS = ['victory', 'defeat', 'draw'] as const
 export type PersonalPvPMatchResult = (typeof PERSONAL_PVP_MATCH_RESULTS)[number];
 
 export interface PersonalPvPMatchSummary {
-  readonly id: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly id: DisplayText;
   readonly battleCode: BattleCode;
-  readonly opponentId: string; // domain-ok: Open dynamic text or non-domain string payload
-  readonly opponentName: string; // domain-ok: Open dynamic text or non-domain string payload
-  readonly opponentAvatar?: string; // domain-ok: Asset path URI string
+  readonly opponentId: DisplayText;
+  readonly opponentName: DisplayText;
+  readonly opponentAvatar?: AssetUri;
   readonly format: PvpMatchFormat;
   readonly isRanked: boolean;
   readonly result: PersonalPvPMatchResult;
   readonly deltaElo?: number;
   readonly turnsCount: number;
-  readonly timestamp: string; // domain-ok: ISO date string
+  readonly timestamp: DisplayText;
 }
 
 export function appendPersonalMatchHistory(
@@ -291,39 +299,39 @@ export function appendPersonalMatchHistory(
 }
 
 export interface PassiveBattleReportData {
-  opponent?: string; // domain-ok: Open dynamic text or non-domain string payload
+  opponent?: DisplayText;
   turns?: number;
-  endedAt?: string; // domain-ok: ISO date string
+  endedAt?: DisplayText;
   deltaElo?: number;
-  faction?: string; // domain-ok: Open dynamic text or non-domain string payload
-  playerClass?: string; // domain-ok: Open dynamic text or non-domain string payload
+  faction?: DisplayText;
+  playerClass?: DisplayText;
 }
 
 export interface PassiveOpponentProfile {
-  id?: string; // domain-ok: Open dynamic text or non-domain string payload
-  username?: string; // domain-ok: Open dynamic text or non-domain string payload
-  playerClass?: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  id?: DisplayText;
+  username?: DisplayText;
+  playerClass?: DisplayText | null;
   level?: number | null;
   trainer_level?: number | null;
-  avatar?: string | null; // domain-ok: Asset path URI string
-  avatarFrame?: string | null; // domain-ok: Asset path URI string
-  avatarDecor?: string | null; // domain-ok: Asset path URI string
-  avatar_style?: string | null; // domain-ok: Asset path URI string
-  avatarStyle?: string | null; // domain-ok: Asset path URI string
-  nick_style?: string | null; // domain-ok: Asset path URI string
-  faction?: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  avatar?: AssetUri | null;
+  avatarFrame?: AssetUri | null;
+  avatarDecor?: AssetUri | null;
+  avatar_style?: AssetUri | null;
+  avatarStyle?: AssetUri | null;
+  nick_style?: AssetUri | null;
+  faction?: DisplayText | null;
   elo_rating?: number | null;
-  gender?: string | null; // domain-ok: Gender identifier string
+  gender?: DisplayText | null;
 }
 
 export interface PassiveBattleReport {
-  id: string; // domain-ok: Open dynamic text or non-domain string payload
-  user_id: string; // domain-ok: Open dynamic text or non-domain string payload
-  opponent_id: string; // domain-ok: Open dynamic text or non-domain string payload
+  id: DisplayText;
+  user_id: DisplayText;
+  opponent_id: DisplayText;
   result: PassiveBattleResult;
   report_data: PassiveBattleReportData;
   opponent_profile?: PassiveOpponentProfile | null;
-  created_at: string; // domain-ok: ISO date string
+  created_at: DisplayText;
 }
 
 export interface PvPStats {
@@ -333,39 +341,39 @@ export interface PvPStats {
 }
 
 export interface SeasonRules {
-  name: string; // domain-ok: Open dynamic text or non-domain string payload
-  startDate?: string; // domain-ok: ISO date string
-  endDate?: string; // domain-ok: ISO date string
-  seasonStartDate?: string; // domain-ok: ISO date string
-  seasonEndDate?: string; // domain-ok: ISO date string
+  name: DisplayText;
+  startDate?: DisplayText;
+  endDate?: DisplayText;
+  seasonStartDate?: DisplayText;
+  seasonEndDate?: DisplayText;
   bannedPokemonIds?: PokemonSpeciesId[];
   levelCap: number;
-  allowedTypes?: string[]; // domain-ok: Pokemon type identifier strings
+  allowedTypes?: DisplayText[];
   maxPokemon: number;
-  themeName?: string; // domain-ok: Open dynamic text or non-domain string payload
+  themeName?: DisplayText;
   isLittleCup?: boolean;
 }
 
 export interface RankedSeasonMedal {
-  id: string; // domain-ok: Open dynamic text or non-domain string payload
-  seasonName: string; // domain-ok: Open dynamic text or non-domain string payload
-  tournamentName?: string; // domain-ok: Open dynamic text or non-domain string payload
+  id: DisplayText;
+  seasonName: DisplayText;
+  tournamentName?: DisplayText;
   themeId?: SeasonalThemeId;
   tier: RankedTierId;
   rank?: number;
   finalElo: number;
-  awardedAt: string; // domain-ok: Open dynamic text or non-domain string payload
+  awardedAt: DisplayText;
 }
 
 export interface PvpTurnPayload {
   turnNumber: number;
-  choice: string; // domain-ok: Open dynamic text or non-domain string payload
+  choice: DisplayText;
 }
 
 export interface PvpTurnStreamPayload {
   turnNumber: number;
   turn?: number;
-  streamLines: string[]; // domain-ok: Open dynamic text or non-domain string payload
+  streamLines: DisplayText[];
   over?: boolean;
   winnerSide?: SideID;
 }
@@ -376,15 +384,15 @@ export interface PvpForfeitPayload {
 }
 
 export interface PvpReconnectPayload {
-  matchId: string; // domain-ok: Open dynamic text or non-domain string payload
+  matchId: DisplayText;
   side: SideID;
   lastTurnNumber: number;
 }
 
 export interface RankedPodiumWinner {
   rank: number;
-  user_id: string; // domain-ok: Open dynamic text or non-domain string payload
-  username: string; // domain-ok: Open dynamic text or non-domain string payload
+  user_id: DisplayText;
+  username: DisplayText;
   elo: number;
   tier: RankedTierId;
 }

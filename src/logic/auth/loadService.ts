@@ -1,10 +1,10 @@
 import type { DBRouter } from '@/logic/db/dbRouter';
-import { readOpfsFile, writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';
+import { readOpfsFile, writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage';
 import { processSaveInWorker, compressSaveInWorker } from '@/logic/workers/saveWorkerClient';
-import type { GameState } from '@/types/system/game';
 import type { AuthUser } from '@/types/auth/auth';
+import type { GameState } from '@/types/system/game';
 
 const REQUIRED_DB_VERSION = 3;
 

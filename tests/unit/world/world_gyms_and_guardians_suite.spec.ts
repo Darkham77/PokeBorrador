@@ -1,22 +1,23 @@
+import { Battle } from '@pkmn/sim';
+import { setActivePinia, createPinia } from 'pinia';
 /**
  * tests/unit/world/world_gyms_and_guardians_suite.spec.ts
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
-import { processGymVictory } from '@/logic/gym/gymEngine';
+
+import { PDEX_ORDER } from '@/data/pokemon/pokedex';
 import { GYMS } from '@/data/world/gyms';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { mapToShowdownSet, getShowdownFormatId } from '@/logic/battle/showdownAdapter';
 import { getShowdownNickname } from '@/logic/battle/showdownUidMapper';
-import { Battle } from '@pkmn/sim';
-import { PDEX_ORDER } from '@/data/pokemon/pokedex';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { checkSpecialEncounters } from '@/logic/encounters/encounterHelpers';
+import { processGymVictory } from '@/logic/gym/gymEngine';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import * as guardianEngine from '@/logic/war/guardianEngine';
+import { getNpcEncounterChances } from '@/logic/weather/weatherUtils';
 import { useGameStore } from '@/stores/game';
 import { useWarStore } from '@/stores/war';
-import { checkSpecialEncounters } from '@/logic/encounters/encounterHelpers';
-import { getNpcEncounterChances } from '@/logic/weather/weatherUtils';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 import { requireISODateKey } from '@/types/system/game';
-import * as guardianEngine from '@/logic/war/guardianEngine';
 
 function activePokePokeIdToID(id: string): string {
   return id.toLowerCase().replace(/[^a-z0-9]/g, '');

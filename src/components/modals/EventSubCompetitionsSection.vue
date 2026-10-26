@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { ResolvedSubCompetition, SubCompetitionConfig } from '@/logic/events/eventEngine';
 import type { DomainPrizeData } from '@/types/rewards/rewards';
-import { getSubCompDefaultIcon, getSubCompTitle } from './eventSubCompHelper';
+
 import EventPodiumPrizesList from './EventPodiumPrizesList.vue';
+import { getSubCompDefaultIcon, getSubCompTitle } from './eventSubCompHelper';
 
 interface Props {
   eventId: string;

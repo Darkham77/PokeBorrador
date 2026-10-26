@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useModalStore } from '@/stores/modals';
-import { useUIStore } from '@/stores/ui';
-import { useEventStore } from '@/stores/events';
-import { useGameStore } from '@/stores/game';
-import { useAuthStore } from '@/stores/auth';
-import { useGTSStore } from '@/stores/gts';
-import { usePvPStore } from '@/stores/pvp';
+
 import {
   simulatePastEventAndMissionsReward,
   clearDebugSimulatedRewards
 } from '@/logic/debug/rewardsDebugSimulation';
+import { useAuthStore } from '@/stores/auth';
+import { useEventStore } from '@/stores/events';
+import { useGameStore } from '@/stores/game';
+import { useGTSStore } from '@/stores/gts';
+import { useModalStore } from '@/stores/modals';
+import { usePvPStore } from '@/stores/pvp';
+import { useUIStore } from '@/stores/ui';
 
 const modalStore = useModalStore();
 const uiStore = useUIStore();
@@ -26,7 +27,7 @@ const isSimulatingRewards = ref(false);
 const isClearingRewards = ref(false);
 const lastSimulationSummary = ref('');
 
-async function handleSimulateRewards() {
+async function handleSimulateRewards(): Promise<void> {
   if (isSimulatingRewards.value) return;
   isSimulatingRewards.value = true;
   try {
@@ -45,7 +46,7 @@ async function handleSimulateRewards() {
   }
 }
 
-async function handleClearRewards() {
+async function handleClearRewards(): Promise<void> {
   if (isClearingRewards.value) return;
   isClearingRewards.value = true;
   try {
@@ -56,18 +57,18 @@ async function handleClearRewards() {
   }
 }
 
-async function startTest() {
+async function startTest(): Promise<void> {
   if (isTesting.value) return;
   isTesting.value = true;
-  const bridge = Reflect.get(window, '__VITE_DEBUG__') as
+  const bridge = Reflect.get(globalThis, '__VITE_DEBUG__') as
     | { testModalStack: (count: number) => Promise<void> }
     | undefined; // domain-ok: Open dynamic text or non-domain string payload
   await bridge?.testModalStack(modalCount.value);
   isTesting.value = false;
 }
 
-function triggerSampleError() {
-  const bridge = Reflect.get(window, '__VITE_DEBUG__') as
+function triggerSampleError(): void {
+  const bridge = Reflect.get(globalThis, '__VITE_DEBUG__') as
     | { triggerTestError: () => void }
     | undefined; // domain-ok: Open dynamic text or non-domain string payload
   bridge?.triggerTestError();

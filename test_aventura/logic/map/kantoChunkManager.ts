@@ -21,22 +21,22 @@ import type {
 import type { UniversalAutotiler, SemanticPrefabRenderer } from './kantoTileEngine.ts';
 
 class Chunk {
-  readonly cx: number;
-  readonly cy: number;
-  readonly wx: number;
-  readonly wy: number;
-  canvas: HTMLCanvasElement | null = null;
-  ctx: CanvasRenderingContext2D | null = null;
-  baked = false;
+  public readonly cx: number;
+  public readonly cy: number;
+  public readonly wx: number;
+  public readonly wy: number;
+  public canvas: HTMLCanvasElement | null = null;
+  public ctx: CanvasRenderingContext2D | null = null;
+  public baked = false;
 
-  constructor(cx: number, cy: number) {
+  public constructor(cx: number, cy: number) {
     this.cx = cx;
     this.cy = cy;
     this.wx = cx * KANTO_CHUNK_PX;
     this.wy = cy * KANTO_CHUNK_PX;
   }
 
-  bake(
+  public bake(
     autotiler: UniversalAutotiler,
     prefabRenderer: SemanticPrefabRenderer,
     world: IRegionalWorldRendererSource
@@ -63,7 +63,7 @@ class Chunk {
     const cR = cL + KANTO_CHUNK_PX;
     const cB = cT + KANTO_CHUNK_PX;
 
-    const inBounds = (x: number, y: number, w: number, h: number) => {
+    const inBounds = (x: number, y: number, w: number, h: number): boolean => {
       return x + w >= cL && x <= cR && y + h >= cT && y <= cB;
     };
 
@@ -168,9 +168,9 @@ class Chunk {
 }
 
 export class ChunkManager {
-  readonly chunks: Chunk[] = [];
+  public readonly chunks: Chunk[] = [];
 
-  constructor() {
+  public constructor() {
     for (let cy = 0; cy < KANTO_CHUNKS_Y; cy++) {
       for (let cx = 0; cx < KANTO_CHUNKS_X; cx++) {
         this.chunks.push(new Chunk(cx, cy));
@@ -178,7 +178,7 @@ export class ChunkManager {
     }
   }
 
-  bakeAll(
+  public bakeAll(
     autotiler: UniversalAutotiler,
     prefabRenderer: SemanticPrefabRenderer,
     world: IRegionalWorldRendererSource
@@ -186,7 +186,7 @@ export class ChunkManager {
     this.chunks.forEach((c) => c.bake(autotiler, prefabRenderer, world));
   }
 
-  bakeArea(
+  public bakeArea(
     autotiler: UniversalAutotiler,
     prefabRenderer: SemanticPrefabRenderer,
     world: IRegionalWorldRendererSource,
@@ -214,7 +214,7 @@ export class ChunkManager {
     }
   }
 
-  renderTo(
+  public renderTo(
     ctx: CanvasRenderingContext2D,
     viewX: number,
     viewY: number,

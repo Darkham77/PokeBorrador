@@ -1,7 +1,8 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import DebugModalsTab from '@/components/admin/debug/DebugModalsTab.vue';
 import * as debugSim from '@/logic/debug/rewardsDebugSimulation';
 

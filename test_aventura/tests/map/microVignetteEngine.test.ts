@@ -11,13 +11,14 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
-import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
-import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
 import {
   generateMicroVignettes,
   sweepStrayPathTiles
 } from '../../logic/map/microVignetteEngine.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
 
 describe('microVignetteEngine (Phase 5)', () => {
   const continent = generateContinentMap({

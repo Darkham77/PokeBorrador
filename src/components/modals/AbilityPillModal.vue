@@ -1,12 +1,13 @@
 <script setup lang="ts">
+import gsap from 'gsap';
 import { computed } from 'vue';
-import { useUIStore } from '@/stores/ui';
-import { useGameStore } from '@/stores/game';
-import { useInventoryStore } from '@/stores/inventory/inventory';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+
 import BaseModal from '@/components/common/BaseModal.vue';
 import { requireAbilityId, type AbilityId } from '@/data/battle/abilities';
-import gsap from 'gsap';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { useGameStore } from '@/stores/game';
+import { useInventoryStore } from '@/stores/inventory/inventory';
+import { useUIStore } from '@/stores/ui';
 
 const uiStore = useUIStore();
 const gameStore = useGameStore();
@@ -23,7 +24,7 @@ const availableAbilities = computed<AbilityId[]>(() => {
   return pokemonDataProvider.getSpeciesAbilities(abilityPokemon.value.id).map(requireAbilityId);
 });
 
-const handleApplyAbility = (ability: AbilityId) => {
+const handleApplyAbility = (ability: AbilityId): void => {
   if (!abilityPokemon.value) return;
   if (abilityPokemon.value.ability === ability) {
     uiStore.notify('Ya tiene esa habilidad.', '⚠️');
@@ -39,19 +40,19 @@ const handleApplyAbility = (ability: AbilityId) => {
   gameStore.save();
 };
 
-const getAbilityDesc = (ability: AbilityId) => {
+const getAbilityDesc = (ability: AbilityId): string => {
   if (!ability) return 'Habilidad especial de este Pokémon.';
   const data = pokemonDataProvider.getAbilityData(ability);
   return data ? data.desc : 'Habilidad especial de este Pokémon.';
 };
 
-const getAbilityName = (ability: AbilityId) => {
+const getAbilityName = (ability: AbilityId): string => {
   if (!ability) return '—';
   const data = pokemonDataProvider.getAbilityData(ability);
   return data ? data.name : ability;
 };
 
-const onBtnEnter = (event: MouseEvent) => {
+const onBtnEnter = (event: MouseEvent): void => {
   const el = event.currentTarget as HTMLElement;
   gsap.to(el, {
     x: 6,
@@ -63,7 +64,7 @@ const onBtnEnter = (event: MouseEvent) => {
   });
 };
 
-const onBtnLeave = (event: MouseEvent, isActive: boolean) => {
+const onBtnLeave = (event: MouseEvent, isActive: boolean): void => {
   const el = event.currentTarget as HTMLElement;
   gsap.to(el, {
     x: 0,
@@ -89,7 +90,7 @@ const emit = defineEmits<{
   (e: 'close'): void;
 }>();
 
-const close = () => {
+const close = (): void => {
   emit('close');
   uiStore.isAbilityPillOpen = false;
   uiStore.activePokemonForAbility = null;

@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * scripts/auditors/domain_data/validate_pokemon.ts
  *
@@ -7,7 +8,7 @@
 
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, normalizePosixPath, createRuleCapabilities } from '@francogp/auditor';
+import { BaseAuditor, normalizePosixPath, createRuleCapabilities, getAuditConfig } from '@francogp/auditor';
 import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION, isEnabledPokemonId } from '../../../src/data/system/constants.ts';
@@ -35,6 +36,10 @@ export const POKEMON_DB_RULES: readonly PokemonDbRuleId[] = [
 
 export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
   constructor() {
+    const config = getAuditConfig();
+    const dataRoots = config.paths?.dataRoots ?? [];
+    const coverageIncludes = dataRoots.map((r) => path.posix.join(r, 'pokemon/**/*.{ts,json}'));
+
     super({
       ruleCapabilities: createRuleCapabilities(POKEMON_DB_RULES, {
         speed: 'heavy',
@@ -58,6 +63,7 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
       ruleIds: POKEMON_DB_RULES,
       packageName: 'Pokémon',
       usesThirdPartyTool: false,
+      requiredPermissions: [],
       ruleDescriptions: {
         'pokemon-invalid-species': 'Especie no válida en catálogo',
         'pokemon-base-stat-mismatch': 'Discrepancia en stats base',
@@ -76,16 +82,17 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
           'Replace or remove invalid move ID from pokemon learnset array',
         'pokemon-missing-learnset': 'Define at least one valid move entry in pokemon learnset'
       },
+      remediationPhase: 'contracts',
       requiredFiles: [DB_FILE],
       coverage: {
-        include: ['src/data/pokemon/**/*.{ts,json}']
+        include: coverageIncludes
       }
     });
   }
 
   private validateBaseStats(
     corePoke: PokemonBaseData,
-    species: { baseStats: Record<string, number> },
+    species: { baseStats: Record<DisplayText, number> },
     tag: string
   ): void {
     for (const stat of STAT_KEYS) {
@@ -172,7 +179,7 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
         if (!species) continue;
         this.validateBaseStats(
           corePoke,
-          species as { baseStats: Record<string, number> },
+          species as { baseStats: Record<DisplayText, number> },
           `[${corePoke.name} (${coreId})]`
         );
       }
@@ -231,10 +238,4 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (
-  process.argv[1] &&
-  import.meta.filename &&
-  path.basename(process.argv[1]) === path.basename(import.meta.filename)
-) {
-  await BaseAuditor.runCli(new PokemonDbAuditor());
-}
+await BaseAuditor.runCliIfMain(import.meta.url, new PokemonDbAuditor());

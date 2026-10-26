@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
-import { useItemOnPokemon } from '@/logic/providers/itemProvider';
+
 import { itemEffects } from '@/logic/items/itemEffects';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { useItemOnPokemon } from '@/logic/providers/itemProvider';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 // Mock de Pinia stores para evitar errores de inicialización

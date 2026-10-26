@@ -1,11 +1,13 @@
-import { describe, it, expect } from 'vite-plus/test';
 import { DatabaseSync } from 'node:sqlite';
+
 import { safeParse } from 'valibot';
-import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
-import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
-import { saveDataSchema } from '../../../src/logic/validation/schemas.ts';
-import { requirePokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
+import { describe, it, expect } from 'vite-plus/test';
+
 import { toNatureId } from '../../../src/data/battle/natures.ts';
+import { requirePokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
+import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
+import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
+import { saveDataSchema } from '../../../src/logic/validation/schemas.ts';
 
 describe('Egg Migration and Sanitization Suite', () => {
   it('should fix egg.id and sanitize invalid/Spanish nature and egg fields across eggs and daycareWarehouse', () => {

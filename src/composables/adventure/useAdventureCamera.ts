@@ -1,5 +1,5 @@
-import { ref, computed, type Ref } from 'vue';
 import { gsap } from 'gsap';
+import { ref, computed, type Ref, type ComputedRef } from 'vue';
 
 interface CameraOptions {
   viewportRef: Ref<HTMLElement | null>;
@@ -18,7 +18,22 @@ const DEFAULT_CENTER_DURATION_SEC = 0.8 as const;
  * Composable that manages a GSAP-powered 2D camera for the adventure map canvas.
  * Provides smooth panning via `centerOnNode()` and manual drag-to-pan.
  */
-export function useAdventureCamera(options: CameraOptions) {
+export interface UseAdventureCameraReturn {
+  cameraX: Ref<number>;
+  cameraY: Ref<number>;
+  cameraScale: Ref<number>;
+  canvasTransform: ComputedRef<{ x: number; y: number; scale: number }>;
+  isDragging: Ref<boolean>;
+  centerOnPoint: (x: number, y: number, duration?: number) => void;
+  jumpToPoint: (x: number, y: number) => void;
+  onPointerDown: (e: PointerEvent) => void;
+  onPointerMove: (e: PointerEvent) => void;
+  onPointerUp: (e: PointerEvent) => void;
+  zoomIn: (getTarget?: () => { x: number; y: number } | undefined) => void;
+  zoomOut: (getTarget?: () => { x: number; y: number } | undefined) => void;
+}
+
+export function useAdventureCamera(options: CameraOptions): UseAdventureCameraReturn {
   const { viewportRef, canvasWidth, canvasHeight } = options;
 
   const cameraX = ref(0);
@@ -45,7 +60,7 @@ export function useAdventureCamera(options: CameraOptions) {
     vpW: number,
     vpH: number,
     scale: number
-  ) {
+  ): { clampedX: number; clampedY: number } {
     const scaledW = canvasWidth * scale;
     const scaledH = canvasHeight * scale;
 
@@ -66,7 +81,7 @@ export function useAdventureCamera(options: CameraOptions) {
     targetX: number,
     targetY: number,
     duration: number = DEFAULT_CENTER_DURATION_SEC
-  ) {
+  ): void {
     const vp = viewportRef.value;
     if (!vp) return;
 
@@ -102,7 +117,7 @@ export function useAdventureCamera(options: CameraOptions) {
   /**
    * Instantly set camera position without animation.
    */
-  function jumpToPoint(targetX: number, targetY: number) {
+  function jumpToPoint(targetX: number, targetY: number): void {
     const vp = viewportRef.value;
     if (!vp) return;
 
@@ -120,7 +135,7 @@ export function useAdventureCamera(options: CameraOptions) {
   }
 
   // ─── Drag-to-Pan ───
-  function onPointerDown(e: PointerEvent) {
+  function onPointerDown(e: PointerEvent): void {
     isDragging.value = true;
     dragStartX = e.clientX;
     dragStartY = e.clientY;
@@ -133,7 +148,7 @@ export function useAdventureCamera(options: CameraOptions) {
     }
   }
 
-  function onPointerMove(e: PointerEvent) {
+  function onPointerMove(e: PointerEvent): void {
     if (!isDragging.value) return;
     const vp = viewportRef.value;
     if (!vp) return;
@@ -157,11 +172,11 @@ export function useAdventureCamera(options: CameraOptions) {
     cameraY.value = clampedY;
   }
 
-  function onPointerUp() {
+  function onPointerUp(): void {
     isDragging.value = false;
   }
 
-  function zoomIn(getTarget?: () => { x: number; y: number } | undefined) {
+  function zoomIn(getTarget?: () => { x: number; y: number } | undefined): void {
     const targetScale = Math.min(cameraScale.value + CAMERA_ZOOM_STEP, CAMERA_MAX_SCALE);
     if (cameraScale.value === targetScale) return;
     const target = getTarget ? getTarget() : null;
@@ -174,7 +189,7 @@ export function useAdventureCamera(options: CameraOptions) {
     });
   }
 
-  function zoomOut(getTarget?: () => { x: number; y: number } | undefined) {
+  function zoomOut(getTarget?: () => { x: number; y: number } | undefined): void {
     const targetScale = Math.max(cameraScale.value - CAMERA_ZOOM_STEP, CAMERA_MIN_SCALE);
     if (cameraScale.value === targetScale) return;
     const target = getTarget ? getTarget() : null;

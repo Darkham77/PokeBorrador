@@ -5,8 +5,9 @@
  * Renders the bottom-left action pills: fishing, archaeology, faction dominance, and winner crown.
  */
 
-import PVTooltip from '@/components/common/PVTooltip.vue';
 import { computed } from 'vue';
+
+import PVTooltip from '@/components/common/PVTooltip.vue';
 import type { MapLocation } from '@/types/pokemon/encounters';
 import type { DominanceInfo } from '@/types/system/stores';
 

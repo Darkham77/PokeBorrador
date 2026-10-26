@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useModalStore, type Modal } from '@/stores/modals';
+
 import ModalHierarchyProvider from '@/components/common/ModalHierarchyProvider.vue';
 import { MODAL_REGISTRY, type ModalRegistryKey } from '@/logic/modals/registry';
+import { useModalStore, type Modal } from '@/stores/modals';
 
 const modalStore = useModalStore();
 
-const resolveModalComponent = (modal: Modal) => {
+const resolveModalComponent = (modal: Modal): unknown => {
   return (
     modal.component ||
     (modal.name in MODAL_REGISTRY ? MODAL_REGISTRY[modal.name as ModalRegistryKey] : null)

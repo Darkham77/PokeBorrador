@@ -9,11 +9,12 @@
  * 4. Bidirectional mode switching between macro-graph and tile editor with store synchronization.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach } from 'vitest';
+
+import { generateLocalMapForNode } from '../../logic/map/nodeLocalMapGenerator.ts';
 import { useMapAdventureStudioStore } from '../../stores/mapAdventureStudio.ts';
 import { useMapStudioStore } from '../../stores/mapStudio.ts';
-import { generateLocalMapForNode } from '../../logic/map/nodeLocalMapGenerator.ts';
 
 describe('Macro-Graph ↔ Local Map Bidirectional Bridge', () => {
   beforeEach(() => {

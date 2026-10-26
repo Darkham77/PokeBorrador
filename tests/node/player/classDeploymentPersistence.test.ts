@@ -7,13 +7,15 @@
  */
 
 import { describe, it, expect } from 'vite-plus/test';
-import { describeWithDatabase } from '../../dbTestHelper.ts';
-import { serializeState } from '@/logic/auth/saveSerializer.ts';
+
 import { validateAndSanitize } from '@/logic/auth/saveSanitizer.ts';
+import { serializeState } from '@/logic/auth/saveSerializer.ts';
+import { healStuckMissions } from '@/logic/player/missionRecovery.ts';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory.ts';
 import { INITIAL_STATE } from '@/stores/gameInitialState.ts';
 import type { GameState } from '@/types/system/game.ts';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory.ts';
-import { healStuckMissions } from '@/logic/player/missionRecovery.ts';
+
+import { describeWithDatabase } from '../../dbTestHelper.ts';
 
 describe('Class Deployment Persistence - Serialization & Sanitization (RED -> GREEN)', () => {
   it('preserves activeMission when serializing and validating SaveData', () => {

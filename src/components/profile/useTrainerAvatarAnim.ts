@@ -1,11 +1,12 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/components/profile/useTrainerAvatarAnim.ts
  *
  * GSAP animations and IntersectionObserver lifecycle for TrainerAvatar.
  */
-
-import { type Ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import gsap from 'gsap';
+import { type Ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
+
 import {
   INTERSECTION_OBSERVER_THRESHOLD_PCT,
   resolveShadowConfig,
@@ -21,7 +22,7 @@ export interface UseTrainerAvatarAnimParams {
   resolvedAvatarStyle: Ref<string>;
   isSquare: Ref<boolean>;
   hasFrame: Ref<boolean>;
-  elementColors: Record<string, { base: string; light: string; frame: string }>; // open-record: Dynamic element colors dictionary
+  elementColors: Record<DisplayText, { base: string; light: string; frame: string }>; // open-record: Dynamic element colors dictionary
 }
 
 export function useTrainerAvatarAnim(params: UseTrainerAvatarAnimParams): void {
@@ -43,7 +44,7 @@ export function useTrainerAvatarAnim(params: UseTrainerAvatarAnimParams): void {
     { threshold: INTERSECTION_OBSERVER_THRESHOLD_PCT }
   );
 
-  function cleanAnimations() {
+  function cleanAnimations(): void {
     if (containerRef.value) {
       observer.unobserve(containerRef.value);
     }
@@ -59,7 +60,7 @@ export function useTrainerAvatarAnim(params: UseTrainerAvatarAnimParams): void {
     }
   }
 
-  function initAnimations() {
+  function initAnimations(): void {
     cleanAnimations();
 
     if (!containerRef.value) return;
@@ -91,10 +92,9 @@ export function useTrainerAvatarAnim(params: UseTrainerAvatarAnimParams): void {
     }
   }
 
-  onMounted(() => {
-    void nextTick(() => {
-      initAnimations();
-    });
+  onMounted(async () => {
+    await nextTick();
+    initAnimations();
   });
 
   onUnmounted(() => {
@@ -103,19 +103,17 @@ export function useTrainerAvatarAnim(params: UseTrainerAvatarAnimParams): void {
 
   watch(
     () => resolvedAvatarStyle.value,
-    () => {
-      void nextTick(() => {
-        initAnimations();
-      });
+    async () => {
+      await nextTick();
+      initAnimations();
     }
   );
 
   watch(
     () => hasFrame.value,
-    () => {
-      void nextTick(() => {
-        initAnimations();
-      });
+    async () => {
+      await nextTick();
+      initAnimations();
     }
   );
 }

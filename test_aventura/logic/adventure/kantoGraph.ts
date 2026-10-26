@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 export interface Connection {
   target: AdventureNodeId;
   mo?: string; // Requisito opcional de MO
@@ -45,7 +46,7 @@ export const KANTO_NODE_POSITIONS = {
   route23: { x: 8, y: 40, label: 'Ruta 23' },
   victory_road: { x: 6, y: 30, label: 'Vía Victoria' },
   cerulean_cave: { x: 60, y: 20, label: 'Cueva Celeste' }
-} as const satisfies Record<string, NodePosition>; // open-record: Kanto graph node coordinates definition map
+} as const satisfies Record<DisplayText, NodePosition>; // open-record: Kanto graph node coordinates definition map
 
 export type AdventureNodeId = keyof typeof KANTO_NODE_POSITIONS;
 

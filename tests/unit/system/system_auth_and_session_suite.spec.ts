@@ -1,19 +1,21 @@
+import type { User } from '@supabase/supabase-js';
+import { setActivePinia, createPinia } from 'pinia';
 /**
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
 import { ref } from 'vue';
-import { useAuthStore } from '@/stores/auth.ts';
-import { setupLocalStorageMock } from './localStorageMock.ts';
-import { supabase } from '@/logic/db/supabase';
-import type { User } from '@supabase/supabase-js';
+
+import { usePWA } from '@/composables/system/usePWA';
 import { loadBestSave } from '@/logic/auth/loadService';
-import { createTestDBRouter, cleanupTestDB } from '../../dbTestHelper.ts';
 import type { DBRouter } from '@/logic/db/dbRouter';
+import { supabase } from '@/logic/db/supabase';
+import { useAuthStore } from '@/stores/auth.ts';
 import type { AuthUser } from '@/types/auth/auth';
 import { useLoginHandlers } from '@/views/auth/useLoginHandlers';
-import { usePWA } from '@/composables/system/usePWA';
+
+import { createTestDBRouter, cleanupTestDB } from '../../dbTestHelper.ts';
+import { setupLocalStorageMock } from './localStorageMock.ts';
 
 // Mock Supabase
 vi.mock('@/logic/db/supabase', async () => {

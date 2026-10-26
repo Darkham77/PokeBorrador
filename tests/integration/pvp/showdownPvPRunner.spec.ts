@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vite-plus/test';
+
 import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
-import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
-import { ShowdownPerspectiveAdapter } from '../../../src/logic/battle/helpers/showdownPerspectiveAdapter.ts';
-import { ShowdownLogEnricher } from '../../../src/logic/battle/helpers/showdownLogEnricher.ts';
 import {
   classifyRequest,
   requiresAction
 } from '../../../src/logic/battle/helpers/requestHelper.ts';
+import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
+import { ShowdownLogEnricher } from '../../../src/logic/battle/helpers/showdownLogEnricher.ts';
+import { ShowdownPerspectiveAdapter } from '../../../src/logic/battle/helpers/showdownPerspectiveAdapter.ts';
 import type { ShowdownPlayerRequest } from '../../../src/types/battle/battle.ts';
 
 function createPvPTestBattle() {

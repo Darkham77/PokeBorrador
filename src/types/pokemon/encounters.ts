@@ -1,14 +1,16 @@
-import { Pokemon } from '@/types/pokemon/pokemon';
-import type { DominanceInfo } from '@/types/system/stores';
-import type { Event } from '@/logic/events/eventEngine';
-import type { DayPhase } from '@/logic/utils/timeUtils';
-import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
-import type { MapRouteId } from '@/data/world/map-assets';
-import type { GymId } from '@/data/world/gyms';
-import type { WeatherId, WeatherMechanical } from '@/logic/weather/weatherRegistry';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { FactionId, PlayerClassId, PlayerClassState } from '@/types/system/game';
+import type { DisplayText } from '@francogp/auditor';
+
 import type { ItemId } from '@/data/inventory/items';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { GymId } from '@/data/world/gyms';
+import type { MapRouteId } from '@/data/world/map-assets';
+import type { Event } from '@/logic/events/eventEngine';
+import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
+import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { WeatherId, WeatherMechanical } from '@/logic/weather/weatherRegistry';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { FactionId, PlayerClassId, PlayerClassState } from '@/types/system/game';
+import type { DominanceInfo } from '@/types/system/stores';
 
 export const ENCOUNTER_TYPES = [
   'wild',
@@ -51,10 +53,10 @@ export interface MapLocationWeatherConfig {
 
 export interface MapLocation {
   id: MapRouteId;
-  name: string; // domain-ok: Open dynamic text or non-domain string payload
-  icon?: string; // domain-ok: Open dynamic text or non-domain string payload
+  name: DisplayText;
+  icon?: DisplayText;
   badges?: number;
-  desc?: string; // domain-ok: Open dynamic text or non-domain string payload
+  desc?: DisplayText;
   isCave?: boolean;
   isIndoors?: boolean;
   isCrystalCave?: boolean;

@@ -1,28 +1,10 @@
+import type { Battle, Side, Pokemon as SimPokemon } from '@pkmn/sim';
+import { setActivePinia, createPinia } from 'pinia';
 // @vitest-environment jsdom
 // jsdom-ok: Web Worker client showdown.worker.ts accesses browser self global
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
 import { ref } from 'vue';
-import { parseLogsWithSkip } from '@/logic/battle/battleTurnLogHelper';
-import {
-  STATUS_NAME_MAP,
-  STATUS_EMOJI_MAP,
-  STATUS_SHORT_LABEL_MAP
-} from '@/logic/battle/battleUiUtils';
-import { executeTeleportAction } from '@/logic/battle/actions/specialActionsTeleportHelper';
-import {
-  sanitizeExplicitSwitchChoice,
-  sanitizeSeatChoiceInput,
-  buildTurnSeats,
-  applyPostTurnHealing,
-  type BattleSeat,
-  type TurnExecutionInput
-} from '@/logic/battle/engine/showdownSeatSyncHelper';
-import { processSearchPhaseSequence } from '@/logic/battle/orchestratorSearchPhaseHelper';
-import {
-  checkLockedVolatiles,
-  resetPlayerStages
-} from '@/logic/battle/actions/switchActionHelpers';
+
 import {
   constructPokemonId,
   deconstructPokemonId,
@@ -31,30 +13,49 @@ import {
   toggleCombatantStatus
 } from '@/components/battle/debugActionPanelHelpers.ts';
 import {
-  resolvePlayerForcedMoveIndex,
-  evaluateMoveValidityAndLock
-} from '@/logic/battle/helpers/turnMoveValidator';
-import { getForcedExitConfig } from '@/logic/battle/helpers/forcedSwitchRegistry';
-import { BATTLE_ESCAPE_TYPES } from '@/types/battle/battle';
-import {
   isFlying,
   computeShadowCoords,
   computeShadowBodyRadius
 } from '@/composables/battle/useBattleShadows';
+import type { PokemonMoveId } from '@/data/battle/moves';
+import type { ItemId } from '@/data/inventory/items';
+import { executeTeleportAction } from '@/logic/battle/actions/specialActionsTeleportHelper';
+import {
+  checkLockedVolatiles,
+  resetPlayerStages
+} from '@/logic/battle/actions/switchActionHelpers';
+import { parseLogsWithSkip } from '@/logic/battle/battleTurnLogHelper';
+import {
+  STATUS_NAME_MAP,
+  STATUS_EMOJI_MAP,
+  STATUS_SHORT_LABEL_MAP
+} from '@/logic/battle/battleUiUtils';
 import {
   isPokemonFaintedOrActive,
   resolveExplicitChoiceHelper,
   resolveForceSwitchFallback,
   resolveReplayerCandidate
 } from '@/logic/battle/engine/showdownChoiceResolver';
-import { ShowdownTeamResolver } from '@/logic/battle/showdownTeamResolver';
+import {
+  sanitizeExplicitSwitchChoice,
+  sanitizeSeatChoiceInput,
+  buildTurnSeats,
+  applyPostTurnHealing,
+  type BattleSeat,
+  type TurnExecutionInput
+} from '@/logic/battle/engine/showdownSeatSyncHelper';
+import { getForcedExitConfig } from '@/logic/battle/helpers/forcedSwitchRegistry';
+import {
+  resolvePlayerForcedMoveIndex,
+  evaluateMoveValidityAndLock
+} from '@/logic/battle/helpers/turnMoveValidator';
+import { processSearchPhaseSequence } from '@/logic/battle/orchestratorSearchPhaseHelper';
 import { injectUidsIntoRequest, setTestingBattle } from '@/logic/battle/showdown.worker';
-import type { Battle, Side, Pokemon as SimPokemon } from '@pkmn/sim';
+import { ShowdownTeamResolver } from '@/logic/battle/showdownTeamResolver';
+import { BATTLE_ESCAPE_TYPES } from '@/types/battle/battle';
+import type { BattleMinigame } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import type { BattleMinigame } from '@/types/battle/battle';
-import type { PokemonMoveId } from '@/data/battle/moves';
-import type { ItemId } from '@/data/inventory/items';
 
 vi.mock('@/stores/ui', () => ({
   useUIStore: () => ({

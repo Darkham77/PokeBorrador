@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+
 // Static Kanto Map Data
 import type {
   UrbanScale,
@@ -35,7 +37,7 @@ export interface DijkstraPath {
   isFly?: boolean;
 }
 
-export const rawNodes: Record<string, MapNode> = {
+export const rawNodes: Record<DisplayText, MapNode> = {
   // open-record: Adventure map node registry indexed by node id
   indigo: {
     name: 'Meseta Añil',
@@ -497,7 +499,7 @@ export const connections: [string, string][] = [
   ['route21', 'pallet']
 ];
 
-export const officialMapIdMap: Record<string, string> = {
+export const officialMapIdMap: Record<DisplayText, string> = {
   // open-record: Map node id to official game map id mapping
   indigo: 'route23', // Victory Road / Indigo Plateau
   victoryroad: 'victory_road',

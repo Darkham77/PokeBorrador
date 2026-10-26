@@ -42,3 +42,6 @@ src/data/system/servers.local.json
 
 # Auditor tool caches (Added by @francogp/auditor)
 .oxlintcache
+
+# Auditor tool caches (Added by @francogp/auditor)
+test-results/

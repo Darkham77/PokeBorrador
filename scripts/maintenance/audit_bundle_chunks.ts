@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -13,8 +14,8 @@ interface NodePart {
 }
 
 interface VisualizerData {
-  nodeMetas: Record<string, ModuleMeta>;
-  nodeParts: Record<string, NodePart>;
+  nodeMetas: Record<DisplayText, ModuleMeta>;
+  nodeParts: Record<DisplayText, NodePart>;
 }
 
 const STATS_FILE = path.resolve(process.cwd(), 'scratch/bundle_stats.html');

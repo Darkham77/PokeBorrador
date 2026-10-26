@@ -1,4 +1,5 @@
 import { gsap } from 'gsap';
+
 import {
   is3DButton,
   getElementShadowColorAndDepth,
@@ -190,7 +191,7 @@ function resetChildDecorations(el: HTMLElement): void {
   }
 }
 
-export function triggerLeave(el: HTMLElement) {
+export function triggerLeave(el: HTMLElement): void {
   if (el.dataset.gsapHover || el.dataset.gsapCustomHover) return;
 
   const isCloseBtn =

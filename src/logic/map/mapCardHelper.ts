@@ -49,9 +49,8 @@ export function calculateSpawnGrid(
   return { rows, cols, totalSlots: rows * cols };
 }
 
-import type { MapLocation } from '@/types/pokemon/encounters';
-
 import type { MapRouteId } from '@/data/world/map-assets';
+import type { MapLocation } from '@/types/pokemon/encounters';
 
 /**
  * Determina si un mapa/ruta se puede extorsionar (tiene salvajes y no es ciudad/pueblo/gimnasio).

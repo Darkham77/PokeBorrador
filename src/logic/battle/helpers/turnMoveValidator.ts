@@ -1,5 +1,5 @@
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
 export interface MoveResolutionResult {
   finalMoveIndex: number;
@@ -115,7 +115,8 @@ export function evaluateMoveValidityAndLock(
   const move = isStruggle ? null : p.moves[moveIndex] || null;
 
   const isScriptedReplay =
-    typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__?.isScriptedReplayMode);
+    typeof globalThis.window !== 'undefined' &&
+    Boolean(globalThis.__VITE_DEBUG__?.isScriptedReplayMode);
   if (!isStruggle && !isLocked && move?.id !== 'struggle' && !isScriptedReplay) {
     if (!move || move.pp <= 0) {
       store.addLog(`¡No queda PP para ${move?.name || 'este movimiento'}!`, 'log-info', p);

@@ -1,14 +1,13 @@
+import gsap from 'gsap';
 import { defineStore } from 'pinia';
 import { ref, markRaw } from 'vue';
-import gsap from 'gsap';
-import { logger } from '@/logic/utils/logger';
+import type { Component } from 'vue';
 
 import {
   MODAL_OPENING_FALLBACK_DURATION_SEC,
   MODAL_CLOSING_FALLBACK_DURATION_SEC
 } from '@/logic/constants/gameplay.ts';
-
-import type { Component } from 'vue';
+import { logger } from '@/logic/utils/logger';
 
 export interface Modal {
   id: string;
@@ -54,7 +53,7 @@ export const useModalStore = defineStore('modals', () => {
   /**
    * Called by the component when the opening animation finishes.
    */
-  const finishOpening = (id: string) => {
+  const finishOpening = (id: string): void => {
     const target = stack.value.find((m) => m.id === id);
     if (target) {
       target.opening = false;
@@ -64,7 +63,7 @@ export const useModalStore = defineStore('modals', () => {
   /**
    * Closes a specific modal by ID or Name.
    */
-  const close = (identifier: string) => {
+  const close = (identifier: string): void => {
     const index = stack.value.findLastIndex(
       (m) => (m.id === identifier || m.name === identifier) && !m.closing
     );
@@ -82,7 +81,7 @@ export const useModalStore = defineStore('modals', () => {
   /**
    * Called by the component when the closing animation finishes.
    */
-  const finalizeClose = (id: string) => {
+  const finalizeClose = (id: string): void => {
     const index = stack.value.findIndex((m) => m.id === id);
     if (index !== -1) {
       stack.value.splice(index, 1);
@@ -92,18 +91,18 @@ export const useModalStore = defineStore('modals', () => {
   /**
    * Closes the top-most modal in the stack (LIFO).
    */
-  const closeTop = () => {
+  const closeTop = (): void => {
     if (stack.value.length > 0) {
       const topModal = stack.value[stack.value.length - 1];
       if (topModal) close(topModal.id);
     }
   };
 
-  const closeAll = () => {
+  const closeAll = (): void => {
     stack.value = [];
   };
 
-  const isOpen = (name: string) => {
+  const isOpen = (name: string): boolean => {
     return stack.value.some((m) => m.name === name && !m.closing);
   };
 

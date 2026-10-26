@@ -1,3 +1,5 @@
+import assert from 'node:assert/strict';
+
 /**
  * tests/node/battle/showdownBattleAgent.test.ts
  *
@@ -6,9 +8,9 @@
  * - No "undefined" modifier string coercion when canMegaEvo is undefined
  */
 import { describe, it } from 'vite-plus/test';
-import assert from 'node:assert/strict';
-import { ShowdownBattleAgent } from '../../../src/logic/battle/helpers/showdownBattleAgent.ts';
+
 import type { ChoiceRequest } from '../../../src/logic/battle/helpers/requestHelper.ts';
+import { ShowdownBattleAgent } from '../../../src/logic/battle/helpers/showdownBattleAgent.ts';
 
 class TestAgent extends ShowdownBattleAgent {
   public testDecide(request: ChoiceRequest): string {

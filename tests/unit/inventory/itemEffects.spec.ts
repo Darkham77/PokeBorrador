@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useInventoryStore } from '@/stores/inventory/inventory';
-import { useGameStore } from '@/stores/game';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import { isValidTarget } from '@/logic/items/itemEffects';
+import { useGameStore } from '@/stores/game';
+import { useInventoryStore } from '@/stores/inventory/inventory';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 // ── Setup helpers ─────────────────────────────────────────────────────────────

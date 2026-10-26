@@ -6,11 +6,12 @@
  */
 
 import { computed } from 'vue';
-import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
 import { toPokemonType } from '@/data/battle/types';
-import type { RouteSpawnMappedItem } from '@/logic/utils/routeSpawnHelpers';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { RouteSpawnMappedItem } from '@/logic/utils/routeSpawnHelpers';
 
 import RouteSpawnsProbabilityBar from './RouteSpawnsProbabilityBar.vue';
 
@@ -75,7 +76,7 @@ const multiplierBadgeClass = computed(() => {
   return 'mult-value neutral-text';
 });
 
-function handleClick() {
+function handleClick(): void {
   emit('select-pokemon', props.poke.id, props.poke.isSeen);
 }
 </script>

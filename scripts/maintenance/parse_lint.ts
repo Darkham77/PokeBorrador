@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -11,8 +12,8 @@ interface LintErrorEntry {
 }
 
 interface ParsedLintData {
-  fileErrors: Record<string, LintErrorEntry[]>;
-  ruleCounts: Record<string, number>;
+  fileErrors: Record<DisplayText, LintErrorEntry[]>;
+  ruleCounts: Record<DisplayText, number>;
   totalErrors: number;
 }
 
@@ -31,8 +32,8 @@ function isTargetFile(file: string): boolean {
 
 function parseLintReport(content: string): ParsedLintData {
   const regex = /error:\s+(.*?)\s+\((@typescript-eslint\/.*?|.*?)\)\s+at\s+(.*?):(\d+):(\d+):/g;
-  const fileErrors: Record<string, LintErrorEntry[]> = {};
-  const ruleCounts: Record<string, number> = {};
+  const fileErrors: Record<DisplayText, LintErrorEntry[]> = {};
+  const ruleCounts: Record<DisplayText, number> = {};
   let totalErrors = 0;
 
   let match: RegExpExecArray | null;
@@ -67,7 +68,7 @@ function formatMarkdownReport(data: ParsedLintData): string {
 
   const sortedFiles = Object.entries(data.fileErrors).sort((a, b) => b[1].length - a[1].length);
   for (const [file, errors] of sortedFiles) {
-    md += `### 📄 [${file}](${file.split('\\').join('/')}) (${errors.length} errores)\n`;
+    md += `### 📄 [${file}](${file.replaceAll(path.win32.sep, path.posix.sep)}) (${errors.length} errores)\n`;
     md += `| Línea | Regla | Mensaje |\n`;
     md += `| :--- | :--- | :--- |\n`;
     const visibleErrors = errors.slice(0, MAX_REPORT_ERRORS_PER_FILE_LIMIT);

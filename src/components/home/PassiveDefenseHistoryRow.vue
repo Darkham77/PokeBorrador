@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
-import type { PassiveBattleReport } from '@/types/battle/pvp';
-import { useUIStore } from '@/stores/ui';
+
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
+import { useUIStore } from '@/stores/ui';
+import type { PassiveBattleReport } from '@/types/battle/pvp';
 
 interface Props {
   report: PassiveBattleReport;
@@ -63,7 +64,7 @@ const formattedDate = computed(() => {
   }
 });
 
-function handleViewTrainerProfile() {
+function handleViewTrainerProfile(): void {
   const rep = props.report;
   const targetId = rep.opponent_profile?.id || rep.opponent_id;
   if (targetId && targetId !== 'local_user') {

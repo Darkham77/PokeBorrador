@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
-import ChatBattleCodeBadge from './ChatBattleCodeBadge.vue';
-import { formatChatTimestamp } from '@/logic/utils/timeUtils.ts';
 import { BATTLE_CODE_REGEX } from '@/logic/constants/gameplay.ts';
-import type { ChatMessage } from '@/stores/social/chatPrivate.ts';
+import { formatChatTimestamp } from '@/logic/utils/timeUtils.ts';
 import type { ProfileCacheItem } from '@/stores/social/chatCosmetics.ts';
+import type { ChatMessage } from '@/stores/social/chatPrivate.ts';
+
+import ChatBattleCodeBadge from './ChatBattleCodeBadge.vue';
 
 const {
   msg,

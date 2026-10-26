@@ -9,10 +9,16 @@
  * 5. Multi-Engine Database Persistence Parity across SQLite and PostgreSQL (describeWithDatabase).
  */
 
-import { it, expect, beforeAll } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
 import crypto from 'node:crypto';
-import { describeWithDatabase } from '../../dbTestHelper.ts';
+
+import { setActivePinia, createPinia } from 'pinia';
+import { it, expect, beforeAll } from 'vite-plus/test';
+
+import { requirePokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
+import { deserializePokemonTeam } from '../../../src/logic/auth/savePokemonSerializer.ts';
+import { validateAndSanitize } from '../../../src/logic/auth/saveSanitizer.ts';
+import { serializeState } from '../../../src/logic/auth/saveSerializer.ts';
+import { DEFAULT_FRIENDSHIP_VALUE } from '../../../src/logic/constants/gameplay.ts';
 import {
   clampFriendship,
   resolveFriendshipSealTier,
@@ -21,15 +27,11 @@ import {
   getFriendshipTooltipDetails,
   applyFriendshipDelta
 } from '../../../src/logic/pokemon/friendshipLogic.ts';
-import { FRIENDSHIP_BOUNDS } from '../../../src/types/pokemon/friendship.ts';
-import { DEFAULT_FRIENDSHIP_VALUE } from '../../../src/logic/constants/gameplay.ts';
 import { makePokemon } from '../../../src/logic/pokemon/pokemonFactory.ts';
-import { serializeState } from '../../../src/logic/auth/saveSerializer.ts';
-import { deserializePokemonTeam } from '../../../src/logic/auth/savePokemonSerializer.ts';
-import { validateAndSanitize } from '../../../src/logic/auth/saveSanitizer.ts';
 import { INITIAL_STATE } from '../../../src/stores/gameInitialState.ts';
-import { requirePokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
+import { FRIENDSHIP_BOUNDS } from '../../../src/types/pokemon/friendship.ts';
 import type { GameState } from '../../../src/types/system/game.ts';
+import { describeWithDatabase } from '../../dbTestHelper.ts';
 
 describeWithDatabase('Friendship Lifecycle & Persistence Parity Suite', (_engine, getDb) => {
   beforeAll(() => {

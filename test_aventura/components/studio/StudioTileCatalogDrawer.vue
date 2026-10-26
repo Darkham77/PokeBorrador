@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+
+import { defaultPrefabsRegistry, type PrefabItem } from '../../logic/map/prefabsRegistry';
 import { useMapAdventureStudioStore } from '../../stores/mapAdventureStudio';
 import { CELL_BIOME, type CellBiomeType } from '../../types/map/kantoGridModel';
-import { defaultPrefabsRegistry, type PrefabItem } from '../../logic/map/prefabsRegistry';
 
 const adventureStore = useMapAdventureStudioStore();
 

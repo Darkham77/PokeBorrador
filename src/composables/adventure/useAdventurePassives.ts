@@ -1,4 +1,5 @@
-import { computed, type Ref } from 'vue';
+import { computed, type ComputedRef, type Ref } from 'vue';
+
 import type { AbilityId } from '@/data/battle/abilities';
 import type { ItemId } from '@/data/inventory/items';
 
@@ -35,9 +36,25 @@ const ADVENTURE_PASSIVES: Partial<
   }
 };
 
+export interface UseAdventurePassivesReturn {
+  activeTeamPassives: ComputedRef<{
+    speedBonus: number;
+    lootBonus: number;
+    natureSync: boolean;
+    list: { label: string; desc: string }[];
+  }>;
+  triggerExtraLoot: (
+    itemId: ItemId,
+    defaultQty: number | undefined,
+    inventoryStore: { addItem: (id: ItemId, qty: number) => void },
+    injectedItems: Ref<Set<ItemId>>,
+    travelLog: Ref<string[]>
+  ) => void;
+}
+
 export function useAdventurePassives(gameStore: {
   state: { team?: Array<{ hp: number; ability?: AbilityId } | null> };
-}) {
+}): UseAdventurePassivesReturn {
   const activeTeamPassives = computed(() => {
     const team = gameStore.state.team || [];
     let speedBonus = 0;
@@ -77,7 +94,7 @@ export function useAdventurePassives(gameStore: {
     inventoryStore: { addItem: (id: ItemId, qty: number) => void },
     injectedItems: Ref<Set<ItemId>>,
     travelLog: Ref<string[]>
-  ) {
+  ): void {
     const lootBonus = activeTeamPassives.value.lootBonus;
     if (lootBonus > 0 && Math.random() < lootBonus) {
       inventoryStore.addItem(itemId, defaultQty);

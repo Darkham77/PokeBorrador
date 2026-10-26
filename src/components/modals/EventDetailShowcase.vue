@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from 'vue';
 import { gsap } from 'gsap';
+import { ref, computed, watch, onUnmounted } from 'vue';
+
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
 import PVTooltip from '@/components/common/PVTooltip.vue';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 interface Props {
   bannerUrl?: string | null;
@@ -27,7 +28,7 @@ const emit = defineEmits<{
 const currentSpeciesIndex = ref(0);
 let cycleTween: gsap.core.Tween | null = null;
 
-const startSpeciesCycle = () => {
+const startSpeciesCycle = (): void => {
   if (cycleTween) {
     cycleTween.kill();
     cycleTween = null;
@@ -62,7 +63,7 @@ const currentSpecies = computed<PokemonSpeciesId | null>(() => {
   return props.involvedSpecies[currentSpeciesIndex.value] || props.involvedSpecies[0] || null;
 });
 
-function handleSpeciesClick() {
+function handleSpeciesClick(): void {
   if (currentSpecies.value) {
     emit('selectSpecies', currentSpecies.value);
   }

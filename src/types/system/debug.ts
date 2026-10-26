@@ -1,14 +1,16 @@
+import type { DisplayText } from '@francogp/auditor';
+
 export interface DebugTool {
-  id: string; // domain-ok: Open dynamic text or non-domain string payload
-  command: string; // domain-ok: Open dynamic text or non-domain string payload
+  id: DisplayText;
+  command: DisplayText;
   action: (...args: never[]) => unknown;
-  label?: string; // domain-ok: Open dynamic text or non-domain string payload
-  category?: string; // domain-ok: Open dynamic text or non-domain string payload
-  description?: string; // domain-ok: Open dynamic text or non-domain string payload
+  label?: DisplayText;
+  category?: DisplayText;
+  description?: DisplayText;
 }
 
 export interface DebugSystem {
   register: (config: DebugTool) => void;
-  unregister?: (id: string) => void;
+  unregister?: (id: DisplayText) => void;
   fastRankedDelay?: boolean;
 }

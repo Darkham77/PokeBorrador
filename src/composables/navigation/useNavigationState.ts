@@ -1,18 +1,21 @@
-import { computed } from 'vue';
+import type { DisplayText } from '@francogp/auditor';
 import { gsap } from 'gsap';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
-import { useSocialStore } from '@/stores/social/social';
-import { useModalStore } from '@/stores/modals';
-import { useGTSStore } from '@/stores/gts';
-import { useBreedingStore } from '@/stores/breeding';
-import { useGymsStore } from '@/stores/gyms';
-import { getItemById, isItemId } from '@/data/inventory/items';
+import { computed, type ComputedRef, type WritableComputedRef } from 'vue';
+
 import { useUnifiedRewards } from '@/composables/rewards/useUnifiedRewards';
-import { categorizeHomeRewards, formatHomeTooltip } from './homeTooltipFormatter.ts';
+import { getItemById, isItemId } from '@/data/inventory/items';
+import { useBreedingStore } from '@/stores/breeding';
+import { useGameStore } from '@/stores/game';
+import { useGTSStore } from '@/stores/gts';
+import { useGymsStore } from '@/stores/gyms';
+import { useModalStore } from '@/stores/modals';
+import { useSocialStore } from '@/stores/social/social';
+import { useUIStore } from '@/stores/ui';
 import type { ClaimItem } from '@/types/system/game';
 
-const TAB_MODAL_MAP: Readonly<Record<string, string>> = {
+import { categorizeHomeRewards, formatHomeTooltip } from './homeTooltipFormatter.ts';
+
+const TAB_MODAL_MAP: Readonly<Record<DisplayText, string>> = {
   // open-record: Navigation tab to modal name mapping
   bag: 'Inventory',
   market: 'Shop',
@@ -53,7 +56,34 @@ const HUD_NAV_TRANSFORM_ORIGIN_CENTER = '50% 50%';
 const NAV_ENTER_ANIM_DURATION_SEC = 0.2;
 const NAV_LEAVE_ANIM_DURATION_SEC = 0.15;
 
-export function useNavigationState() {
+export interface UseNavigationStateReturn {
+  gameStore: ReturnType<typeof useGameStore>;
+  uiStore: ReturnType<typeof useUIStore>;
+  socialStore: ReturnType<typeof useSocialStore>;
+  modalStore: ReturnType<typeof useModalStore>;
+  gtsStore: ReturnType<typeof useGTSStore>;
+  breedingStore: ReturnType<typeof useBreedingStore>;
+  gymsStore: ReturnType<typeof useGymsStore>;
+  activeTab: WritableComputedRef<string>;
+  totalHomeNotifications: ComputedRef<number>;
+  homeTooltipDescription: ComputedRef<string>;
+  totalSocialNotifications: ComputedRef<number>;
+  tradeClaimsCount: ComputedRef<number>;
+  mochilaTooltipDescription: ComputedRef<string>;
+  gymRematchesCount: ComputedRef<number>;
+  medalsBreakdown: ComputedRef<string>;
+  crianzaBadgeValue: ComputedRef<number>;
+  eggsBreakdown: ComputedRef<string>;
+  handleMouseEnter: (group: string) => void;
+  handleMouseLeave: (group: string) => void;
+  handleTabChange: (tab: string, event?: Event) => void;
+  toggleGroupMenu: (group: string) => void;
+  beforeEnter: (el: Element, position?: string) => void;
+  enter: (el: Element, done: () => void) => void;
+  leave: (el: Element, position?: string, done?: () => void) => void;
+}
+
+export function useNavigationState(): UseNavigationStateReturn {
   const gameStore = useGameStore();
   const uiStore = useUIStore();
   const socialStore = useSocialStore();
@@ -110,7 +140,7 @@ export function useNavigationState() {
     const inventory = gameStore.state.inventory || {};
     return Object.entries(inventory)
       .map(([name, qty]) => {
-        const count = qty as number;
+        const count = qty;
         if (count <= 0) return null;
         const found = isItemId(name) ? getItemById(name) : null;
         if (found?.cat === 'pokeballs' || name.toLowerCase().includes('ball')) {
@@ -126,7 +156,7 @@ export function useNavigationState() {
     const list: { name: string; qty: number; tier: number; icon: string }[] = [];
 
     for (const [key, qty] of Object.entries(inventory)) {
-      const count = qty as number;
+      const count = qty;
       if (count <= 0) continue;
       const found = isItemId(key) ? getItemById(key) : null;
       if (found) {
@@ -267,21 +297,21 @@ export function useNavigationState() {
     return lines.join('\n');
   });
 
-  const handleMouseEnter = (group: string) => {
-    if (window.matchMedia('(hover: hover)').matches) {
+  const handleMouseEnter = (group: string): void => {
+    if (globalThis.matchMedia('(hover: hover)').matches) {
       uiStore.openHudGroup = group;
     }
   };
 
-  const handleMouseLeave = (group: string) => {
-    if (window.matchMedia('(hover: hover)').matches) {
+  const handleMouseLeave = (group: string): void => {
+    if (globalThis.matchMedia('(hover: hover)').matches) {
       if (uiStore.openHudGroup === group) {
         uiStore.openHudGroup = null;
       }
     }
   };
 
-  const handleTabChange = (tab: string, _event?: Event) => {
+  const handleTabChange = (tab: string, _event?: Event): void => {
     const modalName = TAB_MODAL_MAP[tab];
     if (modalName) {
       modalStore.open(modalName);
@@ -299,11 +329,11 @@ export function useNavigationState() {
     uiStore.openHudGroup = null;
   };
 
-  const toggleGroupMenu = (name: string) => {
+  const toggleGroupMenu = (name: string): void => {
     uiStore.toggleHudGroup(name);
   };
 
-  const beforeEnter = (el: Element, position: string = 'top') => {
+  const beforeEnter = (el: Element, position: string = 'top'): void => {
     gsap.killTweensOf(el);
     gsap.set(el, {
       opacity: 0,
@@ -314,7 +344,7 @@ export function useNavigationState() {
     });
   };
 
-  const enter = (el: Element, done: () => void) => {
+  const enter = (el: Element, done: () => void): void => {
     gsap.killTweensOf(el);
     gsap.to(el, {
       opacity: 1,
@@ -326,7 +356,7 @@ export function useNavigationState() {
     });
   };
 
-  const leave = (el: Element, position: string = 'top', done?: () => void) => {
+  const leave = (el: Element, position: string = 'top', done?: () => void): void => {
     gsap.killTweensOf(el);
     gsap.to(el, {
       opacity: 0,

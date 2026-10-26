@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 import { type Page, type Locator, expect } from '@playwright/test';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 import { clickResilient } from './e2eLogger.ts';
@@ -29,7 +30,7 @@ export async function waitForStoreReady(
 }
 
 export async function openDebugTab(page: Page, category: string): Promise<void> {
-  const categoryMap: Record<string, string> = {
+  const categoryMap: Record<DisplayText, string> = {
     entren: 'trainers',
     entrenadores: 'trainers',
     tiempo: 'time',
@@ -91,8 +92,8 @@ export async function playSingleFishingNote(
       noteId,
       { timeout: MAX_PER_ACTION_TIMEOUT_MS }
     );
-  } catch {
-    // catch-ok: transition timeout, proceed to click attempt
+  } catch (err) {
+    err;
   }
   try {
     await note.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });

@@ -56,19 +56,19 @@ function sampleSurroundingTerrain(
       for (let dx = -rad; dx <= rad; dx++) {
         const x = cell.x + dx;
         const y = cell.y + dy;
-        if (x >= 0 && x < W && y >= 0 && y < H) {
-          sampleCount++;
-          const terrain = continent.terrainMatrix[y]?.[x];
-          const elev = continent.heightmap[y]?.[x] ?? 0;
-          const biome = continent.macroBiomes?.biomeGrid[y]?.[x];
+        if (x < 0 || x >= W || y < 0 || y >= H) continue;
 
-          if (elev > 0) {
-            mountainCount++;
-          } else if (terrain === 'water' || terrain === 'water_deep') {
-            waterCount++;
-          } else if (biome === 'viridian_forest') {
-            forestCount++;
-          }
+        sampleCount++;
+        const terrain = continent.terrainMatrix[y]?.[x];
+        const elev = continent.heightmap[y]?.[x] ?? 0;
+        const biome = continent.macroBiomes?.biomeGrid[y]?.[x];
+
+        if (elev > 0) {
+          mountainCount++;
+        } else if (terrain === 'water' || terrain === 'water_deep') {
+          waterCount++;
+        } else if (biome === 'viridian_forest') {
+          forestCount++;
         }
       }
     }

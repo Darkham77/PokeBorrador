@@ -10,7 +10,6 @@
  *   4. Intelligent Stair Candidate Detection and stamping connecting elevation tiers.
  */
 
-import { SimplexNoise, fbm2DNormalized } from './noise/simplexNoise.ts';
 import { sanitizeHeightmapMatrix } from './heightmapConstraints.ts';
 import {
   resolveMountainMapGrid,
@@ -18,6 +17,7 @@ import {
   type MountainPalette,
   type MountainStairLocation
 } from './mountainAutotileEngine.ts';
+import { SimplexNoise, fbm2DNormalized } from './noise/simplexNoise.ts';
 
 export interface OrganicMountainOptions {
   readonly width: number;

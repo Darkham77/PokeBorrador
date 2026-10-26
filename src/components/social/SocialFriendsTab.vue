@@ -1,15 +1,17 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
+import { gsap } from 'gsap';
 import { computed, onMounted, ref, watch, nextTick } from 'vue';
-import { useSocialStore } from '@/stores/social/social';
+
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { useModalStore } from '@/stores/modals';
 import { useChatStore } from '@/stores/social/chat';
+import { useSocialStore } from '@/stores/social/social';
+import type { Friend } from '@/stores/social/social';
 import { useTradeStore } from '@/stores/trade';
 import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
-import TrainerCard from './TrainerCard.vue';
-import PVTooltip from '@/components/common/PVTooltip.vue';
-import { gsap } from 'gsap';
 
-import type { Friend } from '@/stores/social/social';
+import TrainerCard from './TrainerCard.vue';
 
 const FRIEND_CARD_INITIAL_OPACITY = 0;
 const FRIEND_CARD_INITIAL_X_OFFSET = -20;
@@ -23,11 +25,11 @@ const tradeStore = useTradeStore();
 const uiStore = useUIStore();
 const modalStore = useModalStore();
 
-function openTrainerProfile(userId: string) {
+function openTrainerProfile(userId: string): void {
   uiStore.open('TrainerProfile', { userId });
 }
 
-function openPvPChallenge(friend: Friend) {
+function openPvPChallenge(friend: Friend): void {
   modalStore.open('PvPChallenge', { friend });
 }
 
@@ -35,23 +37,23 @@ const listRef = ref<HTMLElement | null>(null);
 
 const filteredFriends = computed(() => socialStore.friends);
 
-function openChat(friend: Friend) {
+function openChat(friend: Friend): void {
   chatStore.openChat(friend.id, friend.username);
 }
 
-function isChatActive(friendId: string) {
-  return (
+function isChatActive(friendId: string): boolean {
+  return Boolean(
     chatStore.activeChatId === friendId &&
     chatStore.privateChats[friendId] &&
     !chatStore.privateChats[friendId].isCollapsed
   );
 }
 
-function openTrade(friend: Friend) {
+function openTrade(friend: Friend): void {
   tradeStore.openTradeModal(friend.id, friend.username);
 }
 
-function confirmRemoveFriend(friend: Friend) {
+function confirmRemoveFriend(friend: Friend): void {
   uiStore.openConfirm({
     title: 'ELIMINAR AMIGO',
     message: `¿Estás seguro de que querés eliminar a ${friend.username} de tu lista de amigos?`,
@@ -64,11 +66,11 @@ function confirmRemoveFriend(friend: Friend) {
   });
 }
 
-const getUnreadCount = (friendId: string | number) => {
-  return chatStore.privateChats[friendId]?.unreadCount || 0;
+const getUnreadCount = (friendId: string | number): number => {
+  return chatStore.privateChats[String(friendId) as DisplayText]?.unreadCount || 0;
 };
 
-function animateCards() {
+function animateCards(): void {
   nextTick(() => {
     if (!listRef.value) return;
     const cards = listRef.value.querySelectorAll('.trainer-card');

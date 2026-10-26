@@ -1,14 +1,14 @@
-import { useGameStore } from '@/stores/game.ts';
 import { getItemById, requireItemId, isItemId, type ItemId } from '@/data/inventory/items';
 import { itemEffects as ITEM_EFFECTS, getDynamicItemEffect } from '@/logic/items/itemEffects';
 import { isGlobalItem } from '@/logic/providers/itemProvider.ts';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { useGameStore } from '@/stores/game.ts';
 import type {
   Inventory,
   Item as ItemData,
   ItemCategory,
   BagMainTab
 } from '@/types/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, id: ItemId): ItemId | null {
   // domain-ok: Open dynamic text or non-domain string payload
@@ -28,7 +28,7 @@ export function clonePokemonForSimulation(pokemon: Pokemon): Pokemon {
   };
 }
 
-export function isItemUsableOn(itemId: ItemId, pokemon: Pokemon) {
+export function isItemUsableOn(itemId: ItemId, pokemon: Pokemon): boolean {
   if (!pokemon) return false;
 
   if (isGlobalItem(itemId)) return false;
@@ -58,7 +58,7 @@ export function isItemUsableOn(itemId: ItemId, pokemon: Pokemon) {
   }
 
   const dynamicRes = getDynamicItemEffect(itemId, p);
-  return dynamicRes && dynamicRes.success;
+  return Boolean(dynamicRes && dynamicRes.success);
 }
 
 export function isEquippableHeldItem(item: Pick<ItemData, 'cat' | 'id'>): boolean {
@@ -68,7 +68,7 @@ export function isEquippableHeldItem(item: Pick<ItemData, 'cat' | 'id'>): boolea
   );
 }
 
-export function consumeItem(gameStore: ReturnType<typeof useGameStore>, itemId: ItemId) {
+export function consumeItem(gameStore: ReturnType<typeof useGameStore>, itemId: ItemId): void {
   const inv = gameStore.state.inventory;
   if (!inv) return;
   const actualKey = findInventoryKey(gameStore, itemId);
@@ -95,6 +95,22 @@ export function getItemTier(item: ItemTierQuery): number {
   return 3;
 }
 
+const AUTO_SORT_CATEGORY_VALUES = [
+  'potions',
+  'pokeballs',
+  'stones',
+  'combat_held',
+  'breeding_held',
+  'tools',
+  'tms'
+] as const;
+const AUTO_SORT_CATEGORIES: ReadonlySet<string> = new Set<string>(AUTO_SORT_CATEGORY_VALUES);
+
+const USABLE_OUTSIDE_COMBAT_CAT_VALUES = ['potions', 'stones', 'tools'] as const;
+const USABLE_OUTSIDE_COMBAT_CATS: ReadonlySet<string> = new Set<string>(
+  USABLE_OUTSIDE_COMBAT_CAT_VALUES
+);
+
 export function isItemProduct(item: ItemData): boolean {
   if (getItemTier(item) === 3) return true;
 
@@ -107,15 +123,7 @@ export function isItemProduct(item: ItemData): boolean {
     }
   }
 
-  if (
-    cat === 'potions' ||
-    cat === 'pokeballs' ||
-    cat === 'stones' ||
-    cat === 'combat_held' ||
-    cat === 'breeding_held' ||
-    cat === 'tools' ||
-    cat === 'tms'
-  ) {
+  if (cat && AUTO_SORT_CATEGORIES.has(cat)) {
     return true;
   }
 
@@ -236,7 +244,7 @@ export function isItemUsableOutsideCombat(
   if (id && id.startsWith('tm')) return true;
   if (kind === 'usable') return true;
 
-  if (cat === 'potions' || cat === 'stones' || isEquippableHeldItem(item) || cat === 'tools') {
+  if ((cat && USABLE_OUTSIDE_COMBAT_CATS.has(cat)) || isEquippableHeldItem(item)) {
     return true;
   }
 

@@ -1,7 +1,8 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import TeamManagementModal from '@/components/modals/TeamManagementModal.vue';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';

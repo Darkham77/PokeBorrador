@@ -1,8 +1,10 @@
-import { watch, type Ref, nextTick, computed, onMounted, onUnmounted } from 'vue';
 import { gsap } from 'gsap';
+import { watch, type Ref, nextTick, computed, onMounted, onUnmounted } from 'vue';
+
+import { isFlying } from '@/composables/battle/useBattleShadows';
 import { gameBus } from '@/logic/events/gameBus';
 import type { BattleCombatantProps } from '@/types/battle/battle';
-import { isFlying } from '@/composables/battle/useBattleShadows';
+
 import { buildFaintTimeline, buildAttackTimeline } from './helpers/combatantActionAnims.ts';
 import {
   animateCombatantEmerging,
@@ -15,7 +17,6 @@ import {
   togglePokeballCaptureSuccess,
   prepareBallTransition
 } from './helpers/combatantFeedbackAnims.ts';
-
 import { isIdleSuppressed, runCombatantIdleAnimation } from './helpers/combatantIdleAnims.ts';
 
 export function useBattleCombatantAnims(
@@ -28,7 +29,7 @@ export function useBattleCombatantAnims(
   getSpriteFeetOrigin: () => string,
   getBallTargetCoords: () => { x: number; y: number },
   wasCaptured: Ref<boolean>
-) {
+): void {
   let successBlinkTween: gsap.core.Tween | null = null;
   let idleTween: gsap.core.Tween | null = null;
 
@@ -37,7 +38,7 @@ export function useBattleCombatantAnims(
     return isFlying(props.pokemon);
   });
 
-  const initIdleAnim = () => {
+  const initIdleAnim = (): void => {
     const el = idleWrapperRef.value;
     const poke = props.pokemon;
     if (!el || !poke) return;
@@ -65,7 +66,7 @@ export function useBattleCombatantAnims(
   });
 
   let activeBallAnim: string | null = null;
-  const resetActiveBall = () => {
+  const resetActiveBall = (): void => {
     activeBallAnim = null;
   };
 
@@ -79,7 +80,7 @@ export function useBattleCombatantAnims(
     return true;
   };
 
-  const triggerBallAnimation = (val: string | null) => {
+  const triggerBallAnimation = (val: string | null): void => {
     const sprite = spriteRef.value;
     if (!val || (val !== 'catching' && val !== 'releasing')) {
       if (val !== 'trapped') {
@@ -101,7 +102,7 @@ export function useBattleCombatantAnims(
 
   watch(
     () => props.animState,
-    (val) => {
+    async (val) => {
       const sprite = spriteRef.value;
       if ((val === 'releasing' || val === 'catching') && sprite) {
         const origin = getSpriteFeetOrigin();
@@ -114,7 +115,8 @@ export function useBattleCombatantAnims(
           coords,
           val === 'releasing'
         );
-        void nextTick(() => triggerBallAnimation(val));
+        await nextTick();
+        triggerBallAnimation(val);
       } else {
         if (val !== 'trapped') {
           resetActiveBall();
@@ -124,9 +126,10 @@ export function useBattleCombatantAnims(
     { immediate: true }
   );
 
-  watch(spriteRef, (newEl) => {
+  watch(spriteRef, async (newEl) => {
     if (newEl && (props.animState === 'catching' || props.animState === 'releasing')) {
-      void nextTick(() => triggerBallAnimation(props.animState ?? null));
+      await nextTick();
+      triggerBallAnimation(props.animState ?? null);
     }
   });
 
@@ -238,7 +241,7 @@ export function useBattleCombatantAnims(
     }
   );
 
-  const onRecoilEvent = (e: Event) => {
+  const onRecoilEvent = (e: Event): void => {
     const data = (e as CustomEvent).detail as { side?: string } | undefined;
     if (data?.side === props.side && spriteRef.value) {
       animateCombatantRecoil(spriteRef.value, props.side === 'player');

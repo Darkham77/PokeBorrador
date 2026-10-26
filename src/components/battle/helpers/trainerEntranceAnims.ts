@@ -1,6 +1,6 @@
 import { gsap } from 'gsap';
 import type { Ref } from 'vue';
-import type { useAudioStore } from '@/stores/audio';
+
 import {
   RIVAL_ALERT_FLICKER_DURATION_SEC,
   RIVAL_ALERT_FLICKER_REPEAT_COUNT,
@@ -18,6 +18,8 @@ import {
   TRAINER_EXIT_X_OFFSET_PX
 } from '@/logic/constants/animations';
 import { OPACITY_ZERO } from '@/logic/constants/visuals';
+import { logger } from '@/logic/utils/logger.ts';
+import type { useAudioStore } from '@/stores/audio';
 
 const RIVAL_EXCLAMATION_FADE_OUT_SCALE = 0.5;
 const RIVAL_TRAINER_SLIDE_DELAY_SEC = 1.2;
@@ -46,7 +48,9 @@ export function playTrainerAnimation(
     gsap.killTweensOf(el);
     if (isRival) {
       if (audioStore && typeof audioStore.play === 'function') {
-        void audioStore.play('rival');
+        audioStore.play('rival').catch((err) => {
+          logger.warn('Handled promise rejection:', { cause: err });
+        });
       }
       showRivalAlert.value = true;
 
@@ -157,7 +161,9 @@ export function playTrainerAnimation(
     });
   } else if (newState === 'exiting') {
     if (isRocket && audioStore && typeof audioStore.play === 'function') {
-      void audioStore.play('flee');
+      audioStore.play('flee').catch((err) => {
+        logger.warn('Handled promise rejection:', { cause: err });
+      });
     }
     gsap.to(el, {
       x: `+=${TRAINER_EXIT_X_OFFSET_PX}`,

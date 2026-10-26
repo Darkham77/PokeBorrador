@@ -4,15 +4,17 @@
  * Tier 1 Unit Test: Validates the procedural map generator engine and layer integrity.
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import { describe, it, expect, beforeAll } from 'vitest';
+
+import { ProceduralMapGenerator } from '../../logic/map/proceduralMapGenerator.ts';
 import {
   TilesRegistryService,
   loadTilesRegistry,
   type TilesRegistryJson
 } from '../../logic/map/tilesRegistry.ts';
-import { ProceduralMapGenerator } from '../../logic/map/proceduralMapGenerator.ts';
 
 describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
   let registryService: TilesRegistryService;

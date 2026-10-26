@@ -11,11 +11,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
+import { validateHeightmapConstraints } from '../../logic/map/heightmapConstraints.ts';
 import {
   generateOrganicHeightmap,
   generateOrganicMountainMap
 } from '../../logic/map/organicMountainGenerator.ts';
-import { validateHeightmapConstraints } from '../../logic/map/heightmapConstraints.ts';
 
 describe('organicMountainGenerator', () => {
   describe('generateOrganicHeightmap', () => {

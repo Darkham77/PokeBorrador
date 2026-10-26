@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+
+import PokemonSelectionFilters from '@/components/modals/PokemonSelectionFilters.vue';
+import type { PokemonTagId } from '@/logic/constants/tags';
+import { GTS_ITEMS_PER_PAGE, type MarketListingType } from '@/logic/economy/market';
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils.ts';
 import { useGameStore } from '@/stores/game';
 import { useGTSStore } from '@/stores/gts';
-import PokemonSelectionItem from '../modals/PokemonSelectionItem.vue';
-import PokemonSelectionFilters from '@/components/modals/PokemonSelectionFilters.vue';
-import MarketItemFilters from './MarketItemFilters.vue';
-import MarketItemCard from './MarketItemCard.vue';
-import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils.ts';
-import { GTS_ITEMS_PER_PAGE, type MarketListingType } from '@/logic/economy/market';
-import type { SortOrder, ItemSortKey } from '@/types/system/game';
-import type { PokemonTagId } from '@/logic/constants/tags';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { SortOrder, ItemSortKey } from '@/types/system/game';
+
+import PokemonSelectionItem from '../modals/PokemonSelectionItem.vue';
+import MarketItemCard from './MarketItemCard.vue';
+import MarketItemFilters from './MarketItemFilters.vue';
 import type { InventoryItem } from './useMarketPublishInventory.ts';
-import { useMarketPublishPokemon } from './useMarketPublishPokemon.ts';
 import { useMarketPublishInventory } from './useMarketPublishInventory.ts';
+import { useMarketPublishPokemon } from './useMarketPublishPokemon.ts';
 
 interface Props {
   activeMode: MarketListingType;
@@ -109,7 +111,7 @@ const activeTotalPages = computed(() =>
   props.activeMode === 'pokemon' ? totalPokemonPages.value : totalItemPages.value
 );
 
-function handlePrevPage() {
+function handlePrevPage(): void {
   if (props.activeMode === 'pokemon') {
     if (pokemonPage.value > 1) pokemonPage.value--;
   } else {
@@ -117,7 +119,7 @@ function handlePrevPage() {
   }
 }
 
-function handleNextPage() {
+function handleNextPage(): void {
   if (props.activeMode === 'pokemon') {
     if (pokemonPage.value < totalPokemonPages.value) pokemonPage.value++;
   } else {

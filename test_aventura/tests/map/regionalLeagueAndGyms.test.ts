@@ -12,6 +12,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
@@ -35,10 +36,14 @@ describe('regionalLeagueAndGyms', () => {
 
   const pois = placeRegionalPOIs(continent, { targetCount: 22, seed });
 
+  const SETTLEMENT_TYPE_LIST = ['metropolis', 'city', 'town'] as const;
+  type SettlementType = (typeof SETTLEMENT_TYPE_LIST)[number];
+  const SETTLEMENT_TYPES: ReadonlySet<SettlementType> = new Set<SettlementType>(
+    SETTLEMENT_TYPE_LIST
+  );
+
   it('guarantees at least 8 settlements are placed on regional maps', () => {
-    const settlements = pois.filter(
-      (p) => p.type === 'metropolis' || p.type === 'city' || p.type === 'town'
-    );
+    const settlements = pois.filter((p) => SETTLEMENT_TYPES.has(p.type as SettlementType));
     expect(settlements.length).toBeGreaterThanOrEqual(8);
   });
 

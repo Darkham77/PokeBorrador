@@ -1,15 +1,16 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { generateEncounter } from '@/logic/encounters/encounters';
-import { buildTrainerEncounter } from '@/logic/battle/trainerSpawner';
-import { terminateBattle } from '@/logic/battle/resolution';
-import { useGameStore } from '@/stores/game';
-import { useBoxStore } from '@/stores/box';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
-import type { BattleContext } from '@/types/battle/battleContext';
-import type { BattleState } from '@/types/battle/battle';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import { requireMapRouteId } from '@/data/world/map-assets';
+import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
+import { terminateBattle } from '@/logic/battle/resolution';
+import { buildTrainerEncounter } from '@/logic/battle/trainerSpawner';
+import { generateEncounter } from '@/logic/encounters/encounters';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { useBoxStore } from '@/stores/box';
+import { useGameStore } from '@/stores/game';
+import type { BattleState } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
 
 vi.mock('gsap', () => ({
   default: {

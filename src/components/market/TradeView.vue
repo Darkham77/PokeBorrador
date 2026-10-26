@@ -1,16 +1,18 @@
 <script setup lang="ts">
+import { gsap } from 'gsap';
 import { ref, computed, watch, nextTick, onUnmounted } from 'vue';
+
+import BaseModal from '@/components/common/BaseModal.vue';
+import { getItemById } from '@/data/inventory/items';
+import { isPokemonBusy } from '@/logic/constants/tags';
 import { useGameStore } from '@/stores/game';
 import { useTradeStore } from '@/stores/trade';
 import { useUIStore } from '@/stores/ui';
-import BaseModal from '@/components/common/BaseModal.vue';
-import TradeSidePanel from '../social/TradeSidePanel.vue';
-import TradeFooter from '../social/TradeFooter.vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { Inventory } from '@/types/inventory/items';
-import { gsap } from 'gsap';
-import { getItemById } from '@/data/inventory/items';
-import { isPokemonBusy } from '@/logic/constants/tags';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import TradeFooter from '../social/TradeFooter.vue';
+import TradeSidePanel from '../social/TradeSidePanel.vue';
 
 interface Props {
   show?: boolean;
@@ -52,7 +54,7 @@ const offerMoney = ref(0);
 const requestMoney = ref(0);
 const message = ref('');
 
-const openSelector = (side: string) => {
+const openSelector = (side: string): void => {
   if (side === 'offer') {
     const team = (gs.value.team || []).filter((p): p is Pokemon => p !== null && !isPokemonBusy(p));
     const box = ((gs.value.box as (Pokemon | null)[]) || []).filter(
@@ -93,14 +95,14 @@ const openSelector = (side: string) => {
   }
 };
 
-const closeTrade = () => {
+const closeTrade = (): void => {
   if (isSending.value) return;
   emit('close');
 };
 
 import type { ItemId } from '@/data/inventory/items';
 
-const toggleOfferItem = (itemId: ItemId) => {
+const toggleOfferItem = (itemId: ItemId): void => {
   if (tradeStore.tradeOfferItems[itemId]) {
     delete tradeStore.tradeOfferItems[itemId];
   } else {
@@ -108,7 +110,7 @@ const toggleOfferItem = (itemId: ItemId) => {
   }
 };
 
-const updateOfferItemQty = (itemId: ItemId, qty: number) => {
+const updateOfferItemQty = (itemId: ItemId, qty: number): void => {
   if (qty <= 0) {
     delete tradeStore.tradeOfferItems[itemId];
   } else {
@@ -116,7 +118,7 @@ const updateOfferItemQty = (itemId: ItemId, qty: number) => {
   }
 };
 
-const toggleRequestItem = (itemId: ItemId) => {
+const toggleRequestItem = (itemId: ItemId): void => {
   if (tradeStore.tradeRequestItems[itemId]) {
     delete tradeStore.tradeRequestItems[itemId];
   } else {
@@ -124,7 +126,7 @@ const toggleRequestItem = (itemId: ItemId) => {
   }
 };
 
-const updateRequestItemQty = (itemId: ItemId, qty: number) => {
+const updateRequestItemQty = (itemId: ItemId, qty: number): void => {
   if (qty <= 0) {
     delete tradeStore.tradeRequestItems[itemId];
   } else {
@@ -132,7 +134,7 @@ const updateRequestItemQty = (itemId: ItemId, qty: number) => {
   }
 };
 
-const handleSend = async () => {
+const handleSend = async (): Promise<void> => {
   if (isSending.value) return;
   isSending.value = true;
 
@@ -154,7 +156,7 @@ const tradeGridRef = ref<HTMLElement | null>(null);
 let ctx: gsap.Context | null = null;
 
 // Entry animation using GSAP
-const animateEntry = () => {
+const animateEntry = (): void => {
   if (ctx) ctx.revert();
   ctx = gsap.context(() => {
     if (tradeSummaryRef.value) {

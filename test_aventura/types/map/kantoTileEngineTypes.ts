@@ -5,8 +5,10 @@
  * Pure domain contracts for tiles, prefabs, sheets, and world render sources.
  */
 
+import type { AssetUri, DisplayText } from '@francogp/auditor';
+
 export interface CatalogPart {
-  readonly sheet: string; // domain-ok: dynamic spritesheet filename or identifier
+  readonly sheet: AssetUri;
   readonly sx: number;
   readonly sy: number;
   readonly sw: number;
@@ -18,29 +20,29 @@ export interface CatalogPart {
 }
 
 export interface CatalogPrefab {
-  readonly id: string; // domain-ok: dynamic prefab identifier
-  readonly name?: string; // domain-ok: human readable prefab name
+  readonly id: DisplayText;
+  readonly name?: DisplayText;
   readonly width?: number;
   readonly height?: number;
   readonly parts: readonly CatalogPart[];
 }
 
 export interface CatalogAutotileLayout {
-  readonly pieces: Record<string, { sx: number; sy: number }>; // domain-ok: dynamic autotile piece key mapping
+  readonly pieces: Record<DisplayText, { sx: number; sy: number }>;
 }
 
 export interface SemanticTileCatalog {
-  readonly version: string; // domain-ok: semver catalog version string
+  readonly version: DisplayText;
   readonly tileSize: number;
-  readonly sheets: Record<string, { file: string; width: number; height: number }>; // domain-ok: dynamic sheet key mapping
-  readonly prefabs?: Record<string, Record<string, CatalogPrefab>>; // domain-ok: dynamic category and prefab hierarchy
+  readonly sheets: Record<DisplayText, { file: AssetUri; width: number; height: number }>;
+  readonly prefabs?: Record<DisplayText, Record<DisplayText, CatalogPrefab>>;
   readonly autotileLayout?: {
     standardLPC?: CatalogAutotileLayout;
   };
 }
 
 export interface PlacedStructure {
-  readonly style: string; // domain-ok: dynamic structure prefab style name
+  readonly style: DisplayText;
   readonly x: number;
   readonly y: number;
   readonly w?: number;

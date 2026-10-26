@@ -1,27 +1,28 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/components/shared/RewardPillsGroup.vue
  *
  * Reusable Retro-Modern reward pills list with item sprites,
  * interactive descriptions, and GSAP micro-animations.
  */
-
-import { computed } from 'vue';
 import { gsap } from 'gsap';
+import { computed } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 import type { UnifiedRewardPill } from '@/types/rewards/rewards';
+import type { ComponentPillSize } from '@/types/system/game';
+
 import {
   normalizeAllRewards,
   type RawPrizeData,
   type NormalizedReward
 } from './rewardPillsNormalizers';
 
-import type { ComponentPillSize } from '@/types/system/game';
-
 interface Props {
   pills?: readonly UnifiedRewardPill[] | null;
   prize?: RawPrizeData | Record<string, unknown> | null;
-  rewards?: Record<string, number> | null; // open-record: Generic rewards map
+  rewards?: Record<DisplayText, number> | null; // open-record: Generic rewards map
   size?: ComponentPillSize;
 }
 
@@ -39,7 +40,7 @@ const normalizedList = computed<NormalizedReward[]>(() => {
 // GSAP Micro-interactions
 const REWARD_PILL_HOVER_Y_PX = -2 as const;
 
-function handlePillEnter(e: MouseEvent) {
+function handlePillEnter(e: MouseEvent): void {
   gsap.to(e.currentTarget, {
     y: REWARD_PILL_HOVER_Y_PX,
     scale: 1.03,
@@ -51,7 +52,7 @@ function handlePillEnter(e: MouseEvent) {
   });
 }
 
-function handlePillLeave(e: MouseEvent) {
+function handlePillLeave(e: MouseEvent): void {
   gsap.to(e.currentTarget, {
     y: 0,
     scale: 1,

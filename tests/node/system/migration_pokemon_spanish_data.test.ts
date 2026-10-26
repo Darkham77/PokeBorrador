@@ -6,17 +6,19 @@
  * war_defenders, passive_teams).
  */
 
-import { describe, it, expect } from 'vite-plus/test';
-import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
+
 import postgres from 'postgres';
-import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
-import { CLIENT_DB_VERSION } from '../../../src/logic/db/migrations_version.ts';
-import { splitSQLStatements } from '../../../src/logic/db/sqlTranslator.ts';
+import { describe, it, expect } from 'vite-plus/test';
+
 import { requireAbilityId } from '../../../src/data/battle/abilities.ts';
 import { toNatureId } from '../../../src/data/battle/natures.ts';
 import { isItemId } from '../../../src/data/inventory/items.ts';
+import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
+import { CLIENT_DB_VERSION } from '../../../src/logic/db/migrations_version.ts';
+import { splitSQLStatements } from '../../../src/logic/db/sqlTranslator.ts';
 import { validatePokemon } from '../../../src/logic/pokemon/pokemonFactory.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 import type { GameState } from '../../../src/types/system/game.ts';

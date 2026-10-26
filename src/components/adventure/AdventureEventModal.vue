@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
 import { computed } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
 
 interface ActiveAdventureEvent {
@@ -42,7 +44,7 @@ const DEFAULT_EVENT_ACTION: Readonly<EventTypeAction> = { emoji: '⚔️', label
 const eventAction = computed<EventTypeAction>(() => {
   const type = props.activeEvent?.type;
   if (!type) return DEFAULT_EVENT_ACTION;
-  const entry = (EVENT_TYPE_ACTIONS as Record<string, EventTypeAction | undefined>)[type]; // open-record: Event type actions dictionary
+  const entry = (EVENT_TYPE_ACTIONS as Record<DisplayText, EventTypeAction | undefined>)[type]; // open-record: Event type actions dictionary
   return entry ?? DEFAULT_EVENT_ACTION;
 });
 </script>

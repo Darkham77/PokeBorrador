@@ -8,12 +8,12 @@ import { logger } from './logger.ts';
 export async function getOpfsFile(
   fileName: string,
   options: FileSystemGetFileOptions = { create: true }
-) {
+): Promise<FileSystemFileHandle> {
   const root = await navigator.storage.getDirectory();
-  return await (root as FileSystemDirectoryHandle).getFileHandle(fileName, options);
+  return await root.getFileHandle(fileName, options);
 }
 
-export async function writeOpfsFile(fileName: string, data: Uint8Array | string) {
+export async function writeOpfsFile(fileName: string, data: Uint8Array): Promise<void> {
   const handle = await getOpfsFile(fileName, { create: true });
   const writable = await handle.createWritable();
   await writable.write(data);
@@ -38,10 +38,10 @@ export async function readOpfsFile(fileName: string): Promise<Uint8Array | null>
   }
 }
 
-export async function deleteOpfsFile(fileName: string) {
+export async function deleteOpfsFile(fileName: string): Promise<void> {
   try {
     const root = await navigator.storage.getDirectory();
-    await (root as FileSystemDirectoryHandle).removeEntry(fileName);
+    await root.removeEntry(fileName);
   } catch (e) {
     logger.warn('OPFS', `Error deleting ${fileName}: ${(e as Error).message}`);
   }

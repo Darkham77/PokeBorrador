@@ -1,3 +1,6 @@
+import type { ItemId } from '@/data/inventory/items';
+import type { LogFn } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
 /**
  * battleItems.ts
  * Logic for using items (balls and healing) in battle.
@@ -5,9 +8,7 @@
  */
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { EventStore, AudioStore, BattleStore } from '@/types/system/stores';
-import type { LogFn } from '@/types/battle/battle';
-import type { BattleContext } from '@/types/battle/battleContext';
-import type { ItemId } from '@/data/inventory/items';
+
 import { executePokeballCatchSequence } from './battleCatchProcessor.ts';
 import { executeHealingItemUsage } from './battleHealingItemProcessor.ts';
 

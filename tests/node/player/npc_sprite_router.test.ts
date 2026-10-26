@@ -6,9 +6,11 @@
  * Tests the classification and routing rules in src/logic/utils/npcSpriteRouter.ts.
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
+import { describe, it } from 'vite-plus/test';
+
+import { getRandomQuoteForTrainer } from '../../../src/data/player/trainerPhrases.ts';
 import {
   classifyNpcArchetype,
   getSpritesForArchetype,
@@ -16,7 +18,6 @@ import {
   type NpcArchetype,
   type NpcSpriteId
 } from '../../../src/logic/utils/npcSpriteRouter.ts';
-import { getRandomQuoteForTrainer } from '../../../src/data/player/trainerPhrases.ts';
 
 describe('NPC Sprite Router Classification', () => {
   it('correctly classifies Bugcatcher as caza_bichos', () => {
@@ -44,8 +45,8 @@ describe('NPC Sprite Router Classification', () => {
   });
 });
 
-import { ARCHETYPE_SPRITES } from '../../../src/data/pokemon/npcSpriteCatalog.ts';
 import { TRAINER_TYPES } from '../../../src/data/player/trainerTypes.ts';
+import { ARCHETYPE_SPRITES } from '../../../src/data/pokemon/npcSpriteCatalog.ts';
 
 describe('NPC Sprite Catalog Coverage & Encounter Group Parity', () => {
   it('ensures every sprite in the catalog is correctly classified to its parent archetype', () => {

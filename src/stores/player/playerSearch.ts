@@ -1,13 +1,14 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+
+import { DEFAULT_PLAYER_CLASS } from '@/data/player/playerClasses.ts';
+import { PLAYER_SEARCH_MAX_RESULTS, MIN_SEARCH_QUERY_LENGTH } from '@/logic/constants/gameplay.ts';
 import { useAuthStore } from '@/stores/auth.ts';
 import { useGameStore } from '@/stores/game.ts';
 import type { SearchResult } from '@/stores/social/social.ts';
-import { GameState } from '@/types/system/game';
 import type { ProfileRow, GameSaveRow } from '@/types/system/database';
-import { DEFAULT_PLAYER_CLASS } from '@/data/player/playerClasses.ts';
+import type { GameState } from '@/types/system/game';
 import { DEFAULT_GENDER, DEFAULT_TRAINER_LEVEL } from '@/types/system/game.ts';
-import { PLAYER_SEARCH_MAX_RESULTS, MIN_SEARCH_QUERY_LENGTH } from '@/logic/constants/gameplay.ts';
 
 interface FriendshipRow {
   id: string;
@@ -106,8 +107,8 @@ function buildSearchResultsList(
       nick_style: resolveSearchField('', save.nick_style as string, p.nick_style),
       avatar_style: resolveSearchField('', save.avatar_style as string, p.avatar_style),
       gender: resolveSearchField(DEFAULT_GENDER, save.gender as string, p.gender),
-      status: rel ? (rel.status as string) : DEFAULT_FRIENDSHIP_STATUS,
-      relId: rel ? (rel.id as string) : null,
+      status: rel ? rel.status : DEFAULT_FRIENDSHIP_STATUS,
+      relId: rel ? rel.id : null,
       isRequester: rel ? rel.requester_id === authUserUid : false
     };
   });
@@ -218,7 +219,7 @@ export const usePlayerSearchStore = defineStore('playerSearch', () => {
   async function searchPlayers(
     query: string,
     filters?: { playerClass?: string; faction?: string }
-  ) {
+  ): Promise<void> {
     if (!query || query.length < MIN_SEARCH_QUERY_LENGTH) {
       searchResults.value = [];
       return;

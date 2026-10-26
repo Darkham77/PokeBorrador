@@ -5,17 +5,11 @@
  * weather accuracy overrides, and power calculations.
  */
 
-import {
-  WEATHER_MECHANICAL,
-  type WeatherId,
-  type WeatherMechanical
-} from '@/logic/weather/weatherRegistry.ts';
+import { isAbilityId, isSandForceBoostedType, type AbilityId } from '@/data/battle/abilities.ts';
 import type { PokemonMoveId } from '@/data/battle/moves.ts';
 import type { PokemonType } from '@/data/battle/types.ts';
-import { isAbilityId, type AbilityId } from '@/data/battle/abilities.ts';
 import { isItemId, type ItemId } from '@/data/inventory/items.ts';
 import type { PureBattleWeather } from '@/logic/battle/battleMathTypes.ts';
-import type { Move } from '@/types/pokemon/pokemon.ts';
 import {
   LOW_HP_ABILITY_MULTIPLIER,
   STAB_STANDARD_MULTIPLIER,
@@ -24,6 +18,12 @@ import {
   SAND_FORCE_MULTIPLIER,
   HELD_ITEM_TYPE_BOOST_MULTIPLIER
 } from '@/logic/constants/gameplay.ts';
+import {
+  WEATHER_MECHANICAL,
+  type WeatherId,
+  type WeatherMechanical
+} from '@/logic/weather/weatherRegistry.ts';
+import type { Move } from '@/types/pokemon/pokemon.ts';
 
 const MIST_ACCURACY_PENALTY_PCT = 0.8;
 const FOG_ACCURACY_PENALTY_PCT = 0.6;
@@ -157,14 +157,6 @@ const LOW_HP_PINCH_ABILITIES: Readonly<Partial<Record<AbilityId, PokemonType>>> 
   torrent: 'water',
   swarm: 'bug'
 } as const;
-
-const SAND_FORCE_BOOSTED_TYPES = ['rock', 'ground', 'steel'] as const;
-type SandForceBoostedType = (typeof SAND_FORCE_BOOSTED_TYPES)[number];
-const SAND_FORCE_BOOSTED_SET: ReadonlySet<string> = new Set(SAND_FORCE_BOOSTED_TYPES);
-
-function isSandForceBoostedType(type: string): type is SandForceBoostedType {
-  return SAND_FORCE_BOOSTED_SET.has(type);
-}
 
 function resolvePinchAbilityMultiplier(
   ability: string,

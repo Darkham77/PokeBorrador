@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import type { DisplayText } from '@francogp/auditor';
 import { computed } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 import { MAX_SINGLE_STAT_IV, PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
 import type { StatBarMode } from '@/types/pokemon/pokemon';
@@ -30,14 +32,14 @@ const ivFillWidthPercent = computed(() => {
   return `${(Number(props.iv) / MAX_SINGLE_STAT_IV) * PERCENT_BASE_MULTIPLIER}%`;
 });
 
-const getIvColor = (val: number) => {
+const getIvColor = (val: number): string => {
   if (val >= 28) return 'Rgba(107, 203, 119, 1)';
   if (val >= 15) return 'Rgba(255, 217, 61, 1)';
   if (val >= 8) return 'Rgba(255, 159, 67, 1)';
   return 'Rgba(255, 89, 89, 1)';
 };
 
-const getStatGrade = (iv: number) => {
+const getStatGrade = (iv: number): { label: string; color: string } => {
   if (iv === 31) return { label: 'S', color: 'Rgba(255, 239, 61, 1)' };
   if (iv >= 25) return { label: 'A', color: 'Rgba(52, 211, 153, 1)' };
   if (iv >= 15) return { label: 'B', color: 'Rgba(96, 165, 250, 1)' };
@@ -47,7 +49,7 @@ const getStatGrade = (iv: number) => {
 
 type StatShortKey = 'HP' | 'ATK' | 'DEF' | 'SPA' | 'SPD' | 'SPE';
 
-const getStatLabel = (key: string) => {
+const getStatLabel = (key: string): { name: string; desc: string } => {
   const map: Record<StatShortKey, { name: string; desc: string }> = {
     HP: {
       name: 'Puntos de Salud',
@@ -69,7 +71,9 @@ const getStatLabel = (key: string) => {
     SPE: { name: 'Velocidad', desc: 'Determina qué Pokémon ataca primero en cada turno.' }
   };
   // open-record: Stat metadata dictionary
-  return (map as Record<string, { name: string; desc: string }>)[key] || { name: key, desc: '' };
+  return (
+    (map as Record<DisplayText, { name: string; desc: string }>)[key] || { name: key, desc: '' }
+  );
 };
 </script>
 

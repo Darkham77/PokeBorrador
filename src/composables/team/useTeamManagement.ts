@@ -5,28 +5,30 @@
  * drag-and-drop reordering, and slot selection for TeamManagementModal.
  */
 
-import { ref, computed, watch } from 'vue';
 import gsap from 'gsap';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
+import { ref, computed, watch, type Ref, type ComputedRef } from 'vue';
+
+import type { PokemonType } from '@/data/battle/types';
+import { getItemById } from '@/data/inventory/items';
+import { getSeasonalThemeForMonth, type SeasonalThemeConfig } from '@/data/system/rankedData';
+import {
+  evaluatePokemonForSeason,
+  buildAutoRankedTeam,
+  type PokemonSeasonEvaluation
+} from '@/logic/pvp/seasonTeamFilter';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
 import { useBoxStore } from '@/stores/box';
+import { useGameStore } from '@/stores/game';
 import { useInventoryStore } from '@/stores/inventory/inventory';
 import { usePvPStore } from '@/stores/pvp';
-import { getItemById } from '@/data/inventory/items';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { useUIStore } from '@/stores/ui';
 import {
   MAX_PVP_SLOTS,
   MAX_PVP6_SLOTS,
   type TeamManagementTab,
   type PvpTeamTab
 } from '@/types/battle/pvp';
-import { getSeasonalThemeForMonth } from '@/data/system/rankedData';
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
-import {
-  evaluatePokemonForSeason,
-  buildAutoRankedTeam,
-  type PokemonSeasonEvaluation
-} from '@/logic/pvp/seasonTeamFilter';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const MAX_ADVENTURE_SLOTS = 6;
 const DEFAULT_WAR_SLOTS = 6;
@@ -36,7 +38,40 @@ interface UseTeamManagementOptions {
   initialTab?: TeamManagementTab;
 }
 
-export function useTeamManagement(options: UseTeamManagementOptions = {}) {
+export interface UseTeamManagementReturn {
+  activeTab: Ref<TeamManagementTab>;
+  adventureTeam: ComputedRef<(Pokemon | null)[]>;
+  pvpTeam: ComputedRef<(Pokemon | null)[]>;
+  pvpTeam6: ComputedRef<(Pokemon | null)[]>;
+  warTeam: ComputedRef<(Pokemon | null)[]>;
+  adventureCount: ComputedRef<number>;
+  pvpCount: ComputedRef<number>;
+  pvp6Count: ComputedRef<number>;
+  warCount: ComputedRef<number>;
+  maxWarSlots: ComputedRef<number>;
+  currentRules: ComputedRef<SeasonalThemeConfig | Record<string, unknown>>;
+  tournamentThemeName: ComputedRef<string>;
+  tournamentLevelCap: ComputedRef<number | null>;
+  tournamentIsLittleCup: ComputedRef<boolean>;
+  tournamentAllowedTypes: ComputedRef<string | null>;
+  pvpEvaluations: ComputedRef<Map<string, PokemonSeasonEvaluation>>;
+  pvp6Evaluations: ComputedRef<Map<string, PokemonSeasonEvaluation>>;
+  draggedIndex: Ref<number | null>;
+  touchOverIndex: Ref<number | null>;
+  isDragging: Ref<boolean>;
+  runAutoFillTeam: (tab: 'pvp' | 'pvp6') => void;
+  handleDragStart: (idx: number, e?: DragEvent) => void;
+  handleDragEnd: () => void;
+  handleDrop: (targetIdx: number, e?: DragEvent) => void;
+  handleDropDirect: (fromIdx: number, toIdx: number) => void;
+  handleSlotSelect: (index: number) => void;
+  openDetail: (p: Pokemon | null) => void;
+  openItem: (p: Pokemon | null) => void;
+  unequipItem: (p: Pokemon | null, index: number) => void;
+  sendToBox: (p: Pokemon | null, index: number) => void;
+}
+
+export function useTeamManagement(options: UseTeamManagementOptions = {}): UseTeamManagementReturn {
   const gameStore = useGameStore();
   const uiStore = useUIStore();
   const boxStore = useBoxStore();
@@ -64,7 +99,7 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
   });
 
   const pvpTeam = computed(() => {
-    const pvpUids = (gameStore.state.pvpTeam || []) as string[]; // no-domain: Non-domain utility collection or data structure
+    const pvpUids = gameStore.state.pvpTeam || []; // no-domain: Non-domain utility collection or data structure
     const allPokes = [
       ...((gameStore.state.team || []) as (Pokemon | null)[]),
       ...((gameStore.state.box || []) as (Pokemon | null)[])
@@ -78,7 +113,7 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
   });
 
   const pvpTeam6 = computed(() => {
-    const pvpUids = (gameStore.state.pvpTeam6 || []) as string[]; // no-domain: Non-domain utility collection or data structure
+    const pvpUids = gameStore.state.pvpTeam6 || []; // no-domain: Non-domain utility collection or data structure
     const allPokes = [
       ...((gameStore.state.team || []) as (Pokemon | null)[]),
       ...((gameStore.state.box || []) as (Pokemon | null)[])
@@ -92,7 +127,7 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
   });
 
   const warTeam = computed(() => {
-    const warUids = (gameStore.state.warTeam || []) as string[]; // no-domain: Non-domain utility collection or data structure
+    const warUids = gameStore.state.warTeam || []; // no-domain: Non-domain utility collection or data structure
     const maxSlots = gameStore.state.warSlots || DEFAULT_WAR_SLOTS;
     const allPokes = [
       ...((gameStore.state.team || []) as (Pokemon | null)[]),
@@ -143,7 +178,7 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
       r.allowedTypes.length > 0 &&
       r.allowedTypes.length < TOTAL_POKEMON_TYPES
     ) {
-      return (r.allowedTypes as readonly string[]).join(', '); // no-domain: Non-domain utility collection or data structure
+      return (r.allowedTypes as readonly PokemonType[]).join(', ');
     }
     return null;
   });
@@ -166,7 +201,7 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
     return map;
   });
 
-  function runAutoFillTeam(tab: PvpTeamTab) {
+  function runAutoFillTeam(tab: PvpTeamTab): void {
     const allPokes = [
       ...((gameStore.state.team || []) as (Pokemon | null)[]),
       ...((gameStore.state.box || []) as (Pokemon | null)[])
@@ -199,18 +234,18 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
   const touchOverIndex = ref<number | null>(null);
   const isDragging = ref(false);
 
-  function handleDragStart(index: number) {
+  function handleDragStart(index: number): void {
     draggedIndex.value = index;
     isDragging.value = true;
   }
 
-  function handleDragEnd() {
+  function handleDragEnd(): void {
     isDragging.value = false;
     draggedIndex.value = null;
     touchOverIndex.value = null;
   }
 
-  function handleDropDirect(fromIndex: number, toIndex: number) {
+  function handleDropDirect(fromIndex: number, toIndex: number): void {
     if (fromIndex === toIndex) return;
     if (activeTab.value === 'adventure') {
       if (gameStore.state.team[fromIndex]) {
@@ -225,21 +260,21 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
     }
   }
 
-  function handleDrop(targetIndex: number) {
+  function handleDrop(targetIndex: number): void {
     const from = draggedIndex.value;
     handleDragEnd();
     if (from === null || from === targetIndex) return;
     handleDropDirect(from, targetIndex);
   }
 
-  function openDetail(pokemon: Pokemon | null) {
+  function openDetail(pokemon: Pokemon | null): void {
     if (!pokemon) return;
     const team = (gameStore.state.team || []) as (Pokemon | null)[];
     const idx = team.findIndex((p) => p && p.uid === pokemon.uid);
     uiStore.openPokemonDetail(pokemon, idx, idx > -1 ? 'team' : 'box');
   }
 
-  function openItem(pokemon: Pokemon | null) {
+  function openItem(pokemon: Pokemon | null): void {
     if (!pokemon) return;
     const team = (gameStore.state.team || []) as (Pokemon | null)[];
     let idx = team.findIndex((p) => p && p.uid === pokemon.uid);
@@ -254,7 +289,7 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
     }
   }
 
-  function unequipItem(pokemon: Pokemon | null) {
+  function unequipItem(pokemon: Pokemon | null): void {
     if (!pokemon) return;
     const team = (gameStore.state.team || []) as (Pokemon | null)[];
     let idx = team.findIndex((p) => p && p.uid === pokemon.uid);
@@ -279,7 +314,7 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
     }
   }
 
-  function sendToBox(pokemon: Pokemon | null) {
+  function sendToBox(pokemon: Pokemon | null): void {
     if (!pokemon) return;
     const team = (gameStore.state.team || []) as (Pokemon | null)[];
     const idx = team.findIndex((p) => p && p.uid === pokemon.uid);
@@ -288,8 +323,8 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
     }
   }
 
-  function selectPvp(slotIndex: number) {
-    const pvpTeamUids = (gameStore.state.pvpTeam || []) as string[]; // no-domain: Non-domain utility collection or data structure
+  function selectPvp(slotIndex: number): void {
+    const pvpTeamUids = gameStore.state.pvpTeam || []; // no-domain: Non-domain utility collection or data structure
     const allPokes = [
       ...((gameStore.state.team || []) as (Pokemon | null)[]),
       ...((gameStore.state.box || []) as (Pokemon | null)[])
@@ -316,8 +351,8 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
     });
   }
 
-  function selectPvp6(slotIndex: number) {
-    const currentPvpTeam6 = (gameStore.state.pvpTeam6 || []) as string[]; // no-domain: Non-domain utility collection or data structure
+  function selectPvp6(slotIndex: number): void {
+    const currentPvpTeam6 = gameStore.state.pvpTeam6 || []; // no-domain: Non-domain utility collection or data structure
     const allPokes = [
       ...((gameStore.state.team || []) as (Pokemon | null)[]),
       ...((gameStore.state.box || []) as (Pokemon | null)[])
@@ -344,8 +379,8 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
     });
   }
 
-  function selectWar(slotIndex: number) {
-    const warTeamUids = (gameStore.state.warTeam || []) as string[]; // no-domain: Non-domain utility collection or data structure
+  function selectWar(slotIndex: number): void {
+    const warTeamUids = gameStore.state.warTeam || []; // no-domain: Non-domain utility collection or data structure
     const allPokes = [
       ...((gameStore.state.team || []) as (Pokemon | null)[]),
       ...((gameStore.state.box || []) as (Pokemon | null)[])
@@ -371,10 +406,10 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
     });
   }
 
-  function selectAdventure(_slotIndex: number) {
+  function selectAdventure(_slotIndex: number): void {
     const currentTeamUids = (gameStore.state.team || [])
       .map((p: Pokemon | null) => p?.uid)
-      .filter(Boolean) as string[]; // no-domain: Non-domain utility collection or data structure
+      .filter((uid): uid is string => Boolean(uid));
 
     uiStore.open('PokemonSelection', {
       title: '⚡ SELECCIONAR POKÉMON',
@@ -410,7 +445,7 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
     });
   }
 
-  function handleSlotSelect(index: number) {
+  function handleSlotSelect(index: number): void {
     if (activeTab.value === 'adventure') {
       selectAdventure(index);
     } else if (activeTab.value === 'pvp') {

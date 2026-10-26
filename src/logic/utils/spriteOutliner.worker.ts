@@ -33,13 +33,13 @@ async function saveToCache(cacheKey: string, blob: Blob): Promise<void> {
   }
 }
 
-const ALLOWED_SPRITE_HOSTS = new Set([
-  // runtime-set: Fast O(1) membership lookup set
+const ALLOWED_SPRITE_HOST_VALUES = [
   'raw.githubusercontent.com',
   'play.pokemonshowdown.com',
   'localhost',
   '127.0.0.1'
-]);
+] as const;
+const ALLOWED_SPRITE_HOSTS: ReadonlySet<string> = new Set<string>(ALLOWED_SPRITE_HOST_VALUES);
 
 // Fetch image and create ImageBitmap
 async function loadImageBitmap(rawUrl: string): Promise<ImageBitmap> {

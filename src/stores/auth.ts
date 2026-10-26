@@ -1,27 +1,29 @@
+import type { Session, User, WeakPassword } from '@supabase/supabase-js';
 import { defineStore } from 'pinia';
 import { ref, watch, computed } from 'vue';
-import { logger } from '@/logic/utils/logger.ts';
-import { supabase } from '@/logic/db/supabase.ts';
+
+import { SESSION_ID } from '@/logic/auth/sessionId.ts';
 import { syncServerTime } from '@/logic/auth/timeSync.ts';
-import { useLoadingStore } from '@/stores/loading.ts';
-import { useModalStore } from '@/stores/modals.ts';
+import { supabase } from '@/logic/db/supabase.ts';
+import { isLocalEnvironment } from '@/logic/utils/env.ts';
+import { logger } from '@/logic/utils/logger.ts';
 import {
   safeStorage,
   safeSessionStorage,
   LOCAL_STORAGE_KEYS,
   SESSION_STORAGE_KEYS
 } from '@/logic/utils/storage.ts';
-import { SESSION_ID } from '@/logic/auth/sessionId.ts';
+import { useLoadingStore } from '@/stores/loading.ts';
+import { useModalStore } from '@/stores/modals.ts';
 import type { AuthUser, SessionMode } from '@/types/auth/auth.ts';
 import { requireGenderId, type GenderId } from '@/types/system/game.ts';
-import type { Session } from '@supabase/supabase-js';
+
 import {
   fetchOnlineSessionWithRetry,
   recordSessionIdInProfile,
   fetchProfileMetadata,
   enrichAuthUser
 } from './auth/authSessionVerifier.ts';
-import { isLocalEnvironment } from '@/logic/utils/env.ts';
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<AuthUser | null>(null);
@@ -41,12 +43,12 @@ export const useAuthStore = defineStore('auth', () => {
   const currentUserId = computed<string>(() => user.value?.id || 'local_user');
 
   // Connectivity monitoring (Online mode only)
-  if (typeof window !== 'undefined') {
-    window.addEventListener('online', () => {
+  if (typeof globalThis.window !== 'undefined') {
+    globalThis.addEventListener('online', () => {
       isOnline.value = true;
       if (sessionMode.value === 'online') connectionLost.value = false;
     });
-    window.addEventListener('offline', () => {
+    globalThis.addEventListener('offline', () => {
       isOnline.value = false;
       if (sessionMode.value === 'online') {
         logger.warn('Auth', 'Conexión perdida en modo Online. Activando advertencia.');
@@ -55,7 +57,7 @@ export const useAuthStore = defineStore('auth', () => {
     });
 
     // Listen for unique session conflicts
-    window.addEventListener('session-conflict', () => {
+    globalThis.addEventListener('session-conflict', () => {
       logger.error('AuthStore', 'Conflicto de sesión detectado. Bloqueando acceso.');
       sessionConflict.value = true;
 
@@ -68,7 +70,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
     });
     // Listen for database connection errors (Supabase unreachability)
-    window.addEventListener('db-connection-error', () => {
+    globalThis.addEventListener('db-connection-error', () => {
       if (sessionMode.value === 'online') {
         logger.warn('AuthStore', 'Error de conexión a DB detectado.');
         connectionLost.value = true;
@@ -94,8 +96,8 @@ export const useAuthStore = defineStore('auth', () => {
 
   function tryRestoreE2EPostgresSession(): AuthUser | null {
     const isE2EPostgres =
-      typeof window !== 'undefined' &&
-      (window as { __E2E_DRIVER__?: string }).__E2E_DRIVER__ === 'postgres';
+      typeof globalThis.window !== 'undefined' &&
+      (globalThis as { __E2E_DRIVER__?: string }).__E2E_DRIVER__ === 'postgres';
     if (!isE2EPostgres) return null;
     const localUser = safeStorage.getItem('pokevicio_local_user');
     if (localUser) {
@@ -145,7 +147,7 @@ export const useAuthStore = defineStore('auth', () => {
     return { user: enrichAuthUser(rawUser, profileData), session: onlineSession };
   }
 
-  function markPvPSessionInitialized() {
+  function markPvPSessionInitialized(): void {
     if (safeSessionStorage.getItem(SESSION_STORAGE_KEYS.PVP_SESSION_INITIALIZED) !== 'true') {
       safeSessionStorage.setItem(SESSION_STORAGE_KEYS.PVP_SESSION_INITIALIZED, 'true');
       safeSessionStorage.setItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING, 'true');
@@ -192,11 +194,11 @@ export const useAuthStore = defineStore('auth', () => {
     sessionMode.value = 'online';
     markPvPSessionInitialized();
     startSessionMonitoring();
-    void syncServerTime();
+    await syncServerTime();
     return true;
   }
 
-  async function checkSession() {
+  async function checkSession(): Promise<void> {
     if (safeSessionStorage.getItem(SESSION_STORAGE_KEYS.BLOCK_AUTOLOGIN) === 'true') {
       safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.BLOCK_AUTOLOGIN);
       user.value = null;
@@ -244,7 +246,13 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function login(email: string, password: string) {
+  async function login(
+    email: string,
+    password: string
+  ): Promise<
+    | { user: User; session: Session; weakPassword?: WeakPassword }
+    | { user: User | null; session: Session | null }
+  > {
     const loadingStore = useLoadingStore();
     loadingStore.start(
       'auth_action',
@@ -323,14 +331,19 @@ export const useAuthStore = defineStore('auth', () => {
       safeSessionStorage.setItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING, 'true');
 
       startSessionMonitoring();
-      void syncServerTime();
+      await syncServerTime();
       return data;
     } finally {
       loadingStore.finish('auth_action');
     }
   }
 
-  async function signup(email: string, password: string, username: string, gender: GenderId = 'h') {
+  async function signup(
+    email: string,
+    password: string,
+    username: string,
+    gender: GenderId = 'h'
+  ): Promise<{ user: User | null; session: Session | null }> {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -361,53 +374,54 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function startSessionMonitoring() {
+  function startSessionMonitoring(): void {
     if (!user.value || sessionMode.value === 'offline') return;
 
     // Subscribe to channel to monitor connection status
     supabase.channel(`session_check_${user.value.id}`).subscribe(async (status: string) => {
       if (status === 'SUBSCRIBED') {
         connectionLost.value = false;
+        return;
       }
-      if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-        if (sessionMode.value === 'online') {
-          logger.warn(
-            'SESSION',
-            'Conexión con el servidor perdida (Realtime). Verificando conectividad HTTP...'
-          );
-          const isHttpOk = await checkDbConnectivity();
-          if (!isHttpOk) {
-            logger.warn(
-              'SESSION',
-              'Pérdida temporal de conexión HTTP. Reconectando en segundo plano...'
-            );
-            connectionLost.value = true;
-          } else {
-            logger.info(
-              'SESSION',
-              'Conexión HTTP activa. Desconectando Realtime para evitar spam y continuando en modo degradado.'
-            );
-            connectionLost.value = false;
+      if (status !== 'CLOSED' && status !== 'CHANNEL_ERROR') return;
+      if (sessionMode.value !== 'online') return;
 
-            // Disconnect Realtime to stop recurrent failed WebSocket attempts
-            try {
-              const client = supabase.realClient;
-              if (client && client.realtime) {
-                void client.realtime.disconnect();
-              }
-            } catch (err) {
-              logger.warn(
-                'Auth',
-                `No se pudo desconectar el cliente de Realtime: ${(err as Error).message}`
-              );
-            }
-          }
+      logger.warn(
+        'SESSION',
+        'Conexión con el servidor perdida (Realtime). Verificando conectividad HTTP...'
+      );
+      const isHttpOk = await checkDbConnectivity();
+      if (!isHttpOk) {
+        logger.warn(
+          'SESSION',
+          'Pérdida temporal de conexión HTTP. Reconectando en segundo plano...'
+        );
+        connectionLost.value = true;
+        return;
+      }
+
+      logger.info(
+        'SESSION',
+        'Conexión HTTP activa. Desconectando Realtime para evitar spam y continuando en modo degradado.'
+      );
+      connectionLost.value = false;
+
+      // Disconnect Realtime to stop recurrent failed WebSocket attempts
+      try {
+        const client = supabase.realClient;
+        if (client?.realtime) {
+          await client.realtime.disconnect();
         }
+      } catch (err) {
+        logger.warn(
+          'Auth',
+          `No se pudo desconectar el cliente de Realtime: ${(err as Error).message}`
+        );
       }
     });
   }
 
-  async function localLogin(name: string, gender: GenderId = 'h') {
+  async function localLogin(name: string, gender: GenderId = 'h'): Promise<void> {
     loading.value = true;
     const loadingStore = useLoadingStore();
     loadingStore.start(
@@ -424,7 +438,7 @@ export const useAuthStore = defineStore('auth', () => {
         user_metadata: { full_name: name, username: name, gender },
         db_version: 3
       };
-      user.value = userData as AuthUser;
+      user.value = userData;
       sessionMode.value = 'offline';
       safeStorage.setItem(LOCAL_STORAGE_KEYS.SESSION_MODE, 'offline');
       if (supabase && typeof supabase.setMode === 'function') {
@@ -437,7 +451,7 @@ export const useAuthStore = defineStore('auth', () => {
       safeSessionStorage.setItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING, 'true');
 
       // Sync time will handle offline state internally
-      void syncServerTime();
+      await syncServerTime();
 
       // In local mode there is no online session monitoring
       sessionConflict.value = false;
@@ -447,7 +461,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function logout(preventReload = false, preventSave = false) {
+  async function logout(preventReload = false, preventSave = false): Promise<void> {
     logger.info('AuthStore', 'Iniciando cierre de sesión...');
 
     // Safe preventative save if game is active and not explicitly prevented
@@ -494,7 +508,7 @@ export const useAuthStore = defineStore('auth', () => {
       const baseUrl = import.meta.env.BASE_URL || '/';
       const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
       // security-ok: Same-origin redirect to internal /login route
-      window.location.replace(`${window.location.origin}${cleanBase}login`);
+      globalThis.location.replace(`${globalThis.location.origin}${cleanBase}login`);
     }
   }
 

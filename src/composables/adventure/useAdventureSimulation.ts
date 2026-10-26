@@ -1,5 +1,23 @@
-import { ref, computed, onUnmounted, watch, nextTick } from 'vue';
 import { gsap } from 'gsap';
+import { ref, computed, onUnmounted, watch, nextTick, type ComputedRef, type Ref } from 'vue';
+
+import { useAdventureCamera } from '@/composables/adventure/useAdventureCamera';
+import type { ItemId } from '@/data/inventory/items';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { isMapRouteId, requireMapRouteId } from '@/data/world/map-assets';
+import { FIRE_RED_MAPS } from '@/data/world/maps';
+import { requireWeatherSeasonId } from '@/data/world/weather-tables';
+import { getMapSpawnPoolData } from '@/logic/encounters/encounterHelpers';
+import { logger } from '@/logic/utils/logger.ts';
+import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
+import { getRouteWeather } from '@/logic/weather/weatherUtils';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
+import { useInventoryStore } from '@/stores/inventory/inventory';
+import { useShopStore } from '@/stores/inventory/shop';
+import { useMapStore } from '@/stores/map';
+import type { MapLocation } from '@/types/pokemon/encounters';
+
 import {
   getGraphEdges,
   isAdventureNodeId
@@ -8,28 +26,6 @@ import type {
   AdventureNodeId,
   GraphEdge
 } from '../../../test_aventura/logic/adventure/kantoGraph.ts';
-import { FIRE_RED_MAPS } from '@/data/world/maps';
-import { useMapStore } from '@/stores/map';
-import { useShopStore } from '@/stores/inventory/shop';
-import { useInventoryStore } from '@/stores/inventory/inventory';
-import { useGameStore } from '@/stores/game';
-import { useBattleStore } from '@/stores/battle/battle';
-import { getRouteWeather } from '@/logic/weather/weatherUtils';
-import { requireWeatherSeasonId } from '@/data/world/weather-tables';
-import { isMapRouteId, requireMapRouteId } from '@/data/world/map-assets';
-import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
-import type { ItemId } from '@/data/inventory/items';
-import { useAdventureCamera } from '@/composables/adventure/useAdventureCamera';
-import type { MapLocation } from '@/types/pokemon/encounters';
-import { useAdventureMinigames } from './useAdventureMinigames.ts';
-import { useAdventureEvents } from './useAdventureEvents.ts';
-import { useAdventureRouting } from './useAdventureRouting.ts';
-import { useAdventureLayout } from './useAdventureLayout.ts';
-import { useAdventurePassives } from './useAdventurePassives.ts';
-import { useAdventureModalAnims } from './useAdventureModalAnims.ts';
-import { useAdventureTravelLoop } from './useAdventureTravelLoop.ts';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { getMapSpawnPoolData } from '@/logic/encounters/encounterHelpers';
 import {
   CANVAS_W,
   CANVAS_H,
@@ -41,15 +37,66 @@ import {
   POKEMON_CENTER_NODES,
   MO_LABELS
 } from './helpers/adventureSimulationConstants.ts';
+import { useAdventureEvents } from './useAdventureEvents.ts';
+import { useAdventureLayout } from './useAdventureLayout.ts';
+import { useAdventureMinigames } from './useAdventureMinigames.ts';
+import { useAdventureModalAnims } from './useAdventureModalAnims.ts';
+import { useAdventurePassives } from './useAdventurePassives.ts';
+import { useAdventureRouting } from './useAdventureRouting.ts';
+import { useAdventureTravelLoop } from './useAdventureTravelLoop.ts';
 
-export function useAdventureSimulation() {
+export type UseAdventureSimulationReturn = Omit<
+  ReturnType<typeof useAdventureCamera>,
+  'canvasTransform' | 'centerOnPoint'
+> &
+  ReturnType<typeof useAdventureLayout> &
+  Pick<
+    ReturnType<typeof useAdventureTravelLoop>,
+    'finishTravelAtNode' | 'resumeTravelAfterEvent' | 'cancelTravel'
+  > &
+  ReturnType<typeof useAdventureRouting> &
+  Pick<ReturnType<typeof useAdventureEvents>, 'activeEvent' | 'resolveEvent' | 'triggerExplore'> &
+  Omit<ReturnType<typeof useAdventureMinigames>, 'startMinigame'> &
+  ReturnType<typeof useAdventureModalAnims> & {
+    isPaused: Ref<boolean>;
+    travelProgress: Ref<number>;
+    currentSegmentIndex: Ref<number>;
+    lastStepPct: Ref<number>;
+    safeStepsRemaining: Ref<number>;
+    isArrivalEventPending: Ref<boolean>;
+    blockedConnections: Ref<Set<string>>;
+    graphEdges: Ref<GraphEdge[]>;
+    markerX: Ref<number>;
+    markerY: Ref<number>;
+    showMarker: Ref<boolean>;
+    travelLog: Ref<string[]>;
+    injectedItems: Ref<Set<ItemId>>;
+    glowMarkerRef: Ref<HTMLElement | null>;
+    viewportRef: Ref<HTMLElement | null>;
+    canvasRef: Ref<HTMLElement | null>;
+    hasHealthyTeam: ComputedRef<boolean>;
+    currentMapId: ComputedRef<AdventureNodeId>;
+    mapLocationsById: ComputedRef<Partial<Record<AdventureNodeId, MapLocation>>>;
+    getSpawnPoolForMap: (loc: MapLocation) => ReturnType<typeof getMapSpawnPoolData>;
+    getWeatherForMap: (mapId: AdventureNodeId) => WeatherId;
+    moLabels: typeof MO_LABELS;
+    activeTeamPassives: ReturnType<typeof useAdventurePassives>['activeTeamPassives'];
+    gameStore: ReturnType<typeof useGameStore>;
+    mapStore: ReturnType<typeof useMapStore>;
+    POKEMON_CENTER_NODES: typeof POKEMON_CENTER_NODES;
+    CANVAS_W: number;
+    CANVAS_H: number;
+    triggerHeal: () => void;
+  };
+
+export function useAdventureSimulation(): UseAdventureSimulationReturn {
   const mapStore = useMapStore();
   const shopStore = useShopStore();
   const inventoryStore = useInventoryStore();
   const gameStore = useGameStore();
   const battleStore = useBattleStore();
 
-  function syncCurrentMapFromAdventureNode(nodeId: AdventureNodeId) {
+  function syncCurrentMapFromAdventureNode(nodeId: AdventureNodeId): void {
     if (isMapRouteId(nodeId)) mapStore.currentMap = nodeId;
   }
 
@@ -178,7 +225,11 @@ export function useAdventureSimulation() {
     mapLocationsById
   });
 
-  function getSpawnPoolForMap(loc: MapLocation) {
+  function getSpawnPoolForMap(loc: MapLocation): {
+    generic: PokemonSpeciesId[];
+    specific: PokemonSpeciesId[];
+    rates: Partial<Record<PokemonSpeciesId, number>>;
+  } {
     if (!loc.wild) {
       const emptyPool: {
         generic: PokemonSpeciesId[];
@@ -256,7 +307,7 @@ export function useAdventureSimulation() {
   const { activeTeamPassives, triggerExtraLoot: triggerExtraLootFn } =
     useAdventurePassives(gameStore);
 
-  function triggerExtraLoot(itemId: ItemId, defaultQty: number = 1) {
+  function triggerExtraLoot(itemId: ItemId, defaultQty: number = 1): void {
     triggerExtraLootFn(itemId, defaultQty, inventoryStore, injectedItems, travelLog);
   }
 
@@ -295,7 +346,7 @@ export function useAdventureSimulation() {
     }
   });
 
-  const triggerHeal = () => {
+  const triggerHeal = (): void => {
     if (isTraveling.value) return;
     shopStore.healAllPokemon(0);
     travelLog.value.push(`🏥 ¡Tu equipo ha sido completamente curado en el Centro Pokémon!`);
@@ -350,7 +401,9 @@ export function useAdventureSimulation() {
     }
     if (battleStore.isBattleActive) {
       battleStore.state = null;
-      void battleStore.fsm.transition('EXIT_BATTLE');
+      battleStore.fsm.transition('EXIT_BATTLE').catch((err) => {
+        logger.warn('Handled promise rejection:', { cause: err });
+      });
     }
   });
 

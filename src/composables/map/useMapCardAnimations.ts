@@ -1,5 +1,6 @@
-import { watch, onMounted, onUnmounted, nextTick, type Ref } from 'vue';
 import { gsap } from 'gsap';
+import { watch, onMounted, onUnmounted, nextTick, type Ref } from 'vue';
+
 import {
   animateWeatherTag,
   animateFactionPill,
@@ -26,12 +27,12 @@ export function useMapCardAnimations(options: {
   hasFishing: Ref<object | null | undefined>;
   hasArchaeology: Ref<object | null | undefined>;
   spawnGridSlots: Ref<(string | null)[]>;
-}) {
+}): { initPillAnimations: () => void; initAuraAnimations: () => void } {
   const isFastModeActive = options.isFastMode ?? options.isPerformanceMode ?? { value: false };
   let pillContext: gsap.Context | null = null;
   let auraContext: gsap.Context | null = null;
 
-  const initPillAnimations = () => {
+  const initPillAnimations = (): void => {
     if (pillContext) {
       pillContext.revert();
       pillContext = null;
@@ -44,57 +45,42 @@ export function useMapCardAnimations(options: {
     pillContext = gsap.context(() => {
       const seed = options.cardSeed.value;
 
-      const weatherEl = options.cardRef.value?.querySelector('.location-tag') as
-        | HTMLElement
-        | null
-        | undefined;
+      const weatherEl = options.cardRef.value?.querySelector<HTMLElement>('.location-tag');
       if (weatherEl) {
         animateWeatherTag(weatherEl, options.computedWeather.value, seed);
       }
 
-      const factionEl = options.cardRef.value?.querySelector('.faction-status-pill') as
-        | HTMLElement
-        | null
-        | undefined;
+      const factionEl = options.cardRef.value?.querySelector<HTMLElement>('.faction-status-pill');
       if (factionEl) {
         animateFactionPill(factionEl, options.dominanceWinner.value, seed);
       }
 
-      const fishingEl = options.cardRef.value?.querySelector('.fishing-pill') as
-        | HTMLElement
-        | null
-        | undefined;
+      const fishingEl = options.cardRef.value?.querySelector<HTMLElement>('.fishing-pill');
       if (fishingEl) {
         animateFishingPill(fishingEl, seed);
       }
 
-      const archaeologyEl = options.cardRef.value?.querySelector('.archaeology-pill') as
-        | HTMLElement
-        | null
-        | undefined;
+      const archaeologyEl = options.cardRef.value?.querySelector<HTMLElement>('.archaeology-pill');
       if (archaeologyEl) {
         animateArchaeologyPill(archaeologyEl, seed);
       }
 
-      const crownEl = options.cardRef.value?.querySelector('.dom-badge') as
-        | HTMLElement
-        | null
-        | undefined;
+      const crownEl = options.cardRef.value?.querySelector<HTMLElement>('.dom-badge');
       if (crownEl && !options.isLowPowerActive.value) {
         animateCrownAura(crownEl, seed);
       }
     }, options.cardRef.value || undefined);
   };
 
-  const initAuraAnimations = () => {
+  const initAuraAnimations = (): void => {
     if (auraContext) auraContext.revert();
     if (!options.spawnGridRef.value || !options.isVisible.value) return;
 
     auraContext = gsap.context(() => {
-      const wrappers = gsap.utils.toArray(
+      const wrappers = gsap.utils.toArray<HTMLElement>(
         '.sprite-wrapper',
         options.spawnGridRef.value || undefined
-      ) as HTMLElement[];
+      );
       wrappers.forEach((el) => {
         animateWrapperAura(el, options.isLowPowerActive.value);
       });
@@ -113,10 +99,9 @@ export function useMapCardAnimations(options: {
       options.hasArchaeology,
       options.isPlayerWinner
     ],
-    () => {
-      void nextTick(() => {
-        initPillAnimations();
-      });
+    async () => {
+      await nextTick();
+      initPillAnimations();
     },
     { flush: 'post' }
   );
@@ -171,11 +156,10 @@ export function useMapCardAnimations(options: {
     { flush: 'post' }
   );
 
-  onMounted(() => {
-    void nextTick(() => {
-      initPillAnimations();
-      initAuraAnimations();
-    });
+  onMounted(async () => {
+    await nextTick();
+    initPillAnimations();
+    initAuraAnimations();
   });
 
   onUnmounted(() => {

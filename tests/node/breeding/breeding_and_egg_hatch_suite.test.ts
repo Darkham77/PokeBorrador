@@ -4,25 +4,28 @@
  * Consolidated Suite for Daycare Warehouse Persistence, Egg Natures, Moves Inheritance, and Debug Hatching.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
 import { DatabaseSync } from 'node:sqlite';
+
 import { setActivePinia, createPinia } from 'pinia';
-import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
-import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
+import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
+
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { validateAndSanitize } from '@/logic/auth/saveSanitizer';
+import { inheritMoves } from '@/logic/breeding/breedingInheritance';
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
+import type { SaveDataDto } from '@/logic/validation/schemas';
+import { useBreedingActions } from '@/stores/game/actions/breedingActions';
+import type { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon';
+import type { GameState } from '@/types/system/game';
+
 import { NATURES, toNatureId, isNatureId } from '../../../src/data/battle/natures.ts';
+import { eggFactory } from '../../../src/logic/breeding/eggFactory.ts';
+import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
+import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
 import { makePokemon } from '../../../src/logic/pokemon/pokemonFactory.ts';
 import { useBreedingStore } from '../../../src/stores/breeding.ts';
 import { useGameStore } from '../../../src/stores/game.ts';
-import { eggFactory } from '../../../src/logic/breeding/eggFactory.ts';
-import { inheritMoves } from '@/logic/breeding/breedingInheritance';
-import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
-import { validateAndSanitize } from '@/logic/auth/saveSanitizer';
-import { useBreedingActions } from '@/stores/game/actions/breedingActions';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { DaycareEgg } from '../../../src/types/breeding/breeding.ts';
-import type { GameState } from '@/types/system/game';
-import type { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon';
-import type { SaveDataDto } from '@/logic/validation/schemas';
 
 describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite', () => {
   describe('Daycare Warehouse Persistence & Egg Natures', () => {

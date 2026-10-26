@@ -1,5 +1,7 @@
-import { describe, it, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it, beforeEach } from 'vite-plus/test';
+
 import { PokemonTracker } from '../../../src/logic/battle/ai/heuristic/pokemonTracker.ts';
 import type { RandomBattleSetEntry } from '../../../src/logic/battle/ai/heuristic/types.ts';
 

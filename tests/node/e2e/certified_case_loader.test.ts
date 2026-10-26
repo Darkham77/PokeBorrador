@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vite-plus/test';
+
+import type { CertifiedTestBatch } from '../../../scripts/e2e/e2e_helpers.ts';
 import {
   loadCertifiedBattleCases,
   type CertifiedFuzzerDocument
 } from '../../../scripts/e2e/helpers/certifiedCaseLoader.ts';
-import type { CertifiedTestBatch } from '../../../scripts/e2e/e2e_helpers.ts';
 
 describe('Certified Case Loader - loadCertifiedBattleCases', () => {
   it('loads certified battle batches as an array of CertifiedTestBatch', () => {

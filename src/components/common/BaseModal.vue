@@ -1,20 +1,21 @@
 <script setup lang="ts">
-import { ref, watch, computed, inject, onUnmounted, useSlots, useId, type Ref } from 'vue';
 import { gsap } from 'gsap';
+import { ref, watch, computed, inject, onUnmounted, useSlots, useId, type Ref } from 'vue';
+
 import { useBodyClass } from '@/composables/ui/useBodyClass';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
 import { Z_LAYERS } from '@/logic/constants/visuals';
 import { ANIM_TIMINGS, ANIM_EASES } from '@/logic/utils/animationRegistry';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
 
+import BaseModalFooter from './BaseModalFooter.vue';
+import BaseModalHeader from './BaseModalHeader.vue';
 import {
   resolveModalPositionMode,
   resolveModalCorners,
   resolveModalCardStyles,
   getModalTweenPosition
 } from './baseModalHelper';
-import BaseModalHeader from './BaseModalHeader.vue';
-import BaseModalFooter from './BaseModalFooter.vue';
 import BaseModalOverlay from './BaseModalOverlay.vue';
 
 const MODAL_UNREGISTER_DELAY_SEC = 0.6;
@@ -102,11 +103,11 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-const handleClose = () => {
+const handleClose = (): void => {
   if (props.preventClose) return;
   emit('close');
 };
-const handleOverlayClick = () => {
+const handleOverlayClick = (): void => {
   if (props.closeOnClickOutside && !props.preventClose) handleClose();
 };
 
@@ -147,7 +148,7 @@ useBodyClass(
 );
 
 // GSAP Animation Hooks
-const onContentEnter = (el: Element, done: () => void) => {
+const onContentEnter = (el: Element, done: () => void): void => {
   const duration = ANIM_TIMINGS.MODAL_OPEN || 0.4;
   const ease = ANIM_EASES.OUT_SOFT || 'power2.out';
 
@@ -178,7 +179,7 @@ const onContentEnter = (el: Element, done: () => void) => {
   });
 };
 
-const onContentLeave = (el: Element, done: () => void) => {
+const onContentLeave = (el: Element, done: () => void): void => {
   const toVars: gsap.TweenVars = {
     opacity: 0,
     x: 0,

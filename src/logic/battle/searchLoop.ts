@@ -1,11 +1,13 @@
-import type { BattleContext } from '@/types/battle/battleContext';
-import { generateSearchLoopEncounter } from './searchLoopEncounterHelper.ts';
-import { logger } from '../utils/logger.ts';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleMinigame } from '@/types/battle/battle.ts';
-import type { MapRouteId } from '@/data/world/map-assets';
 import { nextTick } from 'vue';
+
+import type { MapRouteId } from '@/data/world/map-assets';
+import type { BattleMinigame } from '@/types/battle/battle.ts';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import { logger } from '../utils/logger.ts';
 import { isBattleMinigame } from './battleMinigames.ts';
+import { generateSearchLoopEncounter } from './searchLoopEncounterHelper.ts';
 import {
   handleExitToMap,
   initSearchBattleState,
@@ -42,7 +44,10 @@ async function resolveEncounterEntity(
 /**
  * Handles the completion of a battle flow (either going to map or search loop).
  */
-export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'map') {
+export async function handleBattleFlowCompletion(
+  ctx: BattleContext,
+  option = 'map'
+): Promise<void> {
   if (option === 'map') {
     if (!ctx.activeBattle.value) return;
     await handleExitToMap(ctx);
@@ -59,11 +64,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
   await nextTick();
 
   const encounter = await generateSearchLoopEncounter(ctx, locId);
-  const { generatedPoke, minigame } = await resolveEncounterEntity(
-    ctx,
-    encounter as RawEncounterData | null,
-    locId
-  );
+  const { generatedPoke, minigame } = await resolveEncounterEntity(ctx, encounter, locId);
 
   populateEnemyState(ctx, generatedPoke);
   await executeSearchPhaseTransitions(ctx, minigame);
@@ -72,7 +73,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
 /**
  * Triggers an encounter from the search loop.
  */
-export async function triggerNextEncounter(ctx: BattleContext) {
+export async function triggerNextEncounter(ctx: BattleContext): Promise<void> {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx;
   const fsm = ctx.fsm;
 
@@ -114,7 +115,7 @@ function isStartEncounterStateAllowed(
   return isSearchConfirmation || isMinigameCompletion;
 }
 
-export async function startEncounter(ctx: BattleContext) {
+export async function startEncounter(ctx: BattleContext): Promise<void> {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx;
   const fsm = ctx.fsm;
 

@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { onClickOutside } from '@vueuse/core';
-import { useNavigationState } from '@/composables/navigation/useNavigationState';
-import HUD_NavPokemonGroup from './navigation/HUD_NavPokemonGroup.vue';
-import HUD_NavMarketGroup from './navigation/HUD_NavMarketGroup.vue';
-import HUD_NavSocialGroup from './navigation/HUD_NavSocialGroup.vue';
+import { ref } from 'vue';
+
 import EggSprite from '@/components/common/EggSprite.vue';
 import PVHUDButton from '@/components/common/PVHUDButton.vue';
 import PVTooltip from '@/components/common/PVTooltip.vue';
+import { useNavigationState } from '@/composables/navigation/useNavigationState';
+
+import HUD_NavMarketGroup from './navigation/HUD_NavMarketGroup.vue';
+import HUD_NavPokemonGroup from './navigation/HUD_NavPokemonGroup.vue';
+import HUD_NavSocialGroup from './navigation/HUD_NavSocialGroup.vue';
 
 interface Props {
   position?: string;

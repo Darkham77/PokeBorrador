@@ -10,6 +10,17 @@
  */
 
 import { describe, it, expect } from 'vite-plus/test';
+
+import {
+  SEASONAL_THEME_IDS,
+  SEASONAL_ANNUAL_THEMES,
+  SEASONAL_THEMES_BY_ID,
+  SEASONAL_THEMES_BY_MONTH,
+  getSeasonalThemeForMonth,
+  getSeasonalThemeConfig,
+  isSeasonalThemeId,
+  requireSeasonalThemeId
+} from '@/data/system/rankedData.ts';
 import {
   calculateExpectedScore,
   calculateEloDelta,
@@ -29,16 +40,7 @@ import {
   checkAndResolveSeasonEnd,
   calculateEloSoftReset
 } from '@/logic/pvp/rankedSeasonRewardEngine.ts';
-import {
-  SEASONAL_THEME_IDS,
-  SEASONAL_ANNUAL_THEMES,
-  SEASONAL_THEMES_BY_ID,
-  SEASONAL_THEMES_BY_MONTH,
-  getSeasonalThemeForMonth,
-  getSeasonalThemeConfig,
-  isSeasonalThemeId,
-  requireSeasonalThemeId
-} from '@/data/system/rankedData.ts';
+import { INITIAL_STATE } from '@/stores/gameInitialState.ts';
 import {
   isBattleCode,
   requireBattleCode,
@@ -47,9 +49,8 @@ import {
   MAX_PERSONAL_MATCH_HISTORY,
   type PersonalPvPMatchSummary
 } from '@/types/battle/pvp.ts';
-import { INITIAL_STATE } from '@/stores/gameInitialState.ts';
-import type { GameState } from '@/types/system/game.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon.ts';
+import type { GameState } from '@/types/system/game.ts';
 
 describe('PvP Ranked & Elo Suite', () => {
   describe('eloRatingMath', () => {

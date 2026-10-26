@@ -1,6 +1,9 @@
-import { TM_COMPAT, GAME_TMS_BY_ID, isTmId, type TMData } from '../../../data/pokemon/pokedex.ts';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { DisplayText } from '@francogp/auditor';
+
 import type { ItemEffectResult } from '@/types/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
+import { TM_COMPAT, GAME_TMS_BY_ID, isTmId, type TMData } from '../../../data/pokemon/pokedex.ts';
 
 /**
  * Resolves TM learning availability and dynamic TM item effect
@@ -10,7 +13,7 @@ export const getDynamicItemEffect = (itemName: string, p: Pokemon): ItemEffectRe
   if (tmMatch) {
     const tmId = `TM${tmMatch[2]}`;
     const species = p.id;
-    const compatList = (TM_COMPAT as Record<string, readonly string[]>)[species] || []; // open-record: Generic key-value data dictionary container
+    const compatList = (TM_COMPAT as Record<DisplayText, readonly string[]>)[species] || []; // open-record: Generic key-value data dictionary container
     if (!compatList.includes(tmId)) {
       return { success: false, message: 'Incompatible.' };
     }

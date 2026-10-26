@@ -1,10 +1,11 @@
+import { setActivePinia, createPinia } from 'pinia';
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { ref } from 'vue';
-import { setActivePinia, createPinia } from 'pinia';
+
 import { useBattleStore } from '@/stores/battle/battle.ts';
 import { useGameStore } from '@/stores/game.ts';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type { BattleState } from '@/types/battle/battle';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
 describe('Locked Moves Multi-Turn Integration Test (Tier 2)', () => {
   beforeEach(() => {

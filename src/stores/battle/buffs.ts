@@ -1,12 +1,14 @@
+import { gsap } from 'gsap';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
-import { gsap } from 'gsap';
-import { useGameStore } from '@/stores/game.ts';
-import { useEventStore } from '@/stores/events.ts';
+
 import { isItemId, BUFF_FIELDS } from '@/data/inventory/items';
+import { getServerTime, getServerInstant, getGMT3Date } from '@/logic/utils/timeUtils';
+import { useEventStore } from '@/stores/events.ts';
+import { useGameStore } from '@/stores/game.ts';
 import type { GatheringToolTier } from '@/types/pokemon/encounters';
 import type { GameState } from '@/types/system/game';
-import { getServerTime, getServerInstant, getGMT3Date } from '@/logic/utils/timeUtils';
+
 import {
   buildActiveEventBuffs,
   buildActivePlayerItemBuffs,
@@ -141,10 +143,10 @@ export const useBuffsStore = defineStore('buffs', () => {
   const currentTick = ref(0);
   let tickInterval: gsap.core.Tween | null = null;
 
-  function initTick() {
+  function initTick(): void {
     if (tickInterval) tickInterval.kill();
 
-    const tick = () => {
+    const tick = (): void => {
       currentTick.value++;
       // Pause timers if player is in an active battle
       if (gameStore.state.battle && !gameStore.state.battle.over) {
@@ -156,7 +158,7 @@ export const useBuffsStore = defineStore('buffs', () => {
       const changed = decrementActiveBuffs(s);
 
       if (changed && shouldAutoSaveBuffTimers(s)) {
-        void gameStore.save(false);
+        gameStore.scheduleSave();
       }
 
       tickInterval = gsap.delayedCall(BUFF_TICK_INTERVAL_SEC, tick);
@@ -165,7 +167,7 @@ export const useBuffsStore = defineStore('buffs', () => {
     tickInterval = gsap.delayedCall(BUFF_TICK_INTERVAL_SEC, tick);
   }
 
-  function addBuff(buffName: string, seconds: number, extraData: string | null = null) {
+  function addBuff(buffName: string, seconds: number, extraData: string | null = null): void {
     const s = gameStore.state;
     if (
       !applyCumulativeBuff(s, buffName, seconds) &&
@@ -173,11 +175,11 @@ export const useBuffsStore = defineStore('buffs', () => {
     ) {
       applySpecialBuff(s, buffName, seconds, extraData);
     }
-    void gameStore.save(false);
+    gameStore.scheduleSave();
   }
 
   const activeBuffs = computed<ActiveBuffItem[]>(() => {
-    void currentTick.value;
+    if (currentTick.value < 0) return [];
     const nowMs = getServerTime();
     const nowInstant = getServerInstant();
     const zdt = getGMT3Date();

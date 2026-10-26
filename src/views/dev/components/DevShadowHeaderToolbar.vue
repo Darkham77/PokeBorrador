@@ -5,7 +5,6 @@
  * Header toolbar and rebuild banner for the Developer Shadow Calibration View.
  */
 
-import { MIN_SPRITE_ZOOM, MAX_SPRITE_ZOOM, SPRITE_ZOOM_STEP } from '../useShadowEditor.ts';
 import {
   MIN_SHADOW_WIDTH_RATIO,
   MAX_SHADOW_WIDTH_RATIO,
@@ -18,7 +17,9 @@ import {
   SHADOW_PIXELATION_STEP,
   type GlobalShadowConfig
 } from '@/types/pokemon/spriteShadows';
+
 import { COLUMN_OPTIONS, type SaveButtonState } from '../devShadowMathHelper.ts';
+import { MIN_SPRITE_ZOOM, MAX_SPRITE_ZOOM, SPRITE_ZOOM_STEP } from '../useShadowEditor.ts';
 
 interface Props {
   columns: number;

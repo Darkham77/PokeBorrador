@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+
+import PVTooltip from '@/components/common/PVTooltip.vue';
 import {
   getPokemonVisualBadges,
   getPokemonEditorBadges,
@@ -7,9 +9,7 @@ import {
   type TagDefinition,
   type PokemonTagId
 } from '@/logic/constants/tags';
-import PVTooltip from '@/components/common/PVTooltip.vue';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 interface Props {
@@ -56,7 +56,7 @@ const containerStyle = computed(() => {
 
 const itemImageError = ref(false);
 
-const handleBadgeClick = (e: MouseEvent, badge: TagDefinition) => {
+const handleBadgeClick = (e: MouseEvent, badge: TagDefinition): void => {
   if (!props.editable || badge.isAutomatic || badge.isLocked) return;
   e.stopPropagation();
   if (isPokemonTagId(badge.id)) {
@@ -64,7 +64,7 @@ const handleBadgeClick = (e: MouseEvent, badge: TagDefinition) => {
   }
 };
 
-const handleItemImageError = (e: Event) => {
+const handleItemImageError = (e: Event): void => {
   itemImageError.value = true;
   if (e.target) {
     (e.target as HTMLImageElement).style.display = 'none';

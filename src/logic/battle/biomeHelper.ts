@@ -1,5 +1,5 @@
-import { MAPS_BY_ROUTE_ID } from '@/data/world/maps';
 import { isMapRouteId, type MapRouteId } from '@/data/world/map-assets';
+import { MAPS_BY_ROUTE_ID } from '@/data/world/maps';
 import { MAP_BIOME_KEYS, type MapBiomeKey } from '@/logic/constants/encounters';
 
 /**

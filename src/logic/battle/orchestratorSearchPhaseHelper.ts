@@ -1,6 +1,6 @@
+import type { BattleMinigame, BattleState } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleMinigame, BattleState } from '@/types/battle/battle';
 
 async function handleMinigameSequence(
   ctx: BattleContext,
@@ -78,7 +78,7 @@ export async function processSearchPhaseSequence(
   await ctx.fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.REORDER_TEAM);
 
   if (ctx.activeBattle.value?.trainerArchetype === 'policeman') {
-    void ctx.audio.play('siren');
+    await ctx.audio.play('siren');
   }
 
   await ctx.fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE);

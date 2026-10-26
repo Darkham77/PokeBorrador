@@ -7,11 +7,12 @@
  * and escape trajectories (whirlwind, knockback, teleport, flee).
  */
 
+import gsap from 'gsap';
+import { setActivePinia, createPinia } from 'pinia';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { ref } from 'vue';
-import { setActivePinia, createPinia } from 'pinia';
-import gsap from 'gsap';
-import { isFlying } from '@/composables/battle/useBattleShadows';
+
+import { buildAttackTimeline } from '@/components/battle/helpers/combatantActionAnims';
 import {
   animateCombatantEmerging,
   animateCombatantHeal,
@@ -25,8 +26,8 @@ import {
   executeReleasingTween,
   STATUS_FLASH_COLORS
 } from '@/components/battle/helpers/combatantFeedbackAnims';
-import { buildAttackTimeline } from '@/components/battle/helpers/combatantActionAnims';
 import { useBattleCombatantState } from '@/components/battle/useBattleCombatantState';
+import { isFlying } from '@/composables/battle/useBattleShadows';
 import { FLEE_SLIDE_DISTANCE_PX } from '@/logic/constants/animations';
 import {
   ATTACK_PHYSICAL_PREP_DURATION_SEC,

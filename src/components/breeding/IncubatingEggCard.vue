@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
-import type { PokemonEgg } from '@/types/pokemon/pokemon';
-import { getEggSpecies } from '@/logic/breeding/breedingEngine';
+
 import EggSprite from '@/components/common/EggSprite.vue';
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
+import { getEggSpecies } from '@/logic/breeding/breedingEngine';
 import { NPC_EGG_TINT } from '@/logic/constants/gameplay';
+import type { PokemonEgg } from '@/types/pokemon/pokemon';
 
 interface Props {
   egg: PokemonEgg;

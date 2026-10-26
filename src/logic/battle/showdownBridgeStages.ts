@@ -1,7 +1,11 @@
-import type { SBCtx } from './showdownBridgeCtx.ts';
-import { modifyStatStage } from '@/logic/pokemon/statsMath.ts';
+import type { DisplayText } from '@francogp/auditor';
+
 import { MIN_BATTLE_STAT_STAGE, MAX_BATTLE_STAT_STAGE } from '@/logic/constants/gameplay';
+import { modifyStatStage } from '@/logic/pokemon/statsMath.ts';
+import type { BattleStages } from '@/types/battle/battle';
 import { SHOWDOWN_BOOST_STAT_KEYS, type ShowdownBoostStatKey } from '@/types/pokemon/pokemon.ts';
+
+import type { SBCtx } from './showdownBridgeCtx.ts';
 
 /**
  * NATIVE SHOWDOWN STAT STAGE KEYS
@@ -13,12 +17,15 @@ function isShowdownStatKey(key: string): key is ShowdownBoostStatKey {
   return SHOWDOWN_BOOST_STAT_KEYS_SET.has(key);
 }
 
-function getTargetStages(ctx: SBCtx, target: NonNullable<ReturnType<SBCtx['getPoke']>>) {
+function getTargetStages(
+  ctx: SBCtx,
+  target: NonNullable<ReturnType<SBCtx['getPoke']>>
+): BattleStages {
   const isPlayer = target === ctx.p;
   return isPlayer ? ctx.store.playerStages.value : ctx.store.enemyStages.value;
 }
 
-function resetStages(stages: Record<ShowdownBoostStatKey, number> | undefined) {
+function resetStages(stages: Record<ShowdownBoostStatKey, number> | undefined): void {
   if (!stages) return;
   for (const key of SHOWDOWN_BOOST_STAT_KEYS) {
     stages[key] = 0;
@@ -28,7 +35,7 @@ function resetStages(stages: Record<ShowdownBoostStatKey, number> | undefined) {
 function copyStages(
   src: Record<ShowdownBoostStatKey, number> | undefined,
   tgt: Record<ShowdownBoostStatKey, number> | undefined
-) {
+): void {
   if (!src || !tgt) return;
   for (const key of SHOWDOWN_BOOST_STAT_KEYS) {
     tgt[key] = src[key] || 0;
@@ -187,7 +194,7 @@ function applyClearDirectionalBoost(ctx: SBCtx, direction: BoostDirection): bool
   return true;
 }
 
-const STAGE_HANDLERS: Record<string, (ctx: SBCtx) => boolean> = {
+const STAGE_HANDLERS: Record<DisplayText, (ctx: SBCtx) => boolean> = {
   // open-record: Showdown stage event handlers dispatch table
   '-boost': (ctx) => applyBoostOrSet(ctx, false),
   '-setboost': (ctx) => applyBoostOrSet(ctx, true),

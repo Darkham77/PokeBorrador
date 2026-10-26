@@ -12,8 +12,8 @@
  *   3. Guarantees 0 mixed palettes on any contiguous cliff face or massif.
  */
 
-import type { MountainPalette, ElevationMatrix } from './mountainAutotileEngine.ts';
 import type { MacroBiome } from './macroBiomeSynthesizer.ts';
+import type { MountainPalette, ElevationMatrix } from './mountainAutotileEngine.ts';
 
 export interface MountainMassif {
   readonly id: string;
@@ -72,6 +72,78 @@ function resolveMassifPalette(
   return centroidX < worldWidth * 0.5 ? 'brown' : 'gray';
 }
 
+const EIGHT_WAY_NEIGHBOR_OFFSETS: readonly (readonly [number, number])[] = [
+  [-1, -1],
+  [0, -1],
+  [1, -1],
+  [-1, 0],
+  [1, 0],
+  [-1, 1],
+  [0, 1],
+  [1, 1]
+];
+
+interface FloodFilledMassif {
+  readonly cells: readonly { readonly x: number; readonly y: number }[];
+  readonly minX: number;
+  readonly maxX: number;
+  readonly minY: number;
+  readonly maxY: number;
+  readonly centroidX: number;
+  readonly centroidY: number;
+  readonly count: number;
+}
+
+function floodFillMassifComponent(
+  startX: number,
+  startY: number,
+  W: number,
+  H: number,
+  matrix: ElevationMatrix,
+  visited: boolean[][]
+): FloodFilledMassif {
+  const cells: { x: number; y: number }[] = [];
+  const queue: { x: number; y: number }[] = [{ x: startX, y: startY }];
+  visited[startY]![startX] = true;
+
+  let sumX = 0;
+  let sumY = 0;
+  let minX = startX;
+  let maxX = startX;
+  let minY = startY;
+  let maxY = startY;
+
+  while (queue.length > 0) {
+    const curr = queue.shift()!;
+    cells.push(curr);
+    sumX += curr.x;
+    sumY += curr.y;
+
+    if (curr.x < minX) minX = curr.x;
+    if (curr.x > maxX) maxX = curr.x;
+    if (curr.y < minY) minY = curr.y;
+    if (curr.y > maxY) maxY = curr.y;
+
+    for (const [dx, dy] of EIGHT_WAY_NEIGHBOR_OFFSETS) {
+      const nx = curr.x + dx;
+      const ny = curr.y + dy;
+      if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
+        const nElev = matrix[ny]?.[nx] ?? 0;
+        if (nElev > 0 && !visited[ny]![nx]) {
+          visited[ny]![nx] = true;
+          queue.push({ x: nx, y: ny });
+        }
+      }
+    }
+  }
+
+  const count = cells.length;
+  const centroidX = Math.round(sumX / count);
+  const centroidY = Math.round(sumY / count);
+
+  return { cells, minX, maxX, minY, maxY, centroidX, centroidY, count };
+}
+
 /**
  * Clusters mountain elevation cells (Z >= 1) into discrete massifs using 8-connected CCL,
  * and assigns a single continuous geological palette to each massif.
@@ -98,50 +170,8 @@ export function clusterMountainMassifs(options: GeologicalClusterOptions): Geolo
       const elev = matrix[y]?.[x] ?? 0;
       if (elev <= 0 || visited[y]![x]) continue;
 
-      // 8-Connected Component Flood Fill
-      const cells: { x: number; y: number }[] = [];
-      const queue: { x: number; y: number }[] = [{ x, y }];
-      visited[y]![x] = true;
-
-      let sumX = 0;
-      let sumY = 0;
-      let minX = x;
-      let maxX = x;
-      let minY = y;
-      let maxY = y;
-
-      while (queue.length > 0) {
-        const curr = queue.shift()!;
-        cells.push(curr);
-        sumX += curr.x;
-        sumY += curr.y;
-
-        if (curr.x < minX) minX = curr.x;
-        if (curr.x > maxX) maxX = curr.x;
-        if (curr.y < minY) minY = curr.y;
-        if (curr.y > maxY) maxY = curr.y;
-
-        // 8-neighborhood
-        for (let dy = -1; dy <= 1; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            if (dx === 0 && dy === 0) continue;
-            const nx = curr.x + dx;
-            const ny = curr.y + dy;
-
-            if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
-              const nElev = matrix[ny]?.[nx] ?? 0;
-              if (nElev > 0 && !visited[ny]![nx]) {
-                visited[ny]![nx] = true;
-                queue.push({ x: nx, y: ny });
-              }
-            }
-          }
-        }
-      }
-
-      const count = cells.length;
-      const centroidX = Math.round(sumX / count);
-      const centroidY = Math.round(sumY / count);
+      const { cells, minX, maxX, minY, maxY, centroidX, centroidY, count } =
+        floodFillMassifComponent(x, y, W, H, matrix, visited);
 
       // Determine single geological palette for the entire massif
       const palette = resolveMassifPalette(options, cells, count, centroidX, W);

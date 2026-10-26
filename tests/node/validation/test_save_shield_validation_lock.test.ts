@@ -1,5 +1,7 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
+
 import { validateAndSanitize } from '../../../src/logic/auth/saveService.ts';
 import { validateSaveData, type SaveDataDto } from '../../../src/logic/validation/schemas.ts';
 

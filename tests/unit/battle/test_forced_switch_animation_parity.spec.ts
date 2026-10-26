@@ -1,19 +1,20 @@
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useBattleStore } from '@/stores/battle/battle';
-import { useGameStore } from '@/stores/game';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+import { computed, ref } from 'vue';
+
 import { useBattleCombatants } from '@/composables/battle/useBattleCombatants';
-import { parseShowdownLogLine } from '@/logic/battle/showdownBridge';
 import {
   BATTLE_STATES,
   BATTLE_SUBSTATES,
   type BattleStateName,
   type BattleSubStateName
 } from '@/logic/battle/battleStateMachine';
-import { computed, ref } from 'vue';
+import { parseShowdownLogLine } from '@/logic/battle/showdownBridge';
 import { gameBus } from '@/logic/events/gameBus';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
 import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 function createMockPokemon(name: string, uid: string, hp = 100, maxHp = 100): Pokemon {
   return {

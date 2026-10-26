@@ -1,8 +1,8 @@
+import type { BattleState } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import { shouldEnemySwitch, findBestSwitchIndex } from './ai/battleAI.ts';
 
-import type { BattleState } from '@/types/battle/battle';
+import { shouldEnemySwitch, findBestSwitchIndex } from './ai/battleAI.ts';
 import type { ChoiceRequest } from './helpers/requestHelper.ts';
 import { ShowdownBattleRunner } from './helpers/showdownBattleRunner.ts';
 
@@ -68,8 +68,7 @@ export function computeP1Choice(
   moveIndex?: number
 ): string {
   if (isStruggle) return 'struggle';
-  const activeState = ((active as { value?: BattleState } | null)?.value ||
-    active) as BattleState | null;
+  const activeState = (active as { value?: BattleState } | null)?.value || active;
   const pReq = activeState?.playerRequest as ChoiceRequest | undefined;
   const reqMoves = pReq?.active?.[0]?.moves;
 
@@ -137,16 +136,16 @@ function computeEnemyMoveChoice(active: BattleState | null, eMove: Move | null):
 }
 
 function applyDebugEnemyChoiceOverride(p2Choice: string, p2Skip: boolean): string {
-  if (typeof window === 'undefined') return p2Choice;
+  if (typeof globalThis.window === 'undefined') return p2Choice;
 
-  if (window.__VITE_DEBUG__?.isScriptedReplayMode) {
+  if (globalThis.__VITE_DEBUG__?.isScriptedReplayMode) {
     if (p2Skip) {
       console.debug(
         '[E2E-MOCK-CENTRAL-DEBUG] Preserved the certified history cursor because Showdown did not request a P2 action.'
       );
       return 'pass';
     }
-    const debugObj = window.__VITE_DEBUG__;
+    const debugObj = globalThis.__VITE_DEBUG__;
     const historyChoice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2');
     if (historyChoice) {
       console.debug(
@@ -157,13 +156,13 @@ function applyDebugEnemyChoiceOverride(p2Choice: string, p2Skip: boolean): strin
     return p2Choice;
   }
 
-  if (window.__VITE_DEBUG__?.nextEnemyChoice) {
+  if (globalThis.__VITE_DEBUG__?.nextEnemyChoice) {
     if (!p2Skip) {
-      const override = window.__VITE_DEBUG__.nextEnemyChoice;
+      const override = globalThis.__VITE_DEBUG__.nextEnemyChoice;
       console.debug(
         `[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice in executeTurn: ${override}`
       );
-      window.__VITE_DEBUG__.nextEnemyChoice = undefined;
+      globalThis.__VITE_DEBUG__.nextEnemyChoice = undefined;
       return override;
     }
     console.debug(
@@ -172,8 +171,8 @@ function applyDebugEnemyChoiceOverride(p2Choice: string, p2Skip: boolean): strin
     return p2Choice;
   }
 
-  if (window.__VITE_DEBUG__?.enemyChoicesQueue?.length) {
-    const nextInQueue = window.__VITE_DEBUG__.enemyChoicesQueue.shift();
+  if (globalThis.__VITE_DEBUG__?.enemyChoicesQueue?.length) {
+    const nextInQueue = globalThis.__VITE_DEBUG__.enemyChoicesQueue.shift();
     if (nextInQueue) return nextInQueue;
   }
 
@@ -218,13 +217,13 @@ export async function resolveTurnChoices(
   eMove: Move | null,
   { isStruggle, isWild, p2Skip }: TurnChoiceFlags,
   moveIndex?: number
-) {
+): Promise<{ p1Choice: string; p2Choice: string; p1Skip: boolean; p2Skip: boolean }> {
   const active = store.activeBattle.value;
   let p1Choice = computeP1Choice(active, move, isStruggle, moveIndex);
   let p2Choice = await computeP2Choice(store, p, e, eMove, { isWild, p2Skip });
 
-  if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-    const debugObj = window.__VITE_DEBUG__ as Record<string, unknown>; // open-record: Generic key-value data dictionary container
+  if (typeof globalThis.window !== 'undefined' && globalThis.__VITE_DEBUG__?.isScriptedReplayMode) {
+    const debugObj = globalThis.__VITE_DEBUG__ as Record<string, unknown>; // open-record: Generic key-value data dictionary container
     const historyChoice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2');
     if (historyChoice) {
       p2Choice = historyChoice;

@@ -3,7 +3,7 @@
 ## 1. Resumen y Contexto
 
 - **Objetivo:** Crear una herramienta automatizada y aislada en NodeJS que clone la lógica de combate de Showdown y descargue todos los assets visuales necesarios.
-- **Ubicación de Trabajo:** Todo vivirá dentro de `src/game/battle/showdown/sandbox_db/` para no interferir con el funcionamiento actual del juego principal.
+- **Ubicación de Trabajo:** Todo vivirá dentro de `sandbox/showdown_db/` para no interferir con el funcionamiento actual del juego principal.
 - **Propósito:** Lograr la total independencia de red del motor de combate offline, asegurando que el juego siga funcionando si los servidores externos de Showdown o de PokeAPI se caen.
 - **Público:** Administradores y desarrolladores del proyecto.
 - **Riesgo Aceptado:** Incremento significativo de peso en el repositorio Git local por alojar miles de sprites de Pokémon (PNG/GIF).

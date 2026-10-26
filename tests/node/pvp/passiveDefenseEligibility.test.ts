@@ -1,13 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
+import type { DBRouter } from '@/logic/db/dbRouter';
+import { executePassiveMatchmakingFallback } from '@/logic/pvp/passiveMatchmakingHelper';
+import { resolveDefendingTeam, createPassiveTeamSnapshot } from '@/logic/pvp/pvpTeamHelper';
+import { useAuthStore } from '@/stores/auth';
 import { useGameStore } from '@/stores/game';
 import { usePvPStore } from '@/stores/pvp';
-import { useAuthStore } from '@/stores/auth';
 import { useUIStore } from '@/stores/ui';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { DBRouter } from '@/logic/db/dbRouter';
-import { resolveDefendingTeam, createPassiveTeamSnapshot } from '@/logic/pvp/pvpTeamHelper';
-import { executePassiveMatchmakingFallback } from '@/logic/pvp/passiveMatchmakingHelper';
 
 describe('Passive Defense Eligibility & Matchmaking', () => {
   let mockDb: {

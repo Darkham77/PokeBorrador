@@ -1,6 +1,6 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { LogFn, BattleSide } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const STEALTH_ROCK_DENOMINATOR = 8 as const;
 const MIN_DAMAGE = 1 as const;
@@ -33,7 +33,7 @@ function resolveHazardContext(
 ): { ctx: BattleContext; side: BattleSide } | null {
   const ctx =
     typeof ctxOrLog === 'object' && ctxOrLog !== null && 'activeBattle' in ctxOrLog
-      ? (ctxOrLog as BattleContext)
+      ? ctxOrLog
       : null;
   if (!ctx) return null;
   const active = ctx.activeBattle.value;
@@ -92,7 +92,7 @@ export async function applyEntryHazards(
   pokemon: Pokemon,
   sideOrCtx: unknown,
   ctxOrLog?: BattleContext | LogFn
-) {
+): Promise<void> {
   const resolved = resolveHazardContext(pokemon, sideOrCtx, ctxOrLog);
   if (!resolved) return;
 

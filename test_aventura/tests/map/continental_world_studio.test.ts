@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * tests/node/map/continental_world_studio.test.ts
  *
@@ -5,8 +6,8 @@
  * Verifies procedural terrain, node dispersion, Delaunay/MST road connectivity,
  * urban maquette baking, and continental routes export bundle.
  */
-
 import { describe, it, expect } from 'vitest';
+
 import {
   generateProceduralContinentalTerrain,
   scatterUrbanNodes,
@@ -19,12 +20,12 @@ import {
   getCanonicalTileForBiome,
   validateAntiFrankensteinPalette
 } from '../../logic/map/continentalWorldGenerator.ts';
-import { CELL_BIOME } from '../../types/map/kantoGridModel.ts';
 import {
   CANONICAL_THEME_SOURCES,
   type AdventureProject,
   type UrbanScale
 } from '../../types/map/adventureWorldTypes.ts';
+import { CELL_BIOME } from '../../types/map/kantoGridModel.ts';
 
 describe('Continental World Generator (Overworld Studio)', () => {
   const TEST_WIDTH = 1600;
@@ -100,7 +101,7 @@ describe('Continental World Generator (Overworld Studio)', () => {
       expect(connections.length).toBeGreaterThanOrEqual(nodeIds.length - 1);
 
       // Verify full connectivity using BFS
-      const adjacency: Record<string, string[]> = {};
+      const adjacency: Record<DisplayText, string[]> = {};
       for (const id of nodeIds) adjacency[id] = [];
       for (const [u, v] of connections) {
         adjacency[u]?.push(v);
@@ -198,7 +199,7 @@ describe('Continental World Generator (Overworld Studio)', () => {
 
   describe('rasterizeRoadsOnTerrain', () => {
     it('paints DIRT_PATH over land and BRIDGE over water along connections', () => {
-      const terrain: Record<string, (typeof CELL_BIOME)[keyof typeof CELL_BIOME]> = {
+      const terrain: Record<DisplayText, (typeof CELL_BIOME)[keyof typeof CELL_BIOME]> = {
         '0_0': CELL_BIOME.GRASS,
         '1_0': CELL_BIOME.WATER,
         '2_0': CELL_BIOME.GRASS

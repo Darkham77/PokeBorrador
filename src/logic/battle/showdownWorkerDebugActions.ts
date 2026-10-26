@@ -1,15 +1,16 @@
 import type { SideID } from '@pkmn/sim';
-import {
-  getShowdownWorker,
-  resolveBattleStore,
-  cleanWorkerListener
-} from './showdownWorkerInstance.ts';
+
 import {
   lastSyncTeamStates,
   syncTeamsFromLastWorkerState,
   type SynchronizedPokemonState,
   type WorkerSuccessPayload
 } from './showdownTurnSyncHelper.ts';
+import {
+  getShowdownWorker,
+  resolveBattleStore,
+  cleanWorkerListener
+} from './showdownWorkerInstance.ts';
 
 const SIMULATOR_STATE_TIMEOUT_MS = 5000 as const;
 
@@ -24,7 +25,7 @@ export async function getSimulatorState(): Promise<{ p1: unknown[]; p2: unknown[
       reject(new Error('[ShowdownWorkerClient] Timeout waiting for GET_SIMULATOR_STATE_RESPONSE'));
     }, SIMULATOR_STATE_TIMEOUT_MS);
 
-    const handler = (event: MessageEvent) => {
+    const handler = (event: MessageEvent): void => {
       const data = event.data as { type: string; payload: { p1: unknown[]; p2: unknown[] } };
       const { type, payload } = data;
       if (type === 'GET_SIMULATOR_STATE_RESPONSE') {
@@ -45,7 +46,7 @@ export async function isPlayerTrappedInWorker(): Promise<boolean> {
   const worker = getShowdownWorker();
   if (!worker) return false;
   const { promise, resolve } = Promise.withResolvers<boolean>();
-  const handler = (event: MessageEvent) => {
+  const handler = (event: MessageEvent): void => {
     const data = event.data as { type: string; payload: { trapped: boolean } };
     const { type, payload } = data;
     if (type === 'CHECK_TRAPPED_RESPONSE') {
@@ -74,7 +75,7 @@ export async function applyCheatsInWorker(
     payload: { cheats }
   });
   return new Promise((resolve) => {
-    const handler = async (event: MessageEvent) => {
+    const handler = async (event: MessageEvent): Promise<void> => {
       const data = event.data as { type: string; payload: WorkerSuccessPayload };
       if (data.type === 'APPLY_CHEATS_DONE') {
         cleanWorkerListener(worker, handler);
@@ -114,7 +115,7 @@ export async function applyDebugStatusInWorker(
     payload: { debugStatus: { side, uid, status } }
   });
   return new Promise((resolve) => {
-    const handler = async (event: MessageEvent) => {
+    const handler = async (event: MessageEvent): Promise<void> => {
       const data = event.data as { type: string; payload: WorkerSuccessPayload };
       if (data.type !== 'APPLY_DEBUG_STATUS_DONE') return;
       cleanWorkerListener(worker, handler);

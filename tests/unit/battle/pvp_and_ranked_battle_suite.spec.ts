@@ -4,22 +4,23 @@
  * AFK/reconnection timers, and emergency team triggers.
  */
 
+import { setActivePinia, createPinia } from 'pinia';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test';
 import type { Mock } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
+
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper';
 import {
   getEloTier,
   isAllowedRankGap,
   normalizeRankedRules,
   validatePokemonForRanked
 } from '@/logic/pvp/rankedEngine';
-import { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper';
-import { PVP_TURN_TIMEOUT_SEC, PVP_RECONNECT_WINDOW_SEC } from '@/types/battle/pvp';
-import { useGameStore } from '@/stores/game';
-import { useBoxStore } from '@/stores/box';
-import { useLivePvPStore } from '@/stores/livePvP';
 import { useAuthStore } from '@/stores/auth';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { useBoxStore } from '@/stores/box';
+import { useGameStore } from '@/stores/game';
+import { useLivePvPStore } from '@/stores/livePvP';
+import { PVP_TURN_TIMEOUT_SEC, PVP_RECONNECT_WINDOW_SEC } from '@/types/battle/pvp';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 vi.mock('@/logic/battle/showdownWorkerClient', async (importOriginal) => {

@@ -1,11 +1,13 @@
+import type { DisplayText } from '@francogp/auditor';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { defineStore } from 'pinia';
 import { ref, reactive, watch, computed } from 'vue';
+
+import { logger } from '@/logic/utils/logger';
+import { useAudioStore } from '@/stores/audio.ts';
 import { useAuthStore } from '@/stores/auth.ts';
 import { useGameStore } from '@/stores/game.ts';
 import { useUIStore } from '@/stores/ui.ts';
-import { useAudioStore } from '@/stores/audio.ts';
-import { logger } from '@/logic/utils/logger';
-import type { RealtimeChannel } from '@supabase/supabase-js';
 
 let activeFriendIdsProvider: (() => string[]) | null = null;
 
@@ -36,6 +38,7 @@ export interface ChatMessage {
 }
 
 import { DEFAULT_TRAINER_NAME } from '@/types/system/game.ts';
+
 import { parseInstantEpoch } from './chatDateHelper.ts';
 import { sanitizePrivateChats, type PrivateChat, type PrivateChatMap } from './chatSanitizer.ts';
 
@@ -75,7 +78,7 @@ function ensurePrivateChatRecord(
   chatKey: string,
   isIncoming: boolean,
   senderName: string,
-  initialLastInteractions: Record<string, number> // open-record: User UUID to timestamp mapping
+  initialLastInteractions: Record<DisplayText, number> // open-record: User UUID to timestamp mapping
 ): PrivateChat {
   if (!privateChats[chatKey]) {
     privateChats[chatKey] = {
@@ -128,10 +131,13 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
 
   let inboxChannel: RealtimeChannel | null = null;
   let lastMessageSentTimestamp = 0;
-  const outboxChannels: Record<string, RealtimeChannel> = {}; // open-record: User UUID to Realtime channel mapping
+  const outboxChannels: Record<DisplayText, RealtimeChannel> = {}; // open-record: User UUID to Realtime channel mapping
   let isInitialized = false;
 
-  const getSanitizedChats = (chats: PrivateChatMap | undefined, forceCollapse = false) =>
+  const getSanitizedChats = (
+    chats: PrivateChatMap | undefined,
+    forceCollapse = false
+  ): PrivateChatMap =>
     sanitizePrivateChats(
       chats,
       privateChats,
@@ -145,7 +151,7 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
   if (gameStore.state.chats) {
     Object.assign(
       privateChats,
-      getSanitizedChats(gameStore.state.chats as Record<string, PrivateChat>, true)
+      getSanitizedChats(gameStore.state.chats as Record<DisplayText, PrivateChat>, true)
     ); // open-record: Generic key-value data dictionary container
   }
   isInitialized = true;
@@ -155,7 +161,7 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     () => gameStore.state.chats,
     (newChats) => {
       if (newChats) {
-        const sanitized = getSanitizedChats(newChats as Record<string, PrivateChat>, false); // open-record: Generic key-value data dictionary container
+        const sanitized = getSanitizedChats(newChats as Record<DisplayText, PrivateChat>, false); // open-record: Generic key-value data dictionary container
         for (const key in privateChats) {
           if (!sanitized[key]) {
             delete privateChats[key];
@@ -171,7 +177,7 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     { deep: true }
   );
 
-  async function loadPrivateHistory() {
+  async function loadPrivateHistory(): Promise<void> {
     if (!authStore.user || !gameStore.db) return;
     const myId = authStore.user.id;
 
@@ -190,7 +196,7 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     if (data && Array.isArray(data)) {
       const lastSaveTime =
         ((gameStore.state as Record<string, unknown>)._last_updated as number) || 0; // open-record: Generic key-value data dictionary container
-      const initialLastInteractions: Record<string, number> = {}; // open-record: Generic key-value data dictionary container
+      const initialLastInteractions: Record<DisplayText, number> = {}; // open-record: Generic key-value data dictionary container
 
       data.forEach((row: Record<string, unknown>) => {
         const meta = extractChatRowMeta(row, myId);
@@ -227,11 +233,11 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
         appendChatMessageIfUnique(chat, msgObj, msgEpoch, meta.isIncoming, baselineTime);
       });
       gameStore.state.chats = { ...privateChats };
-      void pruneOldMessages();
+      await pruneOldMessages();
     }
   }
 
-  async function pruneOldMessages() {
+  async function pruneOldMessages(): Promise<void> {
     if (!authStore.user || !gameStore.db) return;
     const myId = authStore.user.id;
 
@@ -259,7 +265,7 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     }
   }
 
-  async function initPrivateInbox() {
+  async function initPrivateInbox(): Promise<void> {
     if (!authStore.user || inboxChannel) return;
 
     const db = gameStore.db;
@@ -270,25 +276,29 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     const channel = db.channel(`chat-inbox-${authStore.user.id}`);
     inboxChannel = channel;
     channel
-      .on('broadcast', { event: 'private_message' }, ({ payload }: { payload: ChatMessage }) => {
-        handleIncomingPrivate(payload);
-        void audioStore.play('receivedMsg');
-      })
+      .on(
+        'broadcast',
+        { event: 'private_message' },
+        async ({ payload }: { payload: ChatMessage }) => {
+          handleIncomingPrivate(payload);
+          await audioStore.play('receivedMsg');
+        }
+      )
       .subscribe();
   }
 
   watch(
     () => [authStore.user, gameStore.isReady] as const,
-    ([user, isReady]) => {
+    async ([user, isReady]) => {
       if (user && isReady) {
         if (inboxChannel) {
-          void inboxChannel.unsubscribe();
+          await inboxChannel.unsubscribe();
           inboxChannel = null;
         }
-        void initPrivateInbox();
+        await initPrivateInbox();
       } else if (!user) {
         if (inboxChannel) {
-          void inboxChannel.unsubscribe();
+          await inboxChannel.unsubscribe();
           inboxChannel = null;
         }
       }
@@ -296,8 +306,9 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     { immediate: true }
   );
 
-  function handleIncomingPrivate(payload: ChatMessage, targetChatId?: string) {
-    const chatKey = targetChatId || (payload.senderId as string);
+  function handleIncomingPrivate(payload: ChatMessage, targetChatId?: string): void {
+    const chatKey = targetChatId || payload.senderId;
+    if (!chatKey) return;
 
     if (!privateChats[chatKey]) {
       privateChats[chatKey] = {
@@ -317,7 +328,7 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     );
     if (isDup) return;
 
-    chat.messages.push(payload as ChatMessage);
+    chat.messages.push(payload);
     chat.lastInteraction = Temporal.Now.instant().epochMilliseconds;
 
     if (chat.messages.length > PRIVATE_CHAT_MAX_MESSAGES) chat.messages.shift();
@@ -330,7 +341,7 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     gameStore.state.chats = { ...privateChats };
   }
 
-  async function sendPrivateMessage(friendId: string, text: string) {
+  async function sendPrivateMessage(friendId: string, text: string): Promise<void> {
     if (!authStore.user || !text.trim() || !privateChats[friendId] || !gameStore.db) return;
 
     const now = Temporal.Now.instant().epochMilliseconds;
@@ -351,9 +362,9 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     if (!outboxChannels[friendId]) {
       const chan = db.channel(`chat-inbox-${friendId}`);
       outboxChannels[friendId] = chan;
-      chan.subscribe((status: string) => {
+      chan.subscribe(async (status: string) => {
         if (status === 'SUBSCRIBED' && outboxChannels[friendId]) {
-          void outboxChannels[friendId]?.send({
+          await outboxChannels[friendId]?.send({
             type: 'broadcast',
             event: 'private_message',
             payload
@@ -361,18 +372,22 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
         }
       });
     } else {
-      void outboxChannels[friendId]?.send({ type: 'broadcast', event: 'private_message', payload });
+      await outboxChannels[friendId]?.send({
+        type: 'broadcast',
+        event: 'private_message',
+        payload
+      });
     }
 
     handleIncomingPrivate(
       {
         ...payload,
-        senderName: (payload.senderName as string) || 'Entrenador',
+        senderName: payload.senderName || 'Entrenador',
         senderId: authStore.user.id
       },
       friendId
     );
-    void audioStore.play('sentMsg');
+    await audioStore.play('sentMsg');
 
     const dbPayload = {
       senderId: authStore.user.id,
@@ -387,7 +402,7 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     }
   }
 
-  function openChat(friendId: string, username: string) {
+  async function openChat(friendId: string, username: string): Promise<void> {
     const existingChat = privateChats[friendId];
     if (existingChat && activeChatId.value === friendId && !existingChat.isCollapsed) {
       return;
@@ -409,11 +424,11 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     }
     activeChatId.value = friendId;
     gameStore.state.chats = { ...privateChats };
-    void gameStore.scheduleSave();
-    void loadPrivateHistory();
+    gameStore.scheduleSave();
+    await loadPrivateHistory();
   }
 
-  function closeChat(friendId: string) {
+  function closeChat(friendId: string): void {
     if (privateChats[friendId]) {
       privateChats[friendId].isCollapsed = true;
       gameStore.state.chats = { ...privateChats };

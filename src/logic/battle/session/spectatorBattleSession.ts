@@ -1,10 +1,12 @@
-import { BaseBattleSession } from './baseBattleSession.ts';
-import type { BattleContext } from '@/types/battle/battleContext';
 import type { RealtimeChannel } from '@supabase/supabase-js';
+
+import type { BattleContext } from '@/types/battle/battleContext';
 import type { PvpTurnStreamPayload } from '@/types/battle/pvp';
-import { filterShowdownLogs } from '../showdownBridge.ts';
+
 import { parseLogsWithSkip } from '../battleTurnLogHelper.ts';
+import { filterShowdownLogs } from '../showdownBridge.ts';
 import { syncTeamsFromLastWorkerState } from '../showdownWorkerClient.ts';
+import { BaseBattleSession } from './baseBattleSession.ts';
 
 export interface SpectatorSessionOptions {
   matchId: string;
@@ -13,11 +15,11 @@ export interface SpectatorSessionOptions {
 }
 
 export class SpectatorBattleSession extends BaseBattleSession {
-  readonly matchId: string;
-  readonly channel?: RealtimeChannel | null;
-  viewerCount: number;
+  public readonly matchId: string;
+  public readonly channel?: RealtimeChannel | null;
+  public viewerCount: number;
 
-  constructor(context: BattleContext, options: SpectatorSessionOptions) {
+  public constructor(context: BattleContext, options: SpectatorSessionOptions) {
     super('pvp_spectator', context, {
       showTurnTimer: true,
       allowBag: false,
@@ -32,11 +34,7 @@ export class SpectatorBattleSession extends BaseBattleSession {
     this.viewerCount = options.initialViewerCount ?? 1;
   }
 
-  async resolveOpponentChoice(_playerChoice: string): Promise<string> {
-    return 'pass';
-  }
-
-  async onStreamTurn(payload: PvpTurnStreamPayload): Promise<void> {
+  public async onStreamTurn(payload: PvpTurnStreamPayload): Promise<void> {
     const store = this.context;
     const filteredLogs = filterShowdownLogs(payload.streamLines || []);
     await parseLogsWithSkip(store, filteredLogs, false, false);
@@ -48,7 +46,7 @@ export class SpectatorBattleSession extends BaseBattleSession {
     }
   }
 
-  async processRewards(_won: boolean): Promise<void> {
+  public async processRewards(_won: boolean): Promise<void> {
     // Spectators do not receive battle rewards or ELO updates
   }
 }

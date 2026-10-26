@@ -1,7 +1,10 @@
+import type { DisplayText, JsonObject } from '@francogp/auditor';
+
 import {
   isBattleSubStateName,
   type BattleSubStateName
 } from '@/logic/battle/battleStateMachine.ts';
+
 import {
   CERTIFIED_BATTLE_TEAM_SLOTS,
   type CertifiedBattleTeamSlot
@@ -30,7 +33,7 @@ export type BattleReadySubState = BattleSubStateName | '';
 
 export interface BattleReadySwitchSlot {
   showdownSlot: CertifiedBattleTeamSlot;
-  pokemonUid: string; // domain-ok: Open dynamic text or non-domain string payload
+  pokemonUid: DisplayText;
 }
 
 export interface BattleReadyForInputDetail {
@@ -43,7 +46,7 @@ export interface BattleReadyForInputDetail {
 
 export function isBattleReadyForInputDetail(value: unknown): value is BattleReadyForInputDetail {
   if (typeof value !== 'object' || value === null) return false;
-  const obj = value as Record<string, unknown>; // open-record: Generic key-value data dictionary container
+  const obj = value as JsonObject;
   if (
     !('subState' in obj) ||
     !('p1ChoiceIdx' in obj) ||
@@ -63,7 +66,7 @@ export function isBattleReadyForInputDetail(value: unknown): value is BattleRead
     Array.isArray(playerSwitchSlots) &&
     playerSwitchSlots.every((slot) => {
       if (typeof slot !== 'object' || slot === null) return false;
-      const s = slot as Record<string, unknown>; // open-record: Generic key-value data dictionary container
+      const s = slot as JsonObject;
       return (
         'showdownSlot' in s &&
         CERTIFIED_BATTLE_TEAM_SLOTS.some((candidate) => candidate === s.showdownSlot) &&

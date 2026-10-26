@@ -2,25 +2,7 @@ const ENCOUNTER_INITIAL_CUMULATIVE_RATE = 0;
 const FIRST_POOL_INDEX = 0;
 
 import { GAME_RATIOS } from '@/data/system/constants';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type {
-  MapLocation,
-  Encounter,
-  EncounterOptions,
-  EncounterState
-} from '@/types/pokemon/encounters';
-import type { DayPhase } from '@/logic/utils/timeUtils';
-import type { Event as GameEvent } from '@/logic/events/eventEngine';
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
 import type { MapRouteId } from '@/data/world/map-assets';
-import {
-  checkDebugForcedEncounter,
-  checkRivalSpecialEncounter,
-  checkDefenderSpecialEncounter,
-  checkGuardianSpecialEncounter,
-  type ViteDebugEncounterConfig
-} from './specialEncounterCheckers.ts';
 import {
   DEBUG_TRAINER_CHANCE_PERCENT,
   PERCENTAGE_MULTIPLIER_FACTOR,
@@ -38,6 +20,22 @@ import {
   VISITOR_WEIGHT_REPLACEMENT_VALUE,
   DEFAULT_WEATHER_MULTIPLIER_NORMAL
 } from '@/logic/constants/encounters';
+import type { Event as GameEvent } from '@/logic/events/eventEngine';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import {
+  getEffectiveLeaderAbility,
+  getEncounterRateMultiplier,
+  getFishingWeightMultiplier
+} from '@/logic/pokemon/pokemonFieldAbilities';
+import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import type {
+  MapLocation,
+  Encounter,
+  EncounterOptions,
+  EncounterState
+} from '@/types/pokemon/encounters';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 import {
   getSpeciesEntries,
@@ -48,10 +46,12 @@ import {
   getMapSpawnPoolData
 } from './routeSpawnMath.ts';
 import {
-  getEffectiveLeaderAbility,
-  getEncounterRateMultiplier,
-  getFishingWeightMultiplier
-} from '@/logic/pokemon/pokemonFieldAbilities';
+  checkDebugForcedEncounter,
+  checkRivalSpecialEncounter,
+  checkDefenderSpecialEncounter,
+  checkGuardianSpecialEncounter,
+  type ViteDebugEncounterConfig
+} from './specialEncounterCheckers.ts';
 
 const RAINY_WEATHER_IDS = [
   'rain',
@@ -100,7 +100,7 @@ export function checkSpecialEncounters(
   options: EncounterOptions,
   allMapIds: MapRouteId[]
 ): Encounter | null {
-  const win = (typeof window !== 'undefined' ? window : null) as
+  const win = (typeof globalThis.window !== 'undefined' ? globalThis : null) as
     | (Window & {
         __VITE_DEBUG__?: ViteDebugEncounterConfig;
       })
@@ -113,7 +113,7 @@ export function checkSpecialEncounters(
   const hasTrainerOverride =
     debug?.trainerChancePct !== undefined && debug?.trainerChancePct !== null;
   const trainerOverrideChance = hasTrainerOverride
-    ? debug!.trainerChancePct! / 100
+    ? debug.trainerChancePct! / 100
     : debug?.trainerChance50
       ? DEBUG_TRAINER_CHANCE_PERCENT / 100
       : null;
@@ -251,7 +251,7 @@ export function calculateEncounterTypeWeights(
   state: EncounterState,
   options: EncounterOptions
 ): { groundWeight: number; fishingWeight: number; archWeight: number; totalWeight: number } {
-  const win = (typeof window !== 'undefined' ? window : null) as
+  const win = (typeof globalThis.window !== 'undefined' ? globalThis : null) as
     | (Window & {
         __VITE_DEBUG__?: {
           fishingChancePct?: number | null;

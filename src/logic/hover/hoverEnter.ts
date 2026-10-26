@@ -1,9 +1,10 @@
 import { gsap } from 'gsap';
-import { getHoverEnterStrategy } from './hoverStrategies.ts';
+
 import {
   calculateButtonHoverEnterVars,
   triggerChildHoverTransitions
 } from './hoverEnterChildren.ts';
+import { getHoverEnterStrategy } from './hoverStrategies.ts';
 
 const DEFAULT_HOVER_SCALE = 1.03 as const;
 const DEFAULT_HOVER_Y = -1.5 as const;
@@ -61,7 +62,7 @@ function resolveStrategyHoverEnterVars(el: HTMLElement): gsap.TweenVars {
   return tweenVars;
 }
 
-export function triggerEnter(el: HTMLElement) {
+export function triggerEnter(el: HTMLElement): void {
   if (shouldSkipHoverEnter(el)) return;
 
   const tweenVars = isHoverButtonElement(el)

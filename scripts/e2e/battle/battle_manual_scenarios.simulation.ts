@@ -134,7 +134,7 @@ test.describe('Battle Manual E2E Scenarios', () => {
         );
       },
       undefined,
-      { timeout: 30000 }
+      { timeout: 10000 }
     );
 
     // 3. Verificar que todos los campos del combate fueron restaurados 1:1
@@ -222,7 +222,7 @@ test.describe('Battle Manual E2E Scenarios', () => {
         return fsmState === 'SEARCH_PHASE' || fsmState === 'ACTIVE_BATTLE';
       },
       undefined,
-      { timeout: 30000 }
+      { timeout: 10000 }
     );
 
     const searchState = await page.evaluate(async () => {

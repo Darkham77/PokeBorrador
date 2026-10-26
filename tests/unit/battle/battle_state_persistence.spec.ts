@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { ref } from 'vue';
+
 import type { BattleState, BattleStages } from '@/types/battle/battle';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 vi.mock('@/logic/weather/weatherRegistry', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/logic/weather/weatherRegistry')>();

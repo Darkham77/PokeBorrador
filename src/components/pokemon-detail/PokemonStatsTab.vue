@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import PokemonStatBar from '@/components/pokemon-detail/PokemonStatBar.vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import PokemonStatBar from '@/components/pokemon-detail/PokemonStatBar.vue';
 import { calculateTotalEvs, calculateEvBonusIvs, MAX_TOTAL_EVS } from '@/logic/pokemon/evMath';
-import { calculateTotalBaseStats, calculateTotalIVs } from '@/logic/pokemon/statsMath';
 import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils';
+import { calculateTotalBaseStats, calculateTotalIVs } from '@/logic/pokemon/statsMath';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 interface StatDisplay {
   id: string;

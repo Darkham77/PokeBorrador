@@ -1,12 +1,13 @@
-import { toID } from '@/logic/utils/strings.ts';
-import { EGG_GROUPS, BABY_MAP } from './breedingData.ts';
-import { getFirstEvolution } from '@/logic/pokemon/evolutionEngine';
-import type { Pokemon, BreedingCompatibility } from '@/types/pokemon/pokemon';
 import {
   isPokemonSpeciesId,
   requirePokemonSpeciesId,
   type PokemonSpeciesId
 } from '@/data/pokemon/pokedex';
+import { getFirstEvolution } from '@/logic/pokemon/evolutionEngine';
+import { toID } from '@/logic/utils/strings.ts';
+import type { Pokemon, BreedingCompatibility } from '@/types/pokemon/pokemon';
+
+import { EGG_GROUPS, BABY_MAP } from './breedingData.ts';
 
 /**
  * breedingEngine.ts

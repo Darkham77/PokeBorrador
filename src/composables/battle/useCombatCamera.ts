@@ -1,7 +1,18 @@
-import { ref, onMounted, onUnmounted, computed, watch, type CSSProperties, type Ref } from 'vue';
+import type { DisplayText } from '@francogp/auditor';
 import { useResizeObserver } from '@vueuse/core';
-import { gameBus } from '@/logic/events/gameBus';
+import {
+  ref,
+  onMounted,
+  onUnmounted,
+  computed,
+  watch,
+  type CSSProperties,
+  type ComputedRef,
+  type Ref
+} from 'vue';
+
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
+import { gameBus } from '@/logic/events/gameBus';
 import { useBattleStore } from '@/stores/battle/battle';
 
 const COVER_SAFETY_MARGIN = 1.02;
@@ -17,7 +28,14 @@ const DEFAULT_INITIAL_HEIGHT_PX = 766;
  * useCombatCamera
  * Implements a dynamic 2D camera system based on docs/architecture/combat_camera.md
  */
-export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
+export function useCombatCamera(viewportRef: Ref<HTMLElement | null>): {
+  cameraStyles: ComputedRef<CSSProperties>;
+  worldStyles: ComputedRef<CSSProperties & Record<DisplayText, string | number>>;
+  showGuides: ComputedRef<boolean>;
+  scale: Ref<number, number>;
+  minZoom: ComputedRef<number>;
+  objectScale: number;
+} {
   const battleStore = useBattleStore();
   // Reactive State
   const vpWidth = ref(0);
@@ -67,7 +85,7 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
     justifyContent: 'center' as const
   }));
 
-  const worldStyles = computed<CSSProperties & Record<string, string | number>>(() => ({
+  const worldStyles = computed<CSSProperties & Record<DisplayText, string | number>>(() => ({
     // open-record: Custom CSS variables dictionary
     position: 'absolute' as const,
     top: '0',
@@ -84,7 +102,7 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
     '--preview-size': WORLD_CONSTANTS.PREVIEW_SIZE
   }));
 
-  const updateCamera = (width: number, height: number) => {
+  const updateCamera = (width: number, height: number): void => {
     // Stability Filter: Ignore zero dimensions or browser initialization values
     if (!width || !height || width < MIN_VIEWPORT_SIZE_PX || height < MIN_VIEWPORT_SIZE_PX) return;
 

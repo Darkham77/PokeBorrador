@@ -1,11 +1,15 @@
-import type { SBCtx } from './showdownBridgeCtx.ts';
-import { requireVolatileStatusKey, type Pokemon } from '../../types/pokemon/pokemon.ts';
+import type { DisplayText } from '@francogp/auditor';
+
+import { logger } from '@/logic/utils/logger.ts';
 import { toID } from '@/logic/utils/strings.ts';
+
 import { requireAbilityId } from '../../data/battle/abilities.ts';
 import { requireItemId } from '../../data/inventory/items.ts';
+import { requireVolatileStatusKey, type Pokemon } from '../../types/pokemon/pokemon.ts';
+import type { SBCtx } from './showdownBridgeCtx.ts';
 
 // open-record: Showdown cant messages dictionary
-const CANT_MESSAGES: Readonly<Record<string, string>> = {
+const CANT_MESSAGES: Readonly<Record<DisplayText, string>> = {
   par: 'está paralizado y no puede moverse',
   slp: 'está dormido',
   frz: 'está congelado',
@@ -37,7 +41,9 @@ function applyFlinchStateAndAnimation(
   target.volatileCounters['flinch'] = 1;
   const side = getSide(targetIdent);
   if (side && store.animations?.triggerFlinchAnim) {
-    void store.animations.triggerFlinchAnim(side);
+    store.animations.triggerFlinchAnim(side).catch((err) => {
+      logger.warn('ShowdownBridge', 'Failed to play flinch anim', err);
+    });
   }
 }
 
@@ -164,6 +170,9 @@ function handleEndItemToken(
   return true;
 }
 
+const PROTECTION_EFFECT_VALUES = ['protect', 'detect', 'endure'] as const;
+const PROTECTION_EFFECTS: ReadonlySet<string> = new Set<string>(PROTECTION_EFFECT_VALUES);
+
 function handleSingleMoveOrTurnToken(
   target: Pokemon | null | undefined,
   moveOrEffect: string,
@@ -175,7 +184,7 @@ function handleSingleMoveOrTurnToken(
   if (target) {
     if (!target.volatileCounters) target.volatileCounters = {};
     target.volatileCounters[cleanEffect] = 1;
-    if (cleanEffect === 'protect' || cleanEffect === 'detect' || cleanEffect === 'endure') {
+    if (PROTECTION_EFFECTS.has(cleanEffect)) {
       store.addLog(`¡${target.name} se protegió!`, 'log-info', target);
     }
   }
@@ -236,7 +245,7 @@ function handleSwapToken(ctx: SBCtx): boolean {
 }
 
 // open-record: Showdown item and ability token handlers dispatch table
-const ITEM_ABILITY_HANDLERS: Readonly<Record<string, (ctx: SBCtx) => boolean>> = {
+const ITEM_ABILITY_HANDLERS: Readonly<Record<DisplayText, (ctx: SBCtx) => boolean>> = {
   cant: handleCantToken,
   '-cant': handleCantToken,
   '-activate': (ctx) =>

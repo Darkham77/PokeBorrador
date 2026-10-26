@@ -9,8 +9,13 @@ const MODAL_ANIM_CARD_ENTER_DURATION_SEC = 0.35;
 const MODAL_ANIM_CARD_LEAVE_DURATION_SEC = 0.25;
 const MODAL_ANIM_BACKDROP_LEAVE_DURATION_SEC = 0.15;
 
-export function useAdventureModalAnims() {
-  const onModalEnter = (el: Element, done: () => void) => {
+export interface UseAdventureModalAnimsReturn {
+  readonly onModalEnter: (el: Element, done: () => void) => void;
+  readonly onModalLeave: (el: Element, done: () => void) => void;
+}
+
+export function useAdventureModalAnims(): UseAdventureModalAnimsReturn {
+  const onModalEnter = (el: Element, done: () => void): void => {
     const backdrop = el as HTMLElement;
     const card = backdrop.querySelector('.adv-event-modal-card');
     if (!card) {
@@ -36,7 +41,7 @@ export function useAdventureModalAnims() {
     );
   };
 
-  const onModalLeave = (el: Element, done: () => void) => {
+  const onModalLeave = (el: Element, done: () => void): void => {
     const backdrop = el as HTMLElement;
     const card = backdrop.querySelector('.adv-event-modal-card');
     if (!card) {

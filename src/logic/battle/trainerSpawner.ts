@@ -1,22 +1,21 @@
+import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases';
 import {
   TRAINER_TYPES,
   TRAINER_TYPE_KEYS,
   getArchetypePool,
   type TrainerTypeKey
 } from '@/data/player/trainerTypes';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { MapLocation } from '@/types/pokemon/encounters';
-import type { MapRouteId } from '@/data/world/map-assets';
-import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
 import { requireNpcSpriteId, type NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { MapRouteId } from '@/data/world/map-assets';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { generateNpcName } from '@/logic/utils/npcNameGenerator';
+import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
+import { getSpritesForArchetype } from '@/logic/utils/npcSpriteRouter';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { PlayerClassId, PlayerClassState } from '@/types/system/game';
 
 import { buildTrainerTeam } from './trainerFactory.ts';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { getSpritesForArchetype } from '@/logic/utils/npcSpriteRouter';
-import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases';
-import { generateNpcName } from '@/logic/utils/npcNameGenerator';
 
 // Default generic configuration of probabilities and weights
 const DEFAULT_ARCHETYPE_WEIGHTS: Record<TrainerTypeKey, number> = {
@@ -192,7 +191,7 @@ export async function buildTrainerEncounter(
 }> {
   gsState.trainerChance = 5;
 
-  const mapsList = pokemonDataProvider.getMaps() as MapLocation[];
+  const mapsList = pokemonDataProvider.getMaps();
   const targetMap = mapsList.find((m) => m.id === locId);
   const baseLv = targetMap?.lv?.[0] || 5;
 

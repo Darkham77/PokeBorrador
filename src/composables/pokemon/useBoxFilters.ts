@@ -1,17 +1,19 @@
-import { ref, computed, type Ref } from 'vue';
 import { useStorage, refDebounced } from '@vueuse/core';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { ref, computed, type Ref, type ComputedRef } from 'vue';
+
+import type { PokemonFilterTagId } from '@/logic/constants/tags';
 import { FRIENDSHIP_SEAL_TIERS } from '@/types/pokemon/friendship';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { matchesAllBoxFilters, checkHasActiveFilters } from './boxFilterPredicates.ts';
 import { sortBoxItems } from './boxSortComparators.ts';
-import type { PokemonFilterTagId } from '@/logic/constants/tags';
 
 export const FRIENDSHIP_SEAL_TIER_FILTERS = ['all', ...FRIENDSHIP_SEAL_TIERS] as const;
 type FriendshipSealTierFilter = (typeof FRIENDSHIP_SEAL_TIER_FILTERS)[number];
 
 const DEFAULT_FILTER_DEBOUNCE_MS = 150 as const;
 
-interface FilterState {
+export interface BoxFilterState {
   tier: string;
   type: string;
   levelMin: number;
@@ -45,7 +47,22 @@ interface FilterState {
   friendshipMaxOnly: boolean;
 }
 
-export function useBoxFilters(box: Ref<(Pokemon | null)[]>, options?: { debounceMs?: number }) {
+export interface UseBoxFiltersReturn {
+  filters: Ref<BoxFilterState>;
+  sortMode: Ref<string>;
+  sortDirection: Ref<string>;
+  isFiltersOpen: Ref<boolean>;
+  processedBoxList: ComputedRef<{ p: Pokemon | null; index: number }[]>;
+  hasActiveFilters: ComputedRef<boolean>;
+  toggleFilters: () => void;
+  resetFilters: () => void;
+  setBoxSort: (mode: string) => void;
+}
+
+export function useBoxFilters(
+  box: Ref<(Pokemon | null)[]>,
+  options?: { debounceMs?: number }
+): UseBoxFiltersReturn {
   const sortMode = useStorage('box_sort_mode', 'recent');
   const sortDirection = useStorage('box_sort_direction', 'desc');
   const isFiltersOpen = ref(false);
@@ -61,7 +78,7 @@ export function useBoxFilters(box: Ref<(Pokemon | null)[]>, options?: { debounce
   const MAX_POKEMON_LEVEL_CONST = 100;
   const MAX_POKEMON_FRIENDSHIP_CONST = 255;
 
-  const filters = ref<FilterState>({
+  const filters = ref<BoxFilterState>({
     tier: 'all',
     type: 'all',
     levelMin: 1,
@@ -129,11 +146,11 @@ export function useBoxFilters(box: Ref<(Pokemon | null)[]>, options?: { debounce
     return list;
   });
 
-  function toggleFilters() {
+  function toggleFilters(): void {
     isFiltersOpen.value = !isFiltersOpen.value;
   }
 
-  function resetFilters() {
+  function resetFilters(): void {
     filters.value = {
       tier: 'all',
       type: 'all',
@@ -171,7 +188,7 @@ export function useBoxFilters(box: Ref<(Pokemon | null)[]>, options?: { debounce
     sortDirection.value = 'desc';
   }
 
-  function setBoxSort(mode: string) {
+  function setBoxSort(mode: string): void {
     sortMode.value = mode;
   }
 

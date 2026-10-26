@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import BaseModal from '@/components/common/BaseModal.vue';
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { toPokemonType, type PokemonType } from '@/data/battle/types';
 import {
   SEASONAL_THEMES_BY_ID,
   getSeasonalThemeForMonth,
@@ -11,7 +12,7 @@ import {
   type SeasonalThemeConfig
 } from '@/data/system/rankedData';
 import { resolveMedalTournamentInfo } from '@/logic/pvp/rankedEngine';
-import { toPokemonType, type PokemonType } from '@/data/battle/types';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
 import type { RankedSeasonMedal } from '@/types/battle/pvp';
 
@@ -64,7 +65,7 @@ const allowedTypes = computed<PokemonType[]>(() => {
   return (resolvedTheme.value.allowedTypes || []).map(toPokemonType);
 });
 
-const getPokemonRewardSprite = (species: string, isShiny = true) => {
+const getPokemonRewardSprite = (species: string, isShiny = true): string => {
   return getAssetUrl(ASSET_TYPES.POKEMON, species, { isShiny });
 };
 </script>

@@ -27,6 +27,7 @@ General system maintenance scripts, import fixes, server configurations, and dev
 - **Decoupled Server Catalog Generation (`configure_official_servers.ts`)**: Maintenance scripts generating server configurations MUST output exclusively to gitignored `src/data/system/servers.local.json` in pure JSON. Mutating tracked TypeScript files (`official_servers.ts`) is strictly forbidden to prevent Git working tree pollution during automated deployment or local initialization. It is executed automatically as part of `npm run dev`, environment setup scripts (`setup-linux.sh`, `setup-windows.ps1`), and CI deployment workflows to compile active server profiles from `.env` or `process.env`.
 - **Idempotent Version Governance & Non-Destructive Setup (`setup-linux.sh`, `setup-windows.ps1`)**: Setup and environment preparation scripts by default in developer workstations query `nodejs.org` for the latest Current stable Node.js release, synchronize `.node-version` (with fallback to `.nvmrc`) and `package.json`, update `npm@latest` globally in that isolated Node version, and execute `npm ci`. In automated deployment, CI pipelines, or server environments, passing `--declared-versions` / `-DeclaredVersions` (aliases `--locked`, `--pinned`) strictly freezes the installation to the versions declared in the commit (`.node-version` / `package.json`) without network queries, without mutating Git-tracked files, and without updating npm. Setup scripts MUST NEVER automatically delete or uninstall pre-existing Node versions in NVM belonging to other projects; pruning is strictly restricted to explicit `--prune-other-versions` / `-PruneOtherVersions` flags. Furthermore, setup scripts MUST NOT mutate global user configuration (`~/.npmrc`) or clear system-wide caches; all project-specific npm security policies (`ignore-scripts=true`, `audit-level=high`) MUST be scoped exclusively to the local repository `.npmrc`.
 - **Reverse Proxy WebSocket HMR Auto-Configuration (`vite.config.ts`)**: Development server configuration MUST detect reverse-proxy environments (`DEPLOY_SERVER_NAME`, `VITE_HMR_PORT`, `VITE_REVERSE_PROXY=true`) and automatically configure `hmr: { protocol: 'wss', clientPort: 443 }` and `allowedHosts: true`. This prevents WebSocket connection drops when accessing the Vite dev server over HTTPS through an external SSL-terminating reverse proxy (Nginx, Apache).
+- **QA Inventory Injection & Tester Utilities (`populate_inventory.ts` / `npm run test:populate-inventory`)**: Maintenance and QA utility generating browser DevTools snippets to inject canonical Showdown testing item sets (`TEST_INVENTORY`) into active game saves.
 
 ## Key Files
 
@@ -35,7 +36,6 @@ General system maintenance scripts, import fixes, server configurations, and dev
 - [`admin_rename.ts`](./admin_rename.ts): Administrative CLI tool for player renaming.
 - [`repair_account_legality.ts`](./repair_account_legality.ts): Database maintenance script repairing account legality.
 - [`diagnose_account.ts`](./diagnose_account.ts): Database maintenance script for account diagnostics.
-- [`vite-plugin-precompress.ts`](./vite-plugin-precompress.ts): Static asset precompression plugin for Brotli and Gzip.
 - [`vite-plugin-dev-shadow-editor.ts`](./vite-plugin-dev-shadow-editor.ts): Dev shadow editor middleware plugin.
 - [`vite-plugin-lan-pvp.ts`](./vite-plugin-lan-pvp.ts): LAN PvP dev server middleware plugin.
 - [`vite-plugin-sass-traps.ts`](./vite-plugin-sass-traps.ts): SCSS traps fixer plugin.
@@ -51,6 +51,7 @@ General system maintenance scripts, import fixes, server configurations, and dev
 - [`check_environment.ts`](./check_environment.ts): Module implementation.
 - [`inject_template_ids.ts`](./inject_template_ids.ts): AST-based automated injector for unique template control IDs.
 - [`migrate_dox_sections.ts`](./migrate_dox_sections.ts): Module implementation.
+- [`populate_inventory.ts`](./populate_inventory.ts): Database maintenance script populating player inventory with test and debugging items.
 
 ## Work Guidance
 

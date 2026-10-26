@@ -1,8 +1,7 @@
-import type { BattleContext } from '@/types/battle/battleContext';
-import type { BattleState, BattleOutcomeFlags } from '@/types/battle/battle';
 import { gameBus } from '@/logic/events/gameBus';
 import { gsapSleep } from '@/logic/utils/gsapHelpers';
-
+import type { BattleState, BattleOutcomeFlags } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon.ts';
 
 const ENEMY_FLEE_ANIMATION_DELAY_MS = 1000;
@@ -59,7 +58,7 @@ export async function handleBattleDefeatFlow(
   await ctx.gs.save(false);
   if (ctx.activeBattle.value !== active) return;
 
-  void ctx.audio.play('defeat');
+  await ctx.audio.play('defeat');
 
   await fsm.transition(BATTLE_STATES.EXIT_BATTLE);
   await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.ENTRY_CHECK);

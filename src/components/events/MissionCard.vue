@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { useTemplateRef } from 'vue';
 import { gsap } from 'gsap';
+import { useTemplateRef } from 'vue';
+
 import type { ItemId } from '@/data/inventory/items';
-import MissionCardRulesBox from './MissionCardRulesBox.vue';
+import type { DetailedMissionReward } from '@/logic/player/classMissionsData';
+
 import MissionCardActiveOperation from './MissionCardActiveOperation.vue';
 import MissionCardRewards from './MissionCardRewards.vue';
-import type { DetailedMissionReward } from '@/logic/player/classMissionsData';
+import MissionCardRulesBox from './MissionCardRulesBox.vue';
 
 const cardRef = useTemplateRef<HTMLElement>('cardRef');
 
@@ -72,7 +74,7 @@ const GSAP_HOVER_SPRITE_SCALE = 1.15;
 const GSAP_HOVER_SPRITE_Y_OFFSET_PX = -6;
 const MISSION_CARD_HOVER_SCALE_BOOST = 1.02;
 
-const handleMouseEnter = () => {
+const handleMouseEnter = (): void => {
   if (!cardRef.value) return;
   const isAvail = props.isAvailable && !props.isCompleted;
   const isLock = !props.isAvailable && !props.isCompleted;
@@ -112,7 +114,7 @@ const handleMouseEnter = () => {
   }
 };
 
-const handleMouseLeave = () => {
+const handleMouseLeave = (): void => {
   if (!cardRef.value) return;
   const isAvail = props.isAvailable && !props.isCompleted;
   const isLock = !props.isAvailable && !props.isCompleted;
@@ -152,7 +154,7 @@ const handleMouseLeave = () => {
   }
 };
 
-const handleImgError = (e: Event) => {
+const handleImgError = (e: Event): void => {
   const target = e.target as HTMLImageElement;
   target.style.display = 'none';
   const placeholder = target.nextElementSibling as HTMLElement;

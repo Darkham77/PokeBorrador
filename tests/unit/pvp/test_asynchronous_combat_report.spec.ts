@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useLivePvPStore } from '@/stores/livePvP';
-import { useGameStore } from '@/stores/game';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { useLivePvPStore } from '@/stores/livePvP';
 
 describe('Asynchronous Combat Report Recording', () => {
   beforeEach(() => {

@@ -1,6 +1,6 @@
-import type { MapLocation, MapLocationWeatherConfig } from '@/types/pokemon/encounters';
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
 import { getWeatherFamily } from '@/data/system/weatherFamilies';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import type { MapLocation, MapLocationWeatherConfig } from '@/types/pokemon/encounters';
 
 /**
  * Resolves the canonical weather spawn configuration for a map location.

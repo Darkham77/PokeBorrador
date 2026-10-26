@@ -1,6 +1,8 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
 import { safeParse } from 'valibot';
+import { describe, it } from 'vite-plus/test';
+
 import {
   userProfileSchema,
   trainerNameSchema,

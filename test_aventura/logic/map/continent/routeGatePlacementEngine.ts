@@ -17,15 +17,14 @@ import type {
   POINode,
   SettlementLayoutResult
 } from '../../../types/map/poiTypes.ts';
-import type { ContinentMapResult } from '../continentGenerator.ts';
+import type {
+  EmbeddedCorridor,
+  EmbeddedCorridorWaypoint,
+  GraphEdgeKind
+} from '../../../types/map/pokemonGraphTypes.ts';
 import type { SettlementTerrainContext } from '../cityLayoutEngine.ts';
 import { generateSettlementLayout } from '../cityLayoutEngine.ts';
-import {
-  GRAPH_EDGE_KINDS,
-  type EmbeddedCorridor,
-  type EmbeddedCorridorWaypoint,
-  type GraphEdgeKind
-} from '../../../types/map/pokemonGraphTypes.ts';
+import type { ContinentMapResult } from '../continentGenerator.ts';
 
 export interface SplicedEmbeddedCorridor extends EmbeddedCorridor {
   readonly customStartGw?: EmbeddedCorridorWaypoint;
@@ -68,10 +67,13 @@ const GATE_SEED_MULTIPLIER = 31;
 const PRIMARY_CORRIDOR_KINDS = ['main_chain', 'cycle'] as const satisfies readonly GraphEdgeKind[];
 const PRIMARY_CORRIDOR_KINDS_SET: ReadonlySet<GraphEdgeKind> = new Set(PRIMARY_CORRIDOR_KINDS);
 
-const FALLBACK_CORRIDOR_KINDS_SET: ReadonlySet<GraphEdgeKind> = new Set(
-  GRAPH_EDGE_KINDS.filter(
-    (kind) => kind === 'main_chain' || kind === 'cycle' || kind === 'branch_stub'
-  )
+const FALLBACK_CORRIDOR_KINDS = [
+  'main_chain',
+  'cycle',
+  'branch_stub'
+] as const satisfies readonly GraphEdgeKind[];
+const FALLBACK_CORRIDOR_KINDS_SET: ReadonlySet<GraphEdgeKind> = new Set<GraphEdgeKind>(
+  FALLBACK_CORRIDOR_KINDS
 );
 const PRIMARY_GATE_MIN_SEPARATION = 10;
 const FALLBACK_GATE_CORRIDOR_LENGTH = 16;
@@ -79,6 +81,76 @@ const FALLBACK_GATE_SEARCH_START_RATIO = 0.15;
 const FALLBACK_GATE_SEARCH_END_RATIO = 0.85;
 const FALLBACK_GATE_PROXIMITY_DISTANCE = 18;
 const FALLBACK_GATE_MIN_SEPARATION = 6;
+const GATE_CLEARANCE_NEGATIVE_OFFSET = -2;
+
+function isGateClearanceValid(
+  gx: number,
+  gy: number,
+  width: number,
+  height: number,
+  continent: ContinentMapResult
+): boolean {
+  for (let dy = GATE_CLEARANCE_NEGATIVE_OFFSET; dy <= GATE_CLEARANCE_EXTENT + 1; dy++) {
+    for (let dx = GATE_CLEARANCE_NEGATIVE_OFFSET; dx <= GATE_CLEARANCE_EXTENT + 1; dx++) {
+      const x = gx + dx;
+      const y = gy + dy;
+      if (
+        x < 0 ||
+        x >= width ||
+        y < 0 ||
+        y >= height ||
+        continent.terrainMatrix[y]?.[x] === 'water' ||
+        continent.terrainMatrix[y]?.[x] === 'water_deep' ||
+        continent.terrainMatrix[y]?.[x] !== 'grass' ||
+        (continent.heightmap[y]?.[x] ?? 0) !== 0 ||
+        continent.resolvedMountain.occupiedFootCells[y]?.[x]
+      ) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function isGateTooCloseToPoisOrGates(
+  gx: number,
+  gy: number,
+  pois: readonly POINode[],
+  placedGates: readonly POINode[],
+  minProximity: number,
+  minSep: number
+): boolean {
+  const cx = gx + GATE_SEARCH_OFFSET;
+  const cy = gy + GATE_SEARCH_OFFSET;
+  for (const p of pois) {
+    const px = p.gridX + Math.floor(p.footprint.width / 2);
+    const py = p.gridY + Math.floor(p.footprint.height / 2);
+    if (Math.hypot(cx - px, cy - py) < minProximity) {
+      return true;
+    }
+    const sepX = Math.max(
+      0,
+      p.gridX - (gx + GATE_DEFAULT_SIZE),
+      gx - (p.gridX + p.footprint.width)
+    );
+    const sepY = Math.max(
+      0,
+      p.gridY - (gy + GATE_DEFAULT_SIZE),
+      gy - (p.gridY + p.footprint.height)
+    );
+    if (Math.hypot(sepX, sepY) < minSep) {
+      return true;
+    }
+  }
+  for (const g of placedGates) {
+    const gx2 = g.gridX + GATE_SEARCH_OFFSET;
+    const gy2 = g.gridY + GATE_SEARCH_OFFSET;
+    if (Math.hypot(cx - gx2, cy - gy2) < minProximity) {
+      return true;
+    }
+  }
+  return false;
+}
 
 /**
  * Places procedural route gatehouse checkpoints along candidate routes and splices corridors.
@@ -138,68 +210,13 @@ export function placeProceduralRouteGates(
           continue;
         }
 
-        let valid = true;
-        for (let dy = -2; dy <= GATE_CLEARANCE_EXTENT + 1; dy++) {
-          for (let dx = -2; dx <= GATE_CLEARANCE_EXTENT + 1; dx++) {
-            const x = gx + dx;
-            const y = gy + dy;
-            if (
-              x < 0 ||
-              x >= width ||
-              y < 0 ||
-              y >= height ||
-              continent.terrainMatrix[y]?.[x] === 'water' ||
-              continent.terrainMatrix[y]?.[x] === 'water_deep' ||
-              continent.terrainMatrix[y]?.[x] !== 'grass' ||
-              (continent.heightmap[y]?.[x] ?? 0) !== 0 ||
-              continent.resolvedMountain.occupiedFootCells[y]?.[x]
-            ) {
-              valid = false;
-              break;
-            }
-          }
-          if (!valid) break;
+        if (!isGateClearanceValid(gx, gy, width, height, continent)) {
+          continue;
         }
 
-        if (valid) {
-          const cx = gx + GATE_SEARCH_OFFSET;
-          const cy = gy + GATE_SEARCH_OFFSET;
-          let tooClose = false;
-          for (const p of pois) {
-            const px = p.gridX + Math.floor(p.footprint.width / 2);
-            const py = p.gridY + Math.floor(p.footprint.height / 2);
-            if (Math.hypot(cx - px, cy - py) < minProximity) {
-              tooClose = true;
-              break;
-            }
-            // Edge-to-edge AABB clearance
-            const sepX = Math.max(
-              0,
-              p.gridX - (gx + GATE_DEFAULT_SIZE),
-              gx - (p.gridX + p.footprint.width)
-            );
-            const sepY = Math.max(
-              0,
-              p.gridY - (gy + GATE_DEFAULT_SIZE),
-              gy - (p.gridY + p.footprint.height)
-            );
-            if (Math.hypot(sepX, sepY) < minSep) {
-              tooClose = true;
-              break;
-            }
-          }
-          for (const g of placedGates) {
-            const gx2 = g.gridX + GATE_SEARCH_OFFSET;
-            const gy2 = g.gridY + GATE_SEARCH_OFFSET;
-            if (Math.hypot(cx - gx2, cy - gy2) < minProximity) {
-              tooClose = true;
-              break;
-            }
-          }
-          if (!tooClose) {
-            found = { i, pt, gx, gy };
-            break;
-          }
+        if (!isGateTooCloseToPoisOrGates(gx, gy, pois, placedGates, minProximity, minSep)) {
+          found = { i, pt, gx, gy };
+          break;
         }
       }
 

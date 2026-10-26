@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * src/logic/pokemon/pokemonMath.ts
  *
@@ -10,9 +11,10 @@
  * @module pokemonMath
  */
 
-import type { MoveBaseData } from '../../types/system/database.ts';
 import { toID } from '@/logic/utils/strings.ts';
+
 import { MOVE_TRANSLATIONS_ES } from '../../data/battle/moves.ts';
+import type { MoveBaseData } from '../../types/system/database.ts';
 import { TYPE_EFFECTIVENESS_THRESHOLDS } from '../constants/gameplay.ts';
 
 // ── Type Effectiveness ────────────────────────────────────────────────────────
@@ -55,17 +57,12 @@ export function getMoveDescriptionPure(_name: string, md: MoveBaseData | null): 
     : md.effect?.text;
   if (effectText) return effectText;
 
-  try {
-    if (!md.id) {
-      throw new Error('ID de movimiento no proporcionado en getMoveDescriptionPure');
-    }
+  if (md.id) {
     const cleanId = toID(md.id);
-    const translated =
-      (MOVE_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId] || {}; // open-record: Generic key-value data dictionary container
-    if (translated.desc) return translated.desc;
-  } catch {
-    // catch-ok: Fallback to generic description if translation lookup fails
-    // Graceful fallback
+    const translated = (
+      MOVE_TRANSLATIONS_ES as Record<DisplayText, { name?: string; desc?: string }>
+    )[cleanId];
+    if (translated?.desc) return translated.desc;
   }
 
   if (md.cat === 'status') return 'Un movimiento que causa un efecto de estado o alteración.';

@@ -1,12 +1,5 @@
-/**
- * Guardian Engine - Conflict Zone Logic
- * Handles daily deterministic map selection and guardian generation.
- *
- * Absolute isolation: This module does not store state or connect to DB.
- */
-import { getArgDateString } from '../utils/timeUtils.ts';
-import type { MapRouteId } from '@/data/world/map-assets';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { MapRouteId } from '@/data/world/map-assets';
 import {
   MAX_ACTIVE_WAR_ZONES,
   ELITE_GUARDIAN_RARITY_THRESHOLD,
@@ -19,6 +12,14 @@ import {
   HASH_SHIFT_BITS,
   GUARDIAN_LEVELS
 } from '@/logic/constants/gameplay';
+
+/**
+ * Guardian Engine - Conflict Zone Logic
+ * Handles daily deterministic map selection and guardian generation.
+ *
+ * Absolute isolation: This module does not store state or connect to DB.
+ */
+import { getArgDateString } from '../utils/timeUtils.ts';
 
 export const GUARDIAN_TIERS = ['common', 'rare', 'elite'] as const;
 type GuardianTier = (typeof GUARDIAN_TIERS)[number];
@@ -85,7 +86,7 @@ function hashString(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     hash = (hash << HASH_SHIFT_BITS) - hash + str.charCodeAt(i);
-    hash |= 0;
+    hash = Math.trunc(hash);
   }
   return Math.abs(hash);
 }

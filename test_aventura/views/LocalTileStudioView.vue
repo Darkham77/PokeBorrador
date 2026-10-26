@@ -11,11 +11,13 @@
  */
 
 import { ref } from 'vue';
+
 import { gsapHover as vGsapHover } from '@/directives/gsapHover.ts';
-import StudioLayersPanel from '../components/studio/StudioLayersPanel.vue';
+
+import StudioAssetImportModal from '../components/studio/StudioAssetImportModal.vue';
 import StudioCanvasViewport from '../components/studio/StudioCanvasViewport.vue';
 import StudioInspector from '../components/studio/StudioInspector.vue';
-import StudioAssetImportModal from '../components/studio/StudioAssetImportModal.vue';
+import StudioLayersPanel from '../components/studio/StudioLayersPanel.vue';
 
 const showImportModal = ref(false);
 </script>

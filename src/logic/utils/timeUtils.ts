@@ -1,7 +1,10 @@
-import { logger } from './logger.ts';
-import { DAY_PHASES, type DayPhase } from '@/types/system/time.ts';
-import { DURATION_24_HOURS_MS, ONE_HOUR_MS } from '@/logic/constants/items.ts';
+import type { IsoDateString } from '@francogp/auditor';
+
 import { DAYS_PER_WEEK, DUSK_PHASE_END_HOUR } from '@/logic/constants/gameplay.ts';
+import { DURATION_24_HOURS_MS, ONE_HOUR_MS } from '@/logic/constants/items.ts';
+import { DAY_PHASES, type DayPhase } from '@/types/system/time.ts';
+
+import { logger } from './logger.ts';
 export type { DayPhase };
 
 export const GAME_TIMEZONE = ((typeof import.meta !== 'undefined' &&
@@ -29,7 +32,8 @@ export function setServerTimeSynced(synced: boolean): void {
 }
 
 export function getServerInstant(): Temporal.Instant {
-  const getOffset = typeof window !== 'undefined' ? window.__GET_DB_TIME_OFFSET__ : undefined;
+  const getOffset =
+    typeof globalThis.window !== 'undefined' ? globalThis.window.__GET_DB_TIME_OFFSET__ : undefined;
   const routerOffsetMs = typeof getOffset === 'function' ? getOffset() : 0;
 
   if (!_timeSynced && routerOffsetMs === 0) return Temporal.Now.instant();
@@ -149,7 +153,7 @@ export function formatDisplayDate(ts: string | number | null | undefined): strin
  * adjusted to GAME_TIMEZONE. Use this in ALL UI components instead of
  * local toLocaleString() calls that may produce AM/PM depending on locale.
  */
-export function formatTime(ts: string | number | Date | null | undefined): string {
+export function formatTime(ts: IsoDateString | number | Date | null | undefined): string {
   if (!ts) return '';
   try {
     let instant: Temporal.Instant;
@@ -178,7 +182,7 @@ export function formatTime(ts: string | number | Date | null | undefined): strin
 
 const MIN_EPOCH_TIMESTAMP_DIGITS = 8 as const;
 
-function parseTimestampToInstant(ts: string | number | Date): Temporal.Instant | null {
+function parseTimestampToInstant(ts: IsoDateString | number | Date): Temporal.Instant | null {
   if (ts instanceof Date) {
     return Temporal.Instant.fromEpochMilliseconds(ts.getTime());
   }
@@ -225,7 +229,7 @@ function resolveReferenceZonedDateTime(
  * - If the message is from a previous year, formats as 'DD/MM/YYYY HH:mm' (e.g. '25/12/2025 18:30').
  */
 export function formatChatTimestamp(
-  ts: string | number | Date | null | undefined,
+  ts: IsoDateString | number | Date | null | undefined,
   nowReference?: Temporal.ZonedDateTime | Temporal.Instant | number
 ): string {
   if (!ts) return '';
@@ -336,7 +340,7 @@ export function parseInstantSafe(val: unknown): Temporal.Instant | null {
   } catch (e) {
     const valDesc =
       typeof val === 'string' ? val : typeof val === 'number' ? String(val) : JSON.stringify(val);
-    const errDesc = e instanceof Error ? e.message : String(e as string | number);
+    const errDesc = e instanceof Error ? e.message : String(e);
     throw new Error(`[timeUtils] Error parsing instant for value '${valDesc}': ${errDesc}`, {
       cause: e
     });

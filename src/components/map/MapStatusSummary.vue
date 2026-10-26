@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
+import type { DisplayText } from '@francogp/auditor';
 import { useResizeObserver } from '@vueuse/core';
 import { gsap } from 'gsap';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
+
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import MapPokemonCenterBanner from '@/components/map/MapPokemonCenterBanner.vue';
 import type {
   Event as GameEvent,
   EventConfig,
   WeeklyRotationEntry
 } from '@/logic/events/eventEngine';
 import { resolveWeeklyRotation } from '@/logic/events/eventEngine';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { getGMT3Date } from '@/logic/utils/timeUtils';
-import PVTooltip from '@/components/common/PVTooltip.vue';
-import MapPokemonCenterBanner from '@/components/map/MapPokemonCenterBanner.vue';
 import { useEventStore } from '@/stores/events';
 
 const CAROUSEL_INTERVAL_S = 6;
@@ -75,7 +77,7 @@ const needsCarousel = computed(() => activeEvents.value.length > visibleSlots.va
 // ── Event Banner Image & Meta Resolvers ────────────────────────────────────────
 interface ExtendedConfig extends EventConfig {
   banner?: string;
-  weeklyRotations?: Record<string, WeeklyRotationEntry>; // open-record: Weekly rotation index map
+  weeklyRotations?: Record<DisplayText, WeeklyRotationEntry>; // open-record: Weekly rotation index map
 }
 
 const eventConfigCache = new WeakMap<GameEvent, ExtendedConfig>();

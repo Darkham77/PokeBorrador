@@ -11,15 +11,17 @@
  *   5. FireRed water color homogeneity (no 96,160,216 cyan or 64,120,184 dark patch seams).
  */
 
-import { describe, it, expect } from 'vitest';
-import path from 'node:path';
 import fs from 'node:fs';
+import path from 'node:path';
+
 import sharp from 'sharp';
+import { describe, it, expect } from 'vitest';
+
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
-import { generateWildernessLayer } from '../../logic/map/wildernessVegetationEngine.ts';
 import { CANONICAL_LAKE_SHORE_BRUSH } from '../../logic/map/waterAutotileEngine.ts';
+import { generateWildernessLayer } from '../../logic/map/wildernessVegetationEngine.ts';
 
 describe('wildernessTreeBiomeAndShoreIntegrity', () => {
   const continent = generateContinentMap({

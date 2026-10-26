@@ -1,9 +1,13 @@
-import { computed, type Ref } from 'vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
-import { filterAndSortPokemon } from '@/logic/pokemon/pokemonSelectionFilter.ts';
+import { computed, type ComputedRef, type Ref } from 'vue';
+
 import { isPokemonBusy, isPokemonFilterTagId } from '@/logic/constants/tags.ts';
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
+import {
+  filterAndSortPokemon,
+  type FilterablePokemonItem
+} from '@/logic/pokemon/pokemonSelectionFilter.ts';
 import type { useGameStore } from '@/stores/game';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export function useMarketPublishPokemon(
   game: ReturnType<typeof useGameStore>,
@@ -11,7 +15,15 @@ export function useMarketPublishPokemon(
   sortBy: Ref<string>,
   sortOrder: Ref<string>,
   activeTags: Ref<string[]>
-) {
+): {
+  availablePokemon: ComputedRef<
+    (
+      | { pokemon: Pokemon; _source: 'team'; index: number }
+      | { pokemon: Pokemon; _source: 'box'; index: number }
+    )[]
+  >;
+  filteredAndSortedPokemon: ComputedRef<FilterablePokemonItem[]>;
+} {
   const availablePokemon = computed(() => {
     const team = (game.state.team || [])
       .map((p, i) => ({ pokemon: p, _source: 'team' as const, index: i }))

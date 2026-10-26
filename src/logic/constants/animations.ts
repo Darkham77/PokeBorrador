@@ -1,3 +1,4 @@
+import type { DisplayText } from '@francogp/auditor';
 /**
  * ANIMATION CONSTANTS (SINGLE SOURCE OF TRUTH)
  * Centralized constant definitions for GSAP durations, easing, offsets, and UI movement.
@@ -291,7 +292,7 @@ export const DIALOG_LEAVE_Y_OFFSET_PX = 10;
 export const DIALOG_LEAVE_DURATION_SEC = 0.3;
 
 /** Avatar spin animation durations per trainer class level in seconds. */
-export const AVATAR_CLASS_SPIN_DURATIONS_SEC: Record<string, number> = {
+export const AVATAR_CLASS_SPIN_DURATIONS_SEC: Record<DisplayText, number> = {
   // open-record: Trainer class and faction spin duration dictionary
   fire: 1.5,
   water: 2.0,
@@ -335,7 +336,7 @@ export const AVATAR_TYPE_SPIN_DURATIONS_SEC: Record<PokemonType, number> = {
 };
 
 /** Avatar shadow animation durations per element/class in seconds. */
-export const AVATAR_SHADOW_DURATIONS_SEC: Record<string, number> = {
+export const AVATAR_SHADOW_DURATIONS_SEC: Record<DisplayText, number> = {
   // open-record: Trainer class and elemental shadow duration dictionary
   fire: 1.0,
   water: 1.5,

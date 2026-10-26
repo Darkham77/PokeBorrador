@@ -1,34 +1,34 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+
+import { requireAbilityId } from '@/data/battle/abilities';
+import { requirePokemonMoveId, type MoveCategory } from '@/data/battle/moves';
+import { toNatureId } from '@/data/battle/natures';
+import { SHOP_ITEMS, requireItemId } from '@/data/inventory/items';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import {
   recalcPokemonStats,
   getLegalSpeciesMoves,
   getRandomLegalMoves
 } from '@/logic/pokemon/pokemonFactory';
-import { getExpNeededPure } from '@/logic/pokemon/statsMath';
 import { generateRandomIVs, getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
-import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
-import { SHOP_ITEMS, requireItemId } from '@/data/inventory/items';
-import { toNatureId } from '@/data/battle/natures';
-import { requireAbilityId } from '@/data/battle/abilities';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { getExpNeededPure } from '@/logic/pokemon/statsMath';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import {
   getSelectableSpecies,
   getSelectableNatures,
   getSelectableAbilities
 } from '@/logic/utils/routeSpawnHelpers';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { PokemonStatKey, PokemonMoveId } from '@/types/pokemon/pokemon';
 
 // Subcomponents
 import DebugSearchSelect from './DebugSearchSelect.vue';
+import PokemonBaseStats from './PokemonBaseStats.vue';
 import PokemonIVEditor from './PokemonIVEditor.vue';
 import PokemonMovePicker from './PokemonMovePicker.vue';
 import PokemonPreview from './PokemonPreview.vue';
-import PokemonBaseStats from './PokemonBaseStats.vue';
-
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { requirePokemonMoveId, type MoveCategory } from '@/data/battle/moves';
-import type { PokemonStatKey, PokemonMoveId } from '@/types/pokemon/pokemon';
 
 const props = defineProps<{
   pokemon: Pokemon;
@@ -129,7 +129,7 @@ const activePokeMoves = computed({
 });
 
 // --- RANDOMIZERS ---
-function randomizeActiveSpecies() {
+function randomizeActiveSpecies(): void {
   const dbKeys = Object.keys(pokemonDataProvider.getPokemonDb());
   const randomId = requirePokemonSpeciesId(
     dbKeys[Math.floor(Math.random() * dbKeys.length)] || 'bulbasaur'
@@ -137,18 +137,18 @@ function randomizeActiveSpecies() {
   selectEditPokeSpecies({ id: randomId });
 }
 
-function randomizeActiveLevel() {
+function randomizeActiveLevel(): void {
   activePoke.value.level = Math.floor(Math.random() * MAX_POKEMON_LEVEL) + 1;
 }
 
-function randomizeActiveNature() {
+function randomizeActiveNature(): void {
   const randomNature = allNatures[Math.floor(Math.random() * allNatures.length)];
   if (randomNature) {
     activePokeNature.value = randomNature.id;
   }
 }
 
-function randomizeActiveAbility() {
+function randomizeActiveAbility(): void {
   const abilities = pokemonDataProvider.getSpeciesAbilities(activePoke.value.id);
   if (abilities.length > 0) {
     const randomAbility = abilities[Math.floor(Math.random() * abilities.length)];
@@ -158,19 +158,19 @@ function randomizeActiveAbility() {
   }
 }
 
-function randomizeActiveIVs() {
+function randomizeActiveIVs(): void {
   activePoke.value.ivs = generateRandomIVs();
   recalcPokemonStats(activePoke.value);
 }
 
-function randomizeActiveHeldItem() {
+function randomizeActiveHeldItem(): void {
   const randomItem = allItems.value[Math.floor(Math.random() * allItems.value.length)];
   if (randomItem) {
     activePokeHeldItem.value = randomItem.id;
   }
 }
 
-function randomizeActiveNickname() {
+function randomizeActiveNickname(): void {
   const names = [
     'POKI',
     'CRACK',
@@ -189,7 +189,7 @@ function randomizeActiveNickname() {
       : '';
 }
 
-function selectEditPokeSpecies(p: { id: string }) {
+function selectEditPokeSpecies(p: { id: string }): void {
   const speciesId = requirePokemonSpeciesId(p.id);
   activePoke.value.id = speciesId;
   activePoke.value.name = pokemonDataProvider.resolveSpeciesName(speciesId);
@@ -211,20 +211,20 @@ function selectEditPokeSpecies(p: { id: string }) {
   activePoke.value.hp = activePoke.value.maxHp;
 }
 
-function autoFillActiveMoves() {
+function autoFillActiveMoves(): void {
   const defaultMoves = getMovesAtLevel(activePoke.value.id, activePoke.value.level);
   activePokeMoves.value = defaultMoves
     .filter((m): m is typeof m & { id: string } => !!m?.id)
     .map((m) => requirePokemonMoveId(m.id));
 }
 
-function randomFillActiveMoves() {
+function randomFillActiveMoves(): void {
   activePokeMoves.value = getRandomLegalMoves(activePoke.value.id, activePoke.value.level, 4);
 }
 
 const MAX_STAT_IV_LIMIT = 31;
 
-function updateActiveIV(stat: PokemonStatKey, val: number) {
+function updateActiveIV(stat: PokemonStatKey, val: number): void {
   activePoke.value.ivs[stat] = Math.max(0, Math.min(MAX_STAT_IV_LIMIT, val));
   recalcPokemonStats(activePoke.value);
 }

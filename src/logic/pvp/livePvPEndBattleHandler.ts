@@ -1,25 +1,32 @@
 import type { Ref } from 'vue';
-import type { RealtimeChannel } from '@supabase/supabase-js';
-import type { PvPTimerManager } from './pvpTimerHelper.ts';
-import type { PvpForfeitPayload, PvpMatchFormat, PvpChallengeConfig } from '@/types/battle/pvp';
-import type { usePvPStore } from '@/stores/pvp.ts';
-import type { useGameStore } from '@/stores/game.ts';
-import type { useAuthStore } from '@/stores/auth.ts';
-import type { useUIStore } from '@/stores/ui.ts';
-import type { useBattleStore } from '@/stores/battle/battle.ts';
-import { generateBattleCode } from '@/logic/pvp/replayCodeGenerator.ts';
+
 import { clearActivePvPSession } from '@/logic/pvp/pvpReconnectHelper';
+import { generateBattleCode } from '@/logic/pvp/replayCodeGenerator.ts';
+import { logger } from '@/logic/utils/logger.ts';
+import type { useAuthStore } from '@/stores/auth.ts';
+import type { useBattleStore } from '@/stores/battle/battle.ts';
+import type { useGameStore } from '@/stores/game.ts';
+import type { usePvPStore } from '@/stores/pvp.ts';
+import type { useUIStore } from '@/stores/ui.ts';
+import type {
+  PvpForfeitPayload,
+  PvpChallengeConfig,
+  LiveChannelHandle,
+  PvPBattlePhase
+} from '@/types/battle/pvp';
+
+import type { PvPTimerManager } from './pvpTimerHelper.ts';
 
 export interface EndBattleStateLike {
   active: boolean;
-  phase: string;
+  phase: PvPBattlePhase;
   isHost?: boolean;
   isRanked?: boolean;
   opponentId?: string | null;
   opponentName?: string;
   opponentElo?: number;
   deadline?: number | null;
-  ch?: Pick<RealtimeChannel, 'send' | 'unsubscribe'> | null;
+  ch?: LiveChannelHandle | null;
   inviteId?: string | null;
   config?: PvpChallengeConfig;
   logs: string[];
@@ -37,13 +44,19 @@ export function executeForfeit(ctx: {
       actorSide: ctx.battleState.isHost ? 'p1' : 'p2',
       reason: 'forfeit'
     };
-    void ctx.battleState.ch.send({
-      type: 'broadcast',
-      event: 'pvp_forfeit',
-      payload: forfeitPayload
-    });
+    ctx.battleState.ch
+      .send({
+        type: 'broadcast',
+        event: 'pvp_forfeit',
+        payload: forfeitPayload
+      })
+      .catch((err) => {
+        logger.warn('Handled promise rejection:', { cause: err });
+      });
   }
-  void ctx.endBattle(false, 'Te has rendido.');
+  ctx.endBattle(false, 'Te has rendido.').catch((err) => {
+    logger.warn('Handled promise rejection:', { cause: err });
+  });
 }
 
 const DEFAULT_TURNS_COUNT = 1 as const;
@@ -63,7 +76,11 @@ function resetPvPBattleSession(
   isReconnecting.value = false;
   battleState.active = false;
   battleState.phase = 'over';
-  if (battleState.ch) void battleState.ch.unsubscribe();
+  if (battleState.ch) {
+    battleState.ch.unsubscribe().catch((err) => {
+      logger.warn('Handled promise rejection:', { cause: err });
+    });
+  }
 }
 
 async function processRankedResult(
@@ -106,7 +123,7 @@ function recordPersonalMatchHistory(
     battleCode,
     opponentId: battleState.opponentId || DEFAULT_OPPONENT_ID,
     opponentName: battleState.opponentName || DEFAULT_OPPONENT_NAME,
-    format: (battleState.config?.format || DEFAULT_PVP_FORMAT) as PvpMatchFormat,
+    format: battleState.config?.format || DEFAULT_PVP_FORMAT,
     isRanked: !!battleState.isRanked,
     result: won ? 'victory' : 'defeat',
     deltaElo: eloDelta,

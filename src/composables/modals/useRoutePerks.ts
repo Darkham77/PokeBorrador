@@ -4,18 +4,10 @@
  * Manages Route perks (Rocket extortion and Entrenador official route buffs, timers, and actions).
  */
 
-import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue';
 import { gsap } from 'gsap';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
-import type { MapLocation } from '@/types/pokemon/encounters';
+import { ref, computed, onMounted, onUnmounted, type Ref, type ComputedRef } from 'vue';
+
 import { isMapRouteId, type MapRouteId } from '@/data/world/map-assets';
-import {
-  isMapExtortable,
-  getExtortionConfirmMessage,
-  getOfficialRouteConfirmMessage
-} from '@/logic/map/mapCardHelper';
 import {
   BUFF_DURATION_30_MIN_MS,
   DURATION_24_HOURS_MS,
@@ -23,18 +15,39 @@ import {
   ONE_MINUTE_MS,
   ONE_SECOND_MS
 } from '@/logic/constants/items';
+import {
+  isMapExtortable,
+  getExtortionConfirmMessage,
+  getOfficialRouteConfirmMessage
+} from '@/logic/map/mapCardHelper';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import type { MapLocation } from '@/types/pokemon/encounters';
 
 export interface UseRoutePerksParams {
   map: Ref<MapLocation>;
 }
 
-export function useRoutePerks(params: UseRoutePerksParams) {
+export interface UseRoutePerksReturn {
+  readonly playerClass: ComputedRef<string | null>;
+  readonly isOfficialRouteActive: ComputedRef<boolean>;
+  readonly isExtortedRouteActive: ComputedRef<boolean>;
+  readonly activeExtortedRouteId: ComputedRef<MapRouteId | null>;
+  readonly isOfficialRouteOnCooldown: ComputedRef<boolean>;
+  readonly cooldownRemainingText: ComputedRef<string>;
+  readonly timeRemainingText: Ref<string>;
+  readonly toggleExtortion: () => void;
+  readonly toggleOfficialRoute: () => void;
+}
+
+export function useRoutePerks(params: UseRoutePerksParams): UseRoutePerksReturn {
   const { map } = params;
   const modalStore = useModalStore();
   const gameStore = useGameStore();
   const uiStore = useUIStore();
 
-  const playerClass = computed(() => gameStore.state.playerClass);
+  const playerClass = computed<string | null>(() => gameStore.state.playerClass ?? null);
 
   const isOfficialRouteActive = computed(() => {
     if (playerClass.value !== 'entrenador') return false;
@@ -91,7 +104,7 @@ export function useRoutePerks(params: UseRoutePerksParams) {
   const timeRemainingText = ref('');
   let timerTween: gsap.core.Tween | null = null;
 
-  const tickTime = () => {
+  const tickTime = (): void => {
     const classData = gameStore.state.classData || {};
     const now = Temporal.Now.instant().epochMilliseconds;
     let expired = false;
@@ -142,7 +155,7 @@ export function useRoutePerks(params: UseRoutePerksParams) {
     }
   });
 
-  const toggleExtortion = () => {
+  const toggleExtortion = (): void => {
     if (modalStore.isOpen('Confirm')) return;
     const id = map.value.id;
     const now = Temporal.Now.instant().epochMilliseconds;
@@ -173,7 +186,7 @@ export function useRoutePerks(params: UseRoutePerksParams) {
     });
   };
 
-  const toggleOfficialRoute = () => {
+  const toggleOfficialRoute = (): void => {
     if (modalStore.isOpen('Confirm')) return;
     const id = map.value.id;
     const now = Temporal.Now.instant().epochMilliseconds;

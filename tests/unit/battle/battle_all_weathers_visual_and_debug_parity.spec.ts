@@ -1,3 +1,5 @@
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
 /**
  * tests/unit/battle/battle_all_weathers_visual_and_debug_parity.spec.ts
  *
@@ -11,14 +13,13 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach } from 'vite-plus/test';
-import { setActivePinia, createPinia } from 'pinia';
-import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
-import { WEATHER_REGISTRY, type WeatherId } from '@/logic/weather/weatherRegistry';
+
 import { DEBUG_WEATHER_EFFECTS } from '@/components/admin/debug/debugConstants';
-import { isSnowWeather } from '@/components/common/atmosphereParticleHelper';
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue';
+import { isSnowWeather } from '@/components/common/atmosphereParticleHelper';
 import { useWeatherVisuals } from '@/composables/effects/useWeatherVisuals';
+import { WEATHER_REGISTRY, type WeatherId } from '@/logic/weather/weatherRegistry';
 
 const NON_PLAYABLE_WEATHER_IDS: readonly WeatherId[] = ['none', 'null', 'mist_visual'];
 const NON_PLAYABLE_WEATHER_SET: ReadonlySet<WeatherId> = new Set<WeatherId>(

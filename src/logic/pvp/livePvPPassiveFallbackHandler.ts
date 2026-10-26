@@ -1,17 +1,17 @@
+import type { PlayerClassId } from '@/data/player/playerClasses';
 /**
  * src/logic/pvp/livePvPPassiveFallbackHandler.ts
  *
  * Handler for ranked PvP matchmaking fallback against passive defense teams.
  */
-
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { PvpChallengeConfig, PvPBattleState } from '@/types/battle/pvp';
-import type { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper.ts';
+import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases';
 import { DEFAULT_INITIAL_ELO } from '@/logic/constants/gameplay.ts';
 import type { DBRouter } from '@/logic/db/dbRouter.ts';
-import type { PlayerClassId } from '@/data/player/playerClasses';
+import type { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper.ts';
+import { logger } from '@/logic/utils/logger.ts';
+import type { PvpChallengeConfig, PvPBattleState } from '@/types/battle/pvp';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { GenderId } from '@/types/system/game';
-import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases';
 
 const MAX_POKEMON_3V3 = 3 as const;
 
@@ -92,7 +92,7 @@ export function executeStartPassiveBattle(
 
   const enemyLeader = params.enemyTeam[0];
   if (enemyLeader && ctx.battleStore) {
-    void ctx.battleStore
+    ctx.battleStore
       .startBattle(enemyLeader, {
         isPvP: true,
         isRanked: true,
@@ -115,6 +115,9 @@ export function executeStartPassiveBattle(
         if (ctx.battleState.active) {
           ctx.timerManager.startTurnTimer();
         }
+      })
+      .catch((err) => {
+        logger.warn('Handled promise rejection:', { cause: err });
       });
   }
 }

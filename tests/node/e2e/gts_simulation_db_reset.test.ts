@@ -1,8 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
-import { BaseE2ESimulation } from '../../../scripts/e2e/base_simulation.ts';
-import type { Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import type { Page } from '@playwright/test';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
+
+import { BaseE2ESimulation } from '../../../scripts/e2e/base_simulation.ts';
+import { resetSimulationToCleanState } from '../../../scripts/e2e/helpers/battleScenarioSetupHelper.ts';
 
 class TestE2ESimulation extends BaseE2ESimulation {
   public getIsSharedDatabase(): boolean {
@@ -87,5 +90,31 @@ describe('GTS Multi-Account Simulation DB Reset & Isolation Parity', () => {
 
     // Clean up test file
     fs.unlinkSync(dbPath);
+  });
+
+  it('passes initialSeedVal and replayRandomScale into page.evaluate without relying on unpassed outer Node constants in resetSimulationToCleanState', async () => {
+    let capturedArg: unknown;
+    let evalFnString = '';
+
+    const evaluatePage = {
+      evaluate: vi.fn(async (fn: (...args: any[]) => any, arg: unknown) => {
+        capturedArg = arg;
+        evalFnString = fn.toString();
+      })
+    } as unknown as Page;
+
+    const mockQuery = vi.fn().mockResolvedValue([]);
+
+    await resetSimulationToCleanState(evaluatePage, 'sqlite', 'test_user', mockQuery);
+
+    expect(evaluatePage.evaluate).toHaveBeenCalledOnce();
+    expect(capturedArg).toBeTypeOf('object');
+    expect(capturedArg).toHaveProperty('initialSeedVal');
+    expect(capturedArg).toHaveProperty('replayRandomScale');
+    expect(capturedArg).toHaveProperty('simTimeScale');
+
+    // The serialized browser function must not reference undeclared outer Node constants
+    expect(evalFnString).not.toMatch(/\bINITIAL_SEED_VAL\b/);
+    expect(evalFnString).not.toMatch(/\bREPLAY_RANDOM_SCALE\b/);
   });
 });

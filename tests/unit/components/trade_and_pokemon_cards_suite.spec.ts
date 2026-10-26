@@ -1,12 +1,13 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
-import TradeSidePanel from '@/components/social/TradeSidePanel.vue';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
 import PokemonDisplayCard from '@/components/pokemon/PokemonDisplayCard.vue';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import TradeSidePanel from '@/components/social/TradeSidePanel.vue';
 import { requireItemId } from '@/data/inventory/items';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 function createMockPokemon(overrides: Partial<Pokemon> = {}): Pokemon {
   return {

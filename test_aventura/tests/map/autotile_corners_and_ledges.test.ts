@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { resolveRmxpSubtiles } from '../../logic/map/kantoTileEngine.ts';
 
 /**

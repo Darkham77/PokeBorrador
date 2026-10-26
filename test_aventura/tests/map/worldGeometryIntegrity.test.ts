@@ -15,8 +15,9 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generatePokemonContinentalWorld } from '../../logic/map/continent/continentalEngine.ts';
+
 import { VIGNETTE_BLUEPRINTS_BY_ID } from '../../logic/map/cityVignetteRegistry.ts';
+import { generatePokemonContinentalWorld } from '../../logic/map/continent/continentalEngine.ts';
 
 const TEST_SEEDS = [7741, 2305, 5589, 42, 100, 777, 1234, 9999] as const;
 

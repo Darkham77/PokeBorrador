@@ -1,13 +1,14 @@
-/** @vitest-environment jsdom */
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
+/** @vitest-environment jsdom */
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+
 import PvPChallengeModal from '@/components/modals/PvPChallengeModal.vue';
+import { getSeasonalThemeForMonth } from '@/data/system/rankedData';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
 import { useGameStore } from '@/stores/game';
 import { useLivePvPStore } from '@/stores/livePvP';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import { getSeasonalThemeForMonth } from '@/data/system/rankedData';
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
 
 describe('PvPChallengeModal.vue', () => {
   let mockPokemonList: Pokemon[];

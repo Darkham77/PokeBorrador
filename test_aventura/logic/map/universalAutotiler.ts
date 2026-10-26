@@ -88,12 +88,32 @@ export function resolveRmxpSubtiles(
   return { tl, tr, bl, br };
 }
 
+function expandMountainConnectedNeighbor(
+  nx: number,
+  ny: number,
+  W: number,
+  H: number,
+  grid: readonly Uint8Array[],
+  visited: Set<number>,
+  comp: number[],
+  queue: number[]
+): void {
+  if (nx < 0 || nx >= W || ny < 0 || ny >= H) return;
+  if (grid[ny]?.[nx] !== CELL_BIOME.MOUNTAIN_DIRT) return;
+  const nKey = ny * W + nx;
+  if (!visited.has(nKey)) {
+    visited.add(nKey);
+    comp.push(nKey);
+    queue.push(nKey);
+  }
+}
+
 export class UniversalAutotiler {
   private readonly loader: DynamicCatalogLoader;
   private readonly massifMap = new Map<number, MountainPalette>();
   private lastGridRef: Uint8Array[] | null = null;
 
-  constructor(loader: DynamicCatalogLoader) {
+  public constructor(loader: DynamicCatalogLoader) {
     this.loader = loader;
   }
 
@@ -101,7 +121,7 @@ export class UniversalAutotiler {
    * Identifies the connected mountain massif via 8-connected BFS and assigns a 100% uniform
    * palette ('brown' or 'gray') to every tile belonging to the same massif.
    */
-  getMassifPalette(grid: Uint8Array[], gx: number, gy: number): MountainPalette {
+  public getMassifPalette(grid: Uint8Array[], gx: number, gy: number): MountainPalette {
     if (this.lastGridRef !== grid) {
       this.massifMap.clear();
       this.lastGridRef = grid;
@@ -129,18 +149,7 @@ export class UniversalAutotiler {
       for (let dy = -1; dy <= 1; dy++) {
         for (let dx = -1; dx <= 1; dx++) {
           if (dx === 0 && dy === 0) continue;
-          const nx = cx + dx;
-          const ny = cy + dy;
-          if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
-            if (grid[ny]?.[nx] === CELL_BIOME.MOUNTAIN_DIRT) {
-              const nKey = ny * W + nx;
-              if (!visited.has(nKey)) {
-                visited.add(nKey);
-                comp.push(nKey);
-                queue.push(nKey);
-              }
-            }
-          }
+          expandMountainConnectedNeighbor(cx + dx, cy + dy, W, H, grid, visited, comp, queue);
         }
       }
     }
@@ -183,7 +192,7 @@ export class UniversalAutotiler {
    * - Cardinal cliff edges (top, face, left, right)
    * - Concave inner corners (inner_tl, inner_tr, inner_bl, inner_br)
    */
-  resolveMountainTile(
+  public resolveMountainTile(
     grid: readonly (Uint8Array | readonly number[])[],
     gx: number,
     gy: number,
@@ -288,7 +297,7 @@ export class UniversalAutotiler {
     };
   }
 
-  getPieceSlice(pieceName: string): { sx: number; sy: number } {
+  public getPieceSlice(pieceName: string): { sx: number; sy: number } {
     const layout = this.loader.catalog?.autotileLayout?.standardLPC?.pieces;
     if (layout && layout[pieceName]) {
       return layout[pieceName];
@@ -298,10 +307,10 @@ export class UniversalAutotiler {
     );
   }
 
-  resolvePiece(grid: Uint8Array[], gx: number, gy: number, cellType: number): string {
+  public resolvePiece(grid: Uint8Array[], gx: number, gy: number, cellType: number): string {
     const H = grid.length;
     const W = grid[0]?.length ?? 0;
-    const match = (x: number, y: number) => {
+    const match = (x: number, y: number): boolean => {
       if (x < 0 || x >= W || y < 0 || y >= H) return true;
       const row = grid[y];
       return row ? row[x] === cellType : true;
@@ -345,7 +354,7 @@ export class UniversalAutotiler {
     return 'B';
   }
 
-  drawRmxpAutotile(
+  public drawRmxpAutotile(
     ctx: CanvasRenderingContext2D,
     autotileImg: HTMLImageElement,
     grid: Uint8Array[],
@@ -363,7 +372,7 @@ export class UniversalAutotiler {
     ctx.drawImage(autotileImg, s.br.sx, s.br.sy, sz, sz, dx + sz, dy + sz, sz, sz);
   }
 
-  drawTile(
+  public drawTile(
     ctx: CanvasRenderingContext2D,
     grid: Uint8Array[],
     gx: number,

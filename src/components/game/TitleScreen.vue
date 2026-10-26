@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { useGameStore } from '@/stores/game';
-import { useAuthStore } from '@/stores/auth';
-import { useLoadingStore } from '@/stores/loading';
+import { gsap } from 'gsap';
 import { computed, watch, onMounted, nextTick } from 'vue';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { STARTER_POKEMON } from '@/data/pokemon/starters.ts';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { useLoadingStore } from '@/stores/loading';
 import { GAME_UI_EVENTS, type StarterSelectReadyDetail } from '@/types/system/gameEvents.ts';
-import { gsap } from 'gsap';
 
 const STARTER_SEED_OFFSET = 0.1;
 const STARTER_SEED_MULTIPLIER = 0.4;
@@ -22,13 +23,13 @@ const authStore = useAuthStore();
 const loadingStore = useLoadingStore();
 const gs = computed(() => gameStore.state);
 
-const emitStarterSelectReady = () => {
+const emitStarterSelectReady = (): void => {
   if (!gs.value.starterChosen && gameStore.isReady && loadingStore.isGateOpen) {
     nextTick(() => {
-      if (typeof window !== 'undefined') {
-        window.__STARTER_SELECT_READY__ = true;
+      if (typeof globalThis.window !== 'undefined') {
+        globalThis.window.__STARTER_SELECT_READY__ = true;
         const detail: StarterSelectReadyDetail = { ready: true };
-        window.dispatchEvent(
+        globalThis.dispatchEvent(
           new CustomEvent<StarterSelectReadyDetail>(GAME_UI_EVENTS.STARTER_SELECT_READY, { detail })
         );
       }
@@ -78,15 +79,15 @@ const starterList = computed(() => {
   });
 });
 
-const handleChooseStarter = async (id: PokemonSpeciesId) => {
+const handleChooseStarter = async (id: PokemonSpeciesId): Promise<void> => {
   await gameStore.chooseStarter(id);
 };
 
-const handleLogout = () => {
+const handleLogout = (): void => {
   authStore.logout();
 };
 
-const getStarterConfig = (type: string) => {
+const getStarterConfig = (type: string): { color: string; bg: string; shadow: string } => {
   if (type === 'grass') {
     return {
       color: 'rgba(50, 215, 75, 0.8)',
@@ -108,7 +109,7 @@ const getStarterConfig = (type: string) => {
   };
 };
 
-const handleMouseEnter = (event: MouseEvent, type: string) => {
+const handleMouseEnter = (event: MouseEvent, type: string): void => {
   const el = event.currentTarget as HTMLElement;
   const config = getStarterConfig(type);
 
@@ -125,7 +126,7 @@ const handleMouseEnter = (event: MouseEvent, type: string) => {
   });
 };
 
-const handleMouseLeave = (event: MouseEvent) => {
+const handleMouseLeave = (event: MouseEvent): void => {
   const el = event.currentTarget as HTMLElement;
 
   gsap.to(el, {

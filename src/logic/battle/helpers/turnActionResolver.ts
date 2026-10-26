@@ -1,24 +1,25 @@
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { CertifiedBattleGameAction } from '@/types/battle/certifiedBattleActions';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import {
   decideEnemyMove,
   shouldEnemySwitch,
   findBestSwitchIndex,
   evaluateAndUseNPCItem
 } from '../ai/battleAI.ts';
+import { parseLogsWithSkip } from '../battleTurnLogHelper.ts';
+import { handleForceSwitch } from '../resolution.ts';
+import { filterShowdownLogs } from '../showdownBridge.ts';
 import { ShowdownTeamResolver } from '../showdownTeamResolver.ts';
 import {
   getShowdownWorker,
   executeTurnInWorker,
   syncTeamsFromLastWorkerState
 } from '../showdownWorkerClient.ts';
-import { filterShowdownLogs } from '../showdownBridge.ts';
 import { requireCertifiedBagItemResponse } from './certifiedBagItemActionResolver.ts';
-import { ShowdownBattleRunner } from './showdownBattleRunner.ts';
-import { handleForceSwitch } from '../resolution.ts';
 import { isRevivingForceSwitchRequest } from './requestHelper.ts';
-import { parseLogsWithSkip } from '../battleTurnLogHelper.ts';
+import { ShowdownBattleRunner } from './showdownBattleRunner.ts';
 
 function resolveEnemySwitchUid(
   store: BattleContext,
@@ -90,7 +91,7 @@ function resolveFallbackEnemyMoveChoice(enemyRequest?: ShowdownPlayerRequest): s
 }
 
 function resolveCertifiedReplayBagResponse(
-  replayDebug: NonNullable<typeof window.__VITE_DEBUG__> | undefined,
+  replayDebug: NonNullable<typeof globalThis.__VITE_DEBUG__> | undefined,
   bagAction?: CertifiedBattleGameAction
 ): string {
   if (!bagAction) {
@@ -113,7 +114,7 @@ interface WorkerEnemyActionOptions {
 async function executeWorkerEnemyAction(
   store: BattleContext,
   initialP2Choice: string,
-  replayDebug: NonNullable<typeof window.__VITE_DEBUG__> | undefined,
+  replayDebug: NonNullable<typeof globalThis.__VITE_DEBUG__> | undefined,
   options: WorkerEnemyActionOptions
 ): Promise<void> {
   const { p2Skip, isCertifiedReplay, bagAction } = options;
@@ -158,12 +159,16 @@ async function executeWorkerEnemyAction(
   await resolvePostTurnSwitchesAndFaints(store, result);
 }
 
-export async function runEnemyAction(store: BattleContext, bagAction?: CertifiedBattleGameAction) {
+export async function runEnemyAction(
+  store: BattleContext,
+  bagAction?: CertifiedBattleGameAction
+): Promise<void> {
   const p = store.activeBattle.value?.player;
   const e = store.activeBattle.value?.enemy;
   if (!p || !e || e.hp <= 0) return;
 
-  const replayDebug = typeof window !== 'undefined' ? window.__VITE_DEBUG__ : undefined;
+  const replayDebug =
+    typeof globalThis.window !== 'undefined' ? globalThis.__VITE_DEBUG__ : undefined;
   const isCertifiedReplay = replayDebug?.isScriptedReplayMode === true;
   const isWild = !store.activeBattle.value?.isTrainer && !store.activeBattle.value?.isGym;
 
@@ -220,7 +225,7 @@ export async function resolvePostTurnSwitchesAndFaints(
     p2Request?: { forceSwitch?: unknown[] };
     isOver?: boolean;
   }
-) {
+): Promise<boolean> {
   if (result.isOver && store.activeBattle.value) {
     store.activeBattle.value.over = true;
   }

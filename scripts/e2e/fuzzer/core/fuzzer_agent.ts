@@ -1,12 +1,12 @@
 import {
-  ChoiceRequest,
-  RequestKind,
+  type ChoiceRequest,
+  type RequestKind,
   classifyRequest,
   type ChoiceRequestPokemon
 } from '../../../../src/logic/battle/helpers/requestHelper.ts';
 import {
   ShowdownBattleAgent,
-  ActiveSlotRequest
+  type ActiveSlotRequest
 } from '../../../../src/logic/battle/helpers/showdownBattleAgent.ts';
 import { Dex } from '@pkmn/sim';
 

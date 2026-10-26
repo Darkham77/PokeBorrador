@@ -145,7 +145,7 @@ export class PrefabsRegistryService {
   private allPrefabs: readonly PrefabItem[] = [];
   private isLoaded = false;
 
-  constructor() {
+  public constructor() {
     this.byCategory.set('buildings', []);
     this.byCategory.set('vegetation', []);
     this.byCategory.set('elevation', []);
@@ -164,8 +164,9 @@ export class PrefabsRegistryService {
       if (!manifestUrl.startsWith('/') || manifestUrl.includes('..')) {
         throw new Error(`[PrefabsRegistry] Disallowed manifest URL: ${manifestUrl}`);
       }
+      const targetUrl = new URL(manifestUrl, globalThis.location.origin);
       // fallow-ignore-next-line security-sink
-      let res = await fetch(manifestUrl);
+      let res = await fetch(targetUrl);
       if (!res.ok) {
         res = await fetch('/test_aventura/assets/prefabs/manifest.json');
       }

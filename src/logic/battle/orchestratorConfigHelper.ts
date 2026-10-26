@@ -1,29 +1,37 @@
-import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
-import { cloneReactive } from '@/logic/utils/cloneUtils.ts';
-import { getMapBiomeAndTags } from './biomeHelper.ts';
+import { requireItemId, type ItemId } from '@/data/inventory/items';
+import { isPlayerClassId } from '@/data/player/playerClasses';
+import { requireNpcSpriteId, type NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { requireGymId, type GymId } from '@/data/world/gyms';
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
 import { MAPS_BY_ROUTE_ID, getMapLocationById } from '@/data/world/maps';
+import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
+import { getMapEnvironment } from '@/logic/environment/map/mapEnvironmentRegistry.ts';
+import { clampFriendship } from '@/logic/pokemon/friendshipLogic.ts';
+import { cloneReactive } from '@/logic/utils/cloneUtils.ts';
+import { requireNpcArchetype, type NpcArchetype } from '@/logic/utils/npcSpriteRouter';
+import {
+  BATTLE_DIFFICULTIES,
+  type BattleDifficulty,
+  type BattleParticipantUid,
+  type BattleState,
+  type BattleWeather
+} from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
-import type { BattleParticipantUid, BattleState, BattleWeather } from '@/types/battle/battle';
 import type { Inventory } from '@/types/inventory/items';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation } from '@/types/pokemon/encounters';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { isGenderId, type GenderId, type PlayerClassId } from '@/types/system/game';
+import type { BattleOptions } from '@/types/system/stores.ts';
+
 import {
   isWeatherId,
   requireWeatherId,
-  resolveCurrentWeather
+  resolveCurrentWeather,
+  type WeatherId
 } from '../weather/weatherRegistry.ts';
-import { getMapEnvironment } from '@/logic/environment/map/mapEnvironmentRegistry.ts';
+import { getMapBiomeAndTags } from './biomeHelper.ts';
 import { generateNPCInventory } from './trainerInventory.ts';
-import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
-import { requireGymId } from '@/data/world/gyms';
-import { requireNpcArchetype } from '@/logic/utils/npcSpriteRouter';
-import { requireItemId } from '@/data/inventory/items';
-import { isPlayerClassId } from '@/data/player/playerClasses';
-import { requireNpcSpriteId, type NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
-import { isGenderId, type GenderId, type PlayerClassId } from '@/types/system/game';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { clampFriendship } from '@/logic/pokemon/friendshipLogic.ts';
-import type { BattleOptions } from '@/types/system/stores.ts';
 
 const INITIAL_RATE_CUMULATIVE_SUM = 0 as const;
 const DEFAULT_RARITY_WEIGHT_BASE = 50 as const;
@@ -52,7 +60,10 @@ export function extractLocationAndBiome(
   return { resolvedLocationId, locationMap, activeBiome, mapTags };
 }
 
-function resolveArchetypeAndGym(options: BattleOptions) {
+function resolveArchetypeAndGym(options: BattleOptions): {
+  resolvedTrainerArchetype: NpcArchetype | undefined;
+  resolvedGymId: GymId | undefined;
+} {
   const { trainerArchetype, battleOptions = {}, gymId } = options;
   const optArch =
     typeof battleOptions.trainerArchetype === 'string'
@@ -65,17 +76,46 @@ function resolveArchetypeAndGym(options: BattleOptions) {
   return { resolvedTrainerArchetype, resolvedGymId };
 }
 
-function resolveDifficultyAndReward(options: BattleOptions) {
+const BATTLE_DIFFICULTY_SET: ReadonlySet<BattleDifficulty> = new Set<BattleDifficulty>(
+  BATTLE_DIFFICULTIES
+);
+
+function resolveDifficultyAndReward(options: BattleOptions): {
+  resolvedDifficulty: BattleDifficulty | undefined;
+  resolvedRewardTM: ItemId | undefined;
+} {
   const { difficulty, rewardTM } = options;
   const resolvedDifficulty =
-    difficulty === 'easy' || difficulty === 'normal' || difficulty === 'hard'
-      ? difficulty
-      : undefined;
+    difficulty && BATTLE_DIFFICULTY_SET.has(difficulty) ? difficulty : undefined;
   const resolvedRewardTM = rewardTM ? requireItemId(rewardTM) : undefined;
   return { resolvedDifficulty, resolvedRewardTM };
 }
 
-export function extractBattleConfig(options: BattleOptions) {
+export interface ExtractedBattleConfig {
+  isGym: boolean;
+  resolvedGymId: GymId | undefined;
+  isTrainer: boolean;
+  enemyTeam: Pokemon[] | undefined;
+  trainerName: string;
+  battleOptions: Record<string, unknown>;
+  minigame: 'archaeology' | 'fishing' | null | undefined;
+  wasSearchingOpt: boolean | null;
+  trainerSprite: string | undefined;
+  resolvedTrainerArchetype: NpcArchetype | undefined;
+  isRival: boolean;
+  resolvedDifficulty: BattleDifficulty | undefined;
+  resolvedRewardTM: ItemId | undefined;
+  cannotEscape: boolean;
+  trainerQuote: string | undefined;
+  isPvP: boolean;
+  pvpMatchId: string | undefined;
+  pvpIsHost: boolean | undefined;
+  pvpOpponentId: string | undefined;
+  pvpOpponentName: string | undefined;
+  playerTeam: Pokemon[] | undefined;
+}
+
+export function extractBattleConfig(options: BattleOptions): ExtractedBattleConfig {
   const isGym = Boolean(
     options.isGym ||
     (typeof options.battleOptions === 'object' && options.battleOptions?.isGym) ||
@@ -135,7 +175,10 @@ export function resolveBattleWeather(
   options: BattleOptions,
   cfg: ReturnType<typeof extractBattleConfig>,
   loc: ResolvedLocationData
-) {
+): {
+  activeWeatherId: WeatherId;
+  weather: ReturnType<ReturnType<typeof getMapEnvironment>['resolveCombatWeather']>;
+} {
   const environment = getMapEnvironment(loc.resolvedLocationId, {
     isGym: cfg.isGym,
     gymId: cfg.resolvedGymId,
@@ -189,7 +232,12 @@ function pickTrainerGender(options: BattleOptions, rawGender: unknown): GenderId
 function resolveTrainerDetails(
   cfg: ReturnType<typeof extractBattleConfig>,
   options: BattleOptions
-) {
+): {
+  sprite: NpcSpriteId | PlayerClassId | undefined;
+  gender: GenderId | undefined;
+  name: string | undefined;
+  quote: string | undefined;
+} {
   const { battleOptions } = cfg;
   const nestedSprite =
     typeof battleOptions.trainerSprite === 'string' ? battleOptions.trainerSprite : undefined;
@@ -331,7 +379,7 @@ export function buildInitialBattleState(p: BuildBattleStateParams): BattleState 
 export function generateNpcInventoryForBattle(
   cfg: ReturnType<typeof extractBattleConfig>,
   maxEnemyLv: number
-) {
+): { inventory: Inventory; remainingMoney: number } | null {
   if (!cfg.isTrainer && !cfg.isGym) return null;
   const isRival = cfg.isRival || cfg.battleOptions.isRival === true;
   return generateNPCInventory(

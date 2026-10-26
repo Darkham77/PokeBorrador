@@ -4,21 +4,28 @@
  * Consolidated Suite for Environmental Bush Library, Fishing Minigame, and Minigame Math Formulas.
  */
 
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
-import {
-  getActiveBushesForMap,
-  BIOME_BUSH_CONFIG,
-  BUSH_FAMILIES
-} from '../../../src/logic/environment/bushLibrary.ts';
+import { describe, it } from 'vite-plus/test';
+
 import {
   FISHING_DIFFICULTIES,
   calculateFishingDifficulty,
   calculateFishingDifficultyScore,
   applyFishingLevelAndIvBonus
 } from '../../../src/components/modals/fishingGameHelper.ts';
-import { makePokemon } from '../../../src/logic/pokemon/pokemonFactory.ts';
+import {
+  GYM_REMATCHES,
+  isGymRematchAvailable,
+  isGymRematchCompletedToday,
+  recordGymRematchCompletion
+} from '../../../src/data/world/gymRematches.ts';
+import type { GymId } from '../../../src/data/world/gyms.ts';
+import {
+  getActiveBushesForMap,
+  BIOME_BUSH_CONFIG,
+  BUSH_FAMILIES
+} from '../../../src/logic/environment/bushLibrary.ts';
 import {
   calculateFishingTotalNotes,
   calculateFishingSpeedBase,
@@ -28,15 +35,9 @@ import {
   calculateCloningRerolls,
   calculateCloningShinyChance
 } from '../../../src/logic/minigames/minigameMath.ts';
+import { makePokemon } from '../../../src/logic/pokemon/pokemonFactory.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
-import {
-  GYM_REMATCHES,
-  isGymRematchAvailable,
-  isGymRematchCompletedToday,
-  recordGymRematchCompletion
-} from '../../../src/data/world/gymRematches.ts';
 import type { GameState } from '../../../src/types/system/game.ts';
-import type { GymId } from '../../../src/data/world/gyms.ts';
 
 const baseBushes = [
   { id: 1, cls: 'bush-front-1', scale: 1.3, tx: -60, ty: 10, ad: '1.2s', ay: '0s' },

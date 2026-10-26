@@ -1,3 +1,4 @@
+import { mount } from '@vue/test-utils';
 /**
  * tests/unit/world/world_spawns_and_maps_suite.spec.ts
  * Cohesive domain suite consolidating map spawn calculations, spawn rate integrity,
@@ -5,21 +6,21 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
-import { mount } from '@vue/test-utils';
+
+import RouteSpawnsTable from '@/components/modals/RouteSpawnsTable.vue';
+import type { ArchaeologyRewardData } from '@/composables/modals/useRouteSpawnsArchaeology';
+import { isBabyPokemonSpeciesId, isLegendaryPokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { FIRE_RED_MAPS } from '@/data/world/maps';
 import {
   generateEncounter,
   clampLegendaryRates,
   getFinalGroundRates
 } from '@/logic/encounters/encounters';
-import { FIRE_RED_MAPS } from '@/data/world/maps';
-import { isBabyPokemonSpeciesId, isLegendaryPokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { DayPhase } from '@/types/system/time';
-import { isWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
-import RouteSpawnsTable from '@/components/modals/RouteSpawnsTable.vue';
 import type { RouteSpawnMappedItem } from '@/logic/utils/routeSpawnHelpers';
+import { isWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
 import type { NpcChanceInfo } from '@/logic/weather/weatherUtils';
-import type { ArchaeologyRewardData } from '@/composables/modals/useRouteSpawnsArchaeology';
+import type { DayPhase } from '@/types/system/time';
 
 vi.mock('@/logic/providers/pokemonDataProvider', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/logic/providers/pokemonDataProvider')>();

@@ -8,7 +8,7 @@ El juego actual funciona mediante navegación instantánea de un clic. Este mód
 
 ## 2. Decisiones de Arquitectura e Integración
 
-- **Entorno**: Se crea una ruta de desarrollo aislada `/test-aventura` cargada por `src/views/AdventureTestView.vue`.
+- **Entorno**: Se crea una ruta de desarrollo aislada `/test-aventura` cargada por `src/views/adventure/AdventureTestView.vue`.
 - **Grafo de Kanto**: Se crea una representación geográfica explícita en `test aventura/kantoGraph.ts`.
 - **Cálculo de Ruta**: Algoritmo BFS que encuentra la ruta más corta. Las aristas con requisitos de MO (ej. Surf para rutas de agua) solo se consideran transitables si el jugador tiene dicha MO activada en el panel del simulador.
 - **Control de Animaciones**: Todas las transiciones de la barra de viaje y efectos se coordinan con **GSAP**, respetando la directiva de cero timers numéricos (`setTimeout`/`setInterval`).

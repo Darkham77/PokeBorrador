@@ -1,3 +1,4 @@
+import { isMainModule } from '@francogp/auditor';
 /**
  * @file admin_supabase_users.ts
  * @description Script automático de administración de usuarios Supabase (Nube o NAS),
@@ -14,8 +15,9 @@
  * - Arquitectura Zero-Warning y Zero-Any.
  */
 
-import { styleText, parseArgs } from 'node:util';
+import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
+import { defineCommand, runMain } from 'citty';
 
 const ADMIN_TARGET_NODE_VERSION_LABEL = '26';
 import postgres from 'postgres';
@@ -42,70 +44,6 @@ const KNOWN_ADMIN_ACTIONS = [
   'promote'
 ] as const;
 export type KnownAdminAction = (typeof KNOWN_ADMIN_ACTIONS)[number];
-const KNOWN_ADMIN_ACTIONS_SET: ReadonlySet<string> = new Set(KNOWN_ADMIN_ACTIONS);
-
-function isKnownAdminAction(value: string): value is KnownAdminAction {
-  return KNOWN_ADMIN_ACTIONS_SET.has(value);
-}
-
-function parseAdminCliArgs(
-  rawArgs: readonly string[],
-  baseProfiles: readonly string[],
-  allAvailable: readonly string[]
-): AdminParsedArgs {
-  const { values, positionals } = parseArgs({
-    options: {
-      server: { type: 'string', short: 's' },
-      action: { type: 'string', short: 'a' },
-      email: { type: 'string', short: 'e' },
-      password: { type: 'string', short: 'p' },
-      'new-email': { type: 'string' },
-      username: { type: 'string', short: 'u' },
-      help: { type: 'boolean', short: 'h' }
-    },
-    allowPositionals: true,
-    strict: false
-  });
-
-  const isHelp = Boolean(
-    values.help || rawArgs.includes('help') || rawArgs.includes('--help') || rawArgs.includes('-h')
-  );
-
-  const getParam = (key: string, shortKey?: string): string | undefined => {
-    if (typeof values[key] === 'string') return values[key] as string;
-    if (shortKey && typeof values[shortKey] === 'string') return values[shortKey] as string;
-    for (const arg of rawArgs) {
-      const eq = arg.indexOf('=');
-      if (eq !== -1) {
-        const k = arg.substring(0, eq).replace(/^--?/, '');
-        if (k === key || (shortKey && k === shortKey)) return arg.substring(eq + 1);
-      }
-    }
-    return undefined;
-  };
-
-  const serverArg =
-    getParam('server', 's') ||
-    positionals.find((p) => allAvailable.includes(p) || baseProfiles.includes(p));
-  const actionArg = getParam('action', 'a') || positionals.find(isKnownAdminAction);
-  const nonTarget = positionals.filter(
-    (p) => p !== serverArg && p !== actionArg && !p.includes('=')
-  );
-  const emailArg = getParam('email', 'e') || nonTarget.find((p) => p.includes('@'));
-  const passwordArg =
-    getParam('password', 'p') ||
-    (actionArg === 'set-password' ? nonTarget.find((p) => !p.includes('@')) : undefined);
-  const newEmailArg =
-    getParam('new-email') ||
-    (actionArg === 'set-email'
-      ? nonTarget.find((p) => p.includes('@') && p !== emailArg)
-      : undefined);
-  const usernameArg =
-    getParam('username', 'u') ||
-    (actionArg === 'set-username' ? nonTarget[0] : !emailArg ? nonTarget[0] : undefined);
-
-  return { serverArg, actionArg, emailArg, passwordArg, newEmailArg, usernameArg, isHelp };
-}
 
 async function resolveUserIdentifiers(
   sql: postgres.Sql,
@@ -293,7 +231,7 @@ async function dispatchAdminAction(
   }
 }
 
-export async function adminSupabaseUsers(): Promise<void> {
+export async function adminSupabaseUsers(parsed?: Partial<AdminParsedArgs>): Promise<void> {
   console.log(
     styleText(
       'bold',
@@ -301,27 +239,12 @@ export async function adminSupabaseUsers(): Promise<void> {
     )
   );
 
-  const { serverConfigs, baseProfiles, allAvailable } = await getValidatedServerConfigs();
-  const rawArgs = process.argv.slice(2);
-  const parsed = parseAdminCliArgs(rawArgs, baseProfiles, allAvailable);
+  const { serverConfigs } = await getValidatedServerConfigs();
+  const serverArg = parsed?.serverArg;
+  const actionArg = parsed?.actionArg;
+  const emailArg = parsed?.emailArg;
+  const usernameArg = parsed?.usernameArg;
 
-  if (parsed.isHelp) {
-    console.log(
-      styleText(
-        'cyan',
-        `\n📖 USO: npm run database:admin [server=<perfil>] [action=<accion>] [email=<email>] [password=<pass>]`
-      )
-    );
-    console.log(
-      styleText(
-        'gray',
-        '\nOpciones disponibles:\n  server=<perfil>\n  action=<unban|set-password|set-email|set-username|promote>\n  email=<email>\n  password=<pass>\n  new-email=<email>\n  username=<nombre>'
-      )
-    );
-    process.exit(0);
-  }
-
-  const { serverArg, actionArg, emailArg, usernameArg } = parsed;
   if (!serverArg || !actionArg || (!emailArg && !usernameArg)) {
     console.log(styleText('yellow', '⚠️  Faltan argumentos obligatorios.'));
     console.log(
@@ -358,7 +281,10 @@ export async function adminSupabaseUsers(): Promise<void> {
     const displayName = targetEmail || targetUsername || '';
     console.log(styleText('cyan', `👤 Identificador objetivo: ${displayName}`));
 
-    await dispatchAdminAction(actionArg, sql, targetEmail, targetUsername, displayName, parsed);
+    await dispatchAdminAction(actionArg, sql, targetEmail, targetUsername, displayName, {
+      ...parsed,
+      isHelp: false
+    });
     await sql.end();
   } catch (adminErr: unknown) {
     console.error(
@@ -369,22 +295,61 @@ export async function adminSupabaseUsers(): Promise<void> {
     );
     try {
       await sql.end();
-    } catch {
-      // catch-ok: Best-effort closing of postgres connection during failure
+    } catch (err) {
+      err;
     }
     process.exit(1);
   }
 }
 
-// Permitir ejecución directa
-const isDirectRun =
-  process.argv[1] &&
-  (process.argv[1].endsWith('admin_supabase_users.ts') ||
-    process.argv[1].includes('admin_supabase_users.ts'));
-
-if (isDirectRun) {
-  adminSupabaseUsers().catch((err) => {
-    console.error(styleText('red', `❌ Error fatal: ${(err as Error).message}`));
-    process.exit(1);
-  });
+export const command = defineCommand({
+  meta: {
+    name: 'admin-supabase-users',
+    description: 'Script automático de administración de usuarios Supabase'
+  },
+  args: {
+    server: {
+      type: 'string',
+      description: 'Nombre del perfil de servidor (ej: official_prod)',
+      alias: 's'
+    },
+    action: {
+      type: 'string',
+      description: 'Acción administrativa (unban, set-password, set-email, set-username, promote)',
+      alias: 'a'
+    },
+    email: {
+      type: 'string',
+      description: 'Correo electrónico del usuario',
+      alias: 'e'
+    },
+    password: {
+      type: 'string',
+      description: 'Nueva contraseña para set-password',
+      alias: 'p'
+    },
+    'new-email': {
+      type: 'string',
+      description: 'Nuevo correo para set-email'
+    },
+    username: {
+      type: 'string',
+      description: 'Nombre de usuario del entrenador',
+      alias: 'u'
+    }
+  },
+  async run({ args }) {
+    await adminSupabaseUsers({
+      serverArg: args.server,
+      actionArg: args.action,
+      emailArg: args.email,
+      passwordArg: args.password,
+      newEmailArg: args['new-email'],
+      usernameArg: args.username,
+      isHelp: false
+    });
+  }
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
 }

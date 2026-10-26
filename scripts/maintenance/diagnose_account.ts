@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+import { isMainModule } from '@francogp/auditor';
 /**
  * scripts/maintenance/diagnose_account.ts
  *
@@ -27,7 +29,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { parseArgs, styleText } from 'node:util';
+import { styleText } from 'node:util';
+import { defineCommand, runMain } from 'citty';
 import { DatabaseSync } from 'node:sqlite';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
@@ -456,7 +459,7 @@ function validateValibotSchema(saveData: GameState, findings: DiagnosticFinding[
 }
 
 function validateInventoryItems(
-  inventory: Record<string, number> | undefined,
+  inventory: Record<DisplayText, number> | undefined,
   findings: DiagnosticFinding[]
 ): void {
   const validItemIds: Set<string> = new Set(SHOP_ITEMS.map((i) => i.id));
@@ -717,35 +720,6 @@ interface AccountDiagnosisSummary {
   warnings: DiagnosticFinding[];
 }
 
-function displayHelpAndExit(): never {
-  console.log(`
-🔍 POKÉ VICIO — DIAGNÓSTICO INTEGRAL DE CUENTAS
-
-Uso:
-  # Diagnosticar TODAS las cuentas de un servidor:
-  npm run database:diagnose-account server=<perfil> all
-  npm run database:diagnose-account server=server_franco all
-
-  # Diagnosticar TODAS las cuentas de un respaldo JSON:
-  npm run database:diagnose-account file=<ruta_json> all
-
-  # Diagnosticar una cuenta específica:
-  npm run database:diagnose-account server=server_franco user=kenviota@gmail.com
-  npm run database:diagnose-account file=<ruta_json> user=Angianemar
-  npm run database:diagnose-account user=local_ash
-
-Opciones:
-  all                      Audita todas las cuentas disponibles en el origen seleccionado.
-  server=<perfil>          Nombre del perfil de servidor en .env (ej: server_franco, cloud).
-  user=<id|email|user>     Identificador, correo o nombre de usuario del entrenador a diagnosticar.
-  file=<ruta>              Ruta directa a un archivo JSON de respaldo.
-  db=<ruta>                Ruta al archivo SQLite local (por defecto: poke_local.db).
-  save-json=<ruta>         Exporta los datos de guardado crudos descargados a un archivo JSON local.
-  help                     Muestra este mensaje de ayuda.
-`);
-  process.exit(0);
-}
-
 async function resolveTargetAccounts(
   isAll: boolean,
   fileInput?: string,
@@ -884,58 +858,6 @@ function saveDiagnosisReport(allSummary: AccountDiagnosisSummary[]): void {
   console.log(styleText('dim', `\n💾 Reporte detallado guardado en: ${reportPath}\n`));
 }
 
-interface ParsedDiagnoseCli {
-  readonly isHelp: boolean;
-  readonly isAll: boolean;
-  readonly userInput?: string;
-  readonly serverInput?: string;
-  readonly fileInput?: string;
-  readonly dbInput: string;
-}
-
-function parseDiagnoseAccountCliArgs(rawArgs: string[]): ParsedDiagnoseCli {
-  const normalized = rawArgs.map((a) =>
-    a.includes('=') && !a.startsWith('-')
-      ? `--${a}`
-      : ['help', 'fix', 'all'].includes(a)
-        ? `--${a}`
-        : a
-  );
-
-  const { values, positionals } = parseArgs({
-    args: normalized,
-    options: {
-      user: { type: 'string', short: 'u' },
-      server: { type: 'string', short: 's' },
-      file: { type: 'string', short: 'f' },
-      db: { type: 'string', short: 'd', default: 'poke_local.db' },
-      all: { type: 'boolean', short: 'a' },
-      'save-json': { type: 'string' },
-      help: { type: 'boolean', short: 'h' }
-    },
-    allowPositionals: true,
-    strict: false
-  });
-
-  const isHelp = Boolean(
-    values.help || rawArgs.includes('help') || rawArgs.includes('--help') || rawArgs.includes('-h')
-  );
-  const isAll = Boolean(values.all || rawArgs.includes('all') || values.user === 'all');
-  const userInput =
-    (typeof values.user === 'string' && values.user !== 'all' ? values.user : undefined) ||
-    positionals.find((p) => !p.startsWith('-') && !p.includes('=') && p !== 'all') ||
-    (values.server ? undefined : positionals[0] !== 'all' ? positionals[0] : undefined);
-  const serverInput =
-    (typeof values.server === 'string' ? values.server : undefined) ||
-    (rawArgs.some((a) => a.startsWith('server='))
-      ? rawArgs.find((a) => a.startsWith('server='))?.split('=')[1]
-      : undefined);
-  const fileInput = typeof values.file === 'string' ? values.file : undefined;
-  const dbInput = typeof values.db === 'string' ? values.db : 'poke_local.db';
-
-  return { isHelp, isAll, userInput, serverInput, fileInput, dbInput };
-}
-
 function executeAccountDiagnosisLoop(
   accounts: readonly LoadedAccountData[],
   isAll: boolean
@@ -961,49 +883,80 @@ function executeAccountDiagnosisLoop(
   return { allSummary, totalErrors, totalWarnings, totalFixed };
 }
 
-async function main() {
-  const { isHelp, isAll, userInput, serverInput, fileInput, dbInput } = parseDiagnoseAccountCliArgs(
-    process.argv.slice(2)
-  );
-  if (isHelp) displayHelpAndExit();
+export const command = defineCommand({
+  meta: {
+    name: 'diagnose-account',
+    description: 'Diagnóstico de cuentas y partidas contra el esquema y legalidad'
+  },
+  args: {
+    user: {
+      type: 'string',
+      description: 'ID, email o username a diagnosticar, o "all"',
+      alias: 'u'
+    },
+    server: {
+      type: 'string',
+      description: 'Perfil de servidor en .env',
+      alias: 's'
+    },
+    file: {
+      type: 'string',
+      description: 'Ruta al archivo JSON de respaldo',
+      alias: 'f'
+    },
+    db: {
+      type: 'string',
+      description: 'Ruta a la base de datos SQLite',
+      alias: 'd',
+      default: 'poke_local.db'
+    },
+    all: {
+      type: 'boolean',
+      description: 'Diagnosticar todas las cuentas',
+      alias: 'a'
+    }
+  },
+  async run({ args }) {
+    const isAll = Boolean(args.all || args.user === 'all');
+    const userInput = args.user !== 'all' ? args.user : undefined;
+    const serverInput = args.server;
+    const fileInput = args.file;
+    const dbInput = args.db || 'poke_local.db';
 
-  if (!isAll && !userInput) {
-    console.error(
-      styleText(
-        'yellow',
-        '⚠️ Debes especificar el usuario a diagnosticar con user=<id|email|username> o pasar "all" para diagnosticar todas las cuentas.'
-      )
+    if (!isAll && !userInput) {
+      console.error(
+        styleText(
+          'yellow',
+          '⚠️ Debes especificar el usuario a diagnosticar con user=<id|email|username> o pasar "all" para diagnosticar todas las cuentas.'
+        )
+      );
+      console.log(
+        styleText('gray', 'Ejemplo: npm run database:diagnose-account server=server_franco all')
+      );
+      process.exit(1);
+    }
+
+    console.log(styleText('bold', '\n======================================================'));
+    console.log(styleText('bold', '🧪 POKÉ VICIO — DIAGNÓSTICO DE CUENTAS & PARTIDAS'));
+    console.log(styleText('bold', '======================================================'));
+
+    const accounts = await resolveTargetAccounts(isAll, fileInput, serverInput, dbInput, userInput);
+    if (accounts.length === 0) {
+      console.error(styleText('red', '\n❌ No se encontraron partidas para auditar.'));
+      process.exit(1);
+    }
+
+    console.log(styleText('cyan', `\n📊 Total de cuentas a diagnosticar: ${accounts.length}\n`));
+
+    const { allSummary, totalErrors, totalWarnings, totalFixed } = executeAccountDiagnosisLoop(
+      accounts,
+      isAll
     );
-    console.log(
-      styleText('gray', 'Ejemplo: npm run database:diagnose-account server=server_franco all')
-    );
-    process.exit(1);
+
+    renderGlobalSummary(allSummary, totalErrors, totalWarnings, totalFixed, serverInput);
+    saveDiagnosisReport(allSummary);
   }
-
-  console.log(styleText('bold', '\n======================================================'));
-  console.log(styleText('bold', '🧪 POKÉ VICIO — DIAGNÓSTICO DE CUENTAS & PARTIDAS'));
-  console.log(styleText('bold', '======================================================'));
-
-  const accounts = await resolveTargetAccounts(isAll, fileInput, serverInput, dbInput, userInput);
-  if (accounts.length === 0) {
-    console.error(styleText('red', '\n❌ No se encontraron partidas para auditar.'));
-    process.exit(1);
-  }
-
-  console.log(styleText('cyan', `\n📊 Total de cuentas a diagnosticar: ${accounts.length}\n`));
-
-  const { allSummary, totalErrors, totalWarnings, totalFixed } = executeAccountDiagnosisLoop(
-    accounts,
-    isAll
-  );
-
-  renderGlobalSummary(allSummary, totalErrors, totalWarnings, totalFixed, serverInput);
-  saveDiagnosisReport(allSummary);
-}
-
-if (process.argv[1]?.includes('diagnose_account')) {
-  main().catch((err: unknown) => {
-    console.error(styleText('red', `💥 Error fatal en el diagnóstico: ${(err as Error).message}`));
-    process.exit(1);
-  });
+});
+if (isMainModule(import.meta.url)) {
+  runMain(command);
 }

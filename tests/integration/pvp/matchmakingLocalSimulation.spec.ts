@@ -1,15 +1,14 @@
-/** @vitest-environment jsdom */
-// jsdom-ok: Requires browser environment for local storage, OPFS persistence, and offline DBRouter mode
-import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { useLivePvPStore } from '@/stores/livePvP.ts';
-import { useGameStore } from '@/stores/game.ts';
-import { useAuthStore } from '@/stores/auth.ts';
-import { initSQLite, resetSQLite } from '@/logic/db/sqliteEngine.ts';
+import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
+
 import { TABLES_SCHEMA } from '@/logic/db/schema.ts';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleInvite } from '@/types/battle/pvp';
+import { initSQLite, resetSQLite } from '@/logic/db/sqliteEngine.ts';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory.ts';
+import { useAuthStore } from '@/stores/auth.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useLivePvPStore } from '@/stores/livePvP.ts';
+import type { BattleInvite } from '@/types/battle/pvp';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Local Instance PvP Matchmaking Full Simulation', () => {
   beforeEach(async () => {

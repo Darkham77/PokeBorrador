@@ -1,7 +1,8 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import { hasPokemonTag, isPokemonTagId } from '@/logic/constants/tags';
 import { isReadyForFriendshipEvolution } from '@/logic/pokemon/friendshipLogic';
 import { FRIENDSHIP_BOUNDS } from '@/types/pokemon/friendship';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import type { PokemonFilterCriteria } from './pokemonSelectionFilter.ts';
 import type { FilterablePokemonItem } from './pokemonSortMetric.ts';
 

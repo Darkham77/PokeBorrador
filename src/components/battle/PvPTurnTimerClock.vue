@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, watch, onWatcherCleanup, useTemplateRef } from 'vue';
 import { gsap } from 'gsap';
+import { computed, watch, onWatcherCleanup, useTemplateRef } from 'vue';
+
 import { useLivePvPStore } from '@/stores/livePvP';
 import { PVP_TURN_TIMEOUT_SEC } from '@/types/battle/pvp';
 

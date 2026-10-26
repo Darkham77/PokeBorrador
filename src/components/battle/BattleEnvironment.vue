@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import {
   useBattleBackground,
   type BattleBackgroundLocationId
@@ -21,7 +22,7 @@ const bgData = computed(() => {
   return getBackgroundUrl(props.locationId, props.currentCycle);
 });
 
-const handleBackgroundError = (e: Event) => {
+const handleBackgroundError = (e: Event): void => {
   const target = e.target as HTMLImageElement;
   const currentSrc = target.src;
   if (currentSrc.includes('_')) {

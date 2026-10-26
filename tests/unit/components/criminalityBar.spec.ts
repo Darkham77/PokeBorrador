@@ -1,10 +1,11 @@
-// @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+
 import CriminalityBar from '@/components/ui/CriminalityBar.vue';
-import { useUIStore } from '@/stores/ui';
 import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
 
 describe('CriminalityBar.vue', () => {
   beforeEach(() => {

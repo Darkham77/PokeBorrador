@@ -17,19 +17,15 @@ import type {
   ResolvedPatch,
   ResolvedPatchCell
 } from '../../types/map/autotileStudioTypes.ts';
-
+import { CANONICAL_MINT_GRASS_BRUSH } from './macroBiomeAutotileEngine.ts';
+import { resolveMountainAutotileCell, type ElevationMatrix } from './mountainAutotileEngine.ts';
+import { CANONICAL_DIRT_PATH_BRUSH } from './pathAutotileEngine.ts';
 import {
   classify2DAutotileRole,
   getTileForRole,
   CANONICAL_OCEAN_SHORE_BRUSH,
   BASE_GRASS_TILE
 } from './waterAutotileEngine.ts';
-
-import { CANONICAL_DIRT_PATH_BRUSH } from './pathAutotileEngine.ts';
-
-import { CANONICAL_MINT_GRASS_BRUSH } from './macroBiomeAutotileEngine.ts';
-
-import { resolveMountainAutotileCell, type ElevationMatrix } from './mountainAutotileEngine.ts';
 
 /**
  * Bitmask flag positions in 3x3 grid around center (1,1):

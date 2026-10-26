@@ -10,8 +10,9 @@
  * - Solar Power ability (SpA boost in Sun).
  */
 
-import { describe, it, vi } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it, vi } from 'vite-plus/test';
 
 import {
   calculateDamagePure,

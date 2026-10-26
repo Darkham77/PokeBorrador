@@ -1,16 +1,17 @@
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { createPinia, setActivePinia } from 'pinia';
-import { serializeActiveBattle } from '@/logic/auth/battleSerializerHelper';
-import { restoreBattleState } from '@/logic/battle/orchestratorRestoreHelper';
-import { saveGame, resetSaveOperationState } from '@/logic/auth/saveService';
-import { saveCoordinator } from '@/logic/auth/saveCoordinator';
-import { INITIAL_STATE } from '@/stores/gameInitialState';
-import { pokemonDebugService } from '@/logic/debug/pokemonDebugService';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { GameState } from '@/types/system/game';
-import type { BattleState } from '@/types/battle/battle';
-import type { AuthUser } from '@/types/auth/auth';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { ref } from 'vue';
+
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { serializeActiveBattle } from '@/logic/auth/battleSerializerHelper';
+import { saveCoordinator } from '@/logic/auth/saveCoordinator';
+import { saveGame, resetSaveOperationState } from '@/logic/auth/saveService';
+import { restoreBattleState } from '@/logic/battle/orchestratorRestoreHelper';
+import { pokemonDebugService } from '@/logic/debug/pokemonDebugService';
+import { INITIAL_STATE } from '@/stores/gameInitialState';
+import type { AuthUser } from '@/types/auth/auth';
+import type { BattleState } from '@/types/battle/battle';
+import type { GameState } from '@/types/system/game';
 
 describe('Rival Anti-Cheat Battle Persistence & Remote Save Parity', () => {
   beforeEach(() => {

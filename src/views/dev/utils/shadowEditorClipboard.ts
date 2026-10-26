@@ -1,3 +1,4 @@
+import { logger } from '@/logic/utils/logger.ts';
 import type { ShadowCalibrationSnapshot } from '@/types/pokemon/spriteShadows';
 import {
   DEFAULT_SHADOW_SCALE,
@@ -17,9 +18,8 @@ export async function copySliderValue(value: number): Promise<boolean> {
     try {
       await navigator.clipboard.writeText(value.toString());
       return true;
-    } catch {
-      // catch-ok: Clipboard permission denied or unavailable, fallback to memory
-      // In-memory fallback is active
+    } catch (err) {
+      logger.warn('Handled controlled exception:', { cause: err });
     }
   }
   return true;
@@ -40,9 +40,8 @@ export async function readSliderValue(): Promise<number | null> {
           return num;
         }
       }
-    } catch {
-      // catch-ok: Clipboard permission denied or unavailable, fallback to memory
-      // Clipboard permission denied or unavailable, fall back to memory
+    } catch (err) {
+      logger.warn('Handled controlled exception:', { cause: err });
     }
   }
   return sharedMemoryClipboard;
@@ -57,9 +56,8 @@ export async function copyAllValues(snapshot: ShadowCalibrationSnapshot): Promis
     try {
       await navigator.clipboard.writeText(JSON.stringify(snapshot, null, 2));
       return true;
-    } catch {
-      // catch-ok: Clipboard permission denied or unavailable, fallback to memory
-      // Memory fallback active
+    } catch (err) {
+      logger.warn('Handled controlled exception:', { cause: err });
     }
   }
   return true;
@@ -123,9 +121,8 @@ export async function readAllValues(): Promise<ShadowCalibrationSnapshot | null>
         const parsed = parseCalibrationJson(text);
         if (parsed) return parsed;
       }
-    } catch {
-      // catch-ok: Clipboard permission denied or invalid JSON, fallback to memory
-      // Permission or parse error, fall back to memory
+    } catch (err) {
+      logger.warn('Handled controlled exception:', { cause: err });
     }
   }
   return sharedMemoryCalibration;

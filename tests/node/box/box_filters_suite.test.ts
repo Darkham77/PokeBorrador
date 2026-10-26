@@ -6,6 +6,7 @@
 
 import { describe, it, expect } from 'vite-plus/test';
 import { ref } from 'vue';
+
 import { useBoxFilters } from '@/composables/pokemon/useBoxFilters';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 

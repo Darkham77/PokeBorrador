@@ -1,14 +1,14 @@
 // Topography and Elevation Stamping Engine for Procedural Overworld Maps
 
-import type { TileCollision } from './tilesRegistry.ts';
-import type { MapCell } from '../../types/map/proceduralMapTypes.ts';
-import type { ThemeBiomePalette } from './proceduralBiomePalettes.ts';
-import type { BiomeDistributionResult } from './biomeDistributionEngine.ts';
-import { canStamp, stampMultitile } from './proceduralAutotileEngine.ts';
 import {
   DEFAULT_PROCEDURAL_MAP_MIN_DIMENSION,
   MOUNTAIN_CONE_CELLS_DIVISOR
 } from '../../config/proceduralMapConfig.ts';
+import type { MapCell } from '../../types/map/proceduralMapTypes.ts';
+import type { BiomeDistributionResult } from './biomeDistributionEngine.ts';
+import { canStamp, stampMultitile } from './proceduralAutotileEngine.ts';
+import type { ThemeBiomePalette } from './proceduralBiomePalettes.ts';
+import type { TileCollision } from './tilesRegistry.ts';
 
 export interface OrganicWaterBodiesOptions {
   readonly withWater: boolean;
@@ -133,7 +133,7 @@ export function stampElevationCliffsAndCones(options: ElevationCliffsAndConesOpt
     const leftTile = palette.cliff.left ?? topTile;
     const rightTile = palette.cliff.right ?? topTile;
 
-    const stampCliffRow = (y: number) => {
+    const stampCliffRow = (y: number): void => {
       let runStart = -1;
       for (let x = 2; x <= width - 3; x++) {
         const isMountain = biomeDist.mountainMask[y]![x] && biomeDist.mountainMask[y + 1]![x];

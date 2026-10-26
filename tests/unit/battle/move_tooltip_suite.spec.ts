@@ -1,16 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
-import {
-  calculateMovePower,
-  calculateMoveAccuracy,
-  calculateCritChance
-} from '@/logic/battle/moveTooltipMath';
-import { parseStatusEffectInfo } from '@/logic/battle/tooltip/moveTooltipConditions';
-import {
-  buildKoText,
-  calculateAttackerStatDisplay,
-  buildTooltipDamageRange,
-  buildTooltipSpeedInfo
-} from '@/composables/battle/moveTooltipCalculator';
+
 import {
   formatPowerDisplay,
   formatAccuracyValue,
@@ -27,9 +16,21 @@ import {
   formatStageValue,
   getStageRangeLabel
 } from '@/components/battle/moveTooltipStatusHelper';
-import type { Move } from '@/types/pokemon/pokemon';
+import {
+  buildKoText,
+  calculateAttackerStatDisplay,
+  buildTooltipDamageRange,
+  buildTooltipSpeedInfo
+} from '@/composables/battle/moveTooltipCalculator';
 import type { PurePokemon } from '@/logic/battle/battleMath';
+import {
+  calculateMovePower,
+  calculateMoveAccuracy,
+  calculateCritChance
+} from '@/logic/battle/moveTooltipMath';
 import type { SmogonTooltipResult } from '@/logic/battle/smogonAdapter';
+import { parseStatusEffectInfo } from '@/logic/battle/tooltip/moveTooltipConditions';
+import type { Move } from '@/types/pokemon/pokemon';
 
 describe('Move Tooltip Suite', () => {
   describe('moveTooltipMath & moveTooltipConditions - O(1) Lookups & Modifiers', () => {

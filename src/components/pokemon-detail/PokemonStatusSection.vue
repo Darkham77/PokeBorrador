@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import PVTooltip from '@/components/common/PVTooltip.vue';
 import { getNatureInfo } from '@/data/battle/natures';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils';
-import { getFriendshipTooltipDetails } from '@/logic/pokemon/friendshipLogic';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { MAXIMUM_FRIENDSHIP_VALUE, PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
+import { getFriendshipTooltipDetails } from '@/logic/pokemon/friendshipLogic';
+import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 interface Props {
   pokemon: Pokemon;
@@ -38,14 +39,14 @@ const friendshipTooltipDesc = computed(() => {
 const HP_HIGH_THRESHOLD_PCT = 50;
 const HP_MID_THRESHOLD_PCT = 25;
 
-const getHpPct = (cur: number, max: number) => (cur / max) * 100;
-const getHpClass = (pct: number) => {
+const getHpPct = (cur: number, max: number): number => (cur / max) * 100;
+const getHpClass = (pct: number): string => {
   if (pct > HP_HIGH_THRESHOLD_PCT) return 'hp-high';
   if (pct > HP_MID_THRESHOLD_PCT) return 'hp-mid';
   return 'hp-low';
 };
 
-const getLevelPct = (level: number) =>
+const getLevelPct = (level: number): number =>
   Math.min(100, Math.max(0, (level / MAX_POKEMON_LEVEL) * 100));
 
 const expFillWidthPercent = computed(() => {
@@ -61,13 +62,13 @@ const expFillWidthPercent = computed(() => {
   return `${pct}%`;
 });
 
-const getAbilityDesc = (ability: string) => {
+const getAbilityDesc = (ability: string): string => {
   if (!ability) return 'Habilidad especial de este Pokémon.';
   const data = pokemonDataProvider.getAbilityData(ability);
   return data ? data.desc : 'Habilidad especial de este Pokémon.';
 };
 
-const getAbilityName = (ability: string) => {
+const getAbilityName = (ability: string): string => {
   if (!ability) return '—';
   const data = pokemonDataProvider.getAbilityData(ability);
   return data ? data.name : ability;

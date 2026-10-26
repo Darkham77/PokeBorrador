@@ -1,14 +1,15 @@
-import { describe, it, expect, beforeEach, vi, type Mock } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vite-plus/test';
+
+import type { DBRouter } from '@/logic/db/dbRouter';
+import type { MarketListing } from '@/logic/economy/market';
+import { calculateRocketSellPrice } from '@/logic/pokemon/pokemonUtils';
+import { useAuthStore } from '@/stores/auth';
 import { useBoxStore } from '@/stores/box';
 import { useGameStore } from '@/stores/game';
-import { useAuthStore } from '@/stores/auth';
-import { useUIStore } from '@/stores/ui';
 import { useGTSStore } from '@/stores/gts';
-import { calculateRocketSellPrice } from '@/logic/pokemon/pokemonUtils';
-import type { MarketListing } from '@/logic/economy/market';
+import { useUIStore } from '@/stores/ui';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { DBRouter } from '@/logic/db/dbRouter';
 
 describe('System Market & GTS Domain Suite', () => {
   describe('Black Market (Team Rocket) Sales Logic', () => {

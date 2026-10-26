@@ -1,11 +1,13 @@
-import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { describe, it } from 'vite-plus/test';
+
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { calculateBaseExp, processExpGain } from '@/logic/battle/battleRewards.ts';
 import { buildPrimaryRewardLine } from '@/logic/battle/rewards/combatantExpEvProcessor.ts';
 import { calculateEncounterTypeWeights } from '@/logic/encounters/encounterHelpers.ts';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation, EncounterState } from '@/types/pokemon/encounters';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 function createMockPokemon(opts: { id: string; level: number; uid: string }): Pokemon {
   return {

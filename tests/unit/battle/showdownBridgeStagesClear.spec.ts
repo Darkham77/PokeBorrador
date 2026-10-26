@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
+
 import type { ShowdownBoostStatKey } from '@/types/pokemon/pokemon';
 
 // We test clearDirectionalStages logic directly

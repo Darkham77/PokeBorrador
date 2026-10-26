@@ -1,11 +1,11 @@
-import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon';
-import type { Item } from '@/types/inventory/items';
 import { getItemById, type ItemId } from '@/data/inventory/items';
 import { isValidTarget } from '@/logic/items/itemEffects';
 import {
   isEquippableHeldItem,
   type Item as InventoryListItem
 } from '@/stores/inventory/inventoryHelpers';
+import type { Item } from '@/types/inventory/items';
+import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon';
 
 export interface InventoryTarget {
   context: PokemonStorageLocation;

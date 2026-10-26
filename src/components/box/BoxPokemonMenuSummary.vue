@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { PokemonType } from '@/data/battle/types';
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
-import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
 import PVTooltip from '@/components/common/PVTooltip.vue';
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue';
+import type { PokemonType } from '@/data/battle/types';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 interface Props {
   pokemon: Pokemon;

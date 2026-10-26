@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import PVTooltip from '@/components/common/PVTooltip.vue';
-import MoveTooltip from './MoveTooltip.vue';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+
+import MoveTooltip from './MoveTooltip.vue';
 
 const MOVE_TOOLTIP_DELAY_MS = 400;
 

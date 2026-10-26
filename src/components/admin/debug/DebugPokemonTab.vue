@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useUIStore } from '@/stores/ui';
+
 import DebugPokemonCreator from './DebugPokemonCreator.vue';
 
 const ui = useUIStore();
@@ -16,38 +17,38 @@ interface ViteDebug extends Record<string, unknown> {
   repairAllIllegal: () => void;
 }
 
-const getDebug = () => window.__VITE_DEBUG__ as ViteDebug;
+const getDebug = (): ViteDebug => globalThis.__VITE_DEBUG__ as ViteDebug;
 
 // Direct store manipulation (avoids stale proxy closures from HMR)
-async function setDebugPokedex(mode: string) {
+async function setDebugPokedex(mode: string): Promise<void> {
   getDebug().setPokedexMode(mode);
 }
 
-async function resetPokedexDB() {
+async function resetPokedexDB(): Promise<void> {
   getDebug().resetPokedexDB();
 }
 
-async function syncPokedexFromCollection() {
+async function syncPokedexFromCollection(): Promise<void> {
   getDebug().syncPokedex();
 }
 
-async function clearPvpTeam() {
+async function clearPvpTeam(): Promise<void> {
   getDebug().clearPvpTeam();
 }
 
-async function clearWarTeam() {
+async function clearWarTeam(): Promise<void> {
   getDebug().clearWarTeam();
 }
 
-async function forceStarterScreen() {
+async function forceStarterScreen(): Promise<void> {
   getDebug().forceStarterScreen();
 }
 
-async function walkEggs() {
+async function walkEggs(): Promise<void> {
   getDebug().walkEggs();
 }
 
-async function repairAllIllegal() {
+async function repairAllIllegal(): Promise<void> {
   getDebug().repairAllIllegal?.();
 }
 </script>

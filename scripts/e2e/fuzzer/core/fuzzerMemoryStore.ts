@@ -57,8 +57,8 @@ class FuzzerMemoryStore {
           items?: unknown[];
         };
       }
-    } catch {
-      // catch-ok: Fallback to empty existing doc if file cannot be read or parsed
+    } catch (err) {
+      err;
     }
     const certifiedDocument = {
       battle: this.battle.length > 0 ? this.battle : existingDoc.battle || [],

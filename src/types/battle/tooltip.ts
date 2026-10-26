@@ -1,3 +1,5 @@
+import type { DisplayText } from '@francogp/auditor';
+
 const _TOOLTIP_STAGE_STAT_IDS = ['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva', 'all'] as const;
 export type TooltipStageStatId = (typeof _TOOLTIP_STAGE_STAT_IDS)[number];
 export type TooltipStageStatName =
@@ -17,21 +19,21 @@ export const STAT_MODIFIER_STATUS_CLASSES = ['boosted', 'penalized'] as const;
 export type StatModifierStatusClass = (typeof STAT_MODIFIER_STATUS_CLASSES)[number];
 
 export interface ParsedStatusEffectInfo {
-  label: string; // domain-ok: Open dynamic text or non-domain string payload
+  label: DisplayText;
   chancePct?: number | null;
-  targetLabel?: string; // domain-ok: Open dynamic text or non-domain string payload
+  targetLabel?: DisplayText;
   isGuaranteed?: boolean;
   isCondition?: boolean;
   isSelf?: boolean;
-  targetName?: string; // domain-ok: Open dynamic text or non-domain string payload
+  targetName?: DisplayText;
   direction?: StatModifierDirection;
-  details?: string; // domain-ok: Open dynamic text or non-domain string payload
-  effect?: string; // domain-ok: localized display text
+  details?: DisplayText;
+  effect?: DisplayText;
   statName?: TooltipStageStatName;
   stat?: TooltipStageStatId;
   amount?: number;
   currentStage?: number;
   finalStage?: number;
-  initialStatVal?: string | number; // domain-ok: formatted display value
-  finalStatVal?: string | number; // domain-ok: formatted display value
+  initialStatVal?: DisplayText | number;
+  finalStatVal?: DisplayText | number;
 }

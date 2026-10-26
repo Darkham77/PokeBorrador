@@ -1,37 +1,30 @@
 import assert from 'node:assert/strict';
-import { describe, it, expect, vi, afterEach } from 'vite-plus/test';
-import type { Locator } from '@playwright/test';
 
-import {
-  BATTLE_STATES,
-  isBattleCompletionReady
-} from '@/logic/battle/helpers/battleCompletionReadiness';
+import type { Locator } from '@playwright/test';
+import { describe, it, expect, vi, afterEach } from 'vite-plus/test';
+
+import { getTrainerIdleConfig } from '@/components/battle/helpers/trainerIdleAnims';
+import { isTrainerTransitionActive } from '@/composables/battle/useBattleTrainerAnimations';
+import type { AbilityId } from '@/data/battle/abilities';
+import { ScriptedAI } from '@/logic/battle/ai/scriptedAI';
 import { BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
-import { applyStatusCheatToSide, type CheatSide } from '@/logic/battle/cheats';
 import {
   isNaturalWeatherAllowedInLocation,
   resolveEffectiveCycleForLocation
 } from '@/logic/battle/battleTeamCoordinator';
-import { ScriptedAI } from '@/logic/battle/ai/scriptedAI';
+import { applyStatusCheatToSide, type CheatSide } from '@/logic/battle/cheats';
 import {
-  abilityTriggeredInLog,
-  runStandaloneBatch
-} from '../../../scripts/e2e/fuzzer/core/fuzzer_engine.ts';
-import { generateTestBatches } from '../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
-import type { AbilityId } from '@/data/battle/abilities';
-import { selectNaturalFinishingMoveIndex } from '../../../scripts/e2e/fuzzer/core/fuzzer_agent.ts';
-import {
-  resolveValidMoveChoice,
-  type ActiveRequestMove
-} from '@/logic/battle/helpers/showdownMoveChoiceHelper';
-import { clickResilient } from '../../../scripts/e2e/helpers/e2eLogger.ts';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+  BATTLE_STATES,
+  isBattleCompletionReady
+} from '@/logic/battle/helpers/battleCompletionReadiness';
 import {
   canExecuteScriptedReplayAction,
   isReplaySwitchRequired
 } from '@/logic/battle/helpers/scriptedReplayReadiness';
-import { isTrainerTransitionActive } from '@/composables/battle/useBattleTrainerAnimations';
-import { getTrainerIdleConfig } from '@/components/battle/helpers/trainerIdleAnims';
+import {
+  resolveValidMoveChoice,
+  type ActiveRequestMove
+} from '@/logic/battle/helpers/showdownMoveChoiceHelper';
 import {
   TRAINER_IDLE_BASE_SCALE_X,
   TRAINER_IDLE_VAR_SCALE_X,
@@ -42,6 +35,15 @@ import {
   TRAINER_IDLE_BASE_DURATION_SEC,
   TRAINER_IDLE_VAR_DURATION_SEC
 } from '@/logic/constants/animations';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+
+import { selectNaturalFinishingMoveIndex } from '../../../scripts/e2e/fuzzer/core/fuzzer_agent.ts';
+import {
+  abilityTriggeredInLog,
+  runStandaloneBatch
+} from '../../../scripts/e2e/fuzzer/core/fuzzer_engine.ts';
+import { generateTestBatches } from '../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
+import { clickResilient } from '../../../scripts/e2e/helpers/e2eLogger.ts';
 
 const PLAYER_UID = 'player-uid';
 const OTHER_UID = 'other-uid';

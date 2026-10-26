@@ -1,5 +1,6 @@
-import { onUnmounted, getCurrentInstance } from 'vue';
 import { gsap } from 'gsap';
+import { onUnmounted, getCurrentInstance } from 'vue';
+
 import type { ParticleShape } from '@/data/battle/fx-configs';
 
 const PARTICLE_CENTER_PERCENT = 50;
@@ -51,10 +52,21 @@ export interface ParticleSystemOptions {
   createTweens: (el: HTMLElement, index: number, delay: number) => gsap.core.Animation[];
 }
 
-export function useParticleEngine() {
+export interface UseParticleEngineReturn {
+  readonly initSystem: (elements: HTMLElement[], options: ParticleSystemOptions) => void;
+  readonly killAll: () => void;
+  readonly randomizePosition: (
+    el: HTMLElement,
+    area: { x: [number, number]; y?: [number, number] },
+    shape?: ParticleShape,
+    offset?: { x: number; y: number }
+  ) => void;
+}
+
+export function useParticleEngine(): UseParticleEngineReturn {
   const activeTweens: gsap.core.Animation[] = [];
 
-  const killAll = () => {
+  const killAll = (): void => {
     activeTweens.forEach((t) => t.kill());
     activeTweens.length = 0;
   };
@@ -64,7 +76,7 @@ export function useParticleEngine() {
     area: { x: [number, number]; y?: [number, number] },
     shape: ParticleShape = 'circle',
     offset?: { x: number; y: number }
-  ) => {
+  ): void => {
     let baseLeft: number;
     let baseTop: number;
 
@@ -94,12 +106,12 @@ export function useParticleEngine() {
     gsap.set(el, { left: `${finalLeft}%`, top: `${finalTop}%` });
   };
 
-  const randomizeSize = (el: HTMLElement, range: [number, number]) => {
+  const randomizeSize = (el: HTMLElement, range: [number, number]): void => {
     const randomScale = range[0] + Math.random() * (range[1] - range[0]);
     gsap.set(el, { scale: randomScale });
   };
 
-  const initSystem = (elements: HTMLElement[], options: ParticleSystemOptions) => {
+  const initSystem = (elements: HTMLElement[], options: ParticleSystemOptions): void => {
     // Kill all previously registered tweens and timelines to avoid leaks/accumulation
     killAll();
 
@@ -112,12 +124,12 @@ export function useParticleEngine() {
 
     const {
       shape = 'circle',
-      area = (shape === 'circle'
+      area = shape === 'circle'
         ? { x: [0, CIRCLE_DEFAULT_MAX_RADIUS] }
         : {
             x: [RECT_DEFAULT_MIN_AREA_PERCENT, RECT_DEFAULT_MAX_AREA_PERCENT],
             y: [RECT_DEFAULT_MIN_AREA_PERCENT, RECT_DEFAULT_MAX_AREA_PERCENT]
-          }) as { x: [number, number]; y?: [number, number] },
+          },
       onInit,
       onRepeat,
       createTweens
@@ -163,7 +175,7 @@ export function useParticleEngine() {
       const randomDelay = Math.random() * RANDOM_DELAY_MAX_SECS_LIMIT;
 
       // 4. Inject repositioning logic on loop repeat if configured
-      const wrappedOnRepeat = () => {
+      const wrappedOnRepeat = (): void => {
         // 1. Recalculate individual visibility to prevent abrupt group cuts
         if (options.activeRange) {
           let shouldBeVisible: boolean;

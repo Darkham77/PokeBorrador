@@ -16,8 +16,8 @@ import type { ID } from '@pkmn/sim';
  */
 export function toID(text: unknown): ID {
   if (text && typeof text === 'object' && 'id' in text) {
-    text = (text as { id: unknown }).id;
+    text = text.id;
   }
-  if (typeof text !== 'string' && typeof text !== 'number') return '' as ID;
+  if (typeof text !== 'string' && typeof text !== 'number') return '';
   return ('' + text).toLowerCase().replace(/[^a-z0-9]+/g, '') as ID;
 }

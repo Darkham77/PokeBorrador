@@ -8,6 +8,7 @@
  */
 
 import PVTooltip from '@/components/common/PVTooltip.vue';
+
 import type { DebugPresetOption } from './debugControlTypes.ts';
 
 interface Props {
@@ -46,7 +47,7 @@ const emit = defineEmits<{
   (e: 'update:modelValue', val: number | null): void;
 }>();
 
-function onInput(e: Event) {
+function onInput(e: Event): void {
   const target = e.target as HTMLInputElement;
   const raw = target.value.trim();
   if (raw === '') {
@@ -57,15 +58,15 @@ function onInput(e: Event) {
   }
 }
 
-function setPreset(val: number) {
+function setPreset(val: number): void {
   emit('update:modelValue', val);
 }
 
-function restoreDefault() {
+function restoreDefault(): void {
   emit('update:modelValue', props.defaultValue ?? null);
 }
 
-const isDefaultActive = () => {
+const isDefaultActive = (): boolean => {
   if (props.defaultValue === null || props.defaultValue === undefined) {
     return props.modelValue === null || props.modelValue === undefined;
   }

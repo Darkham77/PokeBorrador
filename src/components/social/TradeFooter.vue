@@ -17,11 +17,11 @@ const emit = defineEmits<{
   (e: 'send'): void;
 }>();
 
-const handleMessageInput = (e: Event) => {
+const handleMessageInput = (e: Event): void => {
   emit('update:message', (e.target as HTMLTextAreaElement).value);
 };
 
-const handleGiftChange = (e: Event) => {
+const handleGiftChange = (e: Event): void => {
   emit('update:isGift', (e.target as HTMLInputElement).checked);
 };
 </script>

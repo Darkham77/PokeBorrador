@@ -15,12 +15,12 @@ export class MapRenderer {
   private worker: Worker | null = null;
   private canvas: HTMLCanvasElement;
 
-  constructor(canvas: HTMLCanvasElement) {
+  public constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.initWorker();
   }
 
-  private initWorker() {
+  private initWorker(): void {
     // Check support for OffscreenCanvas
     if (!('transferControlToOffscreen' in this.canvas)) {
       console.error('OffscreenCanvas is not supported in this browser.');
@@ -50,7 +50,7 @@ export class MapRenderer {
   /**
    * Resizes the offscreen canvas dimensions.
    */
-  public resize(width: number, height: number) {
+  public resize(width: number, height: number): void {
     if (!this.worker) return;
     this.worker.postMessage({
       type: 'RESIZE',
@@ -61,7 +61,7 @@ export class MapRenderer {
   /**
    * Sends new frame updates (e.g. camera position, player position) to the rendering worker.
    */
-  public updateState(state: Partial<MapRendererState>) {
+  public updateState(state: Partial<MapRendererState>): void {
     if (!this.worker) return;
     this.worker.postMessage({
       type: 'UPDATE_STATE',
@@ -72,7 +72,7 @@ export class MapRenderer {
   /**
    * Terminates the worker and cleans up resources.
    */
-  public destroy() {
+  public destroy(): void {
     if (this.worker) {
       this.worker.terminate();
       this.worker = null;

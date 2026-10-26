@@ -1,4 +1,5 @@
 import type { SideID } from '@pkmn/sim';
+
 import type { BattleSide, ShowdownPlayerRequest } from '@/types/battle/battle';
 
 /**
@@ -10,7 +11,7 @@ export class ShowdownPerspectiveAdapter {
   /**
    * Inverts a single Showdown protocol line between p1 and p2.
    */
-  static invertLine(line: string): string {
+  public static invertLine(line: string): string {
     if (!line) return line;
 
     // Use placeholders to avoid collision during two-way swap
@@ -52,14 +53,14 @@ export class ShowdownPerspectiveAdapter {
   /**
    * Inverts a stream of Showdown protocol lines.
    */
-  static invertStream(lines: string[]): string[] {
+  public static invertStream(lines: string[]): string[] {
     return lines.map((line) => this.invertLine(line));
   }
 
   /**
    * Inverts a SideID between p1 and p2 (or p3 and p4 for 4-seat compatibility).
    */
-  static invertSide(side: SideID): SideID {
+  public static invertSide(side: SideID): SideID {
     if (side === 'p1') return 'p2';
     if (side === 'p2') return 'p1';
     if (side === 'p3') return 'p4';
@@ -70,14 +71,14 @@ export class ShowdownPerspectiveAdapter {
   /**
    * Maps a Showdown seat (p1..p4) to local perspective ('player' | 'enemy') given the local client's seat.
    */
-  static mapSeatToLocalSide(seat: SideID, mySeat: SideID): BattleSide {
+  public static mapSeatToLocalSide(seat: SideID, mySeat: SideID): BattleSide {
     return seat === mySeat ? 'player' : 'enemy';
   }
 
   /**
    * Maps a local perspective ('player' | 'enemy') to Showdown seat given the local client's seat.
    */
-  static mapLocalSideToSeat(side: BattleSide, mySeat: SideID): SideID {
+  public static mapLocalSideToSeat(side: BattleSide, mySeat: SideID): SideID {
     if (side === 'player') return mySeat;
     return this.invertSide(mySeat);
   }
@@ -85,7 +86,7 @@ export class ShowdownPerspectiveAdapter {
   /**
    * Inverts an authoritative P2 ShowdownPlayerRequest into a local player (P1) perspective.
    */
-  static invertRequest(request?: ShowdownPlayerRequest): ShowdownPlayerRequest | undefined {
+  public static invertRequest(request?: ShowdownPlayerRequest): ShowdownPlayerRequest | undefined {
     if (!request) return undefined;
 
     const cloned: ShowdownPlayerRequest = structuredClone(request);

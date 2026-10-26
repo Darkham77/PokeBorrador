@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { gsap } from 'gsap';
 import { onMounted, ref, watch, nextTick } from 'vue';
+
 import { useSocialStore, type PendingRequest } from '@/stores/social/social';
 import { useUIStore } from '@/stores/ui';
+
 import TrainerCard from './TrainerCard.vue';
-import { gsap } from 'gsap';
 
 const REQUEST_CARD_INITIAL_OPACITY = 0;
 const REQUEST_CARD_INITIAL_X_OFFSET = -20;
@@ -15,11 +17,22 @@ const socialStore = useSocialStore();
 const uiStore = useUIStore();
 const listRef = ref<HTMLElement | null>(null);
 
-function openTrainerProfile(userId: string) {
+function openTrainerProfile(userId: string): void {
   uiStore.open('TrainerProfile', { userId });
 }
 
-const getProfileForRequest = (req: PendingRequest) => {
+interface RequestProfileData {
+  id: string;
+  username: string;
+  level: number;
+  playerClass: string;
+  faction: string | null;
+  nick_style: string;
+  avatar_style: string | null;
+  gender: string | null;
+}
+
+const getProfileForRequest = (req: PendingRequest): RequestProfileData => {
   const p = req.profiles;
   return {
     id: req.requester_id,
@@ -33,7 +46,7 @@ const getProfileForRequest = (req: PendingRequest) => {
   };
 };
 
-function animateCards() {
+function animateCards(): void {
   nextTick(() => {
     if (!listRef.value) return;
     const cards = listRef.value.querySelectorAll('.trainer-card');

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { TeamManagementTab } from '@/types/battle/pvp';
-import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay';
 import PVTooltip from '@/components/common/PVTooltip.vue';
+import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay';
+import type { TeamManagementTab } from '@/types/battle/pvp';
 
 withDefaults(
   defineProps<{

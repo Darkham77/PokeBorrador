@@ -1,22 +1,23 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
 import { gsap } from 'gsap';
-import { useGameStore } from '@/stores/game';
-import { useMapStore } from '@/stores/map';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
-import MapPokemonCenterBanner from '@/components/map/MapPokemonCenterBanner.vue';
+import { onMounted, onUnmounted } from 'vue';
+
 import HomeBreedingWidget from '@/components/home/HomeBreedingWidget.vue';
 import MapGrid from '@/components/map/MapGrid.vue';
-import type { MapLocation } from '@/types/pokemon/encounters';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import MapPokemonCenterBanner from '@/components/map/MapPokemonCenterBanner.vue';
+import type { MapRouteId } from '@/data/world/map-assets';
+import { EGG_POLLER_INTERVAL_SEC } from '@/logic/constants/gameplay';
 import {
   isMapExtortable,
   getExtortionConfirmMessage,
   getOfficialRouteConfirmMessage
 } from '@/logic/map/mapCardHelper';
-import { requireMapRouteId } from '@/data/world/map-assets';
-import { EGG_POLLER_INTERVAL_SEC } from '@/logic/constants/gameplay';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { useGameStore } from '@/stores/game';
+import { useMapStore } from '@/stores/map';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import type { MapLocation } from '@/types/pokemon/encounters';
 
 const gameStore = useGameStore();
 const mapStore = useMapStore();
@@ -25,7 +26,7 @@ const modalStore = useModalStore();
 
 let expirationTicker: gsap.core.Tween | null = null;
 
-const tickExpirations = () => {
+const tickExpirations = (): void => {
   gameStore.checkRouteExpirations();
   expirationTicker = gsap.delayedCall(EGG_POLLER_INTERVAL_SEC, tickExpirations);
 };
@@ -40,9 +41,9 @@ onUnmounted(() => {
   }
 });
 
-const navigateToMap = async (loc: MapLocation | string | number) => {
+const navigateToMap = async (loc: MapLocation | MapRouteId): Promise<void> => {
   if (modalStore.isOpen('Confirm')) return;
-  const id = requireMapRouteId(typeof loc === 'object' ? loc.id : String(loc));
+  const id = typeof loc === 'object' ? loc.id : loc;
   if (id === 'stadium' || id === 'gym') {
     uiStore.activeTab = 'gyms';
     return;

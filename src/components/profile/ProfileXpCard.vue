@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import gsap from 'gsap';
 import { computed, useTemplateRef, onMounted, onUnmounted, watch } from 'vue';
-import { useGameStore } from '@/stores/game';
-import { usePlayerClassStore } from '@/stores/player/playerClass';
+
 import { PLAYER_CLASSES, CLASS_MISSIONS } from '@/data/player/playerClasses';
 import { MAX_TRAINER_RANK_LEVEL } from '@/logic/constants/gameplay';
-import gsap from 'gsap';
+import { useGameStore } from '@/stores/game';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
 
 const XP_STRIPE_SCROLL_DURATION_SEC = 2;
 const XP_BAR_ENTRY_DURATION_SEC = 0.8;
@@ -123,17 +124,22 @@ const nextClassUnlocks = computed(() => {
 });
 
 const xpBarRef = useTemplateRef<HTMLElement>('xpBarRef');
-let stripesTween: gsap.core.Tween | null = null;
 let widthTween: gsap.core.Tween | null = null;
+let stripesTween: gsap.core.Tween | null = null;
 
-const initXpBarAnimation = () => {
+const initXpBarAnimation = (): void => {
   if (xpBarRef.value) {
-    // layout-ok: ProgressBar stripes pattern animation
-    stripesTween = gsap.to(xpBarRef.value, {
-      backgroundPositionX: '20px',
+    const stripeState = { x: 0 };
+    stripesTween = gsap.to(stripeState, {
+      x: 20,
       duration: XP_STRIPE_SCROLL_DURATION_SEC,
       ease: 'none',
-      repeat: -1
+      repeat: -1,
+      onUpdate: () => {
+        if (xpBarRef.value) {
+          xpBarRef.value.style.backgroundPositionX = `${stripeState.x}px`;
+        }
+      }
     });
 
     // Animate the scaleX to the initial percentage
@@ -151,8 +157,8 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  if (stripesTween) stripesTween.kill();
   if (widthTween) widthTween.kill();
+  if (stripesTween) stripesTween.kill();
 });
 
 // Watch for XP changes to animate scale smoothly

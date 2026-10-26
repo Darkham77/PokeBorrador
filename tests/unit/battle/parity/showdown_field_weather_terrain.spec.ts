@@ -1,11 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
-import { handleFieldEvents } from '@/logic/battle/showdownBridgeField';
-import { ref } from 'vue';
-import { getEffectiveSpeed } from '@/logic/battle/battleEngine';
-import { SBCtx } from '@/logic/battle/showdownBridgeCtx';
-import { Pokemon } from '@/types/pokemon/pokemon';
-import { BattleStages, BattleWeather } from '@/types/battle/battle';
 import { setActivePinia, createPinia } from 'pinia';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import { ref } from 'vue';
+
+import { getEffectiveSpeed } from '@/logic/battle/battleEngine';
+import type { SBCtx } from '@/logic/battle/showdownBridgeCtx';
+import { handleFieldEvents } from '@/logic/battle/showdownBridgeField';
+import type { BattleStages, BattleWeather } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 // --- From test_bug031_end_disable_shadow_field.spec.ts ---
 describe('Audit Parity - BUG-031: -end disable must also clear moves[i].disabled shadow field', () => {

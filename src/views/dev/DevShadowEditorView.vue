@@ -7,7 +7,12 @@
  */
 
 import { ref, computed, onMounted, nextTick } from 'vue';
-import { useShadowEditor, DEFAULT_SPRITE_ZOOM } from './useShadowEditor.ts';
+
+import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage.ts';
+
+import DevShadowFilterBar from './components/DevShadowFilterBar.vue';
+import DevShadowHeaderToolbar from './components/DevShadowHeaderToolbar.vue';
+import ShadowEditorCard from './components/ShadowEditorCard.vue';
 import {
   DEFAULT_PAGE_SIZE,
   formatRatioPercent,
@@ -15,10 +20,7 @@ import {
   isRebuildProgressActive,
   resolveSaveButtonState
 } from './devShadowMathHelper.ts';
-import ShadowEditorCard from './components/ShadowEditorCard.vue';
-import DevShadowHeaderToolbar from './components/DevShadowHeaderToolbar.vue';
-import DevShadowFilterBar from './components/DevShadowFilterBar.vue';
-import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage.ts';
+import { useShadowEditor, DEFAULT_SPRITE_ZOOM } from './useShadowEditor.ts';
 
 const mainScrollRef = ref<HTMLElement | null>(null);
 
@@ -74,19 +76,19 @@ const paginationRangeText = computed(() =>
 const canGoPrev = computed(() => currentPage.value > 1);
 const canGoNext = computed(() => currentPage.value < totalPages.value);
 
-const handleUpdateWidthRatio = (widthRatio: number) => {
+const handleUpdateWidthRatio = (widthRatio: number): void => {
   globalShadowConfig.value = { ...globalShadowConfig.value, widthRatio };
 };
 
-const handleUpdateHeightRatio = (heightRatio: number) => {
+const handleUpdateHeightRatio = (heightRatio: number): void => {
   globalShadowConfig.value = { ...globalShadowConfig.value, heightRatio };
 };
 
-const handleUpdatePixelation = (pixelation: number) => {
+const handleUpdatePixelation = (pixelation: number): void => {
   globalShadowConfig.value = { ...globalShadowConfig.value, pixelation };
 };
 
-const clearAllFilters = () => {
+const clearAllFilters = (): void => {
   searchQuery.value = '';
   onlyModified.value = false;
   selectedGen.value = 'all';
@@ -94,7 +96,7 @@ const clearAllFilters = () => {
   currentPage.value = 1;
 };
 
-const handlePageChange = (page: number) => {
+const handlePageChange = (page: number): void => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page;
     if (mainScrollRef.value) {
@@ -103,7 +105,7 @@ const handlePageChange = (page: number) => {
   }
 };
 
-const handleMainScroll = () => {
+const handleMainScroll = (): void => {
   if (mainScrollRef.value) {
     safeSessionStorage.setItem(
       SESSION_STORAGE_KEYS.DEV_SHADOW_SCROLL_TOP,
@@ -112,7 +114,7 @@ const handleMainScroll = () => {
   }
 };
 
-const restoreScroll = () => {
+const restoreScroll = (): void => {
   if (mainScrollRef.value) {
     const saved = safeSessionStorage.getItem(SESSION_STORAGE_KEYS.DEV_SHADOW_SCROLL_TOP);
     if (saved !== null) {

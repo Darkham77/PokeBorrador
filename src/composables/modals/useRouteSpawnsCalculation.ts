@@ -1,30 +1,36 @@
-import { computed } from 'vue';
+import type { DisplayText } from '@francogp/auditor';
+import { computed, type ComputedRef } from 'vue';
+
+import { ACTIVE_GENERATION } from '@/data/system/constants';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import type { RouteSpawnMappedItem } from '@/logic/utils/routeSpawnHelpers';
+import { type DayPhase } from '@/logic/utils/timeUtils';
+import { getWeatherCombatDescription } from '@/logic/weather/weatherCombatDescriptions.ts';
 import {
   getMechanicalWeather,
   WEATHER_UI_METADATA,
   WEATHER_VISUAL_METADATA,
   WEATHER_REGISTRY
 } from '@/logic/weather/weatherRegistry';
-import { ACTIVE_GENERATION } from '@/data/system/constants';
-import { getWeatherCombatDescription } from '@/logic/weather/weatherCombatDescriptions.ts';
-import type { MapLocation } from '@/types/pokemon/encounters';
-import { useGameStore } from '@/stores/game';
-import { useEventStore } from '@/stores/events';
-import { getNpcEncounterChances } from '@/logic/weather/weatherUtils';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { type WeatherId } from '@/logic/weather/weatherRegistry';
-import { type DayPhase } from '@/logic/utils/timeUtils';
-
-import { useRouteSpawnsWild } from './useRouteSpawnsWild.ts';
-import { useRouteSpawnsFishing } from './useRouteSpawnsFishing.ts';
-import { useRouteSpawnsArchaeology } from './useRouteSpawnsArchaeology.ts';
+import { getNpcEncounterChances, type NpcChanceInfo } from '@/logic/weather/weatherUtils';
+import { useEventStore } from '@/stores/events';
+import { useGameStore } from '@/stores/game';
+import type { MapLocation } from '@/types/pokemon/encounters';
 
 import {
   computeActiveWeights,
   parseWeatherDescription,
   formatTerrainTags,
-  type ExtendedMapLocation
+  type RouteSpawnWeights,
+  type ParsedWeatherDescriptionLine
 } from './routeSpawnsCalculationHelper.ts';
+import {
+  useRouteSpawnsArchaeology,
+  type ArchaeologyRewardData
+} from './useRouteSpawnsArchaeology.ts';
+import { useRouteSpawnsFishing } from './useRouteSpawnsFishing.ts';
+import { useRouteSpawnsWild } from './useRouteSpawnsWild.ts';
 
 export interface RouteSpawnsProps {
   map: MapLocation;
@@ -32,7 +38,39 @@ export interface RouteSpawnsProps {
   cycle: DayPhase;
 }
 
-export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
+export interface UseRouteSpawnsCalculationReturn {
+  weatherEmoji: ComputedRef<string>;
+  weatherLabel: ComputedRef<string>;
+  weatherDetails: ComputedRef<Record<string, unknown> | null>;
+  parsedDescriptionLines: ComputedRef<ParsedWeatherDescriptionLine[]>;
+  getStatusTooltip: (type: string) => { title: string; desc: string };
+  wildSpawns: ComputedRef<RouteSpawnMappedItem[]>;
+  fishingSpawns: ComputedRef<RouteSpawnMappedItem[]>;
+  terrainTags: ComputedRef<string>;
+  activeWeights: ComputedRef<RouteSpawnWeights>;
+  activeFishingChance: ComputedRef<number>;
+  baseFishingChance: ComputedRef<number>;
+  activeArchaeologyChance: ComputedRef<number>;
+  baseArchaeologyChance: ComputedRef<number>;
+  activeTerrestrialChance: ComputedRef<number>;
+  baseTerrestrialChance: ComputedRef<number>;
+  eventFishingMultiplier: ComputedRef<number>;
+  eventArchaeologyMultiplier: ComputedRef<number>;
+  getProbClass: (active: number, base: number) => string;
+  getCategoryTooltip: (type: string) => { title: string; desc: string };
+  archaeologyRewards: ComputedRef<ArchaeologyRewardData[]>;
+  getWildSpawnTooltip: (poke: RouteSpawnMappedItem) => { title: string; description: string };
+  getFishingSpawnTooltip: (poke: RouteSpawnMappedItem) => { title: string; description: string };
+  getArchaeologySpawnTooltip: (item: ArchaeologyRewardData) => {
+    title: string;
+    description: string;
+  };
+  npcSpawns: ComputedRef<NpcChanceInfo[]>;
+}
+
+export function useRouteSpawnsCalculation(
+  props: RouteSpawnsProps
+): UseRouteSpawnsCalculationReturn {
   const gameStore = useGameStore();
   const eventStore = useEventStore();
 
@@ -68,10 +106,10 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
     return parseWeatherDescription(desc);
   });
 
-  const getStatusTooltip = (type: string) => {
+  const getStatusTooltip = (type: string): { title: string; desc: string } => {
     const weatherName = weatherLabel.value || 'el clima actual';
     // open-record: Spawn status display tooltips dictionary
-    const tooltips: Record<string, { title: string; desc: string }> = {
+    const tooltips: Record<DisplayText, { title: string; desc: string }> = {
       Común: {
         title: 'Común',
         desc: 'Aparición habitual en esta zona durante este ciclo de tiempo.'
@@ -109,7 +147,7 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
   };
 
   const terrainTags = computed(() => {
-    return formatTerrainTags(props.map as ExtendedMapLocation);
+    return formatTerrainTags(props.map);
   });
 
   const activeWeights = computed(() => {
@@ -118,7 +156,7 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
       (gameStore.state.pickaxeSecs ?? 0) > 0 || (gameStore.state.brushSecs ?? 0) > 0;
     const eventFishingBonus = eventStore.globalMultipliers?.fishing ?? 1;
 
-    return computeActiveWeights(props.map as ExtendedMapLocation, props.weather, {
+    return computeActiveWeights(props.map, props.weather, {
       hasFishingRod,
       hasPickaxeOrBrush,
       eventFishingBonus
@@ -161,13 +199,13 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
     return Math.round((w.baseGround / w.baseTotal) * 100);
   });
 
-  const getProbClass = (active: number, base: number) => {
+  const getProbClass = (active: number, base: number): string => {
     if (active > base) return 'bonus-text';
     if (active < base) return 'penalty-text';
     return '';
   };
 
-  const getCategoryTooltip = (type: string) => {
+  const getCategoryTooltip = (type: string): { title: string; desc: string } => {
     switch (type) {
       case 'Fósil':
         return {
@@ -198,7 +236,7 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
   };
 
   const npcSpawns = computed(() => {
-    const maps = pokemonDataProvider.getMaps() as MapLocation[]; // domain-ok: Open dynamic text or non-domain string payload
+    const maps = pokemonDataProvider.getMaps(); // domain-ok: Open dynamic text or non-domain string payload
     const mapIds = maps.map((m) => m.id);
     return getNpcEncounterChances(props.map.id, gameStore.state, {}, mapIds);
   });

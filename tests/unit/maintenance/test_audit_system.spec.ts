@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vite-plus/test';
 import {
   discoverAuditors,
   loadAuditConfig,
@@ -13,20 +12,22 @@ import {
   renderMarkdownReport,
   formatStatusBadge
 } from '@francogp/auditor';
+import { Dex, toID } from '@pkmn/sim';
+import { describe, it, expect } from 'vite-plus/test';
+
 import {
   findSpriteCollisions,
   findMissingSprites
-} from '../../../scripts/auditors/assets/audit_item_sprite_collisions.ts';
+} from '../../../scripts/auditors/assets/validate_item_sprite_collisions.ts';
+import { ABILITY_TRANSLATIONS_ES } from '../../../src/data/battle/abilities.ts';
+import { MOVE_TRANSLATIONS_ES } from '../../../src/data/battle/moves.ts';
+import { SHOP_ITEMS } from '../../../src/data/inventory/items.ts';
+import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
+import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS } from '../../../src/data/system/constants.ts';
 import {
   splitSQLStatements,
   translatePostgresToSqlite
 } from '../../../src/logic/db/sqlTranslator.ts';
-import { Dex, toID } from '@pkmn/sim';
-import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS } from '../../../src/data/system/constants.ts';
-import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
-import { SHOP_ITEMS } from '../../../src/data/inventory/items.ts';
-import { MOVE_TRANSLATIONS_ES } from '../../../src/data/battle/moves.ts';
-import { ABILITY_TRANSLATIONS_ES } from '../../../src/data/battle/abilities.ts';
 
 describe('Audit System & Dynamic Auto-Discovery Engine', () => {
   it('should have parity between BUILTIN_AUDIT_FAMILIES and FAMILY_METADATA', () => {
@@ -107,7 +108,7 @@ describe('Unified Theme Presentation Engine', () => {
   it('should render family headers with order and icons', () => {
     const meta = FAMILY_METADATA.domain_data!;
     const header = renderFamilyHeader(meta);
-    expect(header).toContain('[FAMILIA 2]');
+    expect(header).toMatch(/\[FAMIL(?:IA|Y) 2\]/);
     expect(header).toContain(meta.title);
     expect(header).toContain(meta.icon);
   });

@@ -1,16 +1,19 @@
+import type { DisplayText } from '@francogp/auditor';
+
 /**
  * GLOBAL ERROR HANDLER BRIDGE
  * Captures unexpected failures and sends them to the Pinia error store.
  */
 import { useErrorStore } from '@/stores/errorStore';
+
 import { logger } from './logger.ts';
 
 export function initGlobalErrorHandlers(): void {
   const errorStore = useErrorStore();
 
   let isUnloading = false;
-  if (typeof window !== 'undefined') {
-    window.addEventListener('beforeunload', () => {
+  if (typeof globalThis.window !== 'undefined') {
+    globalThis.addEventListener('beforeunload', () => {
       isUnloading = true;
     });
   }
@@ -76,15 +79,15 @@ export function initGlobalErrorHandlers(): void {
   };
 
   // Capture synchronous errors
-  window.onerror = function (
-    message: string | Event,
+  globalThis.onerror = function (
+    message: DisplayText | Event,
     source?: string,
     lineno?: number,
     colno?: number,
     error?: Error
   ): boolean {
     if (isUnloading) return false;
-    errorStore.setError(error || (message as string), {
+    errorStore.setError(error || message, {
       source,
       lineno,
       colno,
@@ -94,7 +97,7 @@ export function initGlobalErrorHandlers(): void {
   };
 
   // Capture unhandled promise rejections
-  window.onunhandledrejection = function (event: PromiseRejectionEvent): void {
+  globalThis.onunhandledrejection = function (event: PromiseRejectionEvent): void {
     if (isUnloading) return;
     errorStore.setError(event.reason, {
       type: 'Unhandled Promise Rejection'
@@ -102,9 +105,14 @@ export function initGlobalErrorHandlers(): void {
   };
 
   // Legacy bridge
-  window.showGameError = (error: Error | string, context: Record<string, unknown> = {}) => {
-    errorStore.setError(error, context);
-  };
+  if (typeof globalThis.window !== 'undefined') {
+    globalThis.window.showGameError = (
+      error: unknown,
+      context: Record<string, unknown> = {}
+    ): void => {
+      errorStore.setError(error, context);
+    };
+  }
 
   logger.info('ERROR_HANDLER', 'Global listeners initialized (Vue Bridge active).');
 }

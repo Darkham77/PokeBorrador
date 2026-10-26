@@ -5,8 +5,10 @@
  * support clean upserts without UUID syntax violations across both SQLite and PostgreSQL.
  */
 
-import { it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
+
+import { it } from 'vite-plus/test';
+
 import { describeWithDatabase } from '../../dbTestHelper.ts';
 
 describeWithDatabase('Competition Entries Dual Database Integration', (engine, getDb) => {

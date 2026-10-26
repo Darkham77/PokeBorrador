@@ -1,26 +1,27 @@
 <script setup lang="ts">
-import { useTemplateRef, onMounted, onUnmounted, nextTick, computed } from 'vue';
 import { gsap } from 'gsap';
-import HomePendingRewardsWidget from '@/components/home/HomePendingRewardsWidget.vue';
-import HomeEventsSection from '@/components/home/HomeEventsSection.vue';
+import { useTemplateRef, onMounted, onUnmounted, nextTick, computed } from 'vue';
+
 import EventMissions from '@/components/events/EventMissions.vue';
-import HomeBreedingWidget from '@/components/home/HomeBreedingWidget.vue';
-import HomeNotificationsFeed from '@/components/home/HomeNotificationsFeed.vue';
-import HomeGymsProgress from '@/components/home/HomeGymsProgress.vue';
-import HomeFactionWar from '@/components/home/HomeFactionWar.vue';
-import HomeClassMissionsWidget from '@/components/home/HomeClassMissionsWidget.vue';
 import HomeActiveBuffsWidget from '@/components/home/HomeActiveBuffsWidget.vue';
-import HomeEconomyWidget from '@/components/home/HomeEconomyWidget.vue';
 import HomeBlackMarketWidget from '@/components/home/HomeBlackMarketWidget.vue';
-import HomeRankedWidget from '@/components/home/HomeRankedWidget.vue';
-import HomePassiveDefenseWidget from '@/components/home/HomePassiveDefenseWidget.vue';
-import { useBreedingStore } from '@/stores/breeding';
-import { useLoadingStore } from '@/stores/loading';
-import { useGameStore } from '@/stores/game';
-import { useUnifiedRewards } from '@/composables/rewards/useUnifiedRewards';
+import HomeBreedingWidget from '@/components/home/HomeBreedingWidget.vue';
+import HomeClassMissionsWidget from '@/components/home/HomeClassMissionsWidget.vue';
 import HomeCollapsibleWidget from '@/components/home/HomeCollapsibleWidget.vue';
+import HomeEconomyWidget from '@/components/home/HomeEconomyWidget.vue';
+import HomeEventsSection from '@/components/home/HomeEventsSection.vue';
+import HomeFactionWar from '@/components/home/HomeFactionWar.vue';
+import HomeGymsProgress from '@/components/home/HomeGymsProgress.vue';
+import HomeNotificationsFeed from '@/components/home/HomeNotificationsFeed.vue';
+import HomePassiveDefenseWidget from '@/components/home/HomePassiveDefenseWidget.vue';
+import HomePendingRewardsWidget from '@/components/home/HomePendingRewardsWidget.vue';
+import HomeRankedWidget from '@/components/home/HomeRankedWidget.vue';
 import HomeWidgetMinimizeBtn from '@/components/home/HomeWidgetMinimizeBtn.vue';
 import HomeWidgetRefreshBtn from '@/components/home/HomeWidgetRefreshBtn.vue';
+import { useUnifiedRewards } from '@/composables/rewards/useUnifiedRewards';
+import { useBreedingStore } from '@/stores/breeding';
+import { useGameStore } from '@/stores/game';
+import { useLoadingStore } from '@/stores/loading';
 
 const ROCKET_BLACK_MARKET_MIN_LEVEL = 10;
 
@@ -54,7 +55,7 @@ onMounted(() => {
   }, homeContainerRef.value || undefined);
 
   // Ensure DOM and child widgets are fully laid out and painted before releasing loading overlay
-  void nextTick(() => {
+  nextTick(() => {
     if (typeof requestAnimationFrame !== 'undefined') {
       requestAnimationFrame(() => {
         loadingStore.markAppMounted();

@@ -1,19 +1,20 @@
+import { createPinia, setActivePinia } from 'pinia';
 // @vitest-environment jsdom
 // jsdom-ok: Requires browser localStorage and navigator.storage for simulated reward saving
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
-import { createPinia, setActivePinia } from 'pinia';
-import { simulatePastEventAndMissionsReward } from '@/logic/debug/rewardsDebugSimulation';
+
 import { useUnifiedRewards } from '@/composables/rewards/useUnifiedRewards';
+import { simulatePastEventAndMissionsReward } from '@/logic/debug/rewardsDebugSimulation';
+import type { Event as GameEvent } from '@/logic/events/eventEngine';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { useAuthStore } from '@/stores/auth';
 import { useEventStore } from '@/stores/events';
 import { useGameStore } from '@/stores/game';
-import { useAuthStore } from '@/stores/auth';
-import { useUIStore } from '@/stores/ui';
-import { useModalStore } from '@/stores/modals';
 import { useGTSStore } from '@/stores/gts';
+import { useModalStore } from '@/stores/modals';
 import { usePvPStore } from '@/stores/pvp';
-import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { useUIStore } from '@/stores/ui';
 import type { AuthUser } from '@/types/auth/auth';
-import type { Event as GameEvent } from '@/logic/events/eventEngine';
 
 describe('reproduce claim all rewards bug', () => {
   beforeEach(() => {
