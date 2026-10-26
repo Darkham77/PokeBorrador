@@ -1,1 +1,0 @@
-export{t as default}from"./FishingModal-DD3Vo7sb.js";

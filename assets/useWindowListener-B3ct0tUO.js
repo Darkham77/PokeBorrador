@@ -1,0 +1,1 @@
+import{r as e}from"./dist-39n6Afkn.js";function t(t,n,r={}){return e(globalThis.window===void 0?null:globalThis,t,n,r)}function n(t,n,r={}){return e(typeof document<`u`?document:null,t,n,r)}export{t as n,n as t};

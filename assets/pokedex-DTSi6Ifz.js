@@ -1,1 +1,0 @@
-export{z as requirePokemonSpeciesId}from"./game-data-pokemon-Ca8Bwgro.js";

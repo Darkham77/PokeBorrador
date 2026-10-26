@@ -1,1 +1,0 @@
-import"./evolutionEngine-D6Pucfmb.js";export{n as getEggSpecies}from"./breedingEngine-s_B-8imC.js";

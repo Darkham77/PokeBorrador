@@ -1,0 +1,1 @@
+var e={common:`COMÚN`,rare:`RARO`,epic:`ÉPICO`,legend:`LEGENDARIO`},t={common:`#94a3b8`,rare:`#3b82f6`,epic:`#a855f7`,legend:`var(--yellow)`};function n(t=`common`){return e[t??`common`]||e.common}function r(e=`common`){return t[e??`common`]||t.common}export{n,r as t};

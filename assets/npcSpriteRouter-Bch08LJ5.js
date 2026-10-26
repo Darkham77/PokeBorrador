@@ -1,1 +1,0 @@
-export{r as getSpritesForArchetype}from"./npcSpriteRouter-BsiIHl02.js";

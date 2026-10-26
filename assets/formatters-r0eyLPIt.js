@@ -1,0 +1,1 @@
+var e=(e,t=999999)=>e>t?`${Math.floor(e/1e6)}M`:(e||0).toLocaleString(),t=new Set([`null`,`undefined`,`Null`,`NULL`]),n=e=>{if(!e||t.has(e)||!e.trim())return`SIN CLASE`;let n=e.toLowerCase().trim();return n===`entrenador`?`Entrenador`:n===`rocket`?`Equipo Rocket`:n===`cazabichos`?`Cazabichos`:n===`criador`?`Criador`:e.toUpperCase()};export{n,e as t};

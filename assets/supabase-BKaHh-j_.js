@@ -1,0 +1,1 @@
+export{t as default,t as supabase}from"./supabase-C-6Q1Q-U.js";

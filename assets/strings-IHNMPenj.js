@@ -1,0 +1,1 @@
+export{C as toID}from"./game-data-feet-YAntEotr.js";

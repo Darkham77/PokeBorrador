@@ -1,1 +1,0 @@
-export{U as toID}from"./game-data-pokemon-Ca8Bwgro.js";
