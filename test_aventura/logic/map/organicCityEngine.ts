@@ -28,7 +28,6 @@ import {
   BFS_CARDINAL_DIRS,
   CITY_LATERAL_CLEARANCE,
   CITY_FRONT_CLEARANCE,
-  CITY_REAR_CLEARANCE,
   GARDEN_MIN_SIZE,
   GARDEN_GATE_GAP_X,
   GARDEN_CANDIDATES,
@@ -574,9 +573,11 @@ export function generateOrganicCityLayout(
       // Y axis (front/back): minimum 2 tiles south (front sidewalk), 1 tile north (eave clearance)
       const lateralOverlap =
         x < b.x + b.width + CITY_LATERAL_CLEARANCE && x + w > b.x - CITY_LATERAL_CLEARANCE;
+      // The northern building of any vertically stacked pair always keeps its full front sidewalk
+      // (CITY_FRONT_CLEARANCE) free, regardless of which one of the two is placed first.
       if (lateralOverlap) {
         const verticalSeparated =
-          y + h + CITY_FRONT_CLEARANCE <= b.y || b.y + b.height + CITY_REAR_CLEARANCE <= y;
+          y + h + CITY_FRONT_CLEARANCE <= b.y || b.y + b.height + CITY_FRONT_CLEARANCE <= y;
         if (!verticalSeparated) return false;
       }
     }

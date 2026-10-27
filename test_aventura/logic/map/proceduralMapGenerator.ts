@@ -97,7 +97,7 @@ export class ProceduralMapGenerator {
 
   private makeCell(tileId: string, collision: TileCollision): MapCell {
     const tileEntry = this.registry.getTileById(tileId);
-    const filePath = tileEntry?.file_path || `/assets/tiles/terrain/${tileId}.png`;
+    const filePath = tileEntry?.file_path || `/test_aventura/assets/tiles/terrain/${tileId}.png`;
     return { tileId, filePath, collision };
   }
 

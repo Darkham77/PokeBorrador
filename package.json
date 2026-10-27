@@ -1,6 +1,6 @@
 {
   "name": "pokemon-online",
-  "version": "0.6.16-build.20261026-001301",
+  "version": "0.6.17-build.20261027-000028",
   "private": true,
   "type": "module",
   "scripts": {
@@ -265,7 +265,7 @@
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
-    "@francogp/auditor": "github:francogp/auditor#v10.2.1",
+    "@francogp/auditor": "github:francogp/auditor#v10.2.3",
     "@pkmn/sim": "^0.10.11",
     "@playwright/test": "^1.64.1",
     "@rolldown/binding-wasm32-wasi": "^1.2.9",
@@ -304,8 +304,8 @@
     "vitest": "$vitest"
   },
   "engines": {
-    "node": ">=26.11.1",
-    "npm": ">=12.2.0"
+    "node": ">=26.12.1",
+    "npm": ">=12.2.1"
   },
   "allowScripts": {
     "@parcel/watcher": true,

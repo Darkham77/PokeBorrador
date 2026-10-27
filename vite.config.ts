@@ -854,7 +854,6 @@ export default defineConfig({
       reporter: ['text', 'json', 'html'],
       reportsDirectory: 'scratch/coverage'
     },
-    // 6. Unified Inline Workspace Projects
     projects: [
       {
         test: {
@@ -883,7 +882,11 @@ export default defineConfig({
           globals: true,
           pool: 'forks',
           environment: 'node',
-          include: ['tests/node/**/*.test.ts', 'packages/auditor/tests/**/*.test.ts'],
+          include: [
+            'tests/node/**/*.test.ts',
+            'packages/auditor/tests/**/*.test.ts',
+            'test_aventura/tests/**/*.{test,spec}.ts'
+          ],
           exclude: ['tests/node/**/backup_migration_real.test.ts'],
           setupFiles: ['./tests/vitest.node.setup.ts'],
           testTimeout: 120000
@@ -900,8 +903,7 @@ export default defineConfig({
           testTimeout: 300000
         }
       }
-    ],
-    include: ['tests/**/*.{test,spec}.ts', 'test_aventura/tests/**/*.{test,spec}.ts']
+    ]
   },
   lint: {
     options: {

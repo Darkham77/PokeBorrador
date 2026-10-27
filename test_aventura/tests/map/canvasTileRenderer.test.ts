@@ -22,25 +22,29 @@ import { generateWildernessLayer } from '../../logic/map/wildernessVegetationEng
 describe('canvasTileRenderer', () => {
   describe('resolveTileUrl', () => {
     it('resolves canonical and prefab filenames to appropriate asset directories', () => {
-      expect(resolveTileUrl('house_blue.png')).toBe('/assets/canon/buildings/house_blue.png');
+      expect(resolveTileUrl('house_blue.png')).toBe(
+        '/test_aventura/assets/canon/buildings/house_blue.png'
+      );
       expect(resolveTileUrl('poke_boardwalk_planks.png')).toBe(
-        '/assets/tiles/poke_boardwalk_dark_center.png'
+        '/test_aventura/assets/tiles/poke_boardwalk_dark_center.png'
       );
       expect(resolveTileUrl('poke_street_lamp.png')).toBe(
-        '/assets/canon/props/poke_street_lamp.png'
+        '/test_aventura/assets/canon/props/poke_street_lamp.png'
       );
       expect(resolveTileUrl('poke_tree_oak_clean.png')).toBe(
-        '/assets/prefabs/vegetation/poke_tree_oak_clean.png'
+        '/test_aventura/assets/prefabs/vegetation/poke_tree_oak_clean.png'
       );
     });
 
     it('resolves autotile and ground filenames strictly to canonical directories', () => {
-      expect(resolveTileUrl('poke_grass_plain.png')).toBe('/assets/tiles/poke_grass_plain.png');
+      expect(resolveTileUrl('poke_grass_plain.png')).toBe(
+        '/test_aventura/assets/tiles/poke_grass_plain.png'
+      );
       expect(resolveTileUrl('poke_water_ocean_center.png')).toBe(
-        '/assets/tiles/water/poke_water_ocean_center.png'
+        '/test_aventura/assets/tiles/water/poke_water_ocean_center.png'
       );
       expect(resolveTileUrl('poke_sand_center.png')).toBe(
-        '/assets/tiles/terrain/poke_sand_center.png'
+        '/test_aventura/assets/tiles/terrain/poke_sand_center.png'
       );
     });
   });

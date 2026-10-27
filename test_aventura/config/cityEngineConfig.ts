@@ -31,7 +31,6 @@ export const BFS_CARDINAL_DIRS = [
 // --- 2.5D Physical Separation Masks ---
 export const CITY_LATERAL_CLEARANCE = 1 as const;
 export const CITY_FRONT_CLEARANCE = 2 as const;
-export const CITY_REAR_CLEARANCE = 1 as const;
 
 // --- Micro-Lot Garden & Enclosures ---
 export const GARDEN_MIN_SIZE = 3 as const;

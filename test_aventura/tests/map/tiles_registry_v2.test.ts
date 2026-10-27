@@ -53,7 +53,7 @@ describe('Canonical Tiles Registry API (SSoT v2.0)', () => {
       const catDir = path.join(tilesDir, category);
       if (fs.statSync(catDir).isDirectory()) {
         for (const file of fs.readdirSync(catDir)) {
-          existingRelativePaths.add(`/assets/tiles/${category}/${file}`);
+          existingRelativePaths.add(`/test_aventura/assets/tiles/${category}/${file}`);
         }
       }
     }
@@ -63,7 +63,7 @@ describe('Canonical Tiles Registry API (SSoT v2.0)', () => {
       expect(VALID_SOURCES_SET.has(tile.source as ValidSource)).toBe(true);
       expect(tile.dimensions.width).toBe(16);
       expect(tile.dimensions.height).toBe(16);
-      expect(tile.file_path.startsWith('/assets/tiles/')).toBe(true);
+      expect(tile.file_path.startsWith('/test_aventura/assets/tiles/')).toBe(true);
       expect(tile.tags.length).toBeGreaterThan(0);
 
       // Verify file exists on disk via cached set

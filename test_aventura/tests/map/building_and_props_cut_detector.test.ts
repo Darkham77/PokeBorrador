@@ -166,7 +166,10 @@ describe('building_and_props_cut_detector', () => {
   });
 
   it('guarantees building prefabs on disk are not abruptly cut flat on roof apex (y=0)', async () => {
-    const manifestPath = path.resolve(ROOT_DIR, 'src/data/map/canonical_assets_manifest.json');
+    const manifestPath = path.resolve(
+      ROOT_DIR,
+      'test_aventura/data/map/canonical_assets_manifest.json'
+    );
     expect(fs.existsSync(manifestPath)).toBe(true);
 
     interface ManifestEntry {

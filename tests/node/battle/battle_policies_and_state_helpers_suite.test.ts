@@ -182,22 +182,14 @@ describe('Battle Policies, Fuzzer & State Helpers Suite', () => {
   });
 
   describe('CombatAI - ScriptedAI Logic', () => {
-    const originalWindow = (globalThis as any).window;
-
     afterEach(() => {
-      if (originalWindow === undefined) {
-        delete (globalThis as any).window;
-      } else {
-        (globalThis as any).window = originalWindow;
-      }
+      globalThis.__VITE_DEBUG__ = undefined;
     });
 
     it('ScriptedAI decideMove should replay moves from the mock choices', () => {
-      (globalThis as any).window = {
-        __VITE_DEBUG__: {
-          mockEnemyChoices: ['move 1', 'switch 2'],
-          enemyChoiceIndex: 0
-        }
+      globalThis.__VITE_DEBUG__ = {
+        mockEnemyChoices: ['move 1', 'switch 2'],
+        enemyChoiceIndex: 0
       };
 
       const ai = new ScriptedAI();
@@ -211,11 +203,9 @@ describe('Battle Policies, Fuzzer & State Helpers Suite', () => {
     });
 
     it('ScriptedAI shouldSwitch should return true if mock choice is switch', () => {
-      (globalThis as any).window = {
-        __VITE_DEBUG__: {
-          mockEnemyChoices: ['move 1', 'switch 2'],
-          enemyChoiceIndex: 1
-        }
+      globalThis.__VITE_DEBUG__ = {
+        mockEnemyChoices: ['move 1', 'switch 2'],
+        enemyChoiceIndex: 1
       };
 
       const ai = new ScriptedAI();

@@ -2,7 +2,7 @@ import { defineAuditConfig } from '@francogp/auditor';
 
 export default defineAuditConfig({
   name: 'Poké Vicio',
-  auditorVersion: '10.2.1-build.20261025-235202',
+  auditorVersion: '10.2.3-build.20261027-004334',
   paths: {
     srcRoots: ['src', 'test_aventura'],
     testRoots: ['tests', 'test_aventura/tests'],
@@ -518,6 +518,22 @@ export default defineAuditConfig({
       spa: true,
       report: 'summary',
       threshold: 512
+    },
+    test: {
+      enabled: true,
+      projects: {
+        unit: [
+          'tests/unit/**/*.{test,spec}.ts',
+          'tests/integration/**/*.{test,spec}.ts',
+          'src/**/*.{test,spec}.ts'
+        ],
+        node: [
+          'tests/node/**/*.test.ts',
+          'packages/auditor/tests/**/*.test.ts',
+          'test_aventura/tests/**/*.{test,spec}.ts'
+        ],
+        migrations: ['tests/node/**/backup_migration_real.test.ts']
+      }
     }
   },
 

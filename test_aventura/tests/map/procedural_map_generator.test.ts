@@ -69,7 +69,7 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
       for (let x = 0; x < map.width; x++) {
         const base = map.baseLayer[y]![x]!;
         expect(base.tileId).toBeTruthy();
-        expect(base.filePath.startsWith('/assets/tiles/')).toBe(true);
+        expect(base.filePath.startsWith('/test_aventura/assets/tiles/')).toBe(true);
         expect(registryService.getTileById(base.tileId)).toBeDefined();
 
         const elev = map.elevationLayer[y]![x];

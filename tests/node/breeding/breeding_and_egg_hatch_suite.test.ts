@@ -251,27 +251,13 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
   });
 
   describe('Stonjourner & Unreleased Pokemon in Debug Mode / Breeding', () => {
-    let hadWindow = false;
-
     beforeEach(() => {
       setActivePinia(createPinia());
-      hadWindow = typeof globalThis.window !== 'undefined';
-      if (!hadWindow) {
-        (globalThis as unknown as { window: unknown }).window = {
-          location: { search: '' },
-          __VITE_DEBUG__: {}
-        };
-      } else {
-        (globalThis.window as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__ = {};
-      }
+      globalThis.__VITE_DEBUG__ = {};
     });
 
     afterEach(() => {
-      if (!hadWindow) {
-        delete (globalThis as unknown as { window?: unknown }).window;
-      } else if (typeof globalThis.window !== 'undefined') {
-        delete (globalThis.window as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__;
-      }
+      globalThis.__VITE_DEBUG__ = undefined;
     });
 
     it('inheritMoves does not assign high level-up moves to baby at level 1 if not an egg move or TM', () => {
@@ -313,7 +299,7 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
     });
 
     it('allows hatching an egg of an unreleased Pokemon (Stonjourner) when debug mode is active', async () => {
-      (globalThis.window as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__ = {};
+      globalThis.__VITE_DEBUG__ = {};
 
       const egg: PokemonEgg = {
         uid: 'egg-stonjourner-1',
@@ -348,7 +334,7 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
     });
 
     it('allows hatching an unreleased Pokemon even if movesAtBirth had an arbitrary move when debug mode is active', async () => {
-      (globalThis.window as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__ = {};
+      globalThis.__VITE_DEBUG__ = {};
 
       const egg: PokemonEgg = {
         uid: 'egg-stonjourner-wideguard',
@@ -382,7 +368,7 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
     });
 
     it('validates and sanitizes save data containing unreleased Pokemon when debug mode is active', () => {
-      (globalThis.window as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__ = {};
+      globalThis.__VITE_DEBUG__ = {};
 
       const testPokemon = makePokemon('stonjourner', 10, { bypassWhitelist: true });
       expect(testPokemon).not.toBeNull();

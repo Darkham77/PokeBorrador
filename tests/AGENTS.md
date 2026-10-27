@@ -72,6 +72,9 @@ QA / Automation Engineers.
 
 - [validation_manual.md](../.agents/skills/project-standards/references/qa/validation_manual.md): Script suite reference commands.
 - [browser_testing_manual.md](../.agents/skills/project-standards/references/qa/browser_testing_manual.md): Playwright and debug bridge verification flows.
+- **Vitest Projects SSoT**: `vite.config.ts > test.projects` is generated from `.auditor/audit.config.ts > vitePlusConfig.test.projects` (project name -> include globs). Every root declared in `paths.testRoots` (`tests`, `test_aventura/tests`) MUST be assigned to a project there and synchronized with `npm run auditor:fix`. NEVER add a root-level `test.include` to `vite.config.ts`: it overrides per-project includes and runs every suite under the `unit` runner.
+- **Offline DB in Node Tests**: `isLocalEnvironment()` returns `false` without `window`, so `DBRouter` starts in `online` mode and hits the remote Supabase server. Integration tests that need the real SQLite engine MUST call `supabase.setMode('offline')` in `beforeEach` instead of declaring `// @vitest-environment jsdom` (flagged by `unnecessary-jsdom`).
+- **Debug Global**: `__VITE_DEBUG__` is read from `globalThis`, not `window`. Tests MUST set and reset `globalThis.__VITE_DEBUG__`.
 
 ## Key Files
 

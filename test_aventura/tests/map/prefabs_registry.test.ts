@@ -8,7 +8,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 import { PrefabsRegistryService } from '../../logic/map/prefabsRegistry.ts';
 import type { PrefabsManifest } from '../../logic/map/prefabsRegistry.ts';
@@ -59,7 +59,13 @@ describe('PrefabsRegistryService', () => {
   };
 
   beforeEach(() => {
+    // The node project has no DOM: loadManifest resolves URLs against globalThis.location.origin
+    vi.stubGlobal('location', { origin: 'http://localhost' });
     service = new PrefabsRegistryService();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('initializes with fallback prefabs before manifest is loaded', () => {

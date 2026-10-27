@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
 
 import { TABLES_SCHEMA } from '@/logic/db/schema.ts';
 import { initSQLite, resetSQLite } from '@/logic/db/sqliteEngine.ts';
+import supabase from '@/logic/db/supabase.ts';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory.ts';
 import { useAuthStore } from '@/stores/auth.ts';
 import { useGameStore } from '@/stores/game.ts';
@@ -13,6 +14,8 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 describe('Local Instance PvP Matchmaking Full Simulation', () => {
   beforeEach(async () => {
     setActivePinia(createPinia());
+    // Native Node has no window/location, so DBRouter would default to 'online' (remote Supabase)
+    supabase.setMode('offline');
     await resetSQLite();
     const db = await initSQLite();
     if (db) {
