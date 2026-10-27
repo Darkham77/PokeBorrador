@@ -1,4 +1,5 @@
 // scripts/e2e/fuzzer/runners/run_gts_fuzzer.ts
+import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Dex } from '@pkmn/sim';
@@ -165,7 +166,18 @@ async function runGTSFuzzer() {
   ];
 }
 
-await runFuzzerSuite({
-  suiteName: 'Fuzzer — Transacciones de GTS (Gen 9)',
-  run: runGTSFuzzer
+export const command = defineCommand({
+  meta: {
+    name: 'run-gts-fuzzer',
+    description: 'Fuzzer de transacciones financieras y listados de GTS'
+  },
+  async run() {
+    await runFuzzerSuite({
+      suiteName: 'Fuzzer — Transacciones de GTS (Gen 9)',
+      run: runGTSFuzzer
+    });
+  }
 });
+
+runMain(command);
+export { runGTSFuzzer };

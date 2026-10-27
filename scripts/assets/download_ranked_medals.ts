@@ -11,7 +11,8 @@ import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import sharp from 'sharp';
 
-import { safeResolve, safeWriteFile, safeFetch } from '@francogp/auditor';
+import { safeResolve, safeWriteFile, safeFetch, isMainModule } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 
 enableCompileCache();
 
@@ -144,7 +145,16 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((err: unknown) => {
-  console.error(styleText('red', `Fatal error: ${(err as Error).message}`));
-  process.exit(FAILURE_EXIT_CODE);
+export const command = defineCommand({
+  meta: {
+    name: 'download-ranked-medals',
+    description: 'Descarga las medallas oficiales de rangos competitivos desde Bulbapedia'
+  },
+  async run() {
+    await main();
+  }
 });
+
+if (isMainModule(import.meta.url)) {
+  runMain(command);
+}

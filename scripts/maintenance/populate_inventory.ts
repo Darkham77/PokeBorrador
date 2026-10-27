@@ -1,3 +1,5 @@
+import { isMainModule } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 import type { ItemId } from '../../src/data/inventory/items.ts';
 
 /**
@@ -73,4 +75,16 @@ function generatePopulateSnippet(): void {
   console.log('\n' + '='.repeat(SEPARATOR_WIDTH) + '\n');
 }
 
-generatePopulateSnippet();
+export const command = defineCommand({
+  meta: {
+    name: 'populate-inventory',
+    description: 'Genera snippet para poblar inventario de testing en DevTools'
+  },
+  run() {
+    generatePopulateSnippet();
+  }
+});
+
+if (isMainModule(import.meta.url)) {
+  runMain(command);
+}

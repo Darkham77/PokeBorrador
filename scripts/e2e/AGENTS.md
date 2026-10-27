@@ -51,14 +51,14 @@ QA / Automation Engineers.
 
 ## Key Files
 
-- `base_battle_simulation.ts`: Module implementation.
-- `base_simulation.ts`: Module implementation.
-- `e2e_constants.ts`: Module implementation.
-- `global_postgres_setup.ts`: Module implementation.
-- `global_postgres_teardown.ts`: Module implementation.
-- `simulation_config.ts`: Module implementation.
-- [`e2e_helpers.ts`](./e2e_helpers.ts): Module implementation.
-- [`run_sequential_simulations.ts`](./run_sequential_simulations.ts): Module implementation.
+- [`base_battle_simulation.ts`](./base_battle_simulation.ts): Base simulation class for combat and Showdown-driven test scenarios.
+- [`base_simulation.ts`](./base_simulation.ts): Base simulation class providing database setup, browser lifecycle, and UI assertions.
+- [`e2e_constants.ts`](./e2e_constants.ts): Named constants, timeouts, and selectors for E2E simulations.
+- [`e2e_helpers.ts`](./e2e_helpers.ts): Shared utility functions, transient network error predicates, and logging helpers.
+- [`global_postgres_setup.ts`](./global_postgres_setup.ts): Global test setup hook ensuring PostgreSQL container availability.
+- [`global_postgres_teardown.ts`](./global_postgres_teardown.ts): Global teardown hook managing container persistence and clean exit.
+- [`run_sequential_simulations.ts`](./run_sequential_simulations.ts): Master simulation orchestrator built with native `citty` (`npm run sim:e2e [filter=<pattern>] [driver=<sqlite|postgres|dual>] [clean] [from=<index|name>]`).
+- [`simulation_config.ts`](./simulation_config.ts): Configuration options and runner defaults for E2E test suites.
 
 ## Work Guidance
 
@@ -117,4 +117,4 @@ QA / Automation Engineers.
 - [results/](./results/AGENTS.md): Domain module documentation for results.
 - [save/](./save/AGENTS.md): Domain module documentation for save.
 - [system/](./system/AGENTS.md): Domain module documentation for system-level update and session simulations.
-- [`./helpers/AGENTS.md`](./helpers/AGENTS.md): Subsystem index for ./helpers.
+- [helpers/](./helpers/AGENTS.md): Subsystem index for ./helpers.

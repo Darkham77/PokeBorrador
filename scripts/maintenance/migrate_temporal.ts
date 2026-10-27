@@ -6,6 +6,7 @@
  * Basado en los estándares del proyecto (Regla 7).
  */
 
+import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -87,4 +88,14 @@ async function main() {
   console.log('\n✨ Migración a Temporal finalizada.');
 }
 
-main();
+export const command = defineCommand({
+  meta: {
+    name: 'migrate-temporal',
+    description: 'Migra llamadas Date a la API nativa Temporal'
+  },
+  async run() {
+    await main();
+  }
+});
+
+runMain(command);

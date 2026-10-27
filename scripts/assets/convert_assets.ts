@@ -1,4 +1,5 @@
-import type { DisplayText } from '@francogp/auditor';
+import { isMainModule, type DisplayText } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 /**
  * scripts/convert_assets.ts
  *
@@ -609,9 +610,18 @@ async function main() {
     pipelineWarnings,
     pipelineErrors
   );
-  process.exit(0);
 }
 
-if (isMainThread) {
-  main();
+export const command = defineCommand({
+  meta: {
+    name: 'convert-assets',
+    description: 'Pipeline zero-config para conversión de assets a WebP y generación de catálogos'
+  },
+  async run() {
+    await main();
+  }
+});
+
+if (isMainThread && isMainModule(import.meta.url)) {
+  runMain(command);
 }

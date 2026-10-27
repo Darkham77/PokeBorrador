@@ -1,4 +1,5 @@
 import type { DisplayText } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
@@ -316,7 +317,14 @@ async function main() {
   console.log(`- Discrepancias de stats en movimientos: ${moveResults.moveStatsDiscrepancies}`);
 }
 
-main().catch((err) => {
-  console.error(styleText('red', `❌ Error inesperado: ${(err as Error).stack}`));
-  process.exit(1);
+export const command = defineCommand({
+  meta: {
+    name: 'compare-db-showdown',
+    description: 'Compara las bases de datos de Pokémon y movimientos contra Pokémon Showdown'
+  },
+  async run() {
+    await main();
+  }
 });
+
+runMain(command);

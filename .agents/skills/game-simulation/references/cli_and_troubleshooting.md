@@ -28,10 +28,10 @@
 
 ### Layers 1 & 2: Unit & Parity Tests
 
-| Script      | Command             | Purpose                                                                    |
-| ----------- | ------------------- | -------------------------------------------------------------------------- |
-| `test:node` | `npm run test:node` | All `tests/node/**/*.test.ts` via native `node:test` (100% green required) |
-| `test`      | `npm run test`      | Full Vitest test suite (`unit` + `node` workspace projects)                |
+| Script      | Command             | Purpose                                                                           |
+| ----------- | ------------------- | --------------------------------------------------------------------------------- |
+| `test:node` | `npm run test:node` | All `tests/node/**/*.test.ts` via Vite+ / Vitest `node` project (100% green required) |
+| `test`      | `npm run test`      | Full Vite+ / Vitest test suite (`unit` + `node` workspace projects)               |
 
 ### Layer 3: Playwright E2E Simulations
 
@@ -93,7 +93,9 @@ npm run sim:e2e filter=search_loop_sequential clean=true
 npm run sim:e2e from=24
 npm run sim:e2e from=save_shield_restrictions
 
-# 5. Fast Headless Case Trace (1-2s):
+# 5. Fast Headless Case Trace (1-2s, positional argument or env fallback):
+npm run sim:fuzzer:trace case-47212c07bc5d
+# Or via environment variable:
 TEST_CASE_ID="case-47212c07bc5d" npm run sim:fuzzer:trace
 ```
 
@@ -113,7 +115,9 @@ npm run sim:e2e filter=search_loop_sequential clean=true
 npm run sim:e2e from=24
 npm run sim:e2e from=save_shield_restrictions
 
-# 5. Fast Headless Case Trace (1-2s):
+# 5. Fast Headless Case Trace (1-2s, positional argument or env fallback):
+npm run sim:fuzzer:trace case-47212c07bc5d
+# Or via environment variable:
 $env:TEST_CASE_ID="case-47212c07bc5d"; npm run sim:fuzzer:trace
 ```
 

@@ -2,6 +2,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
+import { isMainModule } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 
 // Define directories relative to this script
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -147,7 +149,16 @@ async function main(): Promise<void> {
   console.log(`\n✨ Sync completed successfully!\n`);
 }
 
-main().catch((err) => {
-  console.error(`❌ Error during sync:`, err);
-  process.exit(1);
+export const command = defineCommand({
+  meta: {
+    name: 'sync-to-test',
+    description: 'Sincroniza archivos clave del proyecto hacia pokevicio-test'
+  },
+  async run() {
+    await main();
+  }
 });
+
+if (isMainModule(import.meta.url)) {
+  runMain(command);
+}

@@ -1,4 +1,5 @@
 import type { DisplayText } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 /**
  * scripts/tools/fetch_ev_yields.ts
  *
@@ -249,7 +250,14 @@ export async function generateEvYields() {
   console.log(`Successfully generated ${outputPath}`);
 }
 
-generateEvYields().catch((err) => {
-  console.error('Fatal error generating EV yields:', err);
-  process.exit(1);
+export const command = defineCommand({
+  meta: {
+    name: 'fetch-ev-yields',
+    description: 'Extrae y consolida las tablas de rendimiento de EVs de Pokémon'
+  },
+  async run() {
+    await generateEvYields();
+  }
 });
+
+runMain(command);

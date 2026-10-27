@@ -10,6 +10,7 @@ import { execSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { defineCommand, runMain } from 'citty';
+import { parseUnmatchedArgs } from '../lib/cliHelpers.ts';
 import {
   clearAllCheckpoints,
   clearSuiteCheckpoint,
@@ -932,17 +933,17 @@ export const command = defineCommand({
   args: {
     table: {
       type: 'boolean',
-      short: 't',
+      alias: 't',
       description: 'Muestra la tabla Markdown de progreso E2E'
     },
     list: {
       type: 'boolean',
-      short: 'l',
+      alias: 'l',
       description: 'Lista todas las suites E2E detectadas y sus comandos'
     },
     json: {
       type: 'boolean',
-      short: 'j',
+      alias: 'j',
       description: 'Emite la estructura de suites en formato JSON'
     },
     'list-markdown': {
@@ -950,7 +951,7 @@ export const command = defineCommand({
     },
     filter: {
       type: 'string',
-      short: 'f',
+      alias: 'f',
       description: 'Ejecuta únicamente las suites que contengan el filtro'
     },
     from: {
@@ -959,12 +960,12 @@ export const command = defineCommand({
     },
     driver: {
       type: 'string',
-      short: 'd',
+      alias: 'd',
       description: "Modo de base de datos: 'dual', 'sqlite' o 'postgres'"
     },
     clean: {
       type: 'boolean',
-      short: 'c',
+      alias: 'c',
       description: 'Ignora cualquier checkpoint previo e inicia desde el principio'
     },
     reset: {
@@ -973,16 +974,35 @@ export const command = defineCommand({
     }
   },
   async run({ args }) {
-    initSimulationConfig(args);
-    if (args.table || args['list-markdown']) {
+    const { hasFlag, getParam } = parseUnmatchedArgs(args._);
+    const resolvedDriver = args.driver || getParam('driver', 'd');
+    const resolvedFilter = args.filter || getParam('filter', 'f');
+    const resolvedFrom = args.from || getParam('from');
+    const isClean = Boolean(args.clean || args.reset || hasFlag('clean') || hasFlag('reset'));
+    const isTable = Boolean(args.table || args['list-markdown'] || hasFlag('table'));
+    const isList = Boolean(args.list || hasFlag('list'));
+    const isJson = Boolean(args.json || hasFlag('json'));
+
+    const mergedArgs = {
+      ...args,
+      driver: resolvedDriver,
+      filter: resolvedFilter,
+      from: resolvedFrom,
+      clean: isClean,
+      table: isTable,
+      list: isList,
+      json: isJson
+    };
+    initSimulationConfig(mergedArgs);
+    if (isTable) {
       renderTable();
       return;
     }
-    if (args.json) {
+    if (isJson) {
       renderJson();
       return;
     }
-    if (args.list) {
+    if (isList) {
       renderList();
       return;
     }

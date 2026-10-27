@@ -1,4 +1,5 @@
 import type { DisplayText } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -99,4 +100,22 @@ function run(): void {
   console.log(`Summary report written to ${outputPath}`);
 }
 
-run();
+export const command = defineCommand({
+  meta: {
+    name: 'parse-lint',
+    description: 'Parsea y genera un resumen en Markdown del reporte de linter'
+  },
+  args: {
+    report: {
+      type: 'positional',
+      description: 'Ruta al archivo del reporte de lint',
+      required: false,
+      default: ''
+    }
+  },
+  run() {
+    run();
+  }
+});
+
+runMain(command);

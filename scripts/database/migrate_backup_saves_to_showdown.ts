@@ -1,4 +1,5 @@
 import type { DisplayText } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 /**
  * scripts/database/migrate_backup_saves_to_showdown.ts
  *
@@ -7,7 +8,8 @@ import type { DisplayText } from '@francogp/auditor';
  * official Showdown IDs for species, moves, abilities, and natures, and writes
  * the migrated output to scratch/server_franco_backup_migrated.json.
  *
- * Usage: node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/database/migrate_backup_saves_to_showdown.ts
+ * Usage:
+ *   npm run database:migrate-saves [file=<path>]
  */
 
 import fs from 'node:fs/promises';
@@ -880,7 +882,11 @@ function migratePokemonMoves(poke: Record<string, unknown>, moveMap: Map<string,
   return count;
 }
 
-async function main() {
+async function main(customFilePath?: string) {
+  const targetBackupFile = customFilePath
+    ? path.resolve(process.cwd(), customFilePath)
+    : BACKUP_FILE;
+
   console.log('Starting player saves migration to official Showdown IDs...');
 
   const rawAbilities = await fs.readFile(
@@ -900,7 +906,7 @@ async function main() {
   const natureMap = buildNatureMap();
   const moveMap = buildMoveMap(showdownDB.moves);
 
-  const rawBackup = await fs.readFile(BACKUP_FILE, 'utf8');
+  const rawBackup = await fs.readFile(targetBackupFile, 'utf8');
   const backup = JSON.parse(rawBackup) as BackupPayload;
   const gameSaves = backup.data.game_saves || [];
   let migratedPokes = 0;
@@ -928,14 +934,29 @@ async function main() {
     }
   }
 
-  await fs.writeFile(BACKUP_FILE, JSON.stringify(backup, null, 2), 'utf8');
+  await fs.writeFile(targetBackupFile, JSON.stringify(backup, null, 2), 'utf8');
   console.log(`\n🎉 Migración completada exitosamente!`);
   console.log(`📦 Pokémon migrados: ${migratedPokes}`);
   console.log(`⚔️ Movimientos migrados: ${migratedMovesCount}`);
-  console.log(`💾 Backup migrado guardado en: ${BACKUP_FILE}`);
+  console.log(`💾 Backup migrado guardado en: ${targetBackupFile}`);
 }
 
-main().catch((err) => {
-  console.error('Migration failed:', err);
-  process.exit(1);
+export const command = defineCommand({
+  meta: {
+    name: 'migrate-backup-saves-to-showdown',
+    description: 'Migra partidas de backup a los identificadores oficiales de Showdown'
+  },
+  args: {
+    file: {
+      type: 'positional',
+      description: 'Ruta al archivo JSON de backup a migrar',
+      required: false,
+      default: ''
+    }
+  },
+  async run({ args }) {
+    await main(args.file || undefined);
+  }
 });
+
+runMain(command);

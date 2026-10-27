@@ -1,8 +1,18 @@
-// scripts/e2e/fuzzer/runners/run_items_fuzzer.ts
+import { defineCommand, runMain } from 'citty';
 import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
 import { runItemsFuzzer } from '../core/fuzzer_engine.ts';
 
-await runFuzzerSuite({
-  suiteName: 'Fuzzer — Ítems (All Generations)',
-  run: runItemsFuzzer
+export const command = defineCommand({
+  meta: {
+    name: 'run-items-fuzzer',
+    description: 'Fuzzer de ítems Pokémon de todas las generaciones'
+  },
+  async run() {
+    await runFuzzerSuite({
+      suiteName: 'Fuzzer — Ítems (All Generations)',
+      run: runItemsFuzzer
+    });
+  }
 });
+
+runMain(command);

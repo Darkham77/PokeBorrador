@@ -1,20 +1,25 @@
 import type { DisplayText } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
-console.log('\n--- ⚡ SEEDING TEST USERS (ASH & ENTRENADOR) ---');
+export function seedTestUsers(customDbPath?: string): void {
+  console.log('\n--- ⚡ SEEDING TEST USERS (ASH & ENTRENADOR) ---');
 
-const dbPath = path.resolve('scratch/database/manual_user_backup_import.db');
-if (!fs.existsSync(dbPath)) {
-  console.error(
-    `❌ Error: Local database file not found at ${dbPath}. Please run the import or run the dev server first.`
-  );
-  process.exit(1);
-}
+  const dbPath = customDbPath
+    ? path.resolve(customDbPath)
+    : path.resolve('scratch/database/manual_user_backup_import.db');
 
-using db = new DatabaseSync(dbPath);
+  if (!fs.existsSync(dbPath)) {
+    console.error(
+      `❌ Error: Local database file not found at ${dbPath}. Please run the import or run the dev server first.`
+    );
+    process.exit(1);
+  }
+
+  using db = new DatabaseSync(dbPath);
 
 const TEST_USER_LEVEL = 50;
 const TEST_INVENTORY_DEFAULT_QTY = 50;
@@ -338,13 +343,32 @@ try {
 
   db.exec('COMMIT;');
   console.log('✅ Profiles, game_saves, and friendships successfully seeded.');
-} catch (err) {
-  try {
-    db.exec('ROLLBACK;');
-  } catch {
-    0;
+  } catch (err) {
+    try {
+      db.exec('ROLLBACK;');
+    } catch {
+      0;
+    }
+    console.error(`❌ Error during seeding: ${(err as Error).message}`);
   }
-  console.error(`❌ Error during seeding: ${(err as Error).message}`);
-} finally {
-  db.close();
 }
+
+export const command = defineCommand({
+  meta: {
+    name: 'seed-test-users',
+    description: 'Siembra usuarios de prueba locales (Ash y Entrenador) en la base de datos SQLite'
+  },
+  args: {
+    db: {
+      type: 'positional',
+      description: 'Ruta al archivo SQLite (opcional)',
+      required: false,
+      default: ''
+    }
+  },
+  run({ args }) {
+    seedTestUsers(args.db || undefined);
+  }
+});
+
+runMain(command);

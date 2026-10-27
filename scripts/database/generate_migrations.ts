@@ -310,6 +310,11 @@ export const command = defineCommand({
     description: 'Generador automático de manifiesto de migraciones SQL'
   },
   args: {
+    target: {
+      type: 'positional',
+      required: false,
+      description: 'Opción posicional opcional (ej: skip-test, no-test)'
+    },
     'no-test': {
       type: 'boolean',
       description: 'Omitir pruebas de migración'
@@ -320,7 +325,13 @@ export const command = defineCommand({
     }
   },
   async run({ args }) {
-    await runDirectCliPipeline(Boolean(args['no-test'] || args['skip-test']));
+    const isSkip = Boolean(
+      args['no-test'] ||
+        args['skip-test'] ||
+        args.target === 'skip-test' ||
+        args.target === 'no-test'
+    );
+    await runDirectCliPipeline(isSkip);
   }
 });
 if (isMainModule(import.meta.url)) {

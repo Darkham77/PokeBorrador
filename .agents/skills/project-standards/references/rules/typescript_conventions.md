@@ -4,6 +4,7 @@
 >
 > 🛑 **Domain Boundaries & Redirection**:
 >
+> - For universal software architecture, the 6 Mandatory Design Pillars (`/domain-type-first`, `/clean-code`, `/dox-navigator`, `/ponytail`, `/auditor`, `/fallow`), native Node.js standard library, and `citty` CLI contracts ➔ See **`@/architecture`** (`/architecture`).
 > - For full domain typing methodology and union derivation principles ➔ See **@/domain-type-first**.
 > - For database schemas, Valibot parsing, and SQLite/Supabase DTOs ➔ See [Database & Persistence](./database_and_persistence.md) and [Save System Manual](../technical/save_system_manual.md).
 > - For game engine states and constants ➔ See [Game Engine & State](./game_engine_and_state.md).
@@ -98,25 +99,20 @@
 
 ## 8. Node.js 26+ Modernization & Script Rules
 
+- **Native Standard Library & CLI Contracts Delegation**: All filesystem/path operations (`node:path`, `node:fs`) and standalone CLI argument parsing (`citty@^0.2.2` via `cittyHarness.ts`) are governed strictly by **`@/architecture`** (`/architecture`, Core Invariants #10 & #16).
 - **Temporal Usage**: Use `Temporal` instead of `Date` for engine logic.
-- **Node Imports**: Mandatory use of `node:` prefix for built-in imports (e.g. `import path from 'node:path'`).
-- **CLI Flag Parsing**: All utility, database, and maintenance scripts accepting arguments MUST use `import { parseArgs } from 'node:util'` with explicit option dictionaries. Positional arguments without flag names are strictly prohibited.
 - **Permission Model**: Utility scripts must use the Node.js 26 Permission Model (`--permission`). All maintenance scripts in `package.json` like `audit:fix` MUST use `--allow-fs-read=*` to allow reading `node_modules` and external dependencies across the filesystem.
 - **Explicit Resource Management**: Mandatory use of `using` for file handles and database connections in Node scripts.
 - **Vite+ / Vitest Exclusivity & Timer Promises**: All automated unit, node, and integration tests run exclusively under Vite+ via `vite.config.ts` (governed by `tests/AGENTS.md`); importing from `node:test` is strictly forbidden. Prefer `node:timers/promises` for delays in utility/maintenance scripts (Note: 0 timers remain strictly enforced in client/game logic).
 - **Node.js 26 Native TypeScript Extension Standards**: When importing relative TypeScript modules within `scripts/` or `database/` executed directly via Node.js 26 (`--experimental-strip-types`), import paths MUST explicitly use the `.ts` extension (e.g., `import { foo } from './helpers.ts'`). Never use legacy `.js` aliases or omitted extensions in direct script execution.
 
-## 9. Cross-Platform Path Standard
-
-- For converting platform-specific filesystem paths (e.g., from `path.relative`) to POSIX format (such as browser URLs, assets keys, database indexes), you MUST use native split/join operations with separator tokens (`relPath.split(path.sep).join(path.posix.sep)`) instead of regex expressions or simple replace statements. This ensures generated files remain identical across Windows, Linux, and macOS.
-
-## 10. Strict Schema Governance & Zero Optional Mandate for Domain Entities
+## 9. Strict Schema Governance & Zero Optional Mandate for Domain Entities
 
 - **No `optional()` on Intrinsically Mandatory Domain Fields**: Fields that are conceptually mandatory or part of core domain entities (e.g., `isShiny: boolean`, `uid: string`, `expNeeded: number`, `ready: boolean`, `status: PokemonStatus`) MUST NEVER be defined with `optional()` or `fallback()` in Valibot schemas or TypeScript domain contracts.
 - **Static Migration Backfill Requirement**: If historical data lacks mandatory fields, the schema MUST NOT be relaxed to accommodate the omission. Instead, a static database migration MUST be authored in SQL to backfill canonical default values for all existing records.
 - **Single Canonical Sentinel Policy**: Ambiguous or mixed sentinels (such as mixing `null`, `undefined`, and `''` for empty states) are strictly forbidden. For example, Pokémon status MUST strictly use empty string `''` as the sole canonical sentinel for un-afflicted status, preserving 1:1 parity with the Pokémon Showdown engine (`PokemonStatus`).
 
-## 11. Justified Escape Hatches Format & Rules
+## 10. Justified Escape Hatches Format & Rules
 
 When an escape hatch or localized ignore annotation is strictly necessary, it MUST include a colon (`:`) followed by a clear, technical rationale explaining why the exemption is legitimate:
 
@@ -127,7 +123,7 @@ When an escape hatch or localized ignore annotation is strictly necessary, it MU
 
 Naked tags (e.g. `// domain-ok` without `: reason`) are flagged as critical errors by `validate_audit_headers.ts`. Under no circumstances may escape hatches be used to suppress type errors on domain entities or numbers.
 
-## 12. Deep Cloning, Vue Reactivity & High-Performance Object Duplication
+## 11. Deep Cloning, Vue Reactivity & High-Performance Object Duplication
 
 - **Prohibition on `JSON.parse(JSON.stringify)` (`o1-json-clone`)**: It is STRICTLY FORBIDDEN to use `JSON.parse(JSON.stringify(x))` for cloning objects, arrays, or states. This anti-pattern is enforced as an audit error by `scripts/auditors/domain_data/validate_o1_data_structures.ts` (`P_JSON_CLONE`).
 - **Plain Serializable Objects**: Use native `structuredClone(obj)`.
@@ -135,12 +131,12 @@ Naked tags (e.g. `// domain-ok` without `: reason`) are flagged as critical erro
   - When cloning reactive state or entities, developers MUST use `cloneReactive(entity)` from `@/logic/utils/cloneUtils.ts`.
   - To unwrap proxies without creating an isolated deep clone, use `deepToRaw(entity)` from `@/logic/utils/cloneUtils.ts`.
 
-## 13. Canonical Domain IDs in Test Fixtures & Mocks
+## 12. Canonical Domain IDs in Test Fixtures & Mocks
 
 - **Strict Domain ID Mandate**: In accordance with the _Absolute Prohibition on Runtime Auto-Heal & In-Memory Entity Translation Mandate_, unit and integration test fixtures MUST pass canonical domain IDs (e.g. `'tm39'`, `'potion'`, `'charcoal'`), NEVER localized display strings (e.g. `'MT39 Tumba Rocas'`, `'Poción'`).
 - **Fail-Fast Parity**: Application code in `src/` fails fast on non-canonical IDs. Tests must pass canonical IDs to functions like `requireItemId()`, and test localization solely by asserting against `getItemById(id).name`.
 
-## 14. Modern Date & Timestamp APIs (Zero `Date.now()`, Zero `new Date()`)
+## 13. Modern Date & Timestamp APIs (Zero `Date.now()`, Zero `new Date()`)
 
 - **Performance Benchmarking**: For measuring elapsed execution time, sub-auditor runtimes, or benchmark loops, ALWAYS use `performance.now()` (monotonic, sub-millisecond precision).
 - **Wall-Clock Dates & Persistence**: For domain timestamps, persistence dates, log records, or audit headers, ALWAYS use the modern ECMAScript `Temporal` API:

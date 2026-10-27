@@ -3,15 +3,37 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "abre el navegador y fijate si el login de ASH funciona",
-      "expected_output": "The model should check if the server is running, start it if not, then use browser_subagent to test the login flow.",
-      "files": []
+      "name": "ash-interactive-login-check",
+      "prompt": "abre el navegador en localhost:5173 y fijate si el login de ASH funciona",
+      "expected_output": "The agent checks the dev server on https://localhost:5173, logs in as ASH via official UI controls (#id locators), and verifies session initialization via window.__VITE_DEBUG__.",
+      "files": [],
+      "assertions": [
+        "Uses https://localhost:5173 for interactive browser QA",
+        "Logs in as ASH through the UI /login view without skipping via evaluate",
+        "Verifies session via window.__VITE_DEBUG__"
+      ]
     },
     {
       "id": 2,
-      "prompt": "chequea si la nueva pantalla de combate se ve bien en mobile",
-      "expected_output": "The model should trigger project-testing, ensure server readiness, and use browser_subagent with mobile viewport settings.",
-      "files": []
+      "name": "mobile-combat-viewport-qa",
+      "prompt": "chequea manualmente en el navegador si la pantalla de combate se ve bien en mobile",
+      "expected_output": "The agent uses project-browser-testing protocols on localhost:5173 with mobile viewport settings and official UI controls.",
+      "files": [],
+      "assertions": [
+        "Follows browser_testing_manual.md protocols",
+        "Interacts exclusively via explicit #id controls"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "populate-tester-bag-inventory",
+      "prompt": "llena mi mochila con objetos de prueba (pociones, piedras evolutivas, caramelos raros) para probar el inventario en el navegador",
+      "expected_output": "The agent runs npm run test:populate-inventory and follows the console injection protocol in browser_testing_manual.md to populate state.bag and save.",
+      "files": [],
+      "assertions": [
+        "Executes 'npm run test:populate-inventory'",
+        "Follows the injection protocol from browser_testing_manual.md to update state.bag"
+      ]
     }
   ]
 }

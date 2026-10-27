@@ -23,7 +23,9 @@ import postgres from 'postgres';
 import {
   buildDatabaseUrl,
   getValidatedServerConfigs,
-  resolveServerProfiles
+  resolveServerProfiles,
+  serverCliArgs,
+  type ServerCliArgs
 } from '../lib/supabaseClient.ts';
 
 // Optimizar ejecución en ejecuciones sucesivas
@@ -265,7 +267,10 @@ async function updateSingleProfileDb(
   }
 }
 
-export async function updateSupabaseDb(server?: string, isAll?: boolean): Promise<void> {
+export async function updateSupabaseDb(
+  serverOrOptions?: string | ServerCliArgs,
+  isAllFlag?: boolean
+): Promise<void> {
   console.log(
     styleText(
       'bold',
@@ -274,21 +279,12 @@ export async function updateSupabaseDb(server?: string, isAll?: boolean): Promis
   );
 
   const { serverConfigs, baseProfiles, allAvailable } = await getValidatedServerConfigs();
-  const targetProfiles = resolveServerProfiles({ server, all: isAll }, baseProfiles, allAvailable);
-  const serverArg = targetProfiles[0];
+  const cliArgs: ServerCliArgs =
+    typeof serverOrOptions === 'object' && serverOrOptions !== null
+      ? serverOrOptions
+      : { server: serverOrOptions, all: isAllFlag };
 
-  if (!serverArg && !isAll) {
-    console.log(
-      styleText(
-        'yellow',
-        '⚠️  Especifica qué servidor deseas actualizar indicando server=<perfil> o all.'
-      )
-    );
-    console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
-    console.log(styleText('gray', 'Ejemplo: npm run database:update server=server_franco'));
-    console.log(styleText('gray', 'Ejemplo: npm run database:update all'));
-    process.exit(1);
-  }
+  const targetProfiles = resolveServerProfiles(cliArgs, baseProfiles, allAvailable);
 
   const profileToConfig = new Map<string, (typeof serverConfigs)[string]>();
   for (const [key, config] of Object.entries(serverConfigs)) {
@@ -332,19 +328,9 @@ export const command = defineCommand({
     name: 'update-supabase-db',
     description: 'Actualizador y gestor de migraciones para bases de datos Supabase'
   },
-  args: {
-    server: {
-      type: 'string',
-      description: 'Nombre del perfil de servidor a actualizar (ej: server_franco)',
-      alias: 's'
-    },
-    all: {
-      type: 'boolean',
-      description: 'Actualizar todos los perfiles de servidor configurados'
-    }
-  },
+  args: serverCliArgs,
   async run({ args }) {
-    await updateSupabaseDb(args.server, Boolean(args.all));
+    await updateSupabaseDb(args);
   }
 });
 if (isMainModule(import.meta.url)) {

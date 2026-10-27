@@ -1,66 +1,83 @@
 ---
 name: project-standards
-description: Core governance, workspace environment setup, and architectural standards for Poké Vicio. Governs Hybrid Retro-Modern identity, Fallow code quality & complexity governance, Zero-Ignore TypeScript, DBRouter persistence isolation, zero-timers, and E2E simulation rules. Single source of truth for executing all-in-one workspace setup scripts (setup-windows.ps1 / setup-linux.sh) and navigation hub for specialized rule manuals. Load whenever updating or preparing the working environment/dependencies, starting new tasks, modifying core engine/stores/components, refactoring, writing tests, or reviewing project standards.
+description: >-
+  Core domain governance, workspace environment setup, and Poké Vicio architectural standards.
+  Delegates universal software architecture, static analysis, and debugging protocols to /architecture,
+  while governing Poké Vicio specifics: Hybrid Retro-Modern identity, GSAP zero-timer animations,
+  4-seat Showdown battle harness, DBRouter persistence isolation, asset pipeline, and the 7-tier
+  documentation navigation hub. Load whenever updating or preparing the working environment/dependencies,
+  starting new tasks, modifying core engine/stores/components, refactoring, writing tests, or reviewing
+  project standards.
 ---
 
 # Project Standards (Core Governance & Navigation Hub)
 
-This skill defines the immutable core DNA and architectural standards of Poké Vicio. It provides comprehensive governance for design, code quality, security, testing, persistence, and workflow safety, as well as explicit instructions on how and when to consult specialized reference manuals.
+This skill defines the domain-specific DNA, workspace setup, and architectural standards of **Poké Vicio**, as well as the navigation hub for its specialized reference manuals.
+
+## 🏛️ Mandatory Delegation to `/architecture` (Universal Foundation)
+
+> [!IMPORTANT]
+> **Explicit Skill Invocation Mandate (`/architecture`)**:
+> Before designing systems, planning tasks, writing or refactoring code, running audits, or debugging failures, you **MUST explicitly invoke and enforce the `/architecture` skill (`@/architecture`)**.
+>
+> All universal rules formerly duplicated in this document are now governed strictly by **`/architecture`** as the Single Source of Truth:
+>
+> 1. **The 6 Mandatory Design Pillars**:
+>    - **`/domain-type-first`**: Zero `any`, zero `unknown`, zero `@ts-ignore`/`@ts-nocheck`, zero naked strings for finite domains, zero type assertion bypasses (`as Type`), `as const` compile-time unions, and $O(1)$ lookup structures (`ReadonlySet<T>`, `Record<DomainId, T>`).
+>    - **`/clean-code`**: Single responsibility, cognitive complexity $\le 20$, cyclomatic $\le 25$, zero magic numbers (`readonly` named constants without hardcoded values in names), and zero code duplication.
+>    - **`/dox-navigator`**: Mandatory DOX indexation (`AGENTS.md` hierarchy) with relative links and language integrity.
+>    - **`/ponytail`**: Anti-overengineering (YAGNI & KISS), native platform APIs first.
+>    - **`/auditor`**: Official CLI tools priority (`npm run auditor:next`, `auditor:findings`, `auditor:rules`, `auditor:by-rule`, `auditor:by-file`, `auditor:dupes`, `auditor:magic`, `auditor:motion`, `auditor:o1`, `auditor:types`, `auditor:domain`, `auditor:fix`). Prohibits premature scratch scripts, inline `node -e` commands, and raw JSON reading of `scratch/audits/latest_audit.json`.
+>    - **`/fallow`**: Architecture boundaries, circular dependency detection, dead code elimination, semantic duplication, and CWE security audits (zero security-hiding ignores).
+> 2. **Primary Debugging & Triage Guide**:
+>    - **`/systematic-debugging`**: **RED-GREEN First Mandate (Gate 1 Inviolable)** — modifying `src/` without an isolated reproduction test failing deterministically in RED is strictly prohibited. Enforces the 4-phase reactive lifecycle, dual consultation gate, and zero hasty patches/fallbacks.
+> 3. **Universal Core Invariants**:
+>    - Decoupled layers, `.auditor/audit.config.ts` as SSoT, Fail Loud & Fast, Node.js 26+ native standard library (`node:path`, `node:fs`), `citty` CLI contracts, `skills-lock.json` isolation, dependency-to-skill synchronization, and the **Daily Verification Cadence** (`npm run auditor:lint` fast inner loop vs. `npm run auditor` work-complete outer gate vs. `npm run auditor:full` / `npm run build` release gate).
+
+---
+
+## ⚙️ Workspace Environment & Project-Specific Operational Mandates
 
 - **All-in-One Environment Setup & Workspace Update Mandate**: Whenever instructed to initialize, configure, or update the workspace/environment (e.g. _"actualiza el entorno de trabajo"_, _"actualizar entorno"_, _"preparar el entorno"_, _"setup environment"_), the single-command source of truth is the root setup script:
   - **Windows (PowerShell as Admin / Terminal)**: `PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1 [-DeclaredVersions]`
   - **Linux / macOS (Terminal)**: `chmod +x ./setup-linux.sh && ./setup-linux.sh [--declared-versions]`
     This script automatically prompts and elevates Administrator permissions via the native Windows UAC modal dialog (`setup-windows.ps1`) or sudo when required, installs/configures NVM, aligns the Node runtime, preserves the user default NVM alias and other installed Node versions, enforces local `.npmrc` security policies (`ignore-scripts=true`, HTTPS registry, high audit level), cleans residual cache, and runs `npm ci` for a deterministic, ready-to-code workspace in a single run. By default in development, it automatically checks nodejs.org for the latest Current stable Node.js release, synchronizes `.node-version` (with fallback to `.nvmrc`) and `package.json`, and updates `npm@latest` globally. For servers, CI/CD, or reproducible locked runs, passing `--declared-versions` / `-DeclaredVersions` (aliases `--locked`, `--pinned`) freezes installation strictly to versions declared in the commit without network queries, without mutating Git-tracked files, and without updating npm.
   - **IDE & Terminal Restart Recommendation**: Whenever setup scripts modify system/user environment variables, NVM symlinks, or PATH, the agent MUST explicitly advise the user to restart their IDE (or reload terminal windows) so that all child process trees inherit the updated system PATH, eliminating the need for manual PATH injections in subsequent tool executions.
-- **Zero Audit Failures Mandate**: Under NO circumstances are audit failures allowed in any Git commit or pull request. The primary quality gatekeeper is `npm run auditor` (which must report exactly 0 errors). The ratchet mechanism compares warnings against `.auditor/audit-baseline.json` ensuring no warning regressions.
-- **Universal Quality & Audit Ecosystem**: All repository audits are organized under `scripts/auditors/` across 6 domain families (`architecture`, `domain_data`, `persistence`, `fsm`, `assets`, `documentation`). The single master audit runner `npm run auditor` executes 100% of sub-auditors dynamically with zero omissions, displaying formatted step-by-step progress lines and a consolidated Box-Drawing summary table in the terminal while writing the complete structured JSON report with all findings to `scratch/audits/latest_audit.json` (and `scratch/audits/<family>/<id>.json` for individual suites). AI agents needing line-level details must read `scratch/audits/latest_audit.json` directly from disk.
-  - **Developer Intelligence & Reporting Commands**:
-    - `npm run auditor:complexity` / `npm run auditor:complexity`: Renders ranked cyclomatic and cognitive complexity hotspots in `src/`.
-    - `npm run auditor:fallow`: Displays the consolidated codebase intelligence dashboard.
-    - `npm run auditor:fallow:dupes`: Detects duplicate and triplicate code blocks.
-    - `npm run auditor:fallow:security`: Audits CWE vulnerabilities in production `src/` code.
-    - `npm run auditor:fallow:dead-code`: Analyzes circular dependencies, orphan files, and unused exports/packages.
-    - `npm run build:analyze`: Official Single Source of Truth command for build analysis and compilation diagnostics. Sets `process.env.ANALYZE='true'`, executes full production build, generates visual interactive treemap in `scratch/bundle_stats.html` via `rollup-plugin-visualizer`, and enables bottleneck auditing via `npm run auditor:post-build`.
-- **Strict No-Test Mandate for Documentation**: Running test suites (`npm run test`, `test:node`, Vite+, or E2E Playwright simulations) when only editing `.md` documents, DOX indices, or `.agents/` skill files is STRICTLY FORBIDDEN. Verification for documentation tasks is strictly limited to the unified documentation audit `npm run auditor:md`. Running full project audits (`npm run lint` or `npm run auditor`) for documentation or skill edits is strictly forbidden.
-- **Mandatory Work Plan Compliance Mandate**: Whenever creating any work plan, technical proposal, or `implementation_plan.md`, agents MUST obligatorily include and enforce strict compliance with `@/project-standards`, `@/domain-type-first`, and all project quality auditor rules (`npm run auditor`, Fallow complexity/dead-code checks).
-- **Mandatory DOX Navigation**: You MUST always use the `dox-navigator` skill (or trigger the `/dox-navigator` command) to analyze the project context, search for files, components, and manuals, and update any index or documentation within the project.
+- **Strict No-Test Mandate for Documentation**: Running test suites (`npm run test`, `test:node`, Vite+, or E2E Playwright simulations) or heavy project audits (`npm run lint`, `npm run auditor`) when only editing `.md` documents, DOX indices, or `.agents/` skill files is STRICTLY FORBIDDEN. Verification for documentation tasks is strictly limited to the unified documentation audit `npm run auditor:md` (~1–2s).
+- **Build & Bundle Diagnostics**: `npm run build:analyze` is the official Single Source of Truth command for bundle analysis (`ANALYZE='true'`), generating the interactive treemap in `scratch/bundle_stats.html` via `rollup-plugin-visualizer` and feeding `npm run auditor:post-build`.
+- **Mandatory Work Plan Compliance Mandate**: Whenever creating any work plan, technical proposal, or `implementation_plan.md`, agents MUST obligatorily invoke and enforce strict compliance with **`@/architecture`** (and its 6 design pillars + `/systematic-debugging`) alongside **`@/project-standards`**.
 - **Objective-Driven Fuzzer Coverage & Deterministic History**: Fuzzer scenarios MUST prioritize legal actions exercising the mechanic under test. Fuzzer battle histories MUST record rich state metadata on disk (`fuzzer_certified_cases.json`) to enable deterministic 1:1 Playwright combat replays and fail fast on desync. Detailed history schema, timeout rules, and simulator invariants are governed strictly in [@/game-simulation](../game-simulation/SKILL.md).
 
 ---
 
-## 🏛️ Core Architectural & Quality Mandates
+## 🎮 Core Poké Vicio Architectural & Quality Mandates
 
-### 1. Hybrid Retro-Modern Identity
+### 1. Hybrid Retro-Modern Identity & GSAP Motion
 
 - **Visual Design**: Blends modern UI shells (premium gradients, relief borders, shining accents) with a retro pixel art heart (sharp rendering, pixelated fonts and game sprites).
 - **GSAP Exclusive Mandate**: All UI and battle animations MUST be implemented using GSAP. Manual CSS `@keyframes` or JS timers (`setTimeout`/`setInterval`) for animation flow are strictly forbidden.
-- **Mandatory GSAP Migration over Deletion Mandate (Never Delete, Always Migrate)**: Whenever any auditor (`validate_component_styles.ts`, `audit_project.ts`, Fallow, or style linters) flags manual CSS transitions (`transition: ...`) or `@keyframes` violating the GSAP mandate, agents **MUST NEVER** simply delete or strip the animation rules to silence the warning, leaving UI elements static and lifeless. Agents **MUST ACTIVELY MIGRATE** the animation to GSAP (`v-gsap-hover`, `useGsapTransition`, `gsap.to()`, `gsap.from()`, `gsap.timeline()`, Vue `<Transition :css="false" @enter="..." @leave="...">`, or GSAP composables) preserving 1:1 visual motion, easing, duration, and user delight. Auditor warnings highlight non-compliant _technology choices_ (e.g. CSS keyframes), NEVER an instruction to remove the visual feature itself. The mandatory goal of audit remediation is architectural evolution with 100% visual parity.
+- **Mandatory GSAP Migration over Deletion Mandate (Never Delete, Always Migrate)**: Whenever any auditor (`validate_component_styles.ts`, `npm run auditor:motion`, Fallow, or style linters) flags manual CSS transitions (`transition: ...`) or `@keyframes` violating the GSAP mandate, agents **MUST NEVER** simply delete or strip the animation rules to silence the warning, leaving UI elements static and lifeless. Agents **MUST ACTIVELY MIGRATE** the animation to GSAP (`v-gsap-hover`, `useGsapTransition`, `gsap.to()`, `gsap.from()`, `gsap.timeline()`, Vue `<Transition :css="false" @enter="..." @leave="...">`, or GSAP composables) preserving 1:1 visual motion, easing, duration, and user delight.
+- **Zero-Timer Mandate & Exclusive GSAP Clock (`gsap.delayedCall`, `gsapSleep`)**: In `src/` (components, views, combat, and game flow), native timers (`setTimeout`, `setInterval`, `sleep`) are **STRICTLY FORBIDDEN** (audited with hard error by `manualTimersFrontend` and `zeroTimerBattleLogic`). All visual transitions, delays, and pacing MUST be orchestrated strictly and exclusively through **GSAP** (`gsap.delayedCall`, `gsapSleep`, `gsap.timeline()`). Any duration or delay passed to GSAP MUST use descriptive named constants in seconds with the `_SEC` suffix (e.g. `ANIMATION_DELAY_SEC`, `CATCH_SHAKE_DUR_SEC`), audited by `namedTimerConstants`. Native `setTimeout` is strictly restricted to non-visual background infrastructure (network fetch aborts, worker watchdogs) where it MUST use `_MS` constants.
 - **SASS Integrity**: SASS function capitalization is handled automatically by the Vite plugin (`vite-plugin-sass-traps.ts`). Write standard lowercase CSS filters/transforms.
 - **GPU Efficiency & Performance**: Strict use of Texture Atlases, Object Pooling, layer promotion (`will-change: transform`), and filter chain optimizations (`pokemon-outline-performance`) to guarantee 60 FPS fluidity.
 - **GBA Font Spanish Capitalization Constraint**: The primary pixel font lacks uppercase glyphs for 'Ñ' and accented vowels. Any uppercase conversion in the UI (e.g. move names) must preserve or convert these characters to their lowercase equivalents (replacing 'Ñ' with 'ñ') to avoid rendering artifacts.
 
-### 2. Code Modularity & Quality (Fallow SSoT Governance)
+### 2. Project-Specific Code Quality, Reactivity & Data Wrappers
 
-- **Code Quality & Modularity via Fallow SSoT**: Modularity and file health are governed strictly and exclusively by Fallow metrics, completely replacing arbitrary raw file line limits (such as 500 or 1000 lines). Quality is measured via Fallow's native intelligence: Maintainability Index (`maintainability_index`), cognitive and cyclomatic complexity thresholds, function unit size risk bins (1–15 low, 16–30 medium, 31–60 high, >60 very high risk triggering health deductions and `large_functions` reports), dead code elimination, and multi-signal refactoring targets (`--targets`). A minimum project health score of **85/100** is mandatory (`fallow health --score`). Fallow also enforces a 5 MB file size boundary (`--max-file-size 5` skips oversized files to prevent OOM).
-- **Proactive Dead Code & Legacy File Elimination**: Whenever dead code analysis or auditors report orphan or unused files, agents MUST investigate each case individually. If confirmed to be obsolete legacy code or superseded prototypes, delete the files and remove dead exports completely from the codebase instead of retaining dead weight or applying broad ignore filters.
-- **Absolute Prohibition on Magic Numbers & Value-Hardcoding**: Inline numeric literals directly inside business logic, UI components, workers, or tests are strictly forbidden. All numbers MUST be declared as descriptive `readonly` named constants or `as const` config objects. Shared constants used in multiple files MUST be exported from a central constants module. Constant identifiers MUST NOT include their numeric values (e.g. `ARCHAEOLOGY_CAVE_BASE_WEIGHT` is required, `ARCHAEOLOGY_CAVE_BASE_WEIGHT_10` is strictly forbidden). String literals containing values, fractions, or animation syntax (e.g. `"random(-10, 10)"`, `"1/16 HP"`) are string literals and do not require any suppression comments.
-- **Zero-Timer Mandate & Exclusive GSAP Clock (`gsap.delayedCall`, `gsapSleep`)**: In `src/` (components, views, combat, and game flow), native timers (`setTimeout`, `setInterval`, `sleep`) are **STRICTLY FORBIDDEN** (audited with hard error by `manualTimersFrontend` and `zeroTimerBattleLogic`). All visual transitions, delays, and pacing MUST be orchestrated strictly and exclusively through **GSAP** (`gsap.delayedCall`, `gsapSleep`, `gsap.timeline()`). Any duration or delay passed to GSAP MUST use descriptive named constants in seconds with the `_SEC` suffix (e.g. `ANIMATION_DELAY_SEC`, `CATCH_SHAKE_DUR_SEC`), audited by `namedTimerConstants`. Native `setTimeout` is strictly restricted to non-visual background infrastructure (network fetch aborts, worker watchdogs) where it MUST use `_MS` constants.
-- **Permanent Eradication of Magic Number Ignores (`// no-magic`, `// magic-ok`, `// number-ok`)**: Using inline suppression comments (`// no-magic`, `// magic-ok`, `// number-ok`) is STRICTLY FORBIDDEN across the entire repository. The bypass escape hatch `// no-magic` has been permanently deleted from the codebase and all auditor tools. All numbers, numeric thresholds, offsets, and formula coefficients MUST be declared as descriptive named constants (`readonly` / `as const`) adhering strictly to the Named Constants Mandate.
+> _Universal complexity, dead-code, magic-number, and duplication rules are governed by **`/architecture`** (`/clean-code`, `/auditor`, `/fallow`). In addition, Poké Vicio enforces:_
+
+- **Fallow Minimum Health Score (`85/100`)**: A minimum project health score of **85/100** is mandatory (`fallow health --score`), with a 5 MB file size boundary (`--max-file-size 5`).
 - **Mandatory Reactive Computed Purity Mandate**: Getters inside `computed(...)` across all stores and composables MUST be 100% mathematically pure without side effects. It is STRICTLY FORBIDDEN to mutate reactive state (`.value =`, `state.x =`, `this.x =`) or trigger persistence calls (`scheduleSave()`, `.save()`, `.persist()`) inside a computed getter. State mutations belong exclusively in Pinia actions or explicit watchers. Enforced with 0 errors by `validate_reactive_purity.ts`.
 - **Mandatory Typed Domain Wrappers for JSON Files**: Directly importing raw `.json` files containing domain entities (items, species, moves, abilities, sets) is strictly forbidden. Every `.json` data file MUST be wrapped by a co-located TypeScript module exporting constants bounded by strict TypeScript domain union types (`ItemId`, `PokemonSpeciesId`, `AbilityId`, `PokemonMoveId`).
 
-### 3. Architectural Reuse, Polymorphism & 4-Seat Compatibility
+### 3. 4-Seat Battle Harness & 1v1 Active Combat Architecture
 
-- **Zero-Duplication & Inheritance Mandate**: Duplicating logic, structures, components, or control flows anywhere in the codebase is strictly forbidden. Refactor to extract common base classes, parameterized composables, or generic extensible components before writing new code.
 - **Mandatory 4-Seat Extensible Harness & 1v1 Active Battle Architecture**: Battle engine types, worker interfaces, state schemas, and harness adapters MUST be strictly designed and extensible to support up to 4 battle seats (`p1`–`p4`, 2vs2 double battles) when activated. The active gameplay battle orchestrator, UI HUDs, and heuristic AI execute the canonical 1v1 mode (`p1` vs `p2`), reserving `p3`/`p4` harness slots for multi-combatant expansion without duplicating core combat loops.
 
-### 4. TypeScript Integrity & Zero-Ignore Policy
+### 4. TypeScript & Domain Conventions (Poké Vicio Specifics)
 
-- **Zero-Ignore & Zero-Any**: `@ts-ignore`, `@ts-nocheck`, and `any` are strictly forbidden across the entire repository (including Web Workers and E2E simulation files).
-- **Mandatory Domain-Type-First Governance**: Every data type, domain constant, schema, DTO, or boundary contract MUST follow `@/domain-type-first`. Naked `string` declarations for finite domains, open index signatures (`[key: string]: unknown`), wildcard unions (`| string`), open sets/maps (`new Set<string>()`/`new Map()`), and inline type casts (`as Type`, `as any`) are strictly forbidden.
-- **Absolute Prohibition on `Set`/`Map` for Domain Types**: `new Set<string>()` and `new Map()` are mutable runtime data structures, NOT type definitions. Finite domains MUST use `as const` arrays + `(typeof ARRAY)[number]` for typing, and a derived typed `ReadonlySet<T>` with `.has(val)` for constant-time $O(1)$ runtime validation (linear searches like `.includes()` are strictly forbidden in accordance with the O(1) Mandate).
-- **Prohibition on Type Assertion Bypasses**: Type assertions (`as Type`, `as unknown as T`) or helper functions created solely to wrap double casts to evade type checking are strictly prohibited. All data boundaries MUST use explicit boundary adapter functions.
-- **O(1) Data Structures Priority Mandate**: Prioritize $O(1)$ constant-time data structures (`Record<DomainId, T>`, `ReadonlySet<DomainId>`, `computed<Map<DomainId, ...>>`) over linear $O(N)$ searches across all static catalogs (`src/data/`), Pinia stores (`src/stores/`), and battle engine logic (`src/logic/`). Zero-allocation pure helpers MUST replace deep JSON serialization in hot simulation paths.
+- **Universal Domain Typing Delegation**: All TypeScript compile-time union rules, zero-any/zero-ignore policies, prohibition on type assertion bypasses, and $O(1)$ data structure patterns are governed by **`/architecture`** (via **`/domain-type-first`** and **`/auditor`**).
+- **Poké Vicio TypeScript Conventions**: For game-specific rules—including `cloneReactive` for Vue 3 proxies, storage slot index preservation before `.filter()`, single canonical status sentinel (`''`), and justified escape hatch headers—consult [TypeScript & Data Integrity](./references/rules/typescript_conventions.md).
 
 ### 5. Event-Driven Simulation Sync & Zero-Timer Policy
 
@@ -70,39 +87,39 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **Public Event Contract for Simulators**: Playwright simulators must arm a listener before each visible UI action and resume only from a typed public application event emitted after the genuine domain/UI transition. Polling stores, FSM fields, DOM conditions, or private refs (`page.waitForFunction`, repeated locator-state checks, sleeps, or turn counters) is forbidden for synchronization. If a lifecycle has no suitable event, add one in `src/` at its real completion boundary; tests may observe it but never dispatch or forge it.
 - **Passive UI Driver**: A simulator is never an alternate state machine. It may inspect read-only diagnostics for assertions, but it must not infer readiness from low-level state, force a transition, or compensate for a missed event. After an event, it uses only the visible official control that a player would use.
 
-### 6. Zero-Tolerance Turn Failure, 3-Tier Bug Fixing Protocol & Anti-Hasty-Patch Mandate
+### 6. Poké Vicio 3-Tier Bug Fixing Specialization (Complementing `/systematic-debugging`)
 
-- **Mandatory 3-Tier Bug Fixing Protocol**: Whenever ANY bug, failure, or behavioral inconsistency occurs across the repository, the agent MUST apply the full 3-tier protocol:
-  - **Tier 1 (Isolated Unit Test - RED-to-GREEN)**: The agent **MUST FIRST** create an isolated, self-contained unit test in `tests/node/` (or `tests/unit/`) reproducing the exact failure deterministically in **RED** before touching `src/`. The test MUST **extract and inline the failing case data** (or store it in a static fixture file under `tests/fixtures/battle/`) so regenerating the fuzzer or external databases never breaks the unit test. The extracted turn-by-turn choice streams (`step.p1Choice`, `step.p2Choice`), `seed`, and history MUST be executed sequentially to reproduce in RED, and verify empirical repair in GREEN once `src/` is fixed. If the bug touches database queries, schemas, migrations, or storage persistence, the unit test MUST execute and verify RED-to-GREEN across **ALL active database engines** (e.g. SQLite and PostgreSQL via `describeWithDatabase`).
-  - **Tier 2 (Integrity & Integration Test)**: Create or update an integration/integrity test in `tests/integration/` or `tests/node/` verifying cross-module contracts, schema validations, FSM state transitions, store roundtrips, and `@pkmn/sim` parity to ensure that changes do not create boundary desynchronizations. For database-related logic, integrity tests MUST assert identical schema structures, constraint enforcement, and query behavior across both SQLite and PostgreSQL.
-  - **Tier 3 (Playwright E2E Simulation Following `@/game-simulation`)**: For any bug affecting UI, battle choreography, state synchronization, or player interaction, verify or implement Playwright E2E simulations governed strictly by the immutable laws in `@/game-simulation` (`.agents/skills/game-simulation/SKILL.md`):
-    - _Passive Joystick Law_: Tests act purely as passive joysticks reacting only to typed public application events (`battle-ready-for-input`, `battle-forced-switch-required`) and explicit FSM readiness states.
-    - _100% ID-Based & UID-Based Locators_: UI elements MUST be located strictly by `#<id>` or `data-pokemon-uid="${uid}"`, never by text matching or generic classes.
-    - _Strict 10s Per-Action Timeout Limit_: `MAX_PER_ACTION_TIMEOUT_MS = 10000`. Governs the input response window once control is granted to the player/AI (`isReady = true`). A timeout here indicates a structural bug in `src/`, never a time shortage. It MUST NOT abort the engine while it is legitimately processing multi-action turn animations and logs (`isProcessing.value || isIntroAnimating.value`).
-    - _Full Combat Log Retention_: Live battle logs (`battleLogs`) MUST NOT be truncated to arbitrary limits (e.g. 30). Full combat history must be preserved for user scroll during battle; `clearLogs()` cleanses memory on battle completion.
-    - _Zero Artificial Timers & Zero Retry-Loops_: Arbitrary delays (`sleep`, `page.waitForTimeout`), polling loops, or retry wrappers (`clickResilient`) are strictly forbidden.
-    - _100% Shared Battle Runner & Certified Combat Replay_: Browser combats replay certified fuzzer cases through `ShowdownBattleRunner`, consuming identical seeds, atomic history, native choices, and recorded actions.
-    - _Dual-Driver Persistence Verification_: Simulations touching persistence or database synchronization MUST execute in dual mode (`driver=dual` or dual clean zero pass) verifying both SQLite and PostgreSQL engines cleanly.
-- **Fail-Fast Turn Execution**: In Playwright E2E simulations, a single turn failure, unhandled rejection, or desync MUST immediately abort execution with a descriptive error. Retries, silent skips, and spin-loops are strictly forbidden.
-- **Prohibition on Hasty Patches & Fallbacks**: Inventing hasty fallbacks (e.g. returning `'default'`, fallback moves, or mock objects) or swallowing errors (`.catch(() => true)`) to force tests or simulations to pass is strictly forbidden. Root causes MUST be diagnosed and fixed in `src/`.
+> _The core RED-GREEN First Mandate (Gate 1 Inviolable), 4-Phase Reactive Lifecycle, Dual Consultation Gate, and Zero Hasty Patches/Fallbacks are governed strictly by **`/architecture`** $\rightarrow$ **`/systematic-debugging`**. In Poké Vicio, the 3-tier verification applies these game-specific requirements:_
+
+- **Tier 1 (Isolated Unit Test - RED-to-GREEN)**: Extract and inline the failing Showdown fuzzer choice streams (`step.p1Choice`, `step.p2Choice`), `seed`, and history (or store them in a static fixture under `tests/fixtures/battle/`) in `tests/node/` or `tests/unit/` so regenerating the fuzzer never invalidates the test. For database/persistence bugs, execute across **ALL active database engines** (SQLite and PostgreSQL via `describeWithDatabase`).
+- **Tier 2 (Integrity & Integration Test)**: Verify cross-module contracts, Valibot schema validations, battle FSM state transitions, Pinia store roundtrips, and `@pkmn/sim` parity in `tests/integration/` or `tests/node/` (asserting identical SQLite and PostgreSQL behavior for DB logic).
+- **Tier 3 (Playwright E2E Simulation Following `@/game-simulation`)**: For bugs affecting UI, battle choreography, state synchronization, or player interaction, verify or implement Playwright E2E simulations governed strictly by [`@/game-simulation`](../game-simulation/SKILL.md):
+  - _Passive Joystick Law_: React only to typed public application events (`battle-ready-for-input`, `battle-forced-switch-required`) and explicit FSM readiness states.
+  - _100% ID-Based & UID-Based Locators_: Locate UI elements strictly by `#<id>` or `data-pokemon-uid="${uid}"`, never by text matching or generic classes.
+  - _Strict 10s Per-Action Timeout Limit_: `MAX_PER_ACTION_TIMEOUT_MS = 10000` once control is granted (`isReady = true`), never aborting while `isProcessing.value || isIntroAnimating.value`.
+  - _Full Combat Log Retention_: Never truncate live `battleLogs` during combat; `clearLogs()` cleanses memory on battle completion.
+  - _Zero Artificial Timers & Zero Retry-Loops_: No `sleep`, `page.waitForTimeout`, polling loops, or `clickResilient`.
+  - _100% Shared Battle Runner & Certified Combat Replay_: Replay certified fuzzer cases through `ShowdownBattleRunner` with identical seeds, atomic history, and recorded choices.
+  - _Dual-Driver Persistence Verification_: Execute persistence simulations in dual mode (`driver=dual`) verifying both SQLite and PostgreSQL engines cleanly, with fail-fast turn execution on any desync.
 
 ### 7. Database Isolation & Persistence Safety
 
+> _General relational schema design, RLS best practices, and immutable forward-only SQL migration mechanics are coordinated via **`/architecture`** (`database-migrations` & `supabase-postgres-best-practices`). Poké Vicio additionally enforces:_
+
 - **Context Isolation (DBRouter)**: Maintain absolute separation between Online (Supabase) and Offline (SQLite) contexts via `DBRouter`. Run `npm run auditor:sql-migrations` before database commits.
-- **Multi-Engine Behavioral Parity & Dual-Database Test Coverage Mandate**: In architectures supporting multiple database engines (e.g. SQLite for offline/in-memory and PostgreSQL for online/Supabase), migrations, queries, constraints, error handling, and business functionality MUST behave 100% identically across all engines if that is the project's architectural intent. Whenever fixing a bug or adding features touching database logic, tests MUST execute and pass against both SQLite and PostgreSQL engines (using `describeWithDatabase` or dual-driver Playwright runs).
+- **Multi-Engine Behavioral Parity & Dual-Database Test Coverage Mandate**: SQLite (offline/in-memory) and PostgreSQL (online/Supabase) migrations, queries, constraints, error handling, and business functionality MUST behave 100% identically across both engines.
 - **Zero-Pokemon Save Shield**: Saving game state (to IndexedDB, LocalStorage, OPFS, or Supabase) is strictly forbidden if the team and box contain 0 Pokémon OR if `starterChosen` is `false`. Abort save operations immediately if met.
 - **Prohibition on Remote Database Updates**: AI agents MUST NEVER run or execute database update/migration scripts against remote, Docker-based, or shared database profiles (`server_franco`, `cloud`, `official_prod`). Remote updates are strictly reserved for manual execution by the user.
 - **Simulator & Persistence Parity (Status Format)**: Status clearance/assignment across the entire application—including Showdown simulator, Pinia stores, and persistent saves—MUST use `''` (empty string) to denote no status (assigning `null` crashes the simulator and breaks serialization schemas). Status is strictly `PokemonStatusId | ''`, NEVER `null`.
 
-### 8. Git Safety, Workflow & Security
+### 8. Git Safety & Workflow Protection
 
 - **Rollback Confirmation Protocol**: Before executing destructive Git operations (`git reset --hard`, `git checkout .`, `git clean`), the agent MUST explicitly request user confirmation, disclosing the exact commands.
 - **Protection of Uncommitted Files**: Before running bulk modification scripts on uncommitted files, create temporary backups inside `scratch/`.
 - **Scratch Directory Mandate**: Temporary reports, text summaries, and debug outputs MUST be stored exclusively in `scratch/`.
 - **Autonomous Commit & Main Branch Push Prohibition**: Commit flows MUST NOT be run autonomously without explicit user instructions. Pushing to `main` (`origin/main`) is strictly forbidden for agents. Explicitly requested pushes to non-main development/feature branches (such as `desarrollo`) are permitted.
-- **Strict Zero-Hiding Security Mandate**: Suppressing or hiding security vulnerabilities (CWE path traversals, SSRF risks) using ignore files (`.fallowrc.json`), inline comments (`// fallow-ignore`), or exclusions is strictly forbidden. Every security finding MUST be resolved at its source via path sanitization and boundary checks.
 
-### 9. Asset Pipeline, Crafting Tiers & CLI Safety Mandate
+### 9. Asset Pipeline, Crafting Tiers & CLI Execution Safety
 
 - **Mandatory Centralized Asset Management Mandate (`getAssetUrl`)**: All visual assets across the entire project (sprites, trainers, items, maps, banners, badges, battle backgrounds, UI icons, ranked medals) MUST be resolved strictly and exclusively through the centralized asset service (`getAssetUrl(ASSET_TYPES.<CATEGORY>, id, options)`) from `@/logic/services/assetService`. Directly hardcoding asset path strings (`/assets/...`, `/sprites/...`, or relative asset paths) in Vue component templates, styles, Pinia stores, or static configuration files (`src/data/`) is STRICTLY FORBIDDEN. Static databases must only store canonical domain IDs; path resolution is strictly the responsibility of `assetService`. Detailed asset pipeline commands and sprite organization are governed in [Asset Service Manual](./references/technical/asset_service_manual.md).
 - **Mandatory Crafting Tier Hierarchy**: All inventory and shop item sprites in `public/assets/sprites/` MUST follow the 4-tier domain hierarchy (`crafting/tier0/`, `crafting/tier1/`, `crafting/tier2/`, `crafting/tier3/`) mapped from `item.craftingTier`. Detailed asset pipeline commands and sprite organization are governed in [Asset Service Manual](./references/technical/asset_service_manual.md).
@@ -110,23 +127,12 @@ This skill defines the immutable core DNA and architectural standards of Poké V
   1. **Strict Species Whitelist**: Strictly and exclusively depict Pokémon from the enabled species whitelist (`ENABLED_POKEMON_IDS` in `src/data/system/constants.ts`). Non-whitelisted or unapproved species (Lucario, Garchomp, Greninja, Metagross, Tyranitar, Darkrai, Blaziken, or custom forms like Mewtwo Armored) are strictly forbidden in illustration prompts and reward tables.
   2. **Mandatory Spanish Typography**: If an illustration or banner contains any typography, titles, logos, slogans, or stadium signage, it MUST be strictly and exclusively in Spanish (e.g. `"TORNEO FRONTERA JOHTO-KANTO"`). English text burned into illustration pixels is strictly forbidden.
   3. **Zero Hardcoded Dates**: Images MUST NEVER contain burned-in calendar dates, years (e.g. 2024, 2026), timeslots, or fixed hours. All event timing is dynamic and managed via Vue UI overlays. Detailed event system standards are governed in [Event System Manual](./references/systems/event_system_manual.md).
-- **Prohibition of Multi-Line Inline Node CLI Commands (`noInteractiveCliHangs`)**:
-  - AI agents MUST NEVER run multi-line inline scripts (`node -e "..."`) in terminal background tasks on Windows. Doing so causes child processes to hang or await interactive stdin indefinitely.
-  - All validations, diagnostic checks, and tests MUST be executed via dedicated test files (`npm run test:node -- <path>` or `npm run test:unit -- <path>`) or dedicated script files in `scripts/` or `scratch/`.
 - **Absolute Prohibition on Manual Command PATH Injections (`noManualPathInjection`)**:
   - AI agents are STRICTLY FORBIDDEN from prefixing CLI commands with ad-hoc path variables (e.g. `$env:Path = ...; npm ...`, `export PATH=... && npm ...`, or inline path wrappers).
   - All commands MUST be executed cleanly and natively (`npm run <script>`, `vp <tool>`, `node <file>`).
   - If a required binary (`node`, `npm`, `vp`) is not resolved in PATH, the agent MUST instruct the user to run the root setup script and restart their IDE/terminal, NEVER pollute commands with manual PATH injections.
-- **Fast Development Lint Pipeline (`npm run lint`)**:
-  - `npm run lint` executes `npm run auditor:lint` (`preset=lint`), running the 10 core sub-auditors concurrently in parallel: `validate_domain_types`, `validate_o1_data_structures`, `validate_component_styles`, `audit_project` (Fallow intelligence suite: dupes, CWE security, dead code), `validate_vue_sfc_hygiene`, `validate_console_cleanliness`, `validate_audit_headers`, `validate_type_check` (`vue-tsc`), `validate_markdown_lint` (`markdownlint`), and `validate_oxlint` (Oxlint / Vite+).
-  - Use `npm run lint:fix` (or `npm run auditor:lint fix`) to apply automated formatting and lint fixes.
-  - Markdownlint MUST strictly ignore `external/**` and `.git/**` to prevent scanning external source trees.
 - **Hardware-Adaptive Worker Concurrency Mandate**:
   - Multi-process worker pools (master audit runner, safe-commit gatekeeper, asset compression, fuzzer engines) MUST calculate worker capacity dynamically based on available logical cores divided by the standard coefficient: `Math.max(1, Math.floor(availableCpus / 2))` for CPU-heavy auditor tasks, and `Math.floor(os.cpus().length / 4)` for multi-threaded fuzzer/browser testing. Hardcoding arbitrary static limits (such as a fixed cap of 6) is strictly prohibited.
-- **Proportional Verification Protocol (Fast Lint vs Full Audit)**:
-  - **Documentation & Skills (`.md`)**: Run ONLY `npm run auditor:md` (~1-2s). Running heavy audits for documentation or skill edits is strictly forbidden.
-  - **In-Development Code Iteration**: Run `npm run lint` (~10s) or `npm run auditor` for full quality gate.
-  - **Full Quality Gate & Commits**: `npm run auditor` validates 100% of suites and checks warnings against `.auditor/audit-baseline.json`.
 
 ---
 
@@ -196,7 +202,7 @@ Before writing or updating any rule, manual, or architectural lesson, consult th
 
 #### 2. Technical, Infrastructure & QA Manuals (`references/technical/`, `qa/`, `content/`)
 
-- **@/domain-type-first** (bundled in `@francogp/auditor`)
+- **@/architecture** & **@/domain-type-first** (bundled in `@francogp/auditor`)
 - [Browser Testing Manual](./references/qa/browser_testing_manual.md)
 - [Battle Animations QA Manual](./references/qa/manual_testing_battle_animations.md)
 - [Validation & Quality Manual](./references/qa/validation_manual.md)

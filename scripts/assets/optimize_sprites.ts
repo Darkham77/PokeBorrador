@@ -481,6 +481,11 @@ if (isMainThread && isMainModule(import.meta.url)) {
       description: 'Optimiza sprites recortando transparencia y convirtiendo a WebP'
     },
     args: {
+      target: {
+        type: 'positional',
+        required: false,
+        description: 'Objetivo ("all", ID numérico o rango como 1-151)'
+      },
       all: { type: 'boolean', default: false, description: 'Procesar todos los sprites' },
       id: { type: 'string', description: 'ID de la especie' },
       file: { type: 'string', description: 'Nombre de archivo PNG específico' },
@@ -490,6 +495,11 @@ if (isMainThread && isMainModule(import.meta.url)) {
     },
     async run({ args }) {
       try {
+        const rawTarget = typeof args.target === 'string' ? args.target.trim() : '';
+        const isAll = Boolean(args.all || rawTarget === 'all');
+        const resolvedId = args.id || (/^\d+$/.test(rawTarget) ? rawTarget : undefined);
+        const resolvedRange = args.range || (/^\d+-\d+$/.test(rawTarget) ? rawTarget : undefined);
+
         const targetDir =
           typeof args.dir === 'string' ? path.resolve(process.cwd(), args.dir) : FRONT_DIR;
         const files = await fs.readdir(targetDir);
@@ -501,15 +511,15 @@ if (isMainThread && isMainModule(import.meta.url)) {
 
         const filteredFiles = filterTargetFiles(targetFiles, {
           file: typeof args.file === 'string' ? args.file : undefined,
-          id: typeof args.id === 'string' ? args.id : undefined,
-          range: typeof args.range === 'string' ? args.range : undefined
+          id: typeof resolvedId === 'string' ? resolvedId : undefined,
+          range: typeof resolvedRange === 'string' ? resolvedRange : undefined
         });
         if (filteredFiles.length === 0) {
           console.log(`❌ No se encontraron archivos para procesar.`);
           process.exit(0);
         }
 
-        if (!args.all && !args.id && !args.range && !args.file) {
+        if (!isAll && !resolvedId && !resolvedRange && !args.file) {
           console.log(
             'Debes ejecutar con --all para procesamiento masivo, --file <nombre.png> para uno específico, --id <id>, o --range <inicio>-<fin>.'
           );
@@ -517,7 +527,7 @@ if (isMainThread && isMainModule(import.meta.url)) {
         }
 
         const numCPUs = os.cpus().length || 4;
-        const workerPoolLimit = args.id ? 1 : numCPUs;
+        const workerPoolLimit = resolvedId ? 1 : numCPUs;
         console.log(
           `🚀 Iniciando Worker Pool con límites de concurrencia: ${workerPoolLimit} hilo(s).`
         );

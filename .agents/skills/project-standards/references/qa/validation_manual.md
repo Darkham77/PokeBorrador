@@ -175,14 +175,14 @@ Whenever requested to "actualizar herramientas", "update tools", "preparar entor
 
 ### ☁️ Supabase Infrastructure & Multi-Server Management
 
-- `npm run supabase:manage [command=<command>] [tag=<tag>]`: Main Supabase CLI orchestrator in Node.js 26+ (`supabase/setup_supabase.ts`). Manages the Docker container lifecycle.
-  - Subcommands / options: `command=all`, `command=clone`, `command=generate`, `command=build`, `command=publish`, `command=add`.
+- `npm run supabase:manage <subcommand>`: Main Supabase CLI orchestrator in Node.js 26+ (`supabase/setup_supabase.ts`). Manages the Docker container lifecycle.
+  - Subcommands: `list`, `clone`, `generate`, `add`, `build`, `publish`, `release`, `all`.
 - `npm run servers:configure`: Parses unified master `.env` file, extracts profiles, and automatically generates `src/data/system/official_servers.ts`.
-- `npm run database:update [server=<profile> | all]`: Supabase database manager and migrator in Node.js 26+.
-- `npm run database:backup [server=<profile> | all]`: Connects to chosen Supabase server and downloads complete structured backup to `database/backups/`.
-- `npm run database:restore server=<profile> [file=<path>]`: Transactionally restores a JSON backup file to the chosen server.
-- `npm run database:local-import [server=<profile> | file=<path>]`: Imports the most recent JSON backup from a chosen Supabase server into the local SQLite database.
-- `npm run database:admin server=<profile> action=<action> email=<email> [options]`: Supabase user admin CLI in Node.js 26+ (unban, update passwords, promote, etc.).
+- `npm run database:update [<profile> | server=<profile> | all]`: Supabase database manager and migrator in Node.js 26+.
+- `npm run database:backup [<profile> | server=<profile> | all]`: Connects to chosen Supabase server and downloads complete structured backup to `database/backups/`.
+- `npm run database:restore [<profile> | server=<profile>] [file=<path>]`: Transactionally restores a JSON backup file to the chosen server.
+- `npm run database:local-import [<profile> | server=<profile> | file=<path>]`: Imports the most recent JSON backup from a chosen Supabase server into the local SQLite database.
+- `npm run database:admin [<profile> | server=<profile>] action=<action> email=<email> [options]`: Supabase user admin CLI in Node.js 26+ (unban, update passwords, promote, etc.).
 - `npm run admin:rename user=<id_or_name> name=<new_name>`: Administrative CLI to rename a trainer directly in the database.
 
 ### 🖼️ Assets
@@ -199,7 +199,7 @@ When diagnosing, reproducing, or fixing failures across tests or E2E simulation 
 1. **Tier 1: Isolated Unit Test (RED-to-GREEN)**:
    - Identify the failing scenario or case ID (e.g. `case-8b5b9aabf776`).
    - Extract the failing parameters, seed, teams, and turn choices into an immutable static fixture under `tests/fixtures/battle/` or inlined in a test file under `tests/node/battle/`.
-   - Run `npm run test:node -- <path_to_test>` (or `npm run test:unit -- <path_to_test>`) and verify the deterministic failure in **RED** before touching `src/`.
+   - Run `npm run test:node <path_to_test>` (or `npm run test:unit <path_to_test>`) and verify the deterministic failure in **RED** before touching `src/`.
 2. **Tier 2: Integrity & Integration Test**:
    - Verify that data boundaries, schemas, FSM state machine transitions, and Showdown `@pkmn/sim` parity are tested in `tests/integration/` or `tests/node/`.
    - Diagnose root cause in `src/` without using masking fallbacks (`||`, `??`, dummy derivations). Apply clean fix and verify that unit & integration tests turn **GREEN**.

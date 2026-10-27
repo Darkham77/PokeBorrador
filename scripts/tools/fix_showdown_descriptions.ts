@@ -1,4 +1,5 @@
 import type { DisplayText } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs';
 
 const DB_PATH = './showdown/sandbox_db/data/showdown_db_es.json';
@@ -98,4 +99,22 @@ function fixShowdownDescriptions() {
   );
 }
 
-fixShowdownDescriptions();
+export const command = defineCommand({
+  meta: {
+    name: 'fix-showdown-descriptions',
+    description: 'Repara descripciones obsoletas en la base de datos local de Showdown'
+  },
+  args: {
+    db: {
+      type: 'positional',
+      description: 'Ruta al archivo JSON de base de datos de Showdown',
+      required: false,
+      default: ''
+    }
+  },
+  run() {
+    fixShowdownDescriptions();
+  }
+});
+
+runMain(command);

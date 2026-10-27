@@ -1,4 +1,5 @@
 // scripts/e2e/fuzzer/runners/run_missions_fuzzer.ts
+import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Dex } from '@pkmn/sim';
@@ -134,7 +135,18 @@ async function runMissionsFuzzer() {
   ];
 }
 
-await runFuzzerSuite({
-  suiteName: 'Fuzzer — Lógica de Misiones (Gen 9)',
-  run: runMissionsFuzzer
+export const command = defineCommand({
+  meta: {
+    name: 'run-missions-fuzzer',
+    description: 'Fuzzer de lógica y validación de misiones'
+  },
+  async run() {
+    await runFuzzerSuite({
+      suiteName: 'Fuzzer — Lógica de Misiones (Gen 9)',
+      run: runMissionsFuzzer
+    });
+  }
 });
+
+runMain(command);
+export { runMissionsFuzzer };

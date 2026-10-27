@@ -15,7 +15,7 @@ Cloud / Backend Engineers.
 
 ## Key Files
 
-- [`setup_supabase.ts`](./setup_supabase.ts): Script to automate database setup.
+- [`setup_supabase.ts`](./setup_supabase.ts): Main Supabase CLI orchestrator built with native `citty` subcommands (`npm run supabase:manage <subcommand>`: `list`, `clone`, `generate`, `add`, `build`, `publish`, `release`, `all`).
 
 ## Work Guidance
 

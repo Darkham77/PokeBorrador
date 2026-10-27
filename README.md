@@ -108,8 +108,9 @@ Poké Vicio implements a **dual persistence** architecture with total isolation 
 All schema migrations are incremental and applied automatically through the centralized migration runner:
 
 ```bash
-# Initialize or update a specific server profile configured in .env:
-npm run database:update server=server_franco
+# Initialize or update a specific server profile configured in .env (positional or server=<profile>):
+npm run database:update server_franco
+# Or: npm run database:update server=server_franco
 
 # Update ALL server profiles configured in .env:
 npm run database:update all
@@ -130,7 +131,8 @@ This workflow enables converting and loading production or staging database back
 
 ```bash
 # STEP 1: Download a JSON backup from a Supabase server (Optional if you already have the file)
-npm run database:backup server=server_franco
+npm run database:backup server_franco
+# Or: npm run database:backup server=server_franco
 
 # STEP 2: Upgrade backup and strictly legalize Pokémon / accounts
 npm run database:upgrade-backup file=database/backups/server_franco/server_franco_backup_2026-06-27T05-06-25-158315918Z.json
@@ -365,7 +367,7 @@ npm run sim:fuzzer:missions    # Passive missions and rewards
 npm run sim:fuzzer:gyms        # Gym leaders and badge rewards
 npm run sim:fuzzer:gts         # Global Trade Station, trades, and escrow
 npm run sim:fuzzer:ai          # AI heuristics and decision making
-npm run sim:fuzzer:trace       # Deterministic replay of certified failure cases
+npm run sim:fuzzer:trace <caseId> # Deterministic replay of certified failure cases
 ```
 
 #### 3. Sequential E2E Simulations (Playwright)
@@ -407,22 +409,22 @@ npm run sim:e2e:system         # Version upgrades, locks, and lifecycle
 
 The project supports dual persistence with total isolation between local mode (native SQLite) and remote servers (Supabase / PostgreSQL on Docker or Cloud):
 
-| Command                                | Description                                                                                                                                                 |
-| :------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm run database:repair-account`      | **Illegal Account Repair**: Fixes illegal Pokémon (levels, moves, or invalid abilities) across accounts in local SQLite and Supabase.                       |
-| `npm run database:diagnose-account`    | **Account Diagnostics**: Checks integrity, inventory, illegal Pokémon, and locks for an account (`database:diagnose-accounts` for all).                     |
-| `npm run admin:rename`                 | **Administrative Rename**: Updates a user's trainer name in Supabase directly from CLI.                                                                     |
-| `npm run servers:configure`            | **Server Synchronization**: Parses master `.env` or CI secrets and generates decoupled catalog at `src/data/system/servers.local.json` with zero fallbacks. |
-| `npm run database:update`              | **Migration Manager**: Applies initial schemas and incremental SQL migrations to selected Supabase server (`server=<profile>`) or all (`all`).              |
-| `npm run database:backup`              | **Backup Generator**: Connects to Supabase and dumps all tables into a structured JSON file.                                                                |
-| `npm run database:upgrade-backup`      | **Backup Upgrader**: Applies migrations and Showdown legality to an exported JSON backup.                                                                   |
-| `npm run database:restore`             | **Transactional Restore**: Restores a JSON backup transactionally to the selected Supabase server.                                                          |
-| `npm run database:local-import`        | **SQLite Importer**: Imports the latest Supabase JSON backup into local SQLite for offline testing.                                                         |
-| `npm run database:admin`               | **User Administration**: Unban, change passwords, update emails, or promote users to admin from CLI.                                                        |
-| `npm run supabase:manage`              | **Docker/CLI Manager**: Local orchestrator for Supabase containers and Docker image compilation.                                                            |
-| `npm run database:generate-migrations` | **Migration Compiler**: Scans `database/migrations/` and compiles the production TypeScript manifest.                                                       |
-| `npm run database:recompile-feet`      | **Footprint Compiler**: Recompiles and syncs the Pokémon footprint atlas and database.                                                                      |
-| `npm run sync:test`                    | **Sync to Sibling Repo**: Synchronizes source tree with sibling QA repository `pokevicio-test`.                                                             |
+| Command                                | Description                                                                                                                                                   |
+| :------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npm run database:repair-account`      | **Illegal Account Repair**: Fixes illegal Pokémon (levels, moves, or invalid abilities) across accounts in local SQLite and Supabase.                         |
+| `npm run database:diagnose-account`    | **Account Diagnostics**: Checks integrity, inventory, illegal Pokémon, and locks for an account (`database:diagnose-accounts` for all).                       |
+| `npm run admin:rename`                 | **Administrative Rename**: Updates a user's trainer name in Supabase directly from CLI.                                                                       |
+| `npm run servers:configure`            | **Server Synchronization**: Parses master `.env` or CI secrets and generates decoupled catalog at `src/data/system/servers.local.json` with zero fallbacks.   |
+| `npm run database:update`              | **Migration Manager**: Applies initial schemas and incremental SQL migrations to selected Supabase server (`<profile>` or `server=<profile>`) or all (`all`). |
+| `npm run database:backup`              | **Backup Generator**: Connects to Supabase and dumps all tables into a structured JSON file (`<profile>` or `server=<profile>` / `all`).                      |
+| `npm run database:upgrade-backup`      | **Backup Upgrader**: Applies migrations and Showdown legality to an exported JSON backup.                                                                     |
+| `npm run database:restore`             | **Transactional Restore**: Restores a JSON backup transactionally to the selected Supabase server.                                                            |
+| `npm run database:local-import`        | **SQLite Importer**: Imports the latest Supabase JSON backup into local SQLite for offline testing (`<profile>` or `server=<profile>`).                       |
+| `npm run database:admin`               | **User Administration**: Unban, change passwords, update emails, or promote users to admin from CLI.                                                          |
+| `npm run supabase:manage`              | **Docker/CLI Manager**: Local orchestrator for Supabase containers (`list`, `clone`, `generate`, `add`, `build`, `publish`, `release`, `all`).                |
+| `npm run database:generate-migrations` | **Migration Compiler**: Scans `database/migrations/` and compiles the production TypeScript manifest.                                                         |
+| `npm run database:recompile-feet`      | **Footprint Compiler**: Recompiles and syncs the Pokémon footprint atlas and database.                                                                        |
+| `npm run sync:test`                    | **Sync to Sibling Repo**: Synchronizes source tree with sibling QA repository `pokevicio-test`.                                                               |
 
 ---
 
@@ -461,20 +463,20 @@ npm run database:repair-account server=server_franco all
 # 1. Synchronize servers into game UI
 npm run servers:configure
 
-# 2. Initialize or update database on a specific server
-npm run database:update server=server_franco
+# 2. Initialize or update database on a specific server (positional or server=<profile>)
+npm run database:update server_franco
 
 # 3. Update database across ALL servers in .env
 npm run database:update all
 
-# 4. Download a full JSON backup from a server
-npm run database:backup server=server_franco
+# 4. Download a full JSON backup from a server (positional or server=<profile>)
+npm run database:backup server_franco
 
 # 5. Automatically restore the latest backup to a server
-npm run database:restore server=server_franco
+npm run database:restore server_franco
 
 # 6. Restore a specific backup by providing exact file path
-npm run database:restore server=server_franco file=database/backups/server_franco/server_franco_backup_2026-05-17T05-29-09.json
+npm run database:restore server_franco file=database/backups/server_franco/server_franco_backup_2026-05-17T05-29-09.json
 ```
 
 #### 🌐 Network Troubleshooting (MikroTik & Hairpin NAT)

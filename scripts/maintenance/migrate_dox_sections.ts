@@ -14,6 +14,8 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { isMainModule } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 
 const PROJECT_ROOT = process.cwd();
 
@@ -378,4 +380,16 @@ function main(): void {
   );
 }
 
-main();
+export const command = defineCommand({
+  meta: {
+    name: 'migrate-dox-sections',
+    description: 'Migra los archivos AGENTS.md a las 6 secciones canónicas requeridas por la arquitectura'
+  },
+  run() {
+    main();
+  }
+});
+
+if (isMainModule(import.meta.url)) {
+  runMain(command);
+}

@@ -1,4 +1,5 @@
 import type { DisplayText } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs';
 import path from 'node:path';
 import { Battle, Dex } from '@pkmn/sim';
@@ -531,52 +532,53 @@ export const COMPARISON_ITERATIONS_COUNT = 500;
 /** Maximum sample size of failed cases logged to reporting artifacts. */
 export const MAX_FAILURE_SAMPLES_COUNT = 10;
 
-const iterations = COMPARISON_ITERATIONS_COUNT;
-const reports: string[] = []; // no-domain: Non-domain utility collection or data structure
+export function runComparison(customIterations = COMPARISON_ITERATIONS_COUNT): void {
+  const iterations = customIterations;
+  const reports: string[] = []; // no-domain: Non-domain utility collection or data structure
 
-console.log('Iniciando comparación por fases...');
+  console.log('Iniciando comparación por fases...');
 
-PHASES.forEach((phase) => {
-  let passedCount = 0;
-  const fails: ReturnType<typeof executeComparison>[] = [];
+  PHASES.forEach((phase) => {
+    let passedCount = 0;
+    const fails: ReturnType<typeof executeComparison>[] = [];
 
-  for (let i = 0; i < iterations; i++) {
-    const res = executeComparison(phase.options);
-    if (res.passed) {
-      passedCount++;
-    } else {
-      fails.push(res);
+    for (let i = 0; i < iterations; i++) {
+      const res = executeComparison(phase.options);
+      if (res.passed) {
+        passedCount++;
+      } else {
+        fails.push(res);
+      }
     }
-  }
 
-  const accuracy = (passedCount / iterations) * 100;
-  const reportLine = `* **${phase.name}**: ${passedCount}/${iterations} (${accuracy.toFixed(2)}% de coincidencia)`;
-  console.log(reportLine);
-  reports.push(
-    `## ${phase.name}\nCoincidencia: ${passedCount}/${iterations} (${accuracy.toFixed(2)}%)\n`
-  );
+    const accuracy = (passedCount / iterations) * 100;
+    const reportLine = `* **${phase.name}**: ${passedCount}/${iterations} (${accuracy.toFixed(2)}% de coincidencia)`;
+    console.log(reportLine);
+    reports.push(
+      `## ${phase.name}\nCoincidencia: ${passedCount}/${iterations} (${accuracy.toFixed(2)}%)\n`
+    );
 
-  if (fails.length > 0) {
-    reports.push('### Muestra de Fallos:\n');
-    fails.slice(0, MAX_FAILURE_SAMPLES_COUNT).forEach((f, idx) => {
-      reports.push(`#### Fallo #${idx + 1} (Dif: ${f.ourDamage - f.showdownDamage})
+    if (fails.length > 0) {
+      reports.push('### Muestra de Fallos:\n');
+      fails.slice(0, MAX_FAILURE_SAMPLES_COUNT).forEach((f, idx) => {
+        reports.push(`#### Fallo #${idx + 1} (Dif: ${f.ourDamage - f.showdownDamage})
 * **Nuestra estimación**: \`${f.ourDamage}\`
 * **Showdown**: \`${f.showdownDamage}\`
 * **Detalles**: ${f.details}
 `);
-    });
-    reports.push('\n---\n');
+      });
+      reports.push('\n---\n');
+    }
+  });
+
+  const scratchDir = path.resolve(import.meta.dirname, '../../scratch');
+  if (!fs.existsSync(scratchDir)) {
+    fs.mkdirSync(scratchDir, { recursive: true });
   }
-});
 
-const scratchDir = path.resolve(import.meta.dirname, '../../scratch');
-if (!fs.existsSync(scratchDir)) {
-  fs.mkdirSync(scratchDir, { recursive: true });
-}
-
-fs.writeFileSync(
-  path.join(scratchDir, 'combat_comparison.md'),
-  `# Reporte de Auditoría de Fórmulas por Fases
+  fs.writeFileSync(
+    path.join(scratchDir, 'combat_comparison.md'),
+    `# Reporte de Auditoría de Fórmulas por Fases
 
 Este reporte evalúa la precisión matemática del motor de Poké Vicio comparado con \`@pkmn/sim\` (Showdown) bajo reglas de Gen 3 en diferentes niveles de complejidad.
 
@@ -591,6 +593,27 @@ ${PHASES.map((p, i) => {
 
 ${reports.join('\n')}
 `
-);
+  );
 
-console.log(`\nAuditoría por fases completada. Reporte guardado en scratch/combat_comparison.md`);
+  console.log(`\nAuditoría por fases completada. Reporte guardado en scratch/combat_comparison.md`);
+}
+
+export const command = defineCommand({
+  meta: {
+    name: 'compare-combat',
+    description: 'Compara la precisión matemática de daño de Poké Vicio contra Showdown por fases'
+  },
+  args: {
+    iterations: {
+      type: 'string',
+      description: 'Número de iteraciones de comparación por fase',
+      default: '500'
+    }
+  },
+  run({ args }) {
+    const it = Number(args.iterations) || COMPARISON_ITERATIONS_COUNT;
+    runComparison(it);
+  }
+});
+
+runMain(command);

@@ -18,9 +18,10 @@ import path from 'node:path';
 import process from 'node:process';
 import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
-import { styleText, parseArgs } from 'node:util';
+import { styleText } from 'node:util';
 
-import type { DisplayText } from '@francogp/auditor';
+import { isMainModule, type DisplayText } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 
 enableCompileCache();
 
@@ -797,87 +798,117 @@ function syncOfficialServers(): void {
   run(['npm', 'run', 'servers:configure'], undefined, false);
 }
 
-async function main(): Promise<void> {
-  const args = process.argv.slice(2);
-  const normalized = args.map((a: string) =>
-    a.includes('=') && !a.startsWith('-') ? `--${a}` : a
-  );
-  const { values, positionals } = parseArgs({
-    args: normalized,
-    options: {
-      command: { type: 'string', short: 'c' },
-      tag: { type: 'string', default: 'latest' },
-      help: { type: 'boolean', short: 'h' }
-    },
-    allowPositionals: true,
-    strict: false
-  });
-
-  const cmd = values.command || positionals[0] || (values.help ? 'help' : 'list');
-  const tag = values.tag || 'latest';
-
-  if (values.help || cmd === 'help' || cmd === '--help' || cmd === '-h') {
-    console.log(`🐘 Poké Vicio - Gestor de Despliegues Supabase Multi-Servidor (Node.js 26+)
-
-Uso:
-  npm run supabase:manage [command=[comando]] [tag=latest]
-  npm run supabase:manage [comando]
-
-Comandos:
-  list         Muestra los servidores configurados en el .env maestro (por defecto).
-  add          Asistente interactivo para configurar un nuevo servidor.
-  clone        Descarga Supabase oficial y genera el Dockerfile personalizado.
-  generate     Genera los archivos .env y docker-compose.yml para cada servidor.
-  build        Construye la imagen Docker personalizada.
-  publish      Sube la imagen Docker a Docker Hub.
-  release      Atajo para construir y publicar en un paso.
-  all          Clona, genera, construye y publica la imagen en un solo paso.`);
-    process.exit(0);
+const listCommand = defineCommand({
+  meta: { name: 'list', description: 'Muestra los servidores configurados en el .env maestro' },
+  async run() {
+    await listar();
   }
-
-  switch (cmd) {
-    case 'list':
-    case 'listar':
-      await listar();
-      break;
-    case 'clone':
-    case 'clonar':
-      await clonar();
-      break;
-    case 'generate':
-    case 'generar':
-      await generar();
-      syncOfficialServers();
-      break;
-    case 'add':
-    case 'agregar':
-      await agregar();
-      syncOfficialServers();
-      break;
-    case 'build':
-    case 'construir':
-      await construir(typeof tag === 'string' ? tag : undefined);
-      break;
-    case 'publish':
-    case 'publicar':
-      await publicar(typeof tag === 'string' ? tag : undefined);
-      break;
-    case 'release':
-    case 'liberar':
-      await liberar(typeof tag === 'string' ? tag : undefined);
-      break;
-    case 'all':
-    case 'todo':
-      await todo(typeof tag === 'string' ? tag : undefined);
-      syncOfficialServers();
-      break;
-    default:
-      console.error(`Comando desconocido: ${cmd}. Usa --help para ver la lista de comandos.`);
-      process.exit(1);
-  }
-}
-
-main().catch((err) => {
-  console.error(styleText(['bold', 'red'], `❌ Error fatal: ${err.message}`));
-  process.exit(1);
 });
+
+const cloneCommand = defineCommand({
+  meta: {
+    name: 'clone',
+    description: 'Descarga Supabase oficial y genera el Dockerfile personalizado'
+  },
+  async run() {
+    await clonar();
+  }
+});
+
+const generateCommand = defineCommand({
+  meta: {
+    name: 'generate',
+    description: 'Genera los archivos .env y docker-compose.yml para cada servidor'
+  },
+  async run() {
+    await generar();
+    syncOfficialServers();
+  }
+});
+
+const addCommand = defineCommand({
+  meta: {
+    name: 'add',
+    description: 'Asistente interactivo para configurar un nuevo servidor'
+  },
+  async run() {
+    await agregar();
+    syncOfficialServers();
+  }
+});
+
+const buildCommand = defineCommand({
+  meta: { name: 'build', description: 'Construye la imagen Docker personalizada' },
+  args: {
+    tag: { type: 'string', description: 'Etiqueta de la imagen Docker', default: 'latest' }
+  },
+  async run({ args }) {
+    await construir(args.tag);
+  }
+});
+
+const publishCommand = defineCommand({
+  meta: { name: 'publish', description: 'Sube la imagen Docker a Docker Hub' },
+  args: {
+    tag: { type: 'string', description: 'Etiqueta de la imagen Docker', default: 'latest' }
+  },
+  async run({ args }) {
+    await publicar(args.tag);
+  }
+});
+
+const releaseCommand = defineCommand({
+  meta: { name: 'release', description: 'Atajo para construir y publicar en un paso' },
+  args: {
+    tag: { type: 'string', description: 'Etiqueta de la imagen Docker', default: 'latest' }
+  },
+  async run({ args }) {
+    await liberar(args.tag);
+  }
+});
+
+const allCommand = defineCommand({
+  meta: {
+    name: 'all',
+    description: 'Clona, genera, construye y publica la imagen en un solo paso'
+  },
+  args: {
+    tag: { type: 'string', description: 'Etiqueta de la imagen Docker', default: 'latest' }
+  },
+  async run({ args }) {
+    await todo(args.tag);
+    syncOfficialServers();
+  }
+});
+
+export const command = defineCommand({
+  meta: {
+    name: 'setup-supabase',
+    description: 'Gestor de Despliegues Supabase Multi-Servidor (Node.js 26+)'
+  },
+  subCommands: {
+    list: listCommand,
+    listar: listCommand,
+    clone: cloneCommand,
+    clonar: cloneCommand,
+    generate: generateCommand,
+    generar: generateCommand,
+    add: addCommand,
+    agregar: addCommand,
+    build: buildCommand,
+    construir: buildCommand,
+    publish: publishCommand,
+    publicar: publishCommand,
+    release: releaseCommand,
+    liberar: releaseCommand,
+    all: allCommand,
+    todo: allCommand
+  },
+  async run() {
+    await listar();
+  }
+});
+
+if (isMainModule(import.meta.url)) {
+  await runMain(command);
+}

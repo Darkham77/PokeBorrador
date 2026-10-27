@@ -14,6 +14,7 @@ import {
 import { isEnabledPokemonId } from '../../src/data/system/constants.ts';
 import { makePokemon } from '../../src/logic/pokemon/pokemonFactory.ts';
 import { buildDatabaseUrl, getValidatedServerConfigs } from '../lib/supabaseClient.ts';
+import { parseUnmatchedArgs } from '../lib/cliHelpers.ts';
 import type { Pokemon } from '../../src/types/pokemon/pokemon.ts';
 import type { SaveDataDto } from '../../src/logic/validation/schemas.ts';
 
@@ -763,6 +764,11 @@ export const command = defineCommand({
     description: 'Herramienta de reparación y legalización de Pokémon en partidas'
   },
   args: {
+    target: {
+      type: 'positional',
+      required: false,
+      description: 'Usuario a reparar o "all"'
+    },
     user: {
       type: 'string',
       description: 'ID, nombre de usuario o email de la cuenta a reparar',
@@ -785,8 +791,20 @@ export const command = defineCommand({
     }
   },
   async run({ args }) {
-    const isAll = Boolean(args.all || args.user === 'all');
-    const targetUserId = isAll ? null : (args.user ?? null);
+    const { barePositionals, hasFlag, getParam } = parseUnmatchedArgs(args._);
+    const cleanTarget = (args.target || barePositionals[0] || '').trim();
+    const isAll = Boolean(
+      args.all ||
+        args.user === 'all' ||
+        cleanTarget === 'all' ||
+        hasFlag('all') ||
+        getParam('user') === 'all'
+    );
+    const targetUserId = isAll
+      ? null
+      : (args.user ?? cleanTarget ?? getParam('user', 'u') ?? null);
+    const server = args.server || getParam('server', 's');
+    const dbPath = args.db || getParam('db', 'd');
 
     if (!isAll && !targetUserId) {
       console.error(
@@ -799,8 +817,8 @@ export const command = defineCommand({
       await repairAccountsInDatabase({
         userId: targetUserId,
         all: isAll,
-        server: args.server,
-        dbPath: args.db
+        server,
+        dbPath
       });
     } catch (err) {
       console.error(`❌ Error al reparar cuentas:`, (err as Error).message);

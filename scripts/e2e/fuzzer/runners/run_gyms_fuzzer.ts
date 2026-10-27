@@ -1,4 +1,5 @@
 // scripts/e2e/fuzzer/runners/run_gyms_fuzzer.ts
+import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
@@ -125,7 +126,18 @@ async function runGymsFuzzer() {
   ];
 }
 
-await runFuzzerSuite({
-  suiteName: 'Fuzzer — Lógica de Gimnasios (Gen 9)',
-  run: runGymsFuzzer
+export const command = defineCommand({
+  meta: {
+    name: 'run-gyms-fuzzer',
+    description: 'Fuzzer de progresión y recompensas de gimnasios'
+  },
+  async run() {
+    await runFuzzerSuite({
+      suiteName: 'Fuzzer — Lógica de Gimnasios (Gen 9)',
+      run: runGymsFuzzer
+    });
+  }
 });
+
+runMain(command);
+export { runGymsFuzzer };

@@ -20,7 +20,7 @@ Frontend Developers / QA Engineers.
 
 ## Verification
 
-- Run `npm run test:unit -- tests/unit/components/common/` to execute common component unit tests.
+- Run `npm run test:unit tests/unit/components/common/` to execute common component unit tests.
 
 ## Child DOX Index
 

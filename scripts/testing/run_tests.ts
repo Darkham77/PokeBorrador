@@ -11,6 +11,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { defineCommand, runMain } from 'citty';
+import { parseUnmatchedArgs } from '../lib/cliHelpers.ts';
 import {
   inspectDocker,
   ensurePostgresTestContainerReady,
@@ -317,10 +318,12 @@ export const command = defineCommand({
   args: {
     project: {
       type: 'string',
+      alias: 'p',
       description: 'Proyecto de Vitest a ejecutar (unit, node, migrations)'
     },
     coverage: {
       type: 'boolean',
+      alias: 'c',
       description: 'Generar reporte de cobertura'
     },
     filter: {
@@ -330,10 +333,16 @@ export const command = defineCommand({
     }
   },
   async run({ args }) {
+    const { barePositionals, hasFlag, getParam } = parseUnmatchedArgs(args._);
+    const resolvedProject = args.project || getParam('project', 'p');
+    const resolvedFilter =
+      args.filter || getParam('filter') || (barePositionals.length > 0 ? barePositionals[0] : undefined);
+    const resolvedCoverage = Boolean(args.coverage || hasFlag('coverage'));
+
     await runTestRunner({
-      project: args.project,
-      coverage: args.coverage,
-      filter: args.filter
+      project: resolvedProject,
+      coverage: resolvedCoverage,
+      filter: resolvedFilter
     });
   }
 });

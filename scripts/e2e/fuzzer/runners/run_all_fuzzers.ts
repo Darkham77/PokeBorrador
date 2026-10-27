@@ -12,6 +12,8 @@ import {
 import { runMedicineFuzzer } from '../core/fuzzer_medicine_cases.ts';
 import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
 import { FuzzerRunnerLogger } from '../../logging/fuzzer_runner_logger.ts';
+import { isMainModule } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 import { formatExecutionTimestamp } from '../../logging/base_runner_logger.ts';
 
 async function main() {
@@ -52,4 +54,16 @@ async function main() {
   }
 }
 
-await main();
+export const command = defineCommand({
+  meta: {
+    name: 'run-all-fuzzers',
+    description: 'Suite completa unificada de fuzzers de combate y mecánicas en memoria'
+  },
+  async run() {
+    await main();
+  }
+});
+
+if (isMainModule(import.meta.url)) {
+  runMain(command);
+}

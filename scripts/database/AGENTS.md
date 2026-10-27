@@ -8,12 +8,14 @@ Poké Vicio Development Team.
 
 ## Local Contracts
 
-- **Explicit Named Flags Mandate**: All database scripts accept named options via `node:util parseArgs`:
-  - `backup_supabase_db.ts` (`npm run database:backup [server=<profile> | all]`)
-  - `restore_supabase_db.ts` (`npm run database:restore server=<profile> [file=<path>]`)
-  - `upgrade_backup.ts` (`npm run database:upgrade-backup [server=<profile> | file=<path>]`): Dynamically loads legacy backup JSON files, applies all pending migrations in SQLite, sanitizes Pokémon legality (species names, vigor, HP, moves, abilities), and exports a 100% compatible `<file>_upgraded.json` ready for clean restoration.
-  - `update_supabase_db.ts` (`npm run database:update [server=<profile> | all]`)
-  - `import_backup_to_sqlite.ts` (`npm run database:local-import [server=<profile> | file=<path>]`)
+- **Native Citty CLI Architecture Mandate**: All database scripts declare options natively using `citty` (`defineCommand` / `runMain`), accepting both positional server targets and `key=value` parameters:
+  - `backup_supabase_db.ts` (`npm run database:backup [<profile> | server=<profile> | all]`)
+  - `restore_supabase_db.ts` (`npm run database:restore [<profile> | server=<profile>] [file=<path>]`)
+  - `upgrade_backup.ts` (`npm run database:upgrade-backup [<profile> | server=<profile> | file=<path>]`): Dynamically loads legacy backup JSON files, applies all pending migrations in SQLite, sanitizes Pokémon legality (species names, vigor, HP, moves, abilities), and exports a 100% compatible `<file>_upgraded.json` ready for clean restoration.
+  - `update_supabase_db.ts` (`npm run database:update [<profile> | server=<profile> | all]`)
+  - `import_backup_to_sqlite.ts` (`npm run database:local-import [<profile> | server=<profile> | file=<path>]`)
+  - `migrate_backup_saves_to_showdown.ts` (`npm run database:migrate-saves [<path> | file=<path>] [backup]`)
+  - `seed_test_users.ts` (`node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* scripts/database/seed_test_users.ts [<sqlite_path> | db=<sqlite_path>]`)
 - **Local Database Import & Module Aliasing (`import_backup_to_sqlite.ts`)**:
   - Script invocation via `npm run database:local-import` MUST run with `--import tsx` to ensure proper runtime resolution of TypeScript path aliases (`@/`) in standalone Node execution.
   - Due to browser Same-Origin Policy isolating IndexedDB and OPFS between `http://` and `https://` origins, local database rehydration across protocol upgrades MUST be executed via `npm run database:local-import server=<profile>`, generating `scratch/database/manual_user_backup_import.db` which the Vite HTTPS dev server automatically serves to re-seed local client storage.
@@ -34,16 +36,16 @@ Poké Vicio Development Team.
 
 ## Key Files
 
-- `generate_species_purge_migration.ts`: Module implementation.
-- `generate_universal_entity_sanitizer.ts`: Module implementation.
-- `migrate_backup_saves_to_showdown.ts`: Module implementation.
-- `seed_test_users.ts`: Module implementation.
-- [`backup_supabase_db.ts`](./backup_supabase_db.ts): Module implementation.
-- [`generate_migrations.ts`](./generate_migrations.ts): Module implementation.
-- [`import_backup_to_sqlite.ts`](./import_backup_to_sqlite.ts): Module implementation.
-- [`restore_supabase_db.ts`](./restore_supabase_db.ts): Module implementation.
-- [`update_supabase_db.ts`](./update_supabase_db.ts): Module implementation.
-- [`upgrade_backup.ts`](./upgrade_backup.ts): Module implementation.
+- [`backup_supabase_db.ts`](./backup_supabase_db.ts): Downloads complete structured JSON backups from configured Supabase server profiles (`npm run database:backup [<profile> | server=<profile> | all]`).
+- [`generate_migrations.ts`](./generate_migrations.ts): Generates TypeScript migration manifests from SQL files and runs certification checks (`npm run database:generate-migrations`).
+- [`generate_species_purge_migration.ts`](./generate_species_purge_migration.ts): Dynamic generator creating SQL migrations to purge non-whitelisted species and unreleased eggs from player saves.
+- [`generate_universal_entity_sanitizer.ts`](./generate_universal_entity_sanitizer.ts): Code generator creating exhaustive SQL replacement migrations for legacy entity and move identifiers.
+- [`import_backup_to_sqlite.ts`](./import_backup_to_sqlite.ts): Converts upgraded JSON backups to local browser SQLite databases for offline development and QA (`npm run database:local-import [<profile> | server=<profile> | file=<path>]`).
+- [`migrate_backup_saves_to_showdown.ts`](./migrate_backup_saves_to_showdown.ts): Migrates legacy backup save payloads to canonical Showdown Gen 9 format (`npm run database:migrate-saves [<path> | file=<path>] [backup]`).
+- [`restore_supabase_db.ts`](./restore_supabase_db.ts): Transactionally restores JSON backup files to target Supabase server profiles (`npm run database:restore [<profile> | server=<profile>] [file=<path>]`).
+- [`seed_test_users.ts`](./seed_test_users.ts): Seeds local or temporary SQLite databases with deterministic test user accounts (`[<sqlite_path> | db=<sqlite_path>]`).
+- [`update_supabase_db.ts`](./update_supabase_db.ts): Orchestrates incremental SQL migrations, system config version updates, and health checks across Supabase servers (`npm run database:update [<profile> | server=<profile> | all]`).
+- [`upgrade_backup.ts`](./upgrade_backup.ts): In-memory SQLite migration runner and legality sanitizer producing compatible upgraded backups (`npm run database:upgrade-backup [<profile> | server=<profile> | file=<path>]`).
 
 ## Work Guidance
 

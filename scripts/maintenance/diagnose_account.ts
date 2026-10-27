@@ -42,6 +42,7 @@ import { DATABASE_MIGRATIONS } from '../../src/logic/db/migrations_data.ts';
 import { splitSQLStatements, translatePostgresToSqlite } from '../../src/logic/db/sqlTranslator.ts';
 import { initTestDatabaseSchema } from '../auditors/persistence/_testDbHelper.ts';
 import { readAndParseEnv, findServerConfig } from '../lib/supabaseClient.ts';
+import { parseUnmatchedArgs } from '../lib/cliHelpers.ts';
 import { isEnabledPokemonId } from '../../src/data/system/constants.ts';
 import { toID } from '../../src/logic/utils/strings.ts';
 import type { GameState } from '../../src/types/system/game.ts';
@@ -889,6 +890,11 @@ export const command = defineCommand({
     description: 'Diagnóstico de cuentas y partidas contra el esquema y legalidad'
   },
   args: {
+    target: {
+      type: 'positional',
+      required: false,
+      description: 'Usuario a diagnosticar o "all"'
+    },
     user: {
       type: 'string',
       description: 'ID, email o username a diagnosticar, o "all"',
@@ -917,11 +923,19 @@ export const command = defineCommand({
     }
   },
   async run({ args }) {
-    const isAll = Boolean(args.all || args.user === 'all');
-    const userInput = args.user !== 'all' ? args.user : undefined;
-    const serverInput = args.server;
-    const fileInput = args.file;
-    const dbInput = args.db || 'poke_local.db';
+    const { barePositionals, hasFlag, getParam } = parseUnmatchedArgs(args._);
+    const cleanTarget = (args.target || barePositionals[0] || '').trim();
+    const isAll = Boolean(
+      args.all ||
+        args.user === 'all' ||
+        cleanTarget === 'all' ||
+        hasFlag('all') ||
+        getParam('user') === 'all'
+    );
+    const userInput = !isAll ? (args.user || cleanTarget || getParam('user', 'u')) : undefined;
+    const serverInput = args.server || getParam('server', 's');
+    const fileInput = args.file || getParam('file', 'f');
+    const dbInput = args.db || getParam('db', 'd') || 'poke_local.db';
 
     if (!isAll && !userInput) {
       console.error(

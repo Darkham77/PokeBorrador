@@ -175,23 +175,21 @@ This triggers reactive watchers and updates HUD components instantly.
 
 ### 6. window.**VITE_DEBUG** Sanitization in Unit Tests
 
-In testing environments that define the `window` object (such as `jsdom` with Vitest), stores will automatically register their console debug commands on `window.__VITE_DEBUG__` during instantiation. To prevent test isolation leakage, memory leaks, or side effects across different test specs, you MUST explicitly clean up the global debug object in a `beforeEach` hook:
+In testing environments that define the `window` object (such as `jsdom` with Vitest), stores will automatically register their console debug commands on `window.__VITE_DEBUG__` during instantiation. To prevent test isolation leakage, memory leaks, or side effects across different test specs, you MUST explicitly clean up the global debug object in a `beforeEach` hook without using `any` casts:
 
 ```ts
 beforeEach(() => {
-  delete (window as any).__VITE_DEBUG__;
+  Reflect.deleteProperty(window, '__VITE_DEBUG__');
 });
 ```
 
-This guarantees a clean global state for each test run.
+This guarantees a clean global state for each test run while respecting `/domain-type-first` Zero-Any rules.
 
 ### 7. English IDs for Game Objects in Tests
 
 When writing unit tests or specs that verify items or item effects, you MUST always use the English item IDs (e.g., `'everstone'`, `'power_weight'`) instead of Spanish translation names (e.g., `'Piedra Eterna'`, `'Pesa Recia'`). The game logic and engine evaluate items strictly by their canonical English identifier keys, and passing Spanish names will cause test failures due to condition mismatch.
 
 ### 8. Medicine Target Checks in Simulations
-
-| `sim:e2e` | Dynamic sequential file-by-file execution of all `*.simulation.ts` under `scripts/e2e/` (halts on 1st failure) |
 
 When writing tests or configuring battle cheats, do not trigger healing or reanimation items on invalid targets. Any test or simulation script attempting to apply a potion to a Full HP Pokemon or a revive to a living Pokemon MUST fail, matching official game mechanics where it has no effect and does not consume the item.
 

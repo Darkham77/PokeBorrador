@@ -195,7 +195,7 @@ interface CertifiedBattleHistoryEntry {
 
 ### Pokémon Legality Mandate
 
-- Every Pokémon generated or evaluated in fuzzers, battle runners, replayers, and E2E simulations MUST be 100% legal according to Pokémon Showdown canonical Gen 9 rules and the Poké Vicio Pokédex database.
+- Every Pokémon generated or evaluated in fuzzers, battle runners, replayers, and E2E simulations MUST be 100% legal according to Pokémon Showdown canonical `ACTIVE_GENERATION` rules and the Poké Vicio Pokédex database (`ENABLED_POKEMON_IDS`).
 - Generating synthetic or illegal Pokémon (e.g. assigning non-native abilities like _Illuminate_ or _Rough Skin_ to Mew, assigning non-learnable moves, or assigning invalid genders) is **STRICTLY FORBIDDEN**.
 - All generated species must strictly use natural Showdown Dex abilities, biological genders matching species ratio rules, and valid learnsets across all fuzzers and simulators.
 - When testing an ability, move, or mechanic, the generator MUST dynamically select a canonical species from the Showdown Dex that naturally possesses that ability or move.

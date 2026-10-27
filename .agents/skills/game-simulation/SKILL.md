@@ -1,6 +1,6 @@
 ---
 name: game-simulation
-description: >
+description: >-
   MANDATORY orchestrator for all E2E game simulations, battle replay tests, fuzzer
   verifications, Showdown 1:1 parity source code audits, and simulation bugfixes across both Spanish and English.
   YOU MUST trigger this skill whenever the user or task mentions running simulations,
@@ -21,6 +21,10 @@ description: >
 # Game Simulation Orchestrator
 
 Orchestrates the game simulation, E2E pipeline, and Showdown 1:1 parity source code audit with a single goal: **make the game match what `@pkmn/sim` (Pokémon Showdown) says is correct.** Simulations and canonical Showdown code are the source of truth. `src/` must conform to them, never the reverse.
+
+> [!IMPORTANT]
+> **Architectural & Debugging Foundation (`@/architecture`)**:
+> All root-cause repairs during simulation failures MUST strictly enforce **`/architecture`** (the 6 Mandatory Design Pillars: `/domain-type-first`, `/clean-code`, `/dox-navigator`, `/ponytail`, `/auditor`, `/fallow`) and its Primary Debugging Guide **`/systematic-debugging`** (RED-GREEN First — Gate 1 Inviolable).
 
 ---
 

@@ -13,6 +13,8 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
 import { styleText } from 'node:util';
+import { isMainModule } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 
 const RAW_BASE = path.resolve(process.cwd(), '_raw-assets/public/assets/sprites');
 const RAW_ITEMS_DIR = path.join(RAW_BASE, 'items');
@@ -106,7 +108,16 @@ async function main() {
   console.log(styleText('cyan', '═══════════════════════════════════════════════════════\n'));
 }
 
-main().catch((err) => {
-  console.error(styleText('red', `\n💥 Error fatal: ${(err as Error).message}`));
-  process.exit(1);
+export const command = defineCommand({
+  meta: {
+    name: 'organize-item-sprites-by-tier',
+    description: 'Reubica sprites de ítems descargados en sus carpetas por tier de crafteo'
+  },
+  async run() {
+    await main();
+  }
 });
+
+if (isMainModule(import.meta.url)) {
+  runMain(command);
+}

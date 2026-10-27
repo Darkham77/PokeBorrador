@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { styleText } from 'node:util';
 import { defineCommand, runMain } from 'citty';
+import { serverCliArgs } from '../lib/supabaseClient.ts';
 import { TABLES_SCHEMA } from '../../src/logic/db/schema.ts';
 import { SHOP_ITEMS } from '../../src/data/inventory/items.ts';
 
@@ -495,11 +496,7 @@ export const command = defineCommand({
     description: 'Importador de respaldos a SQLite local'
   },
   args: {
-    server: {
-      type: 'string',
-      description: 'Nombre del perfil para importar su respaldo más reciente',
-      alias: 's'
-    },
+    ...serverCliArgs,
     file: {
       type: 'string',
       description: 'Ruta directa al archivo JSON de respaldo a importar',
@@ -507,9 +504,10 @@ export const command = defineCommand({
     }
   },
   async run({ args }) {
+    const rawTarget = args.target ? String(args.target).replace(/^(?:server|s)=/, '').trim() : undefined;
     await runImportBackupToSqlite({
-      server: args.server,
-      file: args.file
+      server: (args.server || rawTarget) as DisplayText | undefined,
+      file: args.file as AssetUri | undefined
     });
   }
 });

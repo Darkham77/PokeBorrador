@@ -1,6 +1,6 @@
 {
   "name": "pokemon-online",
-  "version": "0.6.17-build.20261027-000028",
+  "version": "0.6.18-build.20261027-133236",
   "private": true,
   "type": "module",
   "scripts": {
@@ -78,6 +78,7 @@
     "database:restore": "node --permission --experimental-strip-types --allow-fs-read=. --allow-net scripts/database/restore_supabase_db.ts",
     "database:upgrade-backup": "node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* scripts/database/upgrade_backup.ts",
     "database:local-import": "node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* scripts/database/import_backup_to_sqlite.ts",
+    "database:migrate-saves": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* scripts/database/migrate_backup_saves_to_showdown.ts",
     "database:admin": "node --permission --experimental-strip-types --allow-fs-read=. --allow-net scripts/maintenance/admin_supabase_users.ts",
     "database:diagnose-account": "node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* --allow-net scripts/maintenance/diagnose_account.ts",
     "database:diagnose-accounts": "node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* --allow-net scripts/maintenance/diagnose_account.ts all",
@@ -90,7 +91,9 @@
     "assets:download:items": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-net=raw.githubusercontent.com,play.pokemonshowdown.com,img.pokemondb.net,www.serebii.net scripts/assets/download_assets.ts items",
     "assets:download:medals": "node --permission --experimental-strip-types --allow-addons --allow-fs-read=. --allow-fs-write=. --allow-net=archives.bulbagarden.net scripts/assets/download_ranked_medals.ts",
     "assets:convert": "node --permission --experimental-strip-types --allow-worker --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/assets/convert_assets.ts",
+    "assets:convert:items": "node --permission --experimental-strip-types --allow-addons --allow-fs-read=* --allow-fs-write=* scripts/assets/convert_and_sync_item_sprites.ts",
     "assets:organize-tiers": "node --permission --experimental-strip-types --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/assets/organize_item_sprites_by_tier.ts",
+    "assets:optimize": "node --permission --experimental-strip-types --allow-worker --allow-addons --allow-fs-read=* --allow-fs-write=* scripts/assets/optimize_sprites.ts",
     "assets:audit:items": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* scripts/assets/audit_item_assets.ts",
     "sync:test": "node --experimental-strip-types scripts/maintenance/sync_to_test.ts",
     "dox:migrate": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* scripts/maintenance/migrate_dox_sections.ts",
@@ -265,7 +268,7 @@
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
-    "@francogp/auditor": "github:francogp/auditor#v10.2.3",
+    "@francogp/auditor": "github:francogp/auditor#v10.2.5",
     "@pkmn/sim": "^0.10.11",
     "@playwright/test": "^1.64.1",
     "@rolldown/binding-wasm32-wasi": "^1.2.9",

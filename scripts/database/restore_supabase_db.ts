@@ -25,7 +25,8 @@ import { defineCommand, runMain } from 'citty';
 import {
   buildDatabaseUrl,
   getValidatedServerConfigs,
-  resolveServerProfiles
+  resolveServerProfiles,
+  serverCliArgs
 } from '../lib/supabaseClient.ts';
 
 // Optimizar ejecución en ejecuciones sucesivas
@@ -674,11 +675,7 @@ export const command = defineCommand({
     description: 'Restaura un respaldo JSON en la base de datos Supabase'
   },
   args: {
-    server: {
-      type: 'string',
-      alias: 's',
-      description: 'Nombre del perfil de servidor objetivo'
-    },
+    ...serverCliArgs,
     file: {
       type: 'string',
       alias: 'f',
@@ -687,7 +684,7 @@ export const command = defineCommand({
   },
   async run({ args }) {
     await restoreSupabaseDb({
-      server: typeof args.server === 'string' ? args.server : undefined,
+      server: args.server || args.target,
       file: typeof args.file === 'string' ? args.file : undefined
     });
   }

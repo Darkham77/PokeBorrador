@@ -4,6 +4,7 @@
  * DOWNLOADS KANTO GYM BADGES FROM BULBAPEDIA ARCHIVES (Node.js 26+)
  */
 
+import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
@@ -114,7 +115,14 @@ async function main() {
   );
 }
 
-main().catch((err) => {
-  console.error(styleText('red', `\n💥 Fatal error: ${(err as Error).message}`));
-  process.exit(FAILURE_EXIT_CODE);
+export const command = defineCommand({
+  meta: {
+    name: 'download-badges',
+    description: 'Descarga las medallas de gimnasio de Kanto desde Bulbapedia Archives'
+  },
+  async run() {
+    await main();
+  }
 });
+
+runMain(command);

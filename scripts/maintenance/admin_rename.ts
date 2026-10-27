@@ -1,6 +1,7 @@
 import { isMainModule } from '@francogp/auditor';
 import { createClient, type PostgrestError } from '@supabase/supabase-js';
 import { defineCommand, runMain } from 'citty';
+import { parseUnmatchedArgs } from '../lib/cliHelpers.ts';
 
 export const command = defineCommand({
   meta: {
@@ -8,29 +9,32 @@ export const command = defineCommand({
     description: 'Herramienta administrativa para renombrar entrenadores en Supabase'
   },
   args: {
+    firstArg: {
+      type: 'positional',
+      required: false,
+      description: 'Usuario actual o par user=<id>'
+    },
+    secondArg: {
+      type: 'positional',
+      required: false,
+      description: 'Nuevo nombre o par name=<nombre>'
+    },
     user: {
       type: 'string',
       description: 'ID de usuario o nombre actual en Supabase',
       alias: 'u'
     },
-    target: {
-      type: 'string',
-      description: 'ID de usuario o nombre actual en Supabase',
-      alias: 't'
-    },
     name: {
       type: 'string',
       description: 'Nuevo nombre a asignar al entrenador',
       alias: 'n'
-    },
-    username: {
-      type: 'string',
-      description: 'Nuevo nombre a asignar al entrenador'
     }
   },
   async run({ args }) {
-    const targetUser = args.user || args.target;
-    const newName = args.name || args.username;
+    const { barePositionals, getParam } = parseUnmatchedArgs([args.firstArg, args.secondArg]);
+    const targetUser = args.user || getParam('user', 'u') || barePositionals[0];
+    const newName =
+      args.name || getParam('name', 'n') || getParam('username') || barePositionals[1];
 
     if (!targetUser || !newName) {
       console.log('Uso: npm run admin:rename user=<user_id_o_nombre_actual> name=<nuevo_nombre>');

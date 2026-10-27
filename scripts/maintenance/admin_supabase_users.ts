@@ -22,6 +22,7 @@ import { defineCommand, runMain } from 'citty';
 const ADMIN_TARGET_NODE_VERSION_LABEL = '26';
 import postgres from 'postgres';
 import { buildDatabaseUrl, getValidatedServerConfigs } from '../lib/supabaseClient.ts';
+import { parseUnmatchedArgs } from '../lib/cliHelpers.ts';
 
 // Optimizar ejecución en ejecuciones sucesivas
 enableCompileCache();
@@ -339,13 +340,21 @@ export const command = defineCommand({
     }
   },
   async run({ args }) {
+    const { getParam } = parseUnmatchedArgs(args._);
+    const serverArg = args.server || getParam('server', 's');
+    const actionArg = args.action || getParam('action', 'a');
+    const emailArg = args.email || getParam('email', 'e');
+    const passwordArg = args.password || getParam('password', 'p');
+    const newEmailArg = args['new-email'] || getParam('new-email');
+    const usernameArg = args.username || getParam('username', 'u');
+
     await adminSupabaseUsers({
-      serverArg: args.server,
-      actionArg: args.action,
-      emailArg: args.email,
-      passwordArg: args.password,
-      newEmailArg: args['new-email'],
-      usernameArg: args.username,
+      serverArg,
+      actionArg,
+      emailArg,
+      passwordArg,
+      newEmailArg,
+      usernameArg,
       isHelp: false
     });
   }

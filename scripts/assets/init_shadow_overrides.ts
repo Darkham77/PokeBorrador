@@ -1,4 +1,5 @@
 import type { DisplayText } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 /**
  * scripts/assets/init_shadow_overrides.ts
  *
@@ -72,7 +73,14 @@ async function main() {
   );
 }
 
-main().catch((err) => {
-  console.error('❌ Error initializing shadow overrides:', err);
-  process.exit(1);
+export const command = defineCommand({
+  meta: {
+    name: 'init-shadow-overrides',
+    description: 'Inicializa las coordenadas de sombras de sprites de Pokémon flotantes'
+  },
+  async run() {
+    await main();
+  }
 });
+
+runMain(command);

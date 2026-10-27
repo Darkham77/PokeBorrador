@@ -20,6 +20,7 @@ import path from 'node:path';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import { defineCommand, runMain } from 'citty';
+import { serverCliArgs } from '../lib/supabaseClient.ts';
 import { DatabaseSync } from 'node:sqlite';
 import { DATABASE_MIGRATIONS } from '../../src/logic/db/migrations_data.ts';
 import { splitSQLStatements, translatePostgresToSqlite } from '../../src/logic/db/sqlTranslator.ts';
@@ -326,11 +327,7 @@ export const command = defineCommand({
     description: 'Actualizador y normalizador de respaldos JSON a la última versión del juego'
   },
   args: {
-    server: {
-      type: 'string',
-      description: 'Nombre del perfil de servidor (ej: server_franco)',
-      alias: 's'
-    },
+    ...serverCliArgs,
     file: {
       type: 'string',
       description: 'Ruta directa al archivo JSON de respaldo',
@@ -338,8 +335,9 @@ export const command = defineCommand({
     }
   },
   async run({ args }) {
+    const rawTarget = args.target ? String(args.target).replace(/^(?:server|s)=/, '').trim() : undefined;
     await upgradeBackup({
-      server: args.server,
+      server: args.server || rawTarget,
       file: args.file
     });
   }

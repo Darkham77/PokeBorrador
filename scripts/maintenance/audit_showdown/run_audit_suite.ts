@@ -1,3 +1,5 @@
+import { isMainModule } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 import { audit4SeatCompatibility } from './audit_4seat_compatibility.ts';
 import { auditActiveGenSSoT } from './audit_active_gen_ssot.ts';
 import { auditCatchRateMath } from './audit_catch_rate_math.ts';
@@ -63,4 +65,16 @@ export function runFullAuditSuite() {
   console.log(JSON.stringify(report, null, 2));
 }
 
-runFullAuditSuite();
+export const command = defineCommand({
+  meta: {
+    name: 'run-audit-suite',
+    description: 'Suite completa de 21 herramientas de auditoría contra Pokémon Showdown'
+  },
+  run() {
+    runFullAuditSuite();
+  }
+});
+
+if (isMainModule(import.meta.url)) {
+  runMain(command);
+}

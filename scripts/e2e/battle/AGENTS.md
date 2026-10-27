@@ -27,8 +27,8 @@ QA / Automation Engineers.
 ## Verification
 
 - **Headless Replay (Recommended/Fast):** If you need to verify HP parity, FSM, combat states, or debug fuzzer combat logic errors, **NEVER** use Playwright. Use the headless replayer in Node.js that executes Showdown directly and runs in 1-2 seconds:
-  - Run a single case: `$env:TEST_CASE_ID="case-47212c07bc5d"; npm run sim:fuzzer:trace`
-  - Run multiple cases: `$env:TEST_CASE_ID="case-47212c07bc5d,case-006487488a68"; npm run sim:fuzzer:trace`
+  - Run a single case: `npm run sim:fuzzer:trace case-47212c07bc5d`
+  - Run multiple cases: `npm run sim:fuzzer:trace case-47212c07bc5d,case-006487488a68`
 - **E2E Simulations (Browser):** Use Playwright for flow regressions or verifying GSAP animations and UI:
   - All battle simulations: `npm run sim:e2e:battle`
   - Combat FSM and tactical scenarios: `npm run sim:e2e:combat` (Filter by batch: `$env:TEST_BATCH="21"; npm run sim:e2e:combat`)

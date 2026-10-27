@@ -18,7 +18,8 @@ import { isMainModule } from '@francogp/auditor';
  *   3. Relocate verified files to `_raw-assets/public/assets/sprites/items/`.
  *
  * Usage:
- *   node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-net=raw.githubusercontent.com,play.pokemonshowdown.com,img.pokemondb.net,www.serebii.net scripts/assets/download_assets.ts --items
+ *   npm run assets:download [items | pokemon | all]
+ *   npm run assets:download:items
  */
 
 import fs from 'node:fs/promises';
@@ -342,6 +343,11 @@ export const command = defineCommand({
     description: 'Descargador universal de assets y sprites'
   },
   args: {
+    target: {
+      type: 'positional',
+      description: 'Tipo de assets a descargar (items, pokemon, trainers, all)',
+      required: false
+    },
     pokemon: { type: 'boolean', description: 'Descargar sprites de Pokémon' },
     items: { type: 'boolean', description: 'Descargar sprites de ítems' },
     trainers: { type: 'boolean', description: 'Descargar sprites de entrenadores' },
@@ -349,11 +355,15 @@ export const command = defineCommand({
     limit: { type: 'string', description: 'Límite de especies de Pokémon' }
   },
   async run({ args }) {
-    const doAll =
-      Boolean(args.all) ||
-      (!args.pokemon && !args.items && !args.trainers);
-    const doItems = doAll || Boolean(args.items);
-    const doPokemon = doAll || Boolean(args.pokemon);
+    const rawTarget = typeof args.target === 'string' ? args.target.toLowerCase() : '';
+    const isTargetItems = rawTarget === 'items' || Boolean(args.items);
+    const isTargetPokemon = rawTarget === 'pokemon' || Boolean(args.pokemon);
+    const isTargetTrainers = rawTarget === 'trainers' || Boolean(args.trainers);
+    const isExplicitSubset = isTargetItems || isTargetPokemon || isTargetTrainers;
+
+    const doAll = Boolean(args.all) || rawTarget === 'all' || !isExplicitSubset;
+    const doItems = doAll || isTargetItems;
+    const doPokemon = doAll || isTargetPokemon;
     const pokemonLimit =
       typeof args.limit === 'string' ? parseInt(args.limit, 10) : TOTAL_POKEMON_SPECIES;
 

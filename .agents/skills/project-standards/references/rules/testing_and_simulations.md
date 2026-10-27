@@ -8,6 +8,7 @@
 >
 > 🛑 **Domain Boundaries & Redirection**:
 >
+> - For universal RED-GREEN First debugging (Gate 1 Inviolable), 4-Phase Reactive Triage, and Zero-Duplication / Clean Code rules ➔ See **`@/architecture`** (`/architecture` $\rightarrow$ `/systematic-debugging` and `/clean-code`).
 > - For step-by-step browser QA procedures and DevTools console commands ➔ See [Browser Testing Manual](../qa/browser_testing_manual.md).
 > - For battle engine execution details and Showdown parity ➔ See [Battle Mechanics Manual](../battle/battle_mechanics_manual.md).
 > - For full verification checklists and release gates ➔ See [Audit Checklist](../qa/audit_checklist.md).
@@ -29,7 +30,7 @@ Whenever ANY bug, regression, or state desynchronization occurs across the proje
    - You **MUST FIRST** create an isolated, self-contained unit test in `tests/node/` (pure Node logic) or `tests/unit/` (Vue/JSDOM components) that reproduces the failure deterministically in **RED** before writing or proposing any fix in `src/`.
    - The reproduction test MUST **extract and inline all failing data, seeds, and choice streams** (or use a dedicated static JSON fixture under `tests/fixtures/battle/`). Searching or referencing dynamic live fuzzer outputs is strictly forbidden because regenerated fuzzer runs invalidate temporary IDs.
    - **Dual Database Mandate**: If the bug touches persistence, SQL queries, schemas, database migrations, or DBRouter, the reproduction unit test MUST be written and executed across **ALL active database engines** (e.g. SQLite and PostgreSQL via `describeWithDatabase` from `tests/dbTestHelper.ts`) to reproduce the failure in RED and verify repair in GREEN on both engines.
-   - Run `npm run test:node -- <path_to_test>` (or `npm run test:unit -- <path_to_test>`) to confirm the deterministic RED failure.
+   - Run `npm run test:node <path_to_test>` (or `npm run test:unit <path_to_test>`) to confirm the deterministic RED failure.
 2. **Tier 2: Integrity & Integration Test**:
    - You MUST create or update an integration test under `tests/integration/` or `tests/node/` that validates contract boundaries, schema integrity, FSM state machine lifecycle transitions, store roundtrips (`serializeState` -> `validateAndSanitize` -> `updateState`), and `@pkmn/sim` Showdown engine parity.
    - For database-related logic, integrity tests MUST assert identical schema structures, constraint enforcement, and query behavior across both SQLite and PostgreSQL.

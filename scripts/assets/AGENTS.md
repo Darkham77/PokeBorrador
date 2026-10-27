@@ -24,20 +24,19 @@ Poké Vicio Development Team.
 
 ## Key Files
 
-- `convert_assets.ts`: Zero-config, multi-core WebP conversion pipeline reading `_raw-assets` and generating asset databases (`npm run assets:convert`).
-- `organize_item_sprites_by_tier.ts`: Re-tiering script that moves item sprites into `crafting/tier[0-3]/` based on `item.craftingTier` and synchronizes `items.json`.
-- `download_assets.ts`: Downloads missing official sprites from CDN/Bulbapedia/Serebii (`npm run assets:download:items`).
-- `download_ranked_medals.ts`: Downloads the 6 official rank medals from Bulbapedia Archives into `_raw-assets/public/assets/sprites/ranked_medals/` (`npm run assets:download:medals`).
-- `audit_item_assets.ts`: Compares database items against physical images in `public/assets/sprites/` to ensure zero missing assets (`npm run assets:audit:items`).
-- `audit_item_sprite_collisions.ts`: Scans `items.json` to detect duplicate sprite usages across items and emits structured warnings.
-- `optimize_sprites.ts`: Sprite optimization and compression.
-
-- `convert_and_sync_item_sprites.ts`: Module implementation.
-- `download_badges.ts`: Module implementation.
-- `fetch_sprites.ts`: Module implementation.
-- `init_shadow_overrides.ts`: Module implementation.
-- `recompile_feet_database.ts`: Module implementation.
-- `variantImageAnalyzer.ts`: Module implementation.
+- [`audit_item_assets.ts`](./audit_item_assets.ts): Compares database items against physical images in `public/assets/sprites/` to ensure zero missing assets (`npm run assets:audit:items`).
+- [`audit_item_sprite_collisions.ts`](./audit_item_sprite_collisions.ts): Scans `items.json` to detect duplicate sprite usages across items and emits structured warnings.
+- [`convert_and_sync_item_sprites.ts`](./convert_and_sync_item_sprites.ts): Item sprite conversion and JSON path synchronization (`npm run assets:convert:items`).
+- [`convert_assets.ts`](./convert_assets.ts): Zero-config, multi-core WebP conversion pipeline reading `_raw-assets` and generating asset databases (`npm run assets:convert`).
+- [`download_assets.ts`](./download_assets.ts): Downloads missing official sprites from CDN/Bulbapedia/Serebii (`npm run assets:download [items | pokemon | all]`).
+- [`download_badges.ts`](./download_badges.ts): Downloads gym badge illustrations and maps them into raw assets directory.
+- [`download_ranked_medals.ts`](./download_ranked_medals.ts): Downloads the 6 official rank medals from Bulbapedia Archives into `_raw-assets/public/assets/sprites/ranked_medals/` (`npm run assets:download:medals`).
+- [`fetch_sprites.ts`](./fetch_sprites.ts): Batch sprite downloader fetching animated and static Pokemon battle sprites.
+- [`init_shadow_overrides.ts`](./init_shadow_overrides.ts): Initializes baseline shadow override configurations for sprite rendering.
+- [`optimize_sprites.ts`](./optimize_sprites.ts): Sprite optimization and multi-core WebP compression (`npm run assets:optimize`).
+- [`organize_item_sprites_by_tier.ts`](./organize_item_sprites_by_tier.ts): Re-tiering script that moves item sprites into `crafting/tier[0-3]/` based on `item.craftingTier` and synchronizes `items.json`.
+- [`recompile_feet_database.ts`](./recompile_feet_database.ts): Recompiles feet coordinates and shadow offsets database from manual overrides (`npm run database:recompile-feet`).
+- [`variantImageAnalyzer.ts`](./variantImageAnalyzer.ts): Image analysis utility inspecting alpha channels and visual boundaries for sprite alignment.
 
 ## Work Guidance
 

@@ -1,11 +1,21 @@
 ---
 name: env-multi-server-parser
-description: Interprets, parses, and transforms environment variables from a unified master .env file containing multi-server grouped keys (SERVER_<profile>_<VAR>) and global settings (DOCKER_*). USE THIS SKILL WHENEVER the user requests server configuration, Supabase credential management, generating environment-specific .env files, modifying docker-compose.yml, or creating/executing deployment automation scripts (e.g., setup_supabase.ts), even if the .env file is not explicitly mentioned.
+description: >-
+  Interprets, parses, and transforms environment variables from a unified master .env file
+  containing multi-server grouped keys (SERVER_<profile>_<VAR>) and global settings (DOCKER_*).
+  USE THIS SKILL WHENEVER the user requests server configuration, Supabase credential management,
+  generating environment-specific .env files, compiling servers.local.json (npm run servers:configure),
+  modifying docker-compose.yml, or creating/executing deployment automation scripts (e.g., setup_supabase.ts),
+  even if the .env file is not explicitly mentioned.
 ---
 
 # Multi-Server Environment Interpreter & Parser (`.env`)
 
 This skill defines the standards and procedures for AI agents to correctly interpret the project's unified master `.env` file and transform its data for clean injection into server configurations, Docker containers, and automation scripts.
+
+> [!IMPORTANT]
+> **Universal Architecture & Official Tools Priority (`@/architecture`)**:
+> All environment scripts and file operations MUST strictly obey **`/architecture`** (Core Invariants #10, #11, and #16): use Node.js 26+ native standard library modules (`node:fs`, `node:path`), standardize CLI arguments exclusively on **`citty`** (`citty@^0.2.2`), and always prioritize the official SSoT script `npm run servers:configure` (`scripts/maintenance/configure_official_servers.ts`) over ad-hoc parsers.
 
 ## 1. Context & Master `.env` Architecture
 

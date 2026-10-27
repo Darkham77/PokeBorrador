@@ -13,7 +13,7 @@ QA / Core Engine Team.
 
 ## Key Files
 
-- `validate_certified_cases.ts`: Module implementation.
+- [`validate_certified_cases.ts`](./validate_certified_cases.ts): Validates schema integrity and format of certified fuzzer cases.
 
 ## Work Guidance
 

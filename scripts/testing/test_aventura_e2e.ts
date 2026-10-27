@@ -1,4 +1,6 @@
 import { chromium, type Page } from '@playwright/test';
+import { isMainModule } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 
 interface IssueRecord {
   readonly type: 'pageerror' | 'console-error' | 'failed-request' | 'unhandled-rejection';
@@ -337,4 +339,16 @@ async function runTestAventuraSuite(): Promise<void> {
   }
 }
 
-runTestAventuraSuite();
+export const command = defineCommand({
+  meta: {
+    name: 'test-aventura-e2e',
+    description: 'Comprobación E2E headless de vistas y selectores ID de test_aventura'
+  },
+  async run() {
+    await runTestAventuraSuite();
+  }
+});
+
+if (isMainModule(import.meta.url)) {
+  runMain(command);
+}

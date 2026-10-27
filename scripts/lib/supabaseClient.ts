@@ -279,30 +279,66 @@ export function parseServerArguments(
   return serverArg ? [serverArg] : baseProfiles;
 }
 
-export interface ServerCliOptions {
+export interface ServerCliArgs {
   server?: string;
+  target?: string;
   all?: boolean;
+  _?: string[];
+  [key: string]: unknown;
 }
 
+export type ServerCliOptions = ServerCliArgs;
+
+export const serverCliArgs = {
+  server: {
+    type: 'string' as const,
+    alias: 's',
+    description: 'Nombre del perfil de servidor (ej: server_franco, cloud)'
+  },
+  target: {
+    type: 'positional' as const,
+    required: false,
+    description: 'Perfil de servidor objetivo o "all"'
+  },
+  all: {
+    type: 'boolean' as const,
+    alias: 'a',
+    description: 'Aplicar la operación a todos los servidores configurados'
+  }
+};
+
 export function resolveServerProfiles(
-  options: ServerCliOptions,
+  args: ServerCliArgs,
   baseProfiles: string[],
   allAvailable: string[]
 ): string[] {
-  if (options.all || options.server === 'all') {
+  const rawInput =
+    args.server ||
+    args.target ||
+    (Array.isArray(args._) && args._.length > 0 ? String(args._[0]) : undefined);
+
+  const cleanInput =
+    typeof rawInput === 'string'
+      ? rawInput.replace(/^(?:server|s)=/, '').trim()
+      : undefined;
+
+  const isAll = Boolean(args.all || cleanInput === 'all' || args.server === 'all');
+
+  if (isAll) {
     return baseProfiles;
   }
-  if (options.server) {
-    const s = options.server;
-    if (allAvailable.includes(s) || baseProfiles.includes(s)) {
-      return [s];
+
+  if (cleanInput) {
+    if (allAvailable.includes(cleanInput) || baseProfiles.includes(cleanInput)) {
+      return [cleanInput];
     }
     console.error(
-      styleText('red', `❌ Error: El perfil de servidor "${s}" no existe en el archivo .env.`)
+      styleText('red', `❌ Error: El perfil de servidor "${cleanInput}" no existe en el archivo .env.`)
     );
     console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
     process.exit(1);
   }
+
   console.log(
     styleText(
       'yellow',

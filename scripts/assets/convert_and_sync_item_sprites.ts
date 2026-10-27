@@ -5,9 +5,10 @@
  * 2. Updates `src/data/inventory/items.json` so every item points to its dedicated sprite path `items/<id>`.
  *
  * Usage:
- *   node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/assets/convert_and_sync_item_sprites.ts
+ *   npm run assets:convert:items
  */
 
+import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs/promises';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -85,7 +86,14 @@ async function main() {
   console.log(styleText('cyan', '═══════════════════════════════════════════════════════\n'));
 }
 
-main().catch((err) => {
-  console.error(styleText('red', `\n💥 Error fatal: ${(err as Error).message}`));
-  process.exit(1);
+export const command = defineCommand({
+  meta: {
+    name: 'convert-and-sync-item-sprites',
+    description: 'Convierte sprites de ítems a WebP y sincroniza las rutas en items.json'
+  },
+  async run() {
+    await main();
+  }
 });
+
+runMain(command);

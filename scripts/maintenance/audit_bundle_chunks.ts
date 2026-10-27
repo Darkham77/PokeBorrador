@@ -1,4 +1,5 @@
 import type { DisplayText } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -215,4 +216,26 @@ function auditBundle(): void {
   }
 }
 
-auditBundle();
+export const command = defineCommand({
+  meta: {
+    name: 'audit-bundle-chunks',
+    description: 'Auditor de tamaño de chunks y cuellos de botella del bundle de producción'
+  },
+  args: {
+    stats: {
+      type: 'string',
+      description: 'Ruta al archivo bundle_stats.html',
+      default: ''
+    },
+    dist: {
+      type: 'string',
+      description: 'Ruta al directorio dist/assets',
+      default: ''
+    }
+  },
+  run() {
+    auditBundle();
+  }
+});
+
+runMain(command);

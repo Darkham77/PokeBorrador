@@ -1,47 +1,50 @@
 ---
 name: game-development
-description: Game development orchestrator. YOU MUST use this skill whenever the user asks to build a game, game design, multiplayer networking, sprites, 2D/3D development, or anything related to game engines and mechanics. Routes to platform-specific references based on project needs.
+description: >-
+  Game development orchestrator for Poké Vicio. Use whenever the user asks to design or build game
+  mechanics, 2D sprites, tilemaps, atmospheric weather effects, adaptive game audio, multiplayer
+  networking, or game UI patterns. Delegates universal software architecture to /architecture and
+  Poké Vicio domain rules to /project-standards, while routing to specialized game design, art,
+  audio, and web-game references.
 ---
 
 # Game Development
 
-> **Orchestrator skill** that provides core principles and routes to specialized sub-skills.
+> **Orchestrator skill** that provides core game engineering principles and routes to specialized sub-skills.
 
 ---
 
 ## When to Use This Skill
 
-You are working on a game development project. This skill teaches the PRINCIPLES of game development and directs you to the right sub-skill based on context.
+You are working on **Poké Vicio** (a hybrid retro-modern 2D web video game built with Vue 3, Pinia, GSAP, and `@pkmn/sim`).
 
 > [!IMPORTANT]
-> If you are working on **Poké Vicio**, you MUST additionally consult the [Battle Mechanics Manual](../project-standards/references/battle/battle_mechanics_manual.md) for engine and gameplay rules.
+> **Mandatory Architectural & Domain Governance**:
+>
+> 1. Always invoke and enforce **`/architecture`** (`@/architecture`) for the 6 Mandatory Design Pillars (`/domain-type-first`, `/clean-code`, `/dox-navigator`, `/ponytail`, `/auditor`, `/fallow`) and `/systematic-debugging`.
+> 2. Consult [`/project-standards`](../project-standards/SKILL.md) and the [Battle Mechanics Manual](../project-standards/references/battle/battle_mechanics_manual.md) for Poké Vicio's GSAP zero-timer animations, 4-seat Showdown harness, and engine rules.
 
 ---
 
 ## Sub-Skill Routing
 
-### Platform Selection
+### Platform & Dimension Selection
 
-| If the game targets...              | Use Sub-Skill             |
-| :---------------------------------- | :------------------------ |
-| Web browsers (HTML5, Canvas, WebGL) | `references/web-games.md` |
-
-### Dimension Selection
-
-| If the game is...      | Use Sub-Skill            |
-| :--------------------- | :----------------------- |
-| 2D (sprites, tilemaps) | `references/2d-games.md` |
-| 3D (meshes, shaders)   | `references/3d-games.md` |
+| If the task targets...                 | Use Reference             |
+| :------------------------------------- | :------------------------ |
+| Web browsers (HTML5, Canvas, WebGL/GPU) | [web-games.md](./references/web-games.md) |
+| 2D games (sprites, tilemaps, pixel art) | [2d-games.md](./references/2d-games.md)   |
+| 3D reference patterns (if applicable)   | [3d-games.md](./references/3d-games.md)   |
 
 ### Specialty Areas
 
-| If you need...                          | Use Sub-Skill                       |
-| :-------------------------------------- | :---------------------------------- |
-| GDD, balancing, player psychology       | `references/game-design.md`         |
-| Multiplayer, networking                 | `references/multiplayer.md`         |
-| Visual style, asset pipeline, animation | `references/game-art.md`            |
-| Atmospheric & Weather Effects           | `references/atmospheric_effects.md` |
-| Sound design, music, adaptive audio     | `references/game-audio.md`          |
+| If you need...                          | Use Reference                                           |
+| :-------------------------------------- | :------------------------------------------------------ |
+| GDD, balancing, player psychology       | [game-design.md](./references/game-design.md)           |
+| Multiplayer, networking                 | [multiplayer.md](./references/multiplayer.md)           |
+| Visual style, asset pipeline, animation | [game-art.md](./references/game-art.md)                 |
+| Atmospheric & Weather Effects           | [atmospheric_effects.md](./references/atmospheric_effects.md) |
+| Sound design, music, adaptive audio     | [game-audio.md](./references/game-audio.md)             |
 
 ---
 

@@ -5,9 +5,11 @@
  * without performing expensive image or WebP asset conversions.
  */
 
+import { isMainModule } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 import { regenerateFeetDatabase } from './helpers/catalogGenerators.ts';
 
-async function main() {
+export async function recompileFeetDatabase(): Promise<void> {
   console.log('⚡ Iniciando recompilación rápida de base de datos estática de pies y sombras...');
   await regenerateFeetDatabase((progress, message) => {
     console.log(`[${progress}%] ${message}`);
@@ -15,7 +17,16 @@ async function main() {
   console.log('✅ Recompilación completada con éxito.');
 }
 
-main().catch((err) => {
-  console.error('❌ Error recompilando base de datos de pies:', err);
-  process.exit(1);
+export const command = defineCommand({
+  meta: {
+    name: 'recompile-feet-database',
+    description: 'Recompila la base de datos estática de pies y sombras'
+  },
+  async run() {
+    await recompileFeetDatabase();
+  }
 });
+
+if (isMainModule(import.meta.url)) {
+  runMain(command);
+}

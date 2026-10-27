@@ -252,6 +252,11 @@ export const command = defineCommand({
     description: 'Auditoría de imágenes de ítems contra archivos físicos en public/'
   },
   args: {
+    target: {
+      type: 'positional',
+      required: false,
+      description: 'Opción posicional opcional (ej: summary)'
+    },
     output: {
       type: 'string',
       alias: 'o',
@@ -264,6 +269,7 @@ export const command = defineCommand({
     }
   },
   async run({ args }) {
+    const isSummary = Boolean(args.summary || args.target === 'summary');
     console.log(styleText('bold', '\n--- 🔎 ITEM IMAGE ASSETS AUDIT ---'));
 
     const publicDir = path.resolve(process.cwd(), 'public');
@@ -297,7 +303,7 @@ export const command = defineCommand({
     console.log('\n════════════════════════════════════════════════');
 
     const allMissing = results.filter((r) => !r.found);
-    printMissingItemsDetail(allMissing, Boolean(args.summary));
+    printMissingItemsDetail(allMissing, isSummary);
 
     if (args.output) {
       const outputPath = path.resolve(process.cwd(), String(args.output));

@@ -13,6 +13,7 @@ Architecture & DevOps Engineers.
 
 ## Key Files
 
+- [`cliHelpers.ts`](./cliHelpers.ts): Shared Single Source of Truth for normalizing Citty CLI arguments, unmatched positionals, and key=value syntax.
 - [`supabaseClient.ts`](./supabaseClient.ts): Multi-server Supabase connection and environment resolution helper.
 
 ## Work Guidance

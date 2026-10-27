@@ -28,7 +28,7 @@ Testing / QA Engineers.
 
 ## Verification
 
-- `npm run test:node -- test_aventura/tests/map/` must pass 100% with exit code 0.
+- `npm run test:node test_aventura/tests/map/` must pass 100% with exit code 0.
 
 ## Child DOX Index
 

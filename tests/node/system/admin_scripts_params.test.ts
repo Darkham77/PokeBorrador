@@ -62,7 +62,7 @@ describe('Admin & Maintenance Scripts CLI Parameters & Help', () => {
         stdio: ['ignore', 'pipe', 'pipe']
       }
     );
-    expect(output).toContain('npm run supabase:manage [command=[comando]]');
+    expect(output).toContain('USAGE setup-supabase');
     expect(output).toContain('list');
     expect(output).toContain('generate');
   });

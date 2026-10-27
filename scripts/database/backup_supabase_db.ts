@@ -21,7 +21,12 @@ import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import postgres from 'postgres';
 import { defineCommand, runMain } from 'citty';
-import { readAndParseEnv, buildDatabaseUrl, resolveServerProfiles } from '../lib/supabaseClient.ts';
+import {
+  readAndParseEnv,
+  buildDatabaseUrl,
+  resolveServerProfiles,
+  serverCliArgs
+} from '../lib/supabaseClient.ts';
 
 enableCompileCache();
 
@@ -276,23 +281,9 @@ export const command = defineCommand({
     name: 'backup-supabase-db',
     description: 'Descarga un respaldo completo en formato JSON de la base de datos Supabase'
   },
-  args: {
-    server: {
-      type: 'string',
-      alias: 's',
-      description: 'Nombre del perfil de servidor objetivo'
-    },
-    all: {
-      type: 'boolean',
-      alias: 'a',
-      description: 'Aplica la operación a todos los servidores del .env'
-    }
-  },
+  args: serverCliArgs,
   async run({ args }) {
-    await backupSupabaseDb({
-      server: typeof args.server === 'string' ? args.server : undefined,
-      all: Boolean(args.all)
-    });
+    await backupSupabaseDb(args);
   }
 });
 if (isMainModule(import.meta.url)) {
