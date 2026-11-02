@@ -123,7 +123,8 @@ export function findPathAStar(
   pathGrid: boolean[][],
   allowBridges: boolean,
   excludedNodeZones: { x1: number; y1: number; x2: number; y2: number }[],
-  isOceanGrid?: readonly (readonly boolean[])[]
+  isOceanGrid?: readonly (readonly boolean[])[],
+  allowSand = true
 ): { path: RouteWaypoint[]; isWaterCrossing: boolean } | null {
   const W = continentMap.width;
   const H = continentMap.height;
@@ -176,6 +177,10 @@ export function findPathAStar(
 
       // Determine step cost
       let cost = 1.0;
+
+      if (!allowSand && cell.terrain === 'sand') {
+        continue;
+      }
 
       // Traversing already existing path encourages merging into trunk routes
       if (pathGrid[ny]![nx]) {

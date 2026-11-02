@@ -443,6 +443,91 @@ const NON_LAND_TERRAINS: ReadonlySet<NonLandTerrain> = new Set<NonLandTerrain>(
   NON_LAND_TERRAIN_LIST
 );
 
+const PERIMETER_BOULEVARD_THRESHOLD = 0.75 as const;
+const PERIMETER_RUSTIC_FENCE_THRESHOLD = 0.25 as const;
+const PERIMETER_HEDGE_THRESHOLD = 0.5 as const;
+
+function placeSettlementPerimeterBarriers(
+  node: POINode,
+  bounds: { bx: number; by: number; W: number; H: number },
+  bMask: ReadonlySet<string>,
+  streetSet: ReadonlySet<string>,
+  plazaSet: ReadonlySet<string>,
+  doorstepSet: ReadonlySet<string>,
+  isCellLand: (x: number, y: number) => boolean,
+  addProp: (type: UrbanPropType, x: number, y: number, prefab: string) => void
+): void {
+  // Only inland metropolis and large cities generate formal outer perimeter boundaries
+  if (node.type !== 'metropolis' && node.type !== 'city') return;
+  const isPureIsland =
+    /island|canela|cinnabar|isla/i.test(node.id) ||
+    /isla|island/i.test(node.name) ||
+    node.terrainPreference === 'coast_water';
+  if (isPureIsland) return;
+
+  const { bx, by, W, H } = bounds;
+  const seedHash = Math.abs(Math.sin((bx * 47 + by * 89) * 0.1));
+
+  // Style 3 (seedHash >= PERIMETER_BOULEVARD_THRESHOLD): Open boulevard with curbs only (no artificial fence)
+  if (seedHash >= PERIMETER_BOULEVARD_THRESHOLD) return;
+
+  let hPrefab = 'poke_fence_white_h_mid.png';
+  let vPrefab = 'poke_fence_white_v_left.png';
+
+  if (seedHash < PERIMETER_RUSTIC_FENCE_THRESHOLD) {
+    // Rustic wooden fence
+    hPrefab = 'poke_fence_wood_h.png';
+    vPrefab = 'poke_fence_wood_v.png';
+  } else if (seedHash < PERIMETER_HEDGE_THRESHOLD) {
+    // Trimmed green hedge bushes
+    hPrefab = 'poke_bush_round.png';
+    vPrefab = 'poke_bush_round.png';
+  }
+
+  // Gateway clearance: keep 4-tile wide opening at every avenue/gateway exit
+  const isNearGateway = (x: number, y: number): boolean => {
+    if (!node.gateways) return false;
+    for (const gw of node.gateways) {
+      if (Math.abs(x - gw.x) <= 2 && Math.abs(y - gw.y) <= 2) return true;
+    }
+    return false;
+  };
+
+  const canPlacePerimeter = (x: number, y: number): boolean => {
+    const key = `${x}_${y}`;
+    if (bMask.has(key) || streetSet.has(key) || plazaSet.has(key) || doorstepSet.has(key)) {
+      return false;
+    }
+    if (isNearGateway(x, y)) return false;
+    return isCellLand(x, y);
+  };
+
+  // North perimeter (y = by)
+  for (let x = bx; x < bx + W; x++) {
+    if (canPlacePerimeter(x, by)) {
+      addProp('fence_h', x, by, hPrefab);
+    }
+  }
+  // South perimeter (y = by + H - 1)
+  for (let x = bx; x < bx + W; x++) {
+    if (canPlacePerimeter(x, by + H - 1)) {
+      addProp('fence_h', x, by + H - 1, hPrefab);
+    }
+  }
+  // West perimeter (x = bx)
+  for (let y = by + 1; y < by + H - 1; y++) {
+    if (canPlacePerimeter(bx, y)) {
+      addProp('fence_v', bx, y, vPrefab);
+    }
+  }
+  // East perimeter (x = bx + W - 1)
+  for (let y = by + 1; y < by + H - 1; y++) {
+    if (canPlacePerimeter(bx + W - 1, y)) {
+      addProp('fence_v', bx + W - 1, y, vPrefab);
+    }
+  }
+}
+
 /**
  * Master generator for organic heterogeneous settlement layouts.
  */
@@ -1361,6 +1446,18 @@ export function generateOrganicCityLayout(
           (p) => !bMask.has(`${p.x}_${p.y}`) && !avenueKeys.has(`${p.x}_${p.y}`)
         );
 
+    const cleanPlazaSet = new Set(cleanPlazas.map((p) => `${p.x}_${p.y}`));
+    placeSettlementPerimeterBarriers(
+      node,
+      { bx, by, W, H },
+      bMask,
+      avenueKeys,
+      cleanPlazaSet,
+      reservedDoorsteps,
+      isCellLand,
+      addProp
+    );
+
     const curbs = computeUrbanCurbs({
       pavedPlazaCells: cleanPlazas,
       internalStreets: cleanStreets,
@@ -1718,6 +1815,17 @@ export function generateOrganicCityLayout(
       cleanPlazas.push(p);
     }
   }
+
+  placeSettlementPerimeterBarriers(
+    node,
+    { bx, by, W, H },
+    bMask,
+    streetSet,
+    plazaSeen,
+    reservedDoorsteps,
+    isCellLand,
+    addProp
+  );
 
   const curbs = computeUrbanCurbs({
     pavedPlazaCells: cleanPlazas,

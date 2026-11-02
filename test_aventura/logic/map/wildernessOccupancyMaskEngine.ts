@@ -73,6 +73,9 @@ function blockPoiLayoutElements(
   }
   if (poi.urbanLayout?.props) {
     for (const p of poi.urbanLayout.props) {
+      if (poi.type === 'route_gate' && (p.type === 'fence_h' || p.type === 'fence_v')) {
+        continue;
+      }
       if (p.y >= 0 && p.y < height && p.x >= 0 && p.x < width) {
         targets.treeBlocked[p.y]![p.x] = true;
         targets.urbanBlocked[p.y]![p.x] = true;

@@ -53,6 +53,7 @@ export const ROUTE_GATE_CORRIDOR_HALF_WIDTH = 2 as const;
 export const ROADSIDE_PROP_CLEARANCE_DEFAULT = 2.0 as const;
 export const ROADSIDE_SIGNPOST_CLEARANCE = 3.0 as const;
 export const ROADSIDE_BOULDER_CLEARANCE = 2.5 as const;
+export const CLIFF_BASE_BOULDER_CLEARANCE = 4.5 as const;
 
 export const CLIFF_BASE_BOULDER_NOISE_THRESHOLD = 0.38 as const;
 export const CLIFF_BOULDER_NOISE_SCALE = 0.28 as const;

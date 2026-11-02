@@ -683,3 +683,11 @@ npm run database:admin server=server_franco action=promote email=user@example.co
 ```
 
 > [!IMPORTANT] Usernames must be unique. If a username is already taken, the tool catches the `UNIQUE` constraint violation and outputs a clear warning in the console.
+
+### 9. 🗺️ Continental Studio & Procedural Adventure Engine (`test_aventura`)
+
+The project includes an advanced procedural 2D world generation suite and map studio located in `test_aventura/`:
+
+- **Continental World Generation**: Web Worker-driven procedural synthesis of full continental regions (up to 400x400 cells) with multi-tier mountain massifs, inland lakes, sandy coastlines, organic settlements, and Hamiltonian route topologies.
+- **Autotile Healing Brush**: A model-first, Lyapunov-convergent autotile healing engine and pattern defect scanner that detects and repairs boundary defects across terrain, elevation, and road networks.
+- **Regional Studio**: Interactive canvas viewport with pan, zoom, layer inspection, and defect diagnostics tools.

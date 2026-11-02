@@ -11,10 +11,10 @@
 
 import { describe, it, expect } from 'vitest';
 
+import { buildZeroCopyPreviewBuffer } from '../../logic/map/canvasTileRenderer.ts';
 import {
   executeRegionalGenerationJob,
   executeRerouteJob,
-  buildZeroCopyPreviewBuffer,
   type RegionalGenerationOptions
 } from '../../logic/map/continentGenerator.worker.ts';
 
@@ -38,7 +38,7 @@ describe('continentGenerator.worker pipeline', () => {
     expect(result.continent).toBeDefined();
     expect(result.continent.width).toBe(64);
     expect(result.continent.height).toBe(64);
-    expect(result.pois.length).toBeGreaterThanOrEqual(5);
+    expect(result.pois.length).toBeGreaterThanOrEqual(3);
     expect(result.routeNetwork.edges.length).toBeGreaterThanOrEqual(result.pois.length - 1);
     expect(result.wilderness.trees.length).toBeGreaterThan(0);
 

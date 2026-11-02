@@ -15,6 +15,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { isValidHealingDomain } from '../../logic/map/autotileHealingEngine.ts';
 import { useRegionalContinentStudioStore } from '../../stores/continentStudioStore.ts';
 
 defineProps<{
@@ -54,6 +55,13 @@ function handleProfileChange(e: Event): void {
 function handleCitySelect(e: Event): void {
   const select = e.target as HTMLSelectElement;
   store.selectPOI(select.value || null);
+}
+
+function handleDomainChange(e: Event): void {
+  const select = e.target as HTMLSelectElement;
+  if (isValidHealingDomain(select.value)) {
+    store.setHealingBrushDomain(select.value);
+  }
 }
 
 function handleExportSvg(): void {
@@ -178,6 +186,59 @@ function handleJsonImport(e: Event): void {
       >
         <span class="emoji-inline">↷</span> Rehacer
       </button>
+    </div>
+
+    <!-- Group: Autotile Healing Brush -->
+    <div class="toolbar-group healing-group">
+      <button
+        id="btn-regional-healing-brush"
+        type="button"
+        class="tool-btn"
+        :class="{ active: store.isHealingBrushActive }"
+        :title="
+          store.isHealingBrushActive
+            ? 'Desactivar Pincel Sanador'
+            : 'Activar Pincel Sanador (Clic o arrastrar en el mapa)'
+        "
+        @click="store.toggleHealingBrush()"
+      >
+        <span class="emoji-inline">🩹</span>
+        {{ store.isHealingBrushActive ? 'Sanador Activo' : 'Pincel Sanador' }}
+      </button>
+
+      <select
+        v-if="store.isHealingBrushActive"
+        id="select-healing-domain"
+        class="healing-select"
+        aria-label="Dominio del pincel sanador"
+        :value="store.healingBrushDomain"
+        @change="handleDomainChange"
+      >
+        <option value="auto">🪄 Auto-Detectar</option>
+        <option value="path">🛤️ Caminos</option>
+        <option value="mountain">⛰️ Montañas</option>
+        <option value="water">🌊 Agua / Costas</option>
+        <option value="macro_biome">🌿 Biomas</option>
+      </select>
+
+      <button
+        id="btn-regional-heal-all"
+        type="button"
+        class="tool-btn"
+        :disabled="isRenderingTiles || store.isGenerating || store.detectedDefectCount === 0"
+        :title="
+          store.detectedDefectCount > 0
+            ? `Reparar automáticamente ${store.detectedDefectCount} defectos de autotile en todo el mapa`
+            : '0 defectos detectados en el mapa actual'
+        "
+        @click="store.healEntireMapDefects()"
+      >
+        <span class="emoji-inline">✨</span> Auto-Sanar ({{ store.detectedDefectCount }})
+      </button>
+
+      <span v-if="store.lastHealedReport" class="healing-toast" :title="store.lastHealedReport">
+        {{ store.lastHealedReport }}
+      </span>
     </div>
 
     <!-- Group: City Editor Direct Selector -->
@@ -322,6 +383,22 @@ function handleJsonImport(e: Event): void {
   backdrop-filter: Blur(8px);
   box-shadow: $shadow-md;
 
+  @media (width <= 768px) {
+    top: 8px;
+    right: 8px;
+    left: 8px;
+    flex-wrap: nowrap;
+    gap: $spacing-xs;
+    max-width: calc(100dvw - 16px);
+    padding: 4px 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
   .toolbar-group {
     display: flex;
     align-items: center;
@@ -372,6 +449,39 @@ function handleJsonImport(e: Event): void {
     border: 1px solid Rgb(56 189 248 / 25%);
     border-radius: $radius-md;
     background: Rgb(56 189 248 / 8%);
+  }
+
+  .healing-group {
+    padding: 2px 8px;
+    border: 1px solid Rgb(16 185 129 / 30%);
+    border-radius: $radius-md;
+    background: Rgb(16 185 129 / 8%);
+  }
+
+  .healing-select {
+    padding: 3px 8px;
+    border: 1px solid Rgb(16 185 129 / 40%);
+    border-radius: $radius-md;
+    background: var(--slate-900);
+    color: var(--slate-50);
+    font-size: var(--font-12);
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+
+    &:focus {
+      border-color: var(--emerald-400);
+    }
+  }
+
+  .healing-toast {
+    max-width: 220px;
+    color: var(--emerald-300);
+    font-size: var(--font-11);
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .city-selector-label {
@@ -439,6 +549,12 @@ function handleJsonImport(e: Event): void {
     &:disabled {
       opacity: 0.4;
       cursor: not-allowed;
+    }
+
+    &.active {
+      background: Rgb(16 185 129 / 30%);
+      color: var(--emerald-300);
+      border-color: var(--emerald-400);
     }
 
     &.primary {

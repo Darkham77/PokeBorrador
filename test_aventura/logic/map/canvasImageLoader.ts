@@ -93,8 +93,19 @@ function loadTileImage(filename: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const primaryUrl = resolveTileUrl(filename);
     const img = new Image();
+    img.decoding = 'async';
     img.src = primaryUrl;
     img.onload = (): void => {
+      if (typeof img.decode === 'function') {
+        img
+          .decode()
+          .catch(() => undefined)
+          .finally(() => {
+            imageCache.set(filename, img);
+            resolve(img);
+          });
+        return;
+      }
       imageCache.set(filename, img);
       resolve(img);
     };

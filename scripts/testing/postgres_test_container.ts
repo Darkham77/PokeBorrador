@@ -215,6 +215,9 @@ export async function tryStartDockerDaemon(dockerBin: string): Promise<boolean> 
  * Inspects Docker availability and readiness.
  */
 export async function inspectDocker(): Promise<DockerDiscovery> {
+  if (process.env.SKIP_DOCKER || process.env.NO_DOCKER) {
+    return { dockerBin: null, isRunning: false };
+  }
   const dockerBin = findDockerBinary();
   if (!dockerBin) {
     return { dockerBin: null, isRunning: false };

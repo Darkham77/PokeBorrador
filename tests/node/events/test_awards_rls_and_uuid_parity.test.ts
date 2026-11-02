@@ -19,6 +19,7 @@ describe('Public Awards and Claim Queue RLS and Privileges Parity', () => {
     process.env.TEST_POSTGRES_URL || 'postgres://postgres:postgres@localhost:54329/postgres';
 
   beforeAll(async () => {
+    if (!process.env.TEST_POSTGRES_URL) return;
     const postgres = (await import('postgres')).default;
     const sql = postgres(dbUrl, { max: 1, onnotice: () => {} });
     try {
@@ -36,6 +37,7 @@ describe('Public Awards and Claim Queue RLS and Privileges Parity', () => {
   });
 
   it('allows authenticated role to insert own award in public.awards', async () => {
+    if (!process.env.TEST_POSTGRES_URL) return;
     const postgres = (await import('postgres')).default;
     const sql = postgres(dbUrl, { max: 1, onnotice: () => {} });
     const testAwardId = 'b2222222-3333-4444-5555-666666666666';
@@ -81,6 +83,7 @@ describe('Public Awards and Claim Queue RLS and Privileges Parity', () => {
   });
 
   it('allows authenticated role to insert and claim own item in public.claim_queue', async () => {
+    if (!process.env.TEST_POSTGRES_URL) return;
     const postgres = (await import('postgres')).default;
     const sql = postgres(dbUrl, { max: 1, onnotice: () => {} });
     const testClaimId = 'c3333333-4444-5555-6666-777777777777';

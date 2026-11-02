@@ -1,13 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { defineAsyncComponent, ref } from 'vue';
 
-import AdventureGraphStudioView from './views/AdventureGraphStudioView.vue';
-import AssetAtlasInspectorView from './views/AssetAtlasInspectorView.vue';
-import AutotileStudioView from './views/AutotileStudioView.vue';
-import KantoAdventureView from './views/KantoAdventureView.vue';
-import LocalTileStudioView from './views/LocalTileStudioView.vue';
-import MapStudioView from './views/MapStudioView.vue';
-import RegionalContinentStudioView from './views/RegionalContinentStudioView.vue';
+const AdventureGraphStudioView = defineAsyncComponent(
+  () => import('./views/AdventureGraphStudioView.vue')
+);
+const AssetAtlasInspectorView = defineAsyncComponent(
+  () => import('./views/AssetAtlasInspectorView.vue')
+);
+const AutotileStudioView = defineAsyncComponent(() => import('./views/AutotileStudioView.vue'));
+const KantoAdventureView = defineAsyncComponent(() => import('./views/KantoAdventureView.vue'));
+const LocalTileStudioView = defineAsyncComponent(() => import('./views/LocalTileStudioView.vue'));
+const MapStudioView = defineAsyncComponent(() => import('./views/MapStudioView.vue'));
+const RegionalContinentStudioView = defineAsyncComponent(
+  () => import('./views/RegionalContinentStudioView.vue')
+);
 
 type ActiveTool =
   | 'kanto'
@@ -17,7 +23,26 @@ type ActiveTool =
   | 'cell-studio'
   | 'autotile'
   | 'atlas';
-const currentTool = ref<ActiveTool>('kanto');
+
+const VALID_TOOLS = new Set<ActiveTool>([
+  'kanto',
+  'continent',
+  'map-studio',
+  'graph-studio',
+  'cell-studio',
+  'autotile',
+  'atlas'
+]);
+
+function getInitialTool(): ActiveTool {
+  if (typeof globalThis.location === 'undefined') return 'kanto';
+  const param =
+    new URLSearchParams(globalThis.location.search).get('tool') ||
+    globalThis.location.hash.replace('#', '');
+  return VALID_TOOLS.has(param as ActiveTool) ? (param as ActiveTool) : 'kanto';
+}
+
+const currentTool = ref<ActiveTool>(getInitialTool());
 
 const tabs = [
   { id: 'kanto', label: '🗺️ Croquis Kanto' },
@@ -35,32 +60,28 @@ const tabs = [
     class="adventure-suite-container font-sans text-white h-screen w-screen overflow-hidden flex flex-col bg-slate-950"
   >
     <!-- Barra Superior de Navegación del Sandbox -->
-    <header
-      class="h-12 bg-slate-900 border-b border-slate-800 px-4 flex items-center justify-between shrink-0 z-50"
-    >
-      <div class="font-black text-xs tracking-wider text-yellow-400 flex items-center gap-2">
-        <span class="text-base">🎮</span> POKÉ VICIO: ADVENTURE &amp; STUDIO SUITE
+    <header class="suite-header">
+      <div class="suite-title">
+        <span class="icon">🎮</span>
+        <span class="title-full">POKÉ VICIO: ADVENTURE &amp; STUDIO SUITE</span>
+        <span class="title-mobile">POKÉ VICIO</span>
       </div>
-      <div class="flex items-center gap-1.5">
+      <nav class="suite-tabs">
         <button
           v-for="tab in tabs"
           :id="`tab-${tab.id}`"
           :key="tab.id"
-          :class="[
-            currentTool === tab.id
-              ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          ]"
-          class="px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer border border-transparent hover:border-slate-700"
+          :class="[currentTool === tab.id ? 'is-active' : 'is-inactive']"
+          class="tab-btn"
           @click="currentTool = tab.id as ActiveTool"
         >
           {{ tab.label }}
         </button>
-      </div>
+      </nav>
     </header>
 
     <!-- Área de Visualización -->
-    <main class="flex-1 relative overflow-hidden bg-slate-950">
+    <main class="suite-main">
       <KeepAlive>
         <KantoAdventureView v-if="currentTool === 'kanto'" />
         <RegionalContinentStudioView v-else-if="currentTool === 'continent'" />
@@ -75,7 +96,106 @@ const tabs = [
 </template>
 
 <style scoped lang="scss">
+@use '@/styles/core/tools' as *;
+
 .adventure-suite-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
   user-select: none;
+}
+
+.suite-main {
+  position: relative;
+  min-height: 0;
+  background: var(--slate-950);
+  flex: 1;
+  overflow: hidden;
+}
+
+.suite-header {
+  z-index: calc(var(--z-modal) + 10);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: $spacing-sm;
+  height: var(--header-height, 48px);
+  padding: 0 12px;
+  background: var(--slate-900);
+  border-bottom: 1px solid var(--slate-800);
+  flex-shrink: 0;
+}
+
+.suite-title {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  color: var(--yellow-400);
+  font-size: var(--font-11);
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  .icon {
+    font-size: var(--font-14);
+  }
+
+  .title-mobile {
+    display: none;
+  }
+
+  @media (width <= 768px) {
+    .title-full {
+      display: none;
+    }
+
+    .title-mobile {
+      display: inline;
+    }
+  }
+}
+
+.suite-tabs {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab-btn {
+    padding: 6px 10px;
+    border: 1px solid transparent;
+    border-radius: $radius-md;
+    font-size: var(--font-11);
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+
+    &.is-active {
+      background: var(--blue-600);
+      color: var(--white);
+      font-weight: 700;
+      box-shadow: var(--shadow-sm);
+    }
+
+    &.is-inactive {
+      background: Rgb(255 255 255 / 4%);
+      color: var(--slate-400);
+
+      &:hover {
+        background: var(--slate-800);
+        color: var(--white);
+      }
+    }
+  }
 }
 </style>

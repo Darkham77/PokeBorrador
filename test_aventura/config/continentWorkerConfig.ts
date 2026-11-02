@@ -6,6 +6,7 @@
  */
 
 export const RGBA_ALPHA_OPAQUE = 255 as const;
+export const RGBA_CHANNEL_COUNT = 4 as const;
 
 // --- Surface Terrain Feature RGBA ---
 export const PATH_PREVIEW_RGBA = [212, 163, 115, 255] as const;

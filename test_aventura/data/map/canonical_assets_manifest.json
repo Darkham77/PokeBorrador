@@ -13878,7 +13878,7 @@
       "h": 32
     },
     "collisionMask": [[1]],
-    "runtimePath": "tiles/poke_cliff_brown_rock_stairs_top.png",
+    "runtimePath": "tiles/poke_cliff_brown_stairs_l.png",
     "alphaKey": "transparent"
   },
   {
@@ -13901,7 +13901,7 @@
       "h": 32
     },
     "collisionMask": [[1]],
-    "runtimePath": "tiles/poke_cliff_brown_rock_stairs_bottom.png",
+    "runtimePath": "tiles/poke_cliff_brown_stairs_r.png",
     "alphaKey": "transparent"
   },
   {
@@ -13924,7 +13924,7 @@
       "h": 32
     },
     "collisionMask": [[1]],
-    "runtimePath": "tiles/poke_cliff_gray_rock_stairs_top.png",
+    "runtimePath": "tiles/poke_cliff_gray_stairs_l.png",
     "alphaKey": "transparent"
   },
   {
@@ -13947,7 +13947,7 @@
       "h": 32
     },
     "collisionMask": [[1]],
-    "runtimePath": "tiles/poke_cliff_gray_rock_stairs_bottom.png",
+    "runtimePath": "tiles/poke_cliff_gray_stairs_r.png",
     "alphaKey": "transparent"
   },
   {

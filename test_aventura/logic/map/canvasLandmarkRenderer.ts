@@ -68,12 +68,16 @@ const ROUTE_GATE_HEIGHT = 7 as const;
 const ROUTE_GATE_HORIZONTAL_WIDTH = 8 as const;
 const ROUTE_GATE_HORIZONTAL_HEIGHT = 5 as const;
 const PORT_TRUCK_WIDTH = 3 as const;
+const PORT_TRUCK_HEIGHT = 2 as const;
 const PORT_CARGO_DOUBLE_WIDTH = 2 as const;
 const PORT_CARGO_STACK_WIDTH = 3 as const;
 const PORT_FERRY_LENGTH = 7 as const;
 const PORT_FERRY_BEAM = 5 as const;
 const PORT_GATE_SIDE_OFFSET = 7 as const;
 const PORT_GATE_EAST_OFFSET = 6 as const;
+const PORT_TRUCK_OFFSET_X = 2 as const;
+const PORT_TRUCK_OFFSET_Y = 1 as const;
+const PORT_TRUCK_ALT_OFFSET_Y = 2 as const;
 const PORT_BOLLARD_OFFSET_Y = 6 as const;
 const PORT_BOLLARD_SORT_Y = 7 as const;
 
@@ -266,6 +270,48 @@ export function resolvePoiLandmarksAndBuildings(
             return true;
           };
 
+          const placedPortBoxes: { x: number; y: number; w: number; h: number }[] = [
+            { x: gx, y: gy, w: poi.footprint.width, h: poi.footprint.height }
+          ];
+
+          const canStampPortProp = (
+            x: number,
+            y: number,
+            wTiles: number,
+            hTiles: number,
+            buffer = 1
+          ): boolean => {
+            if (!isDryUnpavedLand(x, y, wTiles, hTiles, buffer)) return false;
+            for (const box of placedPortBoxes) {
+              if (
+                x < box.x + box.w + 1 &&
+                x + wTiles + 1 > box.x &&
+                y < box.y + box.h + 1 &&
+                y + hTiles + 1 > box.y
+              ) {
+                return false;
+              }
+            }
+            return true;
+          };
+
+          const stampPortProp = (
+            file: string,
+            x: number,
+            y: number,
+            wTiles: number,
+            hTiles: number,
+            ySort: number
+          ): void => {
+            buildingsToStamp.push({
+              file,
+              px: x * tileSize,
+              py: y * tileSize,
+              ySort
+            });
+            placedPortBoxes.push({ x, y, w: wTiles, h: hTiles });
+          };
+
           if (facing === 'south') {
             // 1. Authentic Vermilion Port Gate (7x6 tiles)
             const gateFile = resolvePortGateAsset('south', poi.buildingFile);
@@ -277,24 +323,40 @@ export function resolvePoiLandmarksAndBuildings(
             });
 
             // 2. Famous Vermilion Dock Truck (3x2 tiles) parked on dry beach next to the gate
-            if (
-              gx + PORT_GATE_SIDE_OFFSET + PORT_TRUCK_WIDTH <= W &&
-              gy + 2 < H &&
-              isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy + 2, PORT_TRUCK_WIDTH, 2, 1)
-            ) {
-              buildingsToStamp.push({
-                file: 'poke_port_dock_truck.png',
-                px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
-                py: (gy + 2) * tileSize,
-                ySort: (gy + 4) * tileSize
-              });
+            const truckCandidates = [
+              {
+                x: gx + PORT_GATE_SIDE_OFFSET + PORT_TRUCK_OFFSET_X,
+                y: gy + PORT_TRUCK_OFFSET_Y
+              },
+              { x: gx + PORT_GATE_SIDE_OFFSET, y: gy + PORT_TRUCK_OFFSET_Y },
+              {
+                x: gx + PORT_GATE_SIDE_OFFSET + PORT_TRUCK_OFFSET_X,
+                y: gy + PORT_TRUCK_ALT_OFFSET_Y
+              }
+            ];
+            for (const cand of truckCandidates) {
+              if (
+                cand.x + PORT_TRUCK_WIDTH <= W &&
+                cand.y + PORT_TRUCK_HEIGHT < H &&
+                canStampPortProp(cand.x, cand.y, PORT_TRUCK_WIDTH, PORT_TRUCK_HEIGHT, 1)
+              ) {
+                stampPortProp(
+                  'poke_port_dock_truck.png',
+                  cand.x,
+                  cand.y,
+                  PORT_TRUCK_WIDTH,
+                  PORT_TRUCK_HEIGHT,
+                  (cand.y + PORT_TRUCK_HEIGHT) * tileSize
+                );
+                break;
+              }
             }
 
             // 3. Double Cargo Crates Stack (2x1 tiles) on left side of gate
             if (
               gx >= 3 &&
               gy + 2 < H &&
-              isDryUnpavedLand(
+              canStampPortProp(
                 gx - PORT_CARGO_DOUBLE_WIDTH - 1,
                 gy + 2,
                 PORT_CARGO_DOUBLE_WIDTH,
@@ -302,48 +364,56 @@ export function resolvePoiLandmarksAndBuildings(
                 1
               )
             ) {
-              buildingsToStamp.push({
-                file: 'poke_port_cargo_crates_double.png',
-                px: (gx - PORT_CARGO_DOUBLE_WIDTH - 1) * tileSize,
-                py: (gy + 2) * tileSize,
-                ySort: (gy + 4) * tileSize
-              });
+              stampPortProp(
+                'poke_port_cargo_crates_double.png',
+                gx - PORT_CARGO_DOUBLE_WIDTH - 1,
+                gy + 2,
+                PORT_CARGO_DOUBLE_WIDTH,
+                1,
+                (gy + 4) * tileSize
+              );
             }
 
             // 4. Single Cargo Crates Stack (3x2 tiles) on right esplanade
             if (
               gx + PORT_GATE_SIDE_OFFSET + PORT_CARGO_STACK_WIDTH <= W &&
               gy >= 2 &&
-              isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy - 1, PORT_CARGO_STACK_WIDTH, 2, 1)
+              canStampPortProp(gx + PORT_GATE_SIDE_OFFSET + 1, gy - 2, PORT_CARGO_STACK_WIDTH, 2, 1)
             ) {
-              buildingsToStamp.push({
-                file: 'poke_port_cargo_crates_stack.png',
-                px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
-                py: (gy - 1) * tileSize,
-                ySort: (gy + 1) * tileSize
-              });
+              stampPortProp(
+                'poke_port_cargo_crates_stack.png',
+                gx + PORT_GATE_SIDE_OFFSET + 1,
+                gy - 2,
+                PORT_CARGO_STACK_WIDTH,
+                2,
+                gy * tileSize
+              );
             }
 
             // 5. Pier bollard chains flanking gate entrance strictly on dry ground (at least 1 tile clear from water)
-            if (gx >= 2 && gy + 4 < H && isDryUnpavedLand(gx - 2, gy + 4, 2, 1, 1)) {
-              buildingsToStamp.push({
-                file: 'poke_port_bollard_chains.png',
-                px: (gx - 2) * tileSize,
-                py: (gy + 4) * tileSize,
-                ySort: (gy + 5) * tileSize
-              });
+            if (gx >= 2 && gy + 4 < H && canStampPortProp(gx - 2, gy + 4, 2, 1, 1)) {
+              stampPortProp(
+                'poke_port_bollard_chains.png',
+                gx - 2,
+                gy + 4,
+                2,
+                1,
+                (gy + 5) * tileSize
+              );
             }
             if (
               gx + PORT_GATE_SIDE_OFFSET + 2 <= W &&
               gy + 4 < H &&
-              isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy + 4, 2, 1, 1)
+              canStampPortProp(gx + PORT_GATE_SIDE_OFFSET, gy + 4, 2, 1, 1)
             ) {
-              buildingsToStamp.push({
-                file: 'poke_port_bollard_chains.png',
-                px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
-                py: (gy + 4) * tileSize,
-                ySort: (gy + 5) * tileSize
-              });
+              stampPortProp(
+                'poke_port_bollard_chains.png',
+                gx + PORT_GATE_SIDE_OFFSET,
+                gy + 4,
+                2,
+                1,
+                (gy + 5) * tileSize
+              );
             }
 
             // 6. Moored Passenger Ferry at the south pier tip
@@ -394,45 +464,53 @@ export function resolvePoiLandmarksAndBuildings(
             }
 
             // 4. Shoreline props & bollards strictly on dry land with 1-tile clearance from water
-            if (gx >= 4 && gy >= 2 && isDryUnpavedLand(gx - 4, gy - 2, PORT_TRUCK_WIDTH, 2, 1)) {
-              buildingsToStamp.push({
-                file: 'poke_port_dock_truck.png',
-                px: (gx - 4) * tileSize,
-                py: (gy - 2) * tileSize,
-                ySort: gy * tileSize
-              });
+            if (gx >= 4 && gy >= 2 && canStampPortProp(gx - 4, gy - 2, PORT_TRUCK_WIDTH, 2, 1)) {
+              stampPortProp(
+                'poke_port_dock_truck.png',
+                gx - 4,
+                gy - 2,
+                PORT_TRUCK_WIDTH,
+                2,
+                gy * tileSize
+              );
             }
             if (
               gx >= 4 &&
               gy + 5 < H &&
-              isDryUnpavedLand(gx - 4, gy + 5, PORT_CARGO_STACK_WIDTH, 2, 1)
+              canStampPortProp(gx - 4, gy + 5, PORT_CARGO_STACK_WIDTH, 2, 1)
             ) {
-              buildingsToStamp.push({
-                file: 'poke_port_cargo_crates_stack.png',
-                px: (gx - 4) * tileSize,
-                py: (gy + 5) * tileSize,
-                ySort: (gy + PORT_BOLLARD_SORT_Y) * tileSize
-              });
+              stampPortProp(
+                'poke_port_cargo_crates_stack.png',
+                gx - 4,
+                gy + 5,
+                PORT_CARGO_STACK_WIDTH,
+                2,
+                (gy + PORT_BOLLARD_SORT_Y) * tileSize
+              );
             }
-            if (gx >= 2 && gy >= 2 && isDryUnpavedLand(gx - 2, gy - 2, 2, 1, 1)) {
-              buildingsToStamp.push({
-                file: 'poke_port_bollard_chains.png',
-                px: (gx - 2) * tileSize,
-                py: (gy - 2) * tileSize,
-                ySort: (gy - 1) * tileSize
-              });
+            if (gx >= 2 && gy >= 2 && canStampPortProp(gx - 2, gy - 2, 2, 1, 1)) {
+              stampPortProp(
+                'poke_port_bollard_chains.png',
+                gx - 2,
+                gy - 2,
+                2,
+                1,
+                (gy - 1) * tileSize
+              );
             }
             if (
               gx >= 2 &&
               gy + PORT_BOLLARD_OFFSET_Y < H &&
-              isDryUnpavedLand(gx - 2, gy + PORT_BOLLARD_OFFSET_Y, 2, 1, 1)
+              canStampPortProp(gx - 2, gy + PORT_BOLLARD_OFFSET_Y, 2, 1, 1)
             ) {
-              buildingsToStamp.push({
-                file: 'poke_port_bollard_chains.png',
-                px: (gx - 2) * tileSize,
-                py: (gy + PORT_BOLLARD_OFFSET_Y) * tileSize,
-                ySort: (gy + PORT_BOLLARD_SORT_Y) * tileSize
-              });
+              stampPortProp(
+                'poke_port_bollard_chains.png',
+                gx - 2,
+                gy + PORT_BOLLARD_OFFSET_Y,
+                2,
+                1,
+                (gy + PORT_BOLLARD_SORT_Y) * tileSize
+              );
             }
             return;
           }
@@ -467,51 +545,59 @@ export function resolvePoiLandmarksAndBuildings(
             if (
               inlandX + PORT_TRUCK_WIDTH <= W &&
               gy >= 2 &&
-              isDryUnpavedLand(inlandX, gy - 2, PORT_TRUCK_WIDTH, 2, 1)
+              canStampPortProp(inlandX, gy - 2, PORT_TRUCK_WIDTH, 2, 1)
             ) {
-              buildingsToStamp.push({
-                file: 'poke_port_dock_truck.png',
-                px: inlandX * tileSize,
-                py: (gy - 2) * tileSize,
-                ySort: gy * tileSize
-              });
+              stampPortProp(
+                'poke_port_dock_truck.png',
+                inlandX,
+                gy - 2,
+                PORT_TRUCK_WIDTH,
+                2,
+                gy * tileSize
+              );
             }
             if (
               inlandX + PORT_CARGO_STACK_WIDTH <= W &&
               gy + 5 < H &&
-              isDryUnpavedLand(inlandX, gy + 5, PORT_CARGO_STACK_WIDTH, 2, 1)
+              canStampPortProp(inlandX, gy + 5, PORT_CARGO_STACK_WIDTH, 2, 1)
             ) {
-              buildingsToStamp.push({
-                file: 'poke_port_cargo_crates_stack.png',
-                px: inlandX * tileSize,
-                py: (gy + 5) * tileSize,
-                ySort: (gy + PORT_BOLLARD_SORT_Y) * tileSize
-              });
+              stampPortProp(
+                'poke_port_cargo_crates_stack.png',
+                inlandX,
+                gy + 5,
+                PORT_CARGO_STACK_WIDTH,
+                2,
+                (gy + PORT_BOLLARD_SORT_Y) * tileSize
+              );
             }
             const bollardWestX = gx + poi.footprint.width;
             if (
               bollardWestX + 2 <= W &&
               gy >= 2 &&
-              isDryUnpavedLand(bollardWestX, gy - 2, 2, 1, 1)
+              canStampPortProp(bollardWestX, gy - 2, 2, 1, 1)
             ) {
-              buildingsToStamp.push({
-                file: 'poke_port_bollard_chains.png',
-                px: bollardWestX * tileSize,
-                py: (gy - 2) * tileSize,
-                ySort: (gy - 1) * tileSize
-              });
+              stampPortProp(
+                'poke_port_bollard_chains.png',
+                bollardWestX,
+                gy - 2,
+                2,
+                1,
+                (gy - 1) * tileSize
+              );
             }
             if (
               bollardWestX + 2 <= W &&
               gy + PORT_BOLLARD_OFFSET_Y < H &&
-              isDryUnpavedLand(bollardWestX, gy + PORT_BOLLARD_OFFSET_Y, 2, 1, 1)
+              canStampPortProp(bollardWestX, gy + PORT_BOLLARD_OFFSET_Y, 2, 1, 1)
             ) {
-              buildingsToStamp.push({
-                file: 'poke_port_bollard_chains.png',
-                px: bollardWestX * tileSize,
-                py: (gy + PORT_BOLLARD_OFFSET_Y) * tileSize,
-                ySort: (gy + PORT_BOLLARD_SORT_Y) * tileSize
-              });
+              stampPortProp(
+                'poke_port_bollard_chains.png',
+                bollardWestX,
+                gy + PORT_BOLLARD_OFFSET_Y,
+                2,
+                1,
+                (gy + PORT_BOLLARD_SORT_Y) * tileSize
+              );
             }
             return;
           }
@@ -563,30 +649,34 @@ export function resolvePoiLandmarksAndBuildings(
             }
 
             // 4. Props & bollards to the south on dry land with 1-tile clearance from water
-            if (gx >= 2 && gy + 4 < H && isDryUnpavedLand(gx - 2, gy + 4, 2, 1, 1)) {
-              buildingsToStamp.push({
-                file: 'poke_port_bollard_chains.png',
-                px: (gx - 2) * tileSize,
-                py: (gy + 4) * tileSize,
-                ySort: (gy + 5) * tileSize
-              });
+            if (gx >= 2 && gy + 4 < H && canStampPortProp(gx - 2, gy + 4, 2, 1, 1)) {
+              stampPortProp(
+                'poke_port_bollard_chains.png',
+                gx - 2,
+                gy + 4,
+                2,
+                1,
+                (gy + 5) * tileSize
+              );
             }
             if (
               gx + PORT_GATE_EAST_OFFSET + 2 <= W &&
               gy + 4 < H &&
-              isDryUnpavedLand(gx + PORT_GATE_EAST_OFFSET, gy + 4, 2, 1, 1)
+              canStampPortProp(gx + PORT_GATE_EAST_OFFSET, gy + 4, 2, 1, 1)
             ) {
-              buildingsToStamp.push({
-                file: 'poke_port_bollard_chains.png',
-                px: (gx + PORT_GATE_EAST_OFFSET) * tileSize,
-                py: (gy + 4) * tileSize,
-                ySort: (gy + 5) * tileSize
-              });
+              stampPortProp(
+                'poke_port_bollard_chains.png',
+                gx + PORT_GATE_EAST_OFFSET,
+                gy + 4,
+                2,
+                1,
+                (gy + 5) * tileSize
+              );
             }
             if (
               gx + PORT_GATE_SIDE_OFFSET + PORT_TRUCK_WIDTH <= W &&
               gy + poi.footprint.height + 2 <= H &&
-              isDryUnpavedLand(
+              canStampPortProp(
                 gx + PORT_GATE_SIDE_OFFSET,
                 gy + poi.footprint.height,
                 PORT_TRUCK_WIDTH,
@@ -594,24 +684,28 @@ export function resolvePoiLandmarksAndBuildings(
                 1
               )
             ) {
-              buildingsToStamp.push({
-                file: 'poke_port_dock_truck.png',
-                px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
-                py: (gy + poi.footprint.height) * tileSize,
-                ySort: (gy + poi.footprint.height + 2) * tileSize
-              });
+              stampPortProp(
+                'poke_port_dock_truck.png',
+                gx + PORT_GATE_SIDE_OFFSET,
+                gy + poi.footprint.height,
+                PORT_TRUCK_WIDTH,
+                2,
+                (gy + poi.footprint.height + 2) * tileSize
+              );
             }
             if (
               gx >= 3 &&
               gy + poi.footprint.height + 2 <= H &&
-              isDryUnpavedLand(gx - 3, gy + poi.footprint.height, PORT_CARGO_STACK_WIDTH, 2, 1)
+              canStampPortProp(gx - 3, gy + poi.footprint.height, PORT_CARGO_STACK_WIDTH, 2, 1)
             ) {
-              buildingsToStamp.push({
-                file: 'poke_port_cargo_crates_stack.png',
-                px: (gx - 3) * tileSize,
-                py: (gy + poi.footprint.height) * tileSize,
-                ySort: (gy + poi.footprint.height + 2) * tileSize
-              });
+              stampPortProp(
+                'poke_port_cargo_crates_stack.png',
+                gx - 3,
+                gy + poi.footprint.height,
+                PORT_CARGO_STACK_WIDTH,
+                2,
+                (gy + poi.footprint.height + 2) * tileSize
+              );
             }
           }
         };

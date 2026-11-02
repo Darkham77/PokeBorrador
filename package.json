@@ -1,6 +1,6 @@
 {
   "name": "pokemon-online",
-  "version": "0.6.18-build.20261027-133236",
+  "version": "1.0.0-build.20261101-215632",
   "private": true,
   "type": "module",
   "scripts": {

@@ -19,6 +19,8 @@ Testing / QA Engineers.
 ## Work Guidance
 
 - Test tile mapping validity, coordinate boundaries, elevation constants, and sprite registry lookups.
+- Validate autotile healing engine domain detection, 8-neighbor bitmask resolution, and 3x3 cascade neighbor propagation (`autotileHealingEngine.test.ts`).
+- Validate zero-copy `Int32Array` binary tile compilation parity, off-main-thread Worker preset/healing handlers, and `AbortController` cancellation on frame-sliced blitting (`continentAsyncPipeline.test.ts`).
 - Validate canonical building and prefab assets integrity, dimensions, and zero unkeyed chroma backgrounds (`buildingPrefabsIntegrity.test.ts`).
 - Validate canonical 2D GBA bridge autotiling, corridor span detection, and water crossings (`canonicalBridgeEngine.test.ts`).
 - Validate natural islet sculpting, zero ocean water blitting over land, and landing-to-doorway route connectivity for water landmarks (`waterLandmarkIsletBridge.test.ts`).

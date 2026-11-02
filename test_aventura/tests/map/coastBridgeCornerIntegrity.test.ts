@@ -33,10 +33,19 @@ describe('coastBridgeCornerIntegrity', () => {
   const routeNetwork = generateRouteNetwork(continent, pois, { allowBridges: true });
 
   it('guarantees walkway entrance directly facing bridge remains center sand without foam across access', () => {
-    expect(routeNetwork.bridgeGrid[17]?.[76]).toBe(true);
+    let startY = -1;
+    let endY = -1;
+    for (let y = 0; y < 128; y++) {
+      if (routeNetwork.bridgeGrid[y]?.[76]) {
+        if (startY === -1) startY = y;
+        endY = y;
+      }
+    }
+    expect(startY).toBeGreaterThan(0);
+    const midY = Math.floor((startY + endY) / 2);
 
     const resolvedWater = continent.resolvedWater;
-    const entranceCell = resolvedWater.cellDetails[17]?.[75];
+    const entranceCell = resolvedWater.cellDetails[midY]?.[75];
 
     expect(entranceCell).toBeDefined();
     expect(entranceCell?.terrain).toBe('sand');
@@ -44,9 +53,18 @@ describe('coastBridgeCornerIntegrity', () => {
   });
 
   it('guarantees shore flanks facing bridge preserve smooth inner transitions', () => {
+    let startY = -1;
+    let endY = -1;
+    for (let y = 0; y < 128; y++) {
+      if (routeNetwork.bridgeGrid[y]?.[76]) {
+        if (startY === -1) startY = y;
+        endY = y;
+      }
+    }
+    expect(startY).toBeGreaterThan(0);
     const resolvedWater = continent.resolvedWater;
-    const topFlank = resolvedWater.cellDetails[16]?.[75];
-    const botFlank = resolvedWater.cellDetails[18]?.[75];
+    const topFlank = resolvedWater.cellDetails[startY]?.[75];
+    const botFlank = resolvedWater.cellDetails[endY]?.[75];
 
     expect(topFlank?.role).toBe('corner_inner_ne');
     expect(botFlank?.role).toBe('corner_inner_se');

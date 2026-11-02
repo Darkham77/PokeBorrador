@@ -52,8 +52,13 @@ const CORDILLERA_TIER_4_MIN_CELLS = 240 as const;
 const MASSIF_TIER_3_MIN_CELLS = 130 as const;
 export const MASSIF_TIER_2_MIN_CELLS = 25 as const;
 const CAVE_MASSIF_LATERAL_RADIUS = 6 as const;
+const CAVE_ROOF_TERRACE_DEPTH = -3 as const;
+const CAVE_ROOF_TERRACE_RADIUS = 3 as const;
+const CAVE_ROOF_TERRACE_MIN_DY = -1 as const;
+const CAVE_MASSIF_BACKING_MAX_DY = -4 as const;
 const MASSIF_TIER_2_RADIUS = 6 as const;
 const DEFAULT_MOUNTAIN_RATIO = 0.2 as const;
+const MIN_RIDGE_PRUNE_ELEVATION = 2 as const;
 
 export function isCellAdjacentToMountainStairs(
   x: number,
@@ -319,6 +324,23 @@ function pruneOrphanCliffWalls(
     }
   }
 
+  // Pass 3: Demote 1-cell thin ridges ("sausages"/fingers) at elevation Z >= 2
+  for (let iter = 0; iter < 2; iter++) {
+    for (let y = 1; y < H - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        const cur = result[y]![x]!;
+        if (cur < MIN_RIDGE_PRUNE_ELEVATION) continue;
+
+        const isPinchedH = result[y]![x - 1]! < cur && result[y]![x + 1]! < cur;
+        const isPinchedV = result[y - 1]![x]! < cur && result[y + 1]![x]! < cur;
+
+        if (isPinchedH || isPinchedV) {
+          result[y]![x] = cur - 1;
+        }
+      }
+    }
+  }
+
   return result;
 }
 
@@ -391,8 +413,23 @@ function stampCaveSouthCliffMassif(
   validZone: readonly (readonly boolean[])[],
   rawHeightmap: number[][]
 ): void {
+  // 1. Mandatory flat Tier 1 roof terrace directly above the cave entrance:
+  // For 3 tiles north (dy = -3..-1) and lateral radius 3 (dx = -3..3),
+  // elevation is strictly 1 (preventing second-floor cliff face from cramping down on the entrance).
+  for (let dy = CAVE_ROOF_TERRACE_DEPTH; dy <= CAVE_ROOF_TERRACE_MIN_DY; dy++) {
+    for (let dx = -CAVE_ROOF_TERRACE_RADIUS; dx <= CAVE_ROOF_TERRACE_RADIUS; dx++) {
+      const cy = cave.y + dy;
+      const cx = cave.x + dx;
+      if (cx >= 0 && cx < W && cy >= 0 && cy < H && validZone[cy]![cx]) {
+        rawHeightmap[cy]![cx] = 1;
+      }
+    }
+  }
+
+  // 2. Mountain Massif Backing:
+  // From dy = -8 to -4, ensure elevation is at least 1 (can rise to higher tiers further back)
   const CAVE_NORTH_EXTENT = -8 as const;
-  for (let dy = CAVE_NORTH_EXTENT; dy <= -1; dy++) {
+  for (let dy = CAVE_NORTH_EXTENT; dy <= CAVE_MASSIF_BACKING_MAX_DY; dy++) {
     for (let dx = -CAVE_MASSIF_LATERAL_RADIUS; dx <= CAVE_MASSIF_LATERAL_RADIUS; dx++) {
       const cy = cave.y + dy;
       const cx = cave.x + dx;
@@ -892,7 +929,7 @@ export function generateContinentalMountains(
           minClearance: 1,
           targetElevation: 2
         });
-        applySolidSummitElevation(rawHeightmap, px, py, 1, W, H, 3);
+        applySolidSummitElevation(rawHeightmap, px, py, 2, W, H, 3);
       }
     }
 
@@ -917,13 +954,13 @@ export function generateContinentalMountains(
           expandMassifTierRing(rawHeightmap, mtnClearance, {
             px,
             py,
-            radius: 2,
+            radius: 3,
             width: W,
             height: H,
             minClearance: 1,
             targetElevation: 2
           });
-          applySolidSummitElevation(rawHeightmap, px, py, 1, W, H, 2);
+          applySolidSummitElevation(rawHeightmap, px, py, 2, W, H, 2);
         }
       }
     }

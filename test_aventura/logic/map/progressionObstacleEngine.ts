@@ -50,6 +50,8 @@ const DEFAULT_MAX_CUT_TREES = 3;
 const DEFAULT_MAX_STRENGTH_BOULDERS = 2;
 const MIN_OBSTACLE_SEPARATION = 45;
 const OBSTACLE_POI_CLEARANCE_MARGIN = 4;
+const MAX_BARRIER_RAYCAST_DISTANCE = 7 as const;
+const MAX_CHOKE_CORRIDOR_SPAN = 8 as const;
 
 const CUT_TREE_ASSET = 'tree_cuttable.png' as const;
 const STRENGTH_BOULDER_ASSET = 'poke_boulder_large.png' as const;
@@ -187,12 +189,6 @@ export function generateProgressionObstacles(
     const key = `${cand.x}_${cand.y}`;
     if (occupied.has(key)) continue;
 
-    // Minimum distance from existing placed obstacles (guarantees region-wide dispersion)
-    const tooClose = obstacles.some(
-      (obs) => Math.hypot(obs.x - cand.x, obs.y - cand.y) < minSeparation
-    );
-    if (tooClose) continue;
-
     const isBuildingSolid = (bx: number, by: number): boolean => {
       for (const poi of pois) {
         if (poi.urbanLayout?.buildings) {
@@ -218,41 +214,62 @@ export function generateProgressionObstacles(
 
     // Measure distance to impassable barriers in all 4 cardinal directions
     let hLeft = 1;
-    while (hLeft <= 5 && !isImpassableBarrier(cand.x - hLeft, cand.y)) hLeft++;
+    while (hLeft <= MAX_BARRIER_RAYCAST_DISTANCE && !isImpassableBarrier(cand.x - hLeft, cand.y))
+      hLeft++;
     const hitBarrierLeft = isImpassableBarrier(cand.x - hLeft, cand.y);
 
     let hRight = 1;
-    while (hRight <= 5 && !isImpassableBarrier(cand.x + hRight, cand.y)) hRight++;
+    while (hRight <= MAX_BARRIER_RAYCAST_DISTANCE && !isImpassableBarrier(cand.x + hRight, cand.y))
+      hRight++;
     const hitBarrierRight = isImpassableBarrier(cand.x + hRight, cand.y);
 
     // Bounded laterally by West and East barriers -> vertical corridor (North-South transit)
-    const isHorizontalChoke = hitBarrierLeft && hitBarrierRight && hLeft + hRight - 1 <= 6;
+    const isHorizontalChoke =
+      hitBarrierLeft && hitBarrierRight && hLeft + hRight - 1 <= MAX_CHOKE_CORRIDOR_SPAN;
 
     let vUp = 1;
-    while (vUp <= 5 && !isImpassableBarrier(cand.x, cand.y - vUp)) vUp++;
+    while (vUp <= MAX_BARRIER_RAYCAST_DISTANCE && !isImpassableBarrier(cand.x, cand.y - vUp)) vUp++;
     const hitBarrierUp = isImpassableBarrier(cand.x, cand.y - vUp);
 
     let vDown = 1;
-    while (vDown <= 5 && !isImpassableBarrier(cand.x, cand.y + vDown)) vDown++;
+    while (vDown <= MAX_BARRIER_RAYCAST_DISTANCE && !isImpassableBarrier(cand.x, cand.y + vDown))
+      vDown++;
     const hitBarrierDown = isImpassableBarrier(cand.x, cand.y + vDown);
 
     // Bounded vertically by North and South barriers -> horizontal corridor (West-East transit)
-    const isVerticalChoke = hitBarrierUp && hitBarrierDown && vUp + vDown - 1 <= 6;
+    const isVerticalChoke =
+      hitBarrierUp && hitBarrierDown && vUp + vDown - 1 <= MAX_CHOKE_CORRIDOR_SPAN;
 
     // Must be an airtight bottleneck bounded on both ends by natural barriers (never an open field)
     if (!isHorizontalChoke && !isVerticalChoke) continue;
 
     const chokeWidth = isHorizontalChoke ? hLeft + hRight - 1 : vUp + vDown - 1;
+    const canBeCut = chokeWidth <= 4 && cutTreeCount < maxCutTrees;
+    const canBeStrength = strengthCount < maxStrengthBoulders;
 
     // Guarantee placing both cut trees and strength boulders
-    const isStrength =
-      (cutTreeCount > 0 && strengthCount === 0) ||
-      (cand.nearMountain && strengthCount < maxStrengthBoulders && cutTreeCount >= 1);
-    const isCut = !isStrength && cutTreeCount < maxCutTrees;
+    let isStrength = false;
+    let isCut = false;
+    if (cutTreeCount === 0 && canBeCut && !cand.nearMountain) {
+      isCut = true;
+    } else if (strengthCount === 0 && canBeStrength && (cand.nearMountain || cutTreeCount > 0)) {
+      isStrength = true;
+    } else if (canBeCut) {
+      isCut = true;
+    } else if (canBeStrength) {
+      isStrength = true;
+    }
     if (!isStrength && !isCut) continue;
 
-    // Cut Trees only block narrow chokepoints up to width 4
-    if (isCut && chokeWidth > 4) continue;
+    const targetType = isStrength ? 'strength_boulder' : 'cut_tree';
+
+    // Minimum distance from existing placed obstacles (guarantees region-wide dispersion)
+    const tooClose = obstacles.some((obs) => {
+      const dist = Math.hypot(obs.x - cand.x, obs.y - cand.y);
+      const reqDist = obs.type === targetType ? minSeparation : 6;
+      return dist < reqDist;
+    });
+    if (tooClose) continue;
 
     const prop = cand.nearMountain
       ? continent.mountainPalette === 'brown'
@@ -279,6 +296,16 @@ export function generateProgressionObstacles(
       }
     }
 
+    // Cut trees must block genuine narrow chokepoints with at most 3 flanking props
+    if (isCut && flanking.length > 3) {
+      if (strengthCount < maxStrengthBoulders) {
+        isCut = false;
+        isStrength = true;
+      } else {
+        continue;
+      }
+    }
+
     // Mathematical Anti-Bypass BFS: ensure player cannot walk around the obstacle
     const proposedBlocked = new Set<string>();
     proposedBlocked.add(`${cand.x}_${cand.y}`);
@@ -291,7 +318,7 @@ export function generateProgressionObstacles(
       return isImpassableBarrier(bx, by);
     };
 
-    const SEARCH_RADIUS = 6;
+    const SEARCH_RADIUS = 3;
     const canReach = (startX: number, startY: number, goalX: number, goalY: number): boolean => {
       if (isBlocked(startX, startY) || isBlocked(goalX, goalY)) return false;
       const queue: { x: number; y: number }[] = [{ x: startX, y: startY }];

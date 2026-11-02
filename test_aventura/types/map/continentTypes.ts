@@ -121,3 +121,21 @@ export interface SlicedSpriteMetadata {
   readonly dataUrl: AssetUri;
   readonly dominantColors: readonly HexColor[];
 }
+
+const CONTINENT_GENERATION_PHASES = [
+  'sculpting',
+  'routing',
+  'scanning',
+  'compiling_tiles',
+  'rendering'
+] as const;
+
+export type ContinentGenerationPhase = (typeof CONTINENT_GENERATION_PHASES)[number];
+
+export const PACKED_BLIT_STRIDE = 3 as const;
+
+export interface PackedMapBlitPayload {
+  readonly palette: readonly string[];
+  readonly coordsBuffer: ArrayBuffer;
+  readonly count: number;
+}

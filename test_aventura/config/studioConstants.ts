@@ -111,3 +111,6 @@ export const UINT32_DIVISOR = 4294967296;
 
 /** Inner rendering dimension in pixels for a 9-slice subtile preview. */
 export const SUBTILE_INNER_SIZE = 14;
+
+/** Maximum viewport width in pixels treated as a mobile screen in studio views. */
+export const STUDIO_MOBILE_BREAKPOINT_PX = 768 as const;

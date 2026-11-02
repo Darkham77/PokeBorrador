@@ -110,8 +110,8 @@ export const CANONICAL_MOUNTAIN_BRUSH_BROWN_ROCK: Readonly<MountainBrushSet> = {
   edgeEast: 'poke_cliff_brown_rock_right.png',
   edgeSouth_Top: 'poke_cliff_brown_plateau_rock.png',
   edgeSouth_Foot: 'poke_cliff_brown_rock_face_bottom.png',
-  stairs_L: 'poke_cliff_brown_rock_stairs_l.png',
-  stairs_R: 'poke_cliff_brown_rock_stairs_r.png'
+  stairs_L: 'poke_cliff_brown_stairs_l.png',
+  stairs_R: 'poke_cliff_brown_stairs_r.png'
 };
 
 export const CANONICAL_MOUNTAIN_BRUSH_GRAY: Readonly<MountainBrushSet> = {
@@ -154,8 +154,8 @@ const CANONICAL_MOUNTAIN_BRUSH_GRAY_ROCK: Readonly<MountainBrushSet> = {
   edgeEast: 'poke_cliff_gray_rock_right.png',
   edgeSouth_Top: 'poke_cliff_gray_plateau_rock.png',
   edgeSouth_Foot: 'poke_cliff_gray_rock_face_bottom.png',
-  stairs_L: 'poke_cliff_gray_rock_stairs_l.png',
-  stairs_R: 'poke_cliff_gray_rock_stairs_r.png'
+  stairs_L: 'poke_cliff_gray_stairs_l.png',
+  stairs_R: 'poke_cliff_gray_stairs_r.png'
 };
 
 const CANONICAL_MOUNTAIN_BRUSH_VOLCANIC: Readonly<MountainBrushSet> = {
@@ -176,8 +176,8 @@ const CANONICAL_MOUNTAIN_BRUSH_VOLCANIC: Readonly<MountainBrushSet> = {
   edgeEast: 'poke_cliff_brown_rock_right.png',
   edgeSouth_Top: 'poke_cliff_brown_plateau_rock.png',
   edgeSouth_Foot: 'poke_cliff_brown_rock_face_bottom.png',
-  stairs_L: 'poke_cliff_brown_rock_stairs_l.png',
-  stairs_R: 'poke_cliff_brown_rock_stairs_r.png'
+  stairs_L: 'poke_cliff_brown_stairs_l.png',
+  stairs_R: 'poke_cliff_brown_stairs_r.png'
 };
 
 export interface CliffFootOverlay {

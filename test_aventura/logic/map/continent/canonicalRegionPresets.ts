@@ -21,12 +21,12 @@ import {
   type CanonicalPresetId
 } from '../../../data/map/canonicalRegionData.ts';
 import type { POINode, RouteEdge, RouteWaypoint } from '../../../types/map/poiTypes.ts';
-import { generateSettlementLayout } from '../cityLayoutEngine.ts';
-import type { ContinentMapResult, ContinentCellDetails } from '../continentGenerator.ts';
 import {
   buildZeroCopyPreviewBuffer,
   type RegionalGenerationPipelineResult
-} from '../continentGenerator.worker.ts';
+} from '../canvasTileRenderer.ts';
+import { generateSettlementLayout } from '../cityLayoutEngine.ts';
+import type { ContinentMapResult, ContinentCellDetails } from '../continentGenerator.ts';
 import { clusterMountainMassifs } from '../geologicalClusterEngine.ts';
 import { resolveMacroBiomeAutotile } from '../macroBiomeAutotileEngine.ts';
 import { synthesizeMacroBiomes } from '../macroBiomeSynthesizer.ts';

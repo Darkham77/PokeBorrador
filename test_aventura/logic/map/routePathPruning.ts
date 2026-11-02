@@ -14,6 +14,7 @@ import { floodFillGrid, type GridPoint } from '../utils/gridBfsUtils.ts';
 const STAIR_ENDPOINT_PRESERVE_NORTH = 2 as const;
 const STAIR_ENDPOINT_PRESERVE_LATERAL = 2 as const;
 const STAIR_ENDPOINT_PRESERVE_SOUTH = 3 as const;
+const BRIDGE_ENDPOINT_PRESERVE_RADIUS = 2 as const;
 const MAX_PRUNE_PASSES = 5 as const;
 
 function isCellNearPoiFootprint(x: number, y: number, nodes: readonly POINode[]): boolean {
@@ -41,6 +42,38 @@ function isCellAdjacentToBridge(
     bridgeGrid[y]?.[x + 1] ||
     bridgeGrid[y]?.[x - 1]
   );
+}
+
+function preserveBridgeEndpoints(
+  bridgeGrid: readonly (readonly boolean[])[],
+  preservedEndpoints: Set<string>,
+  W: number,
+  H: number
+): void {
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      if (!bridgeGrid[y]?.[x]) continue;
+      addBridgeheadRadius(x, y, preservedEndpoints, W, H);
+    }
+  }
+}
+
+function addBridgeheadRadius(
+  bx: number,
+  by: number,
+  preservedEndpoints: Set<string>,
+  W: number,
+  H: number
+): void {
+  for (let dy = -BRIDGE_ENDPOINT_PRESERVE_RADIUS; dy <= BRIDGE_ENDPOINT_PRESERVE_RADIUS; dy++) {
+    for (let dx = -BRIDGE_ENDPOINT_PRESERVE_RADIUS; dx <= BRIDGE_ENDPOINT_PRESERVE_RADIUS; dx++) {
+      const ny = by + dy;
+      const nx = bx + dx;
+      if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
+        preservedEndpoints.add(`${nx}_${ny}`);
+      }
+    }
+  }
 }
 
 function countTransitableNeighbors(
@@ -141,6 +174,7 @@ export function pruneDeadEndStubs(
       }
     }
   }
+  preserveBridgeEndpoints(bridgeGrid, preservedEndpoints, W, H);
 
   let prunedAny = true;
   let prunePasses = 0;

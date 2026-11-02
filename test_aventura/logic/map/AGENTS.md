@@ -40,9 +40,11 @@ Frontend Developers / Systems Engineers.
 - `cityGeneSynthesizer.ts`: Continuous procedural gene synthesizer deriving 6 continuous urban traits (`canopyIntegration`, `waterFeatureType`, `elevationPolicy`, `urbanDensity`, `streetPattern`, `vignetteBudget` from 2 to 10) from seed, terrain, and POI node roles.
 - `organicCityEngine.ts`: Organic procedural city and settlement layout engine replacing rigid 4-quadrant grids with dynamic vignette budgeting, asymmetric district packing, doorstep clearance invariants, contextual road materials (`dirt`, `paved`, `asphalt`, `stone`, `wood`, `brick`), and guaranteed doorstep-to-street connectivity.
 - **Organic City Street Finalization & TDZ Scope Isolation Mandate**: In `organicCityEngine.ts`, all settlement layout branches (metropolis, city, town, hamlet) invoking `finalizeSettlementStreets` MUST explicitly destructure the building isolation mask `bMask` directly within their localized branch scope rather than relying on outer function variable hoisting. Accessing outer uninitialized `const` declarations across conditional blocks triggers JavaScript Temporal Dead Zone (TDZ) runtime `ReferenceError`s inside asynchronous Web Workers, resulting in silent generation failures and blank canvases.
-- `routeGateBarrierEngine.ts`: Route gatehouse checkpoint barrier sealing and multi-source BFS anti-bypass verification engine guaranteeing hermetic checkpoint route corridors with impassable lateral flanks.
+- `routeGateBarrierEngine.ts`: Route gatehouse checkpoint barrier sealing and multi-source BFS anti-bypass verification engine guaranteeing hermetic checkpoint route corridors with impassable lateral flanks. Enforces non-destructive execution without in-place mutations of `gate.urbanLayout.props` to preserve determinism across regeneration passes.
 - `routeLedgeEngine.ts`: Canonical 1-way jumpable ledge generator (`poke_ledge_jump.png`) with 3-piece autotiling (`poke_ledge_left.png`, `poke_ledge_jump.png`, `poke_ledge_right.png`) on route corridors, enforcing a $\ge 2$-cell unblocked flanking bypass corridor to guarantee zero softlocks.
-- `progressionObstacleEngine.ts`: Procedural HM progression obstacle generator placing Cut trees (`tree_cuttable.png`, Badge 2) and Strength boulders (`poke_boulder_large.png`, Badge 4) on secondary route detours and shortcuts without obstructing primary path transit.
+- `progressionObstacleEngine.ts`: Procedural HM progression obstacle generator placing Cut trees (`tree_cuttable.png`, Badge 2) and Strength boulders (`poke_boulder_large.png`, Badge 4) on secondary route detours and shortcuts without obstructing primary path transit. Cut trees strictly block genuine narrow chokepoints with at most 3 flanking props (`flankingProps.length <= 3`, corridor width <= 4) and maintain minimum regional separation (>= 40 tiles), reserving wider bottlenecks (span up to 8 tiles) for Strength boulders.
+- `mountainPlateauTrailEngine.ts`: Mountain plateau and stair access trail generator stamping 2-tile wide corridors linking stair landings to local route networks and multi-tier plateaus. Prohibits routing access trails through beach sand (`allowSand = false`) to prevent coastal road pruning from severing stair connectivity.
+- `cityLayoutEngine.ts`: Settlement layout and building placement engine generating urban footprints, paved plazas, and perimeter fences. Preliminary fences for route gate settlements enforce 2.5D elevation boundary clearance (`node.elevation`) and water edge buffers.
 - `microVignetteEngine.ts`: Environmental micro-vignette generator and orphan path tile sweeper discovering unallocated $\ge 3\times 3$ grass clearings to embed thematic scenic vignettes (`berry_orchard`, `civic_fountain`, `explorer_camp`, `botanical_garden`), and pruning isolated stray path cells.
 - `continentGenerator.ts`: Macro-regional continental procedural world generator synthesizing 256x256 / 320x320 overworld maps, coordinating geological sculpting, hydrography, biomes, mountain massifs, regional routes, and settlement placements under the 1000-line SRP architectural limit.
 - `continentSculptingEngine.ts`: Continental landmass sculpting, graph dilation, perimeter beach distribution, orphan tile cleaning, and inland freshwater lake carving sub-engine.
@@ -62,24 +64,26 @@ Frontend Developers / Systems Engineers.
 - [`adventureProjectFactory.ts`](./adventureProjectFactory.ts): Canonical adventure project factory generating Kanto, Johto, and blank regional world projects.
 - [`archipelagoGenerator.ts`](./archipelagoGenerator.ts): Module implementation.
 - [`assetWebPathResolver.ts`](./assetWebPathResolver.ts): Canonical web path resolver for test_aventura sprites, tiles, and prefabs.
+- [`autotileDefectScanner.ts`](./autotileDefectScanner.ts): Continental seam and autotile defect scanner engine detecting invalid tile topologies across mountain, water, path, and macro-biome domains.
+- [`autotileHealingEngine.ts`](./autotileHealingEngine.ts): Model-first canonical autotile healing brush engine repairing semantic terrain, elevation, path, and macro-biome matrices with Lyapunov convergence.
 - [`autotileMatrixGenerator.ts`](./autotileMatrixGenerator.ts): Module implementation.
 - [`biomeDistributionEngine.ts`](./biomeDistributionEngine.ts): Module implementation.
 - [`buildingPlacementSolver.ts`](./buildingPlacementSolver.ts): Module implementation.
 - [`canonicalAssetsRegistry.ts`](./canonicalAssetsRegistry.ts): Module implementation.
 - [`canonicalBridgeEngine.ts`](./canonicalBridgeEngine.ts): Module implementation.
 - [`canvasDepthEntityCollector.ts`](./canvasDepthEntityCollector.ts): Module implementation.
-- [`canvasImageLoader.ts`](./canvasImageLoader.ts): Module implementation.
+- [`canvasImageLoader.ts`](./canvasImageLoader.ts): Canonical 2D Canvas tile & prefab asset loader with asynchronous `HTMLImageElement.decode()` off-main-thread rasterization.
 - [`canvasLandmarkRenderer.ts`](./canvasLandmarkRenderer.ts): Module implementation.
 - [`canvasTerrainPathBlitter.ts`](./canvasTerrainPathBlitter.ts): Module implementation.
-- [`canvasTileRenderer.ts`](./canvasTileRenderer.ts): Module implementation.
-- [`canvasViewportBlitter.ts`](./canvasViewportBlitter.ts): Module implementation.
+- [`canvasTileRenderer.ts`](./canvasTileRenderer.ts): Canonical 2D GBA 8-layer tilemap compiler providing both `buildMapBlitInstructions` and zero-copy `Int32Array` `compilePackedMapBlitBuffer` plus `buildZeroCopyPreviewBuffer`.
+- [`canvasViewportBlitter.ts`](./canvasViewportBlitter.ts): Frame-budgeted (`<= 6ms/frame`) `requestAnimationFrame` viewport blitter (`renderPackedContinentTilemap`), instant `rawPreviewBuffer` blitting, mobile backing-scale clamping, and clipped dirty-rect healing updates.
 - [`cavePlacementEngine.ts`](./cavePlacementEngine.ts): Module implementation.
 - [`cityGeneSynthesizer.ts`](./cityGeneSynthesizer.ts): Module implementation.
 - [`cityLayoutEngine.ts`](./cityLayoutEngine.ts): Module implementation.
 - [`cityVignetteRegistry.ts`](./cityVignetteRegistry.ts): Module implementation.
 - [`coastalHarborPlacementEngine.ts`](./coastalHarborPlacementEngine.ts): Module implementation.
 - [`continentGenerator.ts`](./continentGenerator.ts): Module implementation.
-- [`continentGenerator.worker.ts`](./continentGenerator.worker.ts): Module implementation.
+- [`continentGenerator.worker.ts`](./continentGenerator.worker.ts): Dedicated Web Worker offloading procedural continent generation, canonical presets, full-map defect scanning/healing, and zero-copy `Transferable` binary tile buffers.
 - [`continentMountainEngine.ts`](./continentMountainEngine.ts): Module implementation.
 - [`continentSculptingEngine.ts`](./continentSculptingEngine.ts): Module implementation.
 - [`continentalWorldGenerator.ts`](./continentalWorldGenerator.ts): Module implementation.

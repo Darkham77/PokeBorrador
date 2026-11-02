@@ -150,3 +150,9 @@ Whenever ANY bug, regression, or state desynchronization occurs across the proje
   2. **Configurable Gym/Map Overrides**: Gyms and battles with explicit `fixedCycle: 'night'` or custom `fixedWeather` render their configured atmosphere accurately regardless of real-time ticks.
   3. **Multi-Sprite Responsiveness**: Locations with multi-cycle sprites (open routes and multi-sprite interiors like `mansion`) react dynamically to time changes.
   4. **In-Combat Weather Lifecycle**: Moves and abilities properly cast weather in any arena and cleanly revert upon expiration.
+
+---
+
+## 12. PostgreSQL & Docker Container Test Isolation Standard
+
+- **Graceful Fallback in SQLite RAM Environments**: Test suites in `tests/node/` asserting PostgreSQL container lifecycle, PostgREST endpoints, or PostgreSQL-exclusive features (Row-Level Security, database triggers, schema extensions) MUST guard their `beforeAll` hooks and test blocks against `process.env.TEST_POSTGRES_URL` or inspect Docker availability via `inspectDocker()`. When tests run in environments where Docker is disabled (`process.env.SKIP_DOCKER`) or unavailable on the host, PostgreSQL-exclusive tests must skip or return gracefully without throwing unhandled network connection errors (`ECONNREFUSED`).
