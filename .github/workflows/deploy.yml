@@ -52,6 +52,9 @@ jobs:
       - name: Configure official servers
         run: npm run servers:configure
 
+      - name: Pre-flight audit auto-sync
+        run: npm run auditor:fix || true
+
       - name: Build project
         run: |
           npm run build:deploy || (npm run auditor:findings -- phase=setup && npm run auditor:findings && exit 1)
