@@ -52,9 +52,6 @@ jobs:
       - name: Configure official servers
         run: npm run servers:configure
 
-      - name: Prepare scratch workspace
-        run: mkdir -p scratch && touch scratch/ci_placeholder.ts
-
       - name: Build project
         run: npm run build:deploy
 
