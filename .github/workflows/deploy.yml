@@ -14,6 +14,9 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     env:
+      CI: "true"
+      FALLOW_SKIP_BINARY_VERIFY: "1"
+
       # Official Cloud Production Server
       SERVER_cloud_ID: ${{ secrets.SERVER_cloud_ID }}
       SERVER_cloud_NAME: ${{ secrets.SERVER_cloud_NAME }}
@@ -60,3 +63,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+
+      - name: Print audit report on failure
+        if: failure()
+        run: cat scratch/audits/latest_audit.json || true
