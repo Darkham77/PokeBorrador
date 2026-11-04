@@ -1,0 +1,1 @@
+export{w as toID}from"./game-data-feet-C1P64kSw.js";

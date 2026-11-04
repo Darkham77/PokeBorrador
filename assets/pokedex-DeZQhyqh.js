@@ -1,0 +1,1 @@
+export{y as requirePokemonSpeciesId}from"./game-data-feet-C1P64kSw.js";

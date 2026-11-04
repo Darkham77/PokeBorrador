@@ -1,0 +1,1 @@
+import"./battle-D5VGWySB.js";function e(e){return e?e.minigame!==null&&e.minigame!==void 0:!1}function t(e){return e?.minigame??null}function n(e,t){e&&(e.minigame=t??null)}function r(e){e&&(e.minigame=null)}export{n as i,e as n,r,t};

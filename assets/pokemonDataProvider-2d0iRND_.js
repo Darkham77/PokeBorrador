@@ -1,0 +1,1 @@
+export{t as pokemonDataProvider}from"./pokemonDataProvider-DJP-UKoh.js";

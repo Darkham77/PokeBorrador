@@ -1,0 +1,1 @@
+export{m as AUTO_BATTLE_REWARDS_DELAY_SEC,v as MAX_POKEMON_LEVEL,S as isEnabledPokemonId}from"./game-data-pokemon-CspjOnRR.js";

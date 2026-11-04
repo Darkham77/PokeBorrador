@@ -1,0 +1,1 @@
+export{r as getSpritesForArchetype}from"./npcSpriteRouter-AOuJ5pz0.js";

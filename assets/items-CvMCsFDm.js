@@ -1,0 +1,1 @@
+export{c as getItemById,l as getItemName,f as requireItemId}from"./game-data-items-GMmeaaE3.js";

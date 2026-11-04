@@ -1,0 +1,1 @@
+export{t as default}from"./ArchaeologyModal-C_ZYthz9.js";

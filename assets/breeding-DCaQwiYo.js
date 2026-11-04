@@ -1,0 +1,1 @@
+export{t as useBreedingStore}from"./breeding-D9AHD1bc.js";

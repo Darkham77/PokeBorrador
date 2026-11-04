@@ -1,1 +1,0 @@
-export{t as default}from"./ArchaeologyModal-MR6mHwLc.js";
