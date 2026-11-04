@@ -52,12 +52,11 @@ jobs:
       - name: Configure official servers
         run: npm run servers:configure
 
-      - name: Pre-flight audit auto-sync
-        run: npm run auditor:fix || true
+      - name: Prepare scratch workspace
+        run: mkdir -p scratch && touch scratch/ci_placeholder.ts
 
       - name: Build project
-        run: |
-          npm run build:deploy || (npm run auditor:findings -- phase=setup && npm run auditor:findings && exit 1)
+        run: npm run build:deploy
 
       - name: Create SPA 404 fallback for GitHub Pages
         run: cp ./dist/index.html ./dist/404.html
@@ -67,7 +66,3 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
-
-      - name: Print audit report on failure
-        if: failure()
-        run: cat scratch/audits/latest_audit.json || true

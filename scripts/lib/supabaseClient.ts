@@ -121,8 +121,10 @@ export async function readAndParseEnv(): Promise<Record<string, ServerConfig>> {
       }
     }
   } catch (err) {
-    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
-      console.warn('[readAndParseEnv] Error inesperado al leer .env:', err);
+    const isEnoent = (err as NodeJS.ErrnoException).code === 'ENOENT';
+    const isProductionCi = process.env.CI === 'true' || process.env.NODE_ENV === 'production';
+    if (!isEnoent || !isProductionCi) {
+      console.warn('[readAndParseEnv] Aviso al leer archivo .env maestro:', (err as Error).message);
     }
   }
 
