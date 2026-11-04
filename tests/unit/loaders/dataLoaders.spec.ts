@@ -36,8 +36,8 @@ describe('declarative route data loaders suite', () => {
       socialStore.friends = [];
       socialStore.pendingRequests = [];
 
-      expect(socialStore.friends.length).toBe(0);
-      expect(socialStore.pendingRequests.length).toBe(0);
+      expect(socialStore.friends).toHaveLength(0);
+      expect(socialStore.pendingRequests).toHaveLength(0);
     });
   });
 

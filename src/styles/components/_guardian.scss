@@ -85,7 +85,7 @@
   color: $white !important;
   font-family: var(--font-ui) !important; // Was 'Nunito'
   font-size: var(--font-8) !important;
-  font-weight: 900 !important;
+  font-weight: $font-weight-black !important;
   text-transform: uppercase !important;
   margin-top: 3px !important;
   letter-spacing: 0.5px !important;

@@ -6,7 +6,6 @@ import { calculateBattleRewards } from '@/logic/battle/rewardsDistributor';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { useBattleStore } from '@/stores/battle/battle';
 import { useGameStore } from '@/stores/game';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('PvP Combat Resolution & Rewards Isolation (Tier 1)', () => {
   beforeEach(() => {
@@ -109,8 +108,8 @@ describe('PvP Combat Resolution & Rewards Isolation (Tier 1)', () => {
 
       battleStore.state = {
         isPvP: true,
-        player: pvpCopy as Pokemon,
-        playerTeam: [pvpCopy as Pokemon]
+        player: pvpCopy,
+        playerTeam: [pvpCopy]
       } as unknown as typeof battleStore.state;
 
       battleStore.syncTeamHP();

@@ -50,48 +50,6 @@ describe('Map Environment Boundaries & Universal Dynamic Matrix (Data-Driven SSo
           }
         });
 
-        const routeId = loc.id;
-        if (isWeatherTableRouteId(routeId)) {
-          it('todos los climas generados por la tabla meteorológica deben ser admitidos por los límites del mapa', () => {
-            const env = getMapEnvironment(loc.id);
-            const table = ROUTE_WEATHER_TABLES[routeId];
-
-            for (const season of WEATHER_SEASON_IDS) {
-              const seasonData = table[season];
-              if (!seasonData) continue;
-              for (const phase of DAY_PHASES) {
-                const phaseData = seasonData[phase];
-                if (!phaseData) continue;
-                for (const [weatherKey, chance] of Object.entries(phaseData)) {
-                  if (typeof chance === 'number' && chance > 0) {
-                    const weatherId = weatherKey as WeatherId;
-                    expect(
-                      env.isWeatherTypeAllowed(weatherId),
-                      `El mapa "${loc.id}" genera "${weatherId}" en ${season}/${phase} pero no lo permite en sus límites.`
-                    ).toBe(true);
-                    expect(() => env.assertWeatherAllowed(weatherId)).not.toThrow();
-                  }
-                }
-              }
-            }
-          });
-        }
-
-        const mapWeather = loc.weather;
-        if (mapWeather) {
-          it('todos los climas con Pokémon visitantes o exclusivos deben ser admitidos por los límites del mapa', () => {
-            const env = getMapEnvironment(loc.id);
-            for (const weatherKey of Object.keys(mapWeather)) {
-              const weatherId = weatherKey as WeatherId;
-              expect(
-                env.isWeatherTypeAllowed(weatherId),
-                `El mapa "${loc.id}" define spawns para "${weatherId}" pero no lo permite en sus límites.`
-              ).toBe(true);
-              expect(() => env.assertWeatherAllowed(weatherId)).not.toThrow();
-            }
-          });
-        }
-
         it('debe rechazar ruidosamente cualquier clima activo que viole los límites del mapa', () => {
           const env = getMapEnvironment(loc.id);
 
@@ -136,6 +94,51 @@ describe('Map Environment Boundaries & Universal Dynamic Matrix (Data-Driven SSo
     }
   });
 
+  describe('1b. Tablas Meteorológicas y Spawns Estrictamente Permitidos', () => {
+    const mapsWithWeatherTables = FIRE_RED_MAPS.filter((loc) => isWeatherTableRouteId(loc.id));
+    for (const loc of mapsWithWeatherTables) {
+      it(`[${loc.id}] todos los climas de la tabla meteorológica deben ser admitidos por los límites del mapa`, () => {
+        const env = getMapEnvironment(loc.id);
+        const table = ROUTE_WEATHER_TABLES[loc.id as keyof typeof ROUTE_WEATHER_TABLES];
+
+        for (const season of WEATHER_SEASON_IDS) {
+          const seasonData = table[season];
+          if (!seasonData) continue;
+          for (const phase of DAY_PHASES) {
+            const phaseData = seasonData[phase];
+            if (!phaseData) continue;
+            for (const [weatherKey, chance] of Object.entries(phaseData)) {
+              if (typeof chance === 'number' && chance > 0) {
+                const weatherId = weatherKey as WeatherId;
+                expect(
+                  env.isWeatherTypeAllowed(weatherId),
+                  `El mapa "${loc.id}" genera "${weatherId}" en ${season}/${phase} pero no lo permite en sus límites.`
+                ).toBe(true);
+                expect(() => env.assertWeatherAllowed(weatherId)).not.toThrow();
+              }
+            }
+          }
+        }
+      });
+    }
+
+    const mapsWithWeatherSpawns = FIRE_RED_MAPS.filter((loc) => Boolean(loc.weather));
+    for (const loc of mapsWithWeatherSpawns) {
+      it(`[${loc.id}] todos los climas con spawns meteorológicos deben ser admitidos por los límites del mapa`, () => {
+        const env = getMapEnvironment(loc.id);
+        const mapWeather = loc.weather!;
+        for (const weatherKey of Object.keys(mapWeather)) {
+          const weatherId = weatherKey as WeatherId;
+          expect(
+            env.isWeatherTypeAllowed(weatherId),
+            `El mapa "${loc.id}" define spawns para "${weatherId}" pero no lo permite en sus límites.`
+          ).toBe(true);
+          expect(() => env.assertWeatherAllowed(weatherId)).not.toThrow();
+        }
+      });
+    }
+  });
+
   describe('2. Estadio Genérico Universal ("stadium")', () => {
     it('el mapa "stadium" debe tener clima deshabilitado y horario fijo diurno', () => {
       const env = getMapEnvironment('stadium');
@@ -157,7 +160,7 @@ describe('Map Environment Boundaries & Universal Dynamic Matrix (Data-Driven SSo
 
       expect(gymCombatEnv).toBe(pvpCombatEnv);
       expect(gymCombatEnv.isWeatherAllowed()).toBe(false);
-      expect(() => gymCombatEnv.resolveCombatWeather('rain' as WeatherId)).toThrowError(
+      expect(() => gymCombatEnv.resolveCombatWeather('rain')).toThrowError(
         /\[MapEnvironment\] Violación de límites/
       );
     });

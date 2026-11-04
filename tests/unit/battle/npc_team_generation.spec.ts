@@ -175,7 +175,7 @@ describe('randomSet() — rival pool species produce valid competitive sets', ()
     it(`randomSet('${species}') always has exactly 4 moves (competitive set)`, () => {
       const set = gen.randomSet(species);
       const nonEmpty = set.moves.filter(Boolean);
-      expect(nonEmpty.length).toBe(4);
+      expect(nonEmpty).toHaveLength(4);
     });
   }
 });

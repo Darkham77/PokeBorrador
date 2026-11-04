@@ -124,7 +124,7 @@ describe('cityLayoutEngine', () => {
     };
 
     const layout = generateSettlementLayout(node);
-    expect(layout.buildings.length).toBe(4);
+    expect(layout.buildings).toHaveLength(4);
 
     const bTypes = new Set(layout.buildings.map((b) => b.type));
     expect(bTypes.has('pokecenter')).toBe(true);
@@ -133,7 +133,7 @@ describe('cityLayoutEngine', () => {
     expect(bTypes.has('lab') || bTypes.has('house')).toBe(true);
 
     // Strictly 0 paved/concrete cells in rural towns
-    expect(layout.pavedPlazaCells.length).toBe(0);
+    expect(layout.pavedPlazaCells).toHaveLength(0);
     expect(layout.curbs?.length ?? 0).toBe(0);
 
     // Props strictly on grass
@@ -159,7 +159,7 @@ describe('cityLayoutEngine', () => {
     expect(layout.props.length).toBeGreaterThan(0);
 
     // Strictly 0 paved/concrete cells in rural towns
-    expect(layout.pavedPlazaCells.length).toBe(0);
+    expect(layout.pavedPlazaCells).toHaveLength(0);
     expect(layout.internalStreets.length).toBeGreaterThan(0);
 
     const propTypes = new Set(layout.props.map((p) => p.type));
@@ -440,7 +440,7 @@ describe('cityLayoutEngine', () => {
     };
 
     const layout = generateSettlementLayout(forestNode);
-    expect(layout.buildings.length).toBe(2); // North and South gates
+    expect(layout.buildings).toHaveLength(2); // North and South gates
 
     const northGate = layout.buildings.find((b) => b.id.includes('north_gate'))!;
     const southGate = layout.buildings.find((b) => b.id.includes('south_gate'))!;

@@ -90,33 +90,33 @@ const emit = defineEmits<{
         letter-spacing: 0.5px;
       }
     }
+  }
 
-    .rules-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: $spacing-sm-alt;
+  .rules-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-sm-alt;
 
-      .rule-badge {
-        @include pixelated;
+    .rule-badge {
+      @include pixelated;
 
-        padding: 2px 6px;
-        border: 1px solid Rgb(148 163 184 / 30%);
-        border-radius: $radius-sm;
-        background: Rgb(148 163 184 / 15%);
-        color: var(--gray);
-        font-size: var(--font-7);
+      padding: 2px 6px;
+      border: 1px solid Rgb(148 163 184 / 30%);
+      border-radius: $radius-sm;
+      background: Rgb(148 163 184 / 15%);
+      color: var(--gray);
+      font-size: var(--font-7);
 
-        &.little-cup {
-          background: Rgb(236 72 153 / 20%);
-          color: var(--rose);
-          border-color: Rgb(236 72 153 / 40%);
-        }
+      &.little-cup {
+        background: Rgb(236 72 153 / 20%);
+        color: var(--rose);
+        border-color: Rgb(236 72 153 / 40%);
+      }
 
-        &.types {
-          background: Rgb(168 85 247 / 20%);
-          color: var(--purple-400);
-          border-color: Rgb(168 85 247 / 40%);
-        }
+      &.types {
+        background: Rgb(168 85 247 / 20%);
+        color: var(--purple-400);
+        border-color: Rgb(168 85 247 / 40%);
       }
     }
   }

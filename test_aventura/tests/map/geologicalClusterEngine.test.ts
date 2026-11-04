@@ -39,7 +39,7 @@ describe('geologicalClusterEngine', () => {
       elevationMatrix: elev
     });
 
-    expect(result.massifs.length).toBe(2);
+    expect(result.massifs).toHaveLength(2);
 
     const mWest = result.massifs.find((m) => m.centroidX < 16);
     const mEast = result.massifs.find((m) => m.centroidX >= 16);
@@ -71,7 +71,7 @@ describe('geologicalClusterEngine', () => {
       elevationMatrix: elev
     });
 
-    expect(result.massifs.length).toBe(1);
+    expect(result.massifs).toHaveLength(1);
     const massif = result.massifs[0]!;
 
     // Verify every single cell in the massif matches massif.palette in paletteMatrix
@@ -99,7 +99,7 @@ describe('geologicalClusterEngine', () => {
       macroBiomeGrid: macroGrid
     });
 
-    expect(result.massifs.length).toBe(1);
+    expect(result.massifs).toHaveLength(1);
     expect(result.massifs[0]!.palette).toBe('volcanic');
 
     for (const cell of result.massifs[0]!.cells) {

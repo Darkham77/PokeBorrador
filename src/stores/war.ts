@@ -266,10 +266,12 @@ export const useWarStore = defineStore('war', () => {
   async function fetchMapDominance(): Promise<void> {
     if (!gameStore.db) return;
     // 1. Fetch points for the current week
+    const MAX_WAR_DOMINANCE_LIMIT = 500;
     const { data: points } = await gameStore.db
       .from('war_points')
       .select('map_id, faction, points')
-      .eq('week_id', currentWeekId.value);
+      .eq('week_id', currentWeekId.value)
+      .limit(MAX_WAR_DOMINANCE_LIMIT);
 
     const newDom = parsePointsToDominance(points as WarPointsRecord[] | null);
 
@@ -278,7 +280,8 @@ export const useWarStore = defineStore('war', () => {
       const { data: dom } = await gameStore.db
         .from('war_dominance')
         .select('map_id, winner_faction')
-        .eq('week_id', currentWeekId.value);
+        .eq('week_id', currentWeekId.value)
+        .limit(MAX_WAR_DOMINANCE_LIMIT);
 
       mergeSettledWinners(newDom, dom as DominanceRecord[] | null);
     }

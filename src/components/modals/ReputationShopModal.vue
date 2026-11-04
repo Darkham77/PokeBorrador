@@ -9,6 +9,7 @@ import { ref, computed, watch, nextTick } from 'vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 import ShopSearchControls from '@/components/common/ShopSearchControls.vue';
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue';
+import { compareShopItems } from '@/composables/inventory/useShopLogic';
 import { getItemById, type ItemId } from '@/data/inventory/items';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
@@ -151,20 +152,9 @@ const filteredItems = computed<
     sprite: resolveItemSprite(item)
   }));
 
-  return items.toSorted((a, b) => {
-    let comp: number;
-    if (sortKey.value === 'price') {
-      comp = (a.repCost || 0) - (b.repCost || 0);
-    } else if (sortKey.value === 'rarity') {
-      const tiers: Record<ItemTier, number> = { common: 0, rare: 1, epic: 2, legend: 3 };
-      const aT = tiers[a.tier || 'common'] ?? 0;
-      const bT = tiers[b.tier || 'common'] ?? 0;
-      comp = bT - aT;
-    } else {
-      comp = a.name.localeCompare(b.name);
-    }
-    return sortOrder.value === 'asc' ? comp : -comp;
-  });
+  return items.toSorted((a, b) =>
+    compareShopItems(a, b, sortKey.value, sortOrder.value, (item) => item.repCost || 0)
+  );
 });
 
 const availableCategories = computed<string[]>(() => {
@@ -175,27 +165,26 @@ const availableCategories = computed<string[]>(() => {
   return Array.from(cats);
 });
 
-const animateGrid = (): void => {
-  nextTick(() => {
-    if (!gridRef.value) return;
-    const cards = gridRef.value.querySelectorAll('.rep-shop-item-card');
-    if (cards.length > 0) {
-      gsap.killTweensOf(cards);
-      gsap.fromTo(
-        cards,
-        { opacity: 0, y: GSAP_ANIM_Y_OFFSET_PX, scale: GSAP_ANIM_SCALE_START },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: GSAP_ANIM_GRID_DURATION_SEC,
-          stagger: GSAP_ANIM_GRID_STAGGER_SEC,
-          ease: 'power1.out',
-          clearProps: 'transform,scale'
-        }
-      );
-    }
-  });
+const animateGrid = async (): Promise<void> => {
+  await nextTick();
+  if (!gridRef.value) return;
+  const cards = gridRef.value.querySelectorAll('.rep-shop-item-card');
+  if (cards.length > 0) {
+    gsap.killTweensOf(cards);
+    gsap.fromTo(
+      cards,
+      { opacity: 0, y: GSAP_ANIM_Y_OFFSET_PX, scale: GSAP_ANIM_SCALE_START },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: GSAP_ANIM_GRID_DURATION_SEC,
+        stagger: GSAP_ANIM_GRID_STAGGER_SEC,
+        ease: 'power1.out',
+        clearProps: 'transform,scale'
+      }
+    );
+  }
 };
 
 watch([activeTab, search], () => {

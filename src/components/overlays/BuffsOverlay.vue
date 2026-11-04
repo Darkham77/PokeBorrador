@@ -234,7 +234,7 @@ const handleClassMissionClick = (): void => {
 
     .is-done-text {
       color: var(--green, var(--emerald));
-      font-weight: 800;
+      font-weight: $font-weight-extrabold;
     }
   }
 }
@@ -286,6 +286,6 @@ const handleClassMissionClick = (): void => {
 
   color: var(--yellow, #ffd93d);
   font-size: var(--font-12);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 </style>

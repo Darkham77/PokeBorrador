@@ -88,10 +88,10 @@ describe('Reproduce Fuzzer Case 2241566f57e4 (Turn 53-58 Faint & Switch Chains)'
     battle.setPlayer('p2', { name: 'Opponent', team: p2Team });
 
     battle.p1.pokemon.forEach((pokemon, idx) => {
-      if (pokemon && p1Team[idx]?.uid) Reflect.set(pokemon, 'uid', p1Team[idx]!.uid);
+      if (pokemon && p1Team[idx]?.uid) Reflect.set(pokemon, 'uid', p1Team[idx].uid);
     });
     battle.p2.pokemon.forEach((pokemon, idx) => {
-      if (pokemon && p2Team[idx]?.uid) Reflect.set(pokemon, 'uid', p2Team[idx]!.uid);
+      if (pokemon && p2Team[idx]?.uid) Reflect.set(pokemon, 'uid', p2Team[idx].uid);
     });
 
     const engine = new ShowdownBattleEngine({ mode: 'fuzzer', seed: '1,2,3,4' });

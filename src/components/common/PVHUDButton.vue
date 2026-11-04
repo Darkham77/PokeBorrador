@@ -1,9 +1,16 @@
 <script setup lang="ts">
-defineProps({
-  id: { type: String, default: undefined },
-  active: { type: Boolean, default: false },
-  badgeValue: { type: Number, default: 0 },
-  customClass: { type: String, default: '' }
+interface Props {
+  id?: string;
+  active?: boolean;
+  badgeValue?: number;
+  customClass?: string;
+}
+
+withDefaults(defineProps<Props>(), {
+  id: undefined,
+  active: false,
+  badgeValue: 0,
+  customClass: ''
 });
 
 const emit = defineEmits<{

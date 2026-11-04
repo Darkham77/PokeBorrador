@@ -1,10 +1,10 @@
 import type { DisplayText } from '@francogp/auditor';
 
 import { toID } from '@/logic/utils/strings.ts';
-import { requireBattleConditionKey, type BattleConditionKey } from '@/types/battle/battle.ts';
+import { requireBattleConditionKey } from '@/types/battle/battle.ts';
 
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
-import { CANONICAL_TERRAINS } from '../constants/gameplay.ts';
+import { CANONICAL_TERRAINS_SET, type CanonicalTerrain } from '../constants/gameplay.ts';
 import { isWeatherId, requireWeatherId } from '../weather/weatherRegistry.ts';
 import {
   getLocalizedWeatherName,
@@ -12,10 +12,6 @@ import {
 } from '../weather/weatherVisualMapper.ts';
 import type { SBCtx } from './showdownBridgeCtx.ts';
 import { handleStartVolatileEvent, handleEndVolatileEvent } from './showdownBridgeVolatiles.ts';
-
-const CANONICAL_TERRAINS_SET: ReadonlySet<BattleConditionKey> = new Set<BattleConditionKey>(
-  CANONICAL_TERRAINS
-);
 
 const WEATHER_EMOJIS: Record<DisplayText, string> = {
   // open-record: Showdown weather condition emoji map
@@ -150,7 +146,7 @@ function handleFieldStart(ctx: SBCtx, parts: string[], line: string): boolean {
   const fieldCondition = (parts[2] || '').replace('move: ', '');
   if (fieldCondition && ctx.store.activeBattle.value) {
     const cleanField = requireBattleConditionKey(toID(fieldCondition));
-    if (CANONICAL_TERRAINS_SET.has(cleanField)) {
+    if (CANONICAL_TERRAINS_SET.has(cleanField as CanonicalTerrain)) {
       ctx.store.activeBattle.value.terrain = cleanField;
     } else {
       if (!ctx.store.activeBattle.value.fieldConditions) {
@@ -169,7 +165,7 @@ function handleFieldEnd(ctx: SBCtx, parts: string[], line: string): boolean {
   const fieldConditionEnd = (parts[2] || '').replace('move: ', '');
   if (fieldConditionEnd && ctx.store.activeBattle.value) {
     const cleanEndField = requireBattleConditionKey(toID(fieldConditionEnd));
-    if (CANONICAL_TERRAINS_SET.has(cleanEndField)) {
+    if (CANONICAL_TERRAINS_SET.has(cleanEndField as CanonicalTerrain)) {
       ctx.store.activeBattle.value.terrain = null;
     } else if (ctx.store.activeBattle.value.fieldConditions) {
       delete ctx.store.activeBattle.value.fieldConditions[cleanEndField];

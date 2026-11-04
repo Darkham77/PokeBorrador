@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
-import { BaseEventSimulation } from './base_event_simulation.ts';
+
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
+import { BaseEventSimulation } from './base_event_simulation.ts';
 
 /**
  * scripts/e2e/events/event_slot_management.simulation.ts

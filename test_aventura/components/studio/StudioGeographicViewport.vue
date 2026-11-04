@@ -870,7 +870,7 @@ defineExpose({
     background: Rgb(56 189 248 / 85%);
     color: var(--slate-900);
     font-size: var(--font-12);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     box-shadow: $shadow-card;
   }
 }
@@ -891,7 +891,7 @@ defineExpose({
     background: Rgb(15 23 42 / 85%);
     color: var(--slate-50);
     font-size: var(--font-11);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     backdrop-filter: Blur(6px);
   }
 

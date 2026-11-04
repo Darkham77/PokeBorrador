@@ -1,4 +1,4 @@
-import { isMainModule } from '@francogp/auditor';
+import fsPromises from 'node:fs/promises';
 /**
  * @file update_supabase_db.ts
  * @description Script automático para acceder a los servidores Supabase y gestionar la base de datos.
@@ -13,13 +13,14 @@ import { isMainModule } from '@francogp/auditor';
  * - Cumple con las normativas env-multi-server-parser para extraer credenciales del .env maestro.
  * - Estándares Node.js 26+ (Explicit Resource Management con 'using', prefijos node:).
  */
-
-import fsPromises from 'node:fs/promises';
+import { enableCompileCache } from 'node:module';
 import path from 'node:path';
 import { styleText } from 'node:util';
-import { enableCompileCache } from 'node:module';
+
+import { isMainModule } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
 import postgres from 'postgres';
+
 import {
   buildDatabaseUrl,
   getValidatedServerConfigs,
@@ -151,7 +152,7 @@ async function applyPendingPostgresMigrations(
 async function syncSystemConfigVersions(sql: postgres.Sql, profile: string): Promise<void> {
   const allAppliedRows = await sql`SELECT id FROM public._migrations`;
   const versions = allAppliedRows
-    .map((r) => parseInt((r.id as string).split('_')[0] || '0'))
+    .map((r) => parseInt((r.id as string).split('_')[0] || '0', 10))
     .filter((v) => v > 0);
   if (versions.length > 0) {
     const maxAppliedVersion = Math.max(...versions);
@@ -177,7 +178,7 @@ async function syncSystemConfigVersions(sql: postgres.Sql, profile: string): Pro
     };
     if (verContent?.version) appVersion = verContent.version;
   } catch (err) {
-    err;
+    console.warn('[Handled controlled exception]:', err);
   }
 
   console.log(
@@ -257,7 +258,7 @@ async function updateSingleProfileDb(
       );
     }
   } catch (err: unknown) {
-    const msg = err instanceof Error ? (err as Error).message : String(err);
+    const msg = err instanceof Error ? err.message : String(err);
     console.error(
       styleText('red', `❌ Error al conectar o migrar la base de datos de [${profile}]: ${msg}`)
     );
@@ -334,5 +335,5 @@ export const command = defineCommand({
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

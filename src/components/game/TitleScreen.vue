@@ -23,17 +23,16 @@ const authStore = useAuthStore();
 const loadingStore = useLoadingStore();
 const gs = computed(() => gameStore.state);
 
-const emitStarterSelectReady = (): void => {
+const emitStarterSelectReady = async (): Promise<void> => {
   if (!gs.value.starterChosen && gameStore.isReady && loadingStore.isGateOpen) {
-    nextTick(() => {
-      if (typeof globalThis.window !== 'undefined') {
-        globalThis.window.__STARTER_SELECT_READY__ = true;
-        const detail: StarterSelectReadyDetail = { ready: true };
-        globalThis.dispatchEvent(
-          new CustomEvent<StarterSelectReadyDetail>(GAME_UI_EVENTS.STARTER_SELECT_READY, { detail })
-        );
-      }
-    });
+    await nextTick();
+    if (typeof globalThis.window !== 'undefined') {
+      globalThis.window.__STARTER_SELECT_READY__ = true;
+      const detail: StarterSelectReadyDetail = { ready: true };
+      globalThis.dispatchEvent(
+        new CustomEvent<StarterSelectReadyDetail>(GAME_UI_EVENTS.STARTER_SELECT_READY, { detail })
+      );
+    }
   }
 };
 

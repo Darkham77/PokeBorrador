@@ -1,4 +1,6 @@
 import type { DisplayText } from '@francogp/auditor';
+
+import { logger } from '@/logic/utils/logger';
 /**
  * src/logic/map/canvasImageLoader.ts
  *
@@ -93,8 +95,16 @@ function loadTileImage(filename: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const primaryUrl = resolveTileUrl(filename);
     const img = new Image();
+    img.decoding = 'async';
     img.src = primaryUrl;
-    img.onload = (): void => {
+    img.onload = async (): Promise<void> => {
+      if (typeof img.decode === 'function') {
+        try {
+          await img.decode();
+        } catch (err: unknown) {
+          logger.warn('CanvasTileRenderer', `Image decode failed for ${filename}`, err);
+        }
+      }
       imageCache.set(filename, img);
       resolve(img);
     };

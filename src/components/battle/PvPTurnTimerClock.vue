@@ -76,7 +76,7 @@ watch(isUrgent, (urgent) => {
   >
     <div class="timer-content">
       <div class="timer-svg-wrap">
-        <svg class="timer-ring-svg" viewBox="0 0 48 48" width="40" height="40">
+        <svg aria-hidden="true" class="timer-ring-svg" viewBox="0 0 48 48" width="40" height="40">
           <circle class="ring-bg" cx="24" cy="24" :r="RADIUS" />
           <circle
             class="ring-progress"
@@ -190,7 +190,7 @@ watch(isUrgent, (urgent) => {
   position: absolute;
   color: var(--blue-300);
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   letter-spacing: -0.5px;
   text-shadow:
     1px 1px 0 #000,
@@ -225,7 +225,7 @@ watch(isUrgent, (urgent) => {
 
   color: var(--amber);
   font-size: var(--font-9);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   letter-spacing: 0.5px;
   text-shadow:
     1px 1px 0 #000,

@@ -184,71 +184,68 @@ function handleTabLeave(e: MouseEvent): void {
 
 watch(
   authTab,
-  (newTab) => {
-    nextTick(() => {
-      const tabs = document.querySelectorAll('.auth-tab');
-      tabs.forEach((tab) => {
-        const tabText = tab.textContent?.trim().toLowerCase().replace(/\s+/g, '');
-        const expectedText = newTab === 'login' ? 'iniciarsesión' : 'registrarse';
-        const isTabActive = tabText === expectedText;
-        if (isTabActive) {
-          gsap.to(tab, {
-            color: '#ffffff',
-            backgroundColor: '#bf5af2',
-            duration: 0.3
-          });
-        } else {
-          gsap.to(tab, {
-            color: '#86868b',
-            backgroundColor: 'transparent',
-            duration: 0.3
-          });
-        }
-      });
+  async (newTab) => {
+    await nextTick();
+    const tabs = document.querySelectorAll('.auth-tab');
+    tabs.forEach((tab) => {
+      const tabText = tab.textContent?.trim().toLowerCase().replace(/\s+/g, '');
+      const expectedText = newTab === 'login' ? 'iniciarsesión' : 'registrarse';
+      const isTabActive = tabText === expectedText;
+      if (isTabActive) {
+        gsap.to(tab, {
+          color: '#ffffff',
+          backgroundColor: '#bf5af2',
+          duration: 0.3
+        });
+      } else {
+        gsap.to(tab, {
+          color: '#86868b',
+          backgroundColor: 'transparent',
+          duration: 0.3
+        });
+      }
     });
   },
   { immediate: true }
 );
 
-watch(error, (newVal) => {
+watch(error, async (newVal) => {
   if (newVal && newVal.startsWith('BAN:')) {
-    nextTick(() => {
-      const card = document.querySelector('.auth-ban-card');
-      if (card) {
-        gsap.killTweensOf(card);
-        const BAN_SHAKE_STEP_SEC = 0.05;
-        const BAN_SHAKE_LARGE_PX = 4;
-        const BAN_SHAKE_SMALL_PX = 2;
-        const tl = gsap.timeline();
-        tl.to(card, { x: -BAN_SHAKE_LARGE_PX, duration: BAN_SHAKE_STEP_SEC })
-          .to(card, { x: BAN_SHAKE_LARGE_PX, duration: BAN_SHAKE_STEP_SEC })
-          .to(card, { x: -BAN_SHAKE_LARGE_PX, duration: BAN_SHAKE_STEP_SEC })
-          .to(card, { x: BAN_SHAKE_LARGE_PX, duration: BAN_SHAKE_STEP_SEC })
-          .to(card, { x: -BAN_SHAKE_SMALL_PX, duration: BAN_SHAKE_STEP_SEC })
-          .to(card, { x: BAN_SHAKE_SMALL_PX, duration: BAN_SHAKE_STEP_SEC })
-          .to(card, { x: 0, duration: BAN_SHAKE_STEP_SEC });
-      }
-    });
+    await nextTick();
+    const card = document.querySelector('.auth-ban-card');
+    if (card) {
+      gsap.killTweensOf(card);
+      const BAN_SHAKE_STEP_SEC = 0.05;
+      const BAN_SHAKE_LARGE_PX = 4;
+      const BAN_SHAKE_SMALL_PX = 2;
+      const tl = gsap.timeline();
+      tl.to(card, { x: -BAN_SHAKE_LARGE_PX, duration: BAN_SHAKE_STEP_SEC })
+        .to(card, { x: BAN_SHAKE_LARGE_PX, duration: BAN_SHAKE_STEP_SEC })
+        .to(card, { x: -BAN_SHAKE_LARGE_PX, duration: BAN_SHAKE_STEP_SEC })
+        .to(card, { x: BAN_SHAKE_LARGE_PX, duration: BAN_SHAKE_STEP_SEC })
+        .to(card, { x: -BAN_SHAKE_SMALL_PX, duration: BAN_SHAKE_STEP_SEC })
+        .to(card, { x: BAN_SHAKE_SMALL_PX, duration: BAN_SHAKE_STEP_SEC })
+        .to(card, { x: 0, duration: BAN_SHAKE_STEP_SEC });
+    }
   }
 });
 
 watch(
   isOnline,
-  (online) => {
+  async (online) => {
     if (!online) {
-      nextTick(() => {
-        const alert = document.querySelector('.internet-alert');
-        if (alert) {
-          gsap.killTweensOf(alert);
-          gsap.to(alert, {
-            opacity: 0.6,
-            duration: 1,
-            yoyo: true,
-            repeat: -1,
-            ease: 'sine.inOut'
-          });
-        }
-      });
+      await nextTick();
+      const alert = document.querySelector('.internet-alert');
+      if (alert) {
+        gsap.killTweensOf(alert);
+        gsap.to(alert, {
+          opacity: 0.6,
+          duration: 1,
+          yoyo: true,
+          repeat: -1,
+          ease: 'sine.inOut'
+        });
+      }
     } else {
       gsap.killTweensOf('.internet-alert');
     }

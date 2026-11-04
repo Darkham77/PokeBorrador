@@ -1,7 +1,8 @@
-import type { DisplayText } from '@francogp/auditor';
-import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import type { DisplayText } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 
 interface ModuleMeta {
   id: string;
@@ -238,4 +239,4 @@ export const command = defineCommand({
   }
 });
 
-runMain(command);
+void runMain(command);

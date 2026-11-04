@@ -29,7 +29,7 @@
   color: $white;
   font-family: $font-ui;
   font-size: var(--font-13);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   white-space: nowrap;
   box-shadow: var(--shadow-card-elevated);
 

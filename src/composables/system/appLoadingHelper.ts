@@ -2,7 +2,7 @@ export interface AppLoadingState {
   active: boolean;
   msg: string;
   sub: string;
-  global: boolean;
+  isGlobal: boolean;
   icon: string;
 }
 
@@ -31,7 +31,7 @@ export function resolveAppLoadingInfo(params: ResolveLoadingParams): AppLoadingS
       active: true,
       msg: cur?.message || 'Cargando...',
       sub: cur?.subMessage || '',
-      global: cur?.isGlobal || false,
+      isGlobal: cur?.isGlobal || false,
       icon: cur?.icon || '📶'
     };
   }
@@ -41,7 +41,7 @@ export function resolveAppLoadingInfo(params: ResolveLoadingParams): AppLoadingS
       active: true,
       msg: 'Iniciando sesión...',
       sub: 'Conectando con el servidor',
-      global: false,
+      isGlobal: false,
       icon: '📶'
     };
   }
@@ -56,7 +56,7 @@ export function resolveAppLoadingInfo(params: ResolveLoadingParams): AppLoadingS
       active: true,
       msg: !params.isDataLoaded ? 'Cargando datos...' : 'Iniciando motor...',
       sub: 'Preparando entorno de juego',
-      global: false,
+      isGlobal: false,
       icon: !params.isDataLoaded ? '📂' : '⚙️'
     };
   }
@@ -66,12 +66,12 @@ export function resolveAppLoadingInfo(params: ResolveLoadingParams): AppLoadingS
       active: true,
       msg: params.overlayMessage || 'Procesando...',
       sub: 'Por favor, no cierres la ventana',
-      global: true,
+      isGlobal: true,
       icon: '⏳'
     };
   }
 
-  return { active: false, msg: '', sub: '', global: false, icon: '📶' };
+  return { active: false, msg: '', sub: '', isGlobal: false, icon: '📶' };
 }
 
 export interface ShouldShowLoadingOverlayParams {

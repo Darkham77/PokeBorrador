@@ -140,8 +140,8 @@ describe('Rival Anti-Cheat Battle Persistence & Remote Save Parity', () => {
         turnCount: 1,
         over: false,
         escapeAttempts: 0
-      } as BattleState
-    } as unknown as GameState;
+      }
+    };
 
     let rpcCalled = false;
     const mockDb: any = {

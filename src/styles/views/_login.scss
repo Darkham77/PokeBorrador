@@ -140,7 +140,7 @@
   color: var(--gray);
   font-family: var(--font-pixel), sans-serif;
   font-size: var(--font-9);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   text-align: center;
   flex: 1;
   cursor: pointer;
@@ -241,7 +241,7 @@
   .ban-reason {
     color: var(--white);
     font-size: var(--font-13);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     margin-bottom: 8px;
   }
 

@@ -1,4 +1,5 @@
 import { type Page, expect } from '@playwright/test';
+
 import { BaseE2ESimulation, type SimulationOptions } from '../base_simulation.ts';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 

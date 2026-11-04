@@ -1,12 +1,13 @@
 import { test, expect, type Page } from '@playwright/test';
+
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 import {
   openDebugTab,
   armBattleReadyForInput,
   awaitBattleReadyForInput,
   type WindowWithResolver
 } from '../e2e_helpers.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 
 const CHARMANDER_EXPECTED_HP = 97;
 const CHARMANDER_EXPECTED_ATK = 46;

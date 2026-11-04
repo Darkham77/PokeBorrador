@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+
 import { safeScanDirectoryFiles } from './audit_helpers.ts';
 
 /**

@@ -109,7 +109,7 @@ function scheduleGameplayDelay(delaySec: number, callback: () => void): gsap.cor
   return tween;
 }
 
-const spawnNext = (): void => {
+const spawnNext = async (): Promise<void> => {
   if (!gameActive.value || spawnedNotesCount.value >= totalNotes.value) return;
 
   spawnedNotesCount.value++;
@@ -163,22 +163,21 @@ const spawnNext = (): void => {
   );
 
   // Visual Ring Animation
-  nextTick(() => {
-    const el = document.querySelector(`.rhythm-note[data-note-id="${noteId}"] .rhythm-ring`);
-    if (el) {
-      gsap.set(el, { scale: INITIAL_RING_SCALE, opacity: 0 });
-      const ringAnim = createGameplayTween(el, {
-        scale: 1.0,
-        opacity: 1,
-        duration: speedBase.value / MILLISECONDS_PER_SECOND,
-        ease: 'none',
-        onComplete: () => {
-          gsap.to(el, { opacity: 0, duration: RING_FADE_OUT_DURATION_SEC });
-        }
-      });
-      activeTweens.set(noteId, [failCall, ringAnim]);
-    }
-  });
+  await nextTick();
+  const el = document.querySelector(`.rhythm-note[data-note-id="${noteId}"] .rhythm-ring`);
+  if (el) {
+    gsap.set(el, { scale: INITIAL_RING_SCALE, opacity: 0 });
+    const ringAnim = createGameplayTween(el, {
+      scale: 1.0,
+      opacity: 1,
+      duration: speedBase.value / MILLISECONDS_PER_SECOND,
+      ease: 'none',
+      onComplete: () => {
+        gsap.to(el, { opacity: 0, duration: RING_FADE_OUT_DURATION_SEC });
+      }
+    });
+    activeTweens.set(noteId, [failCall, ringAnim]);
+  }
 
   gameCall = scheduleGameplayDelay(spawnInterval.value / MILLISECONDS_PER_SECOND, spawnNext);
 };
@@ -251,20 +250,19 @@ const finishGame = (success: boolean): void => {
   emit('close');
 };
 
-onMounted(() => {
+onMounted(async () => {
   gameCall = scheduleGameplayDelay(INITIAL_SPAWN_DELAY_SEC, spawnNext);
 
-  nextTick(() => {
-    if (fishingIconRef.value) {
-      iconTween = gsap.to(fishingIconRef.value, {
-        y: ICON_BOUNCE_Y_PX,
-        duration: ICON_BOUNCE_DURATION_SEC,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut'
-      });
-    }
-  });
+  await nextTick();
+  if (fishingIconRef.value) {
+    iconTween = gsap.to(fishingIconRef.value, {
+      y: ICON_BOUNCE_Y_PX,
+      duration: ICON_BOUNCE_DURATION_SEC,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
+  }
 });
 
 onUnmounted(() => {

@@ -8,8 +8,7 @@ import {
   requireNpcArchetype,
   getArchetypePool
 } from '@/data/player/trainerTypes';
-import { ARCHETYPE_SPRITES } from '@/data/pokemon/npcSpriteCatalog';
-import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
+import { ARCHETYPE_SPRITES, requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { GYMS, GYMS_BY_ID, isGymId, type GymId } from '@/data/world/gyms';
 import type { MapRouteId } from '@/data/world/map-assets';

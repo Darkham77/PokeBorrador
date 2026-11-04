@@ -99,14 +99,14 @@ describe('svgRouteAdapter', () => {
     expect(imported.dimensions?.height).toBe(1200);
 
     const importedIds = Object.keys(imported.nodes);
-    expect(importedIds.length).toBe(3);
+    expect(importedIds).toHaveLength(3);
     expect(imported.nodes.city_1?.name).toBe('Pueblo Paleta');
     expect(imported.nodes.city_1?.x).toBe(320);
     expect(imported.nodes.city_1?.y).toBe(480);
     expect(imported.nodes.city_2?.name).toBe('Ciudad Verde');
     expect(imported.nodes.city_3?.name).toBe('Ciudad Plateada');
 
-    expect(imported.connections.length).toBe(2);
+    expect(imported.connections).toHaveLength(2);
     expect(imported.connections).toEqual([
       ['city_1', 'city_2'],
       ['city_2', 'city_3']
@@ -126,8 +126,8 @@ describe('svgRouteAdapter', () => {
     const result = importRoutesFromSvg(rawExternalSvg);
     const nodeKeys = Object.keys(result.nodes);
 
-    expect(nodeKeys.length).toBe(2);
-    expect(result.connections.length).toBe(1);
+    expect(nodeKeys).toHaveLength(2);
+    expect(result.connections).toHaveLength(1);
   });
 
   it('regenerates continental geography placing land and roads around imported nodes', () => {

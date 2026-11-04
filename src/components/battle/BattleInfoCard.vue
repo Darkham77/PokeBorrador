@@ -6,7 +6,11 @@ import { computed, ref, watch } from 'vue';
 import { useCombatantStatus } from '@/composables/battle/useCombatantStatus';
 import { getStatBreakdown } from '@/logic/battle/battleEngine';
 import { supabase } from '@/logic/db/supabase';
-import { calculateTotalIVs } from '@/logic/pokemon/statsMath';
+import {
+  calculateTotalIVs,
+  isStatIdExceptHP,
+  type StatIDExceptHP
+} from '@/logic/pokemon/statsMath';
 import { getPokemonTier } from '@/logic/pokemon/tierEngine';
 import { useBattleStore } from '@/stores/battle/battle';
 import { useProfileStore } from '@/stores/player/profile';
@@ -133,8 +137,6 @@ const getStatModifier = (key: string): number => {
   if (!stages) return 0;
   return (stages as Record<DisplayText, number>)[key as DisplayText] || 0;
 };
-
-import { isStatIdExceptHP, type StatIDExceptHP } from '@/logic/pokemon/statsMath';
 
 const getBreakdown = (key: string): ReturnType<typeof getStatBreakdown> => {
   const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages;

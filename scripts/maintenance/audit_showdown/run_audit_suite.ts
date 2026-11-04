@@ -1,27 +1,28 @@
 import { isMainModule } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
+
 import { audit4SeatCompatibility } from './audit_4seat_compatibility.ts';
 import { auditActiveGenSSoT } from './audit_active_gen_ssot.ts';
 import { auditCatchRateMath } from './audit_catch_rate_math.ts';
 import { auditFSMEventParity } from './audit_fsm_event_parity.ts';
 import { auditFsmSubstateParity } from './audit_fsm_substate_parity.ts';
 import { auditFSMZeroTimer } from './audit_fsm_zero_timer.ts';
+import { auditMissingAnimations } from './audit_missing_animations.ts';
 import { auditPlaywrightActionability } from './audit_playwright_actionability.ts';
 import { auditRequestSchema } from './audit_request_schema.ts';
 import { auditSharedExecutorDuplication } from './audit_shared_executor_duplication.ts';
 import { auditShowdownAbilityData } from './audit_showdown_ability_data.ts';
 import { auditShowdownItemData } from './audit_showdown_item_data.ts';
 import { auditShowdownMoveMechanics } from './audit_showdown_move_mechanics.ts';
+import { auditShowdownProtocolTokens } from './audit_showdown_protocol_tokens.ts';
 import { auditShowdownStatusNull } from './audit_showdown_status_null.ts';
 import { auditSilentFallbackPatterns } from './audit_silent_fallback_patterns.ts';
 import { auditStatStageBoosts } from './audit_stat_stage_boosts.ts';
 import { auditUIDMappingIntegrity } from './audit_uid_mapping_integrity.ts';
 import { auditWeatherTerrainParity } from './audit_weather_terrain_parity.ts';
 import { findUntestedShowdownEffects } from './find_untested_showdown_effects.ts';
-import { auditShowdownProtocolTokens } from './audit_showdown_protocol_tokens.ts';
-import { auditMissingAnimations } from './audit_missing_animations.ts';
 
-export function runFullAuditSuite() {
+export function runFullAuditSuite(): void {
   console.log('=== RUNNING COMPLETE 21-TOOL AUDIT SUITE ===\n');
 
   const report = {
@@ -76,5 +77,5 @@ export const command = defineCommand({
 });
 
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

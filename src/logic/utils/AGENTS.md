@@ -36,6 +36,7 @@ Frontend Developers / Systems Engineers.
 - `sanitizeHtml.ts`: HTML sanitization helper for safe markup rendering.
 - `spriteOutliner.ts`: Module implementation.
 - `spriteOutliner.worker.ts`: Module implementation.
+- `spriteOutlinerRenderer.ts`: Canvas and ImageData pixel dilation renderer for sprite outlines.
 - `storage.ts`: Module implementation.
 - `strings.ts`: Module implementation.
 - `temporal-init.ts`: Module implementation.

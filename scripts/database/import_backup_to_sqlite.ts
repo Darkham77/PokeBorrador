@@ -1,12 +1,14 @@
-import { isMainModule, type AssetUri, type DisplayText } from '@francogp/auditor';
-import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import { styleText } from 'node:util';
+
+import { isMainModule, type AssetUri, type DisplayText } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
-import { serverCliArgs } from '../lib/supabaseClient.ts';
-import { TABLES_SCHEMA } from '../../src/logic/db/schema.ts';
+
 import { SHOP_ITEMS } from '../../src/data/inventory/items.ts';
+import { TABLES_SCHEMA } from '../../src/logic/db/schema.ts';
+import { serverCliArgs } from '../lib/supabaseClient.ts';
 
 export interface ImportBackupToSqliteOptions {
   readonly server?: DisplayText;
@@ -16,477 +18,481 @@ export interface ImportBackupToSqliteOptions {
 async function runImportBackupToSqlite(options: ImportBackupToSqliteOptions): Promise<void> {
   console.log(styleText('bold', '\n--- 📥 IMPORTADOR DE RESPALDOS A SQLITE LOCAL ---'));
 
-  let backupPath: string | undefined = options.file as string | undefined;
+  let backupPath: string | undefined = options.file;
 
   if (!backupPath) {
     const serverNameInput = options.server || 'official_prod';
-  let serverName = serverNameInput;
-  const envPath = path.resolve(process.cwd(), '.env');
-  if (fs.existsSync(envPath)) {
-    const { readAndParseEnv } = await import('../lib/supabaseClient.ts');
-    const serverConfigs = await readAndParseEnv();
+    let serverName = serverNameInput;
+    const envPath = path.resolve(process.cwd(), '.env');
+    if (fs.existsSync(envPath)) {
+      const { readAndParseEnv } = await import('../lib/supabaseClient.ts');
+      const serverConfigs = await readAndParseEnv();
 
-    const profileToConfig = new Map<string, (typeof serverConfigs)[string]>();
-    for (const [key, config] of Object.entries(serverConfigs)) {
-      profileToConfig.set(key, config);
-      if (config?.ID) {
-        profileToConfig.set(config.ID, config);
+      const profileToConfig = new Map<string, (typeof serverConfigs)[string]>();
+      for (const [key, config] of Object.entries(serverConfigs)) {
+        profileToConfig.set(key, config);
+        if (config?.ID) {
+          profileToConfig.set(config.ID, config);
+        }
+      }
+
+      const conf = profileToConfig.get(serverNameInput);
+      if (conf) {
+        serverName = conf.ID || serverNameInput;
       }
     }
 
-    const conf = profileToConfig.get(serverNameInput);
-    if (conf) {
-      serverName = conf.ID || serverNameInput;
+    const backupDir = path.resolve('database/backups', serverName);
+    if (!fs.existsSync(backupDir)) {
+      console.error(
+        styleText(
+          'red',
+          `❌ Error: El directorio de backups para "${serverName}" no existe en ${backupDir}`
+        )
+      );
+      process.exit(1);
     }
+
+    const files = fs.readdirSync(backupDir).filter((f) => f.endsWith('.json'));
+    if (files.length === 0) {
+      console.error(
+        styleText('red', `❌ Error: No se encontraron archivos de backup (.json) en ${backupDir}`)
+      );
+      process.exit(1);
+    }
+
+    files.sort();
+    const upgradedFiles = files.filter((f) => f.includes('_upgraded.json')).sort();
+    const latestBackupFile =
+      upgradedFiles.length > 0
+        ? upgradedFiles[upgradedFiles.length - 1]!
+        : files[files.length - 1]!;
+    backupPath = path.join(backupDir, latestBackupFile);
+    console.log(
+      styleText('cyan', `📂 Respaldo detectado para [${serverName}]: ${latestBackupFile}`)
+    );
+  } else {
+    if (!fs.existsSync(backupPath)) {
+      console.error(
+        styleText('red', `❌ Error: El archivo de backup especificado no existe en ${backupPath}`)
+      );
+      process.exit(1);
+    }
+    console.log(styleText('cyan', `📂 Importando archivo específico: ${backupPath}`));
   }
 
-  const backupDir = path.resolve('database/backups', serverName);
-  if (!fs.existsSync(backupDir)) {
-    console.error(
-      styleText(
-        'red',
-        `❌ Error: El directorio de backups para "${serverName}" no existe en ${backupDir}`
-      )
-    );
+  if (!backupPath) {
+    console.error(styleText('red', '❌ Error: No se definió la ruta del archivo de backup.'));
     process.exit(1);
   }
 
-  const files = fs.readdirSync(backupDir).filter((f) => f.endsWith('.json'));
-  if (files.length === 0) {
-    console.error(
-      styleText('red', `❌ Error: No se encontraron archivos de backup (.json) en ${backupDir}`)
-    );
+  let backupContent: string;
+  try {
+    backupContent = fs.readFileSync(backupPath, 'utf8');
+  } catch (err) {
+    console.error(`❌ Error al leer el archivo de backup: ${(err as Error).message}`);
     process.exit(1);
   }
 
-  files.sort();
-  const upgradedFiles = files.filter((f) => f.includes('_upgraded.json')).sort();
-  const latestBackupFile =
-    upgradedFiles.length > 0 ? upgradedFiles[upgradedFiles.length - 1]! : files[files.length - 1]!;
-  backupPath = path.join(backupDir, latestBackupFile);
-  console.log(styleText('cyan', `📂 Respaldo detectado para [${serverName}]: ${latestBackupFile}`));
-} else {
-  if (!fs.existsSync(backupPath)) {
-    console.error(
-      styleText('red', `❌ Error: El archivo de backup especificado no existe en ${backupPath}`)
-    );
+  interface BackupProfile {
+    id: string;
+    username: string;
+  }
+
+  interface BackupData {
+    data: {
+      profiles?: BackupProfile[];
+      [key: string]: unknown[] | undefined;
+    };
+  }
+
+  let backupData: BackupData;
+  try {
+    backupData = JSON.parse(backupContent) as BackupData;
+  } catch (err) {
+    console.error(`❌ Error al parsear el archivo JSON: ${(err as Error).message}`);
     process.exit(1);
   }
-  console.log(styleText('cyan', `📂 Importando archivo específico: ${backupPath}`));
-}
 
-if (!backupPath) {
-  console.error(styleText('red', '❌ Error: No se definió la ruta del archivo de backup.'));
-  process.exit(1);
-}
-
-let backupContent: string;
-try {
-  backupContent = fs.readFileSync(backupPath, 'utf8');
-} catch (err) {
-  console.error(`❌ Error al leer el archivo de backup: ${(err as Error).message}`);
-  process.exit(1);
-}
-
-interface BackupProfile {
-  id: string;
-  username: string;
-}
-
-interface BackupData {
-  data: {
-    profiles?: BackupProfile[];
-    [key: string]: unknown[] | undefined;
-  };
-}
-
-let backupData: BackupData;
-try {
-  backupData = JSON.parse(backupContent) as BackupData;
-} catch (err) {
-  console.error(`❌ Error al parsear el archivo JSON: ${(err as Error).message}`);
-  process.exit(1);
-}
-
-if (!backupData.data) {
-  console.error('❌ Error: El backup no contiene una propiedad "data" válida.');
-  process.exit(1);
-}
-
-// 3. Crear mapeo de IDs: UUID -> local_<username>
-console.log('🔗 Generando diccionario de mapeo de IDs...');
-const idMap = new Map<string, string>();
-const profiles = (backupData.data.profiles || []) as BackupProfile[];
-
-for (const profile of profiles as Array<{ id: string; username?: string; email?: string }>) {
-  if (profile.id) {
-    let cleanName: string;
-    if (profile.username) {
-      cleanName = profile.username.toLowerCase().replace(/\s+/g, '_'); // string-ok: Internal string formatting or DOM token identifier
-    } else if (profile.email) {
-      cleanName = profile.email.split('@')[0]!.toLowerCase().replace(/\s+/g, '_');
-    } else {
-      cleanName = profile.id.toLowerCase(); // string-ok: Internal string formatting or DOM token identifier
-    }
-    idMap.set(profile.id, `local_${cleanName}`);
+  if (!backupData.data) {
+    console.error('❌ Error: El backup no contiene una propiedad "data" válida.');
+    process.exit(1);
   }
-}
-console.log(`✅ Diccionario listo. ${idMap.size} usuarios registrados.`);
 
-// Función de reemplazo recursivo de IDs
-function replaceUserIds(value: unknown, mapping: Map<string, string>): unknown {
-  if (typeof value === 'string') {
-    if (mapping.has(value)) {
-      return mapping.get(value)!;
-    }
-    if (value.startsWith('private:')) {
-      const rawId = value.replace('private:', '');
-      if (mapping.has(rawId)) {
-        return `private:${mapping.get(rawId)}`;
+  // 3. Crear mapeo de IDs: UUID -> local_<username>
+  console.log('🔗 Generando diccionario de mapeo de IDs...');
+  const idMap = new Map<string, string>();
+  const profiles = backupData.data.profiles || [];
+
+  for (const profile of profiles as Array<{ id: string; username?: string; email?: string }>) {
+    if (profile.id) {
+      let cleanName: string;
+      if (profile.username) {
+        cleanName = profile.username.toLowerCase().replace(/\s+/g, '_'); // string-ok: Internal string formatting or DOM token identifier
+      } else if (profile.email) {
+        cleanName = profile.email.split('@')[0]!.toLowerCase().replace(/\s+/g, '_');
+      } else {
+        cleanName = profile.id.toLowerCase(); // string-ok: Internal string formatting or DOM token identifier
       }
+      idMap.set(profile.id, `local_${cleanName}`);
+    }
+  }
+  console.log(`✅ Diccionario listo. ${idMap.size} usuarios registrados.`);
+
+  // Función de reemplazo recursivo de IDs
+  function replaceUserIds(value: unknown, mapping: Map<string, string>): unknown {
+    if (typeof value === 'string') {
+      if (mapping.has(value)) {
+        return mapping.get(value)!;
+      }
+      if (value.startsWith('private:')) {
+        const rawId = value.replace('private:', '');
+        if (mapping.has(rawId)) {
+          return `private:${mapping.get(rawId)}`;
+        }
+      }
+      return value;
+    }
+    if (Array.isArray(value)) {
+      return value.map((item) => replaceUserIds(item, mapping));
+    }
+    if (value !== null && typeof value === 'object') {
+      const newObj: Record<string, unknown> = {};
+      for (const key of Object.keys(value)) {
+        const mappedKey = mapping.has(key) ? mapping.get(key)! : key;
+        newObj[mappedKey] = replaceUserIds((value as Record<string, unknown>)[key], mapping); // open-record: Generic key-value data dictionary container
+      }
+      return newObj;
     }
     return value;
   }
-  if (Array.isArray(value)) {
-    return value.map((item) => replaceUserIds(item, mapping));
+
+  const INVENTORY_ALIASES: Readonly<Record<DisplayText, string>> = {
+    potion: 'Poción',
+    pocion: 'Poción',
+    pocian: 'Poción',
+    pociaon: 'Poción',
+    superpotion: 'Súper Poción',
+    superpocion: 'Súper Poción',
+    hyperpotion: 'Hiper Poción',
+    hiperpocion: 'Hiper Poción',
+    maxpotion: 'Poción Máxima',
+    pocionmaxima: 'Poción Máxima',
+    firestone: 'Piedra Fuego',
+    waterstone: 'Piedra Agua',
+    thunderstone: 'Piedra Trueno',
+    leafstone: 'Piedra Hoja',
+    moonstone: 'Piedra Lunar',
+    sunstone: 'Piedra Solar',
+    vigorcandy: 'Caramelo de vigor',
+    repel: 'Repelente',
+    iman: 'Imán',
+    elixir: 'Elixir',
+    subidapp: 'Subida de PP',
+    subidadepp: 'Subida de PP',
+    mttoxico: 'MT06 Tóxico',
+    ocasoball: 'Ocaso Ball',
+    turnoball: 'Turno Ball',
+    ultraball: 'Ultra Ball',
+    masterball: 'Master Ball',
+    superball: 'Súper Ball',
+    pokeball: 'Pokéball',
+    pokaball: 'Pokéball',
+    brazalrecio: 'Brazal Recio',
+    brazalrecia: 'Brazal Recio',
+    cintorecio: 'Cinto Recio',
+    cintorecia: 'Cinto Recio',
+    pesarecia: 'Pesa Recia',
+    bandarecia: 'Banda Recia',
+    lenterecia: 'Lente Recia',
+    franjarecia: 'Franja Recia',
+    bayadeoro: 'Baya de Oro',
+    bayaoro: 'Baya de Oro',
+    piedraeterna: 'Piedra Eterna',
+    lazodestino: 'Lazo Destino',
+    caramelovigor: 'Caramelo de vigor',
+    fishingrod: 'Caña de pescar',
+    fishingrodgood: 'Caña Buena',
+    fishingrodsuper: 'Supercaña',
+    pickaxe: 'Pico de excavación',
+    pickaxesilver: 'Pico Bueno',
+    pickaxegold: 'Superpico',
+    brush: 'Pincel de excavación',
+    brushgood: 'Pincel Buena',
+    brushsuper: 'Superpincel',
+    carbon: 'Carbón vegetal',
+    carbonvegetal: 'Carbón vegetal'
+  };
+
+  function resolveNormalizedItemName(name: string): string {
+    const norm = name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]/g, '');
+    return INVENTORY_ALIASES[norm] || name;
   }
-  if (value !== null && typeof value === 'object') {
-    const newObj: Record<string, unknown> = {};
-    for (const key of Object.keys(value)) {
-      const mappedKey = mapping.has(key) ? mapping.get(key)! : key;
-      newObj[mappedKey] = replaceUserIds((value as Record<string, unknown>)[key], mapping); // open-record: Generic key-value data dictionary container
+
+  function migrateInventoryKeys(
+    inventory: Record<DisplayText, number>
+  ): Record<DisplayText, number> {
+    const itemMapping: Record<DisplayText, string> = {};
+    for (const item of SHOP_ITEMS) {
+      itemMapping[item.name] = item.id;
     }
-    return newObj;
-  }
-  return value;
-}
+    const validIds = new Set<string>(SHOP_ITEMS.map((i) => i.id));
+    validIds.add('bicycle');
 
-const INVENTORY_ALIASES: Readonly<Record<DisplayText, string>> = {
-  potion: 'Poción',
-  pocion: 'Poción',
-  pocian: 'Poción',
-  pociaon: 'Poción',
-  superpotion: 'Súper Poción',
-  superpocion: 'Súper Poción',
-  hyperpotion: 'Hiper Poción',
-  hiperpocion: 'Hiper Poción',
-  maxpotion: 'Poción Máxima',
-  pocionmaxima: 'Poción Máxima',
-  firestone: 'Piedra Fuego',
-  waterstone: 'Piedra Agua',
-  thunderstone: 'Piedra Trueno',
-  leafstone: 'Piedra Hoja',
-  moonstone: 'Piedra Lunar',
-  sunstone: 'Piedra Solar',
-  vigorcandy: 'Caramelo de vigor',
-  repel: 'Repelente',
-  iman: 'Imán',
-  elixir: 'Elixir',
-  subidapp: 'Subida de PP',
-  subidadepp: 'Subida de PP',
-  mttoxico: 'MT06 Tóxico',
-  ocasoball: 'Ocaso Ball',
-  turnoball: 'Turno Ball',
-  ultraball: 'Ultra Ball',
-  masterball: 'Master Ball',
-  superball: 'Súper Ball',
-  pokeball: 'Pokéball',
-  pokaball: 'Pokéball',
-  brazalrecio: 'Brazal Recio',
-  brazalrecia: 'Brazal Recio',
-  cintorecio: 'Cinto Recio',
-  cintorecia: 'Cinto Recio',
-  pesarecia: 'Pesa Recia',
-  bandarecia: 'Banda Recia',
-  lenterecia: 'Lente Recia',
-  franjarecia: 'Franja Recia',
-  bayadeoro: 'Baya de Oro',
-  bayaoro: 'Baya de Oro',
-  piedraeterna: 'Piedra Eterna',
-  lazodestino: 'Lazo Destino',
-  caramelovigor: 'Caramelo de vigor',
-  fishingrod: 'Caña de pescar',
-  fishingrodgood: 'Caña Buena',
-  fishingrodsuper: 'Supercaña',
-  pickaxe: 'Pico de excavación',
-  pickaxesilver: 'Pico Bueno',
-  pickaxegold: 'Superpico',
-  brush: 'Pincel de excavación',
-  brushgood: 'Pincel Buena',
-  brushsuper: 'Superpincel',
-  carbon: 'Carbón vegetal',
-  carbonvegetal: 'Carbón vegetal'
-};
-
-function resolveNormalizedItemName(name: string): string {
-  const norm = name
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]/g, '');
-  return INVENTORY_ALIASES[norm] || name;
-}
-
-function migrateInventoryKeys(inventory: Record<DisplayText, number>): Record<DisplayText, number> {
-  const itemMapping: Record<DisplayText, string> = {};
-  for (const item of SHOP_ITEMS) {
-    itemMapping[item.name] = item.id;
-  }
-  const validIds = new Set<string>(SHOP_ITEMS.map((i) => i.id));
-  validIds.add('bicycle');
-
-  const newInv: Record<DisplayText, number> = {};
-  for (const [key, qty] of Object.entries(inventory)) {
-    const resolvedName = resolveNormalizedItemName(key);
-    let mappedId = itemMapping[resolvedName];
-    if (!mappedId) {
-      if (validIds.has(key)) {
-        mappedId = key;
-      } else {
-        throw new Error(`Item no reconocido en save local: "${key}"`);
+    const newInv: Record<DisplayText, number> = {};
+    for (const [key, qty] of Object.entries(inventory)) {
+      const resolvedName = resolveNormalizedItemName(key);
+      let mappedId = itemMapping[resolvedName];
+      if (!mappedId) {
+        if (validIds.has(key)) {
+          mappedId = key;
+        } else {
+          throw new Error(`Item no reconocido en save local: "${key}"`);
+        }
       }
+      newInv[mappedId] = qty;
     }
-    newInv[mappedId] = qty;
+    return newInv;
   }
-  return newInv;
-}
 
-interface TimestampedSaveDataPayload {
-  _last_updated?: number;
-}
-
-function isTimestampedSaveDataPayload(val: unknown): val is TimestampedSaveDataPayload {
-  return typeof val === 'object' && val !== null;
-}
-
-function transformSaveData(val: unknown, mapping: Map<string, string>): unknown {
-  try {
-    const parsed = (typeof val === 'string' ? JSON.parse(val) : val) as {
-      inventory?: Record<DisplayText, number>;
-    } | null;
-    if (parsed?.inventory && typeof parsed.inventory === 'object') {
-      parsed.inventory = migrateInventoryKeys(parsed.inventory);
-    }
-    const transformed = replaceUserIds(parsed, mapping);
-    if (isTimestampedSaveDataPayload(transformed)) {
-      transformed._last_updated = Temporal.Now.instant().epochMilliseconds;
-      return JSON.stringify(transformed);
-    }
-    return JSON.stringify(transformed);
-  } catch {
-    return replaceUserIds(val, mapping);
+  interface TimestampedSaveDataPayload {
+    _last_updated?: number;
   }
-}
 
-function transformColumnValue(
-  tableName: string,
-  col: string,
-  val: unknown,
-  mapping: Map<string, string>
-): unknown {
-  if (tableName === 'game_saves' && col === 'save_data') {
-    return transformSaveData(val, mapping);
+  function isTimestampedSaveDataPayload(val: unknown): val is TimestampedSaveDataPayload {
+    return typeof val === 'object' && val !== null;
   }
-  if (tableName === 'profiles' && col === 'db_version') {
-    return 3;
-  }
-  if (tableName === 'market_listings' && col === 'data') {
+
+  function transformSaveData(val: unknown, mapping: Map<string, string>): unknown {
     try {
-      const parsed: unknown = typeof val === 'string' ? JSON.parse(val) : val;
-      return JSON.stringify(replaceUserIds(parsed, mapping));
+      const parsed = (typeof val === 'string' ? JSON.parse(val) : val) as {
+        inventory?: Record<DisplayText, number>;
+      } | null;
+      if (parsed?.inventory && typeof parsed.inventory === 'object') {
+        parsed.inventory = migrateInventoryKeys(parsed.inventory);
+      }
+      const transformed = replaceUserIds(parsed, mapping);
+      if (isTimestampedSaveDataPayload(transformed)) {
+        transformed._last_updated = Temporal.Now.instant().epochMilliseconds;
+        return JSON.stringify(transformed);
+      }
+      return JSON.stringify(transformed);
     } catch {
       return replaceUserIds(val, mapping);
     }
   }
-  return replaceUserIds(val, mapping);
-}
 
-function applyTableSpecificRowFixes(rowCopy: Record<string, unknown>, tableName: string): void {
-  if (tableName === 'game_saves') {
-    if ('id' in rowCopy) rowCopy['last_save_id'] = rowCopy['id'];
-    rowCopy['updated_at'] = Temporal.Now.instant().toString();
+  function transformColumnValue(
+    tableName: string,
+    col: string,
+    val: unknown,
+    mapping: Map<string, string>
+  ): unknown {
+    if (tableName === 'game_saves' && col === 'save_data') {
+      return transformSaveData(val, mapping);
+    }
+    if (tableName === 'profiles' && col === 'db_version') {
+      return 3;
+    }
+    if (tableName === 'market_listings' && col === 'data') {
+      try {
+        const parsed: unknown = typeof val === 'string' ? JSON.parse(val) : val;
+        return JSON.stringify(replaceUserIds(parsed, mapping));
+      } catch {
+        return replaceUserIds(val, mapping);
+      }
+    }
+    return replaceUserIds(val, mapping);
   }
-  if (tableName === 'battle_invites' && 'challenger_id' in rowCopy) {
-    rowCopy['sender_id'] = rowCopy['challenger_id'];
+
+  function applyTableSpecificRowFixes(rowCopy: Record<string, unknown>, tableName: string): void {
+    if (tableName === 'game_saves') {
+      if ('id' in rowCopy) rowCopy['last_save_id'] = rowCopy['id'];
+      rowCopy['updated_at'] = Temporal.Now.instant().toString();
+    }
+    if (tableName === 'battle_invites' && 'challenger_id' in rowCopy) {
+      rowCopy['sender_id'] = rowCopy['challenger_id'];
+    }
   }
-}
 
-function normalizeSqliteColumnValue(val: unknown): unknown {
-  if (typeof val === 'boolean') {
-    return val ? 1 : 0;
+  function normalizeSqliteColumnValue(val: unknown): unknown {
+    if (typeof val === 'boolean') {
+      return val ? 1 : 0;
+    }
+    if (val !== null && typeof val === 'object') {
+      return JSON.stringify(val);
+    }
+    return val;
   }
-  if (val !== null && typeof val === 'object') {
-    return JSON.stringify(val);
+
+  const EMAIL_COLUMN_NAMES = ['email', 'winner_email', 'player_email'] as const;
+  const EMAIL_COLUMNS: ReadonlySet<string> = new Set<string>(EMAIL_COLUMN_NAMES);
+
+  // Función de transformación de fila
+  function transformRow(
+    row: Record<string, unknown>,
+    tableName: string,
+    mapping: Map<string, string>,
+    validCols: Set<string>,
+    hasIntPkId: boolean
+  ): Record<string, unknown> {
+    const newRow: Record<string, unknown> = {};
+    const rowCopy = { ...row };
+    applyTableSpecificRowFixes(rowCopy, tableName);
+
+    for (const col of Object.keys(rowCopy)) {
+      if (!validCols.has(col)) continue;
+
+      const rawVal = rowCopy[col];
+      if (col === 'id' && hasIntPkId && typeof rawVal === 'string') continue;
+      if (EMAIL_COLUMNS.has(col)) {
+        newRow[col] = rawVal;
+        continue;
+      }
+
+      const transformed = transformColumnValue(tableName, col, rawVal, mapping);
+      newRow[col] = normalizeSqliteColumnValue(transformed);
+    }
+    return newRow;
   }
-  return val;
-}
 
-const EMAIL_COLUMN_NAMES = [
-  'email',
-  'winner_email',
-  'player_email'
-] as const;
-const EMAIL_COLUMNS: ReadonlySet<string> = new Set<string>(
-  EMAIL_COLUMN_NAMES
-);
+  // 4. Inicializar Base de Datos SQLite temporal
+  const tempDir = path.resolve('scratch/database');
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+  }
 
-// Función de transformación de fila
-function transformRow(
-  row: Record<string, unknown>,
-  tableName: string,
-  mapping: Map<string, string>,
-  validCols: Set<string>,
-  hasIntPkId: boolean
-): Record<string, unknown> {
-  const newRow: Record<string, unknown> = {};
-  const rowCopy = { ...row };
-  applyTableSpecificRowFixes(rowCopy, tableName);
+  const dbPath = path.join(tempDir, 'manual_user_backup_import.db');
+  if (fs.existsSync(dbPath)) {
+    fs.unlinkSync(dbPath);
+  }
 
-  for (const col of Object.keys(rowCopy)) {
-    if (!validCols.has(col)) continue;
+  console.log(`🔌 Creando base de datos SQLite temporal en: ${dbPath}`);
+  using db = new DatabaseSync(dbPath);
 
-    const rawVal = rowCopy[col];
-    if (col === 'id' && hasIntPkId && typeof rawVal === 'string') continue;
-    if (EMAIL_COLUMNS.has(col)) {
-      newRow[col] = rawVal;
+  // 5. Crear esquemas de tablas
+  console.log('⚡ Inicializando esquemas de tablas...');
+  db.exec('PRAGMA foreign_keys = OFF;');
+
+  const ALL_SCHEMAS = [...TABLES_SCHEMA, '_migrations (id TEXT PRIMARY KEY, applied_at TEXT)'];
+
+  ALL_SCHEMAS.forEach((schema) => {
+    try {
+      db.exec(`CREATE TABLE IF NOT EXISTS ${schema};`);
+    } catch (e) {
+      console.error(
+        `⚠️ Error al crear tabla con esquema: ${schema.split(' ')[0]} - ${(e as Error).message}`
+      );
+    }
+  });
+
+  // Extraer metadatos de las columnas válidas de SQLite local
+  const tableColumns = new Map<string, Set<string>>();
+  const tableIntPk = new Map<string, boolean>();
+
+  ALL_SCHEMAS.forEach((schemaStr) => {
+    const parts = schemaStr.split('(');
+    if (parts.length < 2) return;
+    const tableName = parts[0]!.replace('CREATE TABLE IF NOT EXISTS', '').trim();
+
+    const info = db.prepare(`PRAGMA table_info(${tableName});`).all() as Array<{
+      name: string;
+      type: string;
+      pk: number;
+    }>;
+    if (info.length === 0) return;
+
+    const colSet = new Set<string>();
+    let hasIntPkId = false;
+
+    for (const col of info) {
+      const colName = col.name;
+      const colType = col.type;
+      const isPk = col.pk;
+
+      colSet.add(colName);
+      if (colName === 'id' && colType.toUpperCase() === 'INTEGER' && isPk === 1) {
+        // string-ok: Internal string formatting or DOM token identifier
+        hasIntPkId = true;
+      }
+    }
+
+    tableColumns.set(tableName, colSet);
+    tableIntPk.set(tableName, hasIntPkId);
+  });
+
+  // 6. Inserción de Datos Transformados
+  console.log('⚙️ Insertando y transformando datos...');
+  for (const tableName of Object.keys(backupData.data)) {
+    const rows = backupData.data[tableName];
+    if (!rows || rows.length === 0) continue;
+
+    const validCols = tableColumns.get(tableName);
+    const hasIntPkId = tableIntPk.get(tableName) || false;
+
+    if (!validCols) {
+      console.log(
+        `⚠️ Saltando tabla "${tableName}" (no definida en el esquema de la base de datos local)`
+      );
       continue;
     }
 
-    const transformed = transformColumnValue(tableName, col, rawVal, mapping);
-    newRow[col] = normalizeSqliteColumnValue(transformed);
-  }
-  return newRow;
-}
+    // Mapear y filtrar cada fila
+    const transformedRows = rows
+      .map((r: unknown) =>
+        transformRow(r as Record<string, unknown>, tableName, idMap, validCols, hasIntPkId)
+      ) // open-record: Generic key-value data dictionary container
+      .filter((row: Record<string, unknown>) => Object.keys(row).length > 0);
 
-// 4. Inicializar Base de Datos SQLite temporal
-const tempDir = path.resolve('scratch/database');
-if (!fs.existsSync(tempDir)) {
-  fs.mkdirSync(tempDir, { recursive: true });
-}
+    if (transformedRows.length === 0) continue;
 
-const dbPath = path.join(tempDir, 'manual_user_backup_import.db');
-if (fs.existsSync(dbPath)) {
-  fs.unlinkSync(dbPath);
-}
+    // Tomamos las columnas presentes en el primer registro transformado
+    const columns = Object.keys(transformedRows[0]!);
+    const placeholders = columns.map(() => '?').join(', ');
+    const sql = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders});`;
 
-console.log(`🔌 Creando base de datos SQLite temporal en: ${dbPath}`);
-using db = new DatabaseSync(dbPath);
-
-// 5. Crear esquemas de tablas
-console.log('⚡ Inicializando esquemas de tablas...');
-db.exec('PRAGMA foreign_keys = OFF;');
-
-const ALL_SCHEMAS = [...TABLES_SCHEMA, '_migrations (id TEXT PRIMARY KEY, applied_at TEXT)'];
-
-ALL_SCHEMAS.forEach((schema) => {
-  try {
-    db.exec(`CREATE TABLE IF NOT EXISTS ${schema};`);
-  } catch (e) {
-    console.error(
-      `⚠️ Error al crear tabla con esquema: ${schema.split(' ')[0]} - ${(e as Error).message}`
-    );
-  }
-});
-
-// Extraer metadatos de las columnas válidas de SQLite local
-const tableColumns = new Map<string, Set<string>>();
-const tableIntPk = new Map<string, boolean>();
-
-ALL_SCHEMAS.forEach((schemaStr) => {
-  const parts = schemaStr.split('(');
-  if (parts.length < 2) return;
-  const tableName = parts[0]!.replace('CREATE TABLE IF NOT EXISTS', '').trim();
-
-  const info = db.prepare(`PRAGMA table_info(${tableName});`).all() as Array<{
-    name: string;
-    type: string;
-    pk: number;
-  }>;
-  if (info.length === 0) return;
-
-  const colSet = new Set<string>();
-  let hasIntPkId = false;
-
-  for (const col of info) {
-    const colName = col.name;
-    const colType = col.type;
-    const isPk = col.pk;
-
-    colSet.add(colName);
-    if (colName === 'id' && colType.toUpperCase() === 'INTEGER' && isPk === 1) {
-      // string-ok: Internal string formatting or DOM token identifier
-      hasIntPkId = true;
-    }
-  }
-
-  tableColumns.set(tableName, colSet);
-  tableIntPk.set(tableName, hasIntPkId);
-});
-
-// 6. Inserción de Datos Transformados
-console.log('⚙️ Insertando y transformando datos...');
-for (const tableName of Object.keys(backupData.data)) {
-  const rows = backupData.data[tableName];
-  if (!rows || rows.length === 0) continue;
-
-  const validCols = tableColumns.get(tableName);
-  const hasIntPkId = tableIntPk.get(tableName) || false;
-
-  if (!validCols) {
-    console.log(
-      `⚠️ Saltando tabla "${tableName}" (no definida en el esquema de la base de datos local)`
-    );
-    continue;
-  }
-
-  // Mapear y filtrar cada fila
-  const transformedRows = rows
-    .map((r: unknown) =>
-      transformRow(r as Record<string, unknown>, tableName, idMap, validCols, hasIntPkId)
-    ) // open-record: Generic key-value data dictionary container
-    .filter((row: Record<string, unknown>) => Object.keys(row).length > 0);
-
-  if (transformedRows.length === 0) continue;
-
-  // Tomamos las columnas presentes en el primer registro transformado
-  const columns = Object.keys(transformedRows[0]!);
-  const placeholders = columns.map(() => '?').join(', ');
-  const sql = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders});`;
-
-  try {
-    const stmt = db.prepare(sql);
-    db.exec('BEGIN TRANSACTION;');
-    for (const row of transformedRows) {
-      const values = columns.map((col) => {
-        const val = row[col];
-        if (val === null || val === undefined) return null;
-        if (typeof val === 'string' || typeof val === 'number' || typeof val === 'bigint')
-          return val;
-        if (val instanceof Uint8Array) return val;
-        return String(val);
-      }) as (string | number | bigint | Uint8Array | null)[];
-      stmt.run(...values);
-    }
-    db.exec('COMMIT;');
-    console.log(
-      `✅ Tabla [${tableName}] importada con éxito: ${transformedRows.length} registros.`
-    );
-  } catch (err) {
     try {
-      db.exec('ROLLBACK;');
-    } catch (rollbackErr) {
-      rollbackErr;
+      const stmt = db.prepare(sql);
+      db.exec('BEGIN TRANSACTION;');
+      for (const row of transformedRows) {
+        const values = columns.map((col) => {
+          const val = row[col];
+          if (val === null || val === undefined) return null;
+          if (typeof val === 'string' || typeof val === 'number' || typeof val === 'bigint')
+            return val;
+          if (typeof val === 'boolean') return val ? 1 : 0;
+          if (val instanceof Uint8Array) return val;
+          if (typeof val === 'object') return JSON.stringify(val);
+          return '';
+        });
+        stmt.run(...values);
+      }
+      db.exec('COMMIT;');
+      console.log(
+        `✅ Tabla [${tableName}] importada con éxito: ${transformedRows.length} registros.`
+      );
+    } catch (err) {
+      try {
+        db.exec('ROLLBACK;');
+      } catch (err) {
+        console.warn('[Handled controlled exception]:', err);
+      }
+      console.error(`❌ Error al importar la tabla [${tableName}]: ${(err as Error).message}`);
     }
-    console.error(`❌ Error al importar la tabla [${tableName}]: ${(err as Error).message}`);
   }
-}
 
   db.exec('PRAGMA foreign_keys = ON;');
   db.close();
 
   console.log('\n==================================================');
   console.log('🎉 PROCESO DE IMPORTACIÓN A SQLITE COMPLETADO CON ÉXITO');
-  console.log(`📂 Archivo listo para el navegador en: scratch/database/manual_user_backup_import.db`);
+  console.log(
+    `📂 Archivo listo para el navegador en: scratch/database/manual_user_backup_import.db`
+  );
   console.log('==================================================\n');
 }
 
@@ -504,13 +510,17 @@ export const command = defineCommand({
     }
   },
   async run({ args }) {
-    const rawTarget = args.target ? String(args.target).replace(/^(?:server|s)=/, '').trim() : undefined;
+    const rawTarget = args.target
+      ? String(args.target)
+          .replace(/^(?:server|s)=/, '')
+          .trim()
+      : undefined;
     await runImportBackupToSqlite({
-      server: (args.server || rawTarget) as DisplayText | undefined,
-      file: args.file as AssetUri | undefined
+      server: args.server || rawTarget,
+      file: args.file
     });
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

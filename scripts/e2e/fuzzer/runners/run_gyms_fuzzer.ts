@@ -1,11 +1,13 @@
-// scripts/e2e/fuzzer/runners/run_gyms_fuzzer.ts
-import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
+
+// scripts/e2e/fuzzer/runners/run_gyms_fuzzer.ts
+import { defineCommand, runMain } from 'citty';
+
+import type { GymId } from '../../../../src/data/world/gyms.ts';
 import { processGymVictory, type Gym } from '../../../../src/logic/gym/gymEngine.ts';
 import type { GameState } from '../../../../src/types/system/game.ts';
-import type { GymId } from '../../../../src/data/world/gyms.ts';
+import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
 
 const REPORT_FILE = path.resolve(
   process.cwd(),

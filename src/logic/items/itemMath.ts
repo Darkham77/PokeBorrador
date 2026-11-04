@@ -12,7 +12,7 @@
 
 import type { ItemEffectResult } from '../../types/inventory/items.ts';
 import type { Pokemon, StatusClearTarget } from '../../types/pokemon/pokemon.ts';
-import { DEFAULT_MAX_PP_FALLBACK } from '../constants/gameplay.ts';
+import { DEFAULT_MAX_PP_FALLBACK, DEFAULT_MOVE_PP } from '../constants/gameplay.ts';
 import {
   calculateTotalBaseStats,
   calculateTotalIVs,
@@ -51,8 +51,6 @@ export function canFullRestore(p: Pokemon): boolean {
   const maxHp = Number(p.maxHp ?? 0);
   return hp > 0 && (hp < maxHp || Boolean(p.status));
 }
-
-import { DEFAULT_MOVE_PP } from '@/logic/constants/gameplay.ts';
 
 export function canRestorePP(p: Pokemon): boolean {
   if (Number(p.hp ?? 0) <= 0) return false;

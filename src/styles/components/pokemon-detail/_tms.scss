@@ -103,7 +103,7 @@
         border-radius: $radius-lg-alt;
         color: $black;
         font-size: var(--font-8); // Slightly smaller to fit better
-        font-weight: 900;
+        font-weight: $font-weight-black;
         box-shadow: var(--shadow-card);
       }
 
@@ -116,7 +116,7 @@
         .tm-name {
           color: $white;
           font-size: var(--font-11);
-          font-weight: 800;
+          font-weight: $font-weight-extrabold;
           margin-bottom: 2px;
         }
       }
@@ -124,7 +124,7 @@
       .tm-check {
         color: var(--yellow);
         font-size: var(--font-12);
-        font-weight: 900;
+        font-weight: $font-weight-black;
       }
 
       &.clickable-item {

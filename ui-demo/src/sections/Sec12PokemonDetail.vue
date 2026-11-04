@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 const activeTab = ref<'resumen' | 'stats' | 'ataques' | 'evol'>('resumen');

@@ -1,4 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
+
+import type { PlayerClassId } from '../../../src/data/player/playerClasses.ts';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import {
   armBattleFlowCompletion,
@@ -43,8 +45,7 @@ class RocketPoliceSimWrapper extends BaseBattleSimulation {
       const modalStore = useModalStore();
 
       modalStore.closeAll();
-      gameStore.state.playerClass =
-        p.playerClass as import('../../../src/data/player/playerClasses.ts').PlayerClassId;
+      gameStore.state.playerClass = p.playerClass as PlayerClassId;
       gameStore.state.classLevel = p.classLevel;
       gameStore.state.classData = {
         captureStreak: 0,

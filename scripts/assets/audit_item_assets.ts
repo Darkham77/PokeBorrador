@@ -1,5 +1,5 @@
-import type { DisplayText } from '@francogp/auditor';
-import { isMainModule } from '@francogp/auditor';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 /**
  * scripts/assets/audit_item_assets.ts
  *
@@ -9,11 +9,12 @@ import { isMainModule } from '@francogp/auditor';
  *
  * Usage: npm run assets:audit:items
  */
-
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import { styleText } from 'node:util';
+
+import type { DisplayText } from '@francogp/auditor';
+import { isMainModule } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
+
 import { SHOP_ITEMS } from '../../src/data/inventory/items.ts';
 
 const AUDIT_ITEM_MAPPING: Record<DisplayText, string> = {
@@ -166,7 +167,7 @@ async function checkIfAnyPathExists(paths: string[]): Promise<boolean> {
       await fs.access(p);
       return true;
     } catch (err) {
-      err;
+      console.warn('[Handled controlled exception]:', err);
     }
   }
   return false;
@@ -315,7 +316,9 @@ export const command = defineCommand({
       ];
       allMissing.forEach((i) => {
         lines.push(`- [MISSING] ${i.name} (ID: ${i.id}) [Shops: ${i.shops.join(', ') || 'None'}]`);
-        i.expectedPaths.forEach((p) => lines.push(`  Expected: ${path.relative(process.cwd(), p)}`));
+        i.expectedPaths.forEach((p) =>
+          lines.push(`  Expected: ${path.relative(process.cwd(), p)}`)
+        );
       });
       await fs.writeFile(outputPath, lines.join('\n'), 'utf-8');
       console.log(styleText('cyan', `\n✨ Reporte completo escrito en: ${args.output}`));
@@ -323,5 +326,5 @@ export const command = defineCommand({
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

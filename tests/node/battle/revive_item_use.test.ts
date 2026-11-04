@@ -93,7 +93,7 @@ describe('Revive Item Usage Unit Test', () => {
       'Faint Mew must receive only its own HP (6), not strong Mew HP'
     );
     assert.ok(
-      gameStore.state.team[0]!.hp <= gameStore.state.team[0]!.maxHp,
+      gameStore.state.team[0].hp <= gameStore.state.team[0].maxHp,
       'Faint Mew HP must never exceed its max HP'
     );
     assert.strictEqual(

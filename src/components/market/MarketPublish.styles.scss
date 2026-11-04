@@ -202,7 +202,7 @@
     .val {
       color: var(--white);
       font-size: var(--font-16);
-      font-weight: 900;
+      font-weight: $font-weight-black;
       line-height: 1.35;
       text-transform: uppercase;
     }

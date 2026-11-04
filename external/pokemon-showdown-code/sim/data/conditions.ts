@@ -3,9 +3,9 @@ export const Conditions: import('../sim/dex-conditions').ConditionDataTable = {
     name: 'brn',
     effectType: 'Status',
     onStart(target, source, sourceEffect) {
-      if (sourceEffect && sourceEffect.id === 'flameorb') {
+      if (sourceEffect?.id === 'flameorb') {
         this.add('-status', target, 'brn', '[from] item: Flame Orb');
-      } else if (sourceEffect && sourceEffect.effectType === 'Ability') {
+      } else if (sourceEffect?.effectType === 'Ability') {
         this.add(
           '-status',
           target,
@@ -27,7 +27,7 @@ export const Conditions: import('../sim/dex-conditions').ConditionDataTable = {
     name: 'par',
     effectType: 'Status',
     onStart(target, source, sourceEffect) {
-      if (sourceEffect && sourceEffect.effectType === 'Ability') {
+      if (sourceEffect?.effectType === 'Ability') {
         this.add(
           '-status',
           target,
@@ -60,7 +60,7 @@ export const Conditions: import('../sim/dex-conditions').ConditionDataTable = {
     name: 'slp',
     effectType: 'Status',
     onStart(target, source, sourceEffect) {
-      if (sourceEffect && sourceEffect.effectType === 'Ability') {
+      if (sourceEffect?.effectType === 'Ability') {
         this.add(
           '-status',
           target,
@@ -68,7 +68,7 @@ export const Conditions: import('../sim/dex-conditions').ConditionDataTable = {
           '[from] ability: ' + sourceEffect.name,
           `[of] ${source}`
         );
-      } else if (sourceEffect && sourceEffect.effectType === 'Move') {
+      } else if (sourceEffect?.effectType === 'Move') {
         this.add('-status', target, 'slp', `[from] move: ${sourceEffect.name}`);
       } else {
         this.add('-status', target, 'slp');
@@ -102,7 +102,7 @@ export const Conditions: import('../sim/dex-conditions').ConditionDataTable = {
     name: 'frz',
     effectType: 'Status',
     onStart(target, source, sourceEffect) {
-      if (sourceEffect && sourceEffect.effectType === 'Ability') {
+      if (sourceEffect?.effectType === 'Ability') {
         this.add(
           '-status',
           target,
@@ -148,7 +148,7 @@ export const Conditions: import('../sim/dex-conditions').ConditionDataTable = {
     name: 'psn',
     effectType: 'Status',
     onStart(target, source, sourceEffect) {
-      if (sourceEffect && sourceEffect.effectType === 'Ability') {
+      if (sourceEffect?.effectType === 'Ability') {
         this.add(
           '-status',
           target,
@@ -170,9 +170,9 @@ export const Conditions: import('../sim/dex-conditions').ConditionDataTable = {
     effectType: 'Status',
     onStart(target, source, sourceEffect) {
       this.effectState.stage = 0;
-      if (sourceEffect && sourceEffect.id === 'toxicorb') {
+      if (sourceEffect?.id === 'toxicorb') {
         this.add('-status', target, 'tox', '[from] item: Toxic Orb');
-      } else if (sourceEffect && sourceEffect.effectType === 'Ability') {
+      } else if (sourceEffect?.effectType === 'Ability') {
         this.add(
           '-status',
           target,
@@ -435,11 +435,17 @@ export const Conditions: import('../sim/dex-conditions').ConditionDataTable = {
     onStart(target) {
       this.effectState.targetSlot = target.getSlot();
       this.effectState.endingTurn = this.turn - 1 + 2;
-      if (this.effectState.endingTurn >= 254) {
+      if (this.gen >= 8 && this.effectState.endingTurn >= 256) {
         this.hint(
           `In Gen 8+, Future attacks will never resolve when used on the 255th turn or later.`
         );
       }
+    },
+    onRestart() {
+      if (this.gen >= 8 && this.effectState.endingTurn >= 256) {
+        this.hint(`A previous future attack is stuck on this slot and will never resolve.`);
+      }
+      return false;
     },
     onResidualOrder: 3,
     onResidual(target: Pokemon) {
@@ -458,8 +464,6 @@ export const Conditions: import('../sim/dex-conditions').ConditionDataTable = {
       }
 
       this.add('-end', target, 'move: ' + move.name);
-      target.removeVolatile('Protect');
-      target.removeVolatile('Endure');
 
       if (data.source.hasAbility('infiltrator') && this.gen >= 6) {
         data.moveData.infiltrates = true;
@@ -803,8 +807,7 @@ export const Conditions: import('../sim/dex-conditions').ConditionDataTable = {
     onEffectivenessPriority: -1,
     onEffectiveness(typeMod, target, type, move) {
       if (
-        move &&
-        move.effectType === 'Move' &&
+        move?.effectType === 'Move' &&
         move.category !== 'Status' &&
         type === 'Flying' &&
         typeMod > 0
@@ -830,7 +833,7 @@ export const Conditions: import('../sim/dex-conditions').ConditionDataTable = {
     name: 'Dynamax',
     noCopy: true,
     onStart(pokemon) {
-      this.effectState.turns = 0;
+      this.effectState.turns = 3;
       pokemon.removeVolatile('minimize');
       pokemon.removeVolatile('substitute');
       if (pokemon.volatiles['torment']) {
@@ -876,7 +879,7 @@ export const Conditions: import('../sim/dex-conditions').ConditionDataTable = {
     },
     onResidualPriority: -100,
     onResidual() {
-      this.effectState.turns++;
+      this.effectState.turns--;
     },
     onEnd(pokemon) {
       this.add('-end', pokemon, 'Dynamax');

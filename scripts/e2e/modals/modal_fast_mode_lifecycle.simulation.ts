@@ -12,8 +12,9 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
-import { BaseBattleSimulation } from '../base_battle_simulation.ts';
+
 import type { ModalRegistryKey } from '../../../src/logic/modals/registry.ts';
+import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 
 class ModalFastModeSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
@@ -23,14 +24,14 @@ class ModalFastModeSimWrapper extends BaseBattleSimulation {
   public async openModalDirectly(modalName: ModalRegistryKey): Promise<void> {
     await this.page.evaluate(async (name) => {
       const { useModalStore } = await import('../../../src/stores/modals.ts');
-      useModalStore().open(name as ModalRegistryKey);
+      useModalStore().open(name);
     }, modalName);
   }
 
   public async closeModalDirectly(modalName: ModalRegistryKey): Promise<void> {
     await this.page.evaluate(async (name) => {
       const { useModalStore } = await import('../../../src/stores/modals.ts');
-      useModalStore().close(name as ModalRegistryKey);
+      useModalStore().close(name);
     }, modalName);
   }
 

@@ -4,6 +4,7 @@
  * Resolves combatants, teams, and Pokémon UIDs from raw Showdown battle log lines.
  */
 
+import { logger } from '@/logic/utils/logger';
 import { useGameStore } from '@/stores/game';
 import type { BattleSide, BattleState } from '@/types/battle/battle.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon.ts';
@@ -71,7 +72,7 @@ function matchPokemonBySuffixOrIdentity(team: Pokemon[], rawId: string): Pokemon
             mon.id === namePart)
       ) ?? null; // text-ok: UI text display localization string
     if (suffixMon) {
-      console.debug(
+      logger.debug(
         `[E2E-GETPOKE-SUFFIX-MATCH] Matched rawId "${rawId}" to team UID "${suffixMon.uid}" via name/UID`
       );
       return suffixMon;
@@ -80,7 +81,7 @@ function matchPokemonBySuffixOrIdentity(team: Pokemon[], rawId: string): Pokemon
 
   const matchMon = findMatchingPokemon(rawId, team) ?? null;
   if (matchMon) {
-    console.debug(
+    logger.debug(
       `[E2E-GETPOKE-MATCHMON] Resolved rawId "${rawId}" to team UID "${matchMon.uid}" name "${matchMon.name}"`
     );
     return matchMon;
@@ -98,13 +99,13 @@ export function determineCombatantFromLog(
   if (!side) return null;
 
   if (!battle) {
-    console.debug(
+    logger.debug(
       `[E2E-GETPOKE] No active battle. rawId: "${rawId}", side: "${side}". Returning default.`
     );
     return fallbackMon;
   }
 
-  console.debug(`[E2E-GETPOKE] rawId: "${rawId}", side: "${side}", line: "${line}"`);
+  logger.debug(`[E2E-GETPOKE] rawId: "${rawId}", side: "${side}", line: "${line}"`);
 
   const team = resolveSideTeam(battle, side);
   const foundUid = extractUidFromLogLine(line, rawId);
@@ -118,12 +119,12 @@ export function determineCombatantFromLog(
     }
     const activeMon = locateActiveBattlePokemonByUid(battle, side, foundUid);
     if (activeMon) {
-      console.debug(
+      logger.debug(
         `[E2E-GETPOKE-RESOLVED-ACTIVE] Resolved rawId "${rawId}" to active UID "${foundInTeam.uid}" matches`
       );
       return activeMon;
     }
-    console.debug(
+    logger.debug(
       `[E2E-GETPOKE-RESOLVED-TEAM] Resolved rawId "${rawId}" to team UID "${foundInTeam.uid}" name "${foundInTeam.name}"`
     );
     return foundInTeam;

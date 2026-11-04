@@ -1,11 +1,12 @@
+import type { IncomingMessage, ServerResponse } from 'node:http';
+import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
+
 /**
  * VITE PLUGIN: LAN PvP & Matchmaking Bridge
  * Provides in-memory shared matchmaking queue, battle invites, and real-time WebSocket channel relay
  * across local network (LAN) clients during `npm run dev`.
  */
 import type { Plugin, ViteDevServer } from 'vite-plus';
-import type { IncomingMessage, ServerResponse } from 'node:http';
-import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { WebSocketServer, type WebSocket } from 'ws';
 
 export const LAN_PVP_QUERY_TYPES = ['query', 'run'] as const;
@@ -89,8 +90,8 @@ export function lanPvPPlugin(): Plugin {
                 return;
               }
 
-              const params: SQLInputValue[] = (body.params || []).map(
-                (p) => (p === undefined ? null : p) as SQLInputValue
+              const params: SQLInputValue[] = (body.params || []).map((p) =>
+                p === undefined ? null : p
               );
 
               if (body.type === 'query') {
@@ -152,7 +153,12 @@ export function lanPvPPlugin(): Plugin {
 
         ws.on('message', (raw: unknown) => {
           try {
-            const str = typeof raw === 'string' ? raw : Buffer.isBuffer(raw) ? raw.toString('utf-8') : String(raw);
+            const str =
+              typeof raw === 'string'
+                ? raw
+                : Buffer.isBuffer(raw)
+                  ? raw.toString('utf-8')
+                  : String(raw);
             const msg = JSON.parse(str) as {
               action?: string;
               channel?: string;
@@ -198,7 +204,7 @@ export function lanPvPPlugin(): Plugin {
               }
             }
           } catch (err) {
-            err;
+            console.warn('[Handled controlled exception]:', err);
           }
         });
 

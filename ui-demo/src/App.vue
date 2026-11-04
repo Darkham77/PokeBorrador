@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import { updatePixelScale, setCornerModel, type CornerModelId } from './logic/pixelEngine.ts';
 
+import { updatePixelScale, setCornerModel, type CornerModelId } from './logic/pixelEngine.ts';
 import Sec1NavigationTabs from './sections/Sec1NavigationTabs.vue';
 import Sec2FormControls from './sections/Sec2FormControls.vue';
 import Sec3InventorySlots from './sections/Sec3InventorySlots.vue';

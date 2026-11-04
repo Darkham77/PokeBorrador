@@ -1,7 +1,10 @@
 import { gsap } from 'gsap';
 
-import { requireFeetPoints, type FeetPoints } from '@/data/pokemon/pokemonFeetDatabase';
-import { GLOBAL_SHADOW_CONFIG } from '@/data/pokemon/pokemonFeetDatabase';
+import {
+  requireFeetPoints,
+  type FeetPoints,
+  GLOBAL_SHADOW_CONFIG
+} from '@/data/pokemon/pokemonFeetDatabase';
 
 const DEFAULT_SHADOW_WIDTH = GLOBAL_SHADOW_CONFIG.pixelation;
 const DEFAULT_SHADOW_HEIGHT = Math.max(

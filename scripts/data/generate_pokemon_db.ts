@@ -1,4 +1,3 @@
-import { isMainModule } from '@francogp/auditor';
 /**
  * scripts/data/generate_pokemon_db.ts
  *
@@ -11,14 +10,17 @@ import { isMainModule } from '@francogp/auditor';
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { defineCommand, runMain } from 'citty';
+
+import { isMainModule } from '@francogp/auditor';
 import { Dex } from '@pkmn/sim';
-import { toID } from '../../src/logic/utils/strings.ts';
-import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
-import { SPECIES_METADATA } from '../../src/data/pokemon/speciesMetadata.ts';
+import type { GenderName } from '@pkmn/types';
+import { defineCommand, runMain } from 'citty';
+
 import { requirePokemonMoveId, type PokemonMoveId } from '../../src/data/battle/moves.ts';
 import type { PokemonType } from '../../src/data/battle/types.ts';
-import type { GenderName } from '@pkmn/types';
+import { SPECIES_METADATA } from '../../src/data/pokemon/speciesMetadata.ts';
+import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
+import { toID } from '../../src/logic/utils/strings.ts';
 
 export interface CompactPokemonData {
   name: string; // domain-ok: Open dynamic text or non-domain string payload
@@ -221,10 +223,7 @@ export async function generatePokemonDatabase(): Promise<void> {
     db[speciesId] = buildCompactPokemonData(species, metadata, learnsetResult);
   }
 
-  const relPath = path
-    .relative(process.cwd(), OUTPUT_FILE)
-    .split(path.sep)
-    .join(path.posix.sep);
+  const relPath = path.relative(process.cwd(), OUTPUT_FILE).split(path.sep).join(path.posix.sep);
   const jsonContent = JSON.stringify(db, null, 2);
 
   try {
@@ -234,7 +233,7 @@ export async function generatePokemonDatabase(): Promise<void> {
       return;
     }
   } catch (err) {
-    err;
+    console.warn('[Handled controlled exception]:', err);
   }
 
   await fs.writeFile(OUTPUT_FILE, jsonContent, 'utf8');
@@ -255,5 +254,5 @@ export const command = defineCommand({
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

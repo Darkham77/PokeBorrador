@@ -66,27 +66,26 @@ const GSAP_EASE_OVERSHOOT_LIST = 1.15;
 const GSAP_EASE_OVERSHOOT_SPRITE = 1.275;
 
 // GSAP Stagger Entrance Animations for Milestone Cards
-const animateList = (): void => {
-  nextTick(() => {
-    if (!listRef.value) return;
-    const cards = listRef.value.querySelectorAll('.milestone-card');
-    if (cards.length > 0) {
-      listRef.value.classList.add('list-animating');
-      gsap.killTweensOf(cards);
-      gsap.from(cards, {
-        opacity: 0,
-        x: MILESTONE_LIST_ENTER_X_PX,
-        scale: MILESTONE_LIST_INITIAL_SCALE,
-        duration: MILESTONE_LIST_DURATION_SEC,
-        stagger: MILESTONE_LIST_STAGGER_SEC,
-        ease: `back.out(${GSAP_EASE_OVERSHOOT_LIST})`,
-        clearProps: 'all',
-        onComplete: () => {
-          listRef.value?.classList.remove('list-animating');
-        }
-      });
-    }
-  });
+const animateList = async (): Promise<void> => {
+  await nextTick();
+  if (!listRef.value) return;
+  const cards = listRef.value.querySelectorAll('.milestone-card');
+  if (cards.length > 0) {
+    listRef.value.classList.add('list-animating');
+    gsap.killTweensOf(cards);
+    gsap.from(cards, {
+      opacity: 0,
+      x: MILESTONE_LIST_ENTER_X_PX,
+      scale: MILESTONE_LIST_INITIAL_SCALE,
+      duration: MILESTONE_LIST_DURATION_SEC,
+      stagger: MILESTONE_LIST_STAGGER_SEC,
+      ease: `back.out(${GSAP_EASE_OVERSHOOT_LIST})`,
+      clearProps: 'all',
+      onComplete: () => {
+        listRef.value?.classList.remove('list-animating');
+      }
+    });
+  }
 };
 
 // ── GSAP HOVER HANDLERS ──────────────────────────────────────────────────────

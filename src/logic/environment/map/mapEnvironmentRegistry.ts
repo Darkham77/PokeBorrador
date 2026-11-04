@@ -15,7 +15,7 @@ import { isWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry.ts'
 import type { MapLocation } from '@/types/pokemon/encounters.ts';
 import { DAY_PHASES, type DayPhase } from '@/types/system/time.ts';
 
-import { BaseMapEnvironment, type MapEnvironmentBoundaries } from './baseMapEnvironment.ts';
+import { type BaseMapEnvironment, type MapEnvironmentBoundaries } from './baseMapEnvironment.ts';
 import {
   OutdoorEnvironment,
   SubterraneanCaveEnvironment,

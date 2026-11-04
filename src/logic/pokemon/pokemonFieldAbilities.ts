@@ -49,6 +49,7 @@ const FISHING_BITE_MULTIPLIER_NORMAL = 1.0;
 const FISHING_BITE_MULTIPLIER_BOOSTED = 2.0;
 
 const SNOW_WEATHERS: readonly WeatherId[] = ['snow', 'blizzard', 'cold', 'hail', 'coldwave'];
+const SNOW_WEATHERS_SET = new Set<WeatherId>(SNOW_WEATHERS);
 
 const PICKUP_BRACKET_FIRST_MAX_LEVEL = 20 as const;
 const PICKUP_BRACKET_SECOND_MIN_LEVEL = 21 as const;
@@ -293,7 +294,7 @@ export function getEncounterRateMultiplier(
   if (leaderAbility === 'sandveil' && weather === 'sandstorm') {
     return WEATHER_SPAWN_REDUCTION_MULTIPLIER;
   }
-  if (leaderAbility === 'snowcloak' && SNOW_WEATHERS.includes(weather)) {
+  if (leaderAbility === 'snowcloak' && SNOW_WEATHERS_SET.has(weather)) {
     return WEATHER_SPAWN_REDUCTION_MULTIPLIER;
   }
 

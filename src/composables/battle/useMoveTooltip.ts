@@ -1,5 +1,4 @@
-import { computed, toValue, type ComputedRef } from 'vue';
-import type { MaybeRefOrGetter } from 'vue';
+import { computed, toValue, type ComputedRef, type MaybeRefOrGetter } from 'vue';
 
 import type { PurePokemon } from '@/logic/battle/battleMath';
 import { calculateMoveModifierInfo, parseStatusEffectInfo } from '@/logic/battle/moveTooltipMath';

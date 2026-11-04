@@ -77,7 +77,7 @@ async function fetchPodium(): Promise<void> {
   try {
     const { data, error } = (await gameStore.db
       .from('competition_results')
-      .select('*')
+      .select('event_id, winners')
       .order('ended_at', { ascending: false })
       .limit(COMPETITION_RESULTS_LIMIT)) as {
       data: { event_id?: string; winners?: string | RankedPodiumWinner[] }[] | null;

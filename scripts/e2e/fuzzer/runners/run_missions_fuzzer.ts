@@ -1,18 +1,18 @@
-// scripts/e2e/fuzzer/runners/run_missions_fuzzer.ts
-import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
 import { Dex } from '@pkmn/sim';
-import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
+// scripts/e2e/fuzzer/runners/run_missions_fuzzer.ts
+import { defineCommand, runMain } from 'citty';
+
+import type { NatureId } from '../../../../src/data/battle/natures.ts';
+import type { PokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
 import {
   generateMission,
   validateMissionPokemon
 } from '../../../../src/logic/breeding/missionEngine.ts';
 import type { Pokemon } from '../../../../src/types/pokemon/pokemon.ts';
-import type { PokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
-import type { NatureId } from '../../../../src/data/battle/natures.ts';
-import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
-import type { PokemonType } from '../../../../src/data/battle/types.ts';
+import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
 
 const REPORT_FILE = path.resolve(
   process.cwd(),
@@ -42,14 +42,14 @@ async function runMissionsFuzzer() {
       name: speciesName,
       level,
       gender: 'm',
-      ability: 'illuminate' as AbilityId,
+      ability: 'illuminate',
       nature: nature.toLowerCase() as NatureId,
       ivs: { hp: ivs, atk: ivs, def: ivs, spa: ivs, spd: ivs, spe: ivs },
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
       moves: [],
       hp: 100,
       maxHp: 100,
-      type: 'normal' as PokemonType,
+      type: 'normal',
       atk: 10,
       def: 10,
       spa: 10,

@@ -1,21 +1,19 @@
-import { defineCommand, runMain } from 'citty';
 import type { PokemonSet } from '@pkmn/sim';
-import type { CertifiedBattleCase } from '../generators/fuzzer_team_generator.ts';
-import { loadCertifiedBattleCases } from '../../helpers/certifiedCaseLoader.ts';
+import { defineCommand, runMain } from 'citty';
+
+import { ACTIVE_SHOWDOWN_FORMAT } from '../../../../src/data/system/constants.ts';
 import {
   statsMap,
   patchShowdownSpreadModify
 } from '../../../../src/logic/battle/engine/showdownSpreadModifyHelper.ts';
-import { createShowdownBattle } from '../../../../src/logic/battle/helpers/showdownBattleFactory.ts';
-import {
-  ShowdownTeamMapper,
-  type CustomPokemonSet
-} from '../../../../src/logic/battle/helpers/showdownTeamMapper.ts';
-import { ShowdownLogEnricher } from '../../../../src/logic/battle/helpers/showdownLogEnricher.ts';
-import { ShowdownBattleRunner } from '../../../../src/logic/battle/helpers/showdownBattleRunner.ts';
-import { ACTIVE_SHOWDOWN_FORMAT } from '../../../../src/data/system/constants.ts';
 import { resetDeterministicMathRandom } from '../../../../src/logic/battle/helpers/seedInitializer.ts';
+import { createShowdownBattle } from '../../../../src/logic/battle/helpers/showdownBattleFactory.ts';
+import { ShowdownBattleRunner } from '../../../../src/logic/battle/helpers/showdownBattleRunner.ts';
+import { ShowdownLogEnricher } from '../../../../src/logic/battle/helpers/showdownLogEnricher.ts';
+import { ShowdownTeamMapper } from '../../../../src/logic/battle/helpers/showdownTeamMapper.ts';
+import { loadCertifiedBattleCases } from '../../helpers/certifiedCaseLoader.ts';
 import { formatExecutionTimestamp } from '../../logging/base_runner_logger.ts';
+import type { CertifiedBattleCase } from '../generators/fuzzer_team_generator.ts';
 
 // Aplicar el monkey-patch unificado de Showdown
 patchShowdownSpreadModify(() => true);
@@ -64,8 +62,8 @@ export async function replayCase(options: { caseId?: string; seedStr?: string })
   }
   // Populate statsMap to preserve stats in spreadModify
   statsMap.clear();
-  ShowdownTeamMapper.populateStatsMap(playerTeam as CustomPokemonSet[]);
-  ShowdownTeamMapper.populateStatsMap(enemyTeam as CustomPokemonSet[]);
+  ShowdownTeamMapper.populateStatsMap(playerTeam);
+  ShowdownTeamMapper.populateStatsMap(enemyTeam);
 
   resetDeterministicMathRandom();
   const battle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, seed);

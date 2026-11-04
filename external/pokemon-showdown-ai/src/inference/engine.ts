@@ -1,7 +1,7 @@
+import { logDebug } from '../logging/logger';
+import { BattleStateSnapshot, InferredInfo, PokemonState } from '../types';
 import { SetsDatabase } from './sets-database';
 import { PokemonTracker } from './tracker';
-import { BattleStateSnapshot, InferredInfo, PokemonState } from '../types';
-import { logDebug } from '../logging/logger';
 
 function toId(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]/g, '');

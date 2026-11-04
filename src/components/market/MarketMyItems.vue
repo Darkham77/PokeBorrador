@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia';
 import { ref, computed, onMounted } from 'vue';
 
 import { formatCurrency } from '@/logic/utils/formatters';
+import { logger } from '@/logic/utils/logger';
 import { useAudioStore } from '@/stores/audio';
 import { useGameStore } from '@/stores/game';
 import { useGTSStore } from '@/stores/gts';
@@ -120,7 +121,7 @@ onMounted(() => {
 });
 
 function handleCancel(listingId: string | number): void {
-  console.debug('[GTS] UI: handleCancel disparado para ID:', listingId);
+  logger.debug('[GTS] UI: handleCancel disparado para ID:', String(listingId));
   uiStore.openConfirm({
     title: '¿CANCELAR PUBLICACIÓN?',
     message:
@@ -129,12 +130,12 @@ function handleCancel(listingId: string | number): void {
     cancelText: 'CANCELAR',
     type: 'danger',
     onConfirm: async () => {
-      console.debug('[GTS] UI: Confirmación aceptada, llamando al store...');
+      logger.debug('[GTS] UI: Confirmación aceptada, llamando al store...');
       const success = await gtsStore.cancelListing(listingId);
-      console.debug('[GTS] UI: Resultado cancelación en store:', success);
+      logger.debug('[GTS] UI: Resultado cancelación en store:', String(success));
     },
     onCancel: () => {
-      console.debug('[GTS] UI: Cancelación abortada por el usuario.');
+      logger.debug('[GTS] UI: Cancelación abortada por el usuario.');
     }
   });
 }

@@ -320,7 +320,7 @@ describe('Battle Capture Domain Suite', () => {
 
       expect(consumedItem).toBe('pokeball');
       expect(fsmTransitions).toContain('ACTIVE_BATTLE:CATCH_PROCESS');
-      expect(fsmTransitions.filter((s) => s === 'ACTIVE_BATTLE:CATCH_SHAKE').length).toBe(2);
+      expect(fsmTransitions.filter((s) => s === 'ACTIVE_BATTLE:CATCH_SHAKE')).toHaveLength(2);
       expect(fsmTransitions).toContain('ACTIVE_BATTLE:CATCH_BREAK');
       expect(fsmTransitions).toContain('ACTIVE_BATTLE:FADEOUT_BALL');
 

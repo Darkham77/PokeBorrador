@@ -53,7 +53,7 @@ const emit = defineEmits<{
   'toggle-tag': [tagId: PokemonTagId];
 }>();
 
-const cardRef = ref(null);
+const cardRef = ref<HTMLElement | null>(null);
 const { isVisible } = useElementVisibility(cardRef);
 const uiStore = useUIStore();
 
@@ -260,7 +260,7 @@ function handleCardClick(): void {
   .danger-label {
     color: var(--rose);
     font-size: var(--font-10);
-    font-weight: 900;
+    font-weight: $font-weight-black;
     letter-spacing: 0.5px;
     margin-top: 2px;
   }

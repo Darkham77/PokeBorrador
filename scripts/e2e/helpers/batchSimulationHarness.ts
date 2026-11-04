@@ -1,20 +1,22 @@
-import { setTimeout } from 'node:timers/promises';
-import { test, type Page, type Browser, type BrowserContext } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
+import { setTimeout } from 'node:timers/promises';
+
+import { test, type Page, type Browser, type BrowserContext } from '@playwright/test';
+
+import type { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import {
   isTransientNetworkError,
   isTransientNetworkFailure,
   type CertifiedTestBatch
 } from '../e2e_helpers.ts';
-import type { BaseBattleSimulation } from '../base_battle_simulation.ts';
+import { getSuiteTimeoutForBatch } from '../simulation_config.ts';
 import {
   getSuiteCheckpoint,
   recordSuiteFailure,
   clearSuiteCheckpoint,
   isCleanRequested
 } from './e2eCheckpointManager.ts';
-import { getSuiteTimeoutForBatch } from '../simulation_config.ts';
 
 export interface BatchHarnessOptions<T extends CertifiedTestBatch> {
   suiteName: string;

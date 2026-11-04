@@ -132,7 +132,7 @@ export function syncActiveMovesFromRequest(active: BattleState | null, side: Bat
   if (!reqActive?.moves) return;
 
   if (isStaleRequest(request, poke.uid)) {
-    console.debug(
+    logger.debug(
       `[syncActiveMovesFromRequest] Bypassed stale request for ${poke.name} (${poke.uid})`
     );
     return;
@@ -154,7 +154,7 @@ export function syncActiveMovesFromRequest(active: BattleState | null, side: Bat
   if (side === 'player') {
     syncPlayerTeamMoves(poke.uid, currentMoves);
   }
-  console.debug(
+  logger.debug(
     `[useBattleStore] Sync'd ${side} moves from request:`,
     JSON.stringify(
       poke.moves.map((m) => (m ? `${m.id} (pp: ${m.pp}/${m.maxPP}, dis: ${m.disabled})` : ''))

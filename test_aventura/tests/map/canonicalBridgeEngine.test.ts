@@ -453,13 +453,13 @@ describe('canonicalBridgeEngine', () => {
         expect(pierRows.size).toBeGreaterThan(0);
         for (const [_, xs] of pierRows) {
           // Uniform 3-cell corridor terminating in water
-          expect(xs.length).toBe(3);
+          expect(xs).toHaveLength(3);
         }
       } else {
         expect(pierCols.size).toBeGreaterThan(0);
         for (const [_, ys] of pierCols) {
           // Uniform 3-cell corridor terminating in water
-          expect(ys.length).toBe(3);
+          expect(ys).toHaveLength(3);
         }
       }
     }
@@ -719,7 +719,7 @@ describe('canonicalBridgeEngine', () => {
 
       const pois = placeRegionalPOIs(continent, { targetCount: 18, seed: testSeed });
       const portDocks = pois.filter((p) => p.type === 'port_dock');
-      expect(portDocks.length).toBe(1);
+      expect(portDocks).toHaveLength(1);
 
       for (const dock of portDocks) {
         expect(dock.buildingFile).toMatch(
@@ -774,7 +774,7 @@ describe('canonicalBridgeEngine', () => {
         byY.set(b.y, xs);
       }
       for (const [_, xs] of byY) {
-        expect(xs.length).toBe(3);
+        expect(xs).toHaveLength(3);
       }
     } else {
       const byX = new Map<number, number[]>();
@@ -784,7 +784,7 @@ describe('canonicalBridgeEngine', () => {
         byX.set(b.x, ys);
       }
       for (const [_, ys] of byX) {
-        expect(ys.length).toBe(3);
+        expect(ys).toHaveLength(3);
       }
     }
 

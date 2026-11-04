@@ -46,7 +46,7 @@
 .team-pokemon-level {
   color: $yellow;
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   margin-bottom: spacing(2);
 }
 

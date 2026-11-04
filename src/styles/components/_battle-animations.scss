@@ -43,7 +43,7 @@
   background: Rgb(255 255 255 / 5%);
   color: var(--move-color);
   font-size: var(--font-9);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
 }
 
 .bat-move-tooltip-stats {
@@ -69,7 +69,7 @@
 .bat-move-tooltip-stat-value {
   color: $white;
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .bat-move-tooltip-desc {

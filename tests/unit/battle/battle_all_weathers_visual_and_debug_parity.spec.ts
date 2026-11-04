@@ -74,8 +74,8 @@ describe('Battle Weather & Debug Controls Parity Suite (RED -> GREEN)', () => {
       expect(overlay.classes()).toContain(w);
 
       // Cold and coldwave do NOT have precipitation particle layers
-      expect(wrapper.findAll('.snow-layer').length).toBe(0);
-      expect(wrapper.findAll('.rain-layer').length).toBe(0);
+      expect(wrapper.findAll('.snow-layer')).toHaveLength(0);
+      expect(wrapper.findAll('.rain-layer')).toHaveLength(0);
     }
   });
 

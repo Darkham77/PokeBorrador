@@ -8,13 +8,14 @@
  *   node --permission --experimental-strip-types --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/assets/organize_item_sprites_by_tier.ts
  */
 
-import fs from 'node:fs/promises';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import fs from 'node:fs/promises';
 import path from 'node:path';
-import sharp from 'sharp';
 import { styleText } from 'node:util';
+
 import { isMainModule } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
+import sharp from 'sharp';
 
 const RAW_BASE = path.resolve(process.cwd(), '_raw-assets/public/assets/sprites');
 const RAW_ITEMS_DIR = path.join(RAW_BASE, 'items');
@@ -22,7 +23,7 @@ const PUBLIC_BASE = path.resolve(process.cwd(), 'public/assets/sprites');
 const PUBLIC_ITEMS_DIR = path.join(PUBLIC_BASE, 'items');
 const ITEMS_JSON_PATH = path.resolve(process.cwd(), 'src/data/inventory/items.json');
 
-async function main() {
+async function main(): Promise<void> {
   console.log(styleText('cyan', '\n═══════════════════════════════════════════════════════'));
   console.log(styleText('cyan', '   REUBICACIÓN DE SPRITES A CRAFTING/TIER[0-3]'));
   console.log(styleText('cyan', '═══════════════════════════════════════════════════════\n'));
@@ -119,5 +120,5 @@ export const command = defineCommand({
 });
 
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

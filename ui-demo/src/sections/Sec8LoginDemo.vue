@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
 import { gsap } from 'gsap';
+import { ref, onMounted } from 'vue';
 
 const _AUTH_MODES = ['login', 'signup'] as const;
 type AuthMode = (typeof _AUTH_MODES)[number];

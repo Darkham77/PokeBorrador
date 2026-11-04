@@ -1,6 +1,7 @@
+import { ID, IDEntry, PokemonSet, RandomTeamsTypes, Species, StatID, StatsTable } from '@pkmn/sim';
+
 import { RandomGen2Teams } from './gen2';
 import { Utils } from './utils';
-import { ID, IDEntry, PokemonSet, RandomTeamsTypes, Species, StatID, StatsTable } from '@pkmn/sim';
 
 /* eslint-disable */
 const randomDataJSON = {
@@ -52,7 +53,7 @@ const randomDataJSON = {
     exclusiveMoves: ['doubleedge', 'hyperbeam', 'megadrain', 'substitute']
   },
   beedrill: {
-    level: 81,
+    level: 84,
     moves: ['hyperbeam', 'swordsdance', 'twineedle'],
     exclusiveMoves: ['agility', 'agility', 'megadrain']
   },
@@ -513,7 +514,7 @@ const randomDataJSON = {
   kangaskhan: {
     level: 73,
     moves: ['bodyslam', 'earthquake', 'hyperbeam'],
-    exclusiveMoves: ['blizzard', 'counter', 'rockslide', 'rockslide', 'surf']
+    exclusiveMoves: ['blizzard', 'counter', 'rockslide', 'rockslide']
   },
   horsea: {
     level: 88,
@@ -612,8 +613,8 @@ const randomDataJSON = {
   },
   omastar: {
     level: 74,
-    moves: ['bodyslam', 'rest', 'seismictoss'],
-    essentialMoves: ['blizzard'],
+    moves: ['rest', 'rest', 'seismictoss'],
+    essentialMoves: ['blizzard', 'bodyslam'],
     exclusiveMoves: ['hydropump', 'surf']
   },
   kabuto: { level: 88, moves: ['blizzard', 'bodyslam', 'slash', 'surf'] },

@@ -1,8 +1,9 @@
 import type { DisplayText } from '@francogp/auditor';
 import { type Page, type Locator, expect } from '@playwright/test';
+
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
-import { clickResilient } from './e2eLogger.ts';
 import type { WindowWithResolver } from './battleEventHelpers.ts';
+import { clickResilient } from './e2eLogger.ts';
 
 const STORE_READY_TIMEOUT_MS = 15000;
 const RESILIENT_NAV_TIMEOUT_MS = 15000;

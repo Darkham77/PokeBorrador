@@ -1,3 +1,4 @@
+import { logDebug } from '../logging/logger';
 import {
   PokemonState,
   BaseStats,
@@ -11,7 +12,6 @@ import {
   MoveInfo,
   ActiveRequest
 } from '../types';
-import { logDebug } from '../logging/logger';
 
 // ============================================================
 // Helpers

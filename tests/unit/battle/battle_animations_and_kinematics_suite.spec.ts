@@ -28,8 +28,8 @@ import {
 } from '@/components/battle/helpers/combatantFeedbackAnims';
 import { useBattleCombatantState } from '@/components/battle/useBattleCombatantState';
 import { isFlying } from '@/composables/battle/useBattleShadows';
-import { FLEE_SLIDE_DISTANCE_PX } from '@/logic/constants/animations';
 import {
+  FLEE_SLIDE_DISTANCE_PX,
   ATTACK_PHYSICAL_PREP_DURATION_SEC,
   ATTACK_PHYSICAL_DASH_DURATION_SEC,
   ATTACK_PHYSICAL_RETURN_DURATION_SEC,
@@ -167,7 +167,7 @@ describe('Attack Action Animations (buildAttackTimeline)', () => {
 
     // Verify calls to tl.to
     const toCalls = (tl!.to as ReturnType<typeof vi.fn>).mock.calls;
-    expect(toCalls.length).toBe(3);
+    expect(toCalls).toHaveLength(3);
 
     // Call 0: Prep
     const prepVars = toCalls[0]![1] as Record<string, unknown>;
@@ -349,7 +349,7 @@ describe('Attack Action Animations (buildAttackTimeline)', () => {
     expect(tl).not.toBeNull();
 
     const fromToCalls = (tl!.fromTo as ReturnType<typeof vi.fn>).mock.calls;
-    expect(fromToCalls.length).toBe(1);
+    expect(fromToCalls).toHaveLength(1);
 
     const toVars = fromToCalls[0]![2] as Record<string, unknown>;
     expect(toVars.scale).toBe(ATTACK_SPECIAL_SCALE);
@@ -377,7 +377,7 @@ describe('Attack Action Animations (buildAttackTimeline)', () => {
     expect(tl).not.toBeNull();
 
     const fromToCalls = (tl!.fromTo as ReturnType<typeof vi.fn>).mock.calls;
-    expect(fromToCalls.length).toBe(1);
+    expect(fromToCalls).toHaveLength(1);
 
     const targetEl = fromToCalls[0]![0];
     expect(targetEl).toBe(rotationEl);
@@ -522,7 +522,7 @@ describe('Escape Trajectories & GSAP Tweens', () => {
     expect(gsapToSpy).toHaveBeenCalled();
     const callArgs = gsapToSpy.mock.calls[0];
     expect(callArgs).toBeDefined();
-    const tweenProps = callArgs![1] as gsap.TweenVars;
+    const tweenProps = callArgs![1];
 
     expect(tweenProps.x).toBe(200);
     expect(tweenProps.y).toBe(-180);
@@ -572,7 +572,7 @@ describe('Escape Trajectories & GSAP Tweens', () => {
     expect(gsapToSpy).toHaveBeenCalled();
     const callArgs = gsapToSpy.mock.calls[0];
     expect(callArgs).toBeDefined();
-    const tweenProps = callArgs![1] as gsap.TweenVars;
+    const tweenProps = callArgs![1];
 
     expect(tweenProps.x).toBe(-200);
     expect(tweenProps.y).toBe(-180);
@@ -608,7 +608,7 @@ describe('Escape Trajectories & GSAP Tweens', () => {
     const callArgs = gsapToSpy.mock.calls[0];
     expect(callArgs).toBeDefined();
 
-    const tweenProps = callArgs![1] as gsap.TweenVars;
+    const tweenProps = callArgs![1];
     expect(tweenProps.x).toBe(FLEE_SLIDE_DISTANCE_PX);
     expect(tweenProps.scale).toBe(0.5);
     expect(tweenProps.opacity).toBe(0);
@@ -678,7 +678,7 @@ describe('Escape Trajectories & GSAP Tweens', () => {
     const callArgs = gsapToSpy.mock.calls[0];
     expect(callArgs).toBeDefined();
 
-    const tweenProps = callArgs![1] as gsap.TweenVars;
+    const tweenProps = callArgs![1];
     expect(tweenProps.x).toBe(-FLEE_SLIDE_DISTANCE_PX);
     expect(tweenProps.opacity).toBe(0);
   });

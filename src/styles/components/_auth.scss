@@ -97,7 +97,7 @@
   padding: 3px 10px;
   border-radius: $radius-3xl;
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   margin-top: 2px;
 
   &.type-grass {

@@ -17,7 +17,7 @@ import { isPlayerClassId, type PlayerClassId } from '@/data/player/playerClasses
 import { FULL_ROTATION_DEG } from '@/logic/constants/animations';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { formatCurrency } from '@/logic/utils/formatters';
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
+import { formatDisplayDate } from '@/logic/utils/timeUtils';
 import { useLivePvPStore } from '@/stores/livePvP';
 import { useModalStore } from '@/stores/modals';
 import type { BattleReplayRecord } from '@/types/battle/pvp';
@@ -94,20 +94,6 @@ const {
   fetchData
 } = useTrainerProfile(() => props.userId);
 
-const formatDate = (isoStr: string | null | undefined): string => {
-  if (!isoStr) return '---';
-  try {
-    const inst = Temporal.Instant.from(isoStr);
-    const zdt = inst.toZonedDateTimeISO(GAME_TIMEZONE);
-    const day = String(zdt.day).padStart(2, '0');
-    const month = String(zdt.month).padStart(2, '0');
-    const year = zdt.year;
-    return `${day}/${month}/${year}`;
-  } catch {
-    return '---';
-  }
-};
-
 const openRename = (): void => {
   modalStore.open('Rename');
 };
@@ -123,10 +109,10 @@ const { handleStatEnter, handleStatLeave } = useStatHover();
 
 const activityStats = computed(() => [
   { label: 'Tiempo Jugado', value: `${playtimeHours.value}h`, class: 'yellow-text' },
-  { label: 'Miembro Desde', value: formatDate(createdAt.value) },
+  { label: 'Miembro Desde', value: formatDisplayDate(createdAt.value) },
   {
     label: 'Última Partida',
-    value: isOwnProfile.value ? 'Activo Ahora' : formatDate(lastPlayedAt.value)
+    value: isOwnProfile.value ? 'Activo Ahora' : formatDisplayDate(lastPlayedAt.value)
   }
 ]);
 
@@ -144,19 +130,18 @@ const classStats = computed(() => {
 // Watch loading state to animate the spinner via GSAP
 watch(
   loading,
-  (newVal) => {
+  async (newVal) => {
     if (newVal) {
-      nextTick(() => {
-        const spinner = document.querySelector('.loader-spinner');
-        if (spinner) {
-          gsap.to(spinner, {
-            rotation: FULL_ROTATION_DEG,
-            duration: 1.5,
-            repeat: -1,
-            ease: 'none'
-          });
-        }
-      });
+      await nextTick();
+      const spinner = document.querySelector('.loader-spinner');
+      if (spinner) {
+        gsap.to(spinner, {
+          rotation: FULL_ROTATION_DEG,
+          duration: 1.5,
+          repeat: -1,
+          ease: 'none'
+        });
+      }
     }
   },
   { immediate: true }

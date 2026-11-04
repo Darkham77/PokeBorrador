@@ -1,6 +1,6 @@
 import { ObjectReadWriteStream } from '../../lib/streams';
-import { ID } from '../exported-global-types';
 import { Dex, toID } from '../dex';
+import { ID } from '../exported-global-types';
 import { PRNG, PRNGSeed } from '../prng';
 import { RandomPlayerAI } from './random-player-ai';
 import { AIOptions, Runner, RunnerOptions } from './runner';

@@ -4,69 +4,72 @@ Reflect.set(globalThis, '__E2E__', true);
 process.env.VITE_E2E = 'true';
 
 import fs from 'node:fs';
-import path from 'node:path';
 import os from 'node:os';
+import path from 'node:path';
 import { Worker } from 'node:worker_threads';
-import { toID, Dex, type SideID } from '@pkmn/sim';
+
+import { toID, Dex, type PokemonSet } from '@pkmn/sim';
+
+import { syncRequestConditionsWithSimulator } from '../../../../src/logic/battle/cheats.ts';
+import { PokemonLegalityValidator } from '../../../../src/logic/battle/engine/pokemonLegalityValidator.ts';
 import { ShowdownBattleEngine } from '../../../../src/logic/battle/engine/showdownBattleEngine.ts';
-import { fileWriterQueue } from '../../helpers/fileWriterQueue.ts';
-import { logger } from '../../../../src/logic/utils/logger.ts';
+import {
+  statsMap,
+  patchShowdownSpreadModify
+} from '../../../../src/logic/battle/engine/showdownSpreadModifyHelper.ts';
 import {
   parseShowdownSeedForBattle,
   resetDeterministicMathRandom
 } from '../../../../src/logic/battle/helpers/seedInitializer.ts';
+// Aplicar el monkey-patch unificado de Showdown
+import { resolveBaseStats } from '../../../../src/logic/battle/showdownAdapter.ts';
+import {
+  parseShowdownLogLine,
+  filterShowdownLogs
+} from '../../../../src/logic/battle/showdownBridge.ts';
+import { logger } from '../../../../src/logic/utils/logger.ts';
+import { fileWriterQueue } from '../../helpers/fileWriterQueue.ts';
+import {
+  generateItemTestBatches,
+  ITEM_FUZZER_ACTIVE_HOLDER_COUNT,
+  type ItemTestBatch
+} from '../generators/fuzzer_item_generator.ts';
 import { generateTestBatches, getTriggerSlot } from '../generators/fuzzer_team_generator.ts';
 import type {
   TestBatch,
   CertifiedBattleHistoryEntry
 } from '../generators/fuzzer_team_generator.ts';
 import { certifyBattleCase } from './certifiedBattleCase.ts';
-import {
-  generateItemTestBatches,
-  ITEM_FUZZER_ACTIVE_HOLDER_COUNT,
-  type ItemTestBatch
-} from '../generators/fuzzer_item_generator.ts';
-import { createMockBattleContext } from './fuzzer_mock_battle_store.ts';
-import {
-  parseShowdownLogLine,
-  filterShowdownLogs
-} from '../../../../src/logic/battle/showdownBridge.ts';
-import { fuzzerMemoryStore } from './fuzzerMemoryStore.ts';
-// Aplicar el monkey-patch unificado de Showdown
-import { resolveBaseStats } from '../../../../src/logic/battle/showdownAdapter.ts';
-import {
-  statsMap,
-  patchShowdownSpreadModify
-} from '../../../../src/logic/battle/engine/showdownSpreadModifyHelper.ts';
 import { BattleAgent, classifyRequest, type ChoiceRequest } from './fuzzer_agent.ts';
-import { syncRequestConditionsWithSimulator } from '../../../../src/logic/battle/cheats.ts';
-import { PokemonLegalityValidator } from '../../../../src/logic/battle/engine/pokemonLegalityValidator.ts';
+import { createMockBattleContext } from './fuzzer_mock_battle_store.ts';
+import { fuzzerMemoryStore } from './fuzzerMemoryStore.ts';
 
 // Force inMemory SQLite and Offline DB mode for maximum speed and zero I/O overhead
 Reflect.set(globalThis, '__E2E__', true);
 process.env.VITE_E2E = 'true';
 
 patchShowdownSpreadModify(() => true);
-import type { Pokemon, PokemonMoveId } from '../../../../src/types/pokemon/pokemon.ts';
-import type { PokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
-import type { NatureId } from '../../../../src/data/battle/natures.ts';
 import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
-import type { ItemId } from '../../../../src/data/inventory/items.ts';
-import type { PokemonType } from '../../../../src/data/battle/types.ts';
 import type { MoveCategory } from '../../../../src/data/battle/moves.ts';
+import type { NatureId } from '../../../../src/data/battle/natures.ts';
+import type { PokemonType } from '../../../../src/data/battle/types.ts';
+import type { ItemId } from '../../../../src/data/inventory/items.ts';
+import type { PokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
+import { ACTIVE_SHOWDOWN_FORMAT, MAX_BATTLE_TURNS } from '../../../../src/data/system/constants.ts';
+import { requiresAction } from '../../../../src/logic/battle/helpers/requestHelper.ts';
 import { createShowdownBattle } from '../../../../src/logic/battle/helpers/showdownBattleFactory.ts';
+import { ShowdownLogEnricher } from '../../../../src/logic/battle/helpers/showdownLogEnricher.ts';
 import {
   ShowdownTeamMapper,
   type CustomPokemonSet
 } from '../../../../src/logic/battle/helpers/showdownTeamMapper.ts';
-import { ShowdownLogEnricher } from '../../../../src/logic/battle/helpers/showdownLogEnricher.ts';
-import { requiresAction } from '../../../../src/logic/battle/helpers/requestHelper.ts';
-import { ACTIVE_SHOWDOWN_FORMAT, MAX_BATTLE_TURNS } from '../../../../src/data/system/constants.ts';
+import type { Pokemon, PokemonMoveId } from '../../../../src/types/pokemon/pokemon.ts';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../../simulation_config.ts';
 
 // Capped at total logical CPU cores divided by 4 (physical cores / 2) to optimize throughput
 export const MAX_WORKER_CORES = Math.max(1, Math.floor(os.cpus().length / 4));
 
+import { calcStatsPure } from '../../../../src/logic/pokemon/statsMath.ts';
 import {
   EXCLUDED_ABILITY_ENTRIES,
   EXCLUDED_FROM_SINGLES_REPORT,
@@ -76,8 +79,6 @@ import {
   FUSION_LOCKED_ABILITIES
 } from '../scenarios/fuzzer_excluded_abilities.ts';
 import type { FuzzerResult } from './fuzzer_runner.ts';
-import { calcStatsPure } from '../../../../src/logic/pokemon/statsMath.ts';
-import type { PokemonSet } from '@pkmn/sim';
 
 const RESULTS_DIR = path.resolve(process.cwd(), 'scripts/e2e/results');
 const MOVES_REPORT_FILE = path.join(RESULTS_DIR, 'fuzzer_moves_coverage_report.json');
@@ -187,9 +188,7 @@ export function createLocalPoke(set: PokemonSet): Pokemon {
     spa: calculated.spa,
     spd: calculated.spd,
     spe: calculated.spe,
-    ivs: (Reflect.get(set, 'ivs') as
-      | { hp: number; atk: number; def: number; spa: number; spd: number; spe: number }
-      | undefined) || { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+    ivs: Reflect.get(set, 'ivs') || { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
     nature: (
       (Reflect.get(set, 'nature') as string | undefined) || 'serious'
     ).toLowerCase() as NatureId,
@@ -483,7 +482,7 @@ export async function runStandaloneBatch(
 
         const preTurnForceSwitches: Partial<Record<DisplayText, boolean>> = {};
         for (const side of simBattle.sides) {
-          const reqKind = classifyRequest(side.activeRequest as ChoiceRequest);
+          const reqKind = classifyRequest(side.activeRequest);
           if (reqKind === 'force-switch' || side.requestState === 'switch') {
             preTurnForceSwitches[side.id] = true;
           }
@@ -500,11 +499,8 @@ export async function runStandaloneBatch(
           agent2.abilityTriggerMoveSlot = dynamicTriggerSlot;
         }
 
-        const p1ReqKind = classifyRequest(p1Req as ChoiceRequest);
-        const activeHasExecutableMove = hasExecutableTestMove(
-          p1Req as ChoiceRequest,
-          agent1.movesToTest
-        );
+        const p1ReqKind = classifyRequest(p1Req);
+        const activeHasExecutableMove = hasExecutableTestMove(p1Req, agent1.movesToTest);
         const ipbActive =
           agent1.movesToTest.size > 0 &&
           activeHasExecutableMove &&
@@ -518,8 +514,8 @@ export async function runStandaloneBatch(
         Reflect.set(engine, 'battle', simBattle);
 
         const { p1AcceptedChoice, p2AcceptedChoice, appliedCheats } = engine.executeTurn({
-          p1Agent: agent1 as { decide(req: unknown): string },
-          p2Agent: agent2 as { decide(req: unknown): string },
+          p1Agent: agent1,
+          p2Agent: agent2,
           ipbActive
         });
 
@@ -662,7 +658,7 @@ export async function runStandaloneBatch(
           };
 
           for (const side of simBattle.sides) {
-            const seatId = side.id as SideID;
+            const seatId = side.id;
             if (preTurnForceSwitches[seatId]) {
               const key = `${seatId}ForceSwitch` as keyof CertifiedBattleHistoryEntry;
               Reflect.set(histEntry, key, true);
@@ -679,7 +675,7 @@ export async function runStandaloneBatch(
 
           if (hasPostTurnCheats) {
             appliedCheats.forEach((c) => {
-              const seatId = c.side as SideID;
+              const seatId = c.side;
               const key = `${seatId}Heal` as keyof CertifiedBattleHistoryEntry;
               Reflect.set(histEntry, key, true);
             });
@@ -788,16 +784,16 @@ export async function runStandaloneBatch(
         // (saves happen outside the loop after it completes)
       }
     } catch (err: unknown) {
-      const errMsg = err instanceof Error ? (err as Error).message : String(err);
+      const errMsg = err instanceof Error ? err.message : String(err);
       const batchIdStr = (batch as { id?: string }).id ?? 'unknown'; // no-domain: Non-domain utility collection or data structure
       console.error(`❌ [FUZZER-BATCH-CRASH] Turn ${turn} Batch ${batchIdStr}: ${errMsg}`, err);
 
       batch.movesToTest.forEach((m) => {
         if (moveCoverage[m]) {
-          moveCoverage[m]!.status = 'FAIL';
-          moveCoverage[m]!.details = `CRASH: ${errMsg}`;
-          moveCoverage[m]!.unhandledLogs = [...localUnhandled];
-          moveCoverage[m]!.reproduceTrace = {
+          moveCoverage[m].status = 'FAIL';
+          moveCoverage[m].details = `CRASH: ${errMsg}`;
+          moveCoverage[m].unhandledLogs = [...localUnhandled];
+          moveCoverage[m].reproduceTrace = {
             playerTeam: batch.playerTeam.map((p) => `${p.name} (${p.species})`),
             enemyTeam: batch.enemyTeam.map((e) => `${e.name} (${e.species})`),
             steps: [...steps]
@@ -807,10 +803,10 @@ export async function runStandaloneBatch(
 
       batch.abilitiesToTest.forEach((a) => {
         if (abilityCoverage[a]) {
-          abilityCoverage[a]!.status = 'FAIL';
-          abilityCoverage[a]!.details = `CRASH: ${errMsg}`;
-          abilityCoverage[a]!.unhandledLogs = [...localUnhandled];
-          abilityCoverage[a]!.reproduceTrace = {
+          abilityCoverage[a].status = 'FAIL';
+          abilityCoverage[a].details = `CRASH: ${errMsg}`;
+          abilityCoverage[a].unhandledLogs = [...localUnhandled];
+          abilityCoverage[a].reproduceTrace = {
             playerTeam: batch.playerTeam.map((p) => `${p.name} (${p.species})`),
             enemyTeam: batch.enemyTeam.map((e) => `${e.name} (${e.species})`),
             steps: [...steps]
@@ -1305,8 +1301,8 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
         const p2Req = simBattle.p2.activeRequest;
         if (!p1Req || !p2Req) break;
 
-        const p1Choice = agent1.decide(p1Req as ChoiceRequest);
-        const p2Choice = agent2.decide(p2Req as ChoiceRequest);
+        const p1Choice = agent1.decide(p1Req);
+        const p2Choice = agent2.decide(p2Req);
         const anySeatNeedsAction = simBattle.sides.some(
           (side) =>
             requiresAction(side.activeRequest) ||
@@ -1315,18 +1311,16 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
         );
 
         const preTurnP1ForceSwitch =
-          classifyRequest(p1Req as ChoiceRequest) === 'force-switch' ||
-          simBattle.p1.requestState === 'switch';
+          classifyRequest(p1Req) === 'force-switch' || simBattle.p1.requestState === 'switch';
         const preTurnP2ForceSwitch =
-          classifyRequest(p2Req as ChoiceRequest) === 'force-switch' ||
-          simBattle.p2.requestState === 'switch';
+          classifyRequest(p2Req) === 'force-switch' || simBattle.p2.requestState === 'switch';
 
         const engine = new ShowdownBattleEngine({ mode: 'fuzzer' });
         Reflect.set(engine, 'battle', simBattle);
 
         const testedItemId = batch.itemsToTest[0] ?? '';
         const itemHasEvidence = testedItemId
-          ? hasCertifiedItemProtocolEvidence(testedItemId as ItemId, certifiedRawLogs)
+          ? hasCertifiedItemProtocolEvidence(testedItemId, certifiedRawLogs)
           : false;
         const ipbActive = !batch.disableIpbHealing && !itemHasEvidence && turn <= 6;
 

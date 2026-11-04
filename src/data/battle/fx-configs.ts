@@ -5,6 +5,7 @@
  */
 
 import type { DisplayText } from '@francogp/auditor';
+
 import { POKEMON_STATUSES } from '@/types/pokemon/pokemon';
 
 export interface ParticleArea {
@@ -66,21 +67,10 @@ const FIELD_EFFECT_KEY_VALUES = [
   'stealthrock',
   'toxicspikes'
 ] as const;
-const FIELD_EFFECT_KEYS_SET: ReadonlySet<string> = new Set<string>(
-  FIELD_EFFECT_KEY_VALUES
-);
+const FIELD_EFFECT_KEYS_SET: ReadonlySet<string> = new Set<string>(FIELD_EFFECT_KEY_VALUES);
 
-const FEET_EFFECT_VALUES = [
-  'seed',
-  'trapped',
-  'bound',
-  'ingrain',
-  'seeded',
-  'ingrained'
-] as const;
-const FEET_EFFECTS_SET: ReadonlySet<string> = new Set<string>(
-  FEET_EFFECT_VALUES
-);
+const FEET_EFFECT_VALUES = ['seed', 'trapped', 'bound', 'ingrain', 'seeded', 'ingrained'] as const;
+const FEET_EFFECTS_SET: ReadonlySet<string> = new Set<string>(FEET_EFFECT_VALUES);
 
 const HEAD_EFFECT_VALUES = [
   'sleep',
@@ -90,23 +80,12 @@ const HEAD_EFFECT_VALUES = [
   'slp',
   'perishsong'
 ] as const;
-const HEAD_EFFECTS_SET: ReadonlySet<string> = new Set<string>(
-  HEAD_EFFECT_VALUES
-);
+const HEAD_EFFECTS_SET: ReadonlySet<string> = new Set<string>(HEAD_EFFECT_VALUES);
 
-const PRIMARY_STATUS_SET: ReadonlySet<string> = new Set<string>(
-  POKEMON_STATUSES
-);
+const PRIMARY_STATUS_SET: ReadonlySet<string> = new Set<string>(POKEMON_STATUSES);
 
-const TACTICAL_STATUS_VALUES = [
-  'protected',
-  'enduring',
-  'focus',
-  'lockon'
-] as const;
-const TACTICAL_STATUS_SET: ReadonlySet<string> = new Set<string>(
-  TACTICAL_STATUS_VALUES
-);
+const TACTICAL_STATUS_VALUES = ['protected', 'enduring', 'focus', 'lockon'] as const;
+const TACTICAL_STATUS_SET: ReadonlySet<string> = new Set<string>(TACTICAL_STATUS_VALUES);
 
 interface StaticEffectConfig {
   mult: number;
@@ -261,7 +240,7 @@ function resolveScaleFactor(typeKey: string, ar: number, options: ResolveEffectO
           0.15,
           Math.min(
             2.5,
-            Math.pow((options.isBattle ? ar / BATTLE_AR_DIVISOR : ar) / BASE_AR_SCALE_NORM, 2)
+            ((options.isBattle ? ar / BATTLE_AR_DIVISOR : ar) / BASE_AR_SCALE_NORM) ** 2
           )
         );
 

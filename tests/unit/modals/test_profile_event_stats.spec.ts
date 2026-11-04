@@ -126,7 +126,7 @@ describe('Profile Event Stats & Medals Integration', () => {
       const authStore = useAuthStore();
       const gameStore = useGameStore();
 
-      authStore.user = { id: 'usr-123' } as unknown as typeof authStore.user;
+      authStore.user = { id: 'usr-123' };
       gameStore.state.stats = {
         eventParticipations: 5,
         eventMedalsFirst: 2,

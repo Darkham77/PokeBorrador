@@ -35,6 +35,27 @@ export interface UseShopLogicReturn {
   animateGrid: () => void;
 }
 
+export function compareShopItems<T extends { name: string; tier?: ItemTier }>(
+  a: T,
+  b: T,
+  sortKey: string,
+  sortOrder: 'asc' | 'desc',
+  getPrice: (item: T) => number
+): number {
+  let comp: number;
+  if (sortKey === 'price') {
+    comp = getPrice(a) - getPrice(b);
+  } else if (sortKey === 'rarity') {
+    const tiers: Record<ItemTier, number> = { common: 0, rare: 1, epic: 2, legend: 3 };
+    const aT = tiers[a.tier || 'common'] ?? 0;
+    const bT = tiers[b.tier || 'common'] ?? 0;
+    comp = bT - aT;
+  } else {
+    comp = a.name.localeCompare(b.name);
+  }
+  return sortOrder === 'asc' ? comp : -comp;
+}
+
 export function useShopLogic(options: {
   isBCShop: boolean;
   initialCategory?: string;
@@ -65,26 +86,11 @@ export function useShopLogic(options: {
       return true;
     });
 
-    return items.toSorted((a, b) => {
-      let comp: number;
-      if (sortKey.value === 'price') {
-        if (options.isBCShop) {
-          const aPrice = a.bcPrice ?? a.price ?? 0;
-          const bPrice = b.bcPrice ?? b.price ?? 0;
-          comp = aPrice - bPrice;
-        } else {
-          comp = (a.price || 0) - (b.price || 0);
-        }
-      } else if (sortKey.value === 'rarity') {
-        const tiers: Record<ItemTier, number> = { common: 0, rare: 1, epic: 2, legend: 3 };
-        const aT = tiers[a.tier || 'common'] ?? 0;
-        const bT = tiers[b.tier || 'common'] ?? 0;
-        comp = bT - aT;
-      } else {
-        comp = a.name.localeCompare(b.name);
-      }
-      return sortOrder.value === 'asc' ? comp : -comp;
-    });
+    return items.toSorted((a, b) =>
+      compareShopItems(a, b, sortKey.value, sortOrder.value, (item) =>
+        options.isBCShop ? (item.bcPrice ?? item.price ?? 0) : item.price || 0
+      )
+    );
   });
 
   const availableCategories = computed<string[]>(() => {

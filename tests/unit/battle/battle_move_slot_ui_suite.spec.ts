@@ -259,8 +259,8 @@ describe('Battle Move Slot UI & Choice / Volatile Move Locking Suite', () => {
         currentState: { value: BATTLE_STATES.ACTIVE_BATTLE } as { value: string },
         currentSubState: { value: BATTLE_SUBSTATES.WAIT_INPUT } as { value: string | null },
         transition: vi.fn(async (s: string, sub?: string) => {
-          (fsm.currentState as { value: string }).value = s;
-          if (sub) (fsm.currentSubState as { value: string | null }).value = sub;
+          fsm.currentState.value = s;
+          if (sub) fsm.currentSubState.value = sub;
         })
       };
 

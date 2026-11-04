@@ -77,7 +77,7 @@ describe('seasonTeamFilter - Frontera Kanto & Johto', () => {
     ];
 
     const autoTeam = buildAutoRankedTeam(pool, frontierRules, 6);
-    expect(autoTeam.length).toBe(6);
+    expect(autoTeam).toHaveLength(6);
     // None should be Dragonite High (Lv 85) or Castform (Gen 3)
     const uids = autoTeam.map((p) => p.uid);
     expect(uids).not.toContain('p1');

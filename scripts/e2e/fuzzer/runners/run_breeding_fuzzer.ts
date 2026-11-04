@@ -1,9 +1,16 @@
-import type { DisplayText } from '@francogp/auditor';
-import { isMainModule } from '@francogp/auditor';
 // scripts/e2e/fuzzer/runners/run_breeding_fuzzer.ts
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
+import type { DisplayText } from '@francogp/auditor';
+import { isMainModule } from '@francogp/auditor';
+import { Dex } from '@pkmn/sim';
 import { defineCommand, runMain } from 'citty';
+
+import {
+  requirePokemonSpeciesId,
+  isPokemonSpeciesId
+} from '../../../../src/data/pokemon/pokedex.ts';
 import {
   checkCompatibility,
   getEggSpecies
@@ -13,12 +20,7 @@ import {
   inheritNature,
   inheritMoves
 } from '../../../../src/logic/breeding/breedingInheritance.ts';
-import { Dex } from '@pkmn/sim';
 import type { Pokemon, PokemonGender, PokemonIVs } from '../../../../src/types/pokemon/pokemon.ts';
-import {
-  requirePokemonSpeciesId,
-  isPokemonSpeciesId
-} from '../../../../src/data/pokemon/pokedex.ts';
 
 const REPORT_FILE = path.resolve(
   process.cwd(),

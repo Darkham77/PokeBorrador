@@ -148,7 +148,7 @@ describe('Admin & Dev Views Helpers Domain Suite', () => {
           forceShiny: false,
           guardianProb: 0
         });
-        expect(emptyTeam.length).toBe(MIN_DEBUG_TEAM_SIZE);
+        expect(emptyTeam).toHaveLength(MIN_DEBUG_TEAM_SIZE);
 
         const largeTeam = generateDebugTeamList({
           size: 100,
@@ -158,7 +158,7 @@ describe('Admin & Dev Views Helpers Domain Suite', () => {
           forceShiny: false,
           guardianProb: 0
         });
-        expect(largeTeam.length).toBe(MAX_DEBUG_TEAM_SIZE);
+        expect(largeTeam).toHaveLength(MAX_DEBUG_TEAM_SIZE);
       });
 
       it('handles empty pool safely', () => {

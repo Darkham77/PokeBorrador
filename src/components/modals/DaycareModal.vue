@@ -224,24 +224,24 @@ onMounted(() => {
       'slot-b'
       'compat';
   }
+}
 
-  // Make Slot components flex-1
-  & > :deep(.daycare-slot-legacy) {
-    min-height: unset;
-    border: 2px solid Rgb(255 51 102 / 12%);
-    background: Rgb(20 10 15 / 55%);
-    flex: 1;
-    box-shadow: var(--shadow-card);
+// Make Slot components flex-1
+:deep(.daycare-slot-legacy) {
+  min-height: unset;
+  border: 2px solid Rgb(255 51 102 / 12%);
+  background: Rgb(20 10 15 / 55%);
+  flex: 1;
+  box-shadow: var(--shadow-card);
 
-    &.empty {
-      background: Rgb(0 0 0 / 25%);
-      border-color: Rgb(255 51 102 / 20%);
-      &:hover {
-        border-color: var(--daycare-pink);
-        box-shadow: var(--shadow-glow-amber);
-        .plus-icon {
-          color: var(--daycare-pink);
-        }
+  &.empty {
+    background: Rgb(0 0 0 / 25%);
+    border-color: Rgb(255 51 102 / 20%);
+    &:hover {
+      border-color: var(--daycare-pink);
+      box-shadow: var(--shadow-glow-amber);
+      .plus-icon {
+        color: var(--daycare-pink);
       }
     }
   }

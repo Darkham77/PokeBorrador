@@ -47,9 +47,19 @@ export function getRouteWeather(
   }
   const routeTables = ROUTE_WEATHER_TABLES[mapId];
   const seasonTable = routeTables[seasonId];
+  if (!seasonTable) {
+    throw new Error(
+      `[weatherUtils] Season '${String(seasonId)}' has no weather data for route '${String(mapId)}'`
+    );
+  }
 
   const cycle: DayPhase = forcedCycle || getDayCycle(epochHour * ONE_HOUR_MS);
   const table = seasonTable[cycle];
+  if (!table) {
+    throw new Error(
+      `[weatherUtils] No weather table found for season '${String(seasonId)}' cycle '${cycle}' in route '${String(mapId)}'`
+    );
+  }
 
   // 2. Generate Deterministic Seed
   const mapHash = hashString(mapId);

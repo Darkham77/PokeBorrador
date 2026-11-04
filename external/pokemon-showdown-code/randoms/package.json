@@ -1,6 +1,6 @@
 {
   "name": "@pkmn/randoms",
-  "version": "0.10.11",
+  "version": "0.10.12",
   "description": "Random team generation logic for Pokémon Showdown's Random Battle formats",
   "license": "MIT",
   "repository": "github:pkmn/ps",
@@ -24,7 +24,7 @@
     "posttest": "npm run lint"
   },
   "dependencies": {
-    "@pkmn/sim": "^0.10.11"
+    "@pkmn/sim": "^0.10.12"
   },
   "jest": {
     "preset": "ts-jest",

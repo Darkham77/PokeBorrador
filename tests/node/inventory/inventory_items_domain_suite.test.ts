@@ -141,23 +141,23 @@ describe('Inventory Items Domain Suite', () => {
       const reactiveMon = reactive(makeMon({ hp: 30, maxHp: 60, status: undefined }));
 
       assert.doesNotThrow(() => {
-        isValidTarget('potion', reactiveMon as unknown as Pokemon);
+        isValidTarget('potion', reactiveMon);
       }, 'isValidTarget must not throw when receiving a Vue reactive Proxy');
     });
 
     it('returns true for potion on a reactive proxy with HP below max', () => {
       const reactiveMon = reactive(makeMon({ hp: 30, maxHp: 60, status: undefined }));
-      assert.ok(isValidTarget('potion', reactiveMon as unknown as Pokemon));
+      assert.ok(isValidTarget('potion', reactiveMon));
     });
 
     it('returns false for potion on a reactive proxy with full HP', () => {
       const reactiveMon = reactive(makeMon({ hp: 60, maxHp: 60, status: undefined }));
-      assert.ok(!isValidTarget('potion', reactiveMon as unknown as Pokemon));
+      assert.ok(!isValidTarget('potion', reactiveMon));
     });
 
     it('isValidTarget operates declaratively without throwing on reactive proxies', () => {
       const reactiveMon = reactive(makeMon());
-      assert.doesNotThrow(() => isValidTarget('potion', reactiveMon as unknown as Pokemon));
+      assert.doesNotThrow(() => isValidTarget('potion', reactiveMon));
     });
   });
 

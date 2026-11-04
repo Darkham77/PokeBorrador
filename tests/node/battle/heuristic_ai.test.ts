@@ -125,7 +125,7 @@ describe('HeuristicAI - Path Coverage Tests', () => {
       const result = ai.shouldSwitch(
         attacker,
         defender,
-        [attacker, { ...attacker, uid: 'att-2' } as Pokemon],
+        [attacker, { ...attacker, uid: 'att-2' }],
         fakeStore
       );
       assert.strictEqual(result, false);
@@ -167,7 +167,7 @@ describe('HeuristicAI - Path Coverage Tests', () => {
     });
 
     it('should use Revive on a fainted teammate if active pokemon is healthy', async () => {
-      const activePoke = { ...attacker, hp: 90 } as Pokemon;
+      const activePoke = { ...attacker, hp: 90 };
       const faintedPoke = {
         name: 'Teammate',
         hp: 0,

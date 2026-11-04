@@ -47,7 +47,9 @@ async function handleSearch(): Promise<void> {
 
     const { data, error } = (await gameStore.db
       .from('battle_replays')
-      .select('*')
+      .select(
+        'id, battle_code, p1_id, p2_id, p1_data, p2_data, choice_stream, initial_seed, winner_side, total_turns, seasonal_theme_id, created_at'
+      )
       .eq('battle_code', code)
       .single()) as { data: Record<string, unknown> | null; error: unknown };
 
@@ -322,94 +324,94 @@ onMounted(() => {
     gap: $spacing-md;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
+}
 
-  .replay-card {
+.replay-card {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md-alt;
+  padding: 12px;
+  border: 1px solid var(--slate-800);
+  border-radius: $radius-md;
+  background: var(--slate-900);
+
+  .replay-card-header {
     display: flex;
-    flex-direction: column;
-    gap: $spacing-md-alt;
-    padding: 12px;
-    border: 1px solid var(--slate-800);
-    border-radius: $radius-md;
-    background: var(--slate-900);
+    justify-content: space-between;
+    align-items: center;
 
-    .replay-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-
-      .replay-code {
-        color: var(--amber-400);
-        font-size: var(--font-11);
-        font-weight: bold;
-      }
-
-      .top10-badge {
-        padding: 2px 6px;
-        border-radius: $radius-sm;
-        background: var(--amber-dark);
-        color: var(--yellow-light);
-        font-size: var(--font-9);
-      }
+    .replay-code {
+      color: var(--amber-400);
+      font-size: var(--font-11);
+      font-weight: bold;
     }
 
-    .combatants-matchup {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: $spacing-sm;
-      padding: 8px;
+    .top10-badge {
+      padding: 2px 6px;
       border-radius: $radius-sm;
-      background: var(--slate-800);
+      background: var(--amber-dark);
+      color: var(--yellow-light);
+      font-size: var(--font-9);
+    }
+  }
 
-      .combatant {
-        display: flex;
-        flex-direction: column;
-        font-size: var(--font-10);
-        flex: 1;
+  .combatants-matchup {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: 8px;
+    border-radius: $radius-sm;
+    background: var(--slate-800);
 
-        .trainer-name {
-          color: var(--slate-100);
-          font-weight: bold;
-        }
+    .combatant {
+      display: flex;
+      flex-direction: column;
+      font-size: var(--font-10);
+      flex: 1;
 
-        .trainer-meta {
-          color: var(--slate-400);
-          font-size: var(--font-9);
-          text-transform: uppercase;
-        }
-
-        &.winner .trainer-name {
-          color: var(--emerald);
-        }
+      .trainer-name {
+        color: var(--slate-100);
+        font-weight: bold;
       }
 
-      .vs-divider {
-        color: var(--slate-500);
-        font-size: var(--font-10);
-        font-weight: bold;
+      .trainer-meta {
+        color: var(--slate-400);
+        font-size: var(--font-9);
+        text-transform: uppercase;
+      }
+
+      &.winner .trainer-name {
+        color: var(--emerald);
       }
     }
 
-    .replay-card-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .vs-divider {
+      color: var(--slate-500);
+      font-size: var(--font-10);
+      font-weight: bold;
+    }
+  }
 
-      .turns-count {
-        color: var(--slate-400);
-        font-size: var(--font-10);
-      }
+  .replay-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
-      .watch-btn {
-        padding: 6px 10px;
-        border: 1px solid var(--blue-400);
-        border-radius: $radius-sm;
-        background: var(--blue-500);
-        color: var(--white);
-        font-family: inherit;
-        font-size: var(--font-10);
-        cursor: pointer;
-      }
+    .turns-count {
+      color: var(--slate-400);
+      font-size: var(--font-10);
+    }
+
+    .watch-btn {
+      padding: 6px 10px;
+      border: 1px solid var(--blue-400);
+      border-radius: $radius-sm;
+      background: var(--blue-500);
+      color: var(--white);
+      font-family: inherit;
+      font-size: var(--font-10);
+      cursor: pointer;
     }
   }
 }

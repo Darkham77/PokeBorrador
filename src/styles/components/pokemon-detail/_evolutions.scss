@@ -58,7 +58,7 @@ body .evolve-pane {
 
           color: var(--yellow);
           font-size: var(--font-8);
-          font-weight: 900;
+          font-weight: $font-weight-black;
           text-transform: uppercase;
         }
         & .arrow {
@@ -93,7 +93,7 @@ body .evolve-pane {
       & .evo-target-name {
         color: $white;
         font-size: var(--font-8);
-        font-weight: 900;
+        font-weight: $font-weight-black;
         opacity: 0.9;
         text-transform: uppercase;
         letter-spacing: 0.5px;

@@ -122,14 +122,14 @@ describe('isStruggleMode computed', () => {
   it('returns false when player is in thrash cycle (locked)', () => {
     const player = makePlayer([makeMove({ pp: 0 }), makeMove({ pp: 0 })], {
       thrashTurns: 2
-    } as Partial<Pokemon>);
+    });
     expect(buildIsStruggleMode(player).value).toBe(false);
   });
 
   it('returns false when player is in lockedmove cycle', () => {
     const player = makePlayer([makeMove({ pp: 0 }), makeMove({ pp: 0 })], {
       volatileCounters: { lockedmove: 1 }
-    } as Partial<Pokemon>);
+    });
     expect(buildIsStruggleMode(player).value).toBe(false);
   });
 

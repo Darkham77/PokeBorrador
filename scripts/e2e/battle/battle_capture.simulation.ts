@@ -1,4 +1,9 @@
 import { test, expect, type Page } from '@playwright/test';
+
+import type { AbilityId } from '../../../src/data/battle/abilities.ts';
+import { MOVE_TRANSLATIONS_ES } from '../../../src/data/battle/moves.ts';
+import type { PokemonMoveId } from '../../../src/data/battle/moves.ts';
+import type { PokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import {
   armBattleFlowCompletion,
@@ -8,11 +13,6 @@ import {
   clickResilient,
   type WindowWithResolver
 } from '../e2e_helpers.ts';
-import { MOVE_TRANSLATIONS_ES } from '../../../src/data/battle/moves.ts';
-
-import type { PokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
-import type { PokemonMoveId } from '../../../src/data/battle/moves.ts';
-import type { AbilityId } from '../../../src/data/battle/abilities.ts';
 
 interface BattlePlayerConfig {
   speciesId: PokemonSpeciesId;

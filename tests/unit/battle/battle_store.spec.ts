@@ -3,6 +3,8 @@ import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 
 import { useBattleStore } from '@/stores/battle/battle';
 import { useGameStore } from '@/stores/game';
+import type { BattleState } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 // Mock de assetService para evitar errores de red
@@ -29,7 +31,7 @@ vi.mock('@/logic/battle/battleTurn', () => ({
       s.activeBattle.value.player = { ...p };
       if (s.persistBattle) s.persistBattle();
     }
-    return Promise.resolve();
+    return;
   })
 }));
 
@@ -114,7 +116,7 @@ describe('Battle Store - Struggle Recoil Integration', () => {
       enemy: { uid: 'e456', name: 'Bulbasaur', hp: 100, maxHp: 100 } as unknown as Pokemon,
       over: false,
       playerTeamIndex: 0
-    } as unknown as import('@/types/battle/battle').BattleState;
+    } as unknown as BattleState;
 
     await battle.executeStruggle();
 
@@ -220,7 +222,7 @@ describe('Battle Store - Weather Reset', () => {
         TRAINER_ENTRY: 'TRAINER_ENTRY',
         SHOW_DIALOGS: 'SHOW_DIALOGS'
       }
-    } as unknown as import('@/types/battle/battleContext').BattleContext;
+    } as unknown as BattleContext;
 
     await initBattleSequence(ctx, {
       initialPlayer: {
@@ -230,7 +232,7 @@ describe('Battle Store - Weather Reset', () => {
         ability: 'overgrow',
         nature: 'hardy',
         moves: [{ id: 'tackle' }]
-      } as unknown as import('@/types/pokemon/pokemon').Pokemon,
+      } as unknown as Pokemon,
       initialEnemy: {
         id: 'pikachu',
         uid: 'e1',
@@ -238,7 +240,7 @@ describe('Battle Store - Weather Reset', () => {
         ability: 'static',
         nature: 'hardy',
         moves: [{ id: 'tackle' }]
-      } as unknown as import('@/types/pokemon/pokemon').Pokemon
+      } as unknown as Pokemon
     });
 
     // Should reset turns to -1 (natural weather)

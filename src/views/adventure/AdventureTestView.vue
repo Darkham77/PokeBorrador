@@ -312,6 +312,7 @@ function getNodeClass(nodeId: AdventureNodeId): {
           >
             <!-- SVG Connection Lines (behind cards) -->
             <svg
+              aria-hidden="true"
               class="adv-connections-svg"
               :viewBox="`0 0 ${CANVAS_W} ${CANVAS_H}`"
               preserveAspectRatio="none"

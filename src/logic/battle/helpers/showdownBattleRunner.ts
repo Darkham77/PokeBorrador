@@ -2,6 +2,7 @@ import type { DisplayText } from '@francogp/auditor';
 import type { SideID } from '@pkmn/sim';
 
 import type { PokemonMoveId } from '@/data/battle/moves.ts';
+import { logger } from '@/logic/utils/logger';
 
 import {
   isCertifiedBattleGameAction,
@@ -188,7 +189,7 @@ export class ShowdownBattleRunner {
     const consumedHistory = history
       .slice(0, nextHistoryIndex)
       .map((_, index) => this.requireHistoryEntry(history, index));
-    console.debug(
+    logger.debug(
       `[REPLAY-CURSOR-ADVANCE] Advancing cursor: ${historyIndex} -> ${nextHistoryIndex}. Next step: p1="${(history[nextHistoryIndex] as CertifiedReplayHistoryEntry | undefined)?.p1Choice}", p2="${(history[nextHistoryIndex] as CertifiedReplayHistoryEntry | undefined)?.p2Choice}"`
     );
     Reflect.set(debug, 'replayHistoryIdx', nextHistoryIndex);

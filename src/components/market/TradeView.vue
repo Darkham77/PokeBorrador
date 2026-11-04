@@ -332,7 +332,7 @@ const requestSummary = computed(() => {
 
       color: $white;
       font-size: var(--font-8);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
       line-height: 1.5;
     }
   }

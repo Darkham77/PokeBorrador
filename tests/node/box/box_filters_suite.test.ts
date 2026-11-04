@@ -81,7 +81,7 @@ describe('Box Filters Domain Suite', () => {
       const { filters, sortMode, processedBoxList, hasActiveFilters } = useBoxFilters(box);
       sortMode.value = 'none';
 
-      expect(processedBoxList.value.length).toBe(5);
+      expect(processedBoxList.value).toHaveLength(5);
       expect(hasActiveFilters.value).toBe(false);
 
       filters.value.evATK = 150;
@@ -146,7 +146,7 @@ describe('Box Filters Domain Suite', () => {
       const { filters, sortMode, processedBoxList, hasActiveFilters } = useBoxFilters(box);
       sortMode.value = 'none';
 
-      expect(processedBoxList.value.length).toBe(5);
+      expect(processedBoxList.value).toHaveLength(5);
       expect(hasActiveFilters.value).toBe(false);
 
       filters.value.friendshipMin = 160;

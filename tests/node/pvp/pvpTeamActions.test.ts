@@ -52,7 +52,7 @@ describe('PvP Team Actions', () => {
 
     // Should not allow invalid slot index
     gs.swapPvp6Slot(10, 'pk-7');
-    expect(gs.state.pvpTeam6.length).toBe(6);
+    expect(gs.state.pvpTeam6).toHaveLength(6);
   });
 
   it('should reorder 6v6 PvP team', () => {

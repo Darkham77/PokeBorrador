@@ -4,7 +4,7 @@ import { requireNpcSpriteId, type NpcSpriteId } from '@/data/pokemon/npcSpriteCa
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { requireGymId, type GymId } from '@/data/world/gyms';
 import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
-import { MAPS_BY_ROUTE_ID, getMapLocationById } from '@/data/world/maps';
+import { type MAPS_BY_ROUTE_ID, getMapLocationById } from '@/data/world/maps';
 import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
 import { getMapEnvironment } from '@/logic/environment/map/mapEnvironmentRegistry.ts';
 import { clampFriendship } from '@/logic/pokemon/friendshipLogic.ts';

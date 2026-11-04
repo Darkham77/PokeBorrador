@@ -1,9 +1,9 @@
 // scripts/e2e/fuzzer/core/fuzzer_worker.ts
 import { parentPort, workerData } from 'node:worker_threads';
-import { runStandaloneBatch } from './fuzzer_engine.ts';
-import { FuzzerRunnerLogger } from '../../logging/fuzzer_runner_logger.ts';
 
+import { FuzzerRunnerLogger } from '../../logging/fuzzer_runner_logger.ts';
 import type { FuzzerWorkerData } from '../generators/fuzzer_team_generator.ts';
+import { runStandaloneBatch } from './fuzzer_engine.ts';
 
 async function run() {
   if (!parentPort) return;

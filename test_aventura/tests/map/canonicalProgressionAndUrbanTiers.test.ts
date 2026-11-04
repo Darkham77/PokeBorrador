@@ -22,7 +22,7 @@ import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateProceduralPOICatalog } from '../../logic/map/regionalPoiCatalog.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
 
-describe.skip('Canonical Progression and Urban Tiers', () => {
+describe('Canonical Progression and Urban Tiers', () => {
   it('catalog provides structured progression from L_0 to L_9 with explicit tiers', () => {
     const catalog = generateProceduralPOICatalog(27, { targetUrbanSettlements: 15 });
 
@@ -35,14 +35,14 @@ describe.skip('Canonical Progression and Urban Tiers', () => {
 
     // Exactly 1 Metropolis (Tier 2)
     const metropolises = catalog.filter((p) => p.type === 'metropolis' || p.tier === 2);
-    expect(metropolises.length).toBe(1);
+    expect(metropolises).toHaveLength(1);
     expect(metropolises[0]!.tier).toBe(2);
 
     // Exactly 8 Gyms across Tier 1 cities and Metropolis
     const gymSettlements = catalog.filter(
       (p) => p.hasGym && (p.type === 'city' || p.type === 'metropolis')
     );
-    expect(gymSettlements.length).toBe(8);
+    expect(gymSettlements).toHaveLength(8);
 
     // Final Climax is Pokemon League (Tier 3)
     const league = catalog.find((p) => p.type === 'pokemon_league' || p.tier === 3);
@@ -97,9 +97,9 @@ describe.skip('Canonical Progression and Urban Tiers', () => {
 
     const layout = generateSettlementLayout(node);
     const bTypes = layout.buildings.map((b) => b.type);
-    expect(bTypes.includes('gym')).toBe(false);
-    expect(bTypes.includes('pokemart')).toBe(false);
-    expect(bTypes.includes('pokecenter')).toBe(true);
+    expect(bTypes).not.toContain('gym');
+    expect(bTypes).not.toContain('pokemart');
+    expect(bTypes).toContain('pokecenter');
 
     const houseCount = layout.buildings.filter(
       (b) => b.type === 'house' || b.type === 'lab'
@@ -125,9 +125,9 @@ describe.skip('Canonical Progression and Urban Tiers', () => {
 
     const layout = generateSettlementLayout(node);
     const bTypes = layout.buildings.map((b) => b.type);
-    expect(bTypes.includes('gym')).toBe(true);
-    expect(bTypes.includes('pokecenter')).toBe(true);
-    expect(bTypes.includes('pokemart')).toBe(true);
+    expect(bTypes).toContain('gym');
+    expect(bTypes).toContain('pokecenter');
+    expect(bTypes).toContain('pokemart');
 
     const houseCount = layout.buildings.filter((b) => b.type === 'house').length;
     expect(houseCount).toBeGreaterThanOrEqual(4);
@@ -161,7 +161,7 @@ describe.skip('Canonical Progression and Urban Tiers', () => {
 
     const layout = generateSettlementLayout(node);
     const centers = layout.buildings.filter((b) => b.type === 'pokecenter');
-    expect(centers.length).toBe(1);
+    expect(centers).toHaveLength(1);
 
     // No duplicate Mart side-by-side with Center
     const marts = layout.buildings.filter((b) => b.type === 'pokemart');

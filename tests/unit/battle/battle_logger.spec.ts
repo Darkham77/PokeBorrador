@@ -23,7 +23,7 @@ describe('Battle Logger Utility', () => {
     const result = formatBattleLog(
       'Hi',
       'log-info',
-      'player' as unknown as Parameters<typeof formatBattleLog>[2],
+      'player',
       mockCtx as unknown as Parameters<typeof formatBattleLog>[3]
     );
     expect(result.side).toBe('player');
@@ -59,7 +59,7 @@ describe('Battle Logger Utility', () => {
     const result = formatBattleLog(
       'DEBUG: test',
       'log-info',
-      'player' as unknown as Parameters<typeof formatBattleLog>[2],
+      'player',
       mockCtx as unknown as Parameters<typeof formatBattleLog>[3]
     );
     expect(result.icon).toBe('⚙️');
@@ -71,7 +71,7 @@ describe('Battle Logger Utility', () => {
     const result = formatBattleLog(
       'Used potion',
       'log-info',
-      'potion' as unknown as Parameters<typeof formatBattleLog>[2],
+      'potion',
       mockCtx as unknown as Parameters<typeof formatBattleLog>[3]
     );
     expect(result.iconType).toBe('item');

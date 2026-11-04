@@ -16,7 +16,7 @@ import ProfileTradeNotifs from '@/components/profile/ProfileTradeNotifs.vue';
 import ProfileXpCard from '@/components/profile/ProfileXpCard.vue';
 import { useStatHover } from '@/composables/ui/useStatHover';
 import { formatCurrency } from '@/logic/utils/formatters';
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
+import { formatDisplayDate } from '@/logic/utils/timeUtils';
 import { useAuthStore } from '@/stores/auth';
 import { useGameStore } from '@/stores/game';
 import { useLivePvPStore } from '@/stores/livePvP';
@@ -83,25 +83,11 @@ const {
 
 const formatNum = (num: unknown): string => formatCurrency(Number(num || 0));
 
-const formatDate = (isoStr: string | null | undefined): string => {
-  if (!isoStr) return '---';
-  try {
-    const inst = Temporal.Instant.from(isoStr);
-    const zdt = inst.toZonedDateTimeISO(GAME_TIMEZONE);
-    const day = String(zdt.day).padStart(2, '0');
-    const month = String(zdt.month).padStart(2, '0');
-    const year = zdt.year;
-    return `${day}/${month}/${year}`;
-  } catch {
-    return '---';
-  }
-};
-
 const { handleStatEnter, handleStatLeave } = useStatHover();
 
 const activityStats = computed(() => [
   { label: 'Tiempo Jugado', value: `${playtimeHours.value}h`, class: 'yellow-text' },
-  { label: 'Miembro Desde', value: formatDate(createdAt.value) },
+  { label: 'Miembro Desde', value: formatDisplayDate(createdAt.value) },
   { label: 'Última Partida', value: 'Activo Ahora' }
 ]);
 

@@ -17,10 +17,12 @@ export type PokemonStatKey = (typeof POKEMON_STAT_KEYS)[number];
 export const STAT_BAR_MODES = ['full', 'stat', 'iv'] as const;
 export type StatBarMode = (typeof STAT_BAR_MODES)[number];
 export const POKEMON_STATUSES = ['par', 'brn', 'psn', 'slp', 'frz', 'tox'] as const; // lib-duplicate-ok: Library utility implementation duplication
+const POKEMON_STATUSES_SET = new Set<string>(POKEMON_STATUSES);
 export type PokemonStatus = (typeof POKEMON_STATUSES)[number] | '';
 export const STATUS_CLEAR_TARGETS = ['any', 'poison', ...POKEMON_STATUSES] as const;
 export type StatusClearTarget = (typeof STATUS_CLEAR_TARGETS)[number];
 export const POKERUS_STATUSES = ['uninfected', 'infected', 'cured'] as const;
+const POKERUS_STATUSES_SET = new Set<string>(POKERUS_STATUSES);
 export type PokerusStatus = (typeof POKERUS_STATUSES)[number];
 export const POKEMON_GENDERS = ['m', 'f'] as const;
 export type PokemonGender = (typeof POKEMON_GENDERS)[number] | null;
@@ -65,7 +67,7 @@ export type ObtainedMethod = (typeof OBTAINED_METHODS)[number];
 export function isPokemonStatus(status: unknown): status is PokemonStatus {
   if (status === '') return true;
   if (typeof status !== 'string') return false;
-  return ['par', 'brn', 'psn', 'slp', 'frz', 'tox'].includes(status);
+  return POKEMON_STATUSES_SET.has(status);
 }
 
 export function requirePokemonStatus(status: string): PokemonStatus {
@@ -75,7 +77,7 @@ export function requirePokemonStatus(status: string): PokemonStatus {
 
 export function isPokerusStatus(status: unknown): status is PokerusStatus {
   if (typeof status !== 'string') return false;
-  return POKERUS_STATUSES.includes(status as PokerusStatus);
+  return POKERUS_STATUSES_SET.has(status);
 }
 
 export function requirePokerusStatus(status: string): PokerusStatus {

@@ -1,9 +1,11 @@
-import WebSocket from 'ws';
-import https from 'https';
+import { EventEmitter } from 'events';
 import http from 'http';
+import https from 'https';
+
+import WebSocket from 'ws';
+
 import { CONFIG } from '../config';
 import { log, logError, logDebug } from '../logging/logger';
-import { EventEmitter } from 'events';
 
 export interface ShowdownEvents {
   challstr: (challstr: string) => void;

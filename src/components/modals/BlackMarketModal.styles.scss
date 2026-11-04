@@ -73,7 +73,7 @@
 
         color: var(--red-300);
         font-size: var(--font-11);
-        font-weight: 800;
+        font-weight: $font-weight-extrabold;
         letter-spacing: 0.5px;
       }
 
@@ -129,7 +129,7 @@
   background: Rgb(0 0 0 / 70%);
   color: var(--tier-color, #ffd93d);
   font-size: var(--font-8);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
 }
 
 .bm-card-visual {

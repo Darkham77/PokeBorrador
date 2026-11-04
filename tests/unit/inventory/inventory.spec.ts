@@ -17,7 +17,7 @@ describe('Inventory Store', () => {
     // Mock localStorage
     const storage: Record<string, string> = {};
     vi.stubGlobal('localStorage', {
-      getItem: vi.fn((key: string) => (storage[key] as string | undefined) || null),
+      getItem: vi.fn((key: string) => storage[key] || null),
       setItem: vi.fn((key: string, val: string) => {
         storage[key] = val;
       }),

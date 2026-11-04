@@ -119,7 +119,7 @@ describe('Audit Parity - BUG-044: faint clears volatileCounters and boosts', () 
 
     await handleCoreEvents(ctx as any);
     expect(target.fainted).toBe(true);
-    expect(Object.keys(target.volatileCounters).length).toBe(0);
+    expect(Object.keys(target.volatileCounters)).toHaveLength(0);
   });
 });
 
@@ -142,7 +142,7 @@ describe('Audit Parity - BUG-045: switch/drag clears volatileCounters', () => {
     };
 
     handleMiscEvents(ctx as any);
-    expect(Object.keys(target.volatileCounters).length).toBe(0);
+    expect(Object.keys(target.volatileCounters)).toHaveLength(0);
   });
 });
 

@@ -18,7 +18,7 @@ import {
 } from '@/stores/inventory/inventoryHelpers';
 import { useModalStore } from '@/stores/modals';
 import { useUIStore } from '@/stores/ui';
-import type { Item, ItemDiscardAction } from '@/types/inventory/items';
+import type { Item, ItemDiscardAction, ShopMainTab } from '@/types/inventory/items';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 import InventoryActionMenu from './inventory/InventoryActionMenu.vue';
@@ -64,7 +64,6 @@ const isSmallScreen = computed(() => ui.isSmallScreen);
 // State
 const multiSelectMode = ref<string | null>(null);
 import type { ItemId } from '@/data/inventory/items';
-import type { ShopMainTab } from '@/types/inventory/items';
 
 const selectedItems = reactive(new Map<ItemId, number>());
 const quantitySelectionItem = ref<InventoryListItem | null>(null);
@@ -130,7 +129,7 @@ const isCategorySwitching = ref(false);
 // Battle/Target Auto-category selection
 watch(
   () => props.show,
-  (val) => {
+  async (val) => {
     if (val) {
       if (props.battleMode) {
         battleSearchQuery.value = '';
@@ -152,12 +151,11 @@ watch(
       displayedItems.value = [...filteredItems.value];
 
       // Ensure grid is visible when reopening
-      nextTick(() => {
-        const gridEl = document.querySelector('.inventory-grid-wrapper');
-        if (gridEl) {
-          gsap.set(gridEl, { opacity: 1, y: 0 });
-        }
-      });
+      await nextTick();
+      const gridEl = document.querySelector('.inventory-grid-wrapper');
+      if (gridEl) {
+        gsap.set(gridEl, { opacity: 1, y: 0 });
+      }
     }
   },
   { immediate: true }

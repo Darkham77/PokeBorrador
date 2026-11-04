@@ -10,7 +10,7 @@
     h3 {
       color: var(--white);
       font-size: var(--font-18);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
     }
     .badge {
       padding: 2px 8px;
@@ -18,7 +18,7 @@
       background: Rgb(255 255 255 / 5%);
       color: Rgb(148 163 184 / 100%);
       font-size: var(--font-9);
-      font-weight: 800;
+      font-weight: $font-weight-extrabold;
     }
   }
   .section-desc {
@@ -84,14 +84,14 @@
       display: block;
       color: Rgb(148 163 184 / 100%);
       font-size: var(--font-11);
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
     }
 
     .status-tag {
       display: block;
       color: Rgb(59 130 246 / 100%);
       font-size: var(--font-9);
-      font-weight: 800;
+      font-weight: $font-weight-extrabold;
     }
 
     .lock-tag {
@@ -99,7 +99,7 @@
       padding: 1px 6px;
       border-radius: $radius-sm;
       font-size: var(--font-8);
-      font-weight: 800;
+      font-weight: $font-weight-extrabold;
       letter-spacing: 0.5px;
 
       &.locked {

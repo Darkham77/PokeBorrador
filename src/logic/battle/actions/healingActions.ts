@@ -15,6 +15,7 @@ const BAD_HEAL_WEATHERS: readonly WeatherMechanical[] = [
   WEATHER_MECHANICAL.SANDSTORM,
   WEATHER_MECHANICAL.FOG
 ];
+const BAD_HEAL_WEATHERS_SET = new Set<WeatherMechanical>(BAD_HEAL_WEATHERS);
 
 const HEAL_WEATHER_SUN_PCT = 0.66;
 const HEAL_WEATHER_BAD_PCT = 0.25;
@@ -41,7 +42,7 @@ export const HEALING_ACTIONS: Record<DisplayText, MoveAction> = {
     // Prioridad 1: Clima (Mecánicas oficiales)
     if (mechWeather === WEATHER_MECHANICAL.SUN) {
       healPct = HEAL_WEATHER_SUN_PCT;
-    } else if (BAD_HEAL_WEATHERS.includes(mechWeather)) {
+    } else if (BAD_HEAL_WEATHERS_SET.has(mechWeather)) {
       healPct = HEAL_WEATHER_BAD_PCT;
     } else {
       // Clear weather (Default)

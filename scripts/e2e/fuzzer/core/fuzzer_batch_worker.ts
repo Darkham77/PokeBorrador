@@ -3,10 +3,10 @@ Reflect.set(globalThis, '__E2E__', true);
 process.env.VITE_E2E = 'true';
 
 import { parentPort, workerData } from 'node:worker_threads';
-import { runStandaloneBatch } from './fuzzer_engine.ts';
-import { FuzzerRunnerLogger } from '../../logging/fuzzer_runner_logger.ts';
 
+import { FuzzerRunnerLogger } from '../../logging/fuzzer_runner_logger.ts';
 import type { FuzzerWorkerData } from '../generators/fuzzer_team_generator.ts';
+import { runStandaloneBatch } from './fuzzer_engine.ts';
 
 async function run() {
   if (!parentPort) return;

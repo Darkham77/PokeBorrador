@@ -20,25 +20,24 @@ const naturePokemon = computed(() => {
 });
 const sortedNatures = NATURES.toSorted();
 
-const handleApplyNature = (nature: NatureId): void => {
+const handleApplyNature = async (nature: NatureId): Promise<void> => {
   if (!naturePokemon.value) return;
   naturePokemon.value.nature = nature;
 
   // Recalc stats
-  import('@/logic/pokemon/pokemonFactory').then(({ recalcPokemonStats }) => {
-    if (naturePokemon.value) {
-      recalcPokemonStats(naturePokemon.value);
-      const translatedNature = NATURE_DATA[nature].name;
-      uiStore.notify(
-        `¡La naturaleza de ${naturePokemon.value.name} cambió a ${translatedNature}!`,
-        '✨'
-      );
-    }
-    // Consume only after confirming
-    inventoryStore.removeItem('naturepatch', 1);
-    close();
-    gameStore.save();
-  });
+  const { recalcPokemonStats } = await import('@/logic/pokemon/pokemonFactory');
+  if (naturePokemon.value) {
+    recalcPokemonStats(naturePokemon.value);
+    const translatedNature = NATURE_DATA[nature].name;
+    uiStore.notify(
+      `¡La naturaleza de ${naturePokemon.value.name} cambió a ${translatedNature}!`,
+      '✨'
+    );
+  }
+  // Consume only after confirming
+  inventoryStore.removeItem('naturepatch', 1);
+  close();
+  gameStore.save();
 };
 
 const HOVER_SCALE_BTN_ENTER = 1.02;
@@ -192,7 +191,7 @@ const close = (): void => {
       display: block;
       color: var(--white);
       font-size: var(--font-14);
-      font-weight: 800;
+      font-weight: $font-weight-extrabold;
     }
 
     .n-effects {

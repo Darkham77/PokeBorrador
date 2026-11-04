@@ -1,10 +1,12 @@
-import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
-import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { MAX_SUITE_TOTAL_TIMEOUT_MS } from '../simulation_config.ts';
-import { waitForWaitInput, type WindowWithResolver } from '../e2e_helpers.ts';
+
+import { test, expect, type Page } from '@playwright/test';
+
 import type { NpcSpriteId } from '../../../src/data/pokemon/npcSpriteCatalog.ts';
+import { BaseBattleSimulation } from '../base_battle_simulation.ts';
+import { waitForWaitInput, type WindowWithResolver } from '../e2e_helpers.ts';
+import { MAX_SUITE_TOTAL_TIMEOUT_MS } from '../simulation_config.ts';
 
 interface FailureRecord {
   scenario: string;
@@ -196,22 +198,13 @@ class HeuristicAISimWrapper extends BaseBattleSimulation {
         store.player?.hp === 0 ||
         store.state?.enemy?.hp === 0 ||
         store.state?.player?.hp === 0;
-      const TERMINAL_FSM_STATE_VALUES = [
-        'REWARDS_PHASE',
-        'EXIT_BATTLE',
-        'SEARCH_PHASE'
-      ] as const;
+      const TERMINAL_FSM_STATE_VALUES = ['REWARDS_PHASE', 'EXIT_BATTLE', 'SEARCH_PHASE'] as const;
       type TerminalFsmStateValue = (typeof TERMINAL_FSM_STATE_VALUES)[number];
-      const TERMINAL_FSM_STATES: ReadonlySet<TerminalFsmStateValue> = new Set<TerminalFsmStateValue>(
-        TERMINAL_FSM_STATE_VALUES
-      );
-      const isTerminalFsm = fsmState !== undefined && TERMINAL_FSM_STATES.has(fsmState as TerminalFsmStateValue);
-      return !!(
-        store.state?.over ||
-        storeObj.isBattleOver ||
-        isTerminalFsm ||
-        isFainted
-      );
+      const TERMINAL_FSM_STATES: ReadonlySet<TerminalFsmStateValue> =
+        new Set<TerminalFsmStateValue>(TERMINAL_FSM_STATE_VALUES);
+      const isTerminalFsm =
+        fsmState !== undefined && TERMINAL_FSM_STATES.has(fsmState as TerminalFsmStateValue);
+      return !!(store.state?.over || storeObj.isBattleOver || isTerminalFsm || isFainted);
     });
   }
 }

@@ -3,8 +3,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { describe, it, expect, beforeEach } from 'vite-plus/test';
 
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { ACTIVE_SHOWDOWN_FORMAT } from '@/data/system/constants';
-import { isEnabledPokemonId } from '@/data/system/constants';
+import { ACTIVE_SHOWDOWN_FORMAT, isEnabledPokemonId } from '@/data/system/constants';
 import { calculateEscapeChancePure, calculateCatchRatePure } from '@/logic/battle/battleCatchMath';
 import { STAGE_MULTIPLIERS_STAT, STAGE_MULTIPLIERS_ACC } from '@/logic/battle/battleMath';
 import type { PurePokemon } from '@/logic/battle/battleMathTypes';
@@ -142,7 +141,7 @@ describe('Battle Parity & Audit Domain Suite', () => {
 
     it('debería generar la misma secuencia aleatoria usando array vs string en la clase PRNG', () => {
       const prngFromArray = new PRNG(seedNums as unknown as `${number},${string}`);
-      const prngFromString = new PRNG(seedString as unknown as `${number},${string}`);
+      const prngFromString = new PRNG(seedString);
 
       for (let i = 0; i < 50; i++) {
         const valArray = prngFromArray.random();
@@ -159,7 +158,7 @@ describe('Battle Parity & Audit Domain Suite', () => {
 
       const battleFromString = new Battle({
         formatid: 'gen9customgame' as ID,
-        seed: seedString as unknown as `${number},${string}`
+        seed: seedString
       });
 
       for (let i = 0; i < 10; i++) {
@@ -172,7 +171,7 @@ describe('Battle Parity & Audit Domain Suite', () => {
     let battle: Battle;
 
     beforeEach(() => {
-      battle = new Battle({ formatid: ACTIVE_SHOWDOWN_FORMAT as import('@pkmn/sim').ID });
+      battle = new Battle({ formatid: ACTIVE_SHOWDOWN_FORMAT as ID });
       battle.setPlayer('p1', {
         name: 'Player 1',
         team: [
@@ -347,7 +346,7 @@ describe('Battle Parity & Audit Domain Suite', () => {
       const pool: PokemonSpeciesId[] = ['caterpie', 'weedle', 'pidgey', 'rattata'];
       const team = await buildTrainerTeam(pool, 25, 4);
 
-      expect(team.length).toBe(4);
+      expect(team).toHaveLength(4);
       for (const p of team) {
         expect(isEnabledPokemonId(p.id)).toBe(true);
       }

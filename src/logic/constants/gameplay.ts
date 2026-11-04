@@ -63,6 +63,7 @@ export const CANONICAL_TERRAINS = [
   'mistyterrain',
   'psychicterrain'
 ] as const;
+export const CANONICAL_TERRAINS_SET = new Set<CanonicalTerrain>(CANONICAL_TERRAINS);
 export type CanonicalTerrain = (typeof CANONICAL_TERRAINS)[number];
 
 /** Default starting friendship value for newly caught Pokémon. */

@@ -69,7 +69,7 @@ describe('generatePokemonDatabase & Pokemon DB Integrity', () => {
     for (const [key, value] of Object.entries(db)) {
       expect(key.trim()).not.toBe('');
       expect(value).not.toBeNull();
-      expect(value).not.toBeUndefined();
+      expect(value).toBeDefined();
     }
   });
 });

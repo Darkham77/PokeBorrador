@@ -1,5 +1,6 @@
 import type { MapRouteId } from '@/data/world/map-assets';
 import { requireMapRouteId } from '@/data/world/map-assets';
+import { logger } from '@/logic/utils/logger';
 import type { DayPhase } from '@/logic/utils/timeUtils';
 import { requireWeatherId } from '@/logic/weather/weatherRegistry';
 import { useMapStore } from '@/stores/map';
@@ -68,7 +69,7 @@ export function registerMapTools(debug: DebugSystem): void {
     action: (w: string | null) => {
       const weatherId = w === null || w === 'none' ? null : requireWeatherId(w);
       map.setGlobalWeather(weatherId);
-      console.debug(`[VITE_DEBUG] Weather forced to: ${weatherId || 'deterministic'}`);
+      logger.debug(`[VITE_DEBUG] Weather forced to: ${weatherId || 'deterministic'}`);
       ui.notify(`Debug: Clima forzado a ${w}`, '⛅');
       return `Clima forzado a ${w}`;
     },

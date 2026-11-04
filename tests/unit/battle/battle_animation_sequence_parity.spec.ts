@@ -130,7 +130,7 @@ describe('Battle Animation & FSM Sequence Parity Verification', () => {
       addLog: (msg: string, type: string, source: unknown) => {
         const srcStr = typeof source === 'string' ? source : (source as Pokemon)?.name || 'unknown';
         eventStream.push(`log:${srcStr}:${msg}`);
-        battleStore.addLog(msg, type as any, source as any);
+        battleStore.addLog(msg, type, source as any);
       },
       audio: { play: () => {} }
     } as unknown as BattleContext;
@@ -163,7 +163,7 @@ describe('Battle Animation & FSM Sequence Parity Verification', () => {
     expect(releaseAnimIdx).toBeGreaterThan(sendoutLogIdx);
 
     // Verify final combatants state
-    expect(enemyCombatants.value.length).toBe(1);
+    expect(enemyCombatants.value).toHaveLength(1);
     expect(enemyCombatants.value[0]?.name).toBe('Goldeen');
     expect(enemyCombatants.value[0]?.uid).toBe('enemy-goldeen-1');
   });
@@ -248,7 +248,7 @@ describe('Battle Animation & FSM Sequence Parity Verification', () => {
       addLog: (msg: string, type: string, source: unknown) => {
         const srcStr = typeof source === 'string' ? source : (source as Pokemon)?.name || 'unknown';
         eventStream.push(`log:${srcStr}:${msg}`);
-        battleStore.addLog(msg, type as any, source as any);
+        battleStore.addLog(msg, type, source as any);
       }
     } as unknown as BattleContext;
 
@@ -362,7 +362,7 @@ describe('Battle Animation & FSM Sequence Parity Verification', () => {
       addLog: (msg: string, type: string, source: unknown) => {
         const srcStr = typeof source === 'string' ? source : (source as Pokemon)?.name || 'unknown';
         eventStream.push(`log:${srcStr}:${msg}`);
-        battleStore.addLog(msg, type as any, source as any);
+        battleStore.addLog(msg, type, source as any);
       }
     } as unknown as BattleContext;
 
@@ -445,7 +445,7 @@ describe('Battle Animation & FSM Sequence Parity Verification', () => {
       addLog: (msg: string, type: string, source: unknown) => {
         const srcStr = typeof source === 'string' ? source : (source as Pokemon)?.name || 'unknown';
         eventStream.push(`log:${srcStr}:${msg}`);
-        battleStore.addLog(msg, type as any, source as any);
+        battleStore.addLog(msg, type, source as any);
       }
     } as unknown as BattleContext;
 

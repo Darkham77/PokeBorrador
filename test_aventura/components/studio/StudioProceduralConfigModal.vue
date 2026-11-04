@@ -280,7 +280,7 @@ function handleApplyAndRegenerate(): void {
 .control-label {
   color: var(--slate-300);
   font-size: var(--font-12);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
 }
 
 .label-row {
@@ -295,7 +295,7 @@ function handleApplyAndRegenerate(): void {
   background: var(--slate-700);
   color: var(--sky);
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .presets-grid {
@@ -326,7 +326,7 @@ function handleApplyAndRegenerate(): void {
 
   .preset-name {
     font-size: var(--font-12);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
   }
 
   .preset-meta {
@@ -384,7 +384,7 @@ function handleApplyAndRegenerate(): void {
   margin: 0;
   color: var(--sky);
   font-size: var(--font-13);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .modal-footer {
@@ -402,7 +402,7 @@ function handleApplyAndRegenerate(): void {
     background: transparent;
     color: var(--slate-300);
     font-size: var(--font-12);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     cursor: pointer;
 
     &:hover {
@@ -417,7 +417,7 @@ function handleApplyAndRegenerate(): void {
     background: linear-gradient(135deg, var(--emerald-500) 0%, var(--emerald-500) 100%);
     color: var(--white);
     font-size: var(--font-12);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     cursor: pointer;
 
     &:hover {

@@ -5,6 +5,7 @@
  * undo/redo stack, collision painter, multitile structure stamper, and test-drive engine.
  */
 
+import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -29,9 +30,7 @@ describe('Map Studio Pinia Store (useMapStudioStore)', () => {
 
   beforeAll(() => {
     const registryPath = path.resolve('test_aventura/assets/tiles_registry.json');
-    expect(fs.existsSync(registryPath), 'test_aventura/assets/tiles_registry.json must exist').toBe(
-      true
-    );
+    assert.ok(fs.existsSync(registryPath), 'test_aventura/assets/tiles_registry.json must exist');
     const raw = fs.readFileSync(registryPath, 'utf-8');
     const data = JSON.parse(raw) as TilesRegistryJson;
     registryService = new TilesRegistryService(data);
@@ -145,14 +144,14 @@ describe('Map Studio Pinia Store (useMapStudioStore)', () => {
 
     // Footprint of PC is 5x5: elevation layer at (4..8, 4..8) is populated
     expect(testMap.layers.elevation[4]![4]).not.toBeNull();
-    expect(testMap.entities.warps.length).toBe(warpsCountBefore + 1);
-    expect(testMap.entities.spawns.length).toBe(spawnsCountBefore + 1);
+    expect(testMap.entities.warps).toHaveLength(warpsCountBefore + 1);
+    expect(testMap.entities.spawns).toHaveLength(spawnsCountBefore + 1);
 
     // Undo stamping
     store.undo();
     expect(testMap.layers.elevation[4]![4]).toBeNull();
-    expect(testMap.entities.warps.length).toBe(warpsCountBefore);
-    expect(testMap.entities.spawns.length).toBe(spawnsCountBefore);
+    expect(testMap.entities.warps).toHaveLength(warpsCountBefore);
+    expect(testMap.entities.spawns).toHaveLength(spawnsCountBefore);
   });
 
   it('limits undo history stack to STUDIO_MAX_HISTORY_STEPS (30)', () => {

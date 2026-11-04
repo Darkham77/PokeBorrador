@@ -20,7 +20,7 @@ describe('Rewards Debug Simulation Market Listings DB Insertion', () => {
     const user: AuthUser = {
       id: 'local_seller',
       email: 'seller@test.com'
-    } as AuthUser;
+    };
 
     const router = new DBRouter({ url: 'http://localhost', key: 'mock' }, 'offline', {
       inMemory: true
@@ -37,7 +37,7 @@ describe('Rewards Debug Simulation Market Listings DB Insertion', () => {
 
     // Verify claims were inserted into claim_queue
     const claimRows = await queryLocal('SELECT * FROM claim_queue');
-    expect(claimRows.length).toBe(2);
+    expect(claimRows).toHaveLength(2);
     expect(claimRows[0]?.user_id).toBe('local_seller');
     expect(claimRows[1]?.user_id).toBe('local_seller');
   });
@@ -51,7 +51,7 @@ describe('Rewards Debug Simulation Market Listings DB Insertion', () => {
     const user: AuthUser = {
       id: 'local_seller_2',
       email: 'seller2@test.com'
-    } as AuthUser;
+    };
 
     const router = new DBRouter({ url: 'http://localhost', key: 'mock' }, 'offline', {
       inMemory: true

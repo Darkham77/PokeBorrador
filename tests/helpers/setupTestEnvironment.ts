@@ -30,22 +30,21 @@ export function setupTestTeamGenerators(): void {
         allowedSpecies: new Set(opts.allowedSpecies as PokemonSpeciesId[]),
         aceSpeciesId: opts.aceSpeciesId as PokemonSpeciesId | undefined
       });
-    } else {
-      const opts = payload as {
-        level: number;
-        teamSize: number;
-        aceSpeciesId: string;
-        allowedSpecies?: Iterable<string>;
-      };
-      return RivalTeamGenerator.generateTeam({
-        level: opts.level,
-        teamSize: opts.teamSize,
-        aceSpeciesId: opts.aceSpeciesId as PokemonSpeciesId,
-        allowedSpecies: opts.allowedSpecies
-          ? new Set(opts.allowedSpecies as PokemonSpeciesId[])
-          : undefined
-      });
     }
+    const opts = payload as {
+      level: number;
+      teamSize: number;
+      aceSpeciesId: string;
+      allowedSpecies?: Iterable<string>;
+    };
+    return RivalTeamGenerator.generateTeam({
+      level: opts.level,
+      teamSize: opts.teamSize,
+      aceSpeciesId: opts.aceSpeciesId as PokemonSpeciesId,
+      allowedSpecies: opts.allowedSpecies
+        ? new Set(opts.allowedSpecies as PokemonSpeciesId[])
+        : undefined
+    });
   });
 }
 

@@ -11,7 +11,7 @@ A higher level data API wrapper compatible with [`@pkmn/sim`](../sim) and [`@pkm
 ## Installation
 
 ```sh
-npm install @pkmn/data
+$ npm install @pkmn/data
 ```
 
 Alternatively, as [detailed below](#browser), if you are using `@pkmn/data` in the browser and want
@@ -34,10 +34,10 @@ generally useful without a runtime dependency - you must bring your own data lay
 certainly should be using `@pkmn/dex` instead of `@pkmn/sim` unless you know what you are doing**.
 
 ```ts
-import * as dex from '@pkmn/dex';
-import * as sim from '@pkmn/sim';
-import { Dex } from '@pkmn/dex-types';
 import { Generations } from '@pkmn/data';
+import * as dex from '@pkmn/dex';
+import { Dex } from '@pkmn/dex-types';
+import * as sim from '@pkmn/sim';
 
 // dex.Dex implements the @pkmn/dex-types's Dex directly, so this just works without complaints
 const dexGens = new Generations(dex.Dex);
@@ -85,8 +85,8 @@ is built on top of works - for efficiency reasons its only worthwhile to clean u
 are actually relevant to the generation in question.
 
 ```ts
-import { Dex } from '@pkmn/dex';
 import { Generations } from '@pkmn/data';
+import { Dex } from '@pkmn/dex';
 
 const gens = new Generations(Dex);
 assert(gens.get(1).types.get('Ghost').effectiveness['Psychic'] === 0);

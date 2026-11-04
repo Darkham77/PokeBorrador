@@ -2,6 +2,8 @@ import type { DisplayText } from '@francogp/auditor';
 // src/logic/battle/helpers/showdownSyncHelper.ts
 import type { Side, ID } from '@pkmn/sim';
 
+import { logger } from '@/logic/utils/logger';
+
 export interface MinimalPokemonState {
   uid: string;
   hp: number;
@@ -63,7 +65,7 @@ function syncPokemonStatus(
   const rawStatus = statuses ? findMatchingValue(uid, statuses) : undefined;
   if (rawStatus !== undefined) {
     const targetStatus = (rawStatus || '') as ID;
-    console.debug(
+    logger.debug(
       `[SYNC-SIDE-STATUS] Mon: ${p.name} (uid:${uid}), current status: "${p.status}", targetStatus: "${targetStatus}"`
     );
     const cureFn = Reflect.get(p, 'cureStatus') as ((silent?: boolean) => boolean) | undefined;
@@ -72,7 +74,7 @@ function syncPokemonStatus(
     } else {
       p.status = targetStatus;
     }
-    console.debug(`[SYNC-SIDE-STATUS] Mon: ${p.name} status after sync: "${p.status}"`);
+    logger.debug(`[SYNC-SIDE-STATUS] Mon: ${p.name} status after sync: "${p.status}"`);
   } else if (p.status === 'fnt') {
     const cureFn = Reflect.get(p, 'cureStatus') as ((silent?: boolean) => boolean) | undefined;
     const setFn = Reflect.get(p, 'setStatus') as ((s: string) => boolean) | undefined;
@@ -112,7 +114,7 @@ export function syncSidePokemon(
   // open-record: Dynamic Pokemon UID mapped to status ID
   statuses?: Record<DisplayText, string>
 ): void {
-  console.debug(
+  logger.debug(
     `[SYNC-SIDE] Side ${side.id}: before sync, pokemon:`,
     side.pokemon.map(
       (p) =>
@@ -131,7 +133,7 @@ export function syncSidePokemon(
       syncLivingPokemon(side, p, uid!, clientHp, statuses);
     }
   });
-  console.debug(
+  logger.debug(
     `[SYNC-SIDE] Side ${side.id}: after sync, pokemon:`,
     side.pokemon.map(
       (p) =>

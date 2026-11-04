@@ -85,7 +85,7 @@ describe('Inventory Domain Suite', () => {
     });
 
     it('should return false for Potions if HP is full', () => {
-      const fullHpPokemon = { ...mockPokemon, hp: 40 } as unknown as Pokemon;
+      const fullHpPokemon = { ...mockPokemon, hp: 40 };
       expect(isValidTarget('potion', fullHpPokemon)).toBe(false);
     });
 

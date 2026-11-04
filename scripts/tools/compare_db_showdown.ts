@@ -1,18 +1,20 @@
-import type { DisplayText } from '@francogp/auditor';
-import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs/promises';
+import { enableCompileCache } from 'node:module';
 import path from 'node:path';
 import { styleText } from 'node:util';
-import { enableCompileCache } from 'node:module';
+
+import type { DisplayText } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 
 enableCompileCache();
 
+import { Dex, toID } from '@pkmn/sim';
+
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '../../src/data/pokemon/pokedex.ts';
 // Importar dinámicamente las bases de datos de Poké Vicio
 import { POKEMON_DB } from '../../src/data/pokemon/pokemonDB.ts';
-import { pokemonDataProvider } from '../../src/logic/providers/pokemonDataProvider.ts';
-import { requirePokemonSpeciesId, type PokemonSpeciesId } from '../../src/data/pokemon/pokedex.ts';
-import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
+import { pokemonDataProvider } from '../../src/logic/providers/pokemonDataProvider.ts';
 
 const SHOWDOWN_DB_PATH = path.resolve(
   process.cwd(),
@@ -139,7 +141,19 @@ const POKEMON_DIFFS_HEADER = [
   '| :--- | :--- | :--- | :--- | :--- |'
 ] as const;
 
-function comparePokemonSpecies(normalizedShowdownPoke: Map<string, ShowdownPokeSpec>) {
+interface PokemonComparisonResult {
+  totalPokemonCore: number;
+  matchingPokemon: number;
+  unmatchedPokemon: number;
+  statsDiscrepancies: number;
+  typeDiscrepancies: number;
+  abilityDiscrepancies: number;
+  pokemonDiffsTable: string[];
+}
+
+function comparePokemonSpecies(
+  normalizedShowdownPoke: Map<string, ShowdownPokeSpec>
+): PokemonComparisonResult {
   const pokemonDiffsTable: string[] = [...POKEMON_DIFFS_HEADER];
 
   let totalPokemonCore = 0;
@@ -190,7 +204,16 @@ const MOVE_DIFFS_HEADER = [
   '| :--- | :--- | :--- | :--- |'
 ] as const;
 
-function compareMoves(normalizedShowdownMoves: Map<string, ShowdownMoveSpec>) {
+interface MovesComparisonResult {
+  allGen3MovesCount: number;
+  moveStatsDiscrepancies: number;
+  missingMovesInShowdown: number;
+  moveDiffsTable: string[];
+}
+
+function compareMoves(
+  normalizedShowdownMoves: Map<string, ShowdownMoveSpec>
+): MovesComparisonResult {
   const moveDiffsTable: string[] = [...MOVE_DIFFS_HEADER];
 
   let moveStatsDiscrepancies = 0;
@@ -253,7 +276,7 @@ function compareMoves(normalizedShowdownMoves: Map<string, ShowdownMoveSpec>) {
   };
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.log(styleText('bold', '\n--- 📊 INICIANDO COMPARADOR DE BASES DE DATOS ---'));
 
   let showdownDB: {
@@ -327,4 +350,4 @@ export const command = defineCommand({
   }
 });
 
-runMain(command);
+void runMain(command);

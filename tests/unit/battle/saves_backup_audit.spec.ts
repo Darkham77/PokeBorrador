@@ -144,9 +144,7 @@ function auditMigratedSaves(migratedSaves: Array<{ user_id: string; save_data: s
     }
     if (!saveData) continue;
 
-    const allPokes = [...(saveData.team || []), ...(saveData.box || [])].filter(
-      Boolean
-    ) as AuditPokemon[];
+    const allPokes = [...(saveData.team || []), ...(saveData.box || [])].filter(Boolean);
     for (const poke of allPokes) {
       validatePokemonDex(poke, row.user_id, errors, warnings);
     }
@@ -184,6 +182,6 @@ describe('Player Saves Migration & Compatibility Audit', () => {
     expect(migratedSaves.length).toBeGreaterThan(0);
 
     const { errors } = auditMigratedSaves(migratedSaves);
-    expect(errors.length).toBe(0);
+    expect(errors).toHaveLength(0);
   });
 });

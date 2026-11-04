@@ -273,6 +273,20 @@ describe('Team Validator', () => {
       }
     ];
     assert.legalTeam(team, 'gen4ou');
+
+    // These sets require an extra iteration of recursive chainbreed checking
+    team = [{ species: 'paras', moves: ['flail', 'lightscreen', 'counter'], evs: { hp: 1 } }];
+    assert.legalTeam(team, 'gen2ou');
+
+    team = [
+      {
+        species: 'charmander',
+        ability: 'blaze',
+        moves: ['dragondance', 'outrage', 'bite'],
+        evs: { hp: 1 }
+      }
+    ];
+    assert.legalTeam(team, 'gen3ou');
   });
 
   it('should reject Volbeat with both Lunge and Dizzy Punch in Gen 7', () => {

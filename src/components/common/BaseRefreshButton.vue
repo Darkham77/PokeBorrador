@@ -69,6 +69,7 @@ watch(
     @click.stop="emit('click', $event)"
   >
     <svg
+      aria-hidden="true"
       ref="iconRef"
       class="refresh-icon"
       viewBox="0 0 24 24"

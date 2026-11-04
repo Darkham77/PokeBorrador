@@ -105,7 +105,7 @@ const requestItems = computed(() =>
   .column-title {
     color: Rgb(255 255 255 / 40%);
     font-size: var(--font-11);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
@@ -140,7 +140,7 @@ const requestItems = computed(() =>
   .badge-val {
     color: var(--white);
     font-size: var(--font-12);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
   }
 
   .badge-level,

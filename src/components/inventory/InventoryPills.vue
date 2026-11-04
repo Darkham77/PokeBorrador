@@ -80,9 +80,8 @@ onMounted(async () => {
 
   // Re-evaluate once physical font is fully loaded
   if (typeof document !== 'undefined' && document.fonts) {
-    document.fonts.ready.then(() => {
-      fitAllPills();
-    });
+    await document.fonts.ready;
+    fitAllPills();
   }
 });
 </script>

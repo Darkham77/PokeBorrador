@@ -106,7 +106,8 @@ describe('BaseRefreshButton.vue', () => {
     expect(button.classes()).not.toContain('is-loading');
     expect(button.attributes('disabled')).toBeUndefined();
 
-    await wrapper.setProps({ loading: true });
+    const enableLoadingProps: Record<string, boolean> = { loading: true };
+    await wrapper.setProps(enableLoadingProps);
 
     expect(button.classes()).toContain('is-loading');
     expect(button.attributes('disabled')).toBeDefined();
@@ -120,7 +121,8 @@ describe('BaseRefreshButton.vue', () => {
       })
     );
 
-    await wrapper.setProps({ loading: false });
+    const disableLoadingProps: Record<string, boolean> = { loading: false };
+    await wrapper.setProps(disableLoadingProps);
     expect(button.classes()).not.toContain('is-loading');
     expect(setSpy).toHaveBeenCalledWith(expect.anything(), { rotation: 0 });
   });

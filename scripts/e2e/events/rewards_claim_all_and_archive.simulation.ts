@@ -19,6 +19,7 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
+
 import { BaseE2ESimulation } from '../base_simulation.ts';
 import { clickResilient } from '../e2e_helpers.ts';
 

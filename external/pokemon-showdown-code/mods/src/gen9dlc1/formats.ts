@@ -314,13 +314,7 @@ export const Formats = [
     ],
     mod: 'gen9dlc1',
     searchShow: false,
-    ruleset: [
-      'Standard NatDex',
-      'OHKO Clause',
-      'Evasion Clause',
-      'Species Clause',
-      'Sleep Clause Mod'
-    ],
+    ruleset: ['Standard NatDex'],
     banlist: [
       'ND Uber',
       'ND AG',
@@ -346,15 +340,7 @@ export const Formats = [
     ],
     mod: 'gen9dlc1',
     searchShow: false,
-    ruleset: [
-      'Standard NatDex',
-      'Same Type Clause',
-      'Terastal Clause',
-      'Species Clause',
-      'OHKO Clause',
-      'Evasion Clause',
-      'Sleep Clause Mod'
-    ],
+    ruleset: ['Standard NatDex', 'Same Type Clause', 'Terastal Clause'],
     banlist: [
       'Annihilape',
       'Arceus',
@@ -450,14 +436,7 @@ export const Formats = [
     mod: 'gen9dlc1',
     searchShow: false,
     gameType: 'doubles',
-    ruleset: [
-      'Standard NatDex',
-      'OHKO Clause',
-      'Evasion Moves Clause',
-      'Evasion Abilities Clause',
-      'Species Clause',
-      'Gravity Sleep Clause'
-    ],
+    ruleset: ['Standard Doubles', 'NatDex Mod', 'Evasion Abilities Clause'],
     banlist: [
       'Annihilape',
       'Arceus',

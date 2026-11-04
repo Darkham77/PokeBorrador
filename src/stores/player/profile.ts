@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
+import { safeStorage } from '@/logic/utils/storage';
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
 import type { AuthUser } from '@/types/auth/auth';
 import type { GameState, NotificationItem, GenderId, GameStatKey } from '@/types/system/game';
@@ -50,7 +51,7 @@ export const useProfileStore = defineStore('profile', () => {
     let lastSaveStr = 'Sin datos';
     try {
       const lsKey = 'pokemon_local_save_' + user.id;
-      const lsRaw = localStorage.getItem(lsKey);
+      const lsRaw = safeStorage.getItem(lsKey);
       if (lsRaw) {
         const parsed = JSON.parse(lsRaw) as { _last_updated?: string | number };
         if (parsed._last_updated) {

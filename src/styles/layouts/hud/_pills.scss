@@ -132,7 +132,7 @@
     width: 100%;
     margin: 0;
     font-size: var(--font-12);
-    font-weight: 400;
+    font-weight: $font-weight-normal;
     line-height: 1.1;
     text-align: center;
     white-space: nowrap;
@@ -206,7 +206,7 @@
     padding: 0 !important;
     color: Rgb(255 255 255 / 70%);
     font-size: var(--font-7) !important;
-    font-weight: 400;
+    font-weight: $font-weight-normal;
     text-transform: uppercase;
     letter-spacing: 0;
     white-space: nowrap;

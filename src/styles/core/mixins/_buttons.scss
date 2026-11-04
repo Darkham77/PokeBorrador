@@ -388,7 +388,7 @@ $btn-hover-glow-blur: 20px;
   .username {
     color: Rgb(226 232 240 / 100%);
     font-size: var(--font-11);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
   }
 
   .time {

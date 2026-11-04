@@ -1,8 +1,9 @@
 import { test, type Page } from '@playwright/test';
+
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { loadCertifiedBattleCases } from '../helpers/certifiedCaseLoader.ts';
-import { registerCertifiedBatchTests } from '../helpers/batchSimulationHarness.ts';
 import type { CertifiedTestBatch } from '../e2e_helpers.ts';
+import { registerCertifiedBatchTests } from '../helpers/batchSimulationHarness.ts';
+import { loadCertifiedBattleCases } from '../helpers/certifiedCaseLoader.ts';
 
 class FSMSyncSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {

@@ -1,7 +1,9 @@
-import { type Page, type Locator } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { sanitizePath } from '@francogp/auditor';
+import { type Page, type Locator } from '@playwright/test';
+
 import {
   MAX_PER_ACTION_TIMEOUT_MS,
   MAX_UI_SETTLE_TIMEOUT_MS,
@@ -54,10 +56,9 @@ export function flushE2ELogs(
   }
 }
 
-export function logE2EDebug(page: Page | undefined, msg: string): void {
-  const e2ePage = page as E2EPage | undefined;
-  if (e2ePage?._e2eLogBuffer) {
-    e2ePage._e2eLogBuffer.push(`[E2E-TRACE] ${msg}`);
+export function logE2EDebug(page: E2EPage | undefined, msg: string): void {
+  if (page?._e2eLogBuffer) {
+    page._e2eLogBuffer.push(`[E2E-TRACE] ${msg}`);
   }
 }
 
@@ -70,7 +71,7 @@ export async function clickResilient(
   const fallbackTimeout = Math.min(timeout, E2E_FALLBACK_TIMEOUT_MS);
   try {
     await locator.click({ timeout: initialTimeout });
-  } catch (_err) {
+  } catch {
     await locator.evaluate((el: HTMLElement) => el.click(), undefined, {
       timeout: fallbackTimeout
     });

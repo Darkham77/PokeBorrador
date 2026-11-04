@@ -1,5 +1,5 @@
-import { chromium, type Page } from '@playwright/test';
 import { isMainModule } from '@francogp/auditor';
+import { chromium, type Page } from '@playwright/test';
 import { defineCommand, runMain } from 'citty';
 
 interface IssueRecord {
@@ -14,9 +14,6 @@ const NAVIGATION_TIMEOUT_MS = 30000 as const;
 const SELECTOR_TIMEOUT_MS = 10000 as const;
 const CONTROL_WAIT_TIMEOUT_MS = 3000 as const;
 const HTTP_ERROR_STATUS_THRESHOLD = 400 as const;
-const WORLD_BAKING_SETTLE_TIMEOUT_MS = 1500 as const;
-const PREFAB_THUMB_LOAD_TIMEOUT_MS = 600 as const;
-const SELECTION_CANVAS_RENDER_TIMEOUT_MS = 500 as const;
 const CONTINENT_GENERATION_TIMEOUT_MS = 20000 as const;
 const CANVAS_SAMPLE_SIZE = 50 as const;
 const CANVAS_SAMPLE_OFFSET = 0 as const;
@@ -41,7 +38,7 @@ async function clickIdSafely(page: Page, id: string, description: string): Promi
 
   try {
     console.log(`   👉 Clickeando #${id} [${description}]`);
-    await locator.click({ force: true });
+    await locator.click();
     await page.waitForFunction(() => true);
     return true;
   } catch (err: unknown) {
@@ -127,7 +124,9 @@ async function runTestAventuraSuite(): Promise<void> {
     await clickIdSafely(page, 'tab-continent', 'Pestaña Continent Studio');
     await page.waitForSelector('.regional-studio-container', { timeout: SELECTOR_TIMEOUT_MS });
 
-    console.log('   ⏳ Esperando que el worker finalice la generación continental inicial (400x400)...');
+    console.log(
+      '   ⏳ Esperando que el worker finalice la generación continental inicial (400x400)...'
+    );
     await page.waitForFunction(
       () => {
         const badge = document.querySelector('#status-continent-generator');
@@ -138,25 +137,34 @@ async function runTestAventuraSuite(): Promise<void> {
 
     const initialContinentHasContent = await page.evaluate(
       ({ sampleSize, offset }) => {
-        const canvas = document.querySelector('#canvas-continent-terrain') as HTMLCanvasElement | null;
+        const canvas = document.querySelector<HTMLCanvasElement>('#canvas-continent-terrain');
         if (!canvas || canvas.width === 0 || canvas.height === 0) return false;
         const ctx = canvas.getContext('2d');
         if (!ctx) return false;
-        const data = ctx.getImageData(offset, offset, Math.min(canvas.width, sampleSize), Math.min(canvas.height, sampleSize)).data;
-        return data.some((byte) => byte !== 0);
+        const data = ctx.getImageData(
+          offset,
+          offset,
+          Math.min(canvas.width, sampleSize),
+          Math.min(canvas.height, sampleSize)
+        ).data;
+        return data.some((byte: number) => byte !== 0);
       },
       { sampleSize: CANVAS_SAMPLE_SIZE, offset: CANVAS_SAMPLE_OFFSET }
     );
 
     if (!initialContinentHasContent) {
-      console.error('🚨 Canvas #canvas-continent-terrain no tiene contenido tras generación continental 400x400.');
+      console.error(
+        '🚨 Canvas #canvas-continent-terrain no tiene contenido tras generación continental 400x400.'
+      );
       issues.push({
         type: 'pageerror',
         message: 'Canvas #canvas-continent-terrain is empty after initial continental generation',
         tab: 'continent'
       });
     } else {
-      console.log('   ✅ Canvas central de Continent Studio renderizó píxeles correctamente (400x400).');
+      console.log(
+        '   ✅ Canvas central de Continent Studio renderizó píxeles correctamente (400x400).'
+      );
     }
 
     await clickIdSafely(page, 'btn-display-hybrid', 'Modo de visualización Híbrido');
@@ -172,10 +180,10 @@ async function runTestAventuraSuite(): Promise<void> {
       },
       { timeout: CONTINENT_GENERATION_TIMEOUT_MS }
     );
-    await page.waitForTimeout(WORLD_BAKING_SETTLE_TIMEOUT_MS);
+    await page.locator('#btn-preset-kanto').waitFor({ state: 'visible' });
 
     await clickIdSafely(page, 'btn-preset-kanto', 'Cargar Preset Canónico Kanto');
-    await page.waitForTimeout(WORLD_BAKING_SETTLE_TIMEOUT_MS);
+    await page.locator('#btn-regional-center-view').waitFor({ state: 'visible' });
     await clickIdSafely(page, 'btn-regional-center-view', 'Centrar viewport regional');
 
     // 3. Continental / Map Studio
@@ -189,9 +197,9 @@ async function runTestAventuraSuite(): Promise<void> {
     await clickIdSafely(page, 'tool-btn-pointer-geo', 'Herramienta Puntero');
     await clickIdSafely(page, 'btn-generate-geography', 'Generar Geografía Procedural');
     // Wait for async world baking to settle
-    await page.waitForTimeout(WORLD_BAKING_SETTLE_TIMEOUT_MS);
+    await page.locator('#btn-load-kanto').waitFor({ state: 'visible' });
     await clickIdSafely(page, 'btn-load-kanto', 'Cargar Kanto Canónico');
-    await page.waitForTimeout(WORLD_BAKING_SETTLE_TIMEOUT_MS);
+    await page.locator('#tab-graph-studio').waitFor({ state: 'visible' });
 
     // 4. Graph Studio
     currentTab = 'graph-studio';
@@ -201,11 +209,13 @@ async function runTestAventuraSuite(): Promise<void> {
     await clickIdSafely(page, 'btn-teleport-pallet', 'Saltar a Pueblo Paleta');
     await clickIdSafely(page, 'btn-tab-prefabs', 'Pestaña Drawer Prefabs');
     await clickIdSafely(page, 'chip-buildings', 'Filtro Prefabs Edificios');
-    await page.waitForTimeout(PREFAB_THUMB_LOAD_TIMEOUT_MS);
+    await page.waitForFunction(
+      () => document.querySelectorAll('.prefabs-grid img.prefab-thumb').length > 0
+    );
     const brokenPrefabs = await page.evaluate(() => {
       const imgs = Array.from(
-        document.querySelectorAll('.prefabs-grid img.prefab-thumb')
-      ) as HTMLImageElement[];
+        document.querySelectorAll<HTMLImageElement>('.prefabs-grid img.prefab-thumb')
+      );
       return imgs.filter((img) => img.complete && img.naturalWidth === 0).map((img) => img.src);
     });
     if (brokenPrefabs.length > 0) {
@@ -255,8 +265,8 @@ async function runTestAventuraSuite(): Promise<void> {
     await page.waitForSelector('.asset-card img.preview-img', { timeout: SELECTOR_TIMEOUT_MS });
     const brokenImages = await page.evaluate(() => {
       const imgs = Array.from(
-        document.querySelectorAll('.asset-card img.preview-img')
-      ) as HTMLImageElement[];
+        document.querySelectorAll<HTMLImageElement>('.asset-card img.preview-img')
+      );
       return imgs
         .filter((img) => img.complete && img.naturalWidth === 0)
         .slice(0, 10)
@@ -283,12 +293,10 @@ async function runTestAventuraSuite(): Promise<void> {
     console.log('   👉 Probando selección de edificios y renderizado en MasterSheetCanvas...');
     await clickIdSafely(page, 'btn-gallery-cat-buildings', 'Filtro Edificios para selección');
     await clickIdSafely(page, 'card-asset-poke_dept_store', 'Seleccionar Edificio Dept Store');
-    await page.waitForTimeout(SELECTION_CANVAS_RENDER_TIMEOUT_MS);
+    await page.locator('canvas.master-sheet-canvas').waitFor({ state: 'visible' });
 
     const canvasHasContent = await page.evaluate(() => {
-      const canvas = document.querySelector(
-        'canvas.master-sheet-canvas'
-      ) as HTMLCanvasElement | null;
+      const canvas = document.querySelector<HTMLCanvasElement>('canvas.master-sheet-canvas');
       if (!canvas) return false;
       if (canvas.width === 0 || canvas.height === 0) return false;
       const ctx = canvas.getContext('2d');
@@ -310,7 +318,7 @@ async function runTestAventuraSuite(): Promise<void> {
     }
 
     await clickIdSafely(page, 'card-asset-poke_museum', 'Seleccionar Edificio Museo Pewter');
-    await page.waitForTimeout(SELECTION_CANVAS_RENDER_TIMEOUT_MS);
+    await page.locator('canvas.master-sheet-canvas').waitFor({ state: 'visible' });
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err);
     console.error('💥 Error crítico durante la ejecución del test:', errorMsg);
@@ -350,5 +358,5 @@ export const command = defineCommand({
 });
 
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

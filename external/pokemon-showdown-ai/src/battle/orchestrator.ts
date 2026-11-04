@@ -1,14 +1,14 @@
-import { BattleState } from './state';
-import { ShowdownClient } from '../client/showdown-client';
-import { DamageCalculator } from '../calculator/damage';
-import { InferenceEngine } from '../inference/engine';
-import { evaluateStrategicState } from '../strategy/evaluation';
-import { heuristicDecision } from '../heuristics/engine';
 import { ClaudeEngine } from '../ai/claude';
-import { BattleLogger, log, logError, logDebug } from '../logging/logger';
 import { turnDelay, maybeImperfectPlay } from '../behavior/human-like';
-import { Decision, MoveInfo } from '../types';
+import { DamageCalculator } from '../calculator/damage';
+import { ShowdownClient } from '../client/showdown-client';
 import { CONFIG } from '../config';
+import { heuristicDecision } from '../heuristics/engine';
+import { InferenceEngine } from '../inference/engine';
+import { BattleLogger, log, logError, logDebug } from '../logging/logger';
+import { evaluateStrategicState } from '../strategy/evaluation';
+import { Decision, MoveInfo } from '../types';
+import { BattleState } from './state';
 
 /**
  * Orchestrates a single battle from start to finish.

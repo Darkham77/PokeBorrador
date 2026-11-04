@@ -1,4 +1,4 @@
-import { BUFF_FIELDS, type BuffField } from '@/data/inventory/items';
+import { BUFF_FIELDS, BUFF_FIELDS_SET, type BuffField } from '@/data/inventory/items';
 import { ONE_HOUR_MS, DURATION_24_HOURS_MS } from '@/logic/constants/items.ts';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
@@ -96,7 +96,7 @@ export function registerTimeTools(debug: DebugSystem): void {
     action: (field: string, seconds: number) => {
       const s = game.state;
       const buffField = field as BuffField;
-      if (BUFF_FIELDS.includes(buffField)) {
+      if (BUFF_FIELDS_SET.has(buffField)) {
         s[buffField] = Math.max(0, seconds);
         if (s[buffField] === 0) {
           if (buffField === 'fishingRodSecs') s.fishingRodType = null;

@@ -10,7 +10,7 @@ logic for use with [`@pkmn/sim`](../sim).
 ## Installation
 
 ```sh
-npm install @pkmn/randoms
+$ npm install @pkmn/randoms
 ```
 
 ## Usage
@@ -28,8 +28,8 @@ const team = generator.getTeam();
 its `Teams` so that `Teams.generate` will work:
 
 ```ts
-import { Teams } from '@pkmn/sim';
 import { TeamGenerators } from '@pkmn/randoms';
+import { Teams } from '@pkmn/sim';
 
 Teams.setGeneratorFactory(TeamGenerators);
 const team = Teams.generate('gen1randombattle');

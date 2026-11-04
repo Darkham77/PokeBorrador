@@ -42,7 +42,7 @@ describe('RewardPillsGroup.vue', () => {
     expect(bcPill.exists()).toBe(true);
 
     const itemPills = wrapper.findAll('.reward-pill.item');
-    expect(itemPills.length).toBe(2);
+    expect(itemPills).toHaveLength(2);
   });
 
   it('renders rewards map correctly when passed via rewards prop', () => {

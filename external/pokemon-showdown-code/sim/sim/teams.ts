@@ -1,8 +1,9 @@
 import * as pkmn from '@pkmn/sets';
 import { PokemonSet } from '@pkmn/sets';
-import { PRNG, PRNGSeed } from './prng';
-import { Format, PlayerOptions } from './exported-global-types';
+
 import { Dex } from './dex';
+import { Format, PlayerOptions } from './exported-global-types';
+import { PRNG, PRNGSeed } from './prng';
 
 interface TeamGenerator {
   prng: PRNG;

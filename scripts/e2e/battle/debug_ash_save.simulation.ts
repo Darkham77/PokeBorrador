@@ -1,5 +1,7 @@
-import { test, type Page, type APIRequestContext } from '@playwright/test';
 import path from 'node:path';
+
+import { test, type Page, type APIRequestContext } from '@playwright/test';
+
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { confirmAndStartBattle, waitForWaitInput } from '../e2e_helpers.ts';
 

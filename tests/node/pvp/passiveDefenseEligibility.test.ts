@@ -325,7 +325,7 @@ describe('Passive Defense Eligibility & Matchmaking', () => {
       db: candidateDb,
       userUid: 'my-user-id',
       myElo: 1200,
-      seasonRules: activeRules as any,
+      seasonRules: activeRules,
       notify: notifyFn
     });
 

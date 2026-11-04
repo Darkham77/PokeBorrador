@@ -1,5 +1,4 @@
-import { AnyObject } from '../exported-global-types';
-
+import type { ObjectReadWriteStream } from '../../lib/streams';
 /**
  * Example random player AI.
  *
@@ -7,9 +6,8 @@ import { AnyObject } from '../exported-global-types';
  *
  * @license MIT
  */
-
-import type { ObjectReadWriteStream } from '../../lib/streams';
 import { BattlePlayer } from '../battle-stream';
+import { AnyObject, DebugOutput } from '../exported-global-types';
 import { PRNG, type PRNGSeed } from '../prng';
 import type { ChoiceRequest } from '../side';
 
@@ -199,8 +197,8 @@ export class RandomPlayerAI extends BattlePlayer {
         } else {
           throw new Error(
             `${this.constructor.name} unable to make choice ${i}. request='${typeof request}',` +
-              ` chosen='${chosen}', (mega=${canMegaEvo}, ultra=${canUltraBurst}, zmove=${canZMove},` +
-              ` dynamax='${canDynamax}', terastallize=${canTerastallize})`
+              ` chosen='${chosen.join(',')}', (mega=${canMegaEvo as DebugOutput}, ultra=${canUltraBurst as DebugOutput}, zmove=${canZMove as DebugOutput},` +
+              ` dynamax='${canDynamax as DebugOutput}', terastallize=${canTerastallize as DebugOutput})`
           );
         }
       });

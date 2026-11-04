@@ -1,6 +1,26 @@
 // src/logic/battle/helpers/showdownLogEnricher.ts
 import type { Battle } from '@pkmn/sim';
 
+function enrichLastLogLine(battle: Battle, parts: unknown[]): void {
+  const lastIndex = battle.log.length - 1;
+  if (lastIndex >= 0) {
+    const line = battle.log[lastIndex];
+    const uidMappings: string[] = []; // no-domain: Non-domain utility collection or data structure
+    parts.forEach((part) => {
+      if (part && typeof part === 'object' && 'uid' in part && (part as { uid: string }).uid) {
+        const ident = (part as { toString(): string }).toString();
+        if (ident) {
+          const cleanIdent = ident.replace(/\s+/g, '');
+          uidMappings.push(`${cleanIdent}=${(part as { uid: string }).uid}`);
+        }
+      }
+    });
+    if (uidMappings.length > 0) {
+      battle.log[lastIndex] = `${line}|[uids]${uidMappings.join(',')}`;
+    }
+  }
+}
+
 /**
  * Standardizes log line enrichment with UID tags ([uids]...)
  * across both the browser web worker and the fuzzer/replayer runner.
@@ -13,45 +33,13 @@ export class ShowdownLogEnricher {
     const originalAdd = battle.add.bind(battle);
     battle.add = function (...parts: unknown[]) {
       originalAdd(...(parts as Parameters<typeof originalAdd>)); // domain-ok: Open dynamic text or non-domain string payload
-      const lastIndex = battle.log.length - 1;
-      if (lastIndex >= 0) {
-        const line = battle.log[lastIndex];
-        const uidMappings: string[] = []; // no-domain: Non-domain utility collection or data structure
-        parts.forEach((part) => {
-          if (part && typeof part === 'object' && 'uid' in part && (part as { uid: string }).uid) {
-            const ident = (part as { toString(): string }).toString();
-            if (ident) {
-              const cleanIdent = ident.replace(/\s+/g, '');
-              uidMappings.push(`${cleanIdent}=${(part as { uid: string }).uid}`);
-            }
-          }
-        });
-        if (uidMappings.length > 0) {
-          battle.log[lastIndex] = `${line}|[uids]${uidMappings.join(',')}`;
-        }
-      }
+      enrichLastLogLine(battle, parts);
     };
 
     const originalAddMove = battle.addMove.bind(battle);
     battle.addMove = function (...parts: unknown[]) {
       originalAddMove(...(parts as Parameters<typeof originalAddMove>)); // domain-ok: Open dynamic text or non-domain string payload
-      const lastIndex = battle.log.length - 1;
-      if (lastIndex >= 0) {
-        const line = battle.log[lastIndex];
-        const uidMappings: string[] = []; // no-domain: Non-domain utility collection or data structure
-        parts.forEach((part) => {
-          if (part && typeof part === 'object' && 'uid' in part && (part as { uid: string }).uid) {
-            const ident = (part as { toString(): string }).toString();
-            if (ident) {
-              const cleanIdent = ident.replace(/\s+/g, '');
-              uidMappings.push(`${cleanIdent}=${(part as { uid: string }).uid}`);
-            }
-          }
-        });
-        if (uidMappings.length > 0) {
-          battle.log[lastIndex] = `${line}|[uids]${uidMappings.join(',')}`;
-        }
-      }
+      enrichLastLogLine(battle, parts);
     };
   }
 

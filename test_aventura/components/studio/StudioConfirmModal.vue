@@ -95,7 +95,7 @@ function handleCancel(): void {
   margin: 0;
   color: var(--slate-50);
   font-size: var(--font-15);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .modal-body {
@@ -135,7 +135,7 @@ function handleCancel(): void {
   background: var(--slate-700);
   color: var(--slate-200);
   font-size: var(--font-12);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
   &:hover {
     background: var(--slate-600);
@@ -149,7 +149,7 @@ function handleCancel(): void {
   background: var(--red-600);
   color: var(--white);
   font-size: var(--font-12);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   cursor: pointer;
   box-shadow: var(--shadow-card);
   &:hover {

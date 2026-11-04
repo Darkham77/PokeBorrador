@@ -119,23 +119,22 @@ onUnmounted(() => {
 
 watch(
   () => gs.value.starterChosen,
-  (val) => {
+  async (val) => {
     if (val) {
-      nextTick(() => {
-        const el = document.getElementById('game-screen');
-        if (el) {
-          if (typeof globalThis.window !== 'undefined' && globalThis.__E2E__) {
-            gsap.set(el, { opacity: 1, y: 0 });
-            return;
-          }
-          const MAIN_GAME_TRANSITION_Y_PX = 10;
-          gsap.fromTo(
-            el,
-            { opacity: 0, y: MAIN_GAME_TRANSITION_Y_PX },
-            { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
-          );
+      await nextTick();
+      const el = document.getElementById('game-screen');
+      if (el) {
+        if (typeof globalThis.window !== 'undefined' && globalThis.__E2E__) {
+          gsap.set(el, { opacity: 1, y: 0 });
+          return;
         }
-      });
+        const MAIN_GAME_TRANSITION_Y_PX = 10;
+        gsap.fromTo(
+          el,
+          { opacity: 0, y: MAIN_GAME_TRANSITION_Y_PX },
+          { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
+        );
+      }
     }
   },
   { immediate: true }

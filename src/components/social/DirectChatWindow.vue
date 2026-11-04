@@ -37,7 +37,8 @@ async function handleSendMessage(): Promise<void> {
 
   await chatStore.sendPrivateMessage(props.friendId, text);
   newMessage.value = '';
-  nextTick(scrollToBottom);
+  await nextTick();
+  scrollToBottom();
 }
 
 function closeChat(): void {
@@ -51,9 +52,10 @@ function openTrainerProfile(userId?: string): void {
 
 watch(
   () => chat.value?.messages.length,
-  () => {
+  async () => {
     if (chat.value && !chat.value.isCollapsed) {
-      nextTick(scrollToBottom);
+      await nextTick();
+      scrollToBottom();
       chatStore.fetchMissingCosmetics();
     }
   }
@@ -61,12 +63,11 @@ watch(
 
 watch(
   () => chat.value?.isCollapsed,
-  (collapsed) => {
+  async (collapsed) => {
     if (collapsed === false) {
-      nextTick(() => {
-        scrollToBottom();
-        inputField.value?.focus();
-      });
+      await nextTick();
+      scrollToBottom();
+      inputField.value?.focus();
       // Synchronize bottom scroll with side modal slide-in animation
       const SCROLL_SYNC_STEP_1_SEC = 0.1;
       const SCROLL_SYNC_STEP_2_SEC = 0.3;
@@ -96,8 +97,9 @@ const onMessageEnter = (el: Element, done: () => void): void => {
   );
 };
 
-onMounted(() => {
-  nextTick(scrollToBottom);
+onMounted(async () => {
+  await nextTick();
+  scrollToBottom();
   inputField.value?.focus();
   chatStore.fetchMissingCosmetics();
 });
@@ -194,33 +196,6 @@ onMounted(() => {
   color: Rgb(148 163 184 / 100%);
   font-size: var(--font-12);
   text-align: center;
-}
-
-.message-row {
-  display: flex;
-  align-items: flex-start;
-  gap: $spacing-md;
-}
-
-.message-content {
-  padding: 8px 12px;
-  border: 1px solid Rgb(255 255 255 / 5%);
-  border-radius: 0 $radius-xl $radius-xl;
-  background: Rgb(255 255 255 / 3%);
-  flex: 1;
-
-  &.is-me {
-    background: Rgb(157 78 221 / 15%);
-    border-color: Rgb(157 78 221 / 30%);
-  }
-}
-
-.message-meta {
-  @include chat-message-meta;
-}
-
-.text {
-  @include chat-message-text;
 }
 
 .chat-footer {

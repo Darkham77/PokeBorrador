@@ -102,12 +102,12 @@ describe('Fase 5: Map Props Registry & Placement Engine', () => {
       for (const prop of allProps) {
         expect(prop.width).toBeGreaterThanOrEqual(1);
         expect(prop.height).toBeGreaterThanOrEqual(1);
-        expect(prop.tiles.length).toBe(prop.height);
-        expect(prop.collisionMask.length).toBe(prop.height);
+        expect(prop.tiles).toHaveLength(prop.height);
+        expect(prop.collisionMask).toHaveLength(prop.height);
 
         for (let r = 0; r < prop.height; r++) {
-          expect(prop.tiles[r]!.length).toBe(prop.width);
-          expect(prop.collisionMask[r]!.length).toBe(prop.width);
+          expect(prop.tiles[r]!).toHaveLength(prop.width);
+          expect(prop.collisionMask[r]!).toHaveLength(prop.width);
         }
       }
     });

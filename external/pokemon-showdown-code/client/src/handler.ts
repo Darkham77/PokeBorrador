@@ -68,9 +68,9 @@ export class Handler implements Protocol.Handler {
       case 'multi':
       case 'freeforall':
         this.battle.pokemonControlled = 1;
-        // @ts-expect-error readonly
+        // @ts-ignore readonly
         if (!this.battle.p3) this.battle.p3 = this.battle.createSide(3);
-        // @ts-expect-error readonly
+        // @ts-ignore readonly
         if (!this.battle.p4) this.battle.p4 = this.battle.createSide(4);
         this.battle.p3.foe = this.battle.p2;
         this.battle.p4.foe = this.battle.p1;

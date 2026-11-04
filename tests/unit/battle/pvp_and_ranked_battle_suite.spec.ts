@@ -8,6 +8,7 @@ import { setActivePinia, createPinia } from 'pinia';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test';
 import type { Mock } from 'vite-plus/test';
 
+import type * as ShowdownWorkerClientModule from '@/logic/battle/showdownWorkerClient';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper';
 import {
@@ -24,7 +25,7 @@ import { PVP_TURN_TIMEOUT_SEC, PVP_RECONNECT_WINDOW_SEC } from '@/types/battle/p
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 vi.mock('@/logic/battle/showdownWorkerClient', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/logic/battle/showdownWorkerClient')>();
+  const actual = await importOriginal<typeof ShowdownWorkerClientModule>();
   return {
     ...actual,
     executeTurnInWorker: vi.fn().mockResolvedValue({

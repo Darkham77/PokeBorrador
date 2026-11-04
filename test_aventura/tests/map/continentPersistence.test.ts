@@ -26,8 +26,8 @@ describe('continentPersistence', () => {
     const blank = createBlankProject('Mi Region');
     expect(blank.id.length).toBeGreaterThan(0);
     expect(blank.name).toBe('Mi Region');
-    expect(Object.keys(blank.nodes).length).toBe(0);
-    expect(blank.connections.length).toBe(0);
+    expect(Object.keys(blank.nodes)).toHaveLength(0);
+    expect(blank.connections).toHaveLength(0);
   });
 
   it('creates canonical preset projects with populated geography and cities', () => {
@@ -60,7 +60,7 @@ describe('continentPersistence', () => {
     saveProjectProfile(p2);
 
     const profiles = listProjectProfiles();
-    expect(profiles.length).toBe(2);
+    expect(profiles).toHaveLength(2);
     expect(profiles.some((p) => p.id === p1.id)).toBe(true);
     expect(profiles.some((p) => p.id === p2.id)).toBe(true);
   });

@@ -340,7 +340,7 @@ async function startClassMission(missionId: MissionId): Promise<void> {
       margin: 0;
       color: var(--class-color);
       font-size: var(--font-10);
-      font-weight: 800;
+      font-weight: $font-weight-extrabold;
     }
 
     .class-level-badge {
@@ -352,7 +352,7 @@ async function startClassMission(missionId: MissionId): Promise<void> {
       background: var(--class-color);
       color: var(--white);
       font-size: var(--font-9);
-      font-weight: 800;
+      font-weight: $font-weight-extrabold;
       text-shadow:
         1px 1px 0 #000,
         -1px -1px 0 #000,

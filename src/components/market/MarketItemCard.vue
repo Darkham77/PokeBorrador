@@ -300,18 +300,18 @@ function onItemImgError(e: Event): void {
       display: flex;
       flex-direction: column;
       gap: $spacing-xs;
+    }
 
-      .meta-row-top {
-        display: flex;
-        align-items: center;
-        gap: $spacing-md-alt;
+    .meta-row-top {
+      display: flex;
+      align-items: center;
+      gap: $spacing-md-alt;
 
-        .i-qty {
-          @include pixelated;
+      .i-qty {
+        @include pixelated;
 
-          color: $muted;
-          font-size: var(--font-8);
-        }
+        color: $muted;
+        font-size: var(--font-8);
       }
     }
   }
@@ -345,7 +345,7 @@ function onItemImgError(e: Event): void {
       @include pixelated;
 
       font-size: var(--font-7);
-      font-weight: 900;
+      font-weight: $font-weight-black;
     }
 
     &.shop-pill {

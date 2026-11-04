@@ -240,7 +240,7 @@ describe('Profile Cards Suite', () => {
       expect(wrapper.find('.empty-ranked-medals').exists()).toBe(false);
 
       const items = wrapper.findAll('.ranked-medal-item');
-      expect(items.length).toBe(2);
+      expect(items).toHaveLength(2);
 
       expect(items[0]!.text()).toContain('Frontera Kanto & Johto');
       expect(items[0]!.text()).toContain('Septiembre 2026');
@@ -299,7 +299,7 @@ describe('Profile Cards Suite', () => {
       });
 
       const items = wrapper.findAll('.ranked-medal-item');
-      expect(items.length).toBe(2);
+      expect(items).toHaveLength(2);
 
       await items[0]!.trigger('click');
       expect(openSpy).toHaveBeenCalledWith('RankedTournamentDetail', {

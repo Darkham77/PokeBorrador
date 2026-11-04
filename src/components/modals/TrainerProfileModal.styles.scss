@@ -115,7 +115,7 @@
     align-items: center;
     gap: $spacing-md;
     font-size: var(--font-14);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
 
     .faction-img {
       width: 24px;

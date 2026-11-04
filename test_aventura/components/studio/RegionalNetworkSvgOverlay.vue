@@ -430,7 +430,7 @@ const viewBoxAttr = computed(() => `0 0 ${store.widthPx} ${store.heightPx}`);
   .poi-label-text {
     font-family: inherit;
     font-size: var(--font-11);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     letter-spacing: 0.5px;
     text-shadow: 0 1px 2px Rgb(0 0 0 / 80%);
     pointer-events: none !important;

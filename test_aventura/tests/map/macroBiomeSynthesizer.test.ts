@@ -38,8 +38,8 @@ describe('macroBiomeSynthesizer', () => {
       terrainMatrix: terrain
     });
 
-    expect(result.biomeGrid.length).toBe(H);
-    expect(result.biomeGrid[0]!.length).toBe(W);
+    expect(result.biomeGrid).toHaveLength(H);
+    expect(result.biomeGrid[0]!).toHaveLength(W);
 
     const validBiomes = new Set<MacroBiome>(MACRO_BIOMES);
     for (let y = 0; y < H; y++) {
@@ -137,8 +137,8 @@ describe('macroBiomeSynthesizer', () => {
     });
 
     // Check if transition buffer exists for cells touching different biomes
-    expect(result.transitionBufferGrid.length).toBe(H);
-    expect(result.transitionBufferGrid[0]!.length).toBe(W);
+    expect(result.transitionBufferGrid).toHaveLength(H);
+    expect(result.transitionBufferGrid[0]!).toHaveLength(W);
 
     // If desert or volcanic exists, verify containment logic
     let extremeCellFound = false;

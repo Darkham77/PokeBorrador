@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+
 import { MOCK_SELECTION_ITEMS, type SelectionDemoPokemon } from '../data/mockSelectionPokemon.ts';
 import { logToInspector } from '../logic/useLiveInspector.ts';
 import Sec10SelectionFilters from './Sec10SelectionFilters.vue';

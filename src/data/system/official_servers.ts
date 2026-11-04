@@ -8,8 +8,9 @@
  * - NEVER modified directly by hand to avoid git pull conflicts on production / testing deploys.
  */
 
-import localServersData from './servers.local.json' with { type: 'json' };
 import type { DisplayText, AssetUri } from '@francogp/auditor';
+
+import localServersData from './servers.local.json' with { type: 'json' };
 
 export interface OfficialServer {
   id: DisplayText;

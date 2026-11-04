@@ -1,3 +1,4 @@
+import { isCertifiedBattleGameAction } from '../../../../src/types/battle/certifiedBattleActions.ts';
 import {
   CERTIFIED_BATTLE_WINNERS,
   type CertifiedBattleCase,
@@ -8,7 +9,6 @@ import {
   type TestBatch,
   generateBatchHash
 } from '../generators/fuzzer_team_generator.ts';
-import { isCertifiedBattleGameAction } from '../../../../src/types/battle/certifiedBattleActions.ts';
 
 function isObject(value: unknown): value is object {
   return typeof value === 'object' && value !== null;

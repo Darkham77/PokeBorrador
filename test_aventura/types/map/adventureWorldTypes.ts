@@ -58,8 +58,6 @@ export interface AdventureProjectNode {
   cityConfig?: CityGenerationConfig;
 }
 
-export type MapNode = AdventureProjectNode;
-
 export interface ContinentalRoutesExportBundle {
   readonly version: DisplayText;
   readonly archetype: RegionArchetype;

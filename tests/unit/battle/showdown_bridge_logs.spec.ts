@@ -36,7 +36,7 @@ describe('Showdown Bridge Combat Log Messages Parity', () => {
     gameStore.state = {
       ...gameStore.state,
       team: [playerMon]
-    } as unknown as typeof gameStore.state;
+    };
 
     mockStore = {
       activeBattle: ref({

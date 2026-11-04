@@ -233,7 +233,7 @@ const filteredMaps = computed(() => {
   .map-name {
     color: Rgb(204 204 204 / 100%);
     font-size: var(--font-11);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
   }
 
   .winner-badge {

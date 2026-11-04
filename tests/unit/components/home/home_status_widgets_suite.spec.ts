@@ -254,7 +254,7 @@ describe('Home Status & Activity Widgets Suite', () => {
       expect(wrapper.text()).toContain('2/8 Medallas Conquistadas');
 
       const slots = wrapper.findAll('.medal-slot');
-      expect(slots.length).toBe(8);
+      expect(slots).toHaveLength(8);
       expect(slots[0]!.classes()).toContain('is-conquered');
       expect(slots[1]!.classes()).toContain('is-conquered');
       expect(slots[2]!.classes()).not.toContain('is-conquered');
@@ -408,7 +408,7 @@ describe('Home Status & Activity Widgets Suite', () => {
 
       expect(wrapper.find('#widget-pending-rewards').exists()).toBe(true);
       expect(wrapper.find('.event-pending-awards-banner').exists()).toBe(true);
-      expect(wrapper.findAll('.event-pending-awards-banner .award-item').length).toBe(1);
+      expect(wrapper.findAll('.event-pending-awards-banner .award-item')).toHaveLength(1);
       expect(wrapper.text()).toContain('RECOMPENSAS PENDIENTES (1)');
       expect(wrapper.find('#claim-pending-reward-btn-event-award-1').exists()).toBe(true);
       expect(wrapper.find('#discard-pending-reward-btn-event-award-1').exists()).toBe(true);
@@ -622,7 +622,8 @@ describe('Home Status & Activity Widgets Suite', () => {
       expect(button.classes()).not.toContain('is-loading');
       expect(button.attributes('disabled')).toBeUndefined();
 
-      await wrapper.setProps({ loading: true });
+      const enableLoadingProps: Record<string, boolean> = { loading: true };
+      await wrapper.setProps(enableLoadingProps);
 
       expect(button.classes()).toContain('is-loading');
       expect(button.attributes('disabled')).toBeDefined();
@@ -636,7 +637,8 @@ describe('Home Status & Activity Widgets Suite', () => {
         })
       );
 
-      await wrapper.setProps({ loading: false });
+      const disableLoadingProps: Record<string, boolean> = { loading: false };
+      await wrapper.setProps(disableLoadingProps);
       expect(button.classes()).not.toContain('is-loading');
       expect(setSpy).toHaveBeenCalledWith(expect.anything(), { rotation: 0 });
     });

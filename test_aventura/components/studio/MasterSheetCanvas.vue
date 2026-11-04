@@ -676,7 +676,7 @@ onUnmounted(() => {
   color: var(--slate-400);
   font-family: monospace;
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .floating-btn {
@@ -724,7 +724,7 @@ onUnmounted(() => {
 .hud-label {
   color: var(--slate-500);
   font-size: var(--font-9);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -733,7 +733,7 @@ onUnmounted(() => {
   color: var(--slate-200);
   font-family: monospace;
   font-size: var(--font-13);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 
   &.highlight {
     color: var(--sky);
@@ -795,7 +795,7 @@ onUnmounted(() => {
   background: var(--sky-dark);
   color: var(--white);
   font-size: var(--font-12);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   cursor: pointer;
 
   &:hover {
@@ -812,7 +812,7 @@ onUnmounted(() => {
   background: var(--emerald-500);
   color: var(--white);
   font-size: var(--font-12);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   transform: Translatex(-50%);
   box-shadow: $shadow-card;
 }

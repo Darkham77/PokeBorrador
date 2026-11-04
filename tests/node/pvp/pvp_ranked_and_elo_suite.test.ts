@@ -162,7 +162,7 @@ describe('PvP Ranked & Elo Suite', () => {
       const rules = normalizeRankedRules({
         maxPokemon: 6,
         levelCap: 50,
-        bannedPokemonIds: ['mewtwo' as any]
+        bannedPokemonIds: ['mewtwo']
       });
 
       it('validates a compliant team', () => {

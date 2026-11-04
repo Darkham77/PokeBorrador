@@ -30,8 +30,7 @@ const FORMATS = [
   'gen6randombattle',
   'gen7randombattle',
   'gen8randombattle',
-  /* 'gen7randomdoublesbattle', */ 'gen8randomdoublesbattle',
-  'gen9randombattle',
+  /* 'gen7randomdoublesbattle', */ 'gen9randombattle',
   'gen9randomdoublesbattle'
 ];
 const prng = new PRNG();

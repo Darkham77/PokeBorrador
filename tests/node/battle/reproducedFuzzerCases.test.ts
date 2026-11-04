@@ -91,9 +91,9 @@ describe('Reproduced & Extracted Regression Fuzzer Cases', () => {
         battle,
         p1Choice: step.p1Choice,
         p2Choice: step.p2Choice,
-        history: staticHistory as any,
+        history: staticHistory,
         currentStep: i + 1,
-        certifiedHistoryStep: step as any
+        certifiedHistoryStep: step
       });
 
       expect(result).toBeDefined();
@@ -158,9 +158,9 @@ describe('Reproduced & Extracted Regression Fuzzer Cases', () => {
         battle,
         p1Choice: step.p1Choice,
         p2Choice: step.p2Choice,
-        history: staticHistory as any,
+        history: staticHistory,
         currentStep: i + 1,
-        certifiedHistoryStep: step as any
+        certifiedHistoryStep: step
       });
 
       expect(result).toBeDefined();
@@ -240,7 +240,7 @@ describe('Reproduced & Extracted Regression Fuzzer Cases', () => {
       p2Choice: 'switch 2',
       history: [{ turnCount: 2, p1Choice: '', p2Choice: 'switch 2' }] as any,
       currentStep: 2,
-      certifiedHistoryStep: { turnCount: 2, p1Choice: '', p2Choice: 'switch 2' } as any
+      certifiedHistoryStep: { turnCount: 2, p1Choice: '', p2Choice: 'switch 2' }
     });
 
     expect(turn2Result).toBeDefined();

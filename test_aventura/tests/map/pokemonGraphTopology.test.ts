@@ -29,8 +29,8 @@ describe('Pokemon Topology Graph Generator (Phase 1)', () => {
     const graphA = generatePokemonTopology({ seed: 42 });
     const graphB = generatePokemonTopology({ seed: 42 });
 
-    expect(graphA.nodes.length).toBe(graphB.nodes.length);
-    expect(graphA.edges.length).toBe(graphB.edges.length);
+    expect(graphA.nodes).toHaveLength(graphB.nodes.length);
+    expect(graphA.edges).toHaveLength(graphB.edges.length);
     expect(graphA.mainChainOrder).toEqual(graphB.mainChainOrder);
 
     const validation = validateGraphInvariants(graphA);
@@ -48,8 +48,8 @@ describe('Pokemon Topology Graph Generator (Phase 1)', () => {
     );
     const leagueEdges = graph.edges.filter((e) => e.fromId === league.id || e.toId === league.id);
 
-    expect(starterEdges.length).toBe(1);
-    expect(leagueEdges.length).toBe(1);
+    expect(starterEdges).toHaveLength(1);
+    expect(leagueEdges).toHaveLength(1);
   });
 
   it('contains exactly 8 gyms and at least 1 port city', () => {
@@ -57,7 +57,7 @@ describe('Pokemon Topology Graph Generator (Phase 1)', () => {
     const gyms = graph.nodes.filter((n) => n.role === 'gym_city');
     const ports = graph.nodes.filter((n) => n.hasPort);
 
-    expect(gyms.length).toBe(8);
+    expect(gyms).toHaveLength(8);
     expect(ports.length).toBeGreaterThanOrEqual(1);
 
     const gymNumbers = gyms.map((g) => g.gymNumber).sort((a, b) => (a ?? 0) - (b ?? 0));

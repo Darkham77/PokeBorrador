@@ -411,7 +411,7 @@ describe('Event Awards Validation and Discard System', () => {
 
       // 1. Check pending awards -> Both awards should be loaded
       await checkPendingAwards(ctx, true);
-      expect(ctx.pendingAwards.value.length).toBe(2);
+      expect(ctx.pendingAwards.value).toHaveLength(2);
       expect(ctx.uiStore.notify).toHaveBeenCalledWith(
         '¡Tienes 2 recompensas de eventos pendientes por reclamar!',
         '🎁'

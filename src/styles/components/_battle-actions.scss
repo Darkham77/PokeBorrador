@@ -90,7 +90,7 @@
     color: Rgb(255 255 255 / 60%);
     font-family: inherit;
     font-size: var(--font-10);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
   }
 
   &::before {

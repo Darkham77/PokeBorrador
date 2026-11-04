@@ -36,7 +36,7 @@ describe('EventCardCategoryPreview.vue', () => {
       name: 'Mayor Peso (Staryu)',
       metric: 'weight',
       speciesScope: 'per_species',
-      targetSpecies: 'staryu' as PokemonSpeciesId,
+      targetSpecies: 'staryu',
       order: 'max'
     },
     {
@@ -44,7 +44,7 @@ describe('EventCardCategoryPreview.vue', () => {
       name: 'Menor Peso (Staryu)',
       metric: 'weight',
       speciesScope: 'per_species',
-      targetSpecies: 'staryu' as PokemonSpeciesId,
+      targetSpecies: 'staryu',
       order: 'min'
     },
     {
@@ -52,15 +52,12 @@ describe('EventCardCategoryPreview.vue', () => {
       name: 'Mayor Peso (Magikarp)',
       metric: 'weight',
       speciesScope: 'per_species',
-      targetSpecies: 'magikarp' as PokemonSpeciesId,
+      targetSpecies: 'magikarp',
       order: 'max'
     }
   ];
 
-  const mockSpeciesList: PokemonSpeciesId[] = [
-    'staryu' as PokemonSpeciesId,
-    'magikarp' as PokemonSpeciesId
-  ];
+  const mockSpeciesList: PokemonSpeciesId[] = ['staryu', 'magikarp'];
 
   it('renders species tabs with sprite, name, and wrap container', async () => {
     const wrapper = mount(EventCardCategoryPreview, {
@@ -77,7 +74,7 @@ describe('EventCardCategoryPreview.vue', () => {
 
     // Should have Global + Staryu + Magikarp = 3 tabs
     const tabs = wrapper.findAll('.species-tab-btn');
-    expect(tabs.length).toBe(3);
+    expect(tabs).toHaveLength(3);
 
     const tab0 = tabs[0]!;
     const tab1 = tabs[1]!;
@@ -113,7 +110,7 @@ describe('EventCardCategoryPreview.vue', () => {
 
     // Only 2 slots for Staryu should be rendered (weight_staryu, min_weight_staryu)
     const chips = wrapper.findAll('.comp-slot-chip');
-    expect(chips.length).toBe(2);
+    expect(chips).toHaveLength(2);
     expect(wrapper.text()).toContain('Mayor Peso');
     expect(wrapper.text()).toContain('Menor Peso');
   });

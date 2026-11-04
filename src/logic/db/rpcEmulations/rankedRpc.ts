@@ -198,6 +198,8 @@ async function distributeSeasonalAwards(
   let rank = 0;
   let awardsCount = 0;
   const podium: RankedPodiumEntry[] = [];
+  const awardPlaceholders: string[] = [];
+  const awardParams: unknown[] = [];
 
   for (const player of eligiblePlayers) {
     rank++;
@@ -218,23 +220,28 @@ async function distributeSeasonalAwards(
 
     for (let i = 0; i < prizes.length; i++) {
       const awardId = `award_${targetEventKey}_${player.id}_${i}_${nowEpochMs}`;
-      await queryLocal(
-        `
-        INSERT INTO awards (id, event_id, winner_id, winner_name, winner_email, prize, awarded_at, claimed, received_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 0, NULL)
-      `,
-        [
-          awardId,
-          targetEventKey,
-          player.id,
-          player.username,
-          player.email,
-          JSON.stringify(prizes[i]),
-          nowIso
-        ]
+      awardPlaceholders.push('(?, ?, ?, ?, ?, ?, ?, 0, NULL)');
+      awardParams.push(
+        awardId,
+        targetEventKey,
+        player.id,
+        player.username,
+        player.email,
+        JSON.stringify(prizes[i]),
+        nowIso
       );
       awardsCount++;
     }
+  }
+
+  if (awardPlaceholders.length > 0) {
+    await queryLocal(
+      `
+      INSERT INTO awards (id, event_id, winner_id, winner_name, winner_email, prize, awarded_at, claimed, received_at)
+      VALUES ${awardPlaceholders.join(', ')}
+    `,
+      awardParams
+    );
   }
 
   return { awardsCount, podium };

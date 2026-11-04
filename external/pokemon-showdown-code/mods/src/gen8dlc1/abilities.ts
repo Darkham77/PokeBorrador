@@ -21,8 +21,7 @@ export const Abilities: ModdedAbilityDataTable = {
     inherit: true,
     onDamage(damage, target, source, effect) {
       if (
-        effect &&
-        effect.effectType === 'Move' &&
+        effect?.effectType === 'Move' &&
         ['mimikyu', 'mimikyutotem'].includes(target.species.id) &&
         !target.transformed
       ) {
@@ -48,8 +47,7 @@ export const Abilities: ModdedAbilityDataTable = {
     inherit: true,
     onDamage(damage, target, source, effect) {
       if (
-        effect &&
-        effect.effectType === 'Move' &&
+        effect?.effectType === 'Move' &&
         effect.category === 'Physical' &&
         target.species.id === 'eiscue' &&
         !target.transformed

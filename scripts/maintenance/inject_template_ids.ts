@@ -1,4 +1,4 @@
-import { isMainModule } from '@francogp/auditor';
+import fs from 'node:fs';
 /**
  * scripts/maintenance/inject_template_ids.ts
  *
@@ -9,9 +9,9 @@ import { isMainModule } from '@francogp/auditor';
  * Usage:
  *   npx tsx scripts/maintenance/inject_template_ids.ts [--cwd=<path>] [--dry-run]
  */
-
-import fs from 'node:fs';
 import path from 'node:path';
+
+import { isMainModule } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
 
 interface InjectionOptions {
@@ -82,8 +82,6 @@ function findClosingTagOrText(
   const textOnly = innerHtml.replace(/<[^>]+>/g, '').trim();
   return sanitizeSlug(textOnly);
 }
-
-
 
 function getAllVueFiles(dir: string): string[] {
   if (!fs.existsSync(dir)) return [];
@@ -321,5 +319,5 @@ export const command = defineCommand({
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

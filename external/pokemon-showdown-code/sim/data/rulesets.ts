@@ -1,4 +1,4 @@
-﻿// Note: These are the rules that formats use
+// Note: These are the rules that formats use
 
 // The list of formats is stored in config/formats.js
 export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
@@ -20,7 +20,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   standard: {
     effectType: 'ValidatorRule',
     name: 'Standard',
-    desc: 'The standard ruleset for all offical Smogon singles tiers (Ubers, OU, etc.)',
+    desc: 'The standard ruleset for all official Smogon singles tiers (Ubers, OU, etc.)',
     ruleset: [
       'Standard AG',
       'Sleep Clause Mod',
@@ -34,7 +34,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   flatrules: {
     effectType: 'ValidatorRule',
     name: 'Flat Rules',
-    desc: 'The in-game Flat Rules: Adjust Level Down 50, Species Clause, Item Clause = 1, -Mythical, -Restricted Legendary, Bring 6 Pick 3-6 depending on game type.',
+    desc: 'Enforces in-game Flat Rules: Adjust Level Down 50, Species Clause, Item Clause = 1, -Mythical, -Restricted Legendary, Bring 6 Pick 3-6 depending on game type',
     ruleset: [
       'Obtainable',
       'Team Preview',
@@ -50,7 +50,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   limittworestricted: {
     effectType: 'ValidatorRule',
     name: 'Limit Two Restricted',
-    desc: 'Limit two restricted Pokémon (flagged with * in the rules list)',
+    desc: 'Allows a team to have up to two Restricted Legendary Pokemon',
     onValidateTeam(team) {
       const restrictedSpecies = [];
       for (const set of team) {
@@ -59,7 +59,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
       }
       if (restrictedSpecies.length > 2) {
         return [
-          `You can only use up to two restricted Pok\u00E9mon (you have: ${restrictedSpecies.join(', ')})`
+          `You can only use up to two restricted Pokemon (you have: ${restrictedSpecies.join(', ')})`
         ];
       }
     }
@@ -67,7 +67,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   limitonerestricted: {
     effectType: 'ValidatorRule',
     name: 'Limit One Restricted',
-    desc: 'Limit one restricted Pokémon (flagged with * in the rules list)',
+    desc: 'Allows a team to have one Restricted Legendary Pokemon',
     onValidateTeam(team) {
       const restrictedSpecies = [];
       for (const set of team) {
@@ -76,7 +76,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
       }
       if (restrictedSpecies.length > 1) {
         return [
-          `You can only use one restricted Pok\u00E9mon (you have: ${restrictedSpecies.join(', ')})`
+          `You can only use one restricted Pokemon (you have: ${restrictedSpecies.join(', ')})`
         ];
       }
     }
@@ -184,7 +184,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   obtainable: {
     effectType: 'ValidatorRule',
     name: 'Obtainable',
-    desc: 'Makes sure the team is possible to obtain in-game.',
+    desc: 'Makes sure the team is possible to obtain in-game',
     ruleset: [
       'Obtainable Moves',
       'Obtainable Abilities',
@@ -243,39 +243,28 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   obtainablemoves: {
     effectType: 'ValidatorRule',
     name: 'Obtainable Moves',
-    desc: 'Makes sure moves are learnable by the species.'
+    desc: 'Makes sure moves are learnable by the species'
     // Hardcoded in team-validator.ts
   },
   obtainableabilities: {
     effectType: 'ValidatorRule',
     name: 'Obtainable Abilities',
-    desc: 'Makes sure abilities match the species.'
+    desc: 'Makes sure abilities match the species'
     // Hardcoded in team-validator.ts
   },
   obtainableformes: {
     effectType: 'ValidatorRule',
     name: 'Obtainable Formes',
-    desc: 'Makes sure in-battle formes only appear in-battle.'
+    desc: 'Makes sure in-battle formes only appear in-battle'
     // Hardcoded in team-validator.ts
   },
   obtainablemisc: {
     effectType: 'ValidatorRule',
     name: 'Obtainable Misc',
-    desc: "Validate all obtainability things that aren't moves/abilities (Hidden Power type, gender, IVs, events, duplicate moves).",
+    desc: "Validate all obtainability things that aren't moves/abilities (Hidden Power type, gender, IVs, events, duplicate moves)",
     // Mostly hardcoded in team-validator.ts
     onChangeSet(set) {
       const species = this.dex.species.get(set.species);
-
-      if (species.gender) {
-        if (set.gender !== species.gender) {
-          set.gender = species.gender;
-        }
-      } else {
-        if (set.gender !== 'M' && set.gender !== 'F') {
-          set.gender = '';
-        }
-      }
-
       // limit one of each move
       // repealing this will not actually let you USE multiple moves, because of a cart bug:
       // https://twitter.com/DaWoblefet/status/1396217830006132737
@@ -286,7 +275,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
           const moveid = move.id;
           if (hasMove[moveid])
             return [`${species.baseSpecies} has multiple copies of ${move.name}.`];
-          hasMove[moveid] = true;
+          if (moveid) hasMove[moveid] = true;
         }
       }
     }
@@ -294,7 +283,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   hoennpokedex: {
     effectType: 'ValidatorRule',
     name: 'Hoenn Pokedex',
-    desc: 'Only allows Pok&eacute;mon native to the Hoenn region (OR/AS)',
+    desc: 'Only allows Pokemon native to the Hoenn region (Omega Ruby/Alpha Sapphire)',
     onValidateSet(set, format) {
       const hoennDex = [
         'Abra',
@@ -513,7 +502,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   sinnohpokedex: {
     effectType: 'ValidatorRule',
     name: 'Sinnoh Pokedex',
-    desc: 'Only allows Pok&eacute;mon native to the Sinnoh region (Platinum)',
+    desc: 'Only allows Pokemon native to the Sinnoh region (Platinum)',
     onValidateSet(set, format) {
       const sinnohDex = [
         'Turtwig',
@@ -739,7 +728,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   oldunovapokedex: {
     effectType: 'ValidatorRule',
     name: 'Old Unova Pokedex',
-    desc: 'Only allows Pok&eacute;mon native to the Unova region as of the original Black/White games',
+    desc: 'Only allows Pokemon native to the Unova region (Black/White)',
     onValidateSet(set, format) {
       const species = this.dex.species.get(set.species || set.name);
       const isUnova =
@@ -755,7 +744,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   newunovapokedex: {
     effectType: 'ValidatorRule',
     name: 'New Unova Pokedex',
-    desc: 'Only allows Pok&eacute;mon native to the Unova region as of the Black 2/White 2 games',
+    desc: 'Only allows Pokemon native to the Unova region (Black 2/White 2)',
     onValidateSet(set, format) {
       const unovaDex = [
         'Victini',
@@ -774,7 +763,6 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
         'Liepard',
         'Pidove',
         'Tranquill',
-        'Unfezant',
         'Unfezant',
         'Sewaddle',
         'Swadloon',
@@ -863,7 +851,6 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
         'Krookodile',
         'Darumaka',
         'Darmanitan',
-        'Basculin',
         'Basculin',
         'Trubbish',
         'Garbodor',
@@ -1072,7 +1059,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   kalospokedex: {
     effectType: 'ValidatorRule',
     name: 'Kalos Pokedex',
-    desc: 'Only allows Pok&eacute;mon native to the Kalos region (XY)',
+    desc: 'Only allows Pokemon native to the Kalos region (X/Y)',
     onValidateSet(set, format) {
       const kalosDex = [
         'Chespin',
@@ -1545,7 +1532,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   oldalolapokedex: {
     effectType: 'ValidatorRule',
     name: 'Old Alola Pokedex',
-    desc: 'Only allows Pok&eacute;mon native to the Alola region (SUMO)',
+    desc: 'Only allows Pokemon native to the Alola region (Sun/Moon)',
     banlist: [
       'Pikachu-Partner',
       'Marowak-Alola-Totem',
@@ -1873,7 +1860,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   newalolapokedex: {
     effectType: 'ValidatorRule',
     name: 'New Alola Pokedex',
-    desc: 'Only allows Pok&eacute;mon native to the Alola region (US/UM)',
+    desc: 'Only allows Pokemon native to the Alola region (Ultra Sun/Ultra Moon)',
     onValidateSet(set, format) {
       const alolaDex = [
         'Rowlet',
@@ -1990,7 +1977,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
         'Gyarados',
         'Barboach',
         'Whiscash',
-        'Seal',
+        'Seel',
         'Dewgong',
         'Machop',
         'Machoke',
@@ -2244,7 +2231,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
         'Scizor',
         'Heracross',
         'Aipom',
-        'Ampibom',
+        'Ambipom',
         'Litleo',
         'Pyroar',
         'Misdreavus',
@@ -2293,7 +2280,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   galarpokedex: {
     effectType: 'ValidatorRule',
     name: 'Galar Pokedex',
-    desc: 'Only allows Pok&eacute;mon native to the Galar region (Sw/Sh)',
+    desc: 'Only allows Pokemon native to the Galar region (Sword/Shield)',
     banlist: ['Raichu-Alola', 'Weezing-Base'],
     onValidateSet(set, format) {
       const galarDex = [
@@ -2709,7 +2696,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   isleofarmorpokedex: {
     effectType: 'ValidatorRule',
     name: 'Isle of Armor Pokedex',
-    desc: 'Only allows Pok&eacute;mon native to the Isle of Armor in the Galar Region (Sw/Sh DLC1)',
+    desc: "Only allows Pokemon native to the Galar region's Isle of Armor (Sword/Shield DLC1)",
     onValidateSet(set, format) {
       const ioaDex = [
         'Slowpoke',
@@ -2727,6 +2714,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
         'Wigglytuff',
         'Blipbug',
         'Dottler',
+        'Orbeetle',
         'Fomantis',
         'Lurantis',
         'Applin',
@@ -2935,7 +2923,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   crowntundrapokedex: {
     effectType: 'ValidatorRule',
     name: 'Crown Tundra Pokedex',
-    desc: 'Only allows Pok&eacute;mon native to the Crown Tundra in the Galar Region (Sw/Sh DLC2)',
+    desc: "Only allows Pokemon native to the Galar region's Crown Tundra (Sword/Shield DLC2)",
     onValidateSet(set, format) {
       const tundraDex = [
         'Nidoran-F',
@@ -3025,6 +3013,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
         'Registeel',
         'Bronzor',
         'Bronzong',
+        'Mime Jr.',
         'Spiritomb',
         'Gible',
         'Gabite',
@@ -3156,7 +3145,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   galarexpansionpokedex: {
     effectType: 'ValidatorRule',
     name: 'Galar Expansion Pokedex',
-    desc: 'Only allows Pok&eacute;mon native to the Galar region, Isle of Armor, or Crown Tundra (Sw/Sh + Expansion Pass)',
+    desc: 'Only allows Pokemon native to the Galar region, Isle of Armor, or Crown Tundra (Sword/Shield + Expansion Pass)',
     onValidateSet(set, format) {
       const galarDex = [
         'Grookey',
@@ -3983,20 +3972,467 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
       }
     }
   },
+  paldeapokedex: {
+    effectType: 'ValidatorRule',
+    name: 'Paldea Pokedex',
+    desc: 'Only allows Pokemon native to the Paldea region (Scarlet/Violet)',
+    banlist: [
+      'Arcanine-Hisui',
+      'Avalugg-Hisui',
+      'Basculin-White-Striped',
+      'Braviary-Hisui',
+      'Diglett-Alola',
+      'Dugtrio-Alola',
+      'Electrode-Hisui',
+      'Gimmighoul-Roaming',
+      'Goodra-Hisui',
+      'Grimer-Alola',
+      'Growlithe-Hisui',
+      'Lilligant-Hisui',
+      'Meowth-Alola',
+      'Meowth-Galar',
+      'Muk-Alola',
+      'Persian-Alola',
+      'Qwilfish-Hisui',
+      'Raichu-Alola',
+      'Sliggoo-Hisui',
+      'Slowbro-Galar',
+      'Slowking-Galar',
+      'Slowpoke-Galar',
+      'Sneasel-Hisui',
+      'Voltorb-Hisui',
+      'Tauros-Base',
+      'Wooper-Base',
+      'Zorua-Hisui',
+      'Zoroark-Hisui'
+    ],
+    onValidateSet(set, format) {
+      const paldeaDex = [
+        'Sprigatito',
+        'Floragato',
+        'Meowscarada',
+        'Fuecoco',
+        'Crocalor',
+        'Skeledirge',
+        'Quaxly',
+        'Quaxwell',
+        'Quaquaval',
+        'Lechonk',
+        'Oinkologne',
+        'Tarountula',
+        'Spidops',
+        'Nymble',
+        'Lokix',
+        'Hoppip',
+        'Skiploom',
+        'Jumpluff',
+        'Fletchling',
+        'Fletchinder',
+        'Talonflame',
+        'Pawmi',
+        'Pawmo',
+        'Pawmot',
+        'Houndour',
+        'Houndoom',
+        'Yungoos',
+        'Gumshoos',
+        'Skwovet',
+        'Greedent',
+        'Sunkern',
+        'Sunflora',
+        'Kricketot',
+        'Kricketune',
+        'Scatterbug',
+        'Spewpa',
+        'Vivillon',
+        'Combee',
+        'Vespiquen',
+        'Rookidee',
+        'Corvisquire',
+        'Corviknight',
+        'Happiny',
+        'Chansey',
+        'Blissey',
+        'Azurill',
+        'Marill',
+        'Azumarill',
+        'Surskit',
+        'Masquerain',
+        'Buizel',
+        'Floatzel',
+        'Wooper',
+        'Clodsire',
+        'Psyduck',
+        'Golduck',
+        'Chewtle',
+        'Drednaw',
+        'Igglybuff',
+        'Jigglypuff',
+        'Wigglytuff',
+        'Ralts',
+        'Kirlia',
+        'Gardevoir',
+        'Gallade',
+        'Drowzee',
+        'Hypno',
+        'Gastly',
+        'Haunter',
+        'Gengar',
+        'Tandemaus',
+        'Maushold',
+        'Pichu',
+        'Pikachu',
+        'Raichu',
+        'Fidough',
+        'Dachsbun',
+        'Slakoth',
+        'Vigoroth',
+        'Slaking',
+        'Bounsweet',
+        'Steenee',
+        'Tsareena',
+        'Smoliv',
+        'Dolliv',
+        'Arboliva',
+        'Bonsly',
+        'Sudowoodo',
+        'Rockruff',
+        'Lycanroc',
+        'Rolycoly',
+        'Carkol',
+        'Coalossal',
+        'Shinx',
+        'Luxio',
+        'Luxray',
+        'Starly',
+        'Staravia',
+        'Staraptor',
+        'Oricorio',
+        'Mareep',
+        'Flaaffy',
+        'Ampharos',
+        'Petilil',
+        'Lilligant',
+        'Shroomish',
+        'Breloom',
+        'Applin',
+        'Flapple',
+        'Appletun',
+        'Spoink',
+        'Grumpig',
+        'Squawkabilly',
+        'Misdreavus',
+        'Mismagius',
+        'Makuhita',
+        'Hariyama',
+        'Crabrawler',
+        'Crabominable',
+        'Salandit',
+        'Salazzle',
+        'Phanpy',
+        'Donphan',
+        'Cufant',
+        'Copperajah',
+        'Gible',
+        'Gabite',
+        'Garchomp',
+        'Nacli',
+        'Naclstack',
+        'Garganacl',
+        'Wingull',
+        'Pelipper',
+        'Magikarp',
+        'Gyarados',
+        'Arrokuda',
+        'Barraskewda',
+        'Basculin',
+        'Gulpin',
+        'Swalot',
+        'Meowth',
+        'Persian',
+        'Drifloon',
+        'Drifblim',
+        'Flabe\u0301be\u0301',
+        'Floette',
+        'Florges',
+        'Diglett',
+        'Dugtrio',
+        'Torkoal',
+        'Numel',
+        'Camerupt',
+        'Bronzor',
+        'Bronzong',
+        'Axew',
+        'Fraxure',
+        'Haxorus',
+        'Mankey',
+        'Primeape',
+        'Annihilape',
+        'Meditite',
+        'Medicham',
+        'Riolu',
+        'Lucario',
+        'Charcadet',
+        'Armarouge',
+        'Ceruledge',
+        'Barboach',
+        'Whiscash',
+        'Tadbulb',
+        'Bellibolt',
+        'Goomy',
+        'Sliggoo',
+        'Goodra',
+        'Croagunk',
+        'Toxicroak',
+        'Wattrel',
+        'Kilowattrel',
+        'Eevee',
+        'Vaporeon',
+        'Jolteon',
+        'Flareon',
+        'Espeon',
+        'Umbreon',
+        'Leafeon',
+        'Glaceon',
+        'Sylveon',
+        'Dunsparce',
+        'Dudunsparce',
+        'Deerling',
+        'Sawsbuck',
+        'Girafarig',
+        'Farigiraf',
+        'Grimer',
+        'Muk',
+        'Maschiff',
+        'Mabosstiff',
+        'Toxel',
+        'Toxtricity',
+        'Dedenne',
+        'Pachirisu',
+        'Shroodle',
+        'Grafaiai',
+        'Stantler',
+        'Foongus',
+        'Amoonguss',
+        'Voltorb',
+        'Electrode',
+        'Magnemite',
+        'Magneton',
+        'Magnezone',
+        'Ditto',
+        'Growlithe',
+        'Arcanine',
+        'Teddiursa',
+        'Ursaring',
+        'Zangoose',
+        'Seviper',
+        'Swablu',
+        'Altaria',
+        'Skiddo',
+        'Gogoat',
+        'Tauros',
+        'Litleo',
+        'Pyroar',
+        'Stunky',
+        'Skuntank',
+        'Zorua',
+        'Zoroark',
+        'Sneasel',
+        'Weavile',
+        'Murkrow',
+        'Honchkrow',
+        'Gothita',
+        'Gothorita',
+        'Gothitelle',
+        'Sinistea',
+        'Polteageist',
+        'Mimikyu',
+        'Klefki',
+        'Indeedee',
+        'Bramblin',
+        'Brambleghast',
+        'Toedscool',
+        'Toedscruel',
+        'Tropius',
+        'Fomantis',
+        'Lurantis',
+        'Klawf',
+        'Capsakid',
+        'Scovillain',
+        'Cacnea',
+        'Cacturne',
+        'Rellor',
+        'Rabsca',
+        'Venonat',
+        'Venomoth',
+        'Pineco',
+        'Forretress',
+        'Scyther',
+        'Scizor',
+        'Heracross',
+        'Flittle',
+        'Espathra',
+        'Hippopotas',
+        'Hippowdon',
+        'Sandile',
+        'Krokorok',
+        'Krookodile',
+        'Silicobra',
+        'Sandaconda',
+        'Mudbray',
+        'Mudsdale',
+        'Larvesta',
+        'Volcarona',
+        'Bagon',
+        'Shelgon',
+        'Salamence',
+        'Tinkatink',
+        'Tinkatuff',
+        'Tinkaton',
+        'Hatenna',
+        'Hattrem',
+        'Hatterene',
+        'Impidimp',
+        'Morgrem',
+        'Grimmsnarl',
+        'Wiglett',
+        'Wugtrio',
+        'Bombirdier',
+        'Finizen',
+        'Palafin',
+        'Varoom',
+        'Revavroom',
+        'Cyclizar',
+        'Orthworm',
+        'Sableye',
+        'Shuppet',
+        'Banette',
+        'Falinks',
+        'Hawlucha',
+        'Spiritomb',
+        'Noibat',
+        'Noivern',
+        'Dreepy',
+        'Drakloak',
+        'Dragapult',
+        'Glimmet',
+        'Glimmora',
+        'Rotom',
+        'Greavard',
+        'Houndstone',
+        'Oranguru',
+        'Passimian',
+        'Komala',
+        'Larvitar',
+        'Pupitar',
+        'Tyranitar',
+        'Stonjourner',
+        'Eiscue',
+        'Pincurchin',
+        'Sandygast',
+        'Palossand',
+        'Slowpoke',
+        'Slowbro',
+        'Slowking',
+        'Shellos',
+        'Gastrodon',
+        'Shellder',
+        'Cloyster',
+        'Qwilfish',
+        'Luvdisc',
+        'Finneon',
+        'Lumineon',
+        'Bruxish',
+        'Alomomola',
+        'Skrelp',
+        'Dragalge',
+        'Clauncher',
+        'Clawitzer',
+        'Tynamo',
+        'Eelektrik',
+        'Eelektross',
+        'Mareanie',
+        'Toxapex',
+        'Flamigo',
+        'Dratini',
+        'Dragonair',
+        'Dragonite',
+        'Snom',
+        'Frosmoth',
+        'Snover',
+        'Abomasnow',
+        'Delibird',
+        'Cubchoo',
+        'Beartic',
+        'Snorunt',
+        'Glalie',
+        'Froslass',
+        'Cryogonal',
+        'Cetoddle',
+        'Cetitan',
+        'Bergmite',
+        'Avalugg',
+        'Rufflet',
+        'Braviary',
+        'Pawniard',
+        'Bisharp',
+        'Kingambit',
+        'Deino',
+        'Zweilous',
+        'Hydreigon',
+        'Veluza',
+        'Dondozo',
+        'Tatsugiri',
+        'Great Tusk',
+        'Scream Tail',
+        'Brute Bonnet',
+        'Flutter Mane',
+        'Slither Wing',
+        'Sandy Shocks',
+        'Iron Treads',
+        'Iron Bundle',
+        'Iron Hands',
+        'Iron Jugulis',
+        'Iron Moth',
+        'Iron Thorns',
+        'Frigibax',
+        'Arctibax',
+        'Baxcalibur',
+        'Gimmighoul',
+        'Gholdengo',
+        'Wo-Chien',
+        'Chien-Pao',
+        'Ting-Lu',
+        'Chi-Yu',
+        'Roaring Moon',
+        'Iron Valiant',
+        'Koraidon',
+        'Miraidon'
+      ];
+      const species = this.dex.species.get(set.species || set.name);
+      if (
+        !paldeaDex.includes(species.baseSpecies) &&
+        !paldeaDex.includes(species.name) &&
+        !this.ruleTable.has('+' + species.id)
+      ) {
+        return [`${species.baseSpecies} is not in the Paldea Pokédex.`];
+      }
+    }
+  },
   potd: {
     effectType: 'Rule',
     name: 'PotD',
-    desc: 'Forces the Pokemon of the Day onto every random team.',
+    desc: 'Forces the Pokemon of the Day onto every random team',
     onBegin() {
       if (global.Config?.potd) {
-        this.add('rule', 'Pokemon of the Day: ' + this.dex.species.get(Config.potd).name);
+        this.add('rule', 'Pokemon of the Day: ' + this.dex.species.get(global.Config.potd).name);
       }
     }
   },
   teampreview: {
     effectType: 'Rule',
     name: 'Team Preview',
-    desc: "Allows each player to see the Pok&eacute;mon on their opponent's team before they choose their lead Pok&eacute;mon",
+    desc: "Allows players to see the Pokemon on their opponent's team before selecting their lead Pokemon",
     onBegin() {
       if (this.ruleTable.has(`teratypepreview`)) {
         this.add('rule', 'Tera Type Preview: Tera Types are shown at Team Preview');
@@ -4016,7 +4452,6 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
         }
         this.add('poke', pokemon.side.id, details, '');
       }
-      this.makeRequest('teampreview');
       if (this.ruleTable.has(`teratypepreview`)) {
         for (const side of this.sides) {
           let buf = ``;
@@ -4027,12 +4462,13 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
           this.add(`${buf}`);
         }
       }
+      this.makeRequest('teampreview');
     }
   },
   littlecup: {
     effectType: 'ValidatorRule',
     name: 'Little Cup',
-    desc: "Only allows Pok&eacute;mon that can evolve and don't have any prior evolutions",
+    desc: "Only allows Pokemon that can evolve and don't have any prior evolutions",
     ruleset: ['Max Level = 5'],
     onValidateSet(set) {
       const species = this.dex.species.get(set.species || set.name);
@@ -4066,7 +4502,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   timergrace: {
     effectType: 'Rule',
     name: 'Timer Grace',
-    desc: 'Grace period between timer activation and when total time starts ticking down.',
+    desc: 'Grace period between timer activation and when total time starts ticking down',
     hasValue: 'positive-integer'
     // hardcoded in server/room-battle.ts
   },
@@ -4108,7 +4544,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
     name: 'Blitz',
     // THIS 100% INTENTIONALLY SAYS TEN SECONDS PER TURN
     // IGNORE Max Per Turn. Add Per Turn IS 5, TRANSLATING TO AN INCREMENT OF 10.
-    desc: "Super-fast 'Blitz' timer giving 30 second Team Preview and 10 seconds per turn.",
+    desc: "Super-fast 'Blitz' timer giving 30 second Team Preview and 10 seconds per turn",
     onBegin() {
       this.add('rule', 'Blitz: Super-fast timer');
     },
@@ -4137,9 +4573,9 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   speciesclause: {
     effectType: 'ValidatorRule',
     name: 'Species Clause',
-    desc: 'Prevents teams from having more than one Pok&eacute;mon from the same species',
+    desc: 'Prevents teams from having more than one Pokemon from the same species',
     onBegin() {
-      this.add('rule', 'Species Clause: Limit one of each Pokémon');
+      this.add('rule', 'Species Clause: Limit one of each Pokemon');
     },
     onValidateTeam(team, format) {
       const speciesTable = new Set<number>();
@@ -4147,7 +4583,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
         const species = this.dex.species.get(set.species);
         if (speciesTable.has(species.num)) {
           return [
-            `You are limited to one of each Pokémon by Species Clause.`,
+            `You are limited to one of each Pokemon by Species Clause.`,
             `(You have more than one ${species.baseSpecies})`
           ];
         }
@@ -4158,7 +4594,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   nicknameclause: {
     effectType: 'ValidatorRule',
     name: 'Nickname Clause',
-    desc: 'Prevents teams from having more than one Pok&eacute;mon with the same nickname',
+    desc: 'Prevents teams from having more than one Pokemon with the same nickname',
     onValidateTeam(team, format) {
       const nameTable = new Set<string>();
       for (const set of team) {
@@ -4167,7 +4603,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
           if (name === this.dex.species.get(set.species).baseSpecies) continue;
           if (nameTable.has(name)) {
             return [
-              `Your Pokémon must have different nicknames.`,
+              `Your Pokemon must have different nicknames.`,
               `(You have more than one ${name})`
             ];
           }
@@ -4181,7 +4617,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   beatupnicknamesmod: {
     effectType: 'Rule',
     name: 'Beat Up Nicknames Mod',
-    desc: 'Prevents Beat Up from revealing any party members, enforcing gameplay that assumes optimal Pok&eacute;mon nicknaming strategies.',
+    desc: 'Prevents Beat Up from revealing the names of party members',
     onBegin() {
       if (this.gen <= 4) {
         this.add('rule', `Beat Up Nicknames Mod: Beat Up will not reveal any party members`);
@@ -4193,7 +4629,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   itemclause: {
     effectType: 'ValidatorRule',
     name: 'Item Clause',
-    desc: 'Prevents teams from having more than one Pok&eacute;mon with the same item',
+    desc: 'Prevents teams from having more than one Pokemon with the same item',
     hasValue: 'positive-integer',
     onBegin() {
       this.add(
@@ -4228,25 +4664,16 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   ohkoclause: {
     effectType: 'ValidatorRule',
     name: 'OHKO Clause',
-    desc: 'Bans all OHKO moves, such as Fissure',
+    desc: 'Bans all OHKO moves',
+    banlist: ['Fissure', 'Guillotine', 'Horn Drill', 'Sheer Cold'],
     onBegin() {
       this.add('rule', 'OHKO Clause: OHKO moves are banned');
-    },
-    onValidateSet(set) {
-      const problems: string[] = [];
-      if (set.moves) {
-        for (const moveId of set.moves) {
-          const move = this.dex.moves.get(moveId);
-          if (move.ohko) problems.push(move.name + ' is banned by OHKO Clause.');
-        }
-      }
-      return problems;
     }
   },
   evasionclause: {
     effectType: 'ValidatorRule',
     name: 'Evasion Clause',
-    desc: 'Bans abilities, items, and moves that boost Evasion',
+    desc: 'Bans Abilities, items, and moves that boost evasiveness',
     ruleset: ['Evasion Abilities Clause', 'Evasion Items Clause', 'Evasion Moves Clause'],
     onBegin() {
       this.add('rule', 'Evasion Clause: Evasion abilities, items, and moves are banned');
@@ -4255,7 +4682,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   evasionabilitiesclause: {
     effectType: 'ValidatorRule',
     name: 'Evasion Abilities Clause',
-    desc: 'Bans abilities that boost Evasion under certain weather conditions',
+    desc: 'Bans Abilities that boost evasiveness under certain weather conditions',
     banlist: ['Sand Veil', 'Snow Cloak'],
     onBegin() {
       this.add('rule', 'Evasion Abilities Clause: Evasion abilities are banned');
@@ -4264,7 +4691,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   evasionitemsclause: {
     effectType: 'ValidatorRule',
     name: 'Evasion Items Clause',
-    desc: 'Bans items that lower the accuracy of moves used against the user',
+    desc: 'Bans items that lower the accuracy of moves used against the holder',
     banlist: ['Bright Powder', 'Lax Incense'],
     onBegin() {
       this.add('rule', 'Evasion Items Clause: Evasion items are banned');
@@ -4273,8 +4700,8 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   evasionmovesclause: {
     effectType: 'ValidatorRule',
     name: 'Evasion Moves Clause',
-    desc: "Bans moves that consistently raise the user's evasion when used",
-    banlist: ['Minimize', 'Double Team'],
+    desc: "Bans moves that can raise the user's evasiveness",
+    banlist: ['Acupressure', 'Minimize', 'Double Team'],
     onBegin() {
       this.add('rule', 'Evasion Moves Clause: Evasion moves are banned');
     }
@@ -4303,7 +4730,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   accuracytrapclause: {
     effectType: 'ValidatorRule',
     name: 'Accuracy Trap Clause',
-    desc: 'Bans guaranteed accuracy-dropping moves when used with a trapping move/ability on the same Pok&eacute;mon',
+    desc: 'Bans guaranteed accuracy-dropping moves on Pokemon that also have a trapping move or Ability',
     onValidateSet(set, format, setHas, teamHas) {
       const trapping = [
         'arenatrap',
@@ -4341,26 +4768,25 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   sleepmovesclause: {
     effectType: 'ValidatorRule',
     name: 'Sleep Moves Clause',
-    desc: 'Bans all moves that induce sleep, such as Hypnosis',
-    banlist: ['Yawn'],
+    desc: 'Bans Status moves that induce drowsiness or sleep',
+    banlist: [
+      'Dark Void',
+      'Grass Whistle',
+      'Hypnosis',
+      'Lovely Kiss',
+      'Sing',
+      'Sleep Powder',
+      'Spore',
+      'Yawn'
+    ],
     onBegin() {
       this.add('rule', 'Sleep Moves Clause: Sleep-inducing moves are banned');
-    },
-    onValidateSet(set) {
-      const problems = [];
-      if (set.moves) {
-        for (const id of set.moves) {
-          const move = this.dex.moves.get(id);
-          if (move.status === 'slp') problems.push(move.name + ' is banned by Sleep Moves Clause.');
-        }
-      }
-      return problems;
     }
   },
   gravitysleepclause: {
     effectType: 'ValidatorRule',
     name: 'Gravity Sleep Clause',
-    desc: 'Bans sleep moves below 100% accuracy, in conjunction with Gravity or Gigantamax Orbeetle',
+    desc: 'Bans teams with any sleep move below 100% accuracy along with Gravity or Gigantamax Orbeetle',
     banlist: [
       'Gravity ++ Dark Void',
       'Gravity ++ Grass Whistle',
@@ -4389,7 +4815,9 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
         }
       }
       if (hasOrbeetle && hasSleepMove) {
-        return [`The combination of Gravity and Gigantamax Orbeetle on the same team is banned.`];
+        return [
+          `The combination of inaccurate sleep move and Gigantamax Orbeetle on the same team is banned.`
+        ];
       }
     },
     onBegin() {
@@ -4411,7 +4839,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   batonpassclause: {
     effectType: 'ValidatorRule',
     name: 'Baton Pass Clause',
-    desc: 'Stops teams from having more than one Pok&eacute;mon with Baton Pass, and no Pok&eacute;mon may be capable of passing boosts to both Speed and another stat',
+    desc: 'Stops teams from having more than one Pokemon with Baton Pass, and no Pokemon may be capable of passing boosts to both Speed and another stat',
     banlist: ['Baton Pass > 1'],
     onBegin() {
       this.add(
@@ -4534,7 +4962,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   onebatonpassclause: {
     effectType: 'ValidatorRule',
     name: 'One Baton Pass Clause',
-    desc: 'Stops teams from having more than one Pok&eacute;mon with Baton Pass',
+    desc: 'Stops teams from having more than one Pokemon with Baton Pass',
     banlist: ['Baton Pass > 1'],
     onBegin() {
       this.add('rule', 'One Baton Pass Clause: Limit one Baton Passer');
@@ -4543,7 +4971,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   oneboostpasserclause: {
     effectType: 'ValidatorRule',
     name: 'One Boost Passer Clause',
-    desc: 'Stops teams from having a Pok&eacute;mon with Baton Pass that has multiple ways to boost its stats, and no more than one Baton Passer may be able to boost its stats',
+    desc: 'Stops teams from having a Pokemon with Baton Pass that has multiple ways to boost its stats, and no more than one Baton Passer may be able to boost its stats',
     onBegin() {
       this.add(
         'rule',
@@ -4572,6 +5000,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
         'liechiberry',
         'meditate',
         'petayaberry',
+        'recycle',
         'salacberry',
         'sharpen',
         'speedboost',
@@ -4608,7 +5037,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   batonpassstatclause: {
     effectType: 'ValidatorRule',
     name: 'Baton Pass Stat Clause',
-    desc: 'Stops teams from having a Pok&eacute;mon with Baton Pass that has any way to boost its stats',
+    desc: 'Stops teams from having a Pokemon with Baton Pass that has any way to boost its stats',
     onBegin() {
       this.add('rule', 'Baton Pass Stat Clause: No Baton Passer may have a way to boost its stats');
     },
@@ -4707,7 +5136,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   speedpassclause: {
     effectType: 'ValidatorRule',
     name: 'Speed Pass Clause',
-    desc: 'Stops teams from having a Pok&eacute;mon with Baton Pass that can boost its Speed',
+    desc: 'Stops teams from having a Pokemon with Baton Pass that can boost its Speed',
     onBegin() {
       this.add('rule', 'Baton Pass Stat Clause: No Baton Passer may have a way to boost its Speed');
     },
@@ -4745,11 +5174,11 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   batonpassstattrapclause: {
     effectType: 'ValidatorRule',
     name: 'Baton Pass Stat Trap Clause',
-    desc: 'Stops teams from having a Pok&eacute;mon with Baton Pass that has any way to boost its stats or trap Pok&eacute;mon.',
+    desc: 'Stops teams from having a Pokemon with Baton Pass that has any way to boost its stats or trap Pokemon',
     onBegin() {
       this.add(
         'rule',
-        'Baton Pass Stat Trap Clause: No Baton Passer may have a way to boost stats or trap Pok\u00e9mon'
+        'Baton Pass Stat Trap Clause: No Baton Passer may have a way to boost stats or trap Pokemon'
       );
     },
     onValidateTeam(team) {
@@ -4788,6 +5217,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
         'Power Trick',
         'Psych Up',
         'Rage',
+        'Recycle',
         'Rock Polish',
         'Sharpen',
         'Silver Wind',
@@ -4836,7 +5266,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   hppercentagemod: {
     effectType: 'Rule',
     name: 'HP Percentage Mod',
-    desc: 'Shows the HP of Pok&eacute;mon in percentages',
+    desc: 'Shows the HP of Pokemon in percentages',
     onBegin() {
       this.add('rule', 'HP Percentage Mod: HP is shown in percentages');
       this.reportPercentages = true;
@@ -4845,7 +5275,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   exacthpmod: {
     effectType: 'Rule',
     name: 'Exact HP Mod',
-    desc: 'Shows the exact HP of all Pok&eacute;mon',
+    desc: 'Shows the exact HP of all Pokemon',
     onBegin() {
       this.add('rule', 'Exact HP Mod: Exact HP is shown');
       this.reportExactHP = true;
@@ -4862,8 +5292,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   sleepclausemod: {
     effectType: 'Rule',
     name: 'Sleep Clause Mod',
-    desc: "Prevents players from putting more than one of their opponent's Pok&eacute;mon to sleep at a time, and bans Mega Gengar from using Hypnosis",
-    banlist: ['Hypnosis + Gengarite'],
+    desc: "Prevents players from putting more than one of their opponent's Pokemon to sleep at a time",
     onBegin() {
       this.add('rule', 'Sleep Clause Mod: Limit one foe put to sleep');
     },
@@ -4877,7 +5306,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
             if (!pokemon.statusState.source?.isAlly(pokemon)) {
               this.add('-message', 'Sleep Clause Mod activated.');
               this.hint(
-                "Sleep Clause Mod prevents players from putting more than one of their opponent's Pokémon to sleep at a time"
+                "Sleep Clause Mod prevents players from putting more than one of their opponent's Pokemon to sleep at a time"
               );
               return false;
             }
@@ -4889,7 +5318,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   stadiumsleepclause: {
     effectType: 'Rule',
     name: 'Stadium Sleep Clause',
-    desc: "Prevents players from putting one of their opponent's Pok\u00E9mon to sleep if any of the opponent's other Pok\u00E9mon are asleep (different from Sleep Clause Mod because putting your own Pok\u00E9mon to sleep is enough to prevent opponents from putting your others to sleep).",
+    desc: "Prevents players from putting two of their opponent's Pokemon to sleep at a time, even if the first is asleep from Rest",
     onBegin() {
       this.add('rule', 'Stadium Sleep Clause: Limit one foe put to sleep');
     },
@@ -4913,17 +5342,20 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   switchpriorityclausemod: {
     effectType: 'Rule',
     name: 'Switch Priority Clause Mod',
-    desc: "Makes a faster Pokémon switch first when double-switching, unlike in Emerald link battles, where player 1's Pokémon would switch first",
+    desc: 'Makes a faster Pokemon switch first when double-switching',
     onBegin() {
-      this.add('rule', 'Switch Priority Clause Mod: Faster Pokémon switch first');
+      this.add('rule', 'Switch Priority Clause Mod: Faster Pokemon switch first');
     }
   },
   desyncclausemod: {
     effectType: 'Rule',
     name: 'Desync Clause Mod',
-    desc: 'If a desync would happen, the move fails instead. This rule currently covers Bide, Counter, and Psywave.',
+    desc: "Causes moves to resolve to link battle behavior from the acting player's perspective if a desync would happen. This rule covers online desyncs related to move selection, and offline disparities related to Bide and Psywave",
     onBegin() {
-      this.add('rule', 'Desync Clause Mod: Desyncs changed to move failure.');
+      this.add(
+        'rule',
+        "Desync Clause Mod: Desyncs resolve to link battle behavior from the acting player's perspective."
+      );
     }
     // Hardcoded in gen1/moves.ts
     // Can't be disabled (no precedent for how else to handle desyncs)
@@ -4931,7 +5363,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   deoxyscamouflageclausemod: {
     effectType: 'Rule',
     name: 'Deoxys Camouflage Clause Mod',
-    desc: 'Reveals the Deoxys forme when it is sent in battle.',
+    desc: 'Reveals the Deoxys forme when it is sent in battle',
     // Hardcoded into effect, cannot be disabled.
     onBegin() {
       this.add(
@@ -4943,7 +5375,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   freezeclausemod: {
     effectType: 'Rule',
     name: 'Freeze Clause Mod',
-    desc: "Prevents players from freezing more than one of their opponent's Pok&eacute;mon at a time",
+    desc: "Prevents players from freezing more than one of their opponent's Pokemon at a time",
     onBegin() {
       this.add('rule', 'Freeze Clause Mod: Limit one foe frozen');
     },
@@ -4964,15 +5396,15 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   sametypeclause: {
     effectType: 'ValidatorRule',
     name: 'Same Type Clause',
-    desc: 'Forces all Pok&eacute;mon on a team to share a type with each other',
+    desc: 'Forces all Pokemon on a team to share a type with each other',
     onBegin() {
-      this.add('rule', 'Same Type Clause: Pokémon in a team must share a type');
+      this.add('rule', 'Same Type Clause: Pokemon in a team must share a type');
     },
     onValidateTeam(team) {
       let typeTable: string[] = [];
       for (const [i, set] of team.entries()) {
         let species = this.dex.species.get(set.species);
-        if (!species.types) return [`Invalid pokemon ${set.name || set.species}`];
+        if (!species.types) return [`Invalid Pokemon ${set.name || set.species}`];
         if (i === 0) {
           typeTable = species.types;
         } else {
@@ -5004,7 +5436,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   megarayquazaclause: {
     effectType: 'Rule',
     name: 'Mega Rayquaza Clause',
-    desc: 'Prevents Rayquaza from mega evolving',
+    desc: 'Prevents Rayquaza from Mega Evolving',
     onBegin() {
       this.add('rule', 'Mega Rayquaza Clause: You cannot mega evolve Rayquaza');
       for (const pokemon of this.getAllPokemon()) {
@@ -5021,7 +5453,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   dynamaxclause: {
     effectType: 'Rule',
     name: 'Dynamax Clause',
-    desc: 'Prevents Pok&eacute;mon from Dynamaxing',
+    desc: 'Prevents Pokemon from Dynamaxing',
     onValidateSet(set) {
       if (set.gigantamax) {
         return [
@@ -5040,7 +5472,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   terastalclause: {
     effectType: 'Rule',
     name: 'Terastal Clause',
-    desc: 'Prevents Pok&eacute;mon from Terastallizing',
+    desc: 'Prevents Pokemon from Terastallizing',
     onBegin() {
       for (const pokemon of this.getAllPokemon()) {
         pokemon.canTerastallize = null;
@@ -5057,7 +5489,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   minsourcegen: {
     effectType: 'ValidatorRule',
     name: 'Min Source Gen',
-    desc: 'Pokemon must be obtained from this generation or later.',
+    desc: 'Pokemon must be obtained from this generation or later',
     hasValue: 'positive-integer',
     onValidateRule(value) {
       const minSourceGen = parseInt(value);
@@ -5072,14 +5504,15 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   allowtradeback: {
     effectType: 'ValidatorRule',
     name: 'Allow Tradeback',
-    desc: 'Allows Gen 1 pokemon to have moves from their Gen 2 learnsets'
+    desc: 'Allows Gen 1 Pokemon to have moves from their Gen 2 learnsets'
     // Implemented in team-validator.js
   },
-  allowavs: {
+  lgpenormalrules: {
     effectType: 'ValidatorRule',
-    name: 'Allow AVs',
-    desc: "Tells formats with the 'gen7letsgo' mod to take Awakening Values into consideration when calculating stats"
-    // implemented in TeamValidator#validateStats
+    name: 'LGPE Normal Rules',
+    desc: "Tells formats with the 'gen7letsgo' mod to set the level to 50 and all Awakening Values to 0",
+    ruleset: ['Adjust Level = 50']
+    // AVs implemented in TeamValidator#validateStats
   },
   gemsclause: {
     effectType: 'ValidatorRule',
@@ -5097,18 +5530,18 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   sketchpostgen7moves: {
     effectType: 'ValidatorRule',
     name: 'Sketch Post-Gen 7 Moves',
-    desc: 'Allows Pokémon who learn Sketch to learn any Gen 8+ move (normally, Sketch is not usable in Gen 8 or Gen 9 Pre-DLC2).'
+    desc: 'Allows Pokemon who learn Sketch to learn any Gen 8+ move (normally, Sketch is not usable in Gen 8 or Gen 9 Pre-DLC2)'
     // Implemented in sim/team-validator.ts
   },
   pomegglitchclause: {
     effectType: 'ValidatorRule',
     name: 'Pomeg Glitch Clause',
-    desc: 'Allows any Pokémon from Generation 3 at level 5 or higher to have any of its level-up moves. This implementation is allowed only to enable an otherwise legal Pokémon to obtain moves it would not normally have access to at an earlier level.',
+    desc: 'Allows any Pokemon from Generation 3 at level 5 or higher to have any of its level-up moves. This implementation is allowed only to enable an otherwise legal Pokemon to obtain moves it would not normally have access to at an earlier level',
     // Implemented in sim/team-validator.ts
     onBegin() {
       this.add(
         'rule',
-        'Pomeg Glitch Clause: Gen 3 Pokémon at level 5+ can have any of their level-up moves.'
+        'Pomeg Glitch Clause: Gen 3 Pokemon at level 5+ can have any of their level-up moves.'
       );
     }
   },
@@ -5121,7 +5554,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   openteamsheets: {
     effectType: 'Rule',
     name: 'Open Team Sheets',
-    desc: 'Allows each player to see the Pok&eacute;mon and all non-stat information about them, before they choose their lead Pok&eacute;mon',
+    desc: "Allows players to see each other's Pokemon and all non-stat information about them, before selecting their lead Pokemon",
     mutuallyExclusiveWith: 'forceopenteamsheets',
     onValidateRule() {
       if (!(this.ruleTable.has('teampreview') || this.ruleTable.has('teamtypepreview'))) {
@@ -5146,7 +5579,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   forceopenteamsheets: {
     effectType: 'Rule',
     name: 'Force Open Team Sheets',
-    desc: 'Allows each player to see the Pok&eacute;mon and all non-stat information about them, before they choose their lead Pok&eacute;mon',
+    desc: "Allows players to see each other's Pokemon and all non-stat information about them, before selecting their lead Pokemon",
     mutuallyExclusiveWith: 'openteamsheets',
     onValidateRule() {
       if (!(this.ruleTable.has('teampreview') || this.ruleTable.has('teamtypepreview'))) {
@@ -5159,45 +5592,67 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
       this.showOpenTeamSheets();
     }
   },
+  eventmovesclause: {
+    effectType: 'ValidatorRule',
+    name: 'Event Moves Clause',
+    desc: 'Bans moves only obtainable through events',
+    onBegin() {
+      this.add('rule', 'Event Moves Clause: Event-only moves are banned');
+    },
+    onValidateSet(set) {
+      if (!set.moves) return;
+      const moveSources: NonNullable<import('../sim/dex-species').Learnset['learnset']> =
+        Object.fromEntries(set.moves.map((move) => [this.toID(move), []]));
+
+      const species = this.dex.species.get(set.species);
+      for (const { learnset } of this.dex.species.getFullLearnset(species.id)) {
+        for (const moveid in moveSources) {
+          moveSources[moveid].push(...(learnset[moveid] || []));
+        }
+      }
+      const problems = [];
+      for (const move of set.moves) {
+        const sources = moveSources[this.toID(move)];
+        if (sources?.length && sources.every((learned) => learned.includes('S'))) {
+          problems.push(`${species.name}'s move ${move} is obtainable only through events.`);
+        }
+      }
+      if (problems.length) problems.push(`(Event-only moves are banned.)`);
+      return problems;
+    }
+  },
   pickedteamsize: {
     effectType: 'Rule',
     name: 'Picked Team Size',
-    desc: 'Team size (number of pokemon) that can be brought out of Team Preview',
-    hasValue: 'positive-integer',
-    // hardcoded in sim/side
-    onValidateRule() {
-      if (!(this.ruleTable.has('teampreview') || this.ruleTable.has('teamtypepreview'))) {
-        throw new Error(
-          `The "Picked Team Size" rule${this.ruleTable.blame('pickedteamsize')} requires Team Preview.`
-        );
-      }
-    }
+    desc: 'Team size (number of Pokemon) that can be brought out of Team Preview',
+    hasValue: 'positive-integer'
+    // hardcoded in sim/side and sim/battle
   },
   minteamsize: {
     effectType: 'ValidatorRule',
     name: 'Min Team Size',
-    desc: 'Minimum team size (number of pokemon) that can be brought into Team Preview (or into the battle, in formats without Team Preview)',
+    desc: 'Minimum team size (number of Pokemon) that can be brought into Team Preview (or into the battle, in formats without Team Preview)',
     hasValue: 'positive-integer'
     // hardcoded in sim/team-validator
   },
   maxteamsize: {
     effectType: 'ValidatorRule',
     name: 'Max Team Size',
-    desc: 'Maximum team size (number of pokemon) that can be brought into Team Preview (or into the battle, in formats without Team Preview)',
+    desc: 'Maximum team size (number of Pokemon) that can be brought into Team Preview (or into the battle, in formats without Team Preview)',
     hasValue: 'positive-integer'
     // hardcoded in sim/team-validator
   },
   evlimit: {
     effectType: 'ValidatorRule',
     name: 'EV Limit',
-    desc: 'Maximum total EVs on each pokemon.',
+    desc: 'Maximum total EVs on each Pokemon',
     hasValue: 'integer'
     // hardcoded in sim/team-validator
   },
   maxmovecount: {
     effectType: 'ValidatorRule',
     name: 'Max Move Count',
-    desc: 'Max number of moves allowed on a single pokemon (defaults to 4 in a normal game)',
+    desc: 'Max number of moves allowed on a single Pokemon (defaults to 4 in a normal game)',
     hasValue: 'positive-integer'
     // hardcoded in sim/team-validator
   },
@@ -5224,8 +5679,8 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
       if (totalLowestLevels > maxTotalLevel) {
         const thePokemon =
           pickedTeamSize === team.length
-            ? `all ${team.length} Pokémon`
-            : `the ${pickedTeamSize} lowest-leveled Pokémon`;
+            ? `all ${team.length} Pokemon`
+            : `the ${pickedTeamSize} lowest-leveled Pokemon`;
         return [
           `The combined levels of ${thePokemon} of your team is ${totalLowestLevels}, above the format's total level limit of ${maxTotalLevel}${this.ruleTable.blame('maxtotallevel')}.`
         ];
@@ -5237,7 +5692,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
       }
       if (minTotalWithHighestLevel > maxTotalLevel) {
         return [
-          `Your highest level Pokémon is unusable, because there's no way to create a team with it whose total level is less than the format's total level limit of ${maxTotalLevel}${this.ruleTable.blame('maxtotallevel')}.`
+          `Your highest level Pokemon is unusable, because there's no way to create a team with it whose total level is less than the format's total level limit of ${maxTotalLevel}${this.ruleTable.blame('maxtotallevel')}.`
         ];
       }
     },
@@ -5250,42 +5705,51 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
         : ruleTable.blame('maxteamsize');
       if (maxTotalLevel >= ruleTable.maxLevel * maxTeamSize) {
         throw new Error(
-          `A Max Total Level of ${maxTotalLevel}${ruleTable.blame('maxtotallevel')} is too high (and will have no effect) with ${maxTeamSize}${maxTeamSizeBlame} Pokémon at max level ${ruleTable.maxLevel}${ruleTable.blame('maxlevel')}`
+          `A Max Total Level of ${maxTotalLevel}${ruleTable.blame('maxtotallevel')} is too high (and will have no effect) with ${maxTeamSize}${maxTeamSizeBlame} Pokemon at max level ${ruleTable.maxLevel}${ruleTable.blame('maxlevel')}`
         );
       }
       if (maxTotalLevel <= ruleTable.minLevel * maxTeamSize) {
         throw new Error(
-          `A Max Total Level of ${maxTotalLevel}${ruleTable.blame('maxtotallevel')} is too low with ${maxTeamSize}${maxTeamSizeBlame} Pokémon at min level ${ruleTable.minLevel}${ruleTable.blame('minlevel')}`
+          `A Max Total Level of ${maxTotalLevel}${ruleTable.blame('maxtotallevel')} is too low with ${maxTeamSize}${maxTeamSizeBlame} Pokemon at min level ${ruleTable.minLevel}${ruleTable.blame('minlevel')}`
         );
       }
+    },
+    onChooseTeam(positions, pokemon, autoChoose) {
+      if (autoChoose) {
+        return [...pokemon.keys()].sort((a, b) => pokemon[a].level - pokemon[b].level);
+      }
+      let totalLevel = 0;
+      for (const pos of positions) totalLevel += pokemon[pos].level;
+      if (totalLevel > this.ruleTable.maxTotalLevel!) {
+        return `Your selected team has a total level of ${totalLevel}, but it can't be above ${this.ruleTable.maxTotalLevel!}.`;
+      }
     }
-    // hardcoded in sim/side
   },
   minlevel: {
     effectType: 'ValidatorRule',
     name: 'Min Level',
-    desc: 'Minimum level of brought Pokémon',
+    desc: 'Minimum level of brought Pokemon',
     hasValue: 'positive-integer'
     // hardcoded in sim/team-validator
   },
   maxlevel: {
     effectType: 'ValidatorRule',
     name: 'Max Level',
-    desc: "Maximum level of brought Pokémon (if you're using both this and Adjust Level, this will control what level moves you have access to)",
+    desc: "Maximum level of brought Pokemon (if you're using both this and Adjust Level, this will control what level moves you have access to)",
     hasValue: 'positive-integer'
     // hardcoded in sim/team-validator
   },
   defaultlevel: {
     effectType: 'ValidatorRule',
     name: 'Default Level',
-    desc: 'Default level of brought Pokémon (normally should be equal to Max Level, except Custom Games have a very high max level but still default to 100)',
+    desc: 'Default level of brought Pokemon (normally should be equal to Max Level, except Custom Games have a very high max level but still default to 100)',
     hasValue: 'positive-integer'
     // hardcoded in sim/team-validator
   },
   adjustlevel: {
     effectType: 'ValidatorRule',
     name: 'Adjust Level',
-    desc: "All Pokémon will be set to exactly this level (but unlike Max Level and Min Level, it will still be able to learn moves from above this level) (when using this, Max Level is the level of the pokemon before it's level-adjusted down)",
+    desc: "All Pokemon will be set to exactly this level (but unlike Max Level and Min Level, it will still be able to learn moves from above this level) (when using this, Max Level is the level of the Pokemon before it's level-adjusted down)",
     hasValue: 'positive-integer',
     mutuallyExclusiveWith: 'adjustleveldown'
     // hardcoded in sim/team-validator
@@ -5293,7 +5757,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   adjustleveldown: {
     effectType: 'ValidatorRule',
     name: 'Adjust Level Down',
-    desc: 'Any Pokémon above this level will be set to this level (but unlike Max Level, it will still be able to learn moves from above this level)',
+    desc: 'Any Pokemon above this level will be set to this level (but unlike Max Level, it will still be able to learn moves from above this level)',
     hasValue: 'positive-integer',
     mutuallyExclusiveWith: 'adjustlevel'
     // hardcoded in sim/team-validator
@@ -5301,7 +5765,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   stadiumitemsclause: {
     effectType: 'ValidatorRule',
     name: 'Stadium Items Clause',
-    desc: 'Bans items that are not usable in Pokemon Stadium 2.',
+    desc: 'Bans items that are not usable in Pok&eacute;mon Stadium 2',
     banlist: [
       'Fast Ball',
       'Friend Ball',
@@ -5329,19 +5793,19 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   nc2000movelegality: {
     effectType: 'ValidatorRule',
     name: 'NC 2000 Move Legality',
-    desc: 'Prevents Pok\u00e9mon from having moves that would only be obtainable in Pok\u00e9mon Crystal.'
+    desc: 'Prevents Pokemon from having moves that would only be obtainable in Pok&eacute;mon Crystal'
     // Implemented in mods/gen2/rulesets.ts
   },
   nc1997movelegality: {
     effectType: 'ValidatorRule',
     name: 'NC 1997 Move Legality',
-    desc: "Bans move combinations on Pok\u00e9mon that weren't legal in NC 1997."
+    desc: "Bans move combinations on Pokemon that weren't legal in NC 1997"
     // Implemented in mods/gen1jpn/rulesets.ts
   },
   guaranteedsecondarymod: {
     effectType: 'Rule',
     name: 'Guaranteed Secondary Mod',
-    desc: "All moves' secondary effect chances are set to 100% (Tri Attack and Dire Claw set a random status; Poison Touch is not a real secondary and remains at 30%).",
+    desc: 'Sets the secondary effect chances of moves to 100% (Tri Attack and Dire Claw set a random status; Poison Touch is not a real secondary and remains at 30%).',
     onModifyMove(move) {
       if (move.secondaries) {
         this.debug('Freeze test: Guaranteeing secondary');
@@ -5355,12 +5819,18 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
     effectType: 'ValidatorRule',
     name: 'Hackmons Forme Legality',
     desc: `Enforces proper forme legality for hackmons-based metagames.`,
-    banlist: ['CAP', 'LGPE', 'Future'],
+    banlist: ['CAP', 'Future'],
     onChangeSet(set, format, setHas, teamHas) {
       let species = this.dex.species.get(set.species);
       if (
         (species.natDexTier === 'Illegal' || species.forme.includes('Totem')) &&
-        !['Floette-Eternal', 'Greninja-Ash', 'Xerneas-Neutral'].includes(species.name) &&
+        ![
+          'Eevee-Starter',
+          'Floette-Eternal',
+          'Greninja-Ash',
+          'Pikachu-Starter',
+          'Xerneas-Neutral'
+        ].includes(species.name) &&
         !this.ruleTable.has(`+pokemon:${species.id}`)
       ) {
         return [`${species.name} is illegal.`];
@@ -5390,13 +5860,15 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
             `${set.name ? `${set.name} (${species.name})` : species.name} is required to have ${species.requiredMove}.`
           ];
         }
-        set.species = (
+        set.species =
           species.id === 'xerneas'
             ? 'Xerneas-Neutral'
-            : species.id === 'zygardecomplete'
-              ? 'Zygarde'
+            : typeof species.battleOnly === 'string'
+              ? species.battleOnly
               : species.battleOnly
-        ) as string;
+                ? species.battleOnly[0]
+                : // should never happen?
+                  set.species;
         species = this.dex.species.get(set.species);
       }
       for (const moveid of set.moves) {
@@ -5427,27 +5899,27 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   speciesrevealclause: {
     effectType: 'Rule',
     name: 'Species Reveal Clause',
-    desc: "Reveals a Pok&eacute;mon's true species in hackmons-based metagames.",
+    desc: "Reveals a Pokemon's true species in hackmons-based metagames",
     // Hardcoded into effect, cannot be disabled, ties into team preview
     onBegin() {
       this.add(
         'rule',
-        "Species Reveal Clause: Reveals a Pok\u00e9mon's true species in hackmons-based metagames."
+        "Species Reveal Clause: Reveals a Pokemon's true species in hackmons-based metagames."
       );
     }
   },
   bestof: {
     effectType: 'ValidatorRule',
     name: 'Best Of',
-    desc: 'Allows players to define a best-of series where the winner of the series is the winner of the majority of games.',
+    desc: 'Allows players to define a best-of series where the winner of the series is the winner of the majority of games',
     hasValue: 'positive-integer',
     onValidateRule(value) {
       const num = Number(value);
       if (num > 9 || num < 3 || num % 2 !== 1) {
         throw new Error('Series length must be an odd number between three and nine (inclusive).');
       }
-      if (!['singles', 'doubles'].includes(this.format.gameType)) {
-        throw new Error('Only single and doubles battles can be a Best-of series.');
+      if (this.format.playerCount > 2) {
+        throw new Error('Free For All and Multi Battles cannot be a Best-of series.');
       }
       return value;
     }
@@ -5455,9 +5927,9 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
   illusionlevelmod: {
     effectType: 'Rule',
     name: 'Illusion Level Mod',
-    desc: `Changes the Illusion ability to disguise the Pok&eacute;mon's level instead of leaking it.`,
+    desc: `Changes the Illusion Ability to disguise the Pokemon's level instead of leaking it.`,
     onBegin() {
-      this.add('rule', "Illusion Level Mod: Illusion disguises the Pok\u00e9mon's true level");
+      this.add('rule', "Illusion Level Mod: Illusion disguises the Pokemon's true level");
     }
     // Implemented in Pokemon#getDetails
   }

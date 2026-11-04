@@ -8,13 +8,14 @@ import {
   getPokedexOrderIndex,
   GAME_TMS_BY_ID
 } from '@/data/pokemon/pokedex';
-import { GYMS, GYMS_BY_ID, getGymById, isGymId } from '@/data/world/gyms';
+import { GYMS, GYMS_BY_ID, getGymById, isGymId, type GymId } from '@/data/world/gyms';
+import type { MapRouteId } from '@/data/world/map-assets';
 import { FIRE_RED_MAPS, MAPS_BY_ROUTE_ID, getMapLocationById } from '@/data/world/maps';
 
 describe('Static Catalogs O(1) Lookups & Domain Contracts', () => {
   describe('Items Catalog (ITEMS_BY_ID & getItemById)', () => {
     it('should have 100% item parity between SHOP_ITEMS array and ITEMS_BY_ID record', () => {
-      expect(Object.keys(ITEMS_BY_ID).length).toBe(SHOP_ITEMS.length);
+      expect(Object.keys(ITEMS_BY_ID)).toHaveLength(SHOP_ITEMS.length);
       for (const item of SHOP_ITEMS) {
         expect(ITEMS_BY_ID[item.id]).toBe(item);
         expect(getItemById(item.id)).toBe(item);
@@ -28,13 +29,13 @@ describe('Static Catalogs O(1) Lookups & Domain Contracts', () => {
     });
 
     it('should throw explicit error when getItemById receives an invalid item id', () => {
-      expect(() => getItemById('non_existent_item_xyz')).toThrow();
+      expect(() => getItemById('non_existent_item_xyz')).toThrow(/invalid|item/i);
     });
   });
 
   describe('Maps Catalog (MAPS_BY_ROUTE_ID & getMapLocationById)', () => {
     it('should have 100% parity between FIRE_RED_MAPS and MAPS_BY_ROUTE_ID', () => {
-      expect(Object.keys(MAPS_BY_ROUTE_ID).length).toBe(FIRE_RED_MAPS.length);
+      expect(Object.keys(MAPS_BY_ROUTE_ID)).toHaveLength(FIRE_RED_MAPS.length);
       for (const map of FIRE_RED_MAPS) {
         expect(MAPS_BY_ROUTE_ID[map.id]).toBe(map);
         expect(getMapLocationById(map.id)).toBe(map);
@@ -42,11 +43,9 @@ describe('Static Catalogs O(1) Lookups & Domain Contracts', () => {
     });
 
     it('should throw explicit error for invalid route IDs', () => {
-      expect(() =>
-        getMapLocationById(
-          'fake_route_999' as unknown as import('@/data/world/map-assets').MapRouteId
-        )
-      ).toThrow();
+      expect(() => getMapLocationById('fake_route_999' as unknown as MapRouteId)).toThrow(
+        /invalid|route/i
+      );
     });
   });
 
@@ -74,11 +73,7 @@ describe('Static Catalogs O(1) Lookups & Domain Contracts', () => {
       expect(getPokedexOrderIndex('ivysaur')).toBe(1);
       expect(getPokedexOrderIndex('mew')).toBe(150);
       expect(getPokedexOrderIndex('chikorita')).toBe(151);
-      expect(
-        getPokedexOrderIndex(
-          'non_existent_species' as unknown as import('@/data/pokemon/pokedex').PokemonSpeciesId
-        )
-      ).toBe(-1);
+      expect(getPokedexOrderIndex('non_existent_species')).toBe(-1);
     });
 
     it('should index all GAME_TMS in GAME_TMS_BY_ID in O(1)', () => {
@@ -89,7 +84,7 @@ describe('Static Catalogs O(1) Lookups & Domain Contracts', () => {
 
   describe('Gyms Catalog (GYMS_BY_ID & getGymById)', () => {
     it('should have 100% parity between GYMS and GYMS_BY_ID', () => {
-      expect(Object.keys(GYMS_BY_ID).length).toBe(GYMS.length);
+      expect(Object.keys(GYMS_BY_ID)).toHaveLength(GYMS.length);
       for (const gym of GYMS) {
         expect(GYMS_BY_ID[gym.id]).toBe(gym);
         expect(getGymById(gym.id)).toBe(gym);
@@ -100,9 +95,7 @@ describe('Static Catalogs O(1) Lookups & Domain Contracts', () => {
       expect(isGymId('pewter')).toBe(true);
       expect(isGymId('cerulean')).toBe(true);
       expect(isGymId('fake_gym')).toBe(false);
-      expect(() =>
-        getGymById('fake_gym' as unknown as import('@/data/world/gyms').GymId)
-      ).toThrow();
+      expect(() => getGymById('fake_gym' as unknown as GymId)).toThrow(/invalid|gym/i);
     });
   });
 });

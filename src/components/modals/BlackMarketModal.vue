@@ -61,27 +61,26 @@ function handleBuy(itemId: ItemId): void {
 
 const gridRef = ref<HTMLElement | null>(null);
 
-const animateGrid = (): void => {
-  nextTick(() => {
-    if (!gridRef.value) return;
-    const cards = gridRef.value.querySelectorAll('.bm-card');
-    if (cards.length > 0) {
-      gsap.killTweensOf(cards);
-      gsap.fromTo(
-        cards,
-        { opacity: 0, y: 15, scale: 0.96 },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.35,
-          stagger: 0.05,
-          ease: 'power1.out',
-          clearProps: 'transform,scale'
-        }
-      );
-    }
-  });
+const animateGrid = async (): Promise<void> => {
+  await nextTick();
+  if (!gridRef.value) return;
+  const cards = gridRef.value.querySelectorAll('.bm-card');
+  if (cards.length > 0) {
+    gsap.killTweensOf(cards);
+    gsap.fromTo(
+      cards,
+      { opacity: 0, y: 15, scale: 0.96 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.35,
+        stagger: 0.05,
+        ease: 'power1.out',
+        clearProps: 'transform,scale'
+      }
+    );
+  }
 };
 
 watch(

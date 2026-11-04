@@ -1,3 +1,5 @@
+import { Dex } from '@pkmn/sim';
+
 import {
   type ChoiceRequest,
   type RequestKind,
@@ -8,7 +10,6 @@ import {
   ShowdownBattleAgent,
   type ActiveSlotRequest
 } from '../../../../src/logic/battle/helpers/showdownBattleAgent.ts';
-import { Dex } from '@pkmn/sim';
 
 export type SidePokemon = ChoiceRequestPokemon;
 

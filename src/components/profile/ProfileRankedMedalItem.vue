@@ -178,7 +178,7 @@ const podiumTagClass = computed(() => ({
     .season-name {
       color: var(--slate-200);
       font-size: var(--font-12);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
       line-height: 1.45;
       padding-bottom: 2px;
       white-space: nowrap;
@@ -197,7 +197,7 @@ const podiumTagClass = computed(() => ({
       .season-date {
         color: var(--slate-400);
         font-size: var(--font-10);
-        font-weight: 500;
+        font-weight: $font-weight-medium;
         white-space: nowrap;
       }
 
@@ -208,7 +208,7 @@ const podiumTagClass = computed(() => ({
         background: Rgb(34 197 94 / 20%);
         color: var(--green-light);
         font-size: var(--font-9);
-        font-weight: 700;
+        font-weight: $font-weight-bold;
         line-height: 1.2;
         letter-spacing: 0.3px;
       }
@@ -216,7 +216,7 @@ const podiumTagClass = computed(() => ({
 
     .tier-name {
       font-size: var(--font-11);
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       margin-top: 2px;
     }
   }
@@ -227,7 +227,7 @@ const podiumTagClass = computed(() => ({
     background: Rgb(148 163 184 / 20%);
     color: var(--slate-200);
     font-size: var(--font-10);
-    font-weight: 800;
+    font-weight: $font-weight-extrabold;
 
     &.top-3 {
       border: 1px solid Rgb(234 179 8 / 40%);

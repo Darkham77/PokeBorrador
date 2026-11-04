@@ -1,10 +1,10 @@
-import { CONFIG, validateConfig } from './config';
-import { ShowdownClient } from './client/showdown-client';
-import { DamageCalculator } from './calculator/damage';
-import { InferenceEngine } from './inference/engine';
 import { ClaudeEngine } from './ai/claude';
 import { BattleOrchestrator } from './battle/orchestrator';
 import { requeueDelay } from './behavior/human-like';
+import { DamageCalculator } from './calculator/damage';
+import { ShowdownClient } from './client/showdown-client';
+import { CONFIG, validateConfig } from './config';
+import { InferenceEngine } from './inference/engine';
 import { log, logError } from './logging/logger';
 
 // ============================================================

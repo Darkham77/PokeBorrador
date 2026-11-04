@@ -5,6 +5,7 @@ import { EVOLUTION_TABLE, TRADE_EVOLUTIONS, getStoneEvolution } from '@/data/pok
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
 import { requireMapRouteId } from '@/data/world/map-assets';
+import { logger } from '@/logic/utils/logger';
 import { useBattleStore } from '@/stores/battle/battle';
 import { useBreedingStore } from '@/stores/breeding';
 import { useGameStore } from '@/stores/game';
@@ -319,21 +320,20 @@ export function registerPokeTools(debug: DebugSystem): void {
         };
       });
 
-      console.group('🥚 [DEBUG] DETALLES DE HUEVOS ACTIVOS');
-      console.debug('--- EN ALMACÉN DE GUARDERÍA ---');
+      logger.info('DEBUG-EGGS', '🥚 [DEBUG] DETALLES DE HUEVOS ACTIVOS');
+      logger.info('DEBUG-EGGS', '--- EN ALMACÉN DE GUARDERÍA ---');
       if (warehouse.length > 0) {
-        console.table(warehouse);
+        logger.info('DEBUG-EGGS', JSON.stringify(warehouse, null, 2));
       } else {
-        console.debug('No hay huevos en el almacén de la guardería.');
+        logger.debug('DEBUG-EGGS', 'No hay huevos en el almacén de la guardería.');
       }
 
-      console.debug('--- EN LA MOCHILA ---');
+      logger.info('DEBUG-EGGS', '--- EN LA MOCHILA ---');
       if (backpack.length > 0) {
-        console.table(backpack);
+        logger.info('DEBUG-EGGS', JSON.stringify(backpack, null, 2));
       } else {
-        console.debug('No hay huevos en la mochila.');
+        logger.debug('DEBUG-EGGS', 'No hay huevos en la mochila.');
       }
-      console.groupEnd();
 
       ui.notify('Detalles de huevos impresos en consola', '🥚');
       return { warehouseEggs: breedingStore.warehouseEggs, backpackEggs: game.state.eggs };

@@ -1,4 +1,5 @@
 import { readFileSync, existsSync } from 'node:fs';
+
 import { getFilesRecursively } from './audit_helpers.ts';
 
 export interface StatusNullAuditResult {

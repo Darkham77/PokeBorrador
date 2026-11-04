@@ -254,7 +254,7 @@ async function onClaim(): Promise<void> {
   .username {
     color: var(--white);
     font-size: var(--font-14);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     line-height: 1.2;
   }
 

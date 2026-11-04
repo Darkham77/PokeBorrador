@@ -1,5 +1,5 @@
-import type { DisplayText } from '@francogp/auditor';
-import { defineCommand, runMain } from 'citty';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 /**
  * scripts/assets/init_shadow_overrides.ts
  *
@@ -7,8 +7,9 @@ import { defineCommand, runMain } from 'citty';
  * hardcoded POKEMON_AESTHETICS (floating: true) and pairing each with its current coordinates.
  */
 
-import fs from 'node:fs/promises';
-import path from 'node:path';
+import type { DisplayText } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
+
 import {
   POKEMON_AESTHETICS,
   POKEMON_SPRITE_IDS,
@@ -19,7 +20,7 @@ import type { SpriteShadowOverride } from '../../src/types/pokemon/spriteShadows
 
 const TARGET_FILE = path.resolve(process.cwd(), 'src/data/pokemon/spriteShadowOverrides.json');
 
-async function main() {
+async function main(): Promise<void> {
   const overrides: Record<DisplayText, SpriteShadowOverride> = {};
 
   try {
@@ -27,7 +28,7 @@ async function main() {
     const existing = JSON.parse(raw);
     Object.assign(overrides, existing);
   } catch (err) {
-    err;
+    console.warn('[Handled controlled exception]:', err);
   }
 
   const pGroup = feetDbJson.p as Record<DisplayText, readonly number[]>; // open-record: Generic key-value data dictionary container
@@ -83,4 +84,4 @@ export const command = defineCommand({
   }
 });
 
-runMain(command);
+void runMain(command);

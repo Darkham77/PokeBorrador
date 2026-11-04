@@ -6,6 +6,17 @@ import { setActivePinia, createPinia } from 'pinia';
 import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
 import { WebSocketServer, WebSocket } from 'ws';
 
+function parseWsMessage(raw: unknown): Record<string, unknown> {
+  const text = Buffer.isBuffer(raw)
+    ? raw.toString('utf-8')
+    : typeof raw === 'string'
+      ? raw
+      : raw instanceof Uint8Array
+        ? new TextDecoder().decode(raw)
+        : '';
+  return text ? (JSON.parse(text) as Record<string, unknown>) : {};
+}
+
 describe('LAN PvP & Matchmaking Integration Simulation', () => {
   let server: Server;
   let serverPort: number;
@@ -48,8 +59,8 @@ describe('LAN PvP & Matchmaking Integration Simulation', () => {
               sql: string;
               params?: SQLInputValue[];
             };
-            const params: SQLInputValue[] = (body.params || []).map(
-              (p) => (p === undefined ? null : p) as SQLInputValue
+            const params: SQLInputValue[] = (body.params || []).map((p) =>
+              p === undefined ? null : p
             );
             if (body.type === 'query') {
               const rows = db.prepare(body.sql).all(...params);
@@ -95,7 +106,7 @@ describe('LAN PvP & Matchmaking Integration Simulation', () => {
     wss.on('connection', (ws) => {
       ws.on('message', (raw) => {
         try {
-          const msg = JSON.parse(raw.toString('utf-8')) as {
+          const msg = parseWsMessage(raw) as {
             action?: string;
             channel?: string;
             senderId?: string;
@@ -233,9 +244,9 @@ describe('LAN PvP & Matchmaking Integration Simulation', () => {
     // Ash sends pvp_team broadcast
     const garyReceivedPromise = new Promise<Record<string, unknown>>((resolve) => {
       wsGary.on('message', (raw) => {
-        const msg = JSON.parse(raw.toString('utf-8'));
+        const msg = parseWsMessage(raw);
         if (msg.channel === channelName && msg.action === 'broadcast') {
-          resolve(msg.data);
+          resolve(msg.data as Record<string, unknown>);
         }
       });
     });
@@ -263,9 +274,9 @@ describe('LAN PvP & Matchmaking Integration Simulation', () => {
     // Gary sends pvp_team broadcast back to Ash
     const ashReceivedPromise = new Promise<Record<string, unknown>>((resolve) => {
       wsAsh.on('message', (raw) => {
-        const msg = JSON.parse(raw.toString('utf-8'));
+        const msg = parseWsMessage(raw);
         if (msg.channel === channelName && msg.action === 'broadcast') {
-          resolve(msg.data);
+          resolve(msg.data as Record<string, unknown>);
         }
       });
     });

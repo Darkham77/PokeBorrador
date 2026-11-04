@@ -682,7 +682,7 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
 
       // Assert 6 buttons: 3 copy (📋), 3 paste (📥)
       const actionBtns = wrapper.findAll('.slider-action-btn');
-      expect(actionBtns.length).toBe(6);
+      expect(actionBtns).toHaveLength(6);
 
       // Check copy button for X
       const copyXBtn = actionBtns[0]!;
@@ -771,7 +771,7 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
       });
 
       const footerBtns = wrapper.findAll('.footer-icon-btn');
-      expect(footerBtns.length).toBe(2);
+      expect(footerBtns).toHaveLength(2);
 
       // Copy all button
       const copyAllBtn = footerBtns[0]!;

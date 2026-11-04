@@ -18,8 +18,9 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
-import { BaseEventSimulation } from './base_event_simulation.ts';
+
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
+import { BaseEventSimulation } from './base_event_simulation.ts';
 
 const EXPECTED_CLAIMED_MONEY = 26000;
 const EXPECTED_CLAIMED_BC = 160;

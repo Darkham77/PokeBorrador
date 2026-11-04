@@ -241,7 +241,7 @@ describe('Police Encounter and Difficulty Scaling Integration Test (Tier 2)', ()
     );
 
     expect(policeEncounter250.archetype).toBe('policeman');
-    expect(policeEncounter250.enemyTeam.length).toBe(6);
+    expect(policeEncounter250.enemyTeam).toHaveLength(6);
     expect(policeEncounter250.enemyTeam[0]?.level).toBe(22);
   });
 
@@ -260,7 +260,7 @@ describe('Police Encounter and Difficulty Scaling Integration Test (Tier 2)', ()
     );
 
     expect(policeExtreme.archetype).toBe('policeman');
-    expect(policeExtreme.enemyTeam.length).toBe(6);
+    expect(policeExtreme.enemyTeam).toHaveLength(6);
     for (const p of policeExtreme.enemyTeam) {
       expect(p.level).toBeLessThanOrEqual(100);
       expect(p.level).toBeGreaterThanOrEqual(1);

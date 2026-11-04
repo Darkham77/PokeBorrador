@@ -320,7 +320,7 @@ describe('Pokemon UI & Sprites Domain Suite', () => {
 
       document.createElement = vi.fn().mockImplementation((tagName: string) => {
         if (tagName === 'canvas') {
-          return mockCanvas as unknown as HTMLCanvasElement;
+          return mockCanvas;
         }
         return originalCreateElement.call(document, tagName);
       });

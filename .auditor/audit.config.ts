@@ -2,16 +2,16 @@ import { defineAuditConfig } from '@francogp/auditor';
 
 export default defineAuditConfig({
   name: 'Poké Vicio',
-  auditorVersion: '10.2.5-build.20261027-141121',
+  auditorVersion: '10.7.8-build.20261103-204645',
   paths: {
     srcRoots: ['src', 'test_aventura'],
     testRoots: ['tests', 'test_aventura/tests'],
     e2eRoots: ['scripts/e2e'],
     integrationRoots: ['tests/integration'],
     migrationsDir: 'database/migrations',
-    scriptsRoots: ['scripts'],
-    codeRoots: ['src', 'scripts', 'database', 'ui-demo', 'test_aventura'],
-    cliRoots: ['scripts'],
+    scriptsRoots: ['scripts', 'supabase'],
+    codeRoots: ['src', 'scripts', 'database', 'ui-demo', 'test_aventura', 'supabase'],
+    cliRoots: ['scripts', 'supabase'],
     dataRoots: ['src/data', 'test_aventura/data'],
     componentsRoots: ['src/components', 'test_aventura/components'],
     viewsRoots: ['src/views', 'test_aventura/views'],
@@ -20,20 +20,12 @@ export default defineAuditConfig({
     typesRoots: ['src/types', 'test_aventura/types'],
     stylesRoots: ['src/styles', 'test_aventura/styles'],
     logicRoots: ['src/logic', 'test_aventura/logic'],
+    loggerFiles: ['src/logic/utils/logger.ts'],
     demoRoots: ['ui-demo'],
     exemptFiles: [],
     includeTestsInCodeAudit: false,
-    ignoreGlobs: [
-      'node_modules/**',
-      'dist/**',
-      'scratch/**',
-      '.tsbuildinfo/**',
-      'external/**',
-      'showdown/**',
-      'backup_legacy_code/**',
-      'supabase/docker/**'
-    ],
-    ignoredDirs: ['external', 'showdown', 'backup_legacy_code', 'supabase/docker'],
+    ignoreGlobs: [],
+    ignoredDirs: ['external'],
     ignoredPatterns: ['src/logic/db/migrations_data.ts']
   },
   coverage: {
@@ -63,9 +55,19 @@ export default defineAuditConfig({
         reason: 'Maintenance and tooling CLI scripts running in Node environment'
       },
       {
+        glob: 'supabase/**',
+        policy: 'scripts',
+        reason: 'Docker Supabase local harness and credentials setup scripts'
+      },
+      {
+        glob: 'supabase/**',
+        policy: 'cli',
+        reason: 'Docker Supabase local harness and credentials CLI setup tool'
+      },
+      {
         glob: 'src/data/**',
         policy: 'data',
-        reason: 'Domain data catalogs and tabular game mini-databases'
+        reason: 'Static game databases, items, moves, and assets catalogs'
       },
       {
         glob: 'ui-demo/**',
@@ -76,35 +78,44 @@ export default defineAuditConfig({
       {
         glob: 'test_aventura/data/**',
         policy: 'data',
-        reason: 'Adventure map data presets and catalogs'
+        reason: 'Adventure mode map data and catalogs'
       }
     ]
   },
   testCoverage: {
     enabled: true,
-    enforceInAudit: false
+    enforceInAudit: false,
+    threshold: 80,
+    directoryThresholds: {
+      'src/logic/battle': 85,
+      'src/stores': 80
+    },
+    path: 'scratch/coverage/coverage-final.json',
+    runCommand: 'vp test --coverage',
+    roots: ['src'],
+    extensions: ['.ts', '.vue', '.js', '.jsx', '.tsx', '.mjs', '.cjs'],
+    exemptGlobs: []
   },
   documentation: {
     allowedNpxBinaries: ['kill-port', 'playwright', 'tsx', 'vitest'],
     language: 'en',
-    languageExemptions: [
-      'docs/**',
-      './docs/**',
-      'docs',
-      'test_aventura/docs/**',
-      './test_aventura/docs/**',
-      'test_aventura/docs',
-      'test_aventura/**',
-      './test_aventura/**'
-    ]
+    languageExemptions: ['docs/**', 'test_aventura/**'],
+    enabled: true,
+    chatLanguage: 'es',
+    skillsRoots: ['.agents/skills']
   },
   secretLeaks: {
     enabled: true,
-    exemptGlobs: ['tests/**', 'scripts/testing/**']
+    exemptGlobs: ['tests/**', 'scripts/testing/**'],
+    maskSecrets: true
   },
   persistence: {
     engine: 'hybrid',
     schemaQualified: false,
+    supabaseDir: 'supabase',
+    dockerContainer: 'supabase-db',
+    allowedDatabaseFiles: ['AGENTS.md'],
+    exemptRlsTables: ['_migrations', 'schema_migrations', 'supabase_migrations'],
     authorizedSaveFiles: [
       'src/logic/auth/saveCoordinator.ts',
       'src/stores/game/actions/saveActionHelpers.ts'
@@ -316,12 +327,35 @@ export default defineAuditConfig({
     },
     spawnsWhitelist: {
       enabled: true
-    }
+    },
+    allowedNumericConstantPrefixes: [
+      'GEN_',
+      'ISO_',
+      'UTF_8',
+      'BASE_64',
+      'RGB_',
+      'RGBA_',
+      'WASM_',
+      'HTML_5',
+      'CSS_3',
+      'HTTP_',
+      'D3_'
+    ]
   },
   constants: {
     enabled: true
   },
   styles: {
+    lineHeightOverlapCheck: true,
+    stylelint: {
+      enabled: true,
+      rules: {},
+      ignoreGlobs: [],
+      order: {
+        enabled: true,
+        enforceHasBlockPartitioning: true
+      }
+    },
     zLayersEnabled: true,
     baseScssFile: 'src/styles/core/_base.scss',
     zLayersScssFile: 'src/styles/core/_base.scss',
@@ -334,12 +368,13 @@ export default defineAuditConfig({
       checkColors: true,
       checkLongLines: true,
       minDeclarations: 2
-    }
+    },
+    enabled: true
   },
   bundle: {
     enabled: true,
-    maxClientChunkWarnBytes: 1500 * 1024,
-    maxClientChunkErrorBytes: 2500 * 1024,
+    maxClientChunkWarnBytes: 1228800,
+    maxClientChunkErrorBytes: 2048000,
     exemptChunkPrefixes: [
       'worker-vendor-pkmn',
       'worker-vendor-randoms',
@@ -348,39 +383,73 @@ export default defineAuditConfig({
       'game-data-pokemon',
       'vendor-randoms',
       'db-migrations-data'
-    ]
+    ],
+    statsFile: 'scratch/bundle_stats.html',
+    distDir: 'dist/assets',
+    budgets: [],
+    duplicateModuleThresholdBytes: 512000,
+    topModulesLimit: 15
   },
   templates: {
-    requireInputIds: true
+    requireInputIds: true,
+    enabled: true
   },
   packageHygiene: {
     enabled: true,
     ignoreDependencies: ['markdownlint-cli', 'vue-tsc']
   },
   agentPlugin: {
-    enabled: true
+    enabled: true,
+    gitSafetyHook: true
   },
   fallow: {
     enabled: true,
+    ignoreGlobs: ['.agents/**', 'src/**/*.scss', 'test_aventura/**/*.scss'],
+    ignoreDependencies: [
+      'postgres',
+      '@pkmn/sim',
+      '@rolldown/binding-wasm32-wasi',
+      'ws',
+      'sql.js',
+      'html-validate-vue',
+      'vue-tsc'
+    ],
     security: {
       enabled: true
     },
     enforceTargets: true,
-    maxTargetPriority: 'critical',
+    maxTargetPriority: 35,
     similarCode: {
       enabled: true,
       threshold: 0.95,
-      ignoreSameFile: true
+      ignoreSameFile: true,
+      minLines: 3
     },
     typeAware: true,
     showCascade: true,
     duplicates: {
       nearMiss: true,
-      mode: 'strict'
+      mode: 'strict',
+      minOccurrences: 2,
+      minLines: 15,
+      minTokens: 100,
+      enabled: true
     },
     viz: {
       enabled: true,
       outputPath: 'scratch/fallow_map.html'
+    },
+    flags: {
+      enabled: true,
+      trackRetirement: true
+    },
+    coverage: {
+      enabled: true
+    },
+    health: {
+      maxCognitive: 20,
+      maxCyclomatic: 25,
+      cyclomaticPolicy: 'standard'
     }
   },
   customFamilies: [
@@ -420,24 +489,26 @@ export default defineAuditConfig({
     './scripts/auditors/persistence/validate_sql_migrations.ts'
   ],
   accessibility: {
-    enabled: true
+    enabled: true,
+    rules: {}
   },
   dependencyVulnerabilities: {
     enabled: true,
-    failOn: 'critical'
+    failOn: 'high',
+    allowList: [],
+    includeDev: false
   },
   oxlint: {
     enabled: true
   },
   htmlValidate: {
-    enabled: true
-  },
-  pinia: {
-    enabled: true
+    enabled: true,
+    disabledRules: ['prefer-button']
   },
   typeCoverage: {
     enabled: true,
-    atLeast: 95
+    atLeast: 98,
+    strict: true
   },
   fsm: {
     enabled: true,
@@ -478,7 +549,8 @@ export default defineAuditConfig({
     recommendedScripts: true
   },
   auditorHygiene: {
-    enabled: true
+    enabled: true,
+    roots: ['scripts/auditors']
   },
   scriptExtensions: {
     enabled: true,
@@ -490,21 +562,30 @@ export default defineAuditConfig({
   },
   codeSimplification: {
     enabled: true,
-    allowMatrixLoops: true
+    allowMatrixLoops: true,
+    maxNestingDepth: 4,
+    exemptPaths: []
   },
   scssArchitecture: {
     enabled: true,
     maxNestingDepth: 5,
-    scopedMaxNestingDepth: 5,
+    scopedMaxNestingDepth: 4,
     allowPixelArtSpacing: true,
     allowScopedColors: false
   },
   queryPerformance: {
-    enabled: true
+    enabled: true,
+    excludeMigrationsDir: true,
+    exemptSelectStarPaths: [],
+    exemptPaths: []
   },
   webPerformance: {
     enabled: true,
-    exemptSvgPaths: ['test_aventura/**', 'src/components/common/SVGFilters.vue']
+    exemptSvgPaths: ['test_aventura/**', 'src/components/common/SVGFilters.vue'],
+    maxDomDepth: 16,
+    maxInlineSvgSize: 2048,
+    exemptImgClasses: [],
+    exemptPaths: []
   },
   securityHardening: {
     enabled: true
@@ -512,6 +593,67 @@ export default defineAuditConfig({
 
   vitePlusConfig: {
     enabled: true,
+    lint: {
+      rules: {
+        'unicorn/prefer-node-protocol': 'error',
+        '@typescript-eslint/consistent-type-imports': [
+          'error',
+          {
+            prefer: 'type-imports',
+            fixStyle: 'inline-type-imports'
+          }
+        ],
+        'typescript/prefer-as-const': 'error',
+        'typescript/no-for-in-array': 'error',
+        'typescript/no-duplicate-enum-values': 'error',
+        'typescript/no-duplicate-type-constituents': 'error',
+        'typescript/no-extra-non-null-assertion': 'error',
+        'typescript/no-useless-empty-export': 'error',
+        'oxc/const-comparisons': 'error',
+        'oxc/missing-throw': 'error',
+        'oxc/uninvoked-array-callback': 'error',
+        'unicorn/no-new-array': 'error',
+        'unicorn/prefer-set-size': 'error',
+        'typescript/no-wrapper-object-types': 'error',
+        'typescript/no-unnecessary-type-assertion': 'error',
+        'unicorn/no-instanceof-array': 'error',
+        'unicorn/no-useless-fallback-in-spread': 'error',
+        'unicorn/no-useless-promise-resolve-reject': 'error',
+        'unicorn/prefer-string-starts-ends-with': 'error',
+        'unicorn/throw-new-error': 'error',
+        'promise/no-new-statics': 'error',
+        'promise/valid-params': 'error',
+        'node/no-exports-assign': 'error',
+        'node/no-new-require': 'error',
+        'import/no-duplicates': 'error',
+        'import/no-self-import': 'error',
+        'jsx-a11y/aria-props': 'error',
+        'jsx-a11y/aria-unsupported-elements': 'error',
+        'jsx-a11y/no-aria-hidden-on-focusable': 'error',
+        'jsx-a11y/no-redundant-roles': 'error',
+        'vitest/no-identical-title': 'error',
+        'vitest/no-focused-tests': 'error',
+        'vitest/no-import-node-test': 'error',
+        'vitest/valid-title': 'error',
+        'vue/prefer-import-from-vue': 'error',
+        'vue/no-deprecated-destroyed-lifecycle': 'error',
+        'vue/valid-next-tick': 'error',
+        'vue/next-tick-style': 'error'
+      },
+      enabled: true,
+      typeAware: true,
+      typeCheck: true,
+      plugins: ['vitest', 'node', 'promise', 'unicorn', 'typescript', 'vue', 'import', 'jsx-a11y']
+    },
+    fmt: {
+      ignorePatterns: ['src/data/**'],
+      enabled: true,
+      singleQuote: true,
+      semi: true,
+      trailingComma: 'none',
+      sortPackageJson: true,
+      overrides: []
+    },
     precompress: {
       enabled: true,
       server: 'nginx',
@@ -534,6 +676,23 @@ export default defineAuditConfig({
         ],
         migrations: ['tests/node/**/backup_migration_real.test.ts']
       }
+    },
+    staged: {
+      enabled: true,
+      rules: {
+        '*': 'vp check --fix'
+      }
+    },
+    hooks: {
+      enabled: true
+    },
+    vscode: {
+      enabled: true,
+      formatOnSave: true,
+      defaultFormatter: 'oxc.oxc-vscode'
+    },
+    run: {
+      cache: true
     }
   },
 
@@ -555,13 +714,23 @@ export default defineAuditConfig({
     defaultEncoding: 'utf-8',
     prohibitBom: true,
     detectMojibake: true,
-    exemptGlobs: ['database/backups/**', 'database/migrations/**']
+    exemptGlobs: [
+      'database/backups/**',
+      'database/migrations/20260611120000_migrate_save_v3_ids.sql'
+    ]
   },
   animation: {
     enabled: true
   },
   stylelint: {
     enabled: true,
+    rules: {},
+    strictValues: {
+      enabled: true,
+      ignoreValues: {
+        'border-radius': ['inherit']
+      }
+    },
     order: {
       enabled: true,
       enforceHasBlockPartitioning: true
@@ -573,5 +742,38 @@ export default defineAuditConfig({
   dox: {
     enabled: true,
     ignoreGlobs: ['.agents/**']
+  },
+  gitSafety: {
+    enabled: true,
+    preventDestructiveCommands: true
+  },
+  scriptCommands: {
+    enabled: true
+  },
+  gitIgnore: {
+    enabled: true,
+    extraRequiredEntries: []
+  },
+  security: {
+    enabled: true
+  },
+  packageDistribution: {
+    enabled: false,
+    level: 'warning'
+  },
+  version: {
+    enabled: true,
+    autoSyncPublicVersionJson: true,
+    syncTargets: []
+  },
+  ratchet: {
+    enabled: true,
+    productionRef: 'origin/main',
+    baselineFile: '.auditor/audit-baseline.json'
+  },
+  runner: {
+    enabled: true,
+    timeoutMs: 0,
+    maxStalenessMinutes: 5
   }
 });

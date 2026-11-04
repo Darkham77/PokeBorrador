@@ -25,13 +25,13 @@ describe('Map Structure Templates & Multitile Stamping System', () => {
       const { width, height } = tmpl.footprint;
 
       // Check tile matrix
-      expect(tmpl.tiles.length, `${tmpl.id} rows must equal height`).toBe(height);
+      expect(tmpl.tiles).toHaveLength(height);
       for (let r = 0; r < height; r++) {
         expect(tmpl.tiles[r]?.length, `${tmpl.id} row ${r} cols must equal width`).toBe(width);
       }
 
       // Check collision mask
-      expect(tmpl.collisionMask.length, `${tmpl.id} collision rows must equal height`).toBe(height);
+      expect(tmpl.collisionMask).toHaveLength(height);
       for (let r = 0; r < height; r++) {
         expect(
           tmpl.collisionMask[r]?.length,

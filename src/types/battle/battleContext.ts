@@ -2,16 +2,16 @@ import type { Ref } from 'vue';
 
 import type { SeatState } from '@/composables/battle/useBattleSeats';
 import type { ItemId } from '@/data/inventory/items';
-import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
+import { type BATTLE_STATES, type BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
 import type { PostBattleSequenceCoordinator } from '@/logic/battle/postBattleSequenceCoordinator';
 import type {
   BattleState,
   BattleStages,
   BattleLog,
   BattleSource,
-  BattleSide
+  BattleSide,
+  BattleSeatId
 } from '@/types/battle/battle';
-import type { BattleSeatId } from '@/types/battle/battle';
 import type { BattleUiConfig } from '@/types/battle/battleConfig';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type {

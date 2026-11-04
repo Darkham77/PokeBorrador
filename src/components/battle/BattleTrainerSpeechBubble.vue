@@ -65,7 +65,7 @@ const onDialogLeave = (el: Element, done: () => void): void => {
           {{ dialogText }}
         </div>
         <div class="bubble-tail">
-          <svg viewBox="0 0 120 100" preserveAspectRatio="none">
+          <svg aria-hidden="true" viewBox="0 0 120 100" preserveAspectRatio="none">
             <path d="M -10 40 L 115 2 L -10 80 Z" fill="white" />
             <path d="M 0 40 L 120 0 L 0 80" fill="none" stroke="#141824" stroke-width="8" />
           </svg>

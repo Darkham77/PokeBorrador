@@ -6,7 +6,7 @@
 import dbJson from './spriteMapping.json' with { type: 'json' };
 import type { SpriteMappingMap } from './spriteMappingData.ts';
 
-export const POKEMON_SPRITE_IDS: Partial<SpriteMappingMap> = dbJson as Partial<SpriteMappingMap>;
+export const POKEMON_SPRITE_IDS: Partial<SpriteMappingMap> = dbJson;
 export type PokemonSpriteId = keyof typeof POKEMON_SPRITE_IDS;
 export type PokemonSpriteValue = (typeof POKEMON_SPRITE_IDS)[PokemonSpriteId];
 

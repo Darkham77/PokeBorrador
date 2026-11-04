@@ -38,7 +38,7 @@ describe('DBRouter Dispatch and Isolation Suite (Tier 1)', () => {
   });
 
   it('throws on invalid mock time format', () => {
-    expect(() => router.setMockTime('invalid-time-string')).toThrow();
+    expect(() => router.setMockTime('invalid-time-string')).toThrow(/time|format|invalid/i);
   });
 
   it('throws error when online mode is accessed without URL or key', () => {

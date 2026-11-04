@@ -267,12 +267,12 @@ export class Specie implements DexSpecies {
   readonly isPrimal?: boolean;
   readonly battleOnly?: SpeciesName | SpeciesName[];
   readonly canGigantamax?: MoveName;
-  readonly gmaxUnreleased?: boolean;
   readonly cannotDynamax?: boolean;
   readonly requiredAbility?: AbilityName;
   readonly requiredItem?: ItemName;
   readonly requiredItems?: ItemName[];
   readonly requiredMove?: MoveName;
+  readonly placeholderFor?: SpeciesName;
   readonly gender?: GenderName;
   readonly maxHP?: number;
   readonly evoMove?: MoveName;
@@ -331,9 +331,7 @@ export class Specie implements DexSpecies {
     if (!this.otherFormes?.length) this.otherFormes = undefined;
     this.formeOrder = species.formeOrder?.filter((s) => exists(this.dex.species.get(s)));
     if (!this.formeOrder || this.formeOrder.length <= 1) this.formeOrder = undefined;
-    this.formes = this.formeOrder?.filter(
-      (s) => this.dex.species.get(s).isNonstandard !== 'Gigantamax'
-    );
+    this.formes = this.formeOrder?.filter((s) => !this.dex.species.get(s).placeholderFor);
     this.prevo =
       species.prevo && exists(this.dex.species.get(species.prevo)) ? species.prevo : undefined;
   }
@@ -345,9 +343,7 @@ export class Specie implements DexSpecies {
         : 0
       : this.dex.species
           .get(this.baseSpecies)
-          .formeOrder!.findIndex(
-            (name) => name === (this.isNonstandard === 'Gigantamax' ? this.baseSpecies : this.name)
-          );
+          .formeOrder?.findIndex((name) => name === (this.placeholderFor || this.name)) || 0;
   }
 
   toString() {

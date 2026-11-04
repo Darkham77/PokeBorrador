@@ -148,7 +148,7 @@ describe('Battle Orchestrator & F5 State Restoration Suite', () => {
       expect(ctx.activeBattle.value?.turnCount).toBe(3);
       expect(ctx.playerStages.value.atk).toBe(1);
       expect(ctx.enemyStages.value.def).toBe(-1);
-      expect(ctx.battleLogs.value.length).toBe(1);
+      expect(ctx.battleLogs.value).toHaveLength(1);
       expect(ctx.fsm.currentState.value).toBe('ACTIVE_BATTLE');
       expect(ctx.fsm.currentSubState.value).toBe('WAIT_INPUT');
       expect(ctx.isProcessing.value).toBe(false);

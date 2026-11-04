@@ -10,10 +10,7 @@ import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 describe('PokemonSortBar & Pokemon Sort Constants', () => {
   it('should enforce that all sort options have exactly 3 characters in shortLabel', () => {
     for (const opt of POKEMON_SORT_OPTIONS) {
-      expect(
-        opt.shortLabel.length,
-        `Option ${opt.id} shortLabel "${opt.shortLabel}" must be exactly 3 characters`
-      ).toBe(3);
+      expect(opt.shortLabel).toHaveLength(3);
     }
   });
 

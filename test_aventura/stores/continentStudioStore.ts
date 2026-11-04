@@ -1,53 +1,74 @@
 import type { DisplayText } from '@francogp/auditor';
 /**
- * src/stores/continentStudioStore.ts
+ * test_aventura/stores/continentStudioStore.ts
  *
  * REGIONAL CONTINENT STUDIO PINIA STORE (SSoT)
  *
- * Enforces user directives:
+ * Enforces:
  *   1. Unified Coordinate Space (Canvas + SVG): widthPx = W * 32, heightPx = H * 32.
- *   2. Web Worker Concurrency Control: 250ms debounce on reactive sliders + incremental jobId to discard stale jobs.
+ *   2. Non-Blocking Multi-Threaded Pipeline: shallowRef domain state + preemptive Worker termination.
  *   3. Optimized Drag & Drop: 60 FPS local visual drag on pointermove + targeted incident A* on pointerup.
- *   4. Zero-Copy Memory Transfer: Receives raw transferable ArrayBuffer from Worker.
+ *   4. Zero-Copy Memory Transfer: Receives transferable rawPreviewBuffer + Int32Array PackedMapBlitPayload.
  */
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { computed, ref, shallowRef, triggerRef } from 'vue';
 
 import { DEFAULT_POI_TARGET_COUNT } from '../config/poiPlacementConfig.ts';
 import {
   CANVAS_TILE_SIZE,
   CONTINENT_DEFAULT_SEED,
-  DEFAULT_LAKE_COUNT
+  DEFAULT_LAKE_COUNT,
+  STUDIO_MOBILE_BREAKPOINT_PX
 } from '../config/studioConstants.ts';
+import { scanContinentAutotileDefects } from '../logic/map/autotileDefectScanner.ts';
 import {
-  buildCanonicalRegionMap,
-  type CanonicalPresetId
-} from '../logic/map/continent/canonicalRegionPresets.ts';
+  healContinentAt,
+  type ContinentHealingMutationResult
+} from '../logic/map/autotileHealingEngine.ts';
+import type { CanonicalPresetId } from '../logic/map/continent/canonicalRegionPresets.ts';
 import {
   loadProfileListFromStorage,
-  saveProjectToStorage,
   loadProjectFromStorage,
-  serializeProjectJson,
   parseProjectJson,
+  saveProjectToStorage,
+  serializeProjectJson,
   type ContinentProjectExportPayload
 } from '../logic/map/continent/regionalPersistenceHelper.ts';
 import type { ContinentMapResult } from '../logic/map/continentGenerator.ts';
 import {
-  executeRegionalGenerationJob,
+  executeFullWorkerGeneration,
+  executeHealAllWorkerJob,
+  executePresetWorkerJob,
   executeRerouteJob,
+  type FullWorkerGenerationOutput,
   type RegionalGenerationOptions,
   type WorkerInboundMessage,
   type WorkerOutboundResponse
 } from '../logic/map/continentGenerator.worker.ts';
 import type { WildernessLayerResult } from '../logic/map/wildernessVegetationEngine.ts';
-import type { ContinentRenderMode } from '../types/map/continentTypes.ts';
+import type { HealingDomain } from '../types/map/autotileHealingTypes.ts';
+import type {
+  ContinentGenerationPhase,
+  ContinentRenderMode,
+  PackedMapBlitPayload
+} from '../types/map/continentTypes.ts';
 import type { POINode, RouteEdge, UrbanElementType } from '../types/map/poiTypes.ts';
 
 const DEFAULT_DEBOUNCE_DELAY_MS = 250;
 const MAX_SEED_RANDOM_VALUE = 999999;
 const DEFAULT_MAP_DIMENSION = 400;
+const MOBILE_DEFAULT_MAP_DIMENSION = 128;
 const DEFAULT_OCEAN_WATER_PERCENTAGE = 0.35;
 const DEFAULT_MOUNTAIN_PERCENTAGE = 0.22;
+const MAX_HISTORY_SNAPSHOTS = 20 as const;
+
+const PHASE_STATUS_LABELS: Readonly<Record<ContinentGenerationPhase, string>> = {
+  sculpting: 'Esculpiendo',
+  routing: 'Trazando rutas',
+  scanning: 'Analizando tiles',
+  compiling_tiles: 'Preparando capas',
+  rendering: 'Pintando'
+};
 
 export interface DragVisualPosition {
   readonly x: number;
@@ -56,19 +77,44 @@ export interface DragVisualPosition {
 
 export type ContinentMapDimension = 64 | 128 | 256 | 400;
 
+interface HealingHistorySnapshot {
+  readonly continent: ContinentMapResult;
+  readonly pathGrid: readonly (readonly boolean[])[];
+}
+
+function getInitialMapDimension(): ContinentMapDimension {
+  if (
+    typeof globalThis.window !== 'undefined' &&
+    globalThis.window.innerWidth > 0 &&
+    globalThis.window.innerWidth <= STUDIO_MOBILE_BREAKPOINT_PX
+  ) {
+    return MOBILE_DEFAULT_MAP_DIMENSION;
+  }
+  return DEFAULT_MAP_DIMENSION;
+}
+
 export const useRegionalContinentStudioStore = defineStore('regionalContinentStudio', () => {
   // 1. Generation Parameters (Sliders & Toggles)
   const seed = ref<number>(CONTINENT_DEFAULT_SEED);
-  const mapDimension = ref<ContinentMapDimension>(DEFAULT_MAP_DIMENSION);
+  const mapDimension = ref<ContinentMapDimension>(getInitialMapDimension());
   const oceanWaterPercentage = ref<number>(DEFAULT_OCEAN_WATER_PERCENTAGE);
   const mountainPercentage = ref<number>(DEFAULT_MOUNTAIN_PERCENTAGE);
   const lakeCount = ref<number>(DEFAULT_LAKE_COUNT);
   const poiTargetCount = ref<number>(DEFAULT_POI_TARGET_COUNT);
   const allowBridges = ref<boolean>(true);
 
-  // 2. Interactive & View State
+  // 2. Interactive & Async Progress State
   const displayMode = ref<ContinentRenderMode>('hybrid');
   const isGenerating = ref<boolean>(false);
+  const isRenderingTiles = ref<boolean>(false);
+  const isPendingDebounce = ref<boolean>(false);
+  const generationPhase = ref<ContinentGenerationPhase>('sculpting');
+  const generationProgressPercent = ref<number>(0);
+  const statusLabel = ref<string>('Listo');
+  const isBusy = computed<boolean>(
+    () => isPendingDebounce.value || isGenerating.value || isRenderingTiles.value
+  );
+
   const selectedPOIId = ref<string | null>(null);
   const hoveredPOIId = ref<string | null>(null);
   const selectedRouteId = ref<string | null>(null);
@@ -86,24 +132,34 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
   const savedProfiles = ref<readonly { readonly id: string; readonly name: string }[]>(
     loadProfileListFromStorage()
   );
-  const canUndo = ref<boolean>(false);
-  const canRedo = ref<boolean>(false);
 
-  // 3. Generated Domain Data
-  const continentMap = ref<ContinentMapResult | null>(null);
-  const pois = ref<POINode[]>([]);
-  const routes = ref<RouteEdge[]>([]);
-  const pathGrid = ref<readonly (readonly boolean[])[]>([]);
-  const bridgeGrid = ref<readonly (readonly boolean[])[]>([]);
-  const wilderness = ref<WildernessLayerResult | null>(null);
-  const rawPreviewBuffer = ref<ArrayBuffer | null>(null);
+  // 3. Generated Domain Data (shallowRef prevents recursive Vue Proxy wrapping over ~700k nodes)
+  const continentMap = shallowRef<ContinentMapResult | null>(null);
+  const pois = shallowRef<POINode[]>([]);
+  const routes = shallowRef<RouteEdge[]>([]);
+  const pathGrid = shallowRef<readonly (readonly boolean[])[]>([]);
+  const bridgeGrid = shallowRef<readonly (readonly boolean[])[]>([]);
+  const wilderness = shallowRef<WildernessLayerResult | null>(null);
+  const rawPreviewBuffer = shallowRef<ArrayBuffer | null>(null);
+  const packedBlit = shallowRef<PackedMapBlitPayload | null>(null);
 
-  // 4. Concurrency Control (Incremental Job ID & Debounce Timer)
+  // 4. Healing Brush & History State
+  const undoStack = shallowRef<HealingHistorySnapshot[]>([]);
+  const redoStack = shallowRef<HealingHistorySnapshot[]>([]);
+  const canUndo = computed<boolean>(() => undoStack.value.length > 0);
+  const canRedo = computed<boolean>(() => redoStack.value.length > 0);
+
+  const isHealingBrushActive = ref<boolean>(false);
+  const healingBrushDomain = ref<HealingDomain>('auto');
+  const lastHealedReport = ref<string | null>(null);
+  const detectedDefectCount = ref<number>(0);
+  let activeStrokeSnapshotSaved = false;
+
+  // 5. Concurrency Control (Incremental Job ID & Debounce Timer)
   const currentJobId = ref<number>(0);
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   let workerInstance: Worker | null = null;
 
-  // Pixel Dimensions (viewBox = "0 0 widthPx heightPx")
   const widthPx = computed(
     () => (continentMap.value?.width ?? mapDimension.value) * CANVAS_TILE_SIZE
   );
@@ -111,69 +167,275 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
     () => (continentMap.value?.height ?? mapDimension.value) * CANVAS_TILE_SIZE
   );
 
-  // Selected POI node object
   const selectedPOI = computed<POINode | null>(() => {
     if (!selectedPOIId.value) return null;
     return pois.value.find((p) => p.id === selectedPOIId.value) ?? null;
   });
 
-  /**
-   * Initializes or reuses the Web Worker instance with message listeners.
-   */
+  function clearPendingDebounce(): void {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+      debounceTimer = null;
+    }
+    isPendingDebounce.value = false;
+  }
+
+  function resetBusyWorkerIfNeeded(): void {
+    if (isGenerating.value && workerInstance) {
+      workerInstance.terminate();
+      workerInstance = null;
+    }
+  }
+
+  function clearHistoryStacks(): void {
+    undoStack.value = [];
+    redoStack.value = [];
+    activeStrokeSnapshotSaved = false;
+  }
+
+  function updateRenderProgress(percent: number): void {
+    generationPhase.value = 'rendering';
+    generationProgressPercent.value = percent;
+    statusLabel.value = `${PHASE_STATUS_LABELS.rendering} ${percent}%`;
+  }
+
+  function beginTileRender(): void {
+    isRenderingTiles.value = true;
+    updateRenderProgress(0);
+  }
+
+  function finishTileRender(): void {
+    isRenderingTiles.value = false;
+    if (!isGenerating.value && !isPendingDebounce.value) {
+      statusLabel.value = 'Listo';
+    }
+  }
+
+  function refreshDetectedDefects(): number {
+    if (!continentMap.value) {
+      detectedDefectCount.value = 0;
+      return 0;
+    }
+    const report = scanContinentAutotileDefects({
+      continent: continentMap.value,
+      pathGrid: pathGrid.value,
+      bridgeGrid: bridgeGrid.value,
+      pois: pois.value
+    });
+    detectedDefectCount.value = report.totalDefects;
+    return report.totalDefects;
+  }
+
+  function applyGenerationOutput(
+    genOut: FullWorkerGenerationOutput,
+    startTileRender: boolean
+  ): void {
+    if (startTileRender) {
+      isRenderingTiles.value = true;
+      statusLabel.value = `${PHASE_STATUS_LABELS.rendering} 0%`;
+    }
+    packedBlit.value = genOut.packedBlit;
+    rawPreviewBuffer.value = genOut.result.rawBuffer ?? null;
+    continentMap.value = genOut.result.continent;
+    pois.value = [...genOut.result.pois];
+    routes.value = [...genOut.result.routeNetwork.edges];
+    pathGrid.value = genOut.result.routeNetwork.pathGrid;
+    bridgeGrid.value = genOut.result.routeNetwork.bridgeGrid;
+    wilderness.value = genOut.result.wilderness;
+    detectedDefectCount.value = genOut.detectedDefectCount;
+    clearHistoryStacks();
+    isGenerating.value = false;
+    if (!startTileRender && !isPendingDebounce.value) {
+      statusLabel.value = 'Listo';
+    }
+  }
+
+  function handleWorkerResponse(resp: WorkerOutboundResponse): void {
+    if (resp.jobId !== currentJobId.value) return;
+
+    if (resp.type === 'GENERATION_PROGRESS') {
+      generationPhase.value = resp.phase;
+      generationProgressPercent.value = resp.percent;
+      statusLabel.value = `${PHASE_STATUS_LABELS[resp.phase]} ${resp.percent}%`;
+      return;
+    }
+    if (resp.type === 'GENERATION_COMPLETE') {
+      applyGenerationOutput(
+        {
+          result: resp.result,
+          detectedDefectCount: resp.detectedDefectCount,
+          packedBlit: resp.packedBlit
+        },
+        true
+      );
+      return;
+    }
+    if (resp.type === 'HEAL_ALL_COMPLETE') {
+      isRenderingTiles.value = true;
+      statusLabel.value = `${PHASE_STATUS_LABELS.rendering} 0%`;
+      packedBlit.value = resp.output.packedBlit;
+      rawPreviewBuffer.value = resp.output.rawBuffer;
+      continentMap.value = resp.output.continent;
+      pathGrid.value = resp.output.pathGrid;
+      detectedDefectCount.value = resp.output.detectedDefectCount;
+      lastHealedReport.value = `Mapa sanado (-${resp.output.repairedCount} defectos)`;
+      isGenerating.value = false;
+      return;
+    }
+    if (resp.type === 'REROUTE_COMPLETE') {
+      packedBlit.value = null;
+      pois.value = [...resp.updatedNodes];
+      routes.value = [...resp.updatedEdges];
+      isGenerating.value = false;
+      statusLabel.value = 'Listo';
+      return;
+    }
+    console.error('[RegionalContinentStudio] Generation error from worker:', resp.error);
+    isGenerating.value = false;
+    statusLabel.value = 'Listo';
+  }
+
   function ensureWorker(): Worker | null {
     if (workerInstance) return workerInstance;
-    if (typeof globalThis.window !== 'undefined' && typeof Worker !== 'undefined') {
-      try {
-        workerInstance = new Worker(
-          new URL('../logic/map/continentGenerator.worker.ts', import.meta.url),
-          { type: 'module' }
-        );
-
-        workerInstance.onmessage = (event: MessageEvent<WorkerOutboundResponse>): void => {
-          const resp = event.data;
-          if (!resp) return;
-
-          // Directiva 2: Ignore responses from earlier, outdated generations
-          if (resp.jobId !== currentJobId.value) {
-            return;
-          }
-
-          if (resp.type === 'GENERATION_COMPLETE') {
-            continentMap.value = resp.result.continent;
-            pois.value = [...resp.result.pois];
-            routes.value = [...resp.result.routeNetwork.edges];
-            pathGrid.value = resp.result.routeNetwork.pathGrid;
-            bridgeGrid.value = resp.result.routeNetwork.bridgeGrid;
-            wilderness.value = resp.result.wilderness;
-            rawPreviewBuffer.value = resp.rawBuffer ?? null;
-            isGenerating.value = false;
-          } else if (resp.type === 'REROUTE_COMPLETE') {
-            pois.value = [...resp.updatedNodes];
-            routes.value = [...resp.updatedEdges];
-            isGenerating.value = false;
-          } else if (resp.type === 'ERROR') {
-            console.error('[RegionalContinentStudio] Generation error from worker:', resp.error);
-            isGenerating.value = false;
-          }
-        };
-
-        workerInstance.onerror = (err: ErrorEvent): void => {
-          console.error('[RegionalContinentStudio] Web Worker unhandled error:', err.message, err);
-        };
-      } catch (e) {
-        console.error('[RegionalContinentStudio] Failed to instantiate Web Worker:', e);
-        workerInstance = null;
-      }
+    if (typeof globalThis.window === 'undefined' || typeof Worker === 'undefined') {
+      return null;
+    }
+    try {
+      workerInstance = new Worker(
+        new URL('../logic/map/continentGenerator.worker.ts', import.meta.url),
+        { type: 'module' }
+      );
+      workerInstance.onmessage = (event: MessageEvent<WorkerOutboundResponse>): void => {
+        if (event.data) {
+          handleWorkerResponse(event.data);
+        }
+      };
+      workerInstance.onerror = (err: ErrorEvent): void => {
+        console.error('[RegionalContinentStudio] Web Worker unhandled error:', err.message, err);
+        isGenerating.value = false;
+        statusLabel.value = 'Listo';
+      };
+    } catch (e) {
+      console.error('[RegionalContinentStudio] Failed to instantiate Web Worker:', e);
+      workerInstance = null;
     }
     return workerInstance;
   }
 
-  /**
-   * Dispatches the full regional generation pipeline with concurrency control.
-   */
-  function executeGenerationNow(): void {
+  function pushHistorySnapshot(): void {
+    if (!continentMap.value) return;
+    const nextStack = [
+      ...undoStack.value,
+      {
+        continent: continentMap.value,
+        pathGrid: pathGrid.value
+      }
+    ];
+    undoStack.value =
+      nextStack.length > MAX_HISTORY_SNAPSHOTS
+        ? nextStack.slice(nextStack.length - MAX_HISTORY_SNAPSHOTS)
+        : nextStack;
+    redoStack.value = [];
+  }
+
+  function beginHealingStroke(): void {
+    if (!activeStrokeSnapshotSaved) {
+      pushHistorySnapshot();
+      activeStrokeSnapshotSaved = true;
+    }
+  }
+
+  function endHealingStroke(): void {
+    if (activeStrokeSnapshotSaved) {
+      activeStrokeSnapshotSaved = false;
+      refreshDetectedDefects();
+    }
+  }
+
+  function toggleHealingBrush(): void {
+    isHealingBrushActive.value = !isHealingBrushActive.value;
+    if (isHealingBrushActive.value && detectedDefectCount.value === 0 && continentMap.value) {
+      refreshDetectedDefects();
+    }
+  }
+
+  function setHealingBrushDomain(domain: HealingDomain): void {
+    healingBrushDomain.value = domain;
+  }
+
+  function healTileAt(x: number, y: number): ContinentHealingMutationResult | null {
+    if (!continentMap.value) return null;
+    if (!activeStrokeSnapshotSaved) {
+      pushHistorySnapshot();
+    }
+    const mutation = healContinentAt(continentMap.value, pathGrid.value, x, y, {
+      domain: healingBrushDomain.value,
+      pois: pois.value,
+      bridgeGrid: bridgeGrid.value
+    });
+    packedBlit.value = null;
+    continentMap.value = mutation.continent;
+    pathGrid.value = mutation.pathGrid;
+    const { summary } = mutation;
+    lastHealedReport.value = `(${summary.targetX}, ${summary.targetY}) ${summary.targetRole} [${summary.detectedDomain}] -${summary.repairedCount}`;
+    if (!activeStrokeSnapshotSaved) {
+      refreshDetectedDefects();
+    }
+    return mutation;
+  }
+
+  function healEntireMapDefects(): void {
+    if (!continentMap.value) return;
+    pushHistorySnapshot();
+    clearPendingDebounce();
+    resetBusyWorkerIfNeeded();
+
     const nextJobId = ++currentJobId.value;
     isGenerating.value = true;
+    statusLabel.value = 'Sanando mapa...';
+
+    const input = {
+      continent: continentMap.value,
+      pathGrid: pathGrid.value,
+      bridgeGrid: bridgeGrid.value,
+      pois: pois.value,
+      wilderness: wilderness.value,
+      domain: healingBrushDomain.value
+    };
+
+    const worker = ensureWorker();
+    if (worker) {
+      const request: WorkerInboundMessage = {
+        type: 'HEAL_ALL_DEFECTS',
+        jobId: nextJobId,
+        input
+      };
+      worker.postMessage(request);
+      return;
+    }
+
+    const out = executeHealAllWorkerJob(input);
+    if (currentJobId.value === nextJobId) {
+      packedBlit.value = out.packedBlit;
+      rawPreviewBuffer.value = out.rawBuffer;
+      continentMap.value = out.continent;
+      pathGrid.value = out.pathGrid;
+      detectedDefectCount.value = out.detectedDefectCount;
+      lastHealedReport.value = `Mapa sanado (-${out.repairedCount} defectos)`;
+      isGenerating.value = false;
+      statusLabel.value = 'Listo';
+    }
+  }
+
+  function executeGenerationNow(): void {
+    clearPendingDebounce();
+    resetBusyWorkerIfNeeded();
+
+    const nextJobId = ++currentJobId.value;
+    isGenerating.value = true;
+    generationPhase.value = 'sculpting';
+    generationProgressPercent.value = 0;
+    statusLabel.value = `${PHASE_STATUS_LABELS.sculpting}...`;
 
     const options: RegionalGenerationOptions = {
       width: mapDimension.value,
@@ -195,48 +457,38 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
         options
       };
       worker.postMessage(request);
-    } else {
-      // Synchronous fallback for Node.js test environments or environments without Web Worker
-      try {
-        const result = executeRegionalGenerationJob(options);
-        if (currentJobId.value === nextJobId) {
-          continentMap.value = result.continent;
-          pois.value = [...result.pois];
-          routes.value = [...result.routeNetwork.edges];
-          pathGrid.value = result.routeNetwork.pathGrid;
-          wilderness.value = result.wilderness;
-          rawPreviewBuffer.value = result.rawBuffer ?? null;
-          isGenerating.value = false;
-        }
-      } catch {
-        isGenerating.value = false;
+      return;
+    }
+
+    try {
+      const genOut = executeFullWorkerGeneration(options);
+      if (currentJobId.value === nextJobId) {
+        applyGenerationOutput(genOut, false);
       }
+    } catch {
+      isGenerating.value = false;
+      statusLabel.value = 'Listo';
     }
   }
 
-  /**
-   * Debounced generator trigger (Directive 2: 250ms debounce on reactive sliders).
-   */
   function triggerRegenerationDebounced(delay = DEFAULT_DEBOUNCE_DELAY_MS): void {
     if (debounceTimer) {
       clearTimeout(debounceTimer);
     }
+    isPendingDebounce.value = true;
+    statusLabel.value = 'Preparando...';
     debounceTimer = setTimeout(() => {
+      debounceTimer = null;
+      isPendingDebounce.value = false;
       executeGenerationNow();
     }, delay);
   }
 
-  /**
-   * Randomizes seed and triggers immediate regeneration.
-   */
   function randomizeSeed(): void {
     seed.value = Math.floor(Math.random() * MAX_SEED_RANDOM_VALUE);
     triggerRegenerationDebounced(0);
   }
 
-  /**
-   * Updates only visual position during drag at 60 FPS without heavy computations (Directive 3).
-   */
   function updateNodeDragVisualPosition(nodeId: string, svgX: number, svgY: number): void {
     dragVisualPositions.value = {
       ...dragVisualPositions.value,
@@ -244,12 +496,7 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
     };
   }
 
-  /**
-   * Finalizes drag-and-drop on pointerup (Directive 3):
-   * Clears transient visual override and dispatches targeted A* recalculation for incident edges only.
-   */
   function handleNodeDragEnd(nodeId: string, newGridX: number, newGridY: number): void {
-    // Clear local drag override
     const nextPositions = { ...dragVisualPositions.value };
     delete nextPositions[nodeId];
     dragVisualPositions.value = nextPositions;
@@ -273,22 +520,23 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
         allowBridges: allowBridges.value
       };
       worker.postMessage(request);
-    } else {
-      // Synchronous fallback for test environment
-      const res = executeRerouteJob({
-        jobId: nextJobId,
-        movedNodeId: nodeId,
-        newGridX,
-        newGridY,
-        continent: continentMap.value,
-        nodes: pois.value,
-        edges: routes.value,
-        allowBridges: allowBridges.value
-      });
-      if (currentJobId.value === nextJobId) {
-        pois.value = [...res.updatedNodes];
-        routes.value = [...res.updatedEdges];
-      }
+      return;
+    }
+
+    const res = executeRerouteJob({
+      jobId: nextJobId,
+      movedNodeId: nodeId,
+      newGridX,
+      newGridY,
+      continent: continentMap.value,
+      nodes: pois.value,
+      edges: routes.value,
+      allowBridges: allowBridges.value
+    });
+    if (currentJobId.value === nextJobId) {
+      packedBlit.value = null;
+      pois.value = [...res.updatedNodes];
+      routes.value = [...res.updatedEdges];
     }
   }
 
@@ -321,6 +569,8 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
     if (b) {
       (b as { x: number; y: number }).x = x;
       (b as { x: number; y: number }).y = y;
+      packedBlit.value = null;
+      triggerRef(pois);
     }
   }
 
@@ -333,17 +583,45 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
     if (p) {
       (p as { x: number; y: number }).x = x;
       (p as { x: number; y: number }).y = y;
+      packedBlit.value = null;
+      triggerRef(pois);
     }
   }
 
-  function undo(): void {}
-  function redo(): void {}
+  function undo(): void {
+    const prev = undoStack.value.at(-1);
+    if (!prev || !continentMap.value) return;
+    redoStack.value = [
+      ...redoStack.value,
+      { continent: continentMap.value, pathGrid: pathGrid.value }
+    ];
+    undoStack.value = undoStack.value.slice(0, -1);
+    packedBlit.value = null;
+    continentMap.value = prev.continent;
+    pathGrid.value = prev.pathGrid;
+    refreshDetectedDefects();
+  }
+
+  function redo(): void {
+    const next = redoStack.value.at(-1);
+    if (!next || !continentMap.value) return;
+    undoStack.value = [
+      ...undoStack.value,
+      { continent: continentMap.value, pathGrid: pathGrid.value }
+    ];
+    redoStack.value = redoStack.value.slice(0, -1);
+    packedBlit.value = null;
+    continentMap.value = next.continent;
+    pathGrid.value = next.pathGrid;
+    refreshDetectedDefects();
+  }
+
   function createBlankProject(name: string): void {
     projectName.value = name;
   }
 
-  function saveCurrentProject(): void {
-    const payload: ContinentProjectExportPayload = {
+  function buildProjectExportPayload(): ContinentProjectExportPayload {
+    return {
       id: activeProjectId.value || `proj_${Temporal.Now.instant().epochMilliseconds}`,
       name: projectName.value,
       updatedAt: Temporal.Now.instant().epochMilliseconds,
@@ -357,14 +635,15 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
       pois: pois.value,
       routes: routes.value
     };
+  }
+
+  function saveCurrentProject(): void {
+    const payload = buildProjectExportPayload();
     activeProjectId.value = payload.id;
     savedProfiles.value = saveProjectToStorage(payload);
   }
 
-  function loadProject(id: string): void {
-    const project = loadProjectFromStorage(id);
-    if (!project) return;
-    activeProjectId.value = project.id;
+  function applyImportedProjectSettings(project: ContinentProjectExportPayload): void {
     projectName.value = project.name;
     seed.value = project.seed;
     mapDimension.value = project.mapDimension as ContinentMapDimension;
@@ -378,6 +657,13 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
     executeGenerationNow();
   }
 
+  function loadProject(id: string): void {
+    const project = loadProjectFromStorage(id);
+    if (!project) return;
+    activeProjectId.value = project.id;
+    applyImportedProjectSettings(project);
+  }
+
   function exportSvg(): string {
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${widthPx.value}" height="${heightPx.value}"></svg>`;
   }
@@ -387,53 +673,47 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
   }
 
   function exportProjectJson(): string {
-    const payload: ContinentProjectExportPayload = {
-      id: activeProjectId.value || `proj_${Temporal.Now.instant().epochMilliseconds}`,
-      name: projectName.value,
-      updatedAt: Temporal.Now.instant().epochMilliseconds,
-      seed: seed.value,
-      mapDimension: mapDimension.value,
-      oceanWaterPercentage: oceanWaterPercentage.value,
-      mountainPercentage: mountainPercentage.value,
-      lakeCount: lakeCount.value,
-      poiTargetCount: poiTargetCount.value,
-      allowBridges: allowBridges.value,
-      pois: pois.value,
-      routes: routes.value
-    };
-    return serializeProjectJson(payload);
+    return serializeProjectJson(buildProjectExportPayload());
   }
 
   function importProjectJson(content: string): boolean {
     const parsed = parseProjectJson(content);
     if (!parsed) return false;
-    projectName.value = parsed.name;
-    seed.value = parsed.seed;
-    mapDimension.value = parsed.mapDimension as ContinentMapDimension;
-    oceanWaterPercentage.value = parsed.oceanWaterPercentage;
-    mountainPercentage.value = parsed.mountainPercentage;
-    lakeCount.value = parsed.lakeCount;
-    poiTargetCount.value = parsed.poiTargetCount;
-    allowBridges.value = parsed.allowBridges;
-    pois.value = [...parsed.pois];
-    routes.value = [...parsed.routes];
-    executeGenerationNow();
+    applyImportedProjectSettings(parsed);
     return true;
   }
 
   function loadCanonicalPreset(presetId: CanonicalPresetId = 'kanto'): void {
+    clearPendingDebounce();
+    resetBusyWorkerIfNeeded();
+
+    const nextJobId = ++currentJobId.value;
     isGenerating.value = true;
+    generationPhase.value = 'sculpting';
+    generationProgressPercent.value = 0;
+    statusLabel.value = `${PHASE_STATUS_LABELS.sculpting}...`;
+
+    const worker = ensureWorker();
+    if (worker) {
+      const request: WorkerInboundMessage = {
+        type: 'LOAD_CANONICAL_PRESET',
+        jobId: nextJobId,
+        presetId,
+        seed: seed.value
+      };
+      worker.postMessage(request);
+      return;
+    }
+
     try {
-      const result = buildCanonicalRegionMap(presetId, seed.value);
-      continentMap.value = result.continent;
-      pois.value = [...result.pois];
-      routes.value = [...result.routeNetwork.edges];
-      pathGrid.value = result.routeNetwork.pathGrid;
-      bridgeGrid.value = result.routeNetwork.bridgeGrid;
-      wilderness.value = result.wilderness;
-      rawPreviewBuffer.value = result.rawBuffer ?? null;
+      const genOut = executePresetWorkerJob(presetId, seed.value);
+      if (currentJobId.value === nextJobId) {
+        applyGenerationOutput(genOut, false);
+      }
     } finally {
-      isGenerating.value = false;
+      if (currentJobId.value === nextJobId) {
+        isGenerating.value = false;
+      }
     }
   }
 
@@ -448,6 +728,11 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
     allowBridges,
     displayMode,
     isGenerating,
+    isRenderingTiles,
+    isBusy,
+    generationPhase,
+    generationProgressPercent,
+    statusLabel,
     selectedPOIId,
     hoveredPOIId,
     selectedRouteId,
@@ -460,6 +745,10 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
     savedProfiles,
     canUndo,
     canRedo,
+    isHealingBrushActive,
+    healingBrushDomain,
+    lastHealedReport,
+    detectedDefectCount,
 
     // Data
     continentMap,
@@ -469,6 +758,7 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
     bridgeGrid,
     wilderness,
     rawPreviewBuffer,
+    packedBlit,
 
     // Computed
     widthPx,
@@ -497,6 +787,16 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
     importSvg,
     exportProjectJson,
     importProjectJson,
-    loadCanonicalPreset
+    loadCanonicalPreset,
+    toggleHealingBrush,
+    setHealingBrushDomain,
+    beginHealingStroke,
+    endHealingStroke,
+    refreshDetectedDefects,
+    healTileAt,
+    healEntireMapDefects,
+    beginTileRender,
+    updateRenderProgress,
+    finishTileRender
   };
 });

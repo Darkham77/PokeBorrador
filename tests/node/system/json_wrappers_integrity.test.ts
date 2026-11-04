@@ -29,14 +29,14 @@ describe('JSON Typed Data Wrappers — Domain Integrity Audit', () => {
 
       for (const entry of RANDOM_SETS_DATA) {
         assert.ok(
-          entry.pokemon in SPECIES_METADATA || PDEX_ORDER.includes(entry.pokemon as any),
+          entry.pokemon in SPECIES_METADATA || PDEX_ORDER.includes(entry.pokemon),
           `Species "${entry.pokemon}" in random-sets must exist in SPECIES_METADATA or PDEX_ORDER`
         );
 
         for (const set of entry.sets) {
           if (set.item) {
             assert.doesNotThrow(() => {
-              const resolved = requireItemId(set.item!);
+              const resolved = requireItemId(set.item);
               getItemById(resolved);
             }, `Item "${set.item}" in random-sets for species "${entry.pokemon}" must be a valid canonical ItemId in items database`);
           }

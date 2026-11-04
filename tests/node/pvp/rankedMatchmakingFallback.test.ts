@@ -55,7 +55,7 @@ describe('Ranked Matchmaking & Passive Fallback (No Team Preview, Strict ELO, Ze
               select: vi.fn().mockReturnThis(),
               neq: vi.fn().mockReturnThis(),
               order: vi.fn().mockReturnThis(),
-              limit: vi.fn().mockImplementation(() => Promise.resolve({ data: queueEntries })),
+              limit: vi.fn().mockResolvedValue({ data: queueEntries }),
               delete: vi.fn().mockReturnValue({
                 in: vi.fn().mockResolvedValue({ error: null })
               })
@@ -90,7 +90,7 @@ describe('Ranked Matchmaking & Passive Fallback (No Team Preview, Strict ELO, Ze
         searchPhase,
         killSearchCountdown,
         onMatched
-      } as any);
+      });
 
       // Must NOT match with Maestro (3400)
       expect(insertedInvite?.opponent_id).toBe('user-plata-1250');
@@ -115,7 +115,7 @@ describe('Ranked Matchmaking & Passive Fallback (No Team Preview, Strict ELO, Ze
               select: vi.fn().mockReturnThis(),
               neq: vi.fn().mockReturnThis(),
               order: vi.fn().mockReturnThis(),
-              limit: vi.fn().mockImplementation(() => Promise.resolve({ data: queueEntries }))
+              limit: vi.fn().mockResolvedValue({ data: queueEntries })
             };
           }
           return {};
@@ -135,7 +135,7 @@ describe('Ranked Matchmaking & Passive Fallback (No Team Preview, Strict ELO, Ze
         searchPhase,
         killSearchCountdown,
         onMatched
-      } as any);
+      });
 
       expect(onMatched).not.toHaveBeenCalled();
       expect(isSearching.value).toBe(true);

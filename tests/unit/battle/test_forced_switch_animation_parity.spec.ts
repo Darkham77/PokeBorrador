@@ -138,7 +138,7 @@ describe('Forced Switch Animation & Sequence Parity (Whirlwind, Dragon Tail, Roa
     const { enemyCombatants } = useBattleCombatants(battleStore, playerRef, enemyRef);
 
     // Verify initial combatants state
-    expect(enemyCombatants.value.length).toBe(1);
+    expect(enemyCombatants.value).toHaveLength(1);
     expect(enemyCombatants.value[0]?.name).toBe('Machop');
     expect(enemyCombatants.value[0]?.uid).toBe('enemy-machop-1');
 
@@ -160,7 +160,7 @@ describe('Forced Switch Animation & Sequence Parity (Whirlwind, Dragon Tail, Roa
       addLog: (msg: string, type: string, source: unknown) => {
         const srcStr = typeof source === 'string' ? source : (source as Pokemon)?.name || 'unknown';
         eventStream.push(`log:${srcStr}:${msg}`);
-        battleStore.addLog(msg, type as any, source as any);
+        battleStore.addLog(msg, type, source as any);
       }
     } as unknown as BattleContext;
 
@@ -204,7 +204,7 @@ describe('Forced Switch Animation & Sequence Parity (Whirlwind, Dragon Tail, Roa
     expect(releaseAnimIdx).toBeGreaterThan(dragLogIdx);
 
     // Final verification: active combatant is now Mankey
-    expect(enemyCombatants.value.length).toBe(1);
+    expect(enemyCombatants.value).toHaveLength(1);
     expect(enemyCombatants.value[0]?.name).toBe('Mankey');
     expect(enemyCombatants.value[0]?.uid).toBe('enemy-mankey-2');
     expect(activeBattleRef.value?.enemy?.uid).toBe('enemy-mankey-2');
@@ -277,7 +277,7 @@ describe('Forced Switch Animation & Sequence Parity (Whirlwind, Dragon Tail, Roa
       addLog: (msg: string, type: string, source: unknown) => {
         const srcStr = typeof source === 'string' ? source : (source as Pokemon)?.name || 'unknown';
         eventStream.push(`log:${srcStr}:${msg}`);
-        battleStore.addLog(msg, type as any, source as any);
+        battleStore.addLog(msg, type, source as any);
       }
     } as unknown as BattleContext;
 
@@ -368,7 +368,7 @@ describe('Forced Switch Animation & Sequence Parity (Whirlwind, Dragon Tail, Roa
       addLog: (msg: string, type: string, source: unknown) => {
         const srcStr = typeof source === 'string' ? source : (source as Pokemon)?.name || 'unknown';
         eventStream.push(`log:${srcStr}:${msg}`);
-        battleStore.addLog(msg, type as any, source as any);
+        battleStore.addLog(msg, type, source as any);
       }
     } as unknown as BattleContext;
 
@@ -458,7 +458,7 @@ describe('Forced Switch Animation & Sequence Parity (Whirlwind, Dragon Tail, Roa
       addLog: (msg: string, type: string, source: unknown) => {
         const srcStr = typeof source === 'string' ? source : (source as Pokemon)?.name || 'unknown';
         eventStream.push(`log:${srcStr}:${msg}`);
-        battleStore.addLog(msg, type as any, source as any);
+        battleStore.addLog(msg, type, source as any);
       }
     } as unknown as BattleContext;
 

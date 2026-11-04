@@ -41,7 +41,7 @@ describe('Showdown Protocol 1:1 Exhaustive Parity Verification', () => {
     gameStore.state = {
       ...gameStore.state,
       team: [playerMon]
-    } as unknown as typeof gameStore.state;
+    };
 
     mockStore = {
       activeBattle: ref({

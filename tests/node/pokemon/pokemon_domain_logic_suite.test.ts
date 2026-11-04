@@ -169,7 +169,7 @@ describe('Pokemon Domain Logic Suite', () => {
     });
 
     it('should confirm that "moverelearner" is the canonical ItemId in ITEM_IDS', () => {
-      expect(ITEM_IDS.includes('moverelearner' as any)).toBe(true);
+      expect(ITEM_IDS).toContain('moverelearner' as any);
     });
 
     it('should resolve Spanish move name to Showdown ID via getMoveIdBySpanishName', () => {

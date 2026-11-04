@@ -1,6 +1,7 @@
 import { gsap } from 'gsap';
 
 import { gameBus } from '@/logic/events/gameBus';
+import { logger } from '@/logic/utils/logger';
 
 interface RegisterTweenDetail {
   key: string;
@@ -27,7 +28,7 @@ export function useBattleTweenRegistry(): {
     const data = (e as CustomEvent<RegisterTweenDetail>).detail;
     if (data && typeof data.key === 'string' && data.tween) {
       activeTweens.set(data.key, data.tween);
-      console.debug(
+      logger.debug(
         `[TweenRegistry] Registered animation tween. context=${JSON.stringify({ key: data.key, pendingKeys: [...pendingTweenResolvers.keys()] })}`
       );
       // Unblock any awaitTween call that was already waiting for this key
@@ -130,7 +131,7 @@ export function useBattleTweenRegistry(): {
     }
 
     // Slow path: event-driven wait with GSAP fallback safety
-    console.debug(
+    logger.debug(
       `[TweenRegistry] Awaiting component tween registration. context=${JSON.stringify({ animKey, activeKeys: [...activeTweens.keys()], pendingKeys: [...pendingTweenResolvers.keys()] })}`
     );
     const resolvers = Promise.withResolvers<void>();

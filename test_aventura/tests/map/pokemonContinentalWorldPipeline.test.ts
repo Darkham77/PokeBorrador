@@ -31,7 +31,7 @@ describe('Pokemon Continental World Pipeline (Integration)', () => {
     // 1. Continent terrain matrix integrity
     expect(result.continent.width).toBe(128);
     expect(result.continent.height).toBe(128);
-    expect(result.continent.terrainMatrix.length).toBe(128);
+    expect(result.continent.terrainMatrix).toHaveLength(128);
     expect(result.continent.resolvedWater).toBeDefined();
     expect(result.continent.resolvedMountain).toBeDefined();
 
@@ -46,7 +46,7 @@ describe('Pokemon Continental World Pipeline (Integration)', () => {
     expect(spatialValidation.errors).toEqual([]);
 
     // 4. Corridor properties generated for all corridors
-    expect(result.corridorProperties.length).toBe(result.embedded.corridors.length);
+    expect(result.corridorProperties).toHaveLength(result.embedded.corridors.length);
 
     // 5. Progression anti-softlock solvability guaranteed
     expect(result.progression.isSolvable).toBe(true);
@@ -86,8 +86,8 @@ describe('Pokemon Continental World Pipeline (Integration)', () => {
       const leagueEdges = result.graph.edges.filter(
         (e) => e.fromId === league.id || e.toId === league.id
       );
-      expect(starterEdges.length).toBe(1);
-      expect(leagueEdges.length).toBe(1);
+      expect(starterEdges).toHaveLength(1);
+      expect(leagueEdges).toHaveLength(1);
     }
   });
 

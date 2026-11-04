@@ -120,7 +120,7 @@ const localSeed = computed(() => {
         margin: 0;
         color: var(--slate-50);
         font-size: var(--font-16);
-        font-weight: 700;
+        font-weight: $font-weight-bold;
       }
 
       .dimension-badge {
@@ -141,7 +141,7 @@ const localSeed = computed(() => {
       background: Rgb(239 68 68 / 15%);
       color: var(--red-300);
       font-size: var(--font-13);
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       cursor: pointer;
 
       &:hover {

@@ -9,7 +9,7 @@ describe('TacticalReplayEngine Fog-of-War Resilience', () => {
       id: 'sim_replay_001',
       battleCode: 'BTL-TEST-2026' as any,
       seasonId: 'season_1',
-      themeId: 'kanto_classic' as any,
+      themeId: 'kanto_classic',
       p1: {
         userId: 'u_p1',
         username: 'Player1',
@@ -57,7 +57,7 @@ describe('TacticalReplayEngine Fog-of-War Resilience', () => {
     const p1State = engine.getFogOfWarState('p1');
 
     expect(p1State).toBeDefined();
-    expect(p1State.pokemonList.length).toBe(1);
+    expect(p1State.pokemonList).toHaveLength(1);
     expect(p1State.pokemonList[0]!.name).toBe('pikachu');
   });
 });

@@ -9,7 +9,7 @@ import { isWeatherId } from '@/logic/weather/weatherRegistry';
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
 import { useAudioStore } from '@/stores/audio';
 import { useBattleStore } from '@/stores/battle/battle';
-import type { BattleSide } from '@/types/battle/battle';
+import type { BattleConditionKey, BattleSide } from '@/types/battle/battle';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { DebugSystem } from '@/types/system/debug.ts';
 
@@ -597,11 +597,11 @@ export function registerBattleTools(debug: DebugSystem): void {
         const stageKey = effect === 'lightscreen' ? 'lightScreen' : effect;
         const turnsVal = stages[stageKey];
         if ((turnsVal || 0) > 0) {
-          sideConds[effect as import('@/types/battle/battle').BattleConditionKey] = {
+          sideConds[effect as BattleConditionKey] = {
             turns: turnsVal || 1
           };
         } else {
-          delete sideConds[effect as import('@/types/battle/battle').BattleConditionKey];
+          delete sideConds[effect as BattleConditionKey];
         }
         battle.state = { ...battle.state };
       }

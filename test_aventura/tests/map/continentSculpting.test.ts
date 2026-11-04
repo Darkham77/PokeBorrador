@@ -26,8 +26,8 @@ describe('Continental Sculpting Engine (Phase 3)', () => {
 
     expect(continent.width).toBe(128);
     expect(continent.height).toBe(128);
-    expect(continent.terrainMatrix.length).toBe(128);
-    expect(continent.cells.length).toBe(128);
+    expect(continent.terrainMatrix).toHaveLength(128);
+    expect(continent.cells).toHaveLength(128);
 
     // 1. All nodes must have their footprints on solid land (grass or sand)
     for (const node of embedded.nodes) {

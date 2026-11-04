@@ -33,7 +33,7 @@ function exists(id: string): boolean {
 }
 
 function getStoneEvolution(id: string): { stone: string; to: string } | null {
-  if (STONE_EVOLUTIONS[id]) return STONE_EVOLUTIONS[id]!;
+  if (STONE_EVOLUTIONS[id]) return STONE_EVOLUTIONS[id];
   const prefix = `${id}_`;
   for (const [key, val] of Object.entries(STONE_EVOLUTIONS)) {
     if (key.startsWith(prefix)) return val;
@@ -145,7 +145,7 @@ describe('Evolution Domain: Tables, Stones & Friendship Suite', () => {
   describe('Friendship Evolution Logic', () => {
     test('Golbat evolves to Crobat only when reaching friendship threshold (>= 160)', () => {
       const lowFriendshipGolbat = createMockPokemon({ id: 'golbat', friendship: 70 });
-      expect(checkLevelUpEvolution(lowFriendshipGolbat)).toBe(null);
+      expect(checkLevelUpEvolution(lowFriendshipGolbat)).toBeNull();
 
       const highFriendshipGolbat = createMockPokemon({ id: 'golbat', friendship: 160 });
       expect(checkLevelUpEvolution(highFriendshipGolbat)).toBe('crobat');
@@ -177,7 +177,7 @@ describe('Evolution Domain: Tables, Stones & Friendship Suite', () => {
 
       for (const [fromId, expectedToId] of friendshipPairs) {
         const unreadyPoke = createMockPokemon({ id: fromId as any, friendship: 50 });
-        expect(checkLevelUpEvolution(unreadyPoke)).toBe(null);
+        expect(checkLevelUpEvolution(unreadyPoke)).toBeNull();
 
         const readyPoke = createMockPokemon({ id: fromId as any, friendship: 180 });
         expect(checkLevelUpEvolution(readyPoke)).toBe(expectedToId);
@@ -196,7 +196,7 @@ describe('Evolution Domain: Tables, Stones & Friendship Suite', () => {
       expect(checkLevelUpEvolution(highFriendshipBulba)).toBe('ivysaur');
 
       const unreadyBulba = createMockPokemon({ id: 'bulbasaur', level: 15, friendship: 255 });
-      expect(checkLevelUpEvolution(unreadyBulba)).toBe(null);
+      expect(checkLevelUpEvolution(unreadyBulba)).toBeNull();
     });
   });
 
@@ -204,8 +204,8 @@ describe('Evolution Domain: Tables, Stones & Friendship Suite', () => {
     test('exact key lookup works (pikachu → raichu)', () => {
       const result = getStoneEvolution('pikachu');
       assert.ok(result !== null, 'pikachu should have a stone evolution');
-      assert.equal(result!.to, 'raichu');
-      assert.equal(result!.stone, 'thunderstone');
+      assert.equal(result.to, 'raichu');
+      assert.equal(result.stone, 'thunderstone');
     });
 
     test('disambiguated prefix lookup works (eevee)', () => {
@@ -216,15 +216,15 @@ describe('Evolution Domain: Tables, Stones & Friendship Suite', () => {
     test('slowpokegalar_cuff key exists and targets slowbrogalar', () => {
       const entry = STONE_EVOLUTIONS['slowpokegalar_cuff'];
       assert.ok(entry !== undefined, 'Key "slowpokegalar_cuff" must exist');
-      assert.equal(entry!.stone, 'galaricacuff');
-      assert.equal(entry!.to, 'slowbrogalar');
+      assert.equal(entry.stone, 'galaricacuff');
+      assert.equal(entry.to, 'slowbrogalar');
     });
 
     test('slowpokegalar_wreath key exists and targets slowkinggalar', () => {
       const entry = STONE_EVOLUTIONS['slowpokegalar_wreath'];
       assert.ok(entry !== undefined, 'Key "slowpokegalar_wreath" must exist');
-      assert.equal(entry!.stone, 'galaricawreath');
-      assert.equal(entry!.to, 'slowkinggalar');
+      assert.equal(entry.stone, 'galaricawreath');
+      assert.equal(entry.to, 'slowkinggalar');
     });
 
     test('malformed keys (regression guard): no concatenated names allowed', () => {
@@ -238,8 +238,8 @@ describe('Evolution Domain: Tables, Stones & Friendship Suite', () => {
       const result = getStoneEvolution('slowpokegalar');
       assert.ok(result !== null, 'slowpokegalar should resolve via prefix match');
       assert.ok(
-        result!.to === 'slowbrogalar' || result!.to === 'slowkinggalar',
-        `Unexpected target: ${result!.to}`
+        result.to === 'slowbrogalar' || result.to === 'slowkinggalar',
+        `Unexpected target: ${result.to}`
       );
     });
 
@@ -255,7 +255,7 @@ describe('Evolution Domain: Tables, Stones & Friendship Suite', () => {
       );
       const cuff = entries.find(([, v]) => v.stone === 'galaricacuff');
       assert.ok(cuff !== undefined, 'galaricacuff entry for slowpokegalar must exist');
-      assert.equal(cuff![1].to, 'slowbrogalar');
+      assert.equal(cuff[1].to, 'slowbrogalar');
     });
 
     test('checkStoneEvolution: galaricawreath on slowpokegalar → slowkinggalar', () => {
@@ -264,7 +264,7 @@ describe('Evolution Domain: Tables, Stones & Friendship Suite', () => {
       );
       const wreath = entries.find(([, v]) => v.stone === 'galaricawreath');
       assert.ok(wreath !== undefined, 'galaricawreath entry for slowpokegalar must exist');
-      assert.equal(wreath![1].to, 'slowkinggalar');
+      assert.equal(wreath[1].to, 'slowkinggalar');
     });
   });
 });

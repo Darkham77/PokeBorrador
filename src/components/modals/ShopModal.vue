@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, toRef } from 'vue';
 
 import BaseModal from '@/components/common/BaseModal.vue';
 import ShopSearchControls from '@/components/common/ShopSearchControls.vue';
@@ -29,8 +29,6 @@ const gameStore = useGameStore();
 
 const ui = useUIStore();
 const isSmallScreen = computed(() => ui.isSmallScreen);
-
-import { toRef } from 'vue';
 
 import { useShopLogic } from '@/composables/inventory/useShopLogic';
 
@@ -142,37 +140,5 @@ const close = (): void => {
 <style scoped lang="scss">
 @use '@/styles/core/_mixins' as *;
 @use '@/styles/components/shop' as *;
-
-.modal-main-tabs {
-  display: flex;
-  align-items: center;
-  gap: $spacing-md;
-  margin-bottom: 16px;
-}
-
-.modal-tab-btn {
-  @include pixelated;
-
-  padding: 6px 14px;
-  border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: $radius-lg;
-  background: Rgb(255 255 255 / 3%);
-  color: var(--gray);
-  font-size: var(--font-11);
-  cursor: pointer;
-
-  &:hover {
-    background: Rgb(255 255 255 / 6%);
-    color: var(--white);
-  }
-
-  &.active {
-    background: var(--yellow);
-    color: var(--black);
-    font-weight: bold;
-    border-color: var(--yellow-light);
-    box-shadow: var(--shadow-glow-yellow-sm);
-    text-shadow: none;
-  }
-}
+@include shop-main-tabs(var(--yellow), var(--black), var(--yellow-light));
 </style>

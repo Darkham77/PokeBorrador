@@ -1,8 +1,9 @@
 // ui-demo/src/data/mockDetailPokemon.ts
 
 import type { DisplayText } from '@francogp/auditor';
-import type { PokemonGender } from '@/types/pokemon/pokemon';
+
 import type { PokemonType } from '@/data/battle/types';
+import type { PokemonGender } from '@/types/pokemon/pokemon';
 
 export interface PokemonSummaryItem {
   id: number;

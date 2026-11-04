@@ -8,15 +8,17 @@
  */
 
 import fs from 'node:fs/promises';
+import { enableCompileCache } from 'node:module';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import { enableCompileCache } from 'node:module';
+
+import { BaseAuditor, createRuleCapabilities, getAuditConfig } from '@francogp/auditor';
+
+import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
 import {
   translatePostgresToSqlite,
   splitSQLStatements
 } from '../../../src/logic/db/sqlTranslator.ts';
-import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
-import { BaseAuditor, createRuleCapabilities, getAuditConfig } from '@francogp/auditor';
 import { initTestDatabaseSchema } from './_testDbHelper.ts';
 
 enableCompileCache();
@@ -62,7 +64,7 @@ export const SQL_MIGRATION_RULES: readonly SqlMigrationRuleId[] = [
 ] as const;
 
 export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
-  constructor() {
+  public constructor() {
     const config = getAuditConfig();
     const migrationsDir = config.paths?.migrationsDir;
     if (!migrationsDir) {
@@ -74,12 +76,12 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
       ruleCapabilities: createRuleCapabilities(SQL_MIGRATION_RULES, {
         speed: 'heavy',
         phase: 'normal',
-        fix: 'none',
         md: false,
         ast: false,
         changedOnly: false,
         critical: false
       }),
+      ruleFixers: {},
       id: 'validate_sql_migrations',
       configKey: 'persistence.sqlMigrations',
       defaultConfig: {

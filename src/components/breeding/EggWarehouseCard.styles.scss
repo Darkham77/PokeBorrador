@@ -59,7 +59,7 @@
     min-height: 32px;
     color: Rgb(241 245 249 / 100%);
     font-size: var(--font-11);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     line-height: 1.4;
   }
 
@@ -75,7 +75,7 @@
     span {
       color: Rgb(250 204 21 / 100%);
       font-size: var(--font-11);
-      font-weight: 800;
+      font-weight: $font-weight-extrabold;
     }
   }
 

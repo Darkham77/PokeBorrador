@@ -342,7 +342,7 @@ defineExpose({
 
     color: var(--slate-400);
     font-size: var(--font-7);
-    font-weight: 900;
+    font-weight: $font-weight-black;
     letter-spacing: 2px;
   }
 }
@@ -448,7 +448,7 @@ defineExpose({
       align-items: center;
       color: var(--white);
       font-size: var(--font-8);
-      font-weight: 900;
+      font-weight: $font-weight-black;
       line-height: 1.4;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -465,7 +465,7 @@ defineExpose({
     align-items: center;
     color: var(--yellow);
     font-size: var(--font-7);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     margin-right: 4px;
     flex-shrink: 0;
   }

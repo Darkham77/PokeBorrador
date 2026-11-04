@@ -45,13 +45,8 @@ describe('Pattern 4: Mint Highland Vegetation & Prop Integrity', () => {
       (p) => p.prefabFile === 'poke_rock_stone_gray_medium.png'
     );
 
-    expect(discordantFerns.length, 'Should not contain poke_fern_wild_bush in Mint Highland').toBe(
-      0
-    );
-    expect(
-      faultyPosts.length,
-      'Should not contain poke_rock_stone_gray_medium in Mint Highland'
-    ).toBe(0);
+    expect(discordantFerns).toHaveLength(0);
+    expect(faultyPosts).toHaveLength(0);
 
     const roundBushes = mintBiomeProps.filter(
       (p) => p.type === 'bush' && p.prefabFile === 'poke_bush_round.png'

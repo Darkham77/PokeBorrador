@@ -62,8 +62,8 @@ describe('Canonical Route Topology & Nature-First Pipeline', () => {
 
       const { chain, stubs, loops } = buildRouteChain(pois);
 
-      expect(chain.length).toBe(primaryCount - 1);
-      expect(stubs.length).toBe(pois.length - primaryCount);
+      expect(chain).toHaveLength(primaryCount - 1);
+      expect(stubs).toHaveLength(pois.length - primaryCount);
       expect(loops.length).toBeLessThanOrEqual(2);
 
       // Verify that the chain visits every primary node without branching
@@ -118,8 +118,8 @@ describe('Canonical Route Topology & Nature-First Pipeline', () => {
         pois
       );
 
-      expect(transitable.length).toBe(continent.height);
-      expect(transitable[0]!.length).toBe(continent.width);
+      expect(transitable).toHaveLength(continent.height);
+      expect(transitable[0]!).toHaveLength(continent.width);
 
       // 1. All pathGrid cells must be transitable
       for (let y = 0; y < continent.height; y++) {

@@ -109,7 +109,7 @@ if (typeof HTMLCanvasElement !== 'undefined') {
       };
     }
     return null;
-  }) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+  });
 
   HTMLCanvasElement.prototype.toDataURL = vi.fn().mockReturnValue('data:image/png;base64,mock');
 }
@@ -166,7 +166,7 @@ vi.mock('gsap', () => {
         if (typeof callback === 'function') callback();
       }, delay * 1000);
       if (typeof timerId === 'object' && timerId && 'unref' in timerId) {
-        (timerId as NodeJS.Timeout).unref();
+        timerId.unref();
       }
       activeDelayedCalls.add(timerId);
       return {

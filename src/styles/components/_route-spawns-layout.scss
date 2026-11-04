@@ -36,7 +36,7 @@
     .value {
       color: var(--white);
       font-size: var(--font-14);
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
       text-shadow: 0 1px 2px Rgb(0 0 0 / 50%);
     }
   }
@@ -239,7 +239,7 @@
         align-items: center;
         gap: $spacing-xs;
         color: var(--white);
-        font-weight: 500;
+        font-weight: $font-weight-medium;
 
         &.gray-text {
           color: var(--gray);

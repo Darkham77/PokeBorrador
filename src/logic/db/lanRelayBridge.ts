@@ -10,11 +10,23 @@ import { logger } from '../utils/logger.ts';
 export const LAN_RELAY_ACTIONS = ['subscribe', 'unsubscribe', 'broadcast'] as const;
 export type LanRelayAction = (typeof LAN_RELAY_ACTIONS)[number];
 
+const lanRelayPayloadSchema = v.record(
+  v.string(),
+  v.union([
+    v.string(),
+    v.number(),
+    v.boolean(),
+    v.null(),
+    v.array(v.union([v.string(), v.number(), v.boolean()])),
+    v.record(v.string(), v.union([v.string(), v.number(), v.boolean(), v.array(v.number())]))
+  ])
+);
+
 export const lanRelayMessageSchema = v.object({
   action: v.picklist(LAN_RELAY_ACTIONS),
   channel: v.string(), // domain-ok: Arbitrary realtime channel name
   senderId: v.optional(v.string()), // infra-id-ok: Ephemeral WebSocket client instance identifier
-  data: v.optional(v.unknown())
+  data: v.optional(lanRelayPayloadSchema)
 });
 
 type LanRelayMessage = v.InferOutput<typeof lanRelayMessageSchema>;
@@ -124,11 +136,17 @@ class LanRelayBridge {
     if (!this.isSupported) return;
 
     this.ensureConnected();
+    const parsed = v.safeParse(lanRelayPayloadSchema, data);
+    if (!parsed.success) {
+      logger.warn('LanRelayBridge', 'Discarding invalid broadcast payload:', parsed.issues);
+      return;
+    }
+
     this.sendRaw({
       action: 'broadcast',
       channel,
       senderId: this.clientId,
-      data
+      data: parsed.output
     });
   }
 

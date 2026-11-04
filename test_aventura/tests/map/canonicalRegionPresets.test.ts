@@ -29,7 +29,7 @@ describe('canonicalRegionPresets', () => {
     expect(() => structuredClone(result.routeNetwork.edges)).not.toThrow();
 
     // 23 Canonical & Landmark Kanto POIs (settlements, landmarks, dual cave portals + Victory Road lower/upper cave portals + 1 coastal port dock)
-    expect(result.pois.length).toBe(23);
+    expect(result.pois).toHaveLength(23);
 
     const port = result.pois.find((p) => p.id === 'vermilion_port');
     expect(port).toBeDefined();
@@ -69,7 +69,7 @@ describe('canonicalRegionPresets', () => {
 
     // Kanto Route Network (24 canonical route edges including Victory Road subterranean link and Indigo avenue)
     const edges = result.routeNetwork.edges;
-    expect(edges.length).toBe(24);
+    expect(edges).toHaveLength(24);
 
     // Route 1 connects Pallet to Viridian
     const r1 = edges.find((e) => e.fromNodeId === 'pallet' && e.toNodeId === 'viridian');
@@ -104,7 +104,7 @@ describe('canonicalRegionPresets', () => {
     expect(result.continent.seed).toBe(251);
 
     // 12 Canonical Johto POIs
-    expect(result.pois.length).toBe(12);
+    expect(result.pois).toHaveLength(12);
 
     const newbark = result.pois.find((p) => p.id === 'newbark');
     expect(newbark).toBeDefined();

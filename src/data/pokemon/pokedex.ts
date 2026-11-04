@@ -1,6 +1,7 @@
-import { SPECIES_METADATA, type PokemonSpeciesId } from './speciesMetadata.ts';
 import type { PokemonMoveId } from '@/types/pokemon/pokemon';
+
 import { toID } from '../../logic/utils/strings.ts';
+import { SPECIES_METADATA, type PokemonSpeciesId } from './speciesMetadata.ts';
 
 export type { PokemonSpeciesId };
 

@@ -1,10 +1,11 @@
 import type { DisplayText } from '@francogp/auditor';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+
+import type { AbilityId } from '@/data/battle/abilities';
+import type { NatureId } from '@/data/battle/natures';
 import type { PokemonType } from '@/data/battle/types';
 import type { ItemId } from '@/data/inventory/items';
-import type { NatureId } from '@/data/battle/natures';
-import type { AbilityId } from '@/data/battle/abilities';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
 export interface DemoPokemonConfig {
   uid: DisplayText;

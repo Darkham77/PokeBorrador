@@ -9,11 +9,13 @@ import { ref, watch, nextTick, onUnmounted } from 'vue';
 
 import { Z_LAYERS } from '@/logic/constants/visuals';
 
-const props = defineProps({
-  hasReflect: { type: Boolean, required: true },
-  hasLightScreen: { type: Boolean, required: true },
-  hasSafeguard: { type: Boolean, required: true }
-});
+interface Props {
+  hasReflect: boolean;
+  hasLightScreen: boolean;
+  hasSafeguard: boolean;
+}
+
+const props = defineProps<Props>();
 
 const rootRef = ref<HTMLElement | null>(null);
 
@@ -44,8 +46,9 @@ const initScreenAuraFX = (): void => {
 
 watch(
   [() => props.hasReflect, () => props.hasLightScreen, () => props.hasSafeguard],
-  () => {
-    nextTick(() => initScreenAuraFX());
+  async () => {
+    await nextTick();
+    initScreenAuraFX();
   },
   { immediate: true }
 );

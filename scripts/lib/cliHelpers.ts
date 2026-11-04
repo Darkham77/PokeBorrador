@@ -8,8 +8,8 @@
 export interface ParsedCliInput {
   paramMap: ReadonlyMap<string, string>;
   barePositionals: readonly string[];
-  hasFlag(flag: string): boolean;
-  getParam(key: string, alias?: string): string | undefined;
+  hasFlag: (flag: string) => boolean;
+  getParam: (key: string, alias?: string) => string | undefined;
 }
 
 /**
@@ -50,14 +50,14 @@ export function parseUnmatchedArgs(rawEntries: unknown): ParsedCliInput {
   return {
     paramMap,
     barePositionals,
-    hasFlag(flag: string): boolean {
+    hasFlag: (flag: string): boolean => {
       const lowerFlag = flag.toLowerCase();
       if (paramMap.get(lowerFlag) === 'true') {
         return true;
       }
       return barePositionals.some((item) => item.toLowerCase() === lowerFlag);
     },
-    getParam(key: string, alias?: string): string | undefined {
+    getParam: (key: string, alias?: string): string | undefined => {
       const primary = paramMap.get(key.toLowerCase());
       if (primary !== undefined) {
         return primary;

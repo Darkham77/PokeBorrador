@@ -1,5 +1,3 @@
-import { MoveCounter } from '././gen9';
-import { RandomGen3Teams } from './gen3';
 import {
   Format,
   IDEntry,
@@ -10,6 +8,9 @@ import {
   Species,
   StatID
 } from '@pkmn/sim';
+
+import { MoveCounter } from '././gen9';
+import { RandomGen3Teams } from './gen3';
 
 /* eslint-disable */
 const randomSetsJSON = {

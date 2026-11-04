@@ -1,6 +1,7 @@
 // ui-demo/src/data/mockSelectionPokemon.ts
 
 import type { DisplayText, HexColor } from '@francogp/auditor';
+
 import type { PokemonGender } from '@/types/pokemon/pokemon';
 
 export const MOCK_SELECTION_SOURCES = ['team', 'box'] as const;

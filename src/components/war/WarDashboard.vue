@@ -270,46 +270,46 @@ onMounted(async () => {
       box-shadow: var(--shadow-glow-blue);
     }
   }
+}
 
-  .milestones {
-    position: absolute;
-    top: -4px;
-    right: 10px;
-    left: 10px;
+.milestones {
+  position: absolute;
+  top: -4px;
+  right: 10px;
+  left: 10px;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+
+  .milestone {
     display: flex;
-    justify-content: space-between;
-    pointer-events: none;
+    flex-direction: column;
+    align-items: center;
 
-    .milestone {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    .dot {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--black);
+      border-radius: 50%;
+      background: Rgb(51 51 51 / 100%);
+      margin-bottom: 4px;
+    }
 
+    .pt-label {
+      @include pixelated;
+
+      color: Rgb(102 102 102 / 100%);
+      font-size: var(--font-8);
+    }
+
+    &.achieved {
       .dot {
-        width: 20px;
-        height: 20px;
-        border: 2px solid var(--black);
-        border-radius: 50%;
-        background: Rgb(51 51 51 / 100%);
-        margin-bottom: 4px;
+        background: Rgb(59 130 246 / 100%);
+        border-color: var(--white);
+        box-shadow: var(--shadow-glow-yellow-sm);
       }
-
       .pt-label {
-        @include pixelated;
-
-        color: Rgb(102 102 102 / 100%);
-        font-size: var(--font-8);
-      }
-
-      &.achieved {
-        .dot {
-          background: Rgb(59 130 246 / 100%);
-          border-color: var(--white);
-          box-shadow: var(--shadow-glow-yellow-sm);
-        }
-        .pt-label {
-          color: var(--white);
-        }
+        color: var(--white);
       }
     }
   }

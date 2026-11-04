@@ -31,77 +31,79 @@ defineOptions({
   inheritAttrs: false
 });
 
-const props = defineProps({
-  id: { type: String, default: '' },
-  closeBtnId: { type: String, default: '' },
-  show: { type: Boolean, default: false },
-  title: { type: String, default: '' },
-  emoji: { type: String, default: '' },
-  icon: { type: String, default: '' },
-  maxWidth: { type: String, default: '500px' },
-  maxHeight: { type: String, default: '92dvh' },
-  closeOnClickOutside: { type: Boolean, default: true },
-  showCloseButton: { type: Boolean, default: true },
-  type: {
-    type: String,
-    default: 'center',
-    validator: (val: string) =>
-      [
-        'center',
-        'side-left',
-        'side-right',
-        'side',
-        'top',
-        'down',
-        'left',
-        'right',
-        'fullscreen'
-      ].includes(val)
-  },
-  height: { type: String, default: 'auto' },
-  zIndex: { type: Number, default: null }, // If null, use dynamic stacking
-  hideHeader: { type: Boolean, default: false },
-  padding: { type: String, default: 'standard' },
-  customClass: { type: String, default: '' },
-  noScroll: { type: Boolean, default: false },
-  lockScroll: { type: Boolean, default: true },
-  overlay: {
-    type: String,
-    default: 'dark',
-    validator: (val: string) => ['dark', 'none'].includes(val)
-  },
-  variant: {
-    type: String,
-    default: 'modern',
-    validator: (val: string) => ['modern', 'retro'].includes(val)
-  },
-  titleColor: { type: String, default: null },
-  headerBackground: { type: String, default: null },
-  preventClose: { type: Boolean, default: false },
-  corners: {
-    type: String,
-    default: null,
-    validator: (val: string) => ['all', 'none', 'top', 'bottom', 'left', 'right'].includes(val)
-  },
-  showBorder: { type: Boolean, default: true },
-  blurOverlay: { type: Boolean, default: true },
-  yellowBorder: { type: Boolean, default: false },
-  positionMode: {
-    type: String,
-    default: null, // If null, auto-calculate
-    validator: (val: string) => ['stuck', 'floating'].includes(val)
-  },
-  closeButtonVariant: {
-    type: String,
-    default: 'transparent',
-    validator: (val: string) => ['transparent', 'solid', 'yellow-solid'].includes(val)
-  },
-  accentColor: { type: String, default: 'var(--yellow)' },
-  disableZoom: { type: Boolean, default: false },
-  disableAutoGrow: { type: Boolean, default: false }
+interface BaseModalProps {
+  id?: string;
+  closeBtnId?: string;
+  show?: boolean;
+  title?: string;
+  emoji?: string;
+  icon?: string;
+  maxWidth?: string;
+  maxHeight?: string;
+  closeOnClickOutside?: boolean;
+  showCloseButton?: boolean;
+  type?: string;
+  height?: string;
+  zIndex?: number | null;
+  hideHeader?: boolean;
+  padding?: string;
+  customClass?: string;
+  noScroll?: boolean;
+  lockScroll?: boolean;
+  overlay?: string;
+  variant?: string;
+  titleColor?: string | null;
+  headerBackground?: string | null;
+  preventClose?: boolean;
+  corners?: string | null;
+  showBorder?: boolean;
+  blurOverlay?: boolean;
+  yellowBorder?: boolean;
+  positionMode?: string | null;
+  closeButtonVariant?: string;
+  accentColor?: string;
+  disableZoom?: boolean;
+  disableAutoGrow?: boolean;
+}
+
+const props = withDefaults(defineProps<BaseModalProps>(), {
+  id: '',
+  closeBtnId: '',
+  show: false,
+  title: '',
+  emoji: '',
+  icon: '',
+  maxWidth: '500px',
+  maxHeight: '92dvh',
+  closeOnClickOutside: true,
+  showCloseButton: true,
+  type: 'center',
+  height: 'auto',
+  zIndex: null,
+  hideHeader: false,
+  padding: 'standard',
+  customClass: '',
+  noScroll: false,
+  lockScroll: true,
+  overlay: 'dark',
+  variant: 'modern',
+  titleColor: null,
+  headerBackground: null,
+  preventClose: false,
+  corners: null,
+  showBorder: true,
+  blurOverlay: true,
+  yellowBorder: false,
+  positionMode: null,
+  closeButtonVariant: 'transparent',
+  accentColor: 'var(--yellow)',
+  disableZoom: false,
+  disableAutoGrow: false
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits<{
+  close: [];
+}>();
 
 const handleClose = (): void => {
   if (props.preventClose) return;
@@ -268,8 +270,10 @@ const scrollableContentClasses = computed(() => [
 ]);
 
 const headerIconEmoji = computed(() => props.emoji || props.icon);
-const headerStyles = computed(() => ({ background: props.headerBackground }));
-const titleStyles = computed(() => ({ color: props.titleColor }));
+const headerStyles = computed(() =>
+  props.headerBackground ? { background: props.headerBackground } : undefined
+);
+const titleStyles = computed(() => (props.titleColor ? { color: props.titleColor } : undefined));
 
 const closeBtnClass = computed(() => ({
   'is-solid': props.closeButtonVariant === 'solid',

@@ -1,6 +1,7 @@
 import { gsap } from 'gsap';
 
 import { logger } from '@/logic/utils/logger';
+import { safeStorage, safeSessionStorage } from '@/logic/utils/storage';
 import { useErrorStore } from '@/stores/errorStore';
 import { useEventStore } from '@/stores/events';
 import { useGameStore } from '@/stores/game';
@@ -153,8 +154,8 @@ export function registerSystemTools(debug: DebugSystem): void {
     command: 'factoryResetLocal',
     category: 'emergency',
     action: () => {
-      localStorage.clear();
-      sessionStorage.clear();
+      safeStorage.clear();
+      safeSessionStorage.clear();
       globalThis.location.reload();
     },
     description: 'Limpia todo el estado local (localStorage/sessionStorage) y reinicia la página.'

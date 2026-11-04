@@ -20,15 +20,26 @@ const TITLE_MARGIN_BOTTOM_PX = 8;
 const LINE_MARGIN_BOTTOM_PX = 2;
 const MIN_VISIBLE_LINES_COUNT = 1;
 
-const props = defineProps({
-  title: { type: String, default: '' },
-  description: { type: String, default: '' },
-  position: { type: String, default: 'top' }, // top, bottom, left, right
-  delay: { type: Number, default: 500 },
-  tag: { type: String, default: 'span' },
-  disabled: { type: Boolean, default: false },
-  hideOnClick: { type: Boolean, default: false },
-  touchInstant: { type: Boolean, default: false }
+interface Props {
+  title?: string;
+  description?: string;
+  position?: string;
+  delay?: number;
+  tag?: string;
+  disabled?: boolean;
+  hideOnClick?: boolean;
+  touchInstant?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  title: '',
+  description: '',
+  position: 'top',
+  delay: 500,
+  tag: 'span',
+  disabled: false,
+  hideOnClick: false,
+  touchInstant: false
 });
 
 const isSimplified =

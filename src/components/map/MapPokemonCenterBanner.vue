@@ -188,7 +188,7 @@ const openCenter = (): void => {
   gap: $spacing-sm-alt;
   color: var(--white);
   font-size: var(--font-18);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   margin-bottom: 2px;
   text-shadow: 0 3px 8px Rgb(0 0 0 / 100%);
   white-space: nowrap;
@@ -208,7 +208,7 @@ const openCenter = (): void => {
   max-width: 90%;
   color: Rgb(255 255 255 / 85%);
   font-size: var(--font-8);
-  font-weight: 400 !important;
+  font-weight: $font-weight-normal !important;
   text-shadow: 0 2px 4px Rgb(0 0 0 / 100%);
 }
 

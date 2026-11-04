@@ -221,10 +221,8 @@ const emit = defineEmits<{
         color: var(--yellow);
       }
 
-      &.faction-val {
-        &.none {
-          color: var(--slate-400);
-        }
+      &.faction-val.none {
+        color: var(--slate-400);
       }
     }
 

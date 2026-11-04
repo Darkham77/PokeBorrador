@@ -14,6 +14,7 @@ Game Prototyping / Adventure Suite.
 
 - [`animations.scss`](./animations.scss): Encapsulated SCSS keyframe animations for prototype elements.
 - [`modals.scss`](./modals.scss): Encapsulated modal styles for prototype interface dialogs.
+- [`studio_panels.scss`](./studio_panels.scss): Reusable dock panel and tabs mixins for studio interface.
 
 ## Work Guidance
 

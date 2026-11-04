@@ -312,16 +312,21 @@ export function isEnemyHudSuppressedCheck(
   return !enemy;
 }
 
+export interface ActiveEnemyHudFlags {
+  isTrainer: boolean;
+  isFaintInProgress: boolean;
+}
+
 export function buildActiveEnemyHudData(
   state: string | null | undefined,
   subState: string | null | undefined,
-  isTrainer: boolean,
+  flags: ActiveEnemyHudFlags,
   enemySeat: unknown,
   caughtSnapshot: Pokemon | null | undefined,
-  isFaintInProgress: boolean,
   faintedSnapshot: { side?: string } | null | undefined,
   enemyRef: Pokemon | null | undefined
 ): Pokemon | null {
+  const { isTrainer, isFaintInProgress } = flags;
   if (state && ENEMY_HUD_BLOCKED_STATES_SET.has(state)) return null;
   if (isTrainerHudBlocked(isTrainer, state, subState)) return null;
   if (isSeatCapturing(enemySeat) && caughtSnapshot) return caughtSnapshot;

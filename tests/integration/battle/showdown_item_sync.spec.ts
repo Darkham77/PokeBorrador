@@ -143,7 +143,7 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
       p2Statuses.forEach((status, idx) => {
         const simMon = p2Side?.pokemon?.[idx];
         if (simMon && !simMon.fainted) {
-          simMon.status = status ? (status.toLowerCase() as ID) : ('' as ID);
+          simMon.status = status ? (status.toLowerCase() as ID) : '';
         }
       });
 

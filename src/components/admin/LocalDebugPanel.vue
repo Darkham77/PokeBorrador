@@ -21,12 +21,12 @@ const selectedCategory = ref<DebugPanelCategoryId>('stats');
 
 const openShadowEditor = (): void => {
   isOpen.value = false;
-  window.open('/dev/shadow-editor', '_blank');
+  globalThis.open('/dev/shadow-editor', '_blank');
 };
 
 const openAdventureSuite = (): void => {
   isOpen.value = false;
-  window.open('/test_aventura/index.html', '_blank');
+  globalThis.open('/test_aventura/index.html', '_blank');
 };
 
 const closeForBattleEntry = (): void => {
@@ -170,7 +170,7 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry);
   padding: 4px 8px;
   border-radius: $radius-md;
   font-size: var(--font-8);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
   line-height: 1;
   text-transform: uppercase;
 

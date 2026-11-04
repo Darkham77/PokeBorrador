@@ -1,27 +1,15 @@
-import type { DisplayText } from '@francogp/auditor';
-import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import type { DisplayText } from '@francogp/auditor';
 import { Battle, Dex } from '@pkmn/sim';
-import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
-import {
-  MAXIMUM_POKEMON_LEVEL,
-  BATTLE_TOTAL_STAGES_COUNT,
-  BATTLE_MAX_STAGE_OFFSET,
-  SHOWDOWN_DAMAGE_VARIANCE_MIN,
-  SHOWDOWN_DAMAGE_VARIANCE_MAX_EXCLUSIVE
-} from '../../src/logic/constants/gameplay.ts';
-import {
-  E2E_EV_BALANCED_VALUE,
-  E2E_MAX_IV_VALUE,
-  HIGH_SURVIVAL_HP_CAP,
-  DEFAULT_WEATHER_TURNS_COUNT
-} from '../e2e/simulation_config.ts';
-import { toPokemonType } from '../../src/data/battle/types.ts';
-import { isPokemonMoveId } from '../../src/data/battle/moves.ts';
+import { defineCommand, runMain } from 'citty';
+
 import { isAbilityId } from '../../src/data/battle/abilities.ts';
+import { isPokemonMoveId } from '../../src/data/battle/moves.ts';
+import { toPokemonType } from '../../src/data/battle/types.ts';
 import { isItemId } from '../../src/data/inventory/items.ts';
-import { isWeatherId } from '../../src/logic/weather/weatherRegistry.ts';
+import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
 import { calculateDamagePure, getMoveCategory } from '../../src/logic/battle/battleMath.ts';
 import type {
   PurePokemon,
@@ -29,6 +17,20 @@ import type {
   PureBattleWeather,
   PureDamageOptions
 } from '../../src/logic/battle/battleMathTypes.ts';
+import {
+  MAXIMUM_POKEMON_LEVEL,
+  BATTLE_TOTAL_STAGES_COUNT,
+  BATTLE_MAX_STAGE_OFFSET,
+  SHOWDOWN_DAMAGE_VARIANCE_MIN,
+  SHOWDOWN_DAMAGE_VARIANCE_MAX_EXCLUSIVE
+} from '../../src/logic/constants/gameplay.ts';
+import { isWeatherId } from '../../src/logic/weather/weatherRegistry.ts';
+import {
+  E2E_EV_BALANCED_VALUE,
+  E2E_MAX_IV_VALUE,
+  HIGH_SURVIVAL_HP_CAP,
+  DEFAULT_WEATHER_TURNS_COUNT
+} from '../e2e/simulation_config.ts';
 
 // Diccionario para traducir habilidades de nuestro motor (Español) a Showdown (Inglés)
 const ABILITY_MAP_ES_TO_EN: Record<DisplayText, string> = {
@@ -203,11 +205,12 @@ function initShowdownBattle(
   if (battle.actions) {
     (battle.actions as { checkAccuracy?: () => boolean }).checkAccuracy = () => true;
   }
-  const originalRandom = battle.prng.random;
+  const prng = battle.prng;
+  const originalRandom = prng.random.bind(prng);
   battle.prng.random = function (from, to) {
     if (from === SHOWDOWN_DAMAGE_VARIANCE_MIN && to === SHOWDOWN_DAMAGE_VARIANCE_MAX_EXCLUSIVE)
       return MAXIMUM_POKEMON_LEVEL;
-    return originalRandom.call(this, from, to);
+    return originalRandom(from, to);
   };
 
   battle.setPlayer('p1', {
@@ -280,7 +283,7 @@ function initShowdownBattle(
 
   const sdWeather = COMPARE_COMBAT_WEATHER_MAP[weatherType];
   if (sdWeather && sdWeather !== 'clear') {
-    battle.field.setWeather(sdWeather as never, act1);
+    battle.field.setWeather(sdWeather, act1);
   }
 
   const statKeyAtk = isPhysical ? 'atk' : 'spa';
@@ -616,4 +619,4 @@ export const command = defineCommand({
   }
 });
 
-runMain(command);
+void runMain(command);

@@ -1,7 +1,8 @@
-import type { DisplayText } from '@francogp/auditor';
-import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import type { DisplayText } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 
 const MAX_REPORT_ERRORS_PER_FILE_LIMIT = 10;
 
@@ -118,4 +119,4 @@ export const command = defineCommand({
   }
 });
 
-runMain(command);
+void runMain(command);

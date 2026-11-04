@@ -9,7 +9,7 @@ Logic for authenticating with Pokémon Showdown.
 ## Installation
 
 ```sh
-npm install @pkmn/login
+$ npm install @pkmn/login
 ```
 
 Alternatively, as [detailed below](#browser), if you are using `@pkmn/login` in the browser and want
@@ -159,9 +159,8 @@ within browsers along with `@pkmn/login` to authenticate:
 HTTP requests ([Node.js includes `fetch` as of v18](https://nodejs.org/dist/latest-v18.x/docs/api/globals.html#fetch)):
 
 ```ts
-import fetch from 'node-fetch';
-
 import { Actions } from '@pkmn/login';
+import fetch from 'node-fetch';
 
 async function onChallstr() {
   const action = Actions.login({ username: 'User Name', password: 'password', challstr });
@@ -183,9 +182,8 @@ async function onChallstr() {
 to work in the browser or on Node.js:
 
 ```ts
-import axios from 'axios';
-
 import { Actions } from '@pkmn/login';
+import axios from 'axios';
 
 async function onChallstr() {
   const action = Actions.login({ username: 'User Name', password: 'password', challstr });

@@ -595,6 +595,29 @@ export function generateProceduralRiverDrainage(
   let endNode: { x: number; y: number } | null = null;
   const stairSet = new Set(options?.placedStairs?.map((s) => `${s.x}_${s.y}`) ?? []);
 
+  function getValidRiverNeighbors(
+    cur: RiverWaypoint,
+    W: number,
+    H: number,
+    settlementMask: boolean[][]
+  ): { nx: number; ny: number }[] {
+    const neighbors: { nx: number; ny: number }[] = [];
+    const dirs = [
+      [0, 1],
+      [0, -1],
+      [1, 0],
+      [-1, 0]
+    ];
+    for (const [dx, dy] of dirs) {
+      const nx = cur.x + dx!;
+      const ny = cur.y + dy!;
+      if (nx >= 1 && nx < W - 1 && ny >= 1 && ny < H - 1 && !settlementMask[ny]?.[nx]) {
+        neighbors.push({ nx, ny });
+      }
+    }
+    return neighbors;
+  }
+
   while (pq.length > 0) {
     const cur = pq.pop()!;
 
@@ -604,17 +627,7 @@ export function generateProceduralRiverDrainage(
       break;
     }
 
-    for (const [dx, dy] of [
-      [0, 1],
-      [0, -1],
-      [1, 0],
-      [-1, 0]
-    ]) {
-      const nx = cur.x + dx!;
-      const ny = cur.y + dy!;
-      if (nx < 1 || nx >= W - 1 || ny < 1 || ny >= H - 1) continue;
-      if (settlementMask[ny]?.[nx]) continue;
-
+    for (const { nx, ny } of getValidRiverNeighbors(cur, W, H, settlementMask)) {
       // Penalize immediate nearby ocean coast to force river to flow toward distant basin
       if (visitedOcean[ny]![nx] && !isTargetOcean[ny]![nx]) {
         continue;
@@ -682,16 +695,7 @@ export function generateProceduralRiverDrainage(
         endNode = cur;
         break;
       }
-      for (const [dx, dy] of [
-        [0, 1],
-        [0, -1],
-        [1, 0],
-        [-1, 0]
-      ]) {
-        const nx = cur.x + dx!;
-        const ny = cur.y + dy!;
-        if (nx < 1 || nx >= W - 1 || ny < 1 || ny >= H - 1) continue;
-        if (settlementMask[ny]?.[nx]) continue;
+      for (const { nx, ny } of getValidRiverNeighbors(cur, W, H, settlementMask)) {
         const hCur = heightmap[cur.y]?.[cur.x] ?? 0;
         const hNext = heightmap[ny]?.[nx] ?? 0;
         let stepCost = 1.0;

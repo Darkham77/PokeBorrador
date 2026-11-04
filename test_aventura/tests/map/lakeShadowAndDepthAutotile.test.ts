@@ -13,10 +13,7 @@
 
 import { describe, it, expect } from 'vitest';
 
-import {
-  resolveWaterCoastGrid,
-  type WaterTerrainMatrix
-} from '../../logic/map/waterAutotileEngine.ts';
+import { resolveWaterCoastGrid } from '../../logic/map/waterAutotileEngine.ts';
 
 describe('Inland Lake 2.5D Projected Shadows & Abyssal Depth (Option 4)', () => {
   // Construct a 12x12 grid with a large inland freshwater lake (x: 2..9, y: 2..9) surrounded by grass
@@ -30,7 +27,7 @@ describe('Inland Lake 2.5D Projected Shadows & Abyssal Depth (Option 4)', () => 
     })
   );
 
-  const resolved = resolveWaterCoastGrid(terrainMatrix as WaterTerrainMatrix);
+  const resolved = resolveWaterCoastGrid(terrainMatrix);
 
   it('resolves deep central water (abyssal center) when distance to land >= 2.4 tiles', () => {
     // Cells (5, 5), (5, 6), (6, 5), (6, 6) are 3-4 tiles away from grass shore (x: 2 and y: 2)

@@ -2,6 +2,8 @@
 import { gsap } from 'gsap';
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 
+import { logger } from '@/logic/utils/logger';
+
 import { SUBTILE_INNER_SIZE, TILE_CENTER_OFFSET } from '../../config/studioConstants.ts';
 import { TILE_SIZE } from '../../logic/map/inBrowserTileProcessor.ts';
 import type { CollisionType, MapCell } from '../../logic/map/proceduralMapGenerator';
@@ -437,7 +439,13 @@ function executeToolAction(x: number, y: number): void {
   } else if (tool === 'stamp') {
     const stamped = store.stampCurrentStructure(x, y);
     if (stamped) {
-      preloadImages().then(() => renderCanvas());
+      preloadImages()
+        .then(() => {
+          renderCanvas();
+        })
+        .catch((err: unknown) => {
+          logger.error('StudioCanvasViewport', 'Failed to preload images after stamp', err);
+        });
     }
   } else if (tool === 'eyedropper') {
     const map = store.currentMap;
@@ -506,14 +514,17 @@ function centerMap(): void {
 
 watch(
   () => store.currentMap,
-  (newMap) => {
+  async (newMap) => {
     if (newMap) {
       centerMap();
       renderCanvas();
-      preloadImages().then(() => {
+      try {
+        await preloadImages();
         centerMap();
         renderCanvas();
-      });
+      } catch (err: unknown) {
+        logger.error('StudioCanvasViewport', 'Failed to preload images on map change', err);
+      }
     }
   },
   { deep: true }
@@ -521,22 +532,30 @@ watch(
 
 watch(
   () => [store.layerVisibility, store.activeTool, store.selectedStructureId, store.testDriveActive],
-  () => {
-    preloadImages().then(() => renderCanvas());
+  async () => {
+    try {
+      await preloadImages();
+      renderCanvas();
+    } catch (err: unknown) {
+      logger.error('StudioCanvasViewport', 'Failed to preload images on tool change', err);
+    }
   },
   { deep: true }
 );
 
-onMounted(() => {
+onMounted(async () => {
   globalThis.addEventListener('keydown', onKeyDown);
   globalThis.addEventListener('keyup', onKeyUp);
   if (store.currentMap) {
     centerMap();
     renderCanvas();
-    preloadImages().then(() => {
+    try {
+      await preloadImages();
       centerMap();
       renderCanvas();
-    });
+    } catch (err: unknown) {
+      logger.error('StudioCanvasViewport', 'Failed to preload images on mount', err);
+    }
   }
 });
 

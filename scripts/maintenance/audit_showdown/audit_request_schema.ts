@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+
 import { getFilesRecursively } from './audit_helpers.ts';
 
 export interface SchemaAuditResult {

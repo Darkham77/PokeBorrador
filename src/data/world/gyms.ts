@@ -1,13 +1,13 @@
 import type { DisplayText, HexColor } from '@francogp/auditor';
-import type { PokemonType } from '@/data/battle/types';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
-import type { MapRouteId } from '@/data/world/map-assets';
-import type { ItemId } from '@/data/inventory/items';
-import type { DayPhase } from '@/types/system/time.ts';
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
 
+import type { PokemonType } from '@/data/battle/types';
+import type { ItemId } from '@/data/inventory/items';
+import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { MapRouteId } from '@/data/world/map-assets';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
 import type { BattleDifficulty } from '@/types/battle/battle';
+import type { DayPhase } from '@/types/system/time.ts';
 
 export const GYM_IDS = [
   'pewter',

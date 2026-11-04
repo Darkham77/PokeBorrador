@@ -1,22 +1,22 @@
 import '@/logic/utils/temporal-init.ts';
-import { createApp } from 'vue';
+import { gsap } from 'gsap';
 import { createPinia } from 'pinia';
-import App from './App.vue';
+import { createApp } from 'vue';
+
 import '@/styles/_index.scss';
 import './styles/ui_demo.scss';
 
 // Global Components
 import PVTooltip from '@/components/common/PVTooltip.vue';
-
+import { gsapHover } from '@/directives/gsapHover';
+import { gsapLoop } from '@/directives/gsapLoop';
 // Global Directives
 import { gsapNick } from '@/directives/gsapNick';
-import { gsapLoop } from '@/directives/gsapLoop';
-import { gsapHover } from '@/directives/gsapHover';
 import { initGlobalHoverSystem } from '@/logic/hover/globalHover';
-import { gsap } from 'gsap';
-
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
+
+import App from './App.vue';
 import { DEMO_TEAM_POKEMON, DEMO_BOX_POKEMON } from './data/mockPokemon.ts';
 
 const app = createApp(App);

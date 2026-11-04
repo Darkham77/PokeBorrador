@@ -69,7 +69,7 @@ import {
   type TileMetadata,
   type TileCollision,
   defaultTilesRegistry,
-  TilesRegistryService
+  type TilesRegistryService
 } from './tilesRegistry.ts';
 
 export { TILE_SIZE };

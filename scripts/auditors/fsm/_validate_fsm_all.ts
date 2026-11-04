@@ -8,8 +8,8 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
+import { styleText } from 'node:util';
 
 enableCompileCache();
 
@@ -24,7 +24,7 @@ const FSM_VALIDATION_TASKS: Task[] = [
   { name: 'FSM Flow Parity', args: ['scripts/auditors/fsm/validate_fsm_flow_parity.ts'] }
 ];
 
-function runFsmValidation() {
+function runFsmValidation(): void {
   let anyFailed = false;
 
   for (const task of FSM_VALIDATION_TASKS) {

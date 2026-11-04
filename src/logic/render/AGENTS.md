@@ -13,8 +13,6 @@ Graphics Developers.
 
 ## Key Files
 
-- `MapRenderer.ts`: Module implementation.
-- `render.worker.ts`: Module implementation.
 - [`atmosphere.worker.ts`](./atmosphere.worker.ts): Module implementation.
 
 ## Work Guidance

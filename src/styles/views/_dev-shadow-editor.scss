@@ -40,7 +40,7 @@
   margin: 0;
   color: var(--slate-50);
   font-size: var(--font-16);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
   letter-spacing: 0.5px;
 }
 
@@ -69,7 +69,7 @@
 .zoom-label {
   color: var(--slate-400);
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .zoom-buttons {
@@ -85,7 +85,7 @@
   background: var(--slate-800);
   color: var(--slate-300);
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   cursor: pointer;
 
   &.is-active {
@@ -115,7 +115,7 @@
   min-width: 100px;
   color: var(--amber);
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   white-space: nowrap;
 }
 
@@ -136,7 +136,7 @@
   background: var(--slate-800);
   color: var(--slate-400);
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   cursor: pointer;
 
   &:hover {
@@ -159,7 +159,7 @@
   min-width: 68px;
   color: var(--sky);
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   white-space: nowrap;
 }
 
@@ -180,7 +180,7 @@
   background: var(--slate-800);
   color: var(--slate-400);
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   cursor: pointer;
 
   &:hover {
@@ -195,7 +195,7 @@
   background: var(--slate-700);
   color: var(--slate-400);
   font-size: var(--font-11);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
 
   &.has-modifications {
     border: 1px solid #d97706;
@@ -213,7 +213,7 @@
   border: 1px solid transparent;
   border-radius: $radius-md;
   font-size: var(--font-12);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   cursor: pointer;
 
   .emoji {
@@ -300,7 +300,7 @@
   justify-content: space-between;
   align-items: center;
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .progress-status-msg {
@@ -368,7 +368,7 @@
   background: var(--slate-900);
   color: var(--slate-400);
   font-size: var(--font-12);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   cursor: pointer;
 
   &.is-active {
@@ -388,7 +388,7 @@
 .filter-label {
   color: var(--slate-400);
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .filter-select {
@@ -406,7 +406,7 @@
   gap: $spacing-sm-alt;
   color: var(--slate-300);
   font-size: var(--font-12);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
 }
 
@@ -499,7 +499,7 @@
 
 .empty-title {
   font-size: var(--font-14);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
 }
 
 .spinner {
@@ -541,7 +541,7 @@
   background: var(--slate-900);
   color: var(--slate-300);
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   cursor: pointer;
 
   &:hover:not(:disabled) {
@@ -559,7 +559,7 @@
   padding: 0 4px;
   color: var(--slate-50);
   font-size: var(--font-12);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .toast-banner {
@@ -573,6 +573,6 @@
   background: var(--slate-900);
   color: var(--slate-50);
   font-size: var(--font-13);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   box-shadow: var(--shadow-card);
 }

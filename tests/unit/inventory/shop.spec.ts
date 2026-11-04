@@ -147,7 +147,7 @@ describe('Shop & Healing Logic', () => {
       gameStore.state.playerClass = 'rocket';
       const items = shopStore.getBlackMarketItems();
 
-      expect(items.length).toBe(3);
+      expect(items).toHaveLength(3);
       expect(gameStore.state.classData.blackMarketDaily.date).toBe(
         getGMT3Date().toPlainDate().toString()
       );

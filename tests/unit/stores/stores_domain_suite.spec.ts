@@ -136,7 +136,7 @@ describe('Stores Domain Suite', () => {
       } as unknown as GameState;
 
       const buffs = buildActivePlayerItemBuffs(dummyState);
-      expect(buffs.length).toBe(3);
+      expect(buffs).toHaveLength(3);
       expect(buffs.map((b) => b.id)).toEqual(['repel', 'fishing-rod', 'shiny']);
     });
 

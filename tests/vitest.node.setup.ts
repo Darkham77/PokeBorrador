@@ -29,7 +29,7 @@ function createMemoryStorage(): Storage {
     get length() {
       return store.size;
     }
-  } as Storage;
+  };
 }
 
 if (typeof globalThis.sessionStorage === 'undefined') {

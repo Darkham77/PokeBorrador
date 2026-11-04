@@ -288,7 +288,7 @@ function handleApproveAndIncorporate(): void {
     margin: 0 0 4px;
     color: var(--slate-100);
     font-size: var(--font-14);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
   }
 
   .drop-hint {
@@ -343,7 +343,7 @@ function handleApproveAndIncorporate(): void {
     background: transparent;
     color: var(--slate-400);
     font-size: var(--font-11);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     cursor: pointer;
 
     &.active {
@@ -426,7 +426,7 @@ function handleApproveAndIncorporate(): void {
     background: var(--slate-700);
     color: var(--slate-100);
     font-size: var(--font-12);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     cursor: pointer;
 
     &:hover {
@@ -441,7 +441,7 @@ function handleApproveAndIncorporate(): void {
     background: linear-gradient(135deg, var(--emerald-500) 0%, var(--emerald-500) 100%);
     color: var(--white);
     font-size: var(--font-12);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     cursor: pointer;
     box-shadow: var(--shadow-subtle);
 

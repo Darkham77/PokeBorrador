@@ -71,10 +71,12 @@ export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
     if (missingIds.length === 0) return;
 
     try {
+      const MAX_COSMETICS_BATCH_LIMIT = 100;
       const { data, error } = (await db
         .from('profiles')
         .select('id, username, player_class, trainer_level, avatar_style, nick_style, gender')
-        .in('id', missingIds)) as {
+        .in('id', missingIds)
+        .limit(Math.min(missingIds.length, MAX_COSMETICS_BATCH_LIMIT))) as {
         data:
           | {
               id: string;

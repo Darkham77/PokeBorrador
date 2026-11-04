@@ -38,7 +38,7 @@ export type {
   MapWarp,
   MapSpawn,
   MapEntities,
-  PlacedStructure,
+  PlacedProceduralStructure,
   ProceduralMapOptions,
   MapCell,
   ProceduralMapLayers,

@@ -1,5 +1,6 @@
 // scripts/e2e/fuzzer/core/fuzzerMemoryStore.ts
 import path from 'node:path';
+
 import { fileWriterQueue } from '../../helpers/fileWriterQueue.ts';
 import type { CertifiedBattleCase } from '../generators/fuzzer_team_generator.ts';
 

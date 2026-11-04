@@ -63,7 +63,7 @@ describe('lanRelayMessageSchema', () => {
       channel: 'pvp_room_123'
     };
 
-    expect(() => v.parse(lanRelayMessageSchema, invalidActionMsg)).toThrow();
+    expect(() => v.parse(lanRelayMessageSchema, invalidActionMsg)).toThrow(/invalid/i);
   });
 
   it('rejects messages missing required channel property', () => {
@@ -72,12 +72,12 @@ describe('lanRelayMessageSchema', () => {
       senderId: 'client_xyz'
     };
 
-    expect(() => v.parse(lanRelayMessageSchema, missingChannelMsg)).toThrow();
+    expect(() => v.parse(lanRelayMessageSchema, missingChannelMsg)).toThrow(/invalid/i);
   });
 
   it('rejects non-object primitives and null values', () => {
-    expect(() => v.parse(lanRelayMessageSchema, null)).toThrow();
-    expect(() => v.parse(lanRelayMessageSchema, 'invalid string')).toThrow();
-    expect(() => v.parse(lanRelayMessageSchema, 12345)).toThrow();
+    expect(() => v.parse(lanRelayMessageSchema, null)).toThrow(/invalid/i);
+    expect(() => v.parse(lanRelayMessageSchema, 'invalid string')).toThrow(/invalid/i);
+    expect(() => v.parse(lanRelayMessageSchema, 12345)).toThrow(/invalid/i);
   });
 });

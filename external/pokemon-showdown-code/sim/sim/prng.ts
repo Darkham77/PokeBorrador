@@ -13,6 +13,7 @@
  */
 
 import { Chacha20 } from 'ts-chacha20';
+
 import { Utils } from '../lib/utils';
 
 export type PRNGSeed = `${'sodium' | 'gen5' | number},${string}`;

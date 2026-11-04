@@ -105,10 +105,12 @@ export function useBattleHud(
     return buildActiveEnemyHudData(
       toValue(battleStore.fsm?.currentState),
       toValue(battleStore.fsm?.currentSubState),
-      isTrainer.value,
+      {
+        isTrainer: isTrainer.value,
+        isFaintInProgress: isFaintInProgress.value
+      },
       seats.value.seat2,
       caughtPokemonSnapshot.value,
-      isFaintInProgress.value,
       faintedPokemonSnapshot.value,
       toValue(enemyRef)
     );

@@ -156,7 +156,7 @@ describe('mountainAutotileEngine', () => {
       const result = resolveMountainMapGrid(lShape, 'brown');
 
       // The base grid dimensions should match
-      expect(result.primaryTiles.length).toBe(7);
+      expect(result.primaryTiles).toHaveLength(7);
       expect(result.primaryTiles[0]?.length).toBe(7);
 
       // (2, 5) is elevation 0, but receives a projected foot from (2, 4)

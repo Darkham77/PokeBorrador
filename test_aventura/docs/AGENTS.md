@@ -13,6 +13,7 @@ Game Mechanics / Adventure Prototyping Documentation.
 
 ## Key Files
 
+- [`AUTOTILE_HEALING_BRUSH_DESIGN.md`](./AUTOTILE_HEALING_BRUSH_DESIGN.md): Technical specification and mathematical domain model for the autotile healing brush tool.
 - [`DESIGN_DOC.md`](./DESIGN_DOC.md): Architectural design document for Kanto adventure gameplay loop and engine integration.
 - [`FARMING_ROUTES_DESIGN_DOC.md`](./FARMING_ROUTES_DESIGN_DOC.md): Farming routes layout, resource distribution, and economy design.
 - [`Propuesta_de_Diseño__Integración_de_Bicicleta_y_MO.docx`](./Propuesta_de_Diseño__Integración_de_Bicicleta_y_MO.docx): Design proposal for bicycle and HM (Hidden Machine) mechanics integration.

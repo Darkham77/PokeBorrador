@@ -67,6 +67,6 @@ const togglePerf = (): void => {
 
 .field-label {
   font-family: inherit;
-  font-weight: 500;
+  font-weight: $font-weight-medium;
 }
 </style>

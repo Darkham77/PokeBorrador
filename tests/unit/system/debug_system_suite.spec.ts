@@ -3,7 +3,6 @@ import { setActivePinia, createPinia } from 'pinia';
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vite-plus/test';
 
 import { DEBUG_PANEL_CATEGORIES } from '@/components/admin/debug/debugPanelCategories.ts';
-import type { PlayerClassId } from '@/data/player/playerClasses';
 import { useAuthStore } from '@/stores/auth';
 import { useBreedingStore } from '@/stores/breeding';
 import { useDebugStore } from '@/stores/debug';
@@ -229,7 +228,7 @@ describe('Debug System Suite', () => {
       const setClassAction = tool?.action as (c: string) => void;
 
       setClassAction('rocket');
-      expect(game.state.playerClass).toBe('rocket' as PlayerClassId);
+      expect(game.state.playerClass).toBe('rocket');
 
       expect(() => setClassAction('none')).not.toThrow();
       expect(game.state.playerClass).toBeNull();
@@ -237,7 +236,7 @@ describe('Debug System Suite', () => {
       expect(game.state.classXP).toBe(0);
 
       setClassAction('criador');
-      expect(game.state.playerClass).toBe('criador' as PlayerClassId);
+      expect(game.state.playerClass).toBe('criador');
 
       expect(() => setClassAction('null')).not.toThrow();
       expect(game.state.playerClass).toBeNull();
@@ -382,7 +381,7 @@ describe('Debug System Suite', () => {
     it('handles pokedex synchronization', async () => {
       const game = useGameStore();
       game.state.team = [{ id: 'pikachu' }] as unknown as Pokemon[];
-      await (callDebug('syncPokedex', true) as unknown as Promise<void>);
+      await (callDebug('syncPokedex', true) as Promise<void>);
       expect(game.state.pokedex).toContain('pikachu');
     });
 
@@ -410,7 +409,7 @@ describe('Debug System Suite', () => {
     it('handles pokedex reset', async () => {
       const game = useGameStore();
       game.state.pokedex = ['pikachu'];
-      await (callDebug('resetPokedexDB', true) as unknown);
+      await callDebug('resetPokedexDB', true);
       expect(game.state.pokedex).toHaveLength(0);
     });
 
@@ -418,7 +417,7 @@ describe('Debug System Suite', () => {
       const game = useGameStore();
       const ui = useUIStore();
       game.state.pvpTeam = ['poke1'];
-      await (callDebug('clearPvpTeam', true) as unknown);
+      await callDebug('clearPvpTeam', true);
       expect(game.state.pvpTeam).toHaveLength(0);
       expect(ui.pvpAutoFillDisabled).toBe(true);
     });
@@ -426,7 +425,7 @@ describe('Debug System Suite', () => {
     it('handles modal stack test', async () => {
       const modalStore = useModalStore();
       const openSpy = vi.spyOn(modalStore, 'open');
-      await (callDebug('testModalStack', 3) as unknown);
+      await callDebug('testModalStack', 3);
       expect(openSpy).toHaveBeenCalledTimes(3);
     });
 
@@ -488,13 +487,13 @@ describe('Debug System Suite', () => {
     describe('Admin & Emergency Commands', () => {
       it('handles saveEvent', async () => {
         const eventData = { id: 'test_event', name: 'Test' };
-        await (callDebug('saveEvent', eventData) as unknown);
+        await callDebug('saveEvent', eventData);
         expect(mockChain.upsert).toHaveBeenCalledWith(eventData);
       });
 
       it('handles saveRankedRules', async () => {
         const rules = { seasonName: 'S1', levelCap: 50 };
-        await (callDebug('saveRankedRules', rules) as unknown);
+        await callDebug('saveRankedRules', rules);
         expect(mockChain.upsert).toHaveBeenCalledWith(
           expect.objectContaining({
             season_name: 'S1',
@@ -506,7 +505,7 @@ describe('Debug System Suite', () => {
       it('handles closeRankedSeason', async () => {
         const game = useGameStore();
         const rpcSpy = vi.spyOn(game.db, 'rpc');
-        await (callDebug('closeRankedSeason', 'S1') as unknown);
+        await callDebug('closeRankedSeason', 'S1');
         expect(rpcSpy).toHaveBeenCalledWith('fn_award_ranked_season_automated', {
           target_season_name: 'S1'
         });
@@ -515,7 +514,7 @@ describe('Debug System Suite', () => {
       it('handles forceSyncCloud', async () => {
         const game = useGameStore();
         const saveSpy = vi.spyOn(game, 'save');
-        await (callDebug('forceSyncCloud') as unknown);
+        await callDebug('forceSyncCloud');
         expect(saveSpy).toHaveBeenCalledWith(true, true, true);
       });
     });
@@ -527,7 +526,7 @@ describe('Debug System Suite', () => {
         debug.register({ id: testId, command: 'test', action: () => {} });
         const count = debug.tools.length;
         debug.register({ id: testId, command: 'test', action: () => {} });
-        expect(debug.tools.length).toBe(count);
+        expect(debug.tools).toHaveLength(count);
       });
 
       it('updates global proxy when new tools are registered', () => {

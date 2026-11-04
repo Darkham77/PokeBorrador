@@ -226,37 +226,10 @@ function selectCollisionType(code: CollisionType): void {
 
 <style scoped lang="scss">
 @use '@/styles/core/tools' as *;
+@use '../../styles/studio_panels' as *;
 
 .studio-inspector {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-md-alt;
-  padding: 10px;
-  border: 1px solid var(--slate-800);
-  border-radius: $radius-md;
-  background: var(--slate-900);
-  font-family: $font-family-mono;
-  user-select: none;
-}
-
-.panel-header {
-  display: flex;
-  align-items: center;
-  gap: $spacing-sm-alt;
-  border-bottom: 1px solid var(--slate-800);
-  padding-bottom: 6px;
-
-  .header-icon {
-    font-size: var(--font-13);
-  }
-
-  .panel-title {
-    margin: 0;
-    color: var(--sky);
-    font-size: var(--font-11);
-    font-weight: bold;
-    letter-spacing: 0.5px;
-  }
+  @include studio-dock-panel;
 }
 
 .inspector-section {
@@ -320,7 +293,7 @@ function selectCollisionType(code: CollisionType): void {
     border: 1px solid transparent;
     border-radius: $radius-sm;
     font-size: var(--font-10);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     text-align: left;
     cursor: pointer;
 
@@ -443,22 +416,6 @@ function selectCollisionType(code: CollisionType): void {
         text-overflow: ellipsis;
       }
 
-      .cell-col-val {
-        font-weight: bold;
-        &.col-0 {
-          color: var(--green-light);
-        }
-        &.col-1 {
-          color: var(--rose);
-        }
-        &.col-2 {
-          color: var(--blue-400);
-        }
-        &.col-3 {
-          color: var(--amber-300);
-        }
-      }
-
       &.text-warp .cell-val {
         color: var(--amber-400);
         font-weight: bold;
@@ -466,6 +423,22 @@ function selectCollisionType(code: CollisionType): void {
       &.text-spawn .cell-val {
         color: var(--cyan);
         font-weight: bold;
+      }
+    }
+
+    .cell-col-val {
+      font-weight: bold;
+      &.col-0 {
+        color: var(--green-light);
+      }
+      &.col-1 {
+        color: var(--rose);
+      }
+      &.col-2 {
+        color: var(--blue-400);
+      }
+      &.col-3 {
+        color: var(--amber-300);
       }
     }
   }

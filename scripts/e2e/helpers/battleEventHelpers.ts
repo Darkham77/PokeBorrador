@@ -1,5 +1,5 @@
 import { type Page } from '@playwright/test';
-import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
+
 import {
   BATTLE_UI_EVENTS,
   type BattleForcedSwitchDetail,
@@ -10,6 +10,7 @@ import {
   type GameStoreReadyDetail,
   type StarterSelectReadyDetail
 } from '../../../src/types/system/gameEvents.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 
 export type WindowWithResolver = Window;
 
@@ -99,7 +100,7 @@ export async function awaitBattleReadyForInput(
     }
     throw new Error('[E2E] Battle ready-for-input was awaited without an armed event listener.');
   }, timeoutMs);
-  return result as BattleReadyForInputDetail;
+  return result;
 }
 
 export async function armBattleForcedSwitch(page: Page): Promise<void> {

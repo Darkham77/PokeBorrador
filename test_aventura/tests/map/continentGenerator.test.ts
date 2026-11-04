@@ -182,9 +182,9 @@ describe('continentGenerator', () => {
         { seed: 42, width: W, height: H, mountainPercentage: 0.25, withStairs: true }
       );
 
-      expect(sanitizedHeightmap.length).toBe(H);
-      expect(sanitizedHeightmap[0]!.length).toBe(W);
-      expect(mountainResult.cellDetails.length).toBe(H);
+      expect(sanitizedHeightmap).toHaveLength(H);
+      expect(sanitizedHeightmap[0]!).toHaveLength(W);
+      expect(mountainResult.cellDetails).toHaveLength(H);
 
       // Verify clearance: any cell with elevation > 0 must be on grass with >= 3 cells clearance from water/sand
       for (let y = 0; y < H; y++) {
@@ -232,8 +232,8 @@ describe('continentGenerator', () => {
 
       expect(result.width).toBe(64);
       expect(result.height).toBe(64);
-      expect(result.cells.length).toBe(64);
-      expect(result.cells[0]!.length).toBe(64);
+      expect(result.cells).toHaveLength(64);
+      expect(result.cells[0]!).toHaveLength(64);
 
       let oceanCount = 0;
       let beachCount = 0;

@@ -44,7 +44,7 @@
         display: block;
         color: Rgb(255 255 255 / 40%);
         font-size: var(--font-7);
-        font-weight: 800;
+        font-weight: $font-weight-extrabold;
         margin-bottom: 8px;
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -55,7 +55,7 @@
 
         color: var(--white);
         font-size: var(--font-11);
-        font-weight: 700;
+        font-weight: $font-weight-bold;
         line-height: 1.6;
         letter-spacing: 0.5px;
       }
@@ -78,7 +78,7 @@
         border: 1px solid transparent;
         border-radius: $radius-sm;
         font-size: var(--font-10);
-        font-weight: 800;
+        font-weight: $font-weight-extrabold;
         text-align: center;
         text-transform: uppercase;
         letter-spacing: 0;
@@ -182,7 +182,7 @@
       color: var(--black);
       font-family: $font-family-sans !important;
       font-size: var(--font-11);
-      font-weight: 900;
+      font-weight: $font-weight-black;
       box-shadow: var(--shadow-md);
     }
 
@@ -209,7 +209,7 @@
       width: 50px;
       color: Rgb(255 255 255 / 30%);
       font-size: var(--font-7);
-      font-weight: 900;
+      font-weight: $font-weight-black;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
@@ -220,7 +220,7 @@
       width: 35px;
       color: var(--white);
       font-size: var(--font-10);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
       text-align: right;
     }
 
@@ -286,7 +286,7 @@
 
       color: var(--yellow);
       font-size: var(--font-14);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
       text-shadow: 0 0 15px Rgb(255 214 10 / 30%);
     }
   }
@@ -302,7 +302,7 @@
       padding: 0 16px 8px;
       color: Rgb(255 255 255 / 30%);
       font-size: var(--font-9);
-      font-weight: 800;
+      font-weight: $font-weight-extrabold;
       text-align: left;
       letter-spacing: 1px;
 
@@ -316,7 +316,7 @@
       padding: 12px 16px;
       background: Rgb(255 255 255 / 3%);
       font-size: var(--font-13);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
 
       @media (width <= 480px) {
         padding: 8px 6px;

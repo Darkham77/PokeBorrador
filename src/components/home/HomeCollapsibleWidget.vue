@@ -100,15 +100,14 @@ const toggle = (): void => {
   background: transparent;
   color: var(--white, var(--white));
   font-size: var(--font-11);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   outline: none;
   cursor: pointer;
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 
-  &:focus,
-  &:focus-visible {
+  &:focus:not(:focus-visible) {
     border: none;
     outline: none;
     box-shadow: none;

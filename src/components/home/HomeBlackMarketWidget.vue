@@ -181,7 +181,7 @@ function handleImageError(e: Event): void {
       .widget-sub {
         color: var(--gray, var(--slate-400));
         font-size: var(--font-9);
-        font-weight: 500;
+        font-weight: $font-weight-medium;
         line-height: 1.35;
       }
     }

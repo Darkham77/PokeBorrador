@@ -76,45 +76,44 @@ onUnmounted(() => {
 const MARKET_ANIM_CARD_SCALE_START = 0.98;
 
 // GSAP Grid stagger animation
-const animateGrid = (): void => {
-  nextTick(() => {
-    // 1. Target explorer cards
-    const explorerCards = document.querySelectorAll('.listing-card');
-    if (explorerCards.length > 0) {
-      gsap.killTweensOf(explorerCards);
-      gsap.fromTo(
-        explorerCards,
-        { opacity: 0, y: MARKET_ANIM_CARD_Y_OFFSET_PX, scale: MARKET_ANIM_CARD_SCALE_START },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: MARKET_ANIM_CARD_DURATION_SEC,
-          stagger: MARKET_ANIM_CARD_STAGGER_SEC,
-          ease: 'power2.out',
-          clearProps: 'transform,scale'
-        }
-      );
-    }
+const animateGrid = async (): Promise<void> => {
+  await nextTick();
+  // 1. Target explorer cards
+  const explorerCards = document.querySelectorAll('.listing-card');
+  if (explorerCards.length > 0) {
+    gsap.killTweensOf(explorerCards);
+    gsap.fromTo(
+      explorerCards,
+      { opacity: 0, y: MARKET_ANIM_CARD_Y_OFFSET_PX, scale: MARKET_ANIM_CARD_SCALE_START },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: MARKET_ANIM_CARD_DURATION_SEC,
+        stagger: MARKET_ANIM_CARD_STAGGER_SEC,
+        ease: 'power2.out',
+        clearProps: 'transform,scale'
+      }
+    );
+  }
 
-    // 2. Target user's active publications cards
-    const myCards = document.querySelectorAll('.my-listing-card');
-    if (myCards.length > 0) {
-      gsap.killTweensOf(myCards);
-      gsap.fromTo(
-        myCards,
-        { opacity: 0, x: MARKET_ANIM_MYCARD_X_OFFSET_PX },
-        {
-          opacity: 1,
-          x: 0,
-          duration: MARKET_ANIM_MYCARD_DURATION_SEC,
-          stagger: MARKET_ANIM_MYCARD_STAGGER_SEC,
-          ease: 'power2.out',
-          clearProps: 'transform'
-        }
-      );
-    }
-  });
+  // 2. Target user's active publications cards
+  const myCards = document.querySelectorAll('.my-listing-card');
+  if (myCards.length > 0) {
+    gsap.killTweensOf(myCards);
+    gsap.fromTo(
+      myCards,
+      { opacity: 0, x: MARKET_ANIM_MYCARD_X_OFFSET_PX },
+      {
+        opacity: 1,
+        x: 0,
+        duration: MARKET_ANIM_MYCARD_DURATION_SEC,
+        stagger: MARKET_ANIM_MYCARD_STAGGER_SEC,
+        ease: 'power2.out',
+        clearProps: 'transform'
+      }
+    );
+  }
 };
 
 // Watch active tab or listings change to animate items grid

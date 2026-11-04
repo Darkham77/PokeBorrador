@@ -119,7 +119,7 @@ describe('Passive Defense Logout & Rollback Prevention Suite', () => {
       id: 'local_angianemar',
       email: 'angianemar@local',
       db_version: 3
-    } as unknown as typeof authStore.user;
+    };
     (gameStore as unknown as { db: typeof mockDb }).db = mockDb;
 
     const pokes = [
@@ -151,7 +151,7 @@ describe('Passive Defense Logout & Rollback Prevention Suite', () => {
       id: 'local_angianemar',
       email: 'angianemar@local',
       db_version: 3
-    } as unknown as typeof authStore.user;
+    };
     gameStore.isDataLoaded = true;
     gameStore.isEngineReady = true;
     const saveSpy = vi.spyOn(gameStore, 'save').mockResolvedValue({ success: true });
@@ -171,7 +171,7 @@ describe('Passive Defense Logout & Rollback Prevention Suite', () => {
       id: 'local_angianemar',
       email: 'angianemar@local',
       db_version: 3
-    } as unknown as typeof authStore.user;
+    };
     (gameStore as unknown as { db: typeof mockDb }).db = mockDb;
 
     // Adventure team contains an over-level mon (level 70) which would fail season rules if fallen back to!

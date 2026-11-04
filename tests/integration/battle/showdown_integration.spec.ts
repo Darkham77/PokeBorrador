@@ -9,7 +9,7 @@ import { parseShowdownLogLine } from '@/logic/battle/showdownBridge';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import type { BattleStages } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
 describe('Showdown Integration & Adapters', () => {
   setActivePinia(createPinia());
@@ -347,7 +347,7 @@ describe('Showdown Integration & Adapters', () => {
           type: 'ground',
           cat: 'physical'
         }
-      ] as unknown as import('@/types/pokemon/pokemon').Move[];
+      ] as unknown as Move[];
 
       const p1Team = [mapToShowdownSet(makePokemon('vaporeon', 50)!)];
       const p2Team = [mapToShowdownSet(dugtrio)];
@@ -390,7 +390,7 @@ describe('Showdown Integration & Adapters', () => {
             type: 'poison',
             cat: 'special'
           }
-        ] as unknown as import('@/types/pokemon/pokemon').Move[];
+        ] as unknown as Move[];
 
         const player = makePokemon('vaporeon', 50)!;
         const stages = {
@@ -415,7 +415,7 @@ describe('Showdown Integration & Adapters', () => {
         // Caso 2: Bomba Lodo desactivada, debe elegir Bola Sombra
         enemy.disabledMove = {
           id: 'sludgebomb'
-        } as unknown as import('@/types/pokemon/pokemon').Move;
+        } as unknown as Move;
         const move2 = decideEnemyMove(enemy, player, stages, false);
         expect(move2?.id).toBe('shadowball');
       } finally {

@@ -24,7 +24,7 @@ describe('trainerFactory - buildTrainerTeam', () => {
 
   it('should generate a team of specified size and level', async () => {
     const team = await buildTrainerTeam(['pidgey', 'rattata'], 15, 3);
-    expect(team.length).toBe(3);
+    expect(team).toHaveLength(3);
     expect(team[0]?.level).toBe(15);
     expect(team[0]?.id).toBeDefined();
     interface ExtendedPokemon {
@@ -35,7 +35,7 @@ describe('trainerFactory - buildTrainerTeam', () => {
 
   it('should generate a team where all members have the specified level', async () => {
     const team = await buildTrainerTeam(['pidgey'], 25, 4);
-    expect(team.length).toBe(4);
+    expect(team).toHaveLength(4);
     for (const mon of team) {
       expect(mon.level).toBe(25);
       expect(mon.id).toBe('pidgey');
@@ -45,7 +45,7 @@ describe('trainerFactory - buildTrainerTeam', () => {
   it('should select members strictly from the provided species pool', async () => {
     const allowedPool = ['pidgey', 'rattata'] as const;
     const team = await buildTrainerTeam(allowedPool, 5, 5);
-    expect(team.length).toBe(5);
+    expect(team).toHaveLength(5);
     for (const mon of team) {
       expect(allowedPool).toContain(mon.id);
     }
@@ -53,7 +53,7 @@ describe('trainerFactory - buildTrainerTeam', () => {
 
   it('should handle single pokemon species pool without crash', async () => {
     const team = await buildTrainerTeam(['rattata'] as const, 12, 2);
-    expect(team.length).toBe(2);
+    expect(team).toHaveLength(2);
     expect(team[0]?.id).toBe('rattata');
     expect(team[1]?.id).toBe('rattata');
   });

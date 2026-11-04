@@ -30,7 +30,7 @@ describe('System Utilities & Save Services Domain Suite', () => {
     const backupData = JSON.parse(backupContent);
     const profiles: Array<{ id: string; email?: string; username?: string }> =
       backupData.data.profiles || [];
-    const gameSaves: Array<{ user_id?: string; save_data: string | GameState }> =
+    const gameSaves: Array<{ user_id?: string; save_data: unknown }> =
       backupData.data.game_saves || [];
 
     it('should diagnose kenviota account from recent backup and verify migration fix', () => {

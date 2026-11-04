@@ -106,7 +106,7 @@ describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
     const dummyContinent: ContinentMapResult = {
       width: W,
       height: H,
-      cells: [] as any, // any-ok: dummy continent fixture in test
+      cells: [], // any-ok: dummy continent fixture in test
       terrainMatrix: terrainMatrix as any, // any-ok: dummy continent fixture in test
       heightmap,
       resolvedWater: {} as any, // any-ok: dummy continent fixture in test
@@ -146,7 +146,7 @@ describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
 
       // Collect all POIs with hasPort === true
       const portPois = result.pois.filter((p) => p.hasPort);
-      expect(portPois.length).toBe(1);
+      expect(portPois).toHaveLength(1);
 
       const portCity = portPois[0]!;
 

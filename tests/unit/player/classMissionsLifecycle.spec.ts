@@ -111,7 +111,7 @@ describe('Class Missions Lifecycle Integration (All 4 Classes)', () => {
     await classStore.collectMission();
 
     // 3 Bug Pokémon added to box
-    expect(gameStore.state.box.length).toBe(3);
+    expect(gameStore.state.box).toHaveLength(3);
     for (const p of gameStore.state.box) {
       if (!p) continue;
       expect(['bug']).toContain(p.type === 'bug' || p.type2 === 'bug' ? 'bug' : 'other');

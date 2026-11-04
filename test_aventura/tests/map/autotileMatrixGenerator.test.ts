@@ -10,7 +10,7 @@ import { AUTOTILE_ENGINE_IDS } from '../../types/map/autotileStudioTypes.ts';
 
 describe('autotileMatrixGenerator', () => {
   it('defines exactly 47 canonical bitmask cases without duplicates', () => {
-    expect(CANONICAL_47_BITMASKS.length).toBe(47);
+    expect(CANONICAL_47_BITMASKS).toHaveLength(47);
 
     const masks = CANONICAL_47_BITMASKS.map((c) => c.bitmask);
     const uniqueMasks = new Set(masks);
@@ -20,7 +20,7 @@ describe('autotileMatrixGenerator', () => {
   it('correctly maps between bitmasks and 3x3 boolean grids', () => {
     for (const caseItem of CANONICAL_47_BITMASKS) {
       const grid = bitmaskTo3x3Grid(caseItem.bitmask);
-      expect(grid.length).toBe(3);
+      expect(grid).toHaveLength(3);
       expect(grid[0]?.length).toBe(3);
       expect(grid[1]?.[1]).toBe(true); // Center is always true
 
@@ -36,7 +36,7 @@ describe('autotileMatrixGenerator', () => {
 
         expect(patch.engineId).toBe(engineId);
         expect(patch.bitmaskCase).toBe(caseItem);
-        expect(patch.cells.length).toBe(3);
+        expect(patch.cells).toHaveLength(3);
 
         const centerCell = patch.cells[1]![1]!;
         expect(centerCell.isCenter).toBe(true);

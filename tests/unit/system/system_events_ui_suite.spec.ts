@@ -383,7 +383,7 @@ describe('System Events UI Components Suite', () => {
       authStore.user = {
         id: 'player-123',
         email: 'test@example.com'
-      } as import('@/types/auth/auth').AuthUser;
+      };
       gameStore.db = {
         from: () => ({
           upsert: () => ({
@@ -646,7 +646,7 @@ describe('System Events UI Components Suite', () => {
       });
 
       const pills = wrapper.findAll('.participant-pill');
-      expect(pills.length).toBe(3);
+      expect(pills).toHaveLength(3);
 
       // Click on the first pill (dratini)
       await pills[0]?.trigger('click');

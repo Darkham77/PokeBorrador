@@ -10,8 +10,8 @@ describe('showdownMoveChoiceHelper - Comprehensive Unit Tests', () => {
   describe('resolveValidMoveChoice', () => {
     it('should return falsy/empty choice strings unchanged', () => {
       expect(resolveValidMoveChoice('', [])).toBe('');
-      expect(resolveValidMoveChoice(null as unknown as string, [])).toBe(null);
-      expect(resolveValidMoveChoice(undefined as unknown as string, [])).toBe(undefined);
+      expect(resolveValidMoveChoice(null as unknown as string, [])).toBeNull();
+      expect(resolveValidMoveChoice(undefined as unknown as string, [])).toBeUndefined();
     });
 
     it('should return non-move commands unchanged', () => {

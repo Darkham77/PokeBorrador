@@ -1,11 +1,11 @@
-import { BattleStateSnapshot, StrategicState } from '../types';
 import { BattleState } from '../battle/state';
 import { DamageCalculator } from '../calculator/damage';
 import { InferenceEngine } from '../inference/engine';
-import { evaluateWinConditions } from './win-conditions';
-import { evaluateThreats } from './threats';
+import { BattleStateSnapshot, StrategicState } from '../types';
 import { evaluatePosition } from './position';
 import { calculateSackOrder } from './sack-order';
+import { evaluateThreats } from './threats';
+import { evaluateWinConditions } from './win-conditions';
 
 /**
  * Run the full strategic evaluation pipeline.

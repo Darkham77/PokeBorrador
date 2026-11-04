@@ -1,11 +1,12 @@
 import { test, expect, type Page } from '@playwright/test';
+
+import type { BattleState } from '../../../src/types/battle/battle.ts';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import {
   awaitBattleReadyForInput,
   awaitGameStoreReady,
   type WindowWithResolver
 } from '../e2e_helpers.ts';
-import type { BattleState } from '../../../src/types/battle/battle.ts';
 
 class ManualScenariosSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {

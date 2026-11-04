@@ -36,7 +36,7 @@ describe('PvP Invite Lifecycle & Safety Integration', () => {
     authStore.user = {
       id: 'user-player-1',
       email: 'player1@pvp.com'
-    } as unknown as typeof authStore.user;
+    };
 
     const gameStore = useGameStore();
     const advPoke = createFakePoke('adv-1', 'AdventureCharizard');

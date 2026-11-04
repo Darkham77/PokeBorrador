@@ -23,6 +23,8 @@ import { useEventStore } from '@/stores/events';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 
+import { sortRouteSpawnItems } from './routeSpawnsCalculationHelper.ts';
+
 const ROD_GOOD_BONUS_POINTS = 500;
 const ROD_SUPER_BONUS_POINTS = 1000;
 
@@ -146,12 +148,7 @@ export function useRouteSpawnsFishing(props: RouteSpawnsProps): {
           speciesBonuses
         });
       })
-      .sort((a, b) => {
-        if (a.percentage > 0 && b.percentage === 0) return -1;
-        if (a.percentage === 0 && b.percentage > 0) return 1;
-        if (a.percentage > 0 && b.percentage > 0) return b.percentage - a.percentage;
-        return b.totalStats - a.totalStats;
-      });
+      .sort(sortRouteSpawnItems);
   });
 
   function getFishingSpawnTooltip(poke: RouteSpawnMappedItem): {

@@ -2,6 +2,7 @@ import { setActivePinia, createPinia } from 'pinia';
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
+import type * as BattleOrchestratorModule from '@/logic/battle/orchestrator.ts';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { useBattleStore } from '@/stores/battle/battle';
 import { useGameStore } from '@/stores/game';
@@ -107,7 +108,7 @@ vi.mock('@/logic/battle/showdownWorkerClient.ts', () => ({
 }));
 
 vi.mock('@/logic/battle/orchestrator.ts', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/logic/battle/orchestrator.ts')>();
+  const actual = await importOriginal<typeof BattleOrchestratorModule>();
   return {
     ...actual,
     isPlayerTrappedInWorker: vi.fn(async () => false)

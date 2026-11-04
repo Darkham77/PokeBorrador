@@ -122,7 +122,7 @@ describe('System Market & GTS Domain Suite', () => {
         expect(res.count).toBe(2);
         expect(gs.state.money).toBe(initialMoney + totalValue);
         expect(gs.state.classData.blackMarketSales).toBe(2);
-        expect(gs.state.box.length).toBe(1); // Only Mewtwo remains
+        expect(gs.state.box).toHaveLength(1); // Only Mewtwo remains
         const mewtwo = gs.state.box[0] as Pokemon;
         expect(mewtwo.name).toBe('Mewtwo');
       });
@@ -249,7 +249,7 @@ describe('System Market & GTS Domain Suite', () => {
       });
 
       await gts.fetchListings();
-      expect(gts.listings.length).toBe(1);
+      expect(gts.listings).toHaveLength(1);
       expect(gts.listings[0]!.price).toBe(1000);
     });
 
@@ -322,11 +322,11 @@ describe('System Market & GTS Domain Suite', () => {
       ] as MarketListing[];
 
       gts.filters.mode = 'pokemon';
-      expect(gts.filteredListings.length).toBe(1);
+      expect(gts.filteredListings).toHaveLength(1);
       expect(gts.filteredListings[0]!.data.name).toBe('Pikachu');
 
       gts.filters.mode = 'item';
-      expect(gts.filteredListings.length).toBe(1);
+      expect(gts.filteredListings).toHaveLength(1);
       expect(gts.filteredListings[0]!.data.name).toBe('Poción');
     });
 
@@ -347,7 +347,7 @@ describe('System Market & GTS Domain Suite', () => {
       }));
 
       gts.myListings = mockListings;
-      expect(gts.activeMyListings.length).toBe(10);
+      expect(gts.activeMyListings).toHaveLength(10);
 
       const result = await gts.publishListing(
         'pokemon',
@@ -374,7 +374,7 @@ describe('System Market & GTS Domain Suite', () => {
       }));
 
       gts.myListings = mockListings;
-      expect(gts.activeMyListings.length).toBe(9);
+      expect(gts.activeMyListings).toHaveLength(9);
     });
 
     it('handles cancellation successfully', async () => {
@@ -470,13 +470,13 @@ describe('System Market & GTS Domain Suite', () => {
         }
       ];
 
-      expect(gts.pendingSalesClaims.length).toBe(1);
+      expect(gts.pendingSalesClaims).toHaveLength(1);
       expect(gts.unclaimedSalesCount).toBe(1);
 
-      expect(gts.pendingPurchaseClaims.length).toBe(2);
+      expect(gts.pendingPurchaseClaims).toHaveLength(2);
       expect(gts.unclaimedPurchasesCount).toBe(2);
 
-      expect(gts.allPendingGtsClaims.length).toBe(3);
+      expect(gts.allPendingGtsClaims).toHaveLength(3);
       expect(gts.unclaimedGtsCount).toBe(3);
     });
   });

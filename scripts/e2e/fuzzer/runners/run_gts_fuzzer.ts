@@ -1,14 +1,13 @@
-// scripts/e2e/fuzzer/runners/run_gts_fuzzer.ts
-import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
 import { Dex } from '@pkmn/sim';
-import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
-import type { Pokemon } from '../../../../src/types/pokemon/pokemon.ts';
+// scripts/e2e/fuzzer/runners/run_gts_fuzzer.ts
+import { defineCommand, runMain } from 'citty';
+
 import type { PokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
-import type { NatureId } from '../../../../src/data/battle/natures.ts';
-import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
-import type { PokemonType } from '../../../../src/data/battle/types.ts';
+import type { Pokemon } from '../../../../src/types/pokemon/pokemon.ts';
+import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
 
 const REPORT_FILE = path.resolve(
   process.cwd(),
@@ -40,14 +39,14 @@ async function runGTSFuzzer() {
       name: speciesName,
       level: 30,
       gender: 'm',
-      ability: 'illuminate' as AbilityId,
-      nature: 'serious' as NatureId,
+      ability: 'illuminate',
+      nature: 'serious',
       ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
       moves: [],
       hp: 100,
       maxHp: 100,
-      type: 'normal' as PokemonType,
+      type: 'normal',
       atk: 10,
       def: 10,
       spa: 10,

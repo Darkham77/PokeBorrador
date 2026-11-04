@@ -3,8 +3,7 @@ export const Abilities: import('../../../sim/dex-abilities').ModdedAbilityDataTa
     inherit: true,
     onDamage(damage, target, source, effect) {
       if (
-        effect &&
-        effect.effectType === 'Move' &&
+        effect?.effectType === 'Move' &&
         ['mimikyu', 'mimikyutotem'].includes(target.species.id) &&
         !target.transformed
       ) {

@@ -5,12 +5,14 @@
  * Enforces strict domain union types for items, species, abilities, and moves.
  */
 
-import dbJson from './random-sets.json' with { type: 'json' };
 import type { DisplayText } from '@francogp/auditor';
+
+import type { PokemonMoveId } from '@/types/pokemon/pokemon';
+
+import type { AbilityId } from '../battle/abilities.ts';
 import type { ItemId } from '../inventory/items.ts';
 import type { PokemonSpeciesId } from '../pokemon/pokedex.ts';
-import type { AbilityId } from '../battle/abilities.ts';
-import type { PokemonMoveId } from '@/types/pokemon/pokemon';
+import dbJson from './random-sets.json' with { type: 'json' };
 
 export interface RandomSetItem {
   moves: PokemonMoveId[];

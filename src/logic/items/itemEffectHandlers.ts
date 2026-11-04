@@ -1,6 +1,6 @@
 import type { ItemId } from '@/data/inventory/items';
 import type { ItemEffectResult } from '@/types/inventory/items';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { Pokemon, StatusClearTarget, PokemonStatKey } from '@/types/pokemon/pokemon';
 
 import { DEFAULT_MAX_PP_FALLBACK } from '../constants/gameplay.ts';
 import { checkStoneEvolution } from '../evolution/evolutionLogic.ts';
@@ -25,8 +25,6 @@ export function revive(p: Pokemon, amount: number): ItemEffectResult {
   p.status = '';
   return { success: true, message: `revivió con ${p.hp} HP` };
 }
-
-import type { StatusClearTarget } from '@/types/pokemon/pokemon';
 
 export function clearStatus(p: Pokemon, type: StatusClearTarget): ItemEffectResult {
   if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
@@ -93,7 +91,6 @@ import {
 } from '@/logic/pokemon/evMath';
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import { FRIENDSHIP_BOUNDS } from '@/types/pokemon/friendship.ts';
-import type { PokemonStatKey } from '@/types/pokemon/pokemon';
 
 const BERRY_FRIENDSHIP_INCREASE = 10;
 const VITAMIN_FRIENDSHIP_INCREASE = 5;

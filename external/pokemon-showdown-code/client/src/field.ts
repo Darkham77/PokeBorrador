@@ -123,7 +123,7 @@ export class Field {
   }
 
   destroy() {
-    // @ts-expect-error readonly
+    // @ts-ignore readonly
     this.battle = null!;
   }
 }

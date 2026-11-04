@@ -1,5 +1,7 @@
 import { Generations, Pokemon, Move, Field, calculate, Result } from '@smogon/calc';
+
 import { CONFIG } from '../config';
+import { logDebug } from '../logging/logger';
 import {
   PokemonState,
   BattleStateSnapshot,
@@ -8,7 +10,6 @@ import {
   MoveInfo,
   FieldState
 } from '../types';
-import { logDebug } from '../logging/logger';
 
 function toId(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]/g, '');

@@ -145,13 +145,12 @@ watch(
     () => props.pokemon?.status,
     isAnimated
   ],
-  () => {
+  async () => {
     idleCyclesTarget.value = Math.floor(Math.random() * 2) + 3;
     currentMode.value = 'idle';
     updateAnimatedImageUrls();
-    nextTick(() => {
-      animateSpritesheet();
-    });
+    await nextTick();
+    animateSpritesheet();
   },
   { immediate: true, deep: true }
 );

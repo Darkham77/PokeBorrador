@@ -1,6 +1,6 @@
 import { DatabaseSync } from 'node:sqlite';
 
-import { describe, it, expect, beforeEach } from 'vite-plus/test';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 
 import { emulateClaimAward } from '@/logic/db/rpcEmulations/eventRpc.ts';
 import type { SQLiteDatabase } from '@/logic/db/sqliteEngine.ts';
@@ -8,17 +8,13 @@ import type { SQLiteDatabase } from '@/logic/db/sqliteEngine.ts';
 let memoryDb: DatabaseSync;
 
 // Mock sqliteEngine for node testing of claim_award
-import { vi } from 'vite-plus/test';
 vi.mock('@/logic/db/sqliteEngine.ts', () => ({
   queryLocal: vi.fn(async (sql: string, params: unknown[] = []) => {
     const trimmed = sql.trim();
     const isSelect = trimmed.toUpperCase().startsWith('SELECT');
     const stmt = memoryDb.prepare(sql);
     if (isSelect) {
-      return stmt.all(...(params as (string | number | bigint | null)[])) as Record<
-        string,
-        unknown
-      >[];
+      return stmt.all(...(params as (string | number | bigint | null)[]));
     }
     stmt.run(...(params as (string | number | bigint | null)[]));
     return [];

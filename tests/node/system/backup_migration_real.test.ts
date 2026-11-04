@@ -229,12 +229,12 @@ function assertGameSavesValid(
 
   for (const row of saveRows) {
     const saveData = row.save_data as GameState;
-    assert.ok(saveData, `Save data for user ${row.user_id} must exist`);
+    assert.ok(saveData, `Save data for user ${String(row.user_id)} must exist`);
 
     const valResult = validateSaveData(saveData);
     assert.ok(
       valResult.success,
-      `Save for user ${row.user_id} must pass Valibot schema validation`
+      `Save for user ${String(row.user_id)} must pass Valibot schema validation`
     );
 
     const allPokes = [...(saveData.team || []), ...(saveData.box || [])].filter(
@@ -253,7 +253,7 @@ function assertEscrowPokemonValid(
   rowId: unknown
 ): void {
   if (!poke?.id) return;
-  assert.ok(poke.id, `${tableLabel} Pokemon must have id defined in ${rowId}`);
+  assert.ok(poke.id, `${tableLabel} Pokemon must have id defined in ${String(rowId)}`);
   assert.ok(
     Dex.species.get(poke.id).exists,
     `${tableLabel} Pokemon species '${poke.id}' must exist in Dex`

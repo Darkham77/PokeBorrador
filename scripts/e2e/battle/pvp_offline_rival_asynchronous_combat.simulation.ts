@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { awaitBattleReadyForInput, clickResilient } from '../e2e_helpers.ts';
 

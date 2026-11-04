@@ -118,16 +118,15 @@ const startPulse = (): void => {
   }
 };
 
-onMounted(() => {
-  nextTick(() => {
-    if (props.showSpinner) {
-      startRotation();
-    }
-    startGlow();
-    if (props.icon) {
-      startPulse();
-    }
-  });
+onMounted(async () => {
+  await nextTick();
+  if (props.showSpinner) {
+    startRotation();
+  }
+  startGlow();
+  if (props.icon) {
+    startPulse();
+  }
 });
 
 onUnmounted(() => {
@@ -138,11 +137,10 @@ onUnmounted(() => {
 
 watch(
   () => props.showSpinner,
-  (show) => {
+  async (show) => {
     if (show) {
-      nextTick(() => {
-        startRotation();
-      });
+      await nextTick();
+      startRotation();
     } else if (spinnerTween) {
       spinnerTween.kill();
       spinnerTween = null;
@@ -152,20 +150,18 @@ watch(
 
 watch(
   () => props.theme,
-  () => {
-    nextTick(() => {
-      startGlow();
-    });
+  async () => {
+    await nextTick();
+    startGlow();
   }
 );
 
 watch(
   () => props.icon,
-  (newIcon) => {
+  async (newIcon) => {
     if (newIcon) {
-      nextTick(() => {
-        startPulse();
-      });
+      await nextTick();
+      startPulse();
     } else if (pulseTween) {
       pulseTween.kill();
       pulseTween = null;

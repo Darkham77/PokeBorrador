@@ -9,7 +9,7 @@ A library for building [Pokémon Showdown](https://pokemonshowdown.com) client U
 ## Installation
 
 ```sh
-npm install @pkmn/view
+$ npm install @pkmn/view
 ```
 
 ## Usage
@@ -18,8 +18,8 @@ npm install @pkmn/view
 `@pkmn/client` and extend its functionality in ways which are relevant for building client UIs.
 
 This package is expected to grow in scope, as several primitives have yet to be completed (eg.
-`AnimatedBattle`). Currently, this package offers a [`LogFormatter`](#logformatter) for
-pretty-printing the battle protocol and a [`ChoiceBuilder`](#choicebuilder) helper to make it
+`AnimatedBattle`). Currently, this package offers a [`LogFormatter`](#LogFormatter) for
+pretty-printing the battle protocol and a [`ChoiceBuilder`](#ChoiceBuilder) helper to make it
 easier for humans to construct responses.
 
 #### `LogFormatter`
@@ -69,8 +69,8 @@ the wrong sorts of responses being issued for the various request types, and con
 allow for flexibly specifying choices in a more human-friendly and intuitive way.
 
 ```ts
-import { ChoiceBuilder } from '@pkmn/view';
 import { Protocol } from '@pkmn/protocol';
+import { ChoiceBuilder } from '@pkmn/view';
 
 const request = Protocol.parseRequest(str);
 const builder = new ChoiceBuilder(request);

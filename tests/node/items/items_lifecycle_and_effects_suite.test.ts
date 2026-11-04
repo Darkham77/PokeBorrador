@@ -8,7 +8,6 @@ import { setActivePinia, createPinia } from 'pinia';
 import { describe, test, expect, beforeEach } from 'vite-plus/test';
 
 import { requireAbilityId } from '@/data/battle/abilities.ts';
-import type { ItemId } from '@/data/inventory/items.ts';
 import { getPreEvolution } from '@/data/pokemon/evolutionData.ts';
 import { isPokemonSpeciesId, requirePokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB.ts';
@@ -288,13 +287,13 @@ describe('Items Domain: Lifecycle, Effects & Matrices Suite', () => {
       expect(gameStore.state.pickaxeSecs).toBe(1200);
       expect(gameStore.state.pickaxeType).toBe('gold');
       expect(gameStore.state.brushSecs).toBe(0);
-      expect(gameStore.state.brushType).toBe(null);
+      expect(gameStore.state.brushType).toBeNull();
 
       buffsStore.addBuff('brush', 1200, 'super');
       expect(gameStore.state.brushSecs).toBe(1200);
       expect(gameStore.state.brushType).toBe('super');
       expect(gameStore.state.pickaxeSecs).toBe(0);
-      expect(gameStore.state.pickaxeType).toBe(null);
+      expect(gameStore.state.pickaxeType).toBeNull();
     });
 
     test('cleans up tool types when time expires (0 seconds)', () => {
@@ -313,7 +312,7 @@ describe('Items Domain: Lifecycle, Effects & Matrices Suite', () => {
       advanceCmd?.action(1200 as never);
 
       expect(gameStore.state.fishingRodSecs).toBe(0);
-      expect(gameStore.state.fishingRodType).toBe(null);
+      expect(gameStore.state.fishingRodType).toBeNull();
       expect(gameStore.state.repelSecs).toBe(0);
     });
 
@@ -423,14 +422,14 @@ describe('Items Domain: Lifecycle, Effects & Matrices Suite', () => {
           { id: 'thundershock', name: 'Impactrueno', pp: 30, maxPP: 30, type: 'electric' }
         ];
 
-        inventoryStore.addItem('tm01' as ItemId, 1);
+        inventoryStore.addItem('tm01', 1);
         expect(gameStore.state.inventory['tm01']).toBe(1);
 
         const res = executeUseItem('tm01', 'team', 0);
         expect(res.success).toBe(true);
         expect(res.resultType).toBe('learn_move');
 
-        expect(mon.moves.length).toBe(2);
+        expect(mon.moves).toHaveLength(2);
         expect(gameStore.state.inventory['tm01']).toBeUndefined();
       });
 
@@ -440,9 +439,9 @@ describe('Items Domain: Lifecycle, Effects & Matrices Suite', () => {
         const inventoryStore = useInventoryStore();
 
         const mon = gameStore.state.team[0] as Pokemon;
-        expect(mon.moves.length).toBe(4);
+        expect(mon.moves).toHaveLength(4);
 
-        inventoryStore.addItem('tm01' as ItemId, 1);
+        inventoryStore.addItem('tm01', 1);
 
         const res = executeUseItem('tm01', 'team', 0);
         expect(res.success).toBe(true);

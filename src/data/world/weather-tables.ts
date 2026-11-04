@@ -1,7 +1,7 @@
-import { kantoWeather } from '../weather/kanto/index.ts';
 import type { WeatherId } from '@/logic/weather/weatherRegistry.ts';
-
 import type { DayPhase } from '@/types/system/time.ts';
+
+import { kantoWeather } from '../weather/kanto/index.ts';
 
 export const WEATHER_SEASON_IDS = ['spring', 'summer', 'autumn', 'winter'] as const;
 export type WeatherSeasonId = (typeof WEATHER_SEASON_IDS)[number];

@@ -1,3 +1,5 @@
+import { DebugOutput } from '../sim/exported-global-types';
+
 /**
  * Utils library
  *
@@ -64,6 +66,22 @@ export function stripHTML(htmlContent: string) {
 }
 
 /**
+ * Normalize a message for the purposes of searching.
+ */
+export function normalize(message: string) {
+  message = message
+    .replace(/'/g, '')
+    .replace(/[^A-Za-z0-9]+/g, ' ')
+    .trim();
+  if (!/[A-Za-z][A-Za-z]/.test(message)) {
+    message = message.replace(/ */g, '');
+  } else if (!message.includes(' ')) {
+    message = message.replace(/([A-Z])/g, ' $1').trim();
+  }
+  return ' ' + message.toLowerCase() + ' ';
+}
+
+/**
  * Maps numbers to their ordinal string.
  */
 export function formatOrder(place: number) {
@@ -86,7 +104,7 @@ export function visualize(value: any, depth = 0): string {
   if (value === undefined) return `undefined`;
   if (value === null) return `null`;
   if (typeof value === 'number' || typeof value === 'boolean') {
-    return `${value}`;
+    return `${value as DebugOutput}`;
   }
   if (typeof value === 'string') {
     return `"${value}"`; // NOT ESCAPED
@@ -321,29 +339,6 @@ export function clampIntRange(num: any, min?: number, max?: number): number {
   return num;
 }
 
-export function clearRequireCache(options: { exclude?: string[] } = {}) {
-  const excludes = options?.exclude || [];
-  excludes.push('/node_modules/');
-
-  for (const path in require.cache) {
-    if (excludes.some((p) => path.includes(p))) continue;
-    const mod = require.cache[path]; // have to ref to appease ts
-    if (!mod) continue;
-    uncacheModuleTree(mod, excludes);
-    delete require.cache[path];
-  }
-}
-
-export function uncacheModuleTree(mod: NodeJS.Module, excludes: string[]) {
-  if (!mod.children?.length || excludes.some((p) => mod.filename.includes(p))) return;
-  for (const [i, child] of mod.children.entries()) {
-    if (excludes.some((p) => child.filename.includes(p))) continue;
-    mod.children?.splice(i, 1);
-    uncacheModuleTree(child, excludes);
-  }
-  delete (mod as any).children;
-}
-
 export function deepClone(obj: any): any {
   if (obj === null || typeof obj !== 'object') return obj;
   if (Array.isArray(obj)) return obj.map((prop) => deepClone(prop));
@@ -445,10 +440,7 @@ export function bufWriteHex(buf: Uint8Array, hex: string, offset = 0) {
   }
 }
 export function bufReadHex(buf: Uint8Array, start = 0, end?: number) {
-  return buf
-    .slice(start, end)
-    .map((val) => val.toString(16).padStart(2, '0'))
-    .join('');
+  return [...buf.slice(start, end)].map((val) => val.toString(16).padStart(2, '0')).join('');
 }
 
 export class Multiset<T> extends Map<T, number> {
@@ -480,7 +472,6 @@ export const Utils = {
   deepClone,
   deepFreeze,
   clampIntRange,
-  clearRequireCache,
   randomElement,
   forceWrap,
   splitFirst,

@@ -112,7 +112,7 @@
   color: var(--white);
   font-family: var(--font-pixel);
   font-size: $size;
-  font-weight: 900;
+  font-weight: $font-weight-black;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   box-shadow: var(--shadow-card);

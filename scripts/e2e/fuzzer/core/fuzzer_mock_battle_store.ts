@@ -1,10 +1,11 @@
+import { getActivePinia, setActivePinia, createPinia } from 'pinia';
 // scripts/battle-tester/fuzzer-mock-battle-store.ts
 import { ref } from 'vue';
-import type { BattleContext } from '../../../../src/types/battle/battleContext.ts';
-import type { BattleState, BattleStages, BattleLog } from '../../../../src/types/battle/battle.ts';
-import type { Pokemon, Move } from '../../../../src/types/pokemon/pokemon.ts';
-import { getActivePinia, setActivePinia, createPinia } from 'pinia';
+
 import { useGameStore } from '../../../../src/stores/game.ts';
+import type { BattleState, BattleStages, BattleLog } from '../../../../src/types/battle/battle.ts';
+import type { BattleContext } from '../../../../src/types/battle/battleContext.ts';
+import type { Pokemon, Move } from '../../../../src/types/pokemon/pokemon.ts';
 
 export function createMockBattleContext(
   playerPoke: Pokemon,

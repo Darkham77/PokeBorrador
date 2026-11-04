@@ -93,7 +93,7 @@ const hatchEgg = (egg: PokemonEgg): void => {
   background: Rgb(255 51 102 / 8%);
   color: var(--pokecenter-pink);
   font-size: var(--font-12);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
 
   .npc-badge {
     @include pixelated;
@@ -104,7 +104,7 @@ const hatchEgg = (egg: PokemonEgg): void => {
     background: Rgb(56 189 248 / 15%);
     color: var(--sky);
     font-size: var(--font-9);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
   }
 
   &.empty {

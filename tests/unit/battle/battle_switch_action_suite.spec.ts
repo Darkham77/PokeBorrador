@@ -146,7 +146,7 @@ describe('Switch Sync & Showdown Worker Protocol', () => {
     vi.clearAllMocks();
     mockWorker.postMessage.mockClear();
     mockWorker.postMessage.mockImplementation(() => {
-      Promise.resolve().then(() => {
+      queueMicrotask(() => {
         if (mockWorker.onmessage) {
           mockWorker.onmessage({
             data: {

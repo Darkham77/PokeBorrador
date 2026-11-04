@@ -1,6 +1,9 @@
 import type { Page } from '@playwright/test';
+
+import type { ItemId } from '../../src/data/inventory/items.ts';
+import type { WeatherId } from '../../src/logic/weather/weatherRegistry.ts';
+import type { BattleReadyForInputDetail } from '../../src/types/battle/battleEvents.ts';
 import { BaseE2ESimulation, type SimulationOptions } from './base_simulation.ts';
-import { MAX_PER_ACTION_TIMEOUT_MS, SIMULATION_GSAP_TIME_SCALE } from './simulation_config.ts';
 import {
   armBattleFlowCompletion,
   awaitBattleFlowCompletion,
@@ -10,18 +13,6 @@ import {
   clickResilient,
   type CertifiedTestBatch
 } from './e2e_helpers.ts';
-import type { BattleReadyForInputDetail } from '../../src/types/battle/battleEvents.ts';
-import type { ItemId } from '../../src/data/inventory/items.ts';
-import type { WeatherId } from '../../src/logic/weather/weatherRegistry.ts';
-import {
-  type DebugPokemonSpec,
-  type BattleScenarioOptions,
-  setSimulationMapWeather,
-  seedSimulationInventory,
-  setupBattleScenarioHelper,
-  resetSimulationToCleanState,
-  setupFuzzerScenarioHelper
-} from './helpers/battleScenarioSetupHelper.ts';
 import {
   type BattleStoreSnapshot,
   getPlayerHpHelper,
@@ -35,6 +26,16 @@ import {
   throwBallHelper
 } from './helpers/battleActionExecutionHelper.ts';
 import { replayCertifiedBattleRunner } from './helpers/battleReplayExecutionHelper.ts';
+import {
+  type DebugPokemonSpec,
+  type BattleScenarioOptions,
+  setSimulationMapWeather,
+  seedSimulationInventory,
+  setupBattleScenarioHelper,
+  resetSimulationToCleanState,
+  setupFuzzerScenarioHelper
+} from './helpers/battleScenarioSetupHelper.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS, SIMULATION_GSAP_TIME_SCALE } from './simulation_config.ts';
 
 export type { DebugPokemonSpec, BattleScenarioOptions, BattleStoreSnapshot };
 

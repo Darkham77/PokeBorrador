@@ -25,7 +25,7 @@ describe('Emergent Corridor Property Engine (Phase 4)', () => {
     const continent = sculptContinentFromGraph(embedded, { seed: 42 });
     const enriched = enrichCorridorProperties(embedded, continent);
 
-    expect(enriched.length).toBe(embedded.corridors.length);
+    expect(enriched).toHaveLength(embedded.corridors.length);
 
     for (const prop of enriched) {
       expect(prop.width).toBeGreaterThanOrEqual(3);
@@ -98,9 +98,9 @@ describe('Emergent Corridor Property Engine (Phase 4)', () => {
         const prop = enriched[i]!;
 
         if (corr.kind === 'wormhole_tunnel') {
-          expect(prop.gatehouses.length).toBe(0);
+          expect(prop.gatehouses).toHaveLength(0);
         } else if (corr.kind === 'surf_route') {
-          expect(prop.gatehouses.length).toBe(0);
+          expect(prop.gatehouses).toHaveLength(0);
         } else if (corr.pathCells.length >= 12) {
           expect(prop.gatehouses.length).toBeGreaterThanOrEqual(1);
         }

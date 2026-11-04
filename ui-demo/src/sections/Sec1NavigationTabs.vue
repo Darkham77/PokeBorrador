@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+
 import { logToInspector } from '../logic/useLiveInspector.ts';
 
 const activeTab = ref('ENTRENADOR');

@@ -4,9 +4,11 @@
  * Strongly-typed domain wrapper for src/data/pokemon/pokemonFeetDatabase.json.
  */
 
-import dbJson from './pokemonFeetDatabase.json' with { type: 'json' };
 import type { AssetUri } from '@francogp/auditor';
+
 import type { GlobalShadowConfig } from '@/types/pokemon/spriteShadows';
+
+import dbJson from './pokemonFeetDatabase.json' with { type: 'json' };
 
 export interface PackedFeetDatabase {
   p?: Record<AssetUri, readonly number[]>;

@@ -1,6 +1,7 @@
-import type { PokemonSpeciesId } from './pokedex.ts';
 import type { PokemonStatKey } from '@/types/pokemon/pokemon';
+
 import evYieldsJson from './evYields.json' with { type: 'json' };
+import type { PokemonSpeciesId } from './pokedex.ts';
 
 export type EvYield = Partial<Record<PokemonStatKey, number>>;
 

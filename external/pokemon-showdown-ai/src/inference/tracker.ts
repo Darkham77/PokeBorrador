@@ -1,5 +1,5 @@
-import { InferredSet, InferredInfo, RandomBattleSetEntry } from '../types';
 import { logDebug } from '../logging/logger';
+import { InferredSet, InferredInfo, RandomBattleSetEntry } from '../types';
 
 function toId(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]/g, '');

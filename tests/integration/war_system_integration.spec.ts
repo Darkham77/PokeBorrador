@@ -36,6 +36,18 @@ describe('War System Integration', () => {
       save: vi.fn().mockResolvedValue(true)
     } as unknown as GameState;
 
+    function mockChainableQuery<T>(data: T) {
+      const payload = { data, error: null };
+      const promise = Promise.resolve(payload);
+      const builder: Record<string, unknown> = {
+        then: promise.then.bind(promise),
+        catch: promise.catch.bind(promise),
+        limit: vi.fn().mockReturnValue(promise),
+        eq: vi.fn().mockImplementation(() => builder)
+      };
+      return builder;
+    }
+
     gs.db = {
       rpc: vi
         .fn()
@@ -49,58 +61,37 @@ describe('War System Integration', () => {
       from: vi.fn().mockImplementation((table: string) => {
         if (table === 'war_user_points') {
           return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({
-                eq: vi.fn().mockResolvedValue({
-                  data: [{ points: 1600 }], // User reached 1600 PT (Milestone 1501 -> 150 coins)
-                  error: null
-                })
-              })
-            })
+            select: vi.fn().mockReturnValue(mockChainableQuery([{ points: 1600 }]))
           };
         }
         if (table === 'guardian_captures') {
           return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({
-                eq: vi.fn().mockResolvedValue({ data: [], error: null })
-              })
-            }),
+            select: vi.fn().mockReturnValue(mockChainableQuery([])),
             insert: vi.fn().mockResolvedValue({ error: null })
           };
         }
         if (table === 'war_points') {
           return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockResolvedValue({
-                data: [
-                  { map_id: 'route1', faction: 'union', points: 500 },
-                  { map_id: 'route1', faction: 'poder', points: 200 },
-                  { map_id: 'route2', faction: 'union', points: 400 }
-                ],
-                error: null
-              })
-            })
+            select: vi.fn().mockReturnValue(
+              mockChainableQuery([
+                { map_id: 'route1', faction: 'union', points: 500 },
+                { map_id: 'route1', faction: 'poder', points: 200 },
+                { map_id: 'route2', faction: 'union', points: 400 }
+              ])
+            )
           };
         }
         if (table === 'war_dominance') {
           return {
             select: vi.fn().mockImplementation((cols: string) => {
               if (cols === 'map_id') {
-                return {
-                  eq: vi.fn().mockResolvedValue({ data: [], error: null })
-                };
+                return mockChainableQuery([]);
               }
-              return {
-                eq: vi.fn().mockResolvedValue({
-                  data: [
-                    { winner_faction: 'union' },
-                    { winner_faction: 'union' },
-                    { winner_faction: 'poder' }
-                  ],
-                  error: null
-                })
-              };
+              return mockChainableQuery([
+                { winner_faction: 'union' },
+                { winner_faction: 'union' },
+                { winner_faction: 'poder' }
+              ]);
             }),
             upsert: vi
               .fn()
@@ -113,11 +104,7 @@ describe('War System Integration', () => {
           };
         }
         return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              eq: vi.fn().mockResolvedValue({ data: [], error: null })
-            })
-          }),
+          select: vi.fn().mockReturnValue(mockChainableQuery([])),
           upsert: vi.fn().mockResolvedValue({ error: null })
         };
       })
@@ -127,7 +114,7 @@ describe('War System Integration', () => {
     auth.user = {
       id: 'trainer_01',
       user_metadata: { username: 'Trainer01' }
-    } as unknown as typeof auth.user;
+    };
   });
 
   it('integrated flow: conflict zones -> guardian encounter -> point accumulation -> weekly resolution', async () => {

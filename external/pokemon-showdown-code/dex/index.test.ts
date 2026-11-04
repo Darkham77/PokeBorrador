@@ -200,7 +200,7 @@ describe('Dex', () => {
       expect(Dex.moves.get('Feint').breaksProtect).toBe(true);
       expect(Dex.moves.get('Sacred Sword').ignoreDefensive).toBe(true);
       expect(Dex.moves.get('Fissure').ohko).toBe(true);
-      expect(Dex.forGen(8).moves.get('G-Max Befuddle').isNonstandard).toBe('Gigantamax');
+      expect(Dex.forGen(8).moves.get('G-Max Befuddle').isNonstandard).toBe('Gmax');
 
       // self
       expect(Dex.moves.get('Petal Dance').self!.volatileStatus).toBe('lockedmove');
@@ -324,8 +324,9 @@ describe('Dex', () => {
       // Rockruff (1) + Lycanroc (2) + [Pikachu (1) + Zarude (1)]
       // {DLC2} Giratina (1) + *-Therian (3) + Genesect (4) + Zygarde (2) +
       // Birds (3) + Slowking (1) + Calyrex (2)
-      // {GMax} 26 + 7
+      // {GMax} 26 + (1 + 7)
       formes =
+        26 +
         17 +
         5 +
         1 +
@@ -349,7 +350,7 @@ describe('Dex', () => {
         2 +
         2 +
         1 +
-        (4 + 1 + 1 + 1 + 1 + 2 + (1 + 1)) +
+        (1 + 7 + 4 + 1 + 1 + 1 + 1 + 2 + (1 + 1)) +
         (1 + 3 + 4 + 2 + 3 + 1 + 2);
       expect(counts(8)).toEqual({ species: 664, formes });
       // Galar (1) + Paldea (4) + Rotom (5) + Basculin (1) + Vivillon-Fancy (1) + Oricorio (3) +

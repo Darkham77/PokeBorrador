@@ -774,6 +774,7 @@ defineExpose({
 
       <!-- Coordinate Grid Lines & Labels -->
       <svg
+        aria-hidden="true"
         v-if="store.showGrid"
         class="grid-svg-layer"
         :viewBox="`0 0 ${KANTO_WORLD_WIDTH} ${KANTO_WORLD_HEIGHT}`"
@@ -804,6 +805,7 @@ defineExpose({
 
       <!-- SVG Routes & Interactive Overlay -->
       <svg
+        aria-hidden="true"
         class="routes-svg-layer"
         :viewBox="`0 0 ${KANTO_WORLD_WIDTH} ${KANTO_WORLD_HEIGHT}`"
         :width="KANTO_WORLD_WIDTH"

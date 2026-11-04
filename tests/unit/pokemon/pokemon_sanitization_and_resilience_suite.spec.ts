@@ -407,9 +407,9 @@ describe('Pokemon Sanitization & Resilience Domain Suite', () => {
       expect(result.modified).toBe(true);
 
       // Squirtle must be promoted to team to prevent empty team
-      expect(fakeSave.team.length).toBe(1);
+      expect(fakeSave.team).toHaveLength(1);
       expect(fakeSave.team[0]?.id).toBe('squirtle');
-      expect(fakeSave.box.length).toBe(0);
+      expect(fakeSave.box).toHaveLength(0);
     });
 
     it('preserves Save Shield: creates a legal rescue starter if entire account had only disabled pokemon', () => {
@@ -463,7 +463,7 @@ describe('Pokemon Sanitization & Resilience Domain Suite', () => {
       expect(result.modified).toBe(true);
 
       // Team must have at least 1 legal Pokémon (Bulbasaur fallback)
-      expect(fakeSave.team.length).toBe(1);
+      expect(fakeSave.team).toHaveLength(1);
       expect(fakeSave.team[0]?.id).toBe('bulbasaur');
       expect(checkPokemonLegality(fakeSave.team[0] as unknown as Pokemon).isLegal).toBe(true);
     });

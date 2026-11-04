@@ -4,7 +4,7 @@ import type { Battle } from '@pkmn/sim';
 import type { CertifiedBattleHistoryEntry } from '../../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
 import { ShowdownBattleEngine } from '../engine/showdownBattleEngine.ts';
 import type { CertifiedCheatHistoryStep } from './battleCheatManager.ts';
-import { ShowdownBattleRunner } from './showdownBattleRunner.ts';
+import { type ShowdownBattleRunner } from './showdownBattleRunner.ts';
 
 export interface ShowdownExecutorOptions {
   battle: Battle;

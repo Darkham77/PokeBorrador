@@ -84,10 +84,7 @@ describe('Mountain Stairs & Route Network Integrity (Paso 4 / Error 4)', () => {
       }
     }
 
-    expect(
-      blockedLandings.length,
-      `Found ${blockedLandings.length} props/trees blocking stair corridors: ${JSON.stringify(blockedLandings)}`
-    ).toBe(0);
+    expect(blockedLandings).toHaveLength(0);
   });
 
   it('ensures every mountain stair connects its lower and upper landings to the pathGrid', () => {
@@ -121,9 +118,6 @@ describe('Mountain Stairs & Route Network Integrity (Paso 4 / Error 4)', () => {
       }
     }
 
-    expect(
-      disconnectedStairs.length,
-      `Found ${disconnectedStairs.length} stairs not connected to route network: ${JSON.stringify(disconnectedStairs)}`
-    ).toBe(0);
+    expect(disconnectedStairs).toHaveLength(0);
   });
 });

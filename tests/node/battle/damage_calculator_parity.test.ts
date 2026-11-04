@@ -108,11 +108,12 @@ describe('HeuristicAI - Damage Parity Checks (@pkmn/sim vs @smogon/calc)', () =>
     snapshot: HeuristicBattleSnapshot,
     calculator: HeuristicDamageCalculator
   ): void {
+    const defTypesStr = tc.defTypes.join('/');
     const simEff = calculateSimTypeEffectiveness(dex, tc.moveType, tc.defTypes);
     assert.strictEqual(
       simEff,
       tc.expectedEff,
-      `Sim effectiveness mismatch for ${tc.moveType} vs ${tc.defTypes}`
+      `Sim effectiveness mismatch for ${tc.moveType} vs ${defTypesStr}`
     );
 
     snapshot.mySide.activePokemon!.species = ATTACKER_SPECIES_BY_TYPE[tc.moveType] || 'eevee';
@@ -132,12 +133,12 @@ describe('HeuristicAI - Damage Parity Checks (@pkmn/sim vs @smogon/calc)', () =>
       assert.strictEqual(
         res.maxPercent,
         0,
-        `Expected 0 damage due to immunity for ${tc.moveType} vs ${tc.defTypes}`
+        `Expected 0 damage due to immunity for ${tc.moveType} vs ${defTypesStr}`
       );
     } else {
       assert.ok(
         res.maxPercent > 0,
-        `Expected positive damage for ${tc.moveType} vs ${tc.defTypes}`
+        `Expected positive damage for ${tc.moveType} vs ${defTypesStr}`
       );
     }
   }

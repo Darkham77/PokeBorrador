@@ -29,8 +29,8 @@
           "/color$/": ["transparent", "currentColor", "none"],
           "z-index": ["auto", "0", "-1"],
           "font-size": ["inherit", "initial"],
-          "box-shadow": ["none", "inherit", "initial", "/^inset /", "/^0 /", "/^var\\(/", "/^\\$/"],
-          "border-radius": ["0", "50%", "100%", "9999px", "inherit", "initial"],
+          "box-shadow": ["none"],
+          "border-radius": ["0", "50%", "100%", "9999px", "inherit"],
           "font-family": [
             "inherit",
             "initial",
@@ -53,20 +53,7 @@
           "gap": ["0", "normal"],
           "row-gap": ["0", "normal"],
           "column-gap": ["0", "normal"],
-          "font-weight": [
-            "normal",
-            "bold",
-            "bolder",
-            "lighter",
-            "400",
-            "500",
-            "600",
-            "700",
-            "800",
-            "900",
-            "inherit",
-            "initial"
-          ],
+          "font-weight": ["normal", "bold", "bolder", "lighter"],
           "transition-timing-function": [
             "linear",
             "ease",

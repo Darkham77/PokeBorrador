@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page, type Locator } from '@playwright/test';
+
 import { BaseE2ESimulation } from '../base_simulation.ts';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 
@@ -203,6 +204,32 @@ class ClassDeploymentsSimulation extends BaseE2ESimulation {
   }
 }
 
+async function selectMissionPokemonAndCollect(
+  page: Page,
+  sim: ClassDeploymentsSimulation,
+  missionCard: Locator,
+  pokemonUid?: string
+): Promise<void> {
+  const deliverBtn = page.locator('#deliver-btn-class-mission_6h');
+  await deliverBtn.click();
+
+  if (pokemonUid) {
+    const pokeOption = page.locator(`#pokemon-select-${pokemonUid}`);
+    await expect(pokeOption).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await pokeOption.click();
+  }
+
+  const activeProgress = missionCard.locator('.mission-active-progress');
+  await expect(activeProgress).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+
+  await sim.fastForwardActiveMission();
+
+  await expect(deliverBtn).toHaveText('COBRAR BOTÍN', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  await deliverBtn.click();
+
+  await expect(activeProgress).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+}
+
 test.describe('Class Deployments E2E Simulation (All 4 Classes)', () => {
   test('1. Rocket: Sacrifices poison pokemon from box, starts 6h mission, collects bounty and nugget in-situ', async ({
     page
@@ -216,25 +243,7 @@ test.describe('Class Deployments E2E Simulation (All 4 Classes)', () => {
     const missionCard = page.locator('#mission-card-class-mission_6h');
     await expect(missionCard).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-    const deliverBtn = page.locator('#deliver-btn-class-mission_6h');
-    await deliverBtn.click();
-
-    const ekansOption = page.locator(`#pokemon-select-${ekansUid}`);
-    await expect(ekansOption).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await ekansOption.click();
-
-    // Verify mission card displays active progress
-    const activeProgress = missionCard.locator('.mission-active-progress');
-    await expect(activeProgress).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
-
-    // Fast-forward mission completion
-    await sim.fastForwardActiveMission();
-
-    await expect(deliverBtn).toHaveText('COBRAR BOTÍN', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await deliverBtn.click();
-
-    // Verify in-situ collection completed
-    await expect(activeProgress).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await selectMissionPokemonAndCollect(page, sim, missionCard, ekansUid);
 
     const gameState = await page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
@@ -268,19 +277,7 @@ test.describe('Class Deployments E2E Simulation (All 4 Classes)', () => {
     const missionCard = page.locator('#mission-card-class-mission_6h');
     await expect(missionCard).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-    // Cazabichos starts immediately without selecting a Pokémon
-    const deliverBtn = page.locator('#deliver-btn-class-mission_6h');
-    await deliverBtn.click();
-
-    const activeProgress = missionCard.locator('.mission-active-progress');
-    await expect(activeProgress).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
-
-    await sim.fastForwardActiveMission();
-
-    await expect(deliverBtn).toHaveText('COBRAR BOTÍN', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await deliverBtn.click();
-
-    await expect(activeProgress).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await selectMissionPokemonAndCollect(page, sim, missionCard);
 
     const gameState = await page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
@@ -314,22 +311,7 @@ test.describe('Class Deployments E2E Simulation (All 4 Classes)', () => {
     const missionCard = page.locator('#mission-card-class-mission_6h');
     await expect(missionCard).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-    const deliverBtn = page.locator('#deliver-btn-class-mission_6h');
-    await deliverBtn.click();
-
-    const pikaOption = page.locator(`#pokemon-select-${pikaUid}`);
-    await expect(pikaOption).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await pikaOption.click();
-
-    const activeProgress = missionCard.locator('.mission-active-progress');
-    await expect(activeProgress).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
-
-    await sim.fastForwardActiveMission();
-
-    await expect(deliverBtn).toHaveText('COBRAR BOTÍN', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await deliverBtn.click();
-
-    await expect(activeProgress).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await selectMissionPokemonAndCollect(page, sim, missionCard, pikaUid);
 
     const gameState = await page.evaluate(async (uid) => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
@@ -361,22 +343,7 @@ test.describe('Class Deployments E2E Simulation (All 4 Classes)', () => {
     const missionCard = page.locator('#mission-card-class-mission_6h');
     await expect(missionCard).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-    const deliverBtn = page.locator('#deliver-btn-class-mission_6h');
-    await deliverBtn.click();
-
-    const eeveeOption = page.locator(`#pokemon-select-${eeveeUid}`);
-    await expect(eeveeOption).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await eeveeOption.click();
-
-    const activeProgress = missionCard.locator('.mission-active-progress');
-    await expect(activeProgress).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
-
-    await sim.fastForwardActiveMission();
-
-    await expect(deliverBtn).toHaveText('COBRAR BOTÍN', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await deliverBtn.click();
-
-    await expect(activeProgress).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await selectMissionPokemonAndCollect(page, sim, missionCard, eeveeUid);
 
     const gameState = await page.evaluate(async (uid) => {
       const { useGameStore } = await import('../../../src/stores/game.ts');

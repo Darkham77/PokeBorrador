@@ -1,7 +1,8 @@
 import type { DisplayText } from '@francogp/auditor';
-import { Battle, Pokemon, Side, type PokemonSet, type SideID } from '@pkmn/sim';
+import { Battle, type Pokemon, type Side, type PokemonSet, type SideID } from '@pkmn/sim';
 
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
+import { logger } from '@/logic/utils/logger';
 import type { CoreBattleStatKey } from '@/types/battle/battle.ts';
 import type { PokemonStatKey } from '@/types/pokemon/pokemon.ts';
 
@@ -44,7 +45,7 @@ const DEFAULT_GENERATED_TEAM_SIZE = 3 as const;
 const debugLogs: string[] = []; // no-domain: Non-domain utility collection or data structure
 function logDebug(msg: string): void {
   debugLogs.push(msg);
-  console.debug(msg);
+  logger.debug(msg);
 }
 
 function reportInitStage(stage: string): void {
@@ -248,7 +249,7 @@ function handleInitBattle(payload: WorkerEventPayload): void {
 
   const seedVal = parseToNumericSeed(payload.seed);
   const seedStr = formatToShowdownSeed(seedVal);
-  console.debug(
+  logger.debug(
     `[E2E-SEED-WORKER-DEBUG] Initializing Battle with seedVal: ${JSON.stringify(seedVal)} and seedStr: "${seedStr}"`
   );
 
@@ -479,7 +480,7 @@ function handleWinBattle(payload: WorkerEventPayload): void {
   if (currentBattle && !currentBattle.ended) {
     const side = payload.side || 'p1';
     currentBattle.win(side);
-    console.debug(
+    logger.debug(
       `[Showdown Worker] Batalla declarada terminada por comando de victoria (${side}).`
     );
   }
@@ -490,7 +491,7 @@ function handleWinBattle(payload: WorkerEventPayload): void {
 function handleForcedEndBattle(): void {
   if (currentBattle) {
     currentBattle.ended = true;
-    console.debug(`[Showdown Worker] Batalla forzosamente finalizada por debug/huida.`);
+    logger.debug(`[Showdown Worker] Batalla forzosamente finalizada por debug/huida.`);
   }
   currentBattle = null;
   statsMap.clear();
@@ -560,12 +561,12 @@ globalThis.onmessage = (event: MessageEvent<WorkerEventData>) => {
     if (handler) {
       handler(payload);
     } else {
-      console.warn('[Showdown Worker] Evento desconocido recibido en worker.');
+      logger.warn('[Showdown Worker] Evento desconocido recibido en worker.');
     }
   } catch (error) {
     const errorMsg = (error as Error).message;
     const errorStack = (error as Error).stack || '';
-    console.error('[Showdown Worker] CRITICAL ERROR IN WORKER:', error);
+    logger.error('ShowdownWorker', `CRITICAL ERROR IN WORKER: ${errorMsg}\nStack: ${errorStack}`);
     globalThis.postMessage({
       type: 'ERROR',
       payload: {

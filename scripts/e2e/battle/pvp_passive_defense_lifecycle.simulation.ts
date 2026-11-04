@@ -1,9 +1,9 @@
 import { test, expect, type Page } from '@playwright/test';
-import { BaseE2ESimulation } from '../base_simulation.ts';
-import { clickResilient } from '../e2e_helpers.ts';
 
 import type { PokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
 import type { SeasonRules } from '../../../src/types/battle/pvp.ts';
+import { BaseE2ESimulation } from '../base_simulation.ts';
+import { clickResilient } from '../e2e_helpers.ts';
 
 class PvpPassiveDefenseSimWrapper extends BaseE2ESimulation {
   constructor(page: Page, username: string) {

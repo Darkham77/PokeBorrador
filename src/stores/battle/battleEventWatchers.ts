@@ -9,7 +9,7 @@ import { watch, type Ref, type ComputedRef } from 'vue';
 import {
   BATTLE_STATES,
   BATTLE_SUBSTATES,
-  createBattleStateMachine
+  type BattleStateMachine
 } from '@/logic/battle/battleStateMachine.ts';
 import { isBattleCompletionReady } from '@/logic/battle/helpers/battleCompletionReadiness.ts';
 import { nextBattleReadyEventKey } from '@/logic/battle/helpers/battleReadyEventKey.ts';
@@ -24,8 +24,6 @@ import {
   type BattleReadySubState
 } from '@/types/battle/battleEvents.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-
-export type BattleStateMachine = ReturnType<typeof createBattleStateMachine>;
 
 export interface BattleEventWatchersContext {
   activeBattle: Ref<BattleState | null>;

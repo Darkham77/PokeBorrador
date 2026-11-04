@@ -1,3 +1,5 @@
+import { renderSpriteOutline } from './spriteOutlinerRenderer.ts';
+
 export type SpriteOutlineType = 'outline' | 'silhouette';
 
 const outlineCache = new Map<string, string>();
@@ -117,33 +119,17 @@ async function processSpriteFallback(
   const tempCtx = tempCanvas.getContext('2d');
   if (!tempCtx) throw new Error('Could not get 2D context from temp canvas');
 
-  tempCtx.drawImage(img, 0, 0);
-  tempCtx.globalCompositeOperation = 'source-in';
-  tempCtx.fillStyle = type === 'silhouette' ? '#ffffff' : '#000000';
-  tempCtx.fillRect(0, 0, img.naturalWidth, img.naturalHeight);
-
-  if (type === 'silhouette') {
-    ctx.filter = 'blur(2px)';
-  }
-
-  for (let x = -r; x <= r; x++) {
-    for (let y = -r; y <= r; y++) {
-      if (x * x + y * y > r * r) continue;
-      ctx.drawImage(tempCanvas, padding + x, padding + y);
-    }
-  }
-
-  if (type === 'silhouette') {
-    ctx.filter = 'none';
-  }
-
-  if (type === 'silhouette') {
-    tempCtx.fillStyle = '#000000';
-    tempCtx.fillRect(0, 0, img.naturalWidth, img.naturalHeight);
-    ctx.drawImage(tempCanvas, padding, padding);
-  } else {
-    ctx.drawImage(img, padding, padding);
-  }
+  renderSpriteOutline(
+    ctx,
+    tempCanvas,
+    tempCtx,
+    img,
+    img.naturalWidth,
+    img.naturalHeight,
+    type,
+    r,
+    padding
+  );
 
   return canvas.toDataURL('image/png');
 }

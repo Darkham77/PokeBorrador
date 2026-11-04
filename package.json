@@ -1,6 +1,6 @@
 {
   "name": "pokemon-online",
-  "version": "0.6.18-build.20261027-133236",
+  "version": "0.6.19-build.20261103-213328",
   "private": true,
   "type": "module",
   "scripts": {
@@ -131,7 +131,7 @@
     "auditor:test-fragmentation": "auditor task=validate_test_fragmentation",
     "auditor:test-hygiene": "auditor task=validate_test_hygiene",
     "auditor:template-ids": "auditor task=validate_template_ids",
-    "auditor:type-check": "auditor task=validate_type_check",
+    "auditor:type-check": "auditor task=validate_oxlint",
     "auditor:type-coverage": "auditor task=validate_type_coverage",
     "auditor:typography-line-height": "auditor task=validate_typography_line_height",
     "auditor:vue-sfc-hygiene": "auditor task=validate_vue_sfc_hygiene",
@@ -253,7 +253,10 @@
     "auditor:next:human": "auditor-findings next human",
     "auditor:next": "auditor-findings next",
     "auditor:fallow:boundaries": "auditor-fallow category=boundaries",
-    "auditor:hygiene": "auditor-hygiene"
+    "auditor:hygiene": "auditor-hygiene",
+    "auditor:bundle-budget": "auditor task=validate_bundle_budget",
+    "auditor:setup": "auditor phase=setup",
+    "auditor:config": "auditor-config"
   },
   "dependencies": {
     "@pkmn/randoms": "^0.10.11",
@@ -268,26 +271,24 @@
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
-    "@francogp/auditor": "github:francogp/auditor#v10.2.5",
+    "@francogp/auditor": "github:francogp/auditor#v10.7.8",
     "@pkmn/sim": "^0.10.11",
     "@playwright/test": "^1.64.1",
     "@rolldown/binding-wasm32-wasi": "^1.2.9",
-    "@types/node": "^26.6.5",
+    "@types/node": "^26.6.6",
     "@types/sql.js": "^1.4.11",
     "@types/ws": "^8.18.1",
-    "@vitejs/plugin-basic-ssl": "^2.3.0",
     "@vitejs/plugin-vue": "^6.0.10",
     "@vitest/coverage-v8": "^5.0.5",
     "@vue/test-utils": "^2.5.1",
     "citty": "^0.2.2",
-    "fallow": "^3.35.0",
-    "html-validate": "^11.17.0",
+    "fallow": "^3.39.0",
+    "html-validate": "^11.18.0",
     "html-validate-vue": "^9.3.1",
     "jsdom": "^30.1.0",
-    "markdownlint-cli": "^0.49.1",
+    "markdownlint-cli": "^0.50.0",
     "postgres": "^3.4.9",
-    "rollup-plugin-visualizer": "^7.1.1",
-    "sass": "^1.106.1",
+    "sass": "^1.107.1",
     "sharp": "^0.35.4",
     "sql.js": "^1.14.2",
     "tsx": "^4.23.13",
@@ -295,7 +296,6 @@
     "vite-plugin-pwa": "^1.3.0",
     "vite-plus": "^1.4.0",
     "vitest": "^5.0.5",
-    "vue-tsc": "^3.3.11",
     "ws": "^8.18.1"
   },
   "overrides": {
@@ -303,6 +303,7 @@
     "katex": "^0.19.1",
     "serialize-javascript": "^7.0.5",
     "smol-toml": "^1.9.1",
+    "stylelint-config-recommended": "^18.0.0",
     "vite": "$vite",
     "vitest": "$vitest"
   },

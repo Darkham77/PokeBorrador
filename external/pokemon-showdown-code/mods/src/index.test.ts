@@ -12,14 +12,19 @@ const DATA = {
 
 for (const [pkg, Dex] of Object.entries(DATA)) {
   const expectFormat = (dex: ModdedDex, s: string) => {
-    if (pkg === 'sim') expect((dex as unknown as typeof sim.Dex).formats.get(s)).toBeDefined();
+    if (pkg === 'sim') {
+      const formats = (dex as unknown as typeof sim.Dex).formats;
+      const format = formats.get(s);
+      expect(format.exists).toBe(true);
+      expect(() => formats.getRuleTable(format)).not.toThrow();
+    }
   };
 
   describe(`ModdedDex (${pkg})`, () => {
     describe('mods', () => {
       it('gen1jpn', async () => {
         const data = (await import('./gen1jpn')) as ModData;
-        const dex = new ModdedDex(Dex.mod('gen1stadium' as ID, data));
+        const dex = new ModdedDex(Dex.mod('gen1jpn' as ID, data));
         expect(dex.gen).toBe(1);
         expect(dex.moves.get('swift').accuracy).toBe(100);
         expect(dex.moves.get('blizzard').secondary!.chance).toBe(30);
@@ -37,7 +42,7 @@ for (const [pkg, Dex] of Object.entries(DATA)) {
 
       it('gen2stadium2', async () => {
         const dex = new ModdedDex(
-          Dex.mod('gen1stadium' as ID, (await import('./gen2stadium2')) as ModData)
+          Dex.mod('gen2stadium2' as ID, (await import('./gen2stadium2')) as ModData)
         );
         expect(dex.gen).toBe(2);
         expectFormat(dex, 'gen2nc2000');
@@ -164,14 +169,14 @@ for (const [pkg, Dex] of Object.entries(DATA)) {
         expect(dex.species.get('Koraidon').isNonstandard).toBe('Past');
         expectFormat(dex, 'gen9championsou');
       });
-      it('championsregma', async () => {
+      it('championsregmb', async () => {
         const dex = new ModdedDex(
-          Dex.mod('championsregma' as ID, (await import('./championsregma')) as ModData)
+          Dex.mod('championsregmb' as ID, (await import('./championsregmb')) as ModData)
         );
         expect(dex.gen).toBe(9);
         expect(dex.species.get('Venusaur').isNonstandard).toBeNull();
-        expect(dex.items.get('Life Orb').isNonstandard).toBe('Past');
-        expectFormat(dex, 'gen9championsvgc2026regma');
+        expect(dex.items.get('Ability Shield').isNonstandard).toBe('Past');
+        expectFormat(dex, 'gen9championsvgc2026regmb');
       });
     });
 

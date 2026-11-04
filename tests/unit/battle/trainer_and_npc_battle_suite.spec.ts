@@ -14,6 +14,7 @@ import { ref } from 'vue';
 
 import { TRAINER_TYPES, getArchetypePool, type TrainerTypeKey } from '@/data/player/trainerTypes';
 import { ENABLED_POKEMON_IDS_SET, MAX_POKEMON_LEVEL } from '@/data/system/constants';
+import type * as BattleAiModule from '@/logic/battle/ai/battleAI';
 import { decideEnemyMove } from '@/logic/battle/ai/battleAI';
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
 import { executeTurn } from '@/logic/battle/battleTurn';
@@ -58,7 +59,7 @@ vi.mock('@/logic/battle/showdownTeamResolver', () => ({
 }));
 
 vi.mock('@/logic/battle/ai/battleAI', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/logic/battle/ai/battleAI')>();
+  const actual = await importOriginal<typeof BattleAiModule>();
   return {
     ...actual,
     findBestSwitchIndex: mockFindBestSwitchIndex
@@ -152,7 +153,7 @@ describe('RivalTeamGenerator - Showdown Extended Engine', () => {
       aceSpeciesId: ace
     });
 
-    expect(team.length).toBe(4);
+    expect(team).toHaveLength(4);
     expect(toID(team[0]!.species)).toBe('dragonite');
   });
 
@@ -163,7 +164,7 @@ describe('RivalTeamGenerator - Showdown Extended Engine', () => {
       aceSpeciesId: 'charizard'
     });
 
-    expect(team.length).toBe(6);
+    expect(team).toHaveLength(6);
     for (const member of team) {
       expect(ENABLED_POKEMON_IDS_SET.has(toID(member.species))).toBe(true);
     }
@@ -231,7 +232,7 @@ describe('RivalTeamGenerator - Showdown Extended Engine', () => {
       aceSpeciesId: 'charizard'
     });
 
-    expect(team.length).toBe(1);
+    expect(team).toHaveLength(1);
     expect(toID(team[0]!.species)).toBe('charizard');
     expect(team[0]!.level).toBe(20);
   });
@@ -460,8 +461,8 @@ describe('NPC Item Usage & Turn Skipping', () => {
       currentState: { value: BATTLE_STATES.ACTIVE_BATTLE } as { value: string },
       currentSubState: { value: BATTLE_SUBSTATES.WAIT_INPUT } as { value: string | null },
       transition: vi.fn(async (s: string, sub?: string) => {
-        (fsm.currentState as { value: string }).value = s;
-        if (sub) (fsm.currentSubState as { value: string | null }).value = sub;
+        fsm.currentState.value = s;
+        if (sub) fsm.currentSubState.value = sub;
       })
     };
 
@@ -560,15 +561,15 @@ describe('NPC Counter Switching & Showdown Sync', () => {
       isTrainer: true,
       over: false,
       locationId: 'route1',
-      enemyRequest: null as unknown as Record<string, unknown> | null
+      enemyRequest: null
     });
 
     const fsm = {
       currentState: { value: BATTLE_STATES.ACTIVE_BATTLE } as { value: string },
       currentSubState: { value: BATTLE_SUBSTATES.CLEANUP_MEMORY } as { value: string | null },
       transition: vi.fn(async (s: string, sub?: string) => {
-        (fsm.currentState as { value: string }).value = s;
-        if (sub) (fsm.currentSubState as { value: string | null }).value = sub;
+        fsm.currentState.value = s;
+        if (sub) fsm.currentSubState.value = sub;
       })
     };
 

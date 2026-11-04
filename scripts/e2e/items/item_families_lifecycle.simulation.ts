@@ -11,10 +11,12 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
+
+import type { ItemId } from '@/data/inventory/items.ts';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon.ts';
+
 import { BaseE2ESimulation } from '../base_simulation.ts';
 import { waitForStoreReady } from '../e2e_helpers.ts';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon.ts';
-import type { ItemId } from '@/data/inventory/items.ts';
 
 const INITIAL_PIKA_HP = 10;
 const HEALED_PIKA_HP = 30;
@@ -44,7 +46,7 @@ class ItemFamiliesSimulation extends BaseE2ESimulation {
         id: requirePokemonSpeciesId('pikachu'),
         level: 25,
         moves: ['thundershock']
-      }) as Pokemon;
+      });
       pika.hp = pikaHp;
       pika.maxHp = 100;
       pika.status = 'psn';
@@ -54,13 +56,13 @@ class ItemFamiliesSimulation extends BaseE2ESimulation {
         id: requirePokemonSpeciesId('raichu'),
         level: 50,
         moves: ['thunderbolt', 'quickattack', 'thundershock', 'tailwhip']
-      }) as Pokemon;
+      });
 
       // Mon 2: Eevee (Level 20, Healthy)
       const eevee = pokemonDebugService.generate({
         id: requirePokemonSpeciesId('eevee'),
         level: 20
-      }) as Pokemon;
+      });
 
       gameStore.state.starterChosen = true;
       gameStore.state.team = [pika, raichu, eevee];
@@ -117,7 +119,7 @@ class ItemFamiliesSimulation extends BaseE2ESimulation {
       async ({ id, index }) => {
         const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
         const invStore = useInventoryStore();
-        const res = invStore.useItem(id as ItemId, 'team', index);
+        const res = invStore.useItem(id, 'team', index);
         return { success: !!res.success, message: res.message };
       },
       { id: itemId, index: teamIndex }
@@ -128,7 +130,7 @@ class ItemFamiliesSimulation extends BaseE2ESimulation {
     return await this.page.evaluate(async (id) => {
       const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
       const invStore = useInventoryStore();
-      const res = invStore.useItem(id as ItemId);
+      const res = invStore.useItem(id);
       return { success: !!res.success, message: res.message };
     }, itemId);
   }

@@ -17,13 +17,14 @@ import {
   clampLegendaryRates,
   getFinalGroundRates
 } from '@/logic/encounters/encounters';
+import type * as PokemonDataProviderModule from '@/logic/providers/pokemonDataProvider';
 import type { RouteSpawnMappedItem } from '@/logic/utils/routeSpawnHelpers';
 import { isWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
 import type { NpcChanceInfo } from '@/logic/weather/weatherUtils';
 import type { DayPhase } from '@/types/system/time';
 
 vi.mock('@/logic/providers/pokemonDataProvider', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/logic/providers/pokemonDataProvider')>();
+  const actual = await importOriginal<typeof PokemonDataProviderModule>();
   return {
     ...actual,
     pokemonDataProvider: {

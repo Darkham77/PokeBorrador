@@ -30,10 +30,12 @@ export const POKEMON_CENTER_NODES = [
   'route23' // Meseta Añil
 ] as const satisfies readonly AdventureNodeId[];
 
+const POKEMON_CENTER_NODES_SET = new Set<AdventureNodeId>(POKEMON_CENTER_NODES);
+
 export type PokemonCenterNodeId = (typeof POKEMON_CENTER_NODES)[number];
 
 export function isPokemonCenterNodeId(value: AdventureNodeId): value is PokemonCenterNodeId {
-  return (POKEMON_CENTER_NODES as readonly AdventureNodeId[]).includes(value);
+  return POKEMON_CENTER_NODES_SET.has(value);
 }
 
 export const ADVENTURE_MO_TYPES = [

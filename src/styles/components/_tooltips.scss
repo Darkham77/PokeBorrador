@@ -178,12 +178,12 @@
 
 .tooltip-up {
   color: $green;
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .tooltip-down {
   color: $red;
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .tooltip-neutral {

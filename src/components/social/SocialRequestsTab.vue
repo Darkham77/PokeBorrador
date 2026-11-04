@@ -46,27 +46,26 @@ const getProfileForRequest = (req: PendingRequest): RequestProfileData => {
   };
 };
 
-function animateCards(): void {
-  nextTick(() => {
-    if (!listRef.value) return;
-    const cards = listRef.value.querySelectorAll('.trainer-card');
-    if (cards.length > 0) {
-      listRef.value.classList.add('tab-mounting');
-      gsap.killTweensOf(cards);
-      gsap.from(cards, {
-        opacity: REQUEST_CARD_INITIAL_OPACITY,
-        x: REQUEST_CARD_INITIAL_X_OFFSET,
-        scale: REQUEST_CARD_INITIAL_SCALE,
-        duration: REQUEST_CARD_ANIM_DURATION_SEC,
-        stagger: REQUEST_CARD_ANIM_STAGGER_SEC,
-        ease: 'back.out(1.2)',
-        clearProps: 'opacity,x,scale',
-        onComplete: () => {
-          listRef.value?.classList.remove('tab-mounting');
-        }
-      });
-    }
-  });
+async function animateCards(): Promise<void> {
+  await nextTick();
+  if (!listRef.value) return;
+  const cards = listRef.value.querySelectorAll('.trainer-card');
+  if (cards.length > 0) {
+    listRef.value.classList.add('tab-mounting');
+    gsap.killTweensOf(cards);
+    gsap.from(cards, {
+      opacity: REQUEST_CARD_INITIAL_OPACITY,
+      x: REQUEST_CARD_INITIAL_X_OFFSET,
+      scale: REQUEST_CARD_INITIAL_SCALE,
+      duration: REQUEST_CARD_ANIM_DURATION_SEC,
+      stagger: REQUEST_CARD_ANIM_STAGGER_SEC,
+      ease: 'back.out(1.2)',
+      clearProps: 'opacity,x,scale',
+      onComplete: () => {
+        listRef.value?.classList.remove('tab-mounting');
+      }
+    });
+  }
 }
 
 onMounted(() => {

@@ -89,7 +89,7 @@ const showImportModal = ref(false);
     background: Rgb(14 165 233 / 20%);
     color: var(--sky);
     font-size: var(--font-12);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     cursor: pointer;
 
     &:hover {

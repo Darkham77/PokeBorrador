@@ -48,7 +48,7 @@ describe('Local Instance PvP Matchmaking Full Simulation', () => {
     authStore.user = {
       id: 'local_ash',
       email: 'ash@poke.local'
-    } as unknown as typeof authStore.user;
+    };
     const poke1 = createTestPokemon('ash-p1', 'Pikachu');
     Object.assign(gameStore.state, {
       trainer: 'Ash',
@@ -157,7 +157,7 @@ describe('Local Instance PvP Matchmaking Full Simulation', () => {
     authStore.user = {
       id: 'local_carl',
       email: 'carl@poke.local'
-    } as unknown as typeof authStore.user;
+    };
     Object.assign(gameStore.state, {
       trainer: 'Carl',
       eloRating: 1000,

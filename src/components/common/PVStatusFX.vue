@@ -16,17 +16,22 @@ import { Z_LAYERS } from '@/logic/constants/visuals';
 import PVStatusOverlayLayer from './PVStatusOverlayLayer.vue';
 import { createStatusParticleTimeline, type FXData } from './statusParticleHelpers';
 
-const props = defineProps({
-  activeStatusEffects: { type: Array as () => FXData[], required: true },
-  secondaryEffects: { type: Array as () => FXData[], required: true },
-  tacticalEffects: { type: Array as () => FXData[], required: true },
-  fieldEffects: { type: Array as () => FXData[], required: true },
-  radius: { type: Number, required: true },
-  animSeed: { type: Number, required: true },
-  spriteScale: { type: Number, required: true },
-  pokeScale: { type: Number, default: 1 },
-  isSimplified: { type: Boolean, required: true },
-  isBattle: { type: Boolean, default: false }
+interface Props {
+  activeStatusEffects: FXData[];
+  secondaryEffects: FXData[];
+  tacticalEffects: FXData[];
+  fieldEffects: FXData[];
+  radius: number;
+  animSeed: number;
+  spriteScale: number;
+  pokeScale?: number;
+  isSimplified: boolean;
+  isBattle?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  pokeScale: 1,
+  isBattle: false
 });
 
 const rootRef = ref<HTMLElement | null>(null);
@@ -165,16 +170,18 @@ watch(
     () => props.spriteScale,
     () => props.pokeScale
   ],
-  () => {
-    nextTick(() => refreshAll(true));
+  async () => {
+    await nextTick();
+    refreshAll(true);
   },
   { immediate: true, deep: true }
 );
 
 watch(
   [() => props.secondaryEffects, () => props.tacticalEffects, () => props.fieldEffects],
-  () => {
-    nextTick(() => refreshAll(false));
+  async () => {
+    await nextTick();
+    refreshAll(false);
   },
   { deep: true }
 );

@@ -23,7 +23,7 @@ describe('useSlotReorder', () => {
 
     // Click slot 4 -> triggers swap and resets selection
     selectSlotForSwap(4);
-    expect(activeSwapIndex.value).toBe(null);
+    expect(activeSwapIndex.value).toBeNull();
     expect(slots.value[1]).toBe('uid-5');
     expect(slots.value[4]).toBe('uid-2');
   });
@@ -36,7 +36,7 @@ describe('useSlotReorder', () => {
     expect(activeSwapIndex.value).toBe(0);
 
     selectSlotForSwap(0);
-    expect(activeSwapIndex.value).toBe(null);
+    expect(activeSwapIndex.value).toBeNull();
   });
 
   it('replaces a slot with a new item without creating empty slots', () => {
@@ -47,8 +47,8 @@ describe('useSlotReorder', () => {
     const success = replaceSlot(2, 'uid-new');
     expect(success).toBe(true);
     expect(slots.value[2]).toBe('uid-new');
-    expect(slots.value.length).toBe(6);
-    expect(slots.value.includes('')).toBe(false);
+    expect(slots.value).toHaveLength(6);
+    expect(slots.value).not.toContain('');
   });
 
   it('swaps if the replacement item is already in another slot (prevents duplicates)', () => {

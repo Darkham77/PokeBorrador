@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
-import { BaseEventSimulation } from './base_event_simulation.ts';
+
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
+import { BaseEventSimulation } from './base_event_simulation.ts';
 
 class MultiSpeciesEventSimulation extends BaseEventSimulation {
   constructor(page: Page, username: string) {

@@ -88,6 +88,35 @@ function createLcg(seed: number): () => number {
   };
 }
 
+const PLAZA_SIDE_LENGTH = 6;
+
+function create6x6PlazaLayout(
+  ox: number,
+  oy: number,
+  props: UrbanPropPlacement[]
+): {
+  buildings: UrbanBuildingPlacement[];
+  props: UrbanPropPlacement[];
+  internalStreets: { x: number; y: number }[];
+  pavedPlazaCells: { x: number; y: number }[];
+} {
+  const pavedPlazaCells: { x: number; y: number }[] = [];
+  for (let dy = 0; dy < PLAZA_SIDE_LENGTH; dy++) {
+    for (let dx = 0; dx < PLAZA_SIDE_LENGTH; dx++) {
+      pavedPlazaCells.push({ x: ox + dx, y: oy + dy });
+    }
+  }
+
+  const internalStreets = [
+    { x: ox + 2, y: oy + 4 },
+    { x: ox + 3, y: oy + 4 },
+    { x: ox + 2, y: oy + 5 },
+    { x: ox + 3, y: oy + 5 }
+  ];
+
+  return { buildings: [], props, internalStreets, pavedPlazaCells };
+}
+
 const BLUEPRINTS: readonly VignetteBlueprint[] = [
   // 1. Fisherman's Wharf & House by the Pond (6x6)
   {
@@ -309,21 +338,7 @@ const BLUEPRINTS: readonly VignetteBlueprint[] = [
         { type: 'lamp', x: ox + 5, y: oy + 1, prefabFile: getAssetFilename('poke_street_lamp') }
       ];
 
-      const pavedPlazaCells: { x: number; y: number }[] = [];
-      for (let dy = 0; dy < 6; dy++) {
-        for (let dx = 0; dx < 6; dx++) {
-          pavedPlazaCells.push({ x: ox + dx, y: oy + dy });
-        }
-      }
-
-      const internalStreets = [
-        { x: ox + 2, y: oy + 4 },
-        { x: ox + 3, y: oy + 4 },
-        { x: ox + 2, y: oy + 5 },
-        { x: ox + 3, y: oy + 5 }
-      ];
-
-      return { buildings: [], props, internalStreets, pavedPlazaCells };
+      return create6x6PlazaLayout(ox, oy, props);
     }
   },
 
@@ -478,21 +493,7 @@ const BLUEPRINTS: readonly VignetteBlueprint[] = [
         { type: 'signpost', x: ox + 2, y: oy + 2, prefabFile: getAssetFilename('poke_signpost') }
       ];
 
-      const pavedPlazaCells: { x: number; y: number }[] = [];
-      for (let dy = 0; dy < 6; dy++) {
-        for (let dx = 0; dx < 6; dx++) {
-          pavedPlazaCells.push({ x: ox + dx, y: oy + dy });
-        }
-      }
-
-      const internalStreets = [
-        { x: ox + 2, y: oy + 4 },
-        { x: ox + 3, y: oy + 4 },
-        { x: ox + 2, y: oy + 5 },
-        { x: ox + 3, y: oy + 5 }
-      ];
-
-      return { buildings: [], props, internalStreets, pavedPlazaCells };
+      return create6x6PlazaLayout(ox, oy, props);
     }
   },
 

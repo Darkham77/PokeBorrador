@@ -101,7 +101,7 @@ export async function handleSaveRollback(
 
     try {
       const json = JSON.stringify(rollbackData);
-      localStorage.setItem('pokemon_local_save_' + user.id, json);
+      safeStorage.setItem('pokemon_local_save_' + user.id, json);
 
       const compressed = await compress(json);
       await writeOpfsFile(`save_${user.id}.gz`, compressed);

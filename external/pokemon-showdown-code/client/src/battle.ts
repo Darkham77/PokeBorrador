@@ -557,20 +557,20 @@ export class Battle {
 
   destroy() {
     this.field.destroy();
-    // @ts-expect-error readonly
+    // @ts-ignore readonly
     this.field = null!;
 
     for (let i = 0; i < this.sides.length; i++) {
       if (this.sides[i]) this.sides[i].destroy();
       this.sides[i] = null!;
     }
-    // @ts-expect-error readonly
+    // @ts-ignore readonly
     this.p1 = null!;
-    // @ts-expect-error readonly
+    // @ts-ignore readonly
     this.p2 = null!;
-    // @ts-expect-error readonly
+    // @ts-ignore readonly
     this.p3 = null!;
-    // @ts-expect-error readonly
+    // @ts-ignore readonly
     this.p4 = null!;
   }
 }

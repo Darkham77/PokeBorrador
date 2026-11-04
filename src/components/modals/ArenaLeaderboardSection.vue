@@ -5,10 +5,7 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import BaseRefreshButton from '@/components/common/BaseRefreshButton.vue';
 import { resolveFactionColor } from '@/components/modals/trainerProfileResolver';
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
-import {
-  useRankCardHover,
-  RANK_ANIM_FAST_DURATION_SEC
-} from '@/composables/arena/useRankCardHover';
+import { useRankCardHover, useRankTabHover } from '@/composables/arena/useRankCardHover';
 import { getEloTier } from '@/logic/pvp/rankedEngine';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { useSocialStore } from '@/stores/social/social';
@@ -31,9 +28,8 @@ const listRef = ref<HTMLElement | null>(null);
 
 const loadLeaderboard = async (): Promise<void> => {
   await socialStore.fetchLeaderboard(activeSort.value);
-  nextTick(() => {
-    animateList();
-  });
+  await nextTick();
+  animateList();
 };
 
 const animateList = (): void => {
@@ -81,29 +77,7 @@ const displayPlayers = computed(() => {
 });
 
 const { handleCardEnter, handleCardLeave } = useRankCardHover();
-
-const handleTabEnter = (e: MouseEvent): void => {
-  const el = e.currentTarget as HTMLElement;
-  if (el.classList.contains('active')) return;
-  gsap.to(el, {
-    color: '#ffffff',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    duration: RANK_ANIM_FAST_DURATION_SEC,
-    ease: 'power2.out'
-  });
-};
-
-const handleTabLeave = (e: MouseEvent): void => {
-  const el = e.currentTarget as HTMLElement;
-  if (el.classList.contains('active')) return;
-  gsap.to(el, {
-    color: 'rgba(255, 255, 255, 0.4)',
-    backgroundColor: 'transparent',
-    duration: RANK_ANIM_FAST_DURATION_SEC,
-    ease: 'power2.out',
-    clearProps: 'color,backgroundColor'
-  });
-};
+const { handleTabEnter, handleTabLeave } = useRankTabHover('rgba(255, 255, 255, 0.4)');
 
 onMounted(() => {
   loadLeaderboard();
@@ -285,7 +259,7 @@ watch(activeSort, () => {
       margin: 0;
       color: var(--yellow, var(--amber));
       font-size: var(--font-13);
-      font-weight: 900;
+      font-weight: $font-weight-black;
       letter-spacing: 0.5px;
 
       .emoji {

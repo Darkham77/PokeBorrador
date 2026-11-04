@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { gsap } from 'gsap';
-import { ref, onMounted, nextTick, computed } from 'vue';
+import { ref, onMounted, nextTick, computed, watch, onUnmounted } from 'vue';
 
 import { gameBus } from '@/logic/events/gameBus';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { logger } from '@/logic/utils/logger';
 import { useEvolutionStore } from '@/stores/evolution';
 
 import EvolutionDialogInfo from './EvolutionDialogInfo.vue';
@@ -109,16 +110,19 @@ const initEvolution = (): void => {
   }
   cleanupTweens();
 
-  nextTick(() => {
-    startSequence();
-  });
+  nextTick()
+    .then(() => {
+      startSequence();
+    })
+    .catch((err: unknown) => {
+      logger.warn('EvolutionScene', err);
+    });
 };
 
 onMounted(() => {
   initEvolution();
 });
 
-import { watch, onUnmounted } from 'vue';
 watch(
   () => evolutionStore.isEvolving,
   (newVal) => {
@@ -147,13 +151,17 @@ const startSequence = (): void => {
     timeline = gsap.timeline({
       onComplete: () => {
         step.value = 'final';
-        nextTick(() => {
-          gsap.fromTo(
-            '.result-text',
-            { opacity: 0, y: EVOLUTION_RESULT_TEXT_Y_OFFSET_PX },
-            { opacity: 1, y: 0, duration: EVOLUTION_RESULT_TEXT_DURATION_SEC, ease: 'power2.out' }
-          );
-        });
+        nextTick()
+          .then(() => {
+            gsap.fromTo(
+              '.result-text',
+              { opacity: 0, y: EVOLUTION_RESULT_TEXT_Y_OFFSET_PX },
+              { opacity: 1, y: 0, duration: EVOLUTION_RESULT_TEXT_DURATION_SEC, ease: 'power2.out' }
+            );
+          })
+          .catch((err: unknown) => {
+            logger.warn('EvolutionScene', err);
+          });
       }
     });
 
@@ -204,51 +212,55 @@ const startSequence = (): void => {
     );
 
     timeline.add(() => {
-      nextTick(() => {
-        if (flare1Ref.value && flare2Ref.value) {
-          // Rotaciones continuas en contra-fase
-          const rot1 = gsap.to(flare1Ref.value, {
-            rotation: 360,
-            duration: EVOLUTION_AURA_ROTATION_SEC,
-            repeat: -1,
-            ease: 'none'
-          });
-          const rot2 = gsap.to(flare2Ref.value, {
-            rotation: -360,
-            duration: EVOLUTION_AURA_ROTATION_SEC,
-            repeat: -1,
-            ease: 'none'
-          });
-          activeTweens.push(rot1, rot2);
+      nextTick()
+        .then(() => {
+          if (flare1Ref.value && flare2Ref.value) {
+            // Rotaciones continuas en contra-fase
+            const rot1 = gsap.to(flare1Ref.value, {
+              rotation: 360,
+              duration: EVOLUTION_AURA_ROTATION_SEC,
+              repeat: -1,
+              ease: 'none'
+            });
+            const rot2 = gsap.to(flare2Ref.value, {
+              rotation: -360,
+              duration: EVOLUTION_AURA_ROTATION_SEC,
+              repeat: -1,
+              ease: 'none'
+            });
+            activeTweens.push(rot1, rot2);
 
-          // Efecto respiración de escalas
-          const scale1 = gsap.fromTo(
-            flare1Ref.value,
-            { scale: EVOLUTION_FLARE_INITIAL_SCALE, opacity: EVOLUTION_FLARE_INITIAL_OPACITY },
-            {
-              scale: EVOLUTION_FLARE_MAX_SCALE,
-              opacity: EVOLUTION_FLARE_MAX_OPACITY,
-              duration: GSAP_AURA_SCALE_DURATION_SEC,
-              yoyo: true,
-              repeat: -1,
-              ease: 'sine.inOut'
-            }
-          );
-          const scale2 = gsap.fromTo(
-            flare2Ref.value,
-            { scale: EVOLUTION_FLARE_MAX_SCALE, opacity: EVOLUTION_FLARE_MAX_OPACITY },
-            {
-              scale: EVOLUTION_FLARE_INITIAL_SCALE,
-              opacity: EVOLUTION_FLARE_INITIAL_OPACITY,
-              duration: GSAP_AURA_SCALE_DURATION_SEC,
-              yoyo: true,
-              repeat: -1,
-              ease: 'sine.inOut'
-            }
-          );
-          activeTweens.push(scale1, scale2);
-        }
-      });
+            // Efecto respiración de escalas
+            const scale1 = gsap.fromTo(
+              flare1Ref.value,
+              { scale: EVOLUTION_FLARE_INITIAL_SCALE, opacity: EVOLUTION_FLARE_INITIAL_OPACITY },
+              {
+                scale: EVOLUTION_FLARE_MAX_SCALE,
+                opacity: EVOLUTION_FLARE_MAX_OPACITY,
+                duration: GSAP_AURA_SCALE_DURATION_SEC,
+                yoyo: true,
+                repeat: -1,
+                ease: 'sine.inOut'
+              }
+            );
+            const scale2 = gsap.fromTo(
+              flare2Ref.value,
+              { scale: EVOLUTION_FLARE_MAX_SCALE, opacity: EVOLUTION_FLARE_MAX_OPACITY },
+              {
+                scale: EVOLUTION_FLARE_INITIAL_SCALE,
+                opacity: EVOLUTION_FLARE_INITIAL_OPACITY,
+                duration: GSAP_AURA_SCALE_DURATION_SEC,
+                yoyo: true,
+                repeat: -1,
+                ease: 'sine.inOut'
+              }
+            );
+            activeTweens.push(scale1, scale2);
+          }
+        })
+        .catch((err: unknown) => {
+          logger.warn('EvolutionScene', err);
+        });
     }, 'transformed');
 
     // 5. Particles burst

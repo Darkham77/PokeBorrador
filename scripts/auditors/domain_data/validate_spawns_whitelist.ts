@@ -23,12 +23,14 @@
  */
 
 import fs from 'node:fs';
-import path from 'node:path';
 import { enableCompileCache } from 'node:module';
+import path from 'node:path';
+
 import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
+
 import { ENABLED_POKEMON_IDS_SET } from '../../../src/data/system/constants.ts';
-import { FIRE_RED_MAPS } from '../../../src/data/world/maps.ts';
 import { GYMS, type Gym, type GymId } from '../../../src/data/world/gyms.ts';
+import { FIRE_RED_MAPS } from '../../../src/data/world/maps.ts';
 import type { MapLocation } from '../../../src/types/pokemon/encounters.ts';
 
 enableCompileCache();
@@ -49,17 +51,17 @@ const GYMS_FILE_PATH = 'src/data/world/gyms.ts';
 const GYM_REMATCHES_FILE_PATH = 'src/data/world/gymRematches.ts';
 
 export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
-  constructor() {
+  public constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(SPAWN_WHITELIST_RULES, {
         speed: 'light',
         phase: 'normal',
-        fix: 'none',
         md: false,
         ast: false,
         changedOnly: false,
         critical: false
       }),
+      ruleFixers: {},
       id: 'validate_spawns_whitelist',
       configKey: 'domain.spawnsWhitelist',
       defaultConfig: {

@@ -105,12 +105,12 @@ echo "======================================================"
 export NVM_DIR="$HOME/.nvm"
 
 if [ -s "$NVM_DIR/nvm.sh" ]; then
-    . "$NVM_DIR/nvm.sh"
+    . "$NVM_DIR/nvm.sh" --no-use 2>/dev/null || . "$NVM_DIR/nvm.sh" 2>/dev/null || true
 else
     echo "[NVM] NVM not detected. Installing NVM (v0.40.1)..."
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
     export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    [ -s "$NVM_DIR/nvm.sh" ] && { \. "$NVM_DIR/nvm.sh" --no-use 2>/dev/null || \. "$NVM_DIR/nvm.sh" 2>/dev/null || true; }
 fi
 
 # 2. Install and activate Node.js in NVM
@@ -121,8 +121,9 @@ echo -e "\n[NODE] Activating Node.js v$TARGET_NODE_VER..."
 nvm use "$TARGET_NODE_VER" || echo "  [WARN] Warning while activating Node v$TARGET_NODE_VER."
 
 # Preserve existing default alias for multi-project coexistence
-CURRENT_DEFAULT=$(nvm alias default 2>/dev/null | awk '{print $3}' || true)
-if [ -n "$CURRENT_DEFAULT" ] && [ "$CURRENT_DEFAULT" != "N/A" ] && [ "$SET_DEFAULT" = false ]; then
+DEFAULT_ALIAS_INFO=$(nvm alias default 2>/dev/null || true)
+CURRENT_DEFAULT=$(echo "$DEFAULT_ALIAS_INFO" | awk '{print $3}' || true)
+if [ -n "$CURRENT_DEFAULT" ] && [ "$CURRENT_DEFAULT" != "N/A" ] && ! echo "$DEFAULT_ALIAS_INFO" | grep -q -e "-> N/A" && [ "$SET_DEFAULT" = false ]; then
     echo "[INFO] Preserving existing default alias ($CURRENT_DEFAULT). $PROJECT_NAME is activated locally via .node-version ('vp env use')."
 else
     echo "[NVM] Configuring NVM default alias to v$TARGET_NODE_VER..."
@@ -178,11 +179,11 @@ if [ "$UPDATE_TO_LATEST" = true ]; then
         if grep -q '"packageManager":' "$PKG_PATH"; then
             sed -i -E "s/(\"packageManager\": *\")[^\"]*(\")/\1npm@$NEW_NPM_VER\2/" "$PKG_PATH"
             echo "  [OK] packageManager synchronized to npm@$NEW_NPM_VER in package.json"
-        elif grep -E -q '"name": *"[^"]*", *(\r)?$' "$PKG_PATH"; then
-            sed -i -E "s/(\"name\": *\"[^\"]*\",)(\r)?$/\1\n  \"packageManager\": \"npm@$NEW_NPM_VER\",\2/" "$PKG_PATH"
+        elif grep -E -q '^  "name": *"[^"]*", *(\r)?$' "$PKG_PATH"; then
+            sed -i -E "s/^(  \"name\": *\"[^\"]*\",)(\r)?$/\1\n  \"packageManager\": \"npm@$NEW_NPM_VER\",\2/" "$PKG_PATH"
             echo "  [OK] packageManager injected as npm@$NEW_NPM_VER in package.json"
-        elif grep -q '"name":' "$PKG_PATH"; then
-            sed -i -E "s/(\"name\": *\"[^\"]*\")(\r)?$/\1,\n  \"packageManager\": \"npm@$NEW_NPM_VER\"\2/" "$PKG_PATH"
+        elif grep -E -q '^  "name":' "$PKG_PATH"; then
+            sed -i -E "s/^(  \"name\": *\"[^\"]*\")(\r)?$/\1,\n  \"packageManager\": \"npm@$NEW_NPM_VER\"\2/" "$PKG_PATH"
             echo "  [OK] packageManager injected as npm@$NEW_NPM_VER in package.json"
         fi
     fi
@@ -194,6 +195,9 @@ if [ "$UPDATE_TO_LATEST" = true ]; then
     done
 else
     TARGET_NPM_VER=$(grep -o '"npm": *"[^"]*"' "$PKG_PATH" | grep -o '[0-9.]*' | head -n 1)
+    if [ -z "$TARGET_NPM_VER" ]; then
+        TARGET_NPM_VER=$(grep -o '"packageManager": *"npm@[^"]*"' "$PKG_PATH" | grep -o '[0-9.]*' | head -n 1)
+    fi
     CURRENT_NPM_VER=$($NODE_BIN_DIR/npm -v 2>/dev/null || npm -v)
     if [ -n "$TARGET_NPM_VER" ] && [ "$CURRENT_NPM_VER" != "$TARGET_NPM_VER" ]; then
         echo -e "\n[NPM] Synchronizing npm to version declared in commit (npm@$TARGET_NPM_VER)..."

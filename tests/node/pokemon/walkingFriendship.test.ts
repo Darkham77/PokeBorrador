@@ -164,7 +164,7 @@ describeWithDatabase('Walking Friendship Canonical System Suite', (_engine, getD
     expect(lead.friendshipSteps).toBe(100);
     expect(res1.rewardedPokemon).toBeNull();
     expect(lead.friendship).toBe(70);
-    expect(notifications.length).toBe(0);
+    expect(notifications).toHaveLength(0);
 
     // Threshold reached: 100 + 28 = 128 steps, roll fails (0.6 >= 0.5)
     const res2 = processWalkingFriendshipStepAccumulation({
@@ -178,7 +178,7 @@ describeWithDatabase('Walking Friendship Canonical System Suite', (_engine, getD
     expect(lead.friendshipSteps).toBe(0);
     expect(res2.rewardedPokemon).toBeNull();
     expect(lead.friendship).toBe(70);
-    expect(notifications.length).toBe(0);
+    expect(notifications).toHaveLength(0);
 
     // Threshold reached again: 130 steps = 1 cycle + 2 leftover, roll succeeds (0.2 < 0.5)
     const res3 = processWalkingFriendshipStepAccumulation({
@@ -192,7 +192,7 @@ describeWithDatabase('Walking Friendship Canonical System Suite', (_engine, getD
     expect(lead.friendshipSteps).toBe(2);
     expect(res3.rewardedPokemon?.uid).toBe(lead.uid);
     expect(lead.friendship).toBe(71); // +1 gain
-    expect(notifications.length).toBe(1);
+    expect(notifications).toHaveLength(1);
     expect(notifications[0]!.icon).toBe('❤️');
     expect(notifications[0]!.msg).toContain('Eevee');
   });
@@ -270,14 +270,14 @@ describeWithDatabase('Walking Friendship Canonical System Suite', (_engine, getD
       'SELECT save_data FROM game_saves WHERE user_id = ?',
       [userId]
     );
-    expect(rows.length).toBe(1);
+    expect(rows).toHaveLength(1);
 
     const loadedRaw = rows[0]!.save_data;
     const loadedData = typeof loadedRaw === 'string' ? JSON.parse(loadedRaw) : loadedRaw;
 
     // 4. Deserialize team
     const restoredTeam = deserializePokemonTeam((loadedData as Record<string, unknown>).team);
-    expect(restoredTeam.length).toBe(2);
+    expect(restoredTeam).toHaveLength(2);
 
     // 5. Assert 100% fidelity on per-Pokemon friendship and friendshipSteps
     const restoredMonA = restoredTeam[0]!;

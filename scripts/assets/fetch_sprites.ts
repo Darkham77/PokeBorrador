@@ -1,6 +1,7 @@
-import type { DisplayText } from '@francogp/auditor';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
+
+import type { DisplayText } from '@francogp/auditor';
 
 // URLs base de Pokémon Showdown para Sprites y Audio
 const BASE_URLS = {
@@ -37,7 +38,7 @@ async function downloadFile(url: string, destPath: string): Promise<boolean> {
       return true;
     }
   } catch (err) {
-    err;
+    console.warn('[Handled controlled exception]:', err);
   }
 
   try {
@@ -52,7 +53,7 @@ async function downloadFile(url: string, destPath: string): Promise<boolean> {
     const arrayBuffer = await res.arrayBuffer();
     await fs.writeFile(destPath, Buffer.from(arrayBuffer));
     return true;
-  } catch (_error) {
+  } catch {
     return false;
   }
 }
@@ -130,7 +131,7 @@ export async function downloadPokemonAssets(
 /**
  * Asegura la existencia de los directorios de salida necesarios.
  */
-export async function ensureDirsExist() {
+export async function ensureDirsExist(): Promise<void> {
   for (const dir of Object.values(OUTPUT_DIRS)) {
     await fs.mkdir(dir, { recursive: true });
   }

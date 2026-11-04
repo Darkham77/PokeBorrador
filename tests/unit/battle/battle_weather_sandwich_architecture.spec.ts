@@ -45,7 +45,7 @@ describe('Atmosphere Sandwich Architecture Contract (RED -> GREEN)', () => {
 
     // Should render precipitation in 'all' mode
     const rainLayers = wrapper.findAll('.rain-layer');
-    expect(rainLayers.length).toBe(2);
+    expect(rainLayers).toHaveLength(2);
 
     // Should render lightning in 'all' mode
     expect(wrapper.find('.lightning-bolt').exists()).toBe(true);
@@ -77,7 +77,7 @@ describe('Atmosphere Sandwich Architecture Contract (RED -> GREEN)', () => {
 
     // Must NOT render precipitation layers (raindrops, snowflakes) in ambient mode
     const rainLayers = wrapper.findAll('.rain-layer');
-    expect(rainLayers.length).toBe(0);
+    expect(rainLayers).toHaveLength(0);
 
     // Must NOT render lightning bolt or flash in ambient mode
     expect(wrapper.find('.lightning-bolt').exists()).toBe(false);
@@ -85,7 +85,7 @@ describe('Atmosphere Sandwich Architecture Contract (RED -> GREEN)', () => {
 
     // Must NOT render leaves in ambient mode
     const leaves = wrapper.findAll('.leaf-element');
-    expect(leaves.length).toBe(0);
+    expect(leaves).toHaveLength(0);
   });
 
   it('AtmosphereLayer layer="particles" renders precipitation, lightning, and leaves with .is-particles-layer flag', async () => {
@@ -114,7 +114,7 @@ describe('Atmosphere Sandwich Architecture Contract (RED -> GREEN)', () => {
 
     // Must render precipitation layers (raindrops)
     const rainLayers = wrapper.findAll('.rain-layer');
-    expect(rainLayers.length).toBe(2);
+    expect(rainLayers).toHaveLength(2);
 
     // Must render lightning elements
     expect(wrapper.find('.lightning-bolt').exists()).toBe(true);
@@ -384,7 +384,7 @@ describe('Atmosphere Sandwich Architecture Contract (RED -> GREEN)', () => {
 
       const spriteFx = wrapper.findComponent(PVSpriteFX);
       expect(spriteFx.exists()).toBe(true);
-      expect(spriteFx.props('overlayOnly')).toBe(true);
+      expect((spriteFx.props() as Record<string, unknown>).overlayOnly).toBe(true);
     });
 
     it('BattleCombatant with hideStatusOverlay: true forwards prop to PVSpriteFX', async () => {
@@ -402,7 +402,7 @@ describe('Atmosphere Sandwich Architecture Contract (RED -> GREEN)', () => {
 
       const spriteFx = wrapper.findComponent(PVSpriteFX);
       expect(spriteFx.exists()).toBe(true);
-      expect(spriteFx.props('hideStatusOverlay')).toBe(true);
+      expect((spriteFx.props() as Record<string, unknown>).hideStatusOverlay).toBe(true);
     });
 
     it('BattleArenaEnemyCombatant and BattleArenaPlayerCombatant forward hideStatusOverlay', async () => {
@@ -420,7 +420,7 @@ describe('Atmosphere Sandwich Architecture Contract (RED -> GREEN)', () => {
 
       const enemyCombatant = enemyWrapper.findComponent(BattleCombatant);
       expect(enemyCombatant.exists()).toBe(true);
-      expect(enemyCombatant.props('hideStatusOverlay')).toBe(true);
+      expect((enemyCombatant.props() as Record<string, unknown>).hideStatusOverlay).toBe(true);
 
       const playerWrapper = mount(BattleArenaPlayerCombatant, {
         props: {
@@ -436,7 +436,7 @@ describe('Atmosphere Sandwich Architecture Contract (RED -> GREEN)', () => {
 
       const playerCombatant = playerWrapper.findComponent(BattleCombatant);
       expect(playerCombatant.exists()).toBe(true);
-      expect(playerCombatant.props('hideStatusOverlay')).toBe(true);
+      expect((playerCombatant.props() as Record<string, unknown>).hideStatusOverlay).toBe(true);
     });
   });
 });

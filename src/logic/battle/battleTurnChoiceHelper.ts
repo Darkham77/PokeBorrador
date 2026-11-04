@@ -1,3 +1,4 @@
+import { logger } from '@/logic/utils/logger';
 import type { BattleState } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
@@ -140,7 +141,7 @@ function applyDebugEnemyChoiceOverride(p2Choice: string, p2Skip: boolean): strin
 
   if (globalThis.__VITE_DEBUG__?.isScriptedReplayMode) {
     if (p2Skip) {
-      console.debug(
+      logger.debug(
         '[E2E-MOCK-CENTRAL-DEBUG] Preserved the certified history cursor because Showdown did not request a P2 action.'
       );
       return 'pass';
@@ -148,7 +149,7 @@ function applyDebugEnemyChoiceOverride(p2Choice: string, p2Skip: boolean): strin
     const debugObj = globalThis.__VITE_DEBUG__;
     const historyChoice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2');
     if (historyChoice) {
-      console.debug(
+      logger.debug(
         `[E2E-MOCK-CENTRAL-DEBUG] Resolved enemy choice from the certified history: "${historyChoice}".`
       );
       return historyChoice;
@@ -159,13 +160,13 @@ function applyDebugEnemyChoiceOverride(p2Choice: string, p2Skip: boolean): strin
   if (globalThis.__VITE_DEBUG__?.nextEnemyChoice) {
     if (!p2Skip) {
       const override = globalThis.__VITE_DEBUG__.nextEnemyChoice;
-      console.debug(
+      logger.debug(
         `[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice in executeTurn: ${override}`
       );
       globalThis.__VITE_DEBUG__.nextEnemyChoice = undefined;
       return override;
     }
-    console.debug(
+    logger.debug(
       `[E2E-MOCK-CENTRAL-DEBUG] Bypassed nextEnemyChoice interception in executeTurn because P2 is in wait state.`
     );
     return p2Choice;
@@ -228,7 +229,7 @@ export async function resolveTurnChoices(
     if (historyChoice) {
       p2Choice = historyChoice;
     }
-    console.debug(
+    logger.debug(
       `[E2E-CERTIFIED-REPLAY] Resolved the enemy Showdown submission from certified history: ${p2Choice}. Player choice: ${p1Choice}`
     );
   }

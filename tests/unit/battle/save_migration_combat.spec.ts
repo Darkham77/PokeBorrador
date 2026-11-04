@@ -3,7 +3,6 @@ import { createPinia, setActivePinia } from 'pinia';
 import { describe, it, expect, beforeEach } from 'vite-plus/test';
 
 import { mapToShowdownSet, getShowdownFormatId } from '@/logic/battle/showdownAdapter';
-import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Save Migration and Combat Simulation', () => {
   beforeEach(() => {
@@ -199,8 +198,8 @@ describe('Save Migration and Combat Simulation', () => {
     expect(migratedSquirtle.moves[0].id).toBe('bubblebeam');
 
     // 5. Simular combate usando @pkmn/sim con el set migrado para asegurar que sea 100% aceptado por el motor
-    const p1Set = mapToShowdownSet(migratedBulbasaur as unknown as Pokemon);
-    const p2Set = mapToShowdownSet(migratedSquirtle as unknown as Pokemon);
+    const p1Set = mapToShowdownSet(migratedBulbasaur);
+    const p2Set = mapToShowdownSet(migratedSquirtle);
 
     // Validar el set contra el motor de showdown
     expect(Dex.moves.get(p1Set.moves[0]).exists).toBe(true);

@@ -670,7 +670,7 @@ describe('Showdown Audit v8 Fixes Unit Tests', () => {
   it('handles reviving flag in decideForcedSwitch', () => {
     const agent = new BattleAgent('p1');
     const mockFullReq: ChoiceRequest = {
-      forceSwitch: [{ reviving: true } as unknown as boolean],
+      forceSwitch: [{ reviving: true }],
       side: {
         pokemon: [
           {

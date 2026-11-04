@@ -258,7 +258,7 @@ watch(trainerExpPct, (newPct) => {
   }
 
   .xp-current {
-    font-weight: 500;
+    font-weight: $font-weight-medium;
   }
 
   .xp-percent {
@@ -298,7 +298,7 @@ watch(trainerExpPct, (newPct) => {
     line-height: 1.4;
 
     strong {
-      font-weight: 700;
+      font-weight: $font-weight-bold;
     }
   }
 
@@ -312,7 +312,7 @@ watch(trainerExpPct, (newPct) => {
     color: Rgb(255 255 255 / 70%);
     font-family: $font-family-sans;
     font-size: var(--font-11);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     margin-bottom: 8px;
   }
 

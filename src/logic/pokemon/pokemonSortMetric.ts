@@ -28,33 +28,51 @@ function computeIvsTotal(ivs: Pokemon['ivs']): number {
   );
 }
 
+type MetricExtractor = (p: FilterablePokemonItem['pokemon']) => number;
+
+const POKEMON_SORT_BY_KEYS = [
+  'level',
+  'ivs',
+  'tier',
+  'TOT',
+  'tot',
+  'bst',
+  'hatched',
+  'egg',
+  'pokedex',
+  'pdex',
+  'weight',
+  'height',
+  'friendship'
+] as const;
+export type PokemonSortByKey = (typeof POKEMON_SORT_BY_KEYS)[number];
+
+const SORT_METRIC_STRATEGIES: Record<PokemonSortByKey, MetricExtractor> = {
+  level: (p) => p.level || 0,
+  ivs: (p) => computeIvsTotal(p.ivs),
+  tier: (p) => computeIvsTotal(p.ivs),
+  TOT: (p) => calculateTotalPower(p),
+  tot: (p) => calculateTotalPower(p),
+  bst: (p) => calculateTotalPower(p),
+  hatched: (p) => (p.obtainedMethod === 'egg' ? 1 : 0),
+  egg: (p) => (p.obtainedMethod === 'egg' ? 1 : 0),
+  pokedex: (p) => {
+    const idx = getPokedexOrderIndex(requirePokemonSpeciesId(p.id));
+    return idx === -1 ? POKEDEX_UNKNOWN_INDEX : idx;
+  },
+  pdex: (p) => {
+    const idx = getPokedexOrderIndex(requirePokemonSpeciesId(p.id));
+    return idx === -1 ? POKEDEX_UNKNOWN_INDEX : idx;
+  },
+  weight: (p) => getPokemonPhysicalWeight(p),
+  height: (p) => getPokemonPhysicalHeight(p),
+  friendship: (p) => p.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE
+};
+
 export function getPokemonSortMetric(item: FilterablePokemonItem, sortBy?: string): number {
   const p = item.pokemon;
-  switch (sortBy) {
-    case 'level':
-      return p.level || 0;
-    case 'ivs':
-    case 'tier':
-      return computeIvsTotal(p.ivs);
-    case 'TOT':
-    case 'tot':
-    case 'bst':
-      return calculateTotalPower(p);
-    case 'hatched':
-    case 'egg':
-      return p.obtainedMethod === 'egg' ? 1 : 0;
-    case 'pokedex':
-    case 'pdex': {
-      const idx = getPokedexOrderIndex(requirePokemonSpeciesId(p.id));
-      return idx === -1 ? POKEDEX_UNKNOWN_INDEX : idx;
-    }
-    case 'weight':
-      return getPokemonPhysicalWeight(p);
-    case 'height':
-      return getPokemonPhysicalHeight(p);
-    case 'friendship':
-      return p.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE;
-    default:
-      return p.obtainedAt || (item._source === 'box' ? BOX_SORT_INDEX_OFFSET : 0) + item.index;
+  if (sortBy && sortBy in SORT_METRIC_STRATEGIES) {
+    return SORT_METRIC_STRATEGIES[sortBy as PokemonSortByKey](p);
   }
+  return p.obtainedAt || (item._source === 'box' ? BOX_SORT_INDEX_OFFSET : 0) + item.index;
 }

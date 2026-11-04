@@ -1,17 +1,18 @@
+import type { GenderName } from '@pkmn/types';
+
 /**
  * src/data/pokemon/pokemonDB.ts
- * 
+ *
  * Static domain wrapper for Pokemon Database.
  * Data is precomputed at build/dev time by scripts/data/generate_pokemon_db.ts
  * avoiding @pkmn/sim Dex overhead in the browser runtime bundle.
  */
 import type { PokemonBaseData, LearnsetMove } from '../../types/system/database.ts';
-import type { PokemonType } from '../battle/types.ts';
-import { SPECIES_METADATA } from './speciesMetadata.ts';
-import { MOVE_TRANSLATIONS_ES, requirePokemonMoveId, type PokemonMoveId } from '../battle/moves.ts';
 import type { AbilityId } from '../battle/abilities.ts';
-import type { GenderName } from '@pkmn/types';
+import { MOVE_TRANSLATIONS_ES, requirePokemonMoveId, type PokemonMoveId } from '../battle/moves.ts';
+import type { PokemonType } from '../battle/types.ts';
 import pokemonDbJson from './pokemonDB.json' with { type: 'json' };
+import { SPECIES_METADATA } from './speciesMetadata.ts';
 
 export type PokemonDbSpeciesId = keyof typeof SPECIES_METADATA;
 

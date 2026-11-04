@@ -63,7 +63,7 @@ describeWithDatabase('Magikarp Contest Awarding Parity', (engine) => {
         'SELECT * FROM competition_results WHERE event_id = ? ORDER BY ended_at DESC',
         ['torneo_pesca']
       )) as Array<{ id: string; event_id: string; winners: string; ended_at: string }>;
-      expect(ordered.length).toBe(2);
+      expect(ordered).toHaveLength(2);
       const latestParsed = JSON.parse(ordered[0]!.winners) as Array<{
         rank: string;
         player_name: string;
@@ -220,7 +220,7 @@ describeWithDatabase('Magikarp Contest Awarding Parity', (engine) => {
         .eq('event_id', 'torneo_pesca');
       expect(unOrderedSelect.error).toBeNull();
       const unorderedRows = (unOrderedSelect.data || []) as Array<{ winners?: unknown }>;
-      expect(unorderedRows.length).toBe(2);
+      expect(unorderedRows).toHaveLength(2);
       const staleResult = unorderedRows[0];
       const staleWinners = (
         typeof staleResult?.winners === 'string'
@@ -246,7 +246,7 @@ describeWithDatabase('Magikarp Contest Awarding Parity', (engine) => {
         .order('ended_at', { ascending: false });
       expect(orderedSelect.error).toBeNull();
       const orderedRows = (orderedSelect.data || []) as Array<{ winners?: unknown }>;
-      expect(orderedRows.length).toBe(2);
+      expect(orderedRows).toHaveLength(2);
       const latestResult = orderedRows[0];
       const latestWinners = (
         typeof latestResult?.winners === 'string'

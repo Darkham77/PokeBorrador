@@ -144,7 +144,7 @@ describe('rewardsDebugSimulation logic', () => {
             third: { money: 5000 }
           }
         }
-      } as any
+      }
     ];
 
     const gtsStore = useGTSStore();
@@ -284,7 +284,7 @@ describe('rewardsDebugSimulation logic', () => {
     await clearDebugSimulatedRewards(eventStore, gameStore, uiStore, gtsStore, pvpStore);
 
     // Only real_award preserved
-    expect(eventStore.pendingAwards.length).toBe(1);
+    expect(eventStore.pendingAwards).toHaveLength(1);
     expect(eventStore.pendingAwards[0]?.id).toBe('real_award_1');
 
     // Test mission cleared
@@ -295,7 +295,7 @@ describe('rewardsDebugSimulation logic', () => {
     expect(gameStore.state.claimQueue?.[0]?.id).toBe('real_claim');
 
     // Only real sale preserved
-    expect(gtsStore.salesHistory.length).toBe(1);
+    expect(gtsStore.salesHistory).toHaveLength(1);
     expect(gtsStore.salesHistory[0]?.id).toBe('real_sale');
 
     // Coliseo Ranked reset
@@ -384,10 +384,10 @@ describe('rewardsDebugSimulation logic', () => {
 
     // After claimAllRewards, NO claimable rewards should remain
     const remainingClaimable = unifiedRewards.value.filter((r) => r.isClaimable);
-    expect(remainingClaimable.length).toBe(0);
+    expect(remainingClaimable).toHaveLength(0);
 
     // The ONLY reward remaining in the entire list must be the unclaimable archived award
-    expect(unifiedRewards.value.length).toBe(1);
+    expect(unifiedRewards.value).toHaveLength(1);
     expect(unifiedRewards.value[0]?.id).toBe(archivedReward?.id);
 
     // 3. Verify the Pokémon from GTS was transferred into the player's team or box with valid capture timestamp
@@ -409,11 +409,11 @@ describe('rewardsDebugSimulation logic', () => {
     const reloadedRankedItems = reloadedUnified.unifiedRewards.value.filter(
       (r) => r.source === 'ranked_milestone'
     );
-    expect(reloadedRankedItems.length).toBe(0);
+    expect(reloadedRankedItems).toHaveLength(0);
 
     // 5. Test that the archived award can be discarded with discardAward
     const discardRes = await eventStore.discardAward((archivedReward!.rawData as any).id);
     expect(discardRes).toBe(true);
-    expect(unifiedRewards.value.length).toBe(0);
+    expect(unifiedRewards.value).toHaveLength(0);
   });
 });

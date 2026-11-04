@@ -1,15 +1,16 @@
 import type { DisplayText } from '@francogp/auditor';
-import { type Page, expect } from '@playwright/test';
 import { toID } from '@pkmn/sim';
+import { type Page, expect } from '@playwright/test';
+
+import { isMatchingUid } from '../../../src/logic/battle/showdownUidMapper.ts';
+import type { CertifiedBattleCase } from '../fuzzer/generators/fuzzer_team_generator.ts';
 import {
   MAX_PER_ACTION_TIMEOUT_MS,
   MAX_UI_SETTLE_TIMEOUT_MS,
   SWITCH_SLOT_INDEX_OFFSET
 } from '../simulation_config.ts';
-import { isMatchingUid } from '../../../src/logic/battle/showdownUidMapper.ts';
-import type { CertifiedBattleCase } from '../fuzzer/generators/fuzzer_team_generator.ts';
-import { clickResilient } from './e2eLogger.ts';
 import { waitForWaitInput, type WindowWithResolver } from './battleEventHelpers.ts';
+import { clickResilient } from './e2eLogger.ts';
 
 export type CertifiedTestBatch = CertifiedBattleCase;
 
@@ -87,7 +88,7 @@ export async function resolveTargetUidForSlot(
           return pokemon.uid;
         }
         return null;
-      } catch (_err: unknown) {
+      } catch {
         return null;
       }
     },
@@ -179,15 +180,10 @@ export async function executeNativeAutoBattle(page: Page): Promise<void> {
       if (!store) return true;
       const active = (store.activeBattle || store.state) as { over?: boolean } | undefined;
       const fsmState = store.currentFsmState;
-      const TERMINAL_FSM_STATE_VALUES = [
-        'EXIT_BATTLE',
-        'REWARDS_PHASE',
-        'SEARCH_PHASE'
-      ] as const;
+      const TERMINAL_FSM_STATE_VALUES = ['EXIT_BATTLE', 'REWARDS_PHASE', 'SEARCH_PHASE'] as const;
       type TerminalFsmStateValue = (typeof TERMINAL_FSM_STATE_VALUES)[number];
-      const TERMINAL_FSM_STATES: ReadonlySet<TerminalFsmStateValue> = new Set<TerminalFsmStateValue>(
-        TERMINAL_FSM_STATE_VALUES
-      );
+      const TERMINAL_FSM_STATES: ReadonlySet<TerminalFsmStateValue> =
+        new Set<TerminalFsmStateValue>(TERMINAL_FSM_STATE_VALUES);
       return (
         active?.over === true ||
         (fsmState !== undefined && TERMINAL_FSM_STATES.has(fsmState as TerminalFsmStateValue))
@@ -390,10 +386,10 @@ export async function handleItemChoice(page: Page, cleanChoice: string): Promise
       const pinia = battleStore._p;
       const gameStore = pinia?._s?.get('game');
       const team = [...(gameStore?.state?.team || [])].filter(
-        (p): p is NonNullable<typeof p> => p != null
+        (p): p is NonNullable<typeof p> => p !== null && p !== undefined
       );
       return team[idx]?.uid || null;
-    } catch (_e) {
+    } catch {
       return null;
     }
   }, targetIdx);
@@ -547,7 +543,7 @@ export async function checkIfChoiceIsInvalid(
         return !!isInvalid;
       }
       return false;
-    } catch (_e: unknown) {
+    } catch {
       return false;
     }
   }, choice);
@@ -1046,11 +1042,7 @@ export async function executeAutoBattle(
     (['p1', 'p2'] as const).forEach((seat) => {
       const expectedTeam = finalState[seat];
       if (expectedTeam) {
-        verifyFinalStateTeam(
-          seat,
-          expectedTeam as Parameters<typeof verifyFinalStateTeam>[1],
-          clientState
-        );
+        verifyFinalStateTeam(seat, expectedTeam, clientState);
       }
     });
   }

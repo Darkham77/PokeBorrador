@@ -7,7 +7,7 @@ function checkMegaForme(species: Species, forme: string, battle: Battle) {
     altForme.exists &&
     altForme.gen <= 7 &&
     !battle.ruleTable.isBannedSpecies(altForme) &&
-    !battle.ruleTable.isBanned('pokemontag:mega')
+    !battle.ruleTable.isBanned('tag:mega')
   ) {
     return altForme.name;
   }
@@ -84,6 +84,7 @@ export const Scripts: ModdedBattleScriptsData = {
     set.happiness = 70;
     const friendshipValue = tr((set.happiness / 255 / 10 + 1) * 100);
     stat = tr((stat * friendshipValue) / 100);
+    stat += set.evs[statName];
     return stat;
   }
 };

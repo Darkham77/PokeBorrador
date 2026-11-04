@@ -233,3 +233,51 @@
     padding: 12px;
   }
 }
+
+@mixin shop-main-tabs(
+  $active-bg: var(--yellow),
+  $active-color: var(--black),
+  $active-border: var(--yellow-light)
+) {
+  .modal-main-tabs {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    margin-bottom: 16px;
+  }
+
+  .modal-tab-btn {
+    @include pixelated;
+
+    padding: 6px 14px;
+    border: 1px solid Rgb(255 255 255 / 8%);
+    border-radius: $radius-lg;
+    background: Rgb(255 255 255 / 3%);
+    color: var(--gray);
+    font-size: var(--font-11);
+    cursor: pointer;
+
+    &:hover {
+      background: Rgb(255 255 255 / 6%);
+      color: var(--white);
+    }
+
+    &.active {
+      background: $active-bg;
+      color: $active-color;
+      font-weight: bold;
+      border-color: $active-border;
+      box-shadow: var(--shadow-glow-yellow-sm);
+
+      @if $active-color == var(--white) {
+        text-shadow:
+          1px 1px 0 #000,
+          -1px -1px 0 #000,
+          1px -1px 0 #000,
+          -1px 1px 0 #000;
+      } @else {
+        text-shadow: none;
+      }
+    }
+  }
+}

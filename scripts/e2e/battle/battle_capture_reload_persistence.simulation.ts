@@ -5,6 +5,7 @@
  * with 100% domain fidelity (species, stats, moves) and without save validation errors.
  */
 import { test, expect, type Page } from '@playwright/test';
+
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import {
   armBattleFlowCompletion,

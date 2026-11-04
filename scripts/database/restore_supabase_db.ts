@@ -1,5 +1,5 @@
-import type { DisplayText } from '@francogp/auditor';
-import { isMainModule } from '@francogp/auditor';
+import fsPromises from 'node:fs/promises';
+import { enableCompileCache } from 'node:module';
 /**
  * @file restore_supabase_db.ts
  * @description Script automático para restaurar un respaldo completo (backup) en formato JSON
@@ -15,13 +15,14 @@ import { isMainModule } from '@francogp/auditor';
  * - Estándares Node.js 26+ (Explicit Resource Management con 'using', prefijos node:).
  * - Arquitectura Zero-Warning y Zero-Any.
  */
-
-import fsPromises from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
-import { enableCompileCache } from 'node:module';
-import postgres from 'postgres';
+
+import type { DisplayText } from '@francogp/auditor';
+import { isMainModule } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
+import postgres from 'postgres';
+
 import {
   buildDatabaseUrl,
   getValidatedServerConfigs,
@@ -35,7 +36,9 @@ enableCompileCache();
 const BACKUPS_DIR = path.resolve(process.cwd(), 'database/backups');
 const RESTORE_TARGET_NODE_VERSION_LABEL = '26';
 
-export async function restoreSupabaseDb(options: { server?: string; file?: string } = {}) {
+export async function restoreSupabaseDb(
+  options: { server?: string; file?: string } = {}
+): Promise<void> {
   console.log(
     styleText(
       'bold',
@@ -190,7 +193,7 @@ export async function restoreSupabaseDb(options: { server?: string; file?: strin
     try {
       await sql.end();
     } catch (err) {
-      err;
+      console.warn('[Handled controlled exception]:', err);
     }
     process.exit(1);
   }
@@ -332,8 +335,10 @@ function collectBackupUserIds(
   const backupUserIds = new Map<string, string>();
   const profileRows = backupData['profiles'] || [];
   for (const r of profileRows) {
-    const userId = String(r.id || r.user_id || '');
-    const email = String(r.email || `user_${userId}@test.com`);
+    const rawId = r.id ?? r.user_id;
+    const userId = typeof rawId === 'string' ? rawId : '';
+    const email =
+      typeof r.email === 'string' && r.email.length > 0 ? r.email : `user_${userId}@test.com`;
     if (userId.length === UUID_STRING_LENGTH_EXPECTED) backupUserIds.set(userId, email);
   }
 
@@ -342,7 +347,8 @@ function collectBackupUserIds(
     if (!rows) continue;
     for (const r of rows) {
       for (const key of USER_ID_KEYS) {
-        const val = String(r[key] || '');
+        const rawVal = r[key];
+        const val = typeof rawVal === 'string' ? rawVal : '';
         if (val.length === UUID_STRING_LENGTH_EXPECTED && !backupUserIds.has(val)) {
           backupUserIds.set(val, `user_${val}@test.com`);
         }
@@ -499,10 +505,11 @@ async function restoreAuthUsers(
       const updateCols = Object.keys(cleanUser).filter((k) => k !== 'id');
       await tx`INSERT INTO auth.users ${tx(cleanUser)} ON CONFLICT (id) DO UPDATE SET ${tx(cleanUser, ...updateCols)}`;
     } catch (authErr: unknown) {
+      const targetId = typeof u.id === 'string' ? u.id : 'unknown';
       console.error(
         styleText(
           'yellow',
-          `   ⚠️ Advertencia al restaurar usuario ${u.id}: ${(authErr as Error).message}`
+          `   ⚠️ Advertencia al restaurar usuario ${targetId}: ${(authErr as Error).message}`
         )
       );
     }
@@ -554,10 +561,11 @@ async function restoreAuthIdentities(
       const updateCols = Object.keys(cleanIden).filter((k) => k !== 'id');
       await tx`INSERT INTO auth.identities ${tx(cleanIden)} ON CONFLICT (id) DO UPDATE SET ${tx(cleanIden, ...updateCols)}`;
     } catch (idenErr: unknown) {
+      const targetId = typeof iden.id === 'string' ? iden.id : 'unknown';
       console.error(
         styleText(
           'yellow',
-          `   ⚠️ Advertencia al restaurar identidad ${iden.id}: ${(idenErr as Error).message}`
+          `   ⚠️ Advertencia al restaurar identidad ${targetId}: ${(idenErr as Error).message}`
         )
       );
     }
@@ -690,5 +698,5 @@ export const command = defineCommand({
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

@@ -129,7 +129,7 @@ describe('Market Logic', () => {
     assert.strictEqual(isMarketSoldSeen(numericId, state), false);
     assert.strictEqual(isMarketSoldSeen(String(numericId), state), false);
 
-    markMarketSoldSeen(numericId as unknown as string, state);
+    markMarketSoldSeen(numericId, state);
 
     // Must be converted to string, never stored as raw number
     assert.deepStrictEqual(state.marketSoldSeenIds, ['2083620643']);

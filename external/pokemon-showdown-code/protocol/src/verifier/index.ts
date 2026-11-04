@@ -750,6 +750,7 @@ class Handler implements Required<Protocol.Handler<boolean>> {
           verifyKWArgs(kwArgs, ['miss', 'still', 'from'], this.gen) &&
           (!kwArgs.from ||
             (this.gen?.num === 1 && BINDING.includes(kwArgs.from)) ||
+            (this.gen?.num === 2 && kwArgs.from === 'move: Pursuit') ||
             verifyMoveName(kwArgs.from as Protocol.MoveName, this.gen))
         );
       }
@@ -763,10 +764,12 @@ class Handler implements Required<Protocol.Handler<boolean>> {
           verifyKWArgs(kwArgs, ['miss', 'still', 'from', 'notarget', 'spread'], this.gen) &&
           (!kwArgs.from ||
             kwArgs.from === 'lockedmove' ||
+            kwArgs.from === 'move: Pursuit' ||
             verifyMoveName(kwArgs.from as Protocol.MoveName, this.gen))
         );
       }
       case 4: {
+        // BUG: Quick Claw in Gen 4 should not set sourceEffect (missing from battle-actions.ts:452)
         const from = [
           'move: Metronome',
           'move: Mirror Move',
@@ -778,7 +781,9 @@ class Handler implements Required<Protocol.Handler<boolean>> {
           'lockedmove',
           'move: Me First',
           'move: Nature Power',
-          'Pursuit'
+          'Pursuit',
+          'move: Pursuit',
+          'item: Quick Claw'
         ];
         return (
           args.length === 4 &&
@@ -1026,9 +1031,10 @@ class Handler implements Required<Protocol.Handler<boolean>> {
       if (!verifyKWArgs(kwArgs, ['from', 'of'], this.gen)) return false;
       return (
         !kwArgs.from ||
-        (kwArgs.of ? ['brn', 'psn', 'Leech Seed', 'Recoil'] : ['brn', 'psn', 'confusion']).includes(
-          kwArgs.from
-        )
+        (kwArgs.of
+          ? ['brn', 'psn', 'Leech Seed', 'Recoil']
+          : ['brn', 'psn', 'confusion', 'Recoil']
+        ).includes(kwArgs.from)
       );
     }
     return verifyKWArgs(kwArgs, [...KWARGS, 'partiallytrapped'], this.gen);

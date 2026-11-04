@@ -1,3 +1,6 @@
+import type { MoveBaseData } from '@/types/system/database.ts';
+
+import type { PokemonMoveId } from './moves.ts';
 /**
  * src/data/battle/movesData.ts
  *
@@ -5,11 +8,10 @@
  * Avoids @pkmn/sim Dex overhead in browser runtime bundle.
  */
 import movesDataJson from './movesData.json' with { type: 'json' };
-import type { MoveBaseData } from '@/types/system/database.ts';
-import type { PokemonMoveId } from './moves.ts';
 
-const MOVES_DATABASE: Readonly<Record<PokemonMoveId, MoveBaseData>> =
-  movesDataJson as Readonly<Record<PokemonMoveId, MoveBaseData>>;
+const MOVES_DATABASE: Readonly<Record<PokemonMoveId, MoveBaseData>> = movesDataJson as Readonly<
+  Record<PokemonMoveId, MoveBaseData>
+>;
 
 export function hasMoveData(id: string): id is PokemonMoveId {
   return Object.hasOwn(MOVES_DATABASE, id);

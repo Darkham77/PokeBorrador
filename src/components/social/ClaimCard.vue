@@ -178,7 +178,7 @@ const onClaim = async (): Promise<void> => {
     gap: $spacing-sm-alt;
     color: Rgb(241 245 249 / 100%);
     font-size: var(--font-14);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     line-height: 1.2;
 
     .lvl-label,

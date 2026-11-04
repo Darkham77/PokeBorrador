@@ -25,7 +25,7 @@
 
   /* audit-disable gpu-gaps */
   color: var(--white) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   animation: none !important;
   text-shadow: none !important;
   font-style: normal !important;
@@ -100,7 +100,7 @@
     var(--rainbow-6, #f05)
   ) !important;
   color: transparent !important;
-  font-weight: 900 !important;
+  font-weight: $font-weight-black !important;
   background-size: 200% auto !important;
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
@@ -111,7 +111,7 @@
 .username.cazabichos,
 .name.cazabichos {
   color: var(--emerald) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow:
     0 0 6px Rgb(34 197 94 / 50%),
     0 0 12px Rgb(21 128 61 / 30%) !important;
@@ -121,7 +121,7 @@
 .username.criador,
 .name.criador {
   color: var(--purple-400) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow:
     0 0 6px Rgb(168 85 247 / 50%),
     0 0 12px Rgb(126 34 206 / 30%) !important;
@@ -131,7 +131,7 @@
 .username.rocket,
 .name.rocket {
   color: var(--red-light) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow:
     0 0 8px #ef4444,
     0 0 15px #991b1b !important;
@@ -141,7 +141,7 @@
 .username.entrenador,
 .name.entrenador {
   color: var(--blue-500) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow:
     0 0 6px Rgb(59 130 246 / 50%),
     0 0 12px Rgb(29 78 216 / 30%) !important;
@@ -149,7 +149,7 @@
 
 .nt-faction-union {
   color: var(--amber) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow:
     0 0 4px #2563eb,
     0 0 10px Rgb(37 99 235 / 70%),
@@ -158,7 +158,7 @@
 
 .nt-faction-poder {
   color: var(--orange-500) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow:
     0 0 4px #ef4444,
     0 0 10px Rgb(239 68 68 / 70%),
@@ -753,13 +753,13 @@
 /* --- ELEMENTAL DAMAGE TYPE NICK STYLES --- */
 .nt-type-normal {
   color: var(--slate-400) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow: 0 0 5px Rgb(156 163 175 / 40%) !important;
 }
 
 .nt-type-grass {
   color: var(--emerald) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow:
     0 0 6px Rgb(34 197 94 / 50%),
     0 0 12px Rgb(21 128 61 / 30%) !important;
@@ -767,7 +767,7 @@
 
 .nt-type-ice {
   color: var(--sky) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow:
     0 0 6px Rgb(56 189 248 / 60%),
     0 0 15px Rgb(255 255 255 / 50%) !important;
@@ -775,7 +775,7 @@
 
 .nt-type-fighting {
   color: var(--orange-500) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow:
     0 0 6px Rgb(234 88 12 / 60%),
     0 0 12px Rgb(127 29 29 / 40%) !important;
@@ -783,7 +783,7 @@
 
 .nt-type-poison {
   color: var(--purple-400) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow:
     0 0 6px Rgb(168 85 247 / 60%),
     0 0 12px Rgb(76 29 149 / 50%) !important;
@@ -791,7 +791,7 @@
 
 .nt-type-ground {
   color: var(--amber-dark) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow:
     0 0 6px Rgb(202 138 4 / 50%),
     0 0 12px Rgb(69 26 3 / 40%) !important;
@@ -799,13 +799,13 @@
 
 .nt-type-flying {
   color: var(--cyan) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow: 0 0 8px Rgb(103 232 249 / 60%) !important;
 }
 
 .nt-type-psychic {
   color: var(--rose) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow:
     0 0 8px Rgb(236 72 153 / 70%),
     0 0 15px Rgb(107 33 168 / 40%) !important;
@@ -813,19 +813,19 @@
 
 .nt-type-bug {
   color: var(--green-light) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow: 0 0 6px Rgb(132 204 22 / 50%) !important;
 }
 
 .nt-type-rock {
   color: var(--amber-dark) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow: 0 0 5px Rgb(180 83 9 / 60%) !important;
 }
 
 .nt-type-dragon {
   color: var(--blue-500) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow:
     0 0 8px Rgb(79 70 229 / 60%),
     0 0 15px Rgb(49 46 129 / 50%) !important;
@@ -833,7 +833,7 @@
 
 .nt-type-steel {
   color: var(--slate-500) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow:
     0 0 6px Rgb(100 116 139 / 50%),
     0 0 12px Rgb(255 255 255 / 30%) !important;
@@ -841,7 +841,7 @@
 
 .nt-type-fairy {
   color: var(--rose) !important;
-  font-weight: 700 !important;
+  font-weight: $font-weight-bold !important;
   text-shadow:
     0 0 6px Rgb(244 114 182 / 60%),
     0 0 15px Rgb(253 244 255 / 40%) !important;

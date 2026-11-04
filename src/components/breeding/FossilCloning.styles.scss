@@ -118,7 +118,7 @@
   .fossil-title {
     color: var(--white);
     font-size: var(--font-12);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     white-space: nowrap;
   }
 
@@ -162,7 +162,7 @@
     h4 {
       color: var(--white);
       font-size: var(--font-13);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
       margin-bottom: 4px;
     }
     p {
@@ -252,7 +252,7 @@
 
     td {
       color: var(--white);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
     }
 
     .mult-label {
@@ -318,7 +318,7 @@
     .val {
       color: var(--white);
       font-size: var(--font-14);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
 
       &.error-text {
         color: var(--red);

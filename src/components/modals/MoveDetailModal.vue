@@ -177,7 +177,7 @@ const description = computed(() => {
     color: $white;
     font-family: $font-family-ui;
     font-size: var(--font-26);
-    font-weight: 900;
+    font-weight: $font-weight-black;
 
     small {
       font-size: var(--font-14);
@@ -218,7 +218,7 @@ const description = computed(() => {
   .val {
     color: var(--move-accent);
     font-size: var(--font-20);
-    font-weight: 900;
+    font-weight: $font-weight-black;
     text-shadow: 0 0 10px Rgb(from var(--move-accent, #fff) r g b / 10%);
   }
 }
@@ -247,7 +247,7 @@ const description = computed(() => {
   margin: 0;
   color: var(--slate-100);
   font-size: var(--font-13);
-  font-weight: 400;
+  font-weight: $font-weight-normal;
   line-height: 1.6;
   text-wrap: balance;
 }

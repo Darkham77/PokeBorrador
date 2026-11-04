@@ -8,18 +8,19 @@
  *   npm run assets:convert:items
  */
 
-import { defineCommand, runMain } from 'citty';
-import fs from 'node:fs/promises';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import fs from 'node:fs/promises';
 import path from 'node:path';
-import sharp from 'sharp';
 import { styleText } from 'node:util';
+
+import { defineCommand, runMain } from 'citty';
+import sharp from 'sharp';
 
 const RAW_ITEMS_DIR = path.resolve(process.cwd(), '_raw-assets/public/assets/sprites/items');
 const PUBLIC_ITEMS_DIR = path.resolve(process.cwd(), 'public/assets/sprites/items');
 const ITEMS_JSON_PATH = path.resolve(process.cwd(), 'src/data/inventory/items.json');
 
-async function main() {
+async function main(): Promise<void> {
   console.log(styleText('cyan', '\n═══════════════════════════════════════════════════════'));
   console.log(styleText('cyan', '   ITEM SPRITE CONVERTER & DATABASE SYNC'));
   console.log(styleText('cyan', '═══════════════════════════════════════════════════════\n'));
@@ -96,4 +97,4 @@ export const command = defineCommand({
   }
 });
 
-runMain(command);
+void runMain(command);

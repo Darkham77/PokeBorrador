@@ -35,7 +35,7 @@ describe('useTrainerProfile helpers & reactivity', () => {
     authStore.user = {
       id: 'test-user-id',
       email: 'test@example.com'
-    } as unknown as typeof authStore.user;
+    };
     gameStore.state.faction = null;
 
     const profile = useTrainerProfile(() => authStore.user?.id);
@@ -53,7 +53,7 @@ describe('useTrainerProfile helpers & reactivity', () => {
 
   it('correctly marks isOwnProfile as false when inspecting another trainer ID', () => {
     const authStore = useAuthStore();
-    authStore.user = { id: 'current-user-123' } as unknown as typeof authStore.user;
+    authStore.user = { id: 'current-user-123' };
 
     const profile = useTrainerProfile(() => 'foreign-user-456');
     expect(profile.isOwnProfile.value).toBe(false);
@@ -61,7 +61,7 @@ describe('useTrainerProfile helpers & reactivity', () => {
 
   it('handles authenticated user with undefined target as not own profile', () => {
     const authStore = useAuthStore();
-    authStore.user = { id: 'current-user-123' } as unknown as typeof authStore.user;
+    authStore.user = { id: 'current-user-123' };
 
     const profile = useTrainerProfile(() => undefined);
     expect(profile.isOwnProfile.value).toBe(false);
@@ -69,7 +69,7 @@ describe('useTrainerProfile helpers & reactivity', () => {
 
   it('resolves public trainer metrics from profile row without saveState', () => {
     const authStore = useAuthStore();
-    authStore.user = { id: 'current-user-123' } as unknown as typeof authStore.user;
+    authStore.user = { id: 'current-user-123' };
 
     const profileData = {
       id: 'foreign-user-456',
@@ -94,7 +94,7 @@ describe('useTrainerProfile helpers & reactivity', () => {
     expect(modal.trainersDefeated.value).toBe(35);
     expect(modal.wildWins.value).toBe(110);
     expect(modal.warCoins.value).toBe(75);
-    expect(modal.isGymDefeated('cerulean' as never)).toBe(true);
-    expect(modal.isGymDefeated('pewter' as never)).toBe(false);
+    expect(modal.isGymDefeated('cerulean')).toBe(true);
+    expect(modal.isGymDefeated('pewter')).toBe(false);
   });
 });

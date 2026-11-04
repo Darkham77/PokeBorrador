@@ -1,4 +1,3 @@
-import { isMainModule } from '@francogp/auditor';
 /**
  * scripts/data/generate_moves_db.ts
  *
@@ -7,15 +6,18 @@ import { isMainModule } from '@francogp/auditor';
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { defineCommand, runMain } from 'citty';
+
+import { isMainModule } from '@francogp/auditor';
 import { Dex } from '@pkmn/sim';
-import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
+import { defineCommand, runMain } from 'citty';
+
 import movesJson from '../../src/data/battle/moves.json' with { type: 'json' };
 import {
   requirePokemonMoveId,
   type PokemonMoveId,
   type MoveCategory
 } from '../../src/data/battle/moves.ts';
+import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
 
 const OUTPUT_FILE = path.resolve(process.cwd(), 'src/data/battle/movesData.json');
 
@@ -106,19 +108,17 @@ const DRAGON_RAGE_FIXED_DAMAGE = 40;
 type ShowdownMove = NonNullable<ReturnType<ReturnType<typeof Dex.forGen>['moves']['get']>>;
 
 function applyMoveEffects(entry: StaticMoveEntry, move: ShowdownMove): void {
-  const boosts = cleanBoosts(
-    move.boosts as Partial<Record<ShowdownBoostStatKey, number>> | undefined
-  );
+  const boosts = cleanBoosts(move.boosts);
   if (boosts) entry.boosts = boosts;
   if (move.status) entry.status = move.status;
   if (move.volatileStatus) entry.volatileStatus = move.volatileStatus;
   if (move.sideCondition) entry.sideCondition = move.sideCondition;
   if (move.weather) entry.weather = move.weather;
 
-  const sec = cleanEffect(move.secondary as RawEffect | null | undefined);
+  const sec = cleanEffect(move.secondary);
   if (sec) {
     if (move.secondary?.self) {
-      const selfEff = cleanEffect(move.secondary.self as RawEffect);
+      const selfEff = cleanEffect(move.secondary.self);
       if (selfEff) sec.self = selfEff;
     }
     entry.secondary = sec;
@@ -128,7 +128,7 @@ function applyMoveEffects(entry: StaticMoveEntry, move: ShowdownMove): void {
     entry.secondaries = move.secondaries.map((s) => cleanEffect(s as RawEffect)).filter(Boolean);
   }
 
-  const selfHit = cleanEffect(move.self as RawEffect | null | undefined);
+  const selfHit = cleanEffect(move.self);
   if (selfHit) entry.self = selfHit;
 }
 
@@ -234,7 +234,7 @@ export async function generateMovesDatabase(): Promise<void> {
   for (const [id, trans] of Object.entries(movesJson)) {
     const move = Dex.forGen(ACTIVE_GENERATION).moves.get(id);
     const moveId = requirePokemonMoveId(id);
-    result[moveId] = buildMoveEntry(moveId, trans, move as ShowdownMove | undefined);
+    result[moveId] = buildMoveEntry(moveId, trans, move);
   }
 
   const jsonContent = JSON.stringify(result, null, 2);
@@ -254,5 +254,5 @@ export const command = defineCommand({
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

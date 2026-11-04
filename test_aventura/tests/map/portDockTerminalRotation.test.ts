@@ -154,7 +154,7 @@ describe('portDockTerminalRotation', () => {
 
       const pois = placeRegionalPOIs(continent, { targetCount: 18, seed });
       const portDocks = pois.filter((p) => p.type === 'port_dock');
-      expect(portDocks.length).toBe(1);
+      expect(portDocks).toHaveLength(1);
 
       const port = portDocks[0]!;
       expect(port.facing).toBeDefined();

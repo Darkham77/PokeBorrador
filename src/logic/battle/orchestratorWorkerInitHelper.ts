@@ -22,7 +22,7 @@ interface WorkerInitResponsePayload {
 function resolveWindowDebugSeed(): number[] | null {
   if (typeof globalThis.window !== 'undefined') {
     const debugSeed = globalThis.__VITE_DEBUG__?.battleSeed ?? null;
-    console.debug(
+    logger.debug(
       `[E2E-SEED-ORCHESTRATOR-DEBUG] Read seed directly from window: ${JSON.stringify(debugSeed)}`
     );
     return debugSeed;
@@ -125,7 +125,7 @@ function detachWorkerInitListeners(
 
 function handleWorkerLogMessage(responsePayload?: { message?: string }): void {
   const stage = responsePayload?.message ?? 'missing-stage';
-  console.debug(`[WORKER] ${stage}`);
+  logger.debug(`[WORKER] ${stage}`);
   if (typeof globalThis.window !== 'undefined' && globalThis.__VITE_DEBUG__) {
     globalThis.__VITE_DEBUG__.lastWorkerInitStage = stage;
   }
@@ -167,7 +167,7 @@ async function handleInitBattleSuccess(
   onResolve: () => void
 ): Promise<void> {
   logger.info('ShowdownWorker', 'Batalla inicializada con éxito en el worker.');
-  console.debug(
+  logger.debug(
     '[E2E-ORCHESTRATOR-INIT-DEBUG] responsePayload keys:',
     Object.keys(responsePayload || {})
   );
@@ -278,7 +278,7 @@ export async function initWorkerForBattle(
   const { p1Data, p2Data } = resolveBattleTeams(ctx, initialPlayer, initialEnemy, debugSeed);
   const initialWeatherOfficial = battleState?.weather?.type || 'none';
 
-  console.debug(
+  logger.debug(
     `[E2E-SEED-DEBUG] Initializing worker battle. context=${JSON.stringify({ initialWeatherOfficial, debugSeed, seedArr })}`
   );
 

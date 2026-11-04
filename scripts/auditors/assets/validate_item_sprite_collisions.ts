@@ -8,8 +8,9 @@
  */
 
 import { readFileSync, existsSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { enableCompileCache } from 'node:module';
+import { resolve } from 'node:path';
+
 import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
 
 enableCompileCache();
@@ -141,18 +142,18 @@ export const ITEM_SPRITE_COLLISION_RULES: readonly ItemSpriteCollisionRuleId[] =
 export class ItemSpriteCollisionAuditor extends BaseAuditor<ItemSpriteCollisionRuleId> {
   private readonly itemsJsonPath: string;
 
-  constructor() {
+  public constructor() {
     const itemsPath = resolve(process.cwd(), 'src/data/inventory/items.json');
     super({
       ruleCapabilities: createRuleCapabilities(ITEM_SPRITE_COLLISION_RULES, {
         speed: 'light',
         phase: 'normal',
-        fix: 'none',
         md: false,
         ast: false,
         changedOnly: false,
         critical: false
       }),
+      ruleFixers: {},
       id: 'validate_item_sprite_collisions',
       configKey: 'assets.itemSpriteCollisions',
       defaultConfig: {

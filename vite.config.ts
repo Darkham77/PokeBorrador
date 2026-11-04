@@ -1,25 +1,10 @@
 import fs from 'node:fs';
-import fsPromises from 'node:fs/promises';
-import type { IncomingMessage, ServerResponse } from 'node:http';
 import path from 'node:path';
 
-import { vitePrecompressPlugin } from '@francogp/auditor';
-import basicSsl from '@vitejs/plugin-basic-ssl';
-import vue from '@vitejs/plugin-vue';
-import { visualizer } from 'rollup-plugin-visualizer';
-import { VitePWA } from 'vite-plugin-pwa';
-import { defineConfig, type HmrContext, type Plugin, type PluginOption } from 'vite-plus';
-import { type ViteDevServer } from 'vite-plus';
-import type { ESBuildOptions } from 'vite-plus';
-import * as compiler from 'vue/compiler-sfc';
+import { defineConfig, type ESBuildOptions } from 'vite-plus';
 
-import { generatePokemonDatabase } from './scripts/data/generate_pokemon_db.ts';
-import { generateMigrations } from './scripts/database/generate_migrations.ts';
-import { devShadowEditorPlugin } from './scripts/maintenance/vite-plugin-dev-shadow-editor.ts';
 import { fixPkmnSimPlugin } from './scripts/maintenance/vite-plugin-fix-pkmn-sim.ts';
-import { lanPvPPlugin } from './scripts/maintenance/vite-plugin-lan-pvp.ts';
-import { sassTrapsFixer } from './scripts/maintenance/vite-plugin-sass-traps.ts';
-import { isValidSqliteBuffer } from './src/logic/db/sqliteBufferValidator.ts';
+import { plugins } from './vite.plugins.ts';
 type ESBuildOptionsWithCharset = ESBuildOptions & {
   charset?: 'utf8';
 };
@@ -31,382 +16,6 @@ const esbuildConfig: ESBuildOptionsWithCharset = {
   pure:
     process.env.NODE_ENV === 'production' ? ['console.log', 'console.info', 'console.debug'] : []
 };
-function pokemonDbGeneratorPlugin(): Plugin {
-  return {
-    name: 'pokemon-db-generator',
-    async buildStart(): Promise<void> {
-      await generatePokemonDatabase();
-    },
-    handleHotUpdate({ file }: { file: string }): void {
-      if (
-        file.includes('src/data/pokemon/speciesMetadata') ||
-        file.includes('src/data/battle/moves') ||
-        file.includes('src/data/system/constants')
-      ) {
-        generatePokemonDatabase().catch((err) => {
-          console.error('[PokemonDB Generator] Hot update generation failed:', err);
-        });
-      }
-    }
-  };
-}
-function migrationsPlugin(): Plugin {
-  return {
-    name: 'migrations-generator',
-    async buildStart(): Promise<void> {
-      await generateMigrations();
-    },
-    handleHotUpdate({ file }: { file: string }): void {
-      if (file.includes('database/migrations')) {
-        generateMigrations().catch((err) => {
-          console.error('[Migrations Generator] Hot update generation failed:', err);
-        });
-        try {
-          const templatePath = path.resolve(
-            import.meta.dirname,
-            'scratch/database/clean_template.db'
-          );
-          if (fs.existsSync(templatePath)) {
-            fs.unlinkSync(templatePath);
-            console.log('🗑️ [DevDB] clean_template.db deleted due to migration update.');
-          }
-        } catch {
-          /* ignore */
-        }
-      }
-    }
-  };
-}
-function devDbImportPlugin(): Plugin {
-  return {
-    name: 'dev-db-import',
-    configureServer(server: ViteDevServer) {
-      let cleanDbRamBuffer: Buffer | null = null;
-      const simDbRamBuffers = new Map<string, Buffer>();
-      const manualImportPath = path.resolve(
-        import.meta.dirname,
-        'scratch/database/manual_user_backup_import.db'
-      );
-      const getSimKey = (req: IncomingMessage): string | null => {
-        const headerKey = req.headers['x-db-key'];
-        const cleanHeaderKey =
-          typeof headerKey === 'string'
-            ? headerKey.replace(/[^a-zA-Z0-9_-]/g, '')
-            : Array.isArray(headerKey) && headerKey[0]
-              ? headerKey[0].replace(/[^a-zA-Z0-9_-]/g, '')
-              : '';
-        if (cleanHeaderKey && cleanHeaderKey.startsWith('sim_')) return cleanHeaderKey;
-        if (!req.url) return null;
-        try {
-          const parsed = new URL(req.url, 'http://localhost');
-          const key = parsed.searchParams.get('db_key');
-          return key && key.startsWith('sim_') && /^[a-zA-Z0-9_-]+$/.test(key) ? key : null;
-        } catch {
-          return null;
-        }
-      };
-      const getSimDbPath = (simKey: string): string => {
-        const normalizedKey = simKey.startsWith('sim_') ? simKey : `sim_${simKey}`;
-        return path.resolve(
-          import.meta.dirname,
-          'scratch/database/simulations',
-          `${normalizedKey}.db`
-        );
-      };
-      async function handleManualImportRoute(
-        req: IncomingMessage,
-        res: ServerResponse
-      ): Promise<boolean> {
-        const url = req.url ?? '';
-        if (url.startsWith('/api/dev-manual-import-check')) {
-          try {
-            await fsPromises.access(manualImportPath);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ exists: true }));
-          } catch {
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ exists: false }));
-          }
-          return true;
-        }
-        if (url.startsWith('/api/dev-manual-import-db')) {
-          try {
-            await fsPromises.access(manualImportPath);
-            const binary = await fsPromises.readFile(manualImportPath);
-            res.writeHead(200, {
-              'Content-Type': 'application/octet-stream',
-              'Cache-Control': 'no-store'
-            });
-            res.end(binary);
-            console.debug('📦 [DevDB] manual_user_backup_import.db sent to client from disk.');
-          } catch {
-            res.writeHead(404, { 'Content-Type': 'text/plain' });
-            res.end('No manual user backup import found');
-          }
-          return true;
-        }
-        if (url.startsWith('/api/dev-manual-import-cleanup')) {
-          try {
-            await fsPromises.unlink(manualImportPath);
-            console.log('📦 [DevDB] manual_user_backup_import.db cleaned up from disk.');
-          } catch {
-            /* ignore */
-          }
-          res.writeHead(200, { 'Content-Type': 'text/plain' });
-          res.end('Cleaned up');
-          return true;
-        }
-        return false;
-      }
-      async function handleSimDbCheck(req: IncomingMessage, res: ServerResponse): Promise<void> {
-        const simKey = getSimKey(req);
-        if (!simKey) {
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ exists: false }));
-          return;
-        }
-        const simPath = getSimDbPath(simKey);
-        try {
-          await fsPromises.access(simPath);
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ exists: true }));
-        } catch {
-          const existsInRam = simDbRamBuffers.has(simKey);
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ exists: existsInRam }));
-        }
-      }
-      async function handleSimDbCleanup(req: IncomingMessage, res: ServerResponse): Promise<void> {
-        const simKey = getSimKey(req);
-        if (simKey) {
-          simDbRamBuffers.delete(simKey);
-          const simPath = getSimDbPath(simKey);
-          try {
-            await fsPromises.unlink(simPath);
-            console.log(
-              `📦 [DevDB] Simulation ${path.basename(simPath)} cleaned up from RAM & disk.`
-            );
-          } catch {
-            /* ignore */
-          }
-        }
-        res.writeHead(200, { 'Content-Type': 'text/plain' });
-        res.end('Cleaned up');
-      }
-      async function handleSimDbDownload(req: IncomingMessage, res: ServerResponse): Promise<void> {
-        const simKey = getSimKey(req);
-        if (!simKey) {
-          res.writeHead(404, { 'Content-Type': 'text/plain' });
-          res.end('Simulation key missing or invalid');
-          return;
-        }
-        // 1. Prioritize RAM memory buffer (most recent, instant, free of I/O race conditions)
-        const ramBuf = simDbRamBuffers.get(simKey);
-        if (ramBuf && isValidSqliteBuffer(ramBuf)) {
-          res.writeHead(200, {
-            'Content-Type': 'application/octet-stream',
-            'Cache-Control': 'no-store'
-          });
-          res.end(ramBuf);
-          console.debug(`📦 [DevDB] Simulation ${simKey} sent to client from RAM memory.`);
-          return;
-        }
-        // 2. Read from disk if not available in RAM
-        const simPath = getSimDbPath(simKey);
-        try {
-          await fsPromises.access(simPath);
-          const binary = await fsPromises.readFile(simPath);
-          if (!isValidSqliteBuffer(binary)) {
-            res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end('Corrupted database file on disk');
-            return;
-          }
-          res.writeHead(200, {
-            'Content-Type': 'application/octet-stream',
-            'Cache-Control': 'no-store'
-          });
-          res.end(binary);
-          console.debug(
-            `📦 [DevDB] Simulation ${path.basename(simPath)} sent to client from disk.`
-          );
-          return;
-        } catch {
-          res.writeHead(404, { 'Content-Type': 'text/plain' });
-          res.end('No simulation database found');
-        }
-      }
-      function handleSimDbExport(req: IncomingMessage, res: ServerResponse): void {
-        const simKey = getSimKey(req);
-        if (!simKey) {
-          res.writeHead(400, { 'Content-Type': 'text/plain' });
-          res.end('Simulation key required with sim_ prefix');
-          return;
-        }
-        let isAborted = false;
-        req.on('aborted', () => {
-          isAborted = true;
-        });
-        req.on('close', () => {
-          if (!req.complete) isAborted = true;
-        });
-        const chunks: Buffer[] = [];
-        req.on('data', (chunk) => chunks.push(chunk as Buffer));
-        req.on('end', async () => {
-          if (isAborted || !req.complete) {
-            console.warn(
-              `⚠️ [DevDB] Simulation ${simKey} upload aborted prematurely by client. Discarding incomplete payload.`
-            );
-            res.writeHead(400, { 'Content-Type': 'text/plain' });
-            res.end('Upload aborted');
-            return;
-          }
-          const buffer = Buffer.concat(chunks);
-          const rawLength = req.headers['content-length'];
-          const expectedLength = rawLength ? parseInt(rawLength, 10) : undefined;
-          if (!isValidSqliteBuffer(buffer, expectedLength)) {
-            console.warn(
-              `⚠️ [DevDB] Simulation ${simKey} failed SQLite buffer validation (len: ${buffer.length}, expected: ${expectedLength}). Discarding.`
-            );
-            res.writeHead(400, { 'Content-Type': 'text/plain' });
-            res.end('Invalid SQLite database buffer');
-            return;
-          }
-          simDbRamBuffers.set(simKey, buffer);
-          const simPath = getSimDbPath(simKey);
-          const tmpPath = `${simPath}.${Math.random().toString(36).substring(2, 8)}.tmp`;
-          try {
-            await fsPromises.mkdir(path.dirname(simPath), { recursive: true });
-            await fsPromises.writeFile(tmpPath, buffer);
-            await fsPromises.rename(tmpPath, simPath);
-            console.debug(
-              `📥 [DevDB] Simulation ${path.basename(simPath)} updated in RAM and disk.`
-            );
-          } catch {
-            await fsPromises.unlink(tmpPath).catch(() => {});
-          }
-          res.writeHead(200, { 'Content-Type': 'text/plain' });
-          res.end('Saved');
-        });
-      }
-      async function handleSimDbRoute(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
-        const url = req.url ?? '';
-        if (url.startsWith('/api/dev-sim-db-check') || url.startsWith('/api/dev-import-db-check')) {
-          await handleSimDbCheck(req, res);
-          return true;
-        }
-        if (
-          url.startsWith('/api/dev-sim-db-cleanup') ||
-          url.startsWith('/api/dev-import-db-cleanup')
-        ) {
-          await handleSimDbCleanup(req, res);
-          return true;
-        }
-        if (url.startsWith('/api/dev-sim-db') || url.startsWith('/api/dev-import-db')) {
-          await handleSimDbDownload(req, res);
-          return true;
-        }
-        if (url.startsWith('/api/dev-export-db') && req.method === 'POST') {
-          handleSimDbExport(req, res);
-          return true;
-        }
-        return false;
-      }
-      async function handleCleanDbDownload(res: ServerResponse): Promise<void> {
-        if (cleanDbRamBuffer) {
-          res.writeHead(200, {
-            'Content-Type': 'application/octet-stream',
-            'Cache-Control': 'no-store'
-          });
-          res.end(cleanDbRamBuffer);
-          return;
-        }
-        const dbPath = path.resolve(import.meta.dirname, 'scratch/database/clean_template.db');
-        try {
-          await fsPromises.access(dbPath);
-          const binary = await fsPromises.readFile(dbPath);
-          cleanDbRamBuffer = binary;
-          res.writeHead(200, {
-            'Content-Type': 'application/octet-stream',
-            'Cache-Control': 'no-store'
-          });
-          res.end(binary);
-          console.debug('📦 [DevDB] Temporary clean_template.db sent to client from RAM.');
-        } catch {
-          res.writeHead(404, { 'Content-Type': 'text/plain' });
-          res.end('No clean template database found');
-        }
-      }
-      function handleCleanDbExport(req: IncomingMessage, res: ServerResponse): void {
-        let isAborted = false;
-        req.on('aborted', () => {
-          isAborted = true;
-        });
-        req.on('close', () => {
-          if (!req.complete) isAborted = true;
-        });
-        const chunks: Buffer[] = [];
-        req.on('data', (chunk) => chunks.push(chunk as Buffer));
-        req.on('end', async () => {
-          if (isAborted || !req.complete) {
-            console.warn(
-              '⚠️ [DevDB] clean_template.db upload aborted prematurely by client. Discarding.'
-            );
-            res.writeHead(400, { 'Content-Type': 'text/plain' });
-            res.end('Upload aborted');
-            return;
-          }
-          const buffer = Buffer.concat(chunks);
-          const rawLength = req.headers['content-length'];
-          const expectedLength = rawLength ? parseInt(rawLength, 10) : undefined;
-          if (!isValidSqliteBuffer(buffer, expectedLength)) {
-            console.warn(
-              `⚠️ [DevDB] clean_template.db failed SQLite buffer validation (len: ${buffer.length}). Discarding.`
-            );
-            res.writeHead(400, { 'Content-Type': 'text/plain' });
-            res.end('Invalid SQLite database buffer');
-            return;
-          }
-          cleanDbRamBuffer = buffer;
-          const dbPath = path.resolve(import.meta.dirname, 'scratch/database/clean_template.db');
-          const tmpPath = `${dbPath}.${Math.random().toString(36).substring(2, 8)}.tmp`;
-          try {
-            await fsPromises.mkdir(path.dirname(dbPath), { recursive: true });
-            await fsPromises.writeFile(tmpPath, buffer);
-            await fsPromises.rename(tmpPath, dbPath);
-            console.debug('📥 [DevDB] clean_template.db updated 100% in RAM and synchronized.');
-          } catch {
-            await fsPromises.unlink(tmpPath).catch(() => {});
-          }
-          res.writeHead(200, { 'Content-Type': 'text/plain' });
-          res.end('Success');
-        });
-      }
-      async function handleCleanDbRoute(
-        req: IncomingMessage,
-        res: ServerResponse
-      ): Promise<boolean> {
-        const url = req.url ?? '';
-        if (url.startsWith('/api/dev-clean-db')) {
-          await handleCleanDbDownload(res);
-          return true;
-        }
-        if (url.startsWith('/api/dev-export-clean-db') && req.method === 'POST') {
-          handleCleanDbExport(req, res);
-          return true;
-        }
-        return false;
-      }
-      server.middlewares.use(
-        async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
-          if (await handleManualImportRoute(req, res)) return;
-          if (await handleSimDbRoute(req, res)) return;
-          if (await handleCleanDbRoute(req, res)) return;
-          next();
-        }
-      );
-    }
-  };
-}
 // ─── Version System ───────────────────────────────────────────────────────────
 // The developer's LOCAL build is the single source of truth for the version.
 // Canonical application version derived from package.json (Single Source of Truth)
@@ -430,33 +39,11 @@ function getPackageVersion(): string {
       return ver.startsWith('v') ? ver : `v${ver}`;
     }
   } catch {
-    // Silently ignore
+    /* fallback to default */
   }
   return 'v0.6.0';
 }
 const appVersion: string = getPackageVersion();
-/**
- * Plugin que sincroniza public/version.json con la versión canónica de package.json
- */
-function versionPlugin(): Plugin {
-  return {
-    name: 'version-json-writer',
-    buildStart(): void {
-      try {
-        const publicDir = path.resolve(import.meta.dirname, 'public');
-        if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
-        const verPath = path.resolve(publicDir, 'version.json');
-        const content = JSON.stringify({ version: appVersion }, null, 2) + '\n';
-        if (!fs.existsSync(verPath) || fs.readFileSync(verPath, 'utf-8') !== content) {
-          fs.writeFileSync(verPath, content, 'utf-8');
-          console.log(`📦 [version] Versión sincronizada en public/version.json: ${appVersion}`);
-        }
-      } catch (e) {
-        console.error('Failed to write version.json:', e);
-      }
-    }
-  };
-}
 // Detect if building on GitHub Actions for GitHub Pages
 const isGithubActions = !!process.env.GITHUB_ACTIONS;
 const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1];
@@ -499,167 +86,69 @@ function resolveManualChunk(id: string): string | undefined {
   }
   return undefined;
 }
-const vuePlugin: unknown = vue({
-  compiler,
-  template: {
-    compilerOptions: {
-      hoistStatic: true,
-      cacheHandlers: true,
-      comments: false
-    }
-  }
-});
-const plugins = [fixPkmnSimPlugin(), vuePlugin];
-if (!isVitest) {
-  plugins.push(
-    basicSsl(),
-    lanPvPPlugin(),
-    pokemonDbGeneratorPlugin(),
-    migrationsPlugin(),
-    devDbImportPlugin(),
-    devShadowEditorPlugin(),
-    sassTrapsFixer(),
-    versionPlugin(),
-    VitePWA({
-      registerType: 'prompt',
-      includeAssets: ['sql-wasm.wasm', 'assets/fondo/logo%203.webp'],
-      manifest: {
-        name: 'Poké Vicio',
-        short_name: 'PokéVicio',
-        description: 'El juego definitivo de Pokémon para navegador',
-        theme_color: '#161a2e',
-        background_color: '#0a0c14',
-        display: 'standalone',
-        orientation: 'any',
-        start_url: base,
-        scope: base,
-        icons: [
-          {
-            src: 'assets/fondo/logo%203.webp',
-            sizes: '512x512',
-            type: 'image/webp',
-            purpose: 'any'
-          },
-          {
-            src: 'assets/fondo/logo%203.webp',
-            sizes: '512x512',
-            type: 'image/webp',
-            purpose: 'maskable'
-          }
-        ]
-      },
-      workbox: {
-        cleanupOutdatedCaches: true,
-        skipWaiting: true,
-        clientsClaim: true,
-        // CRITICAL: Precache ONLY the essential App Shell (< 500 KB).
-        // Heavy data chunks, optional views, and dynamic engines are cached on-demand via runtime caching.
-        globPatterns: [
-          '**/*.{html,ico,woff2}',
-          '**/index-*.{js,css}',
-          '**/vendor-vue-*.js',
-          '**/vendor-gsap-*.js'
-        ],
-        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
-        runtimeCaching: [
-          {
-            // Dynamic code chunks & wasm modules (game data, modals, subviews, sqlite)
-            urlPattern: /\/assets\/.*\.(js|css|wasm)(\?.*)?$/i,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'app-dynamic-chunks-v1',
-              expiration: {
-                maxEntries: 150,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            // Dynamic event and PokeCenter UI banners (updated in background via StaleWhileRevalidate)
-            urlPattern:
-              /\/assets\/ui\/(events|pokecenter)\/.*\.(png|webp|svg|gif|jpg|jpeg)(\?.*)?$/i,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'game-event-banners-v1',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            // All game image assets (sprites, icons, backgrounds)
-            urlPattern: /\/assets\/.*\.(png|webp|svg|gif|jpg|jpeg)(\?.*)?$/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'game-images-v1',
-              expiration: {
-                maxEntries: 25000,
-                maxAgeSeconds: 60 * 60 * 24 * 90 // 90 days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            // All game audio assets (music tracks, SFX files: mp3, ogg, wav, midi, m4a, flac, aac)
-            urlPattern: /\/assets\/.*\.(mp3|ogg|wav|mid|midi|m4a|flac|aac)(\?.*)?$/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'game-audio-v1',
-              expiration: {
-                maxEntries: 500,
-                maxAgeSeconds: 60 * 60 * 24 * 90 // 90 days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          }
-        ]
-      },
-      devOptions: {
-        enabled: false,
-        type: 'module'
-      }
-    }),
-    vitePrecompressPlugin(),
-    {
-      name: 'worker-reload-plugin',
-      handleHotUpdate({ file, server }: HmrContext) {
-        if (file.endsWith('showdown.worker.ts')) {
-          server.config.logger.info(
-            `[HMR] showdown.worker.ts modificado. Forzando recarga de página.`
-          );
-          server.ws.send({ type: 'full-reload' });
-          return [];
-        }
-        return;
-      }
-    }
-  );
-}
-if (process.env.ANALYZE === 'true') {
-  plugins.push(
-    visualizer({
-      filename: 'scratch/bundle_stats.html',
-      open: false,
-      gzipSize: true,
-      brotliSize: true
-    })
-  );
-}
+const LOCKED_SKILLS_IGNORE_PATTERNS = [
+  '.agents/skills/algorithmic-art/**',
+  '.agents/skills/canvas-design/**',
+  '.agents/skills/ci-cd-and-automation/**',
+  '.agents/skills/code-review/**',
+  '.agents/skills/code-simplification/**',
+  '.agents/skills/codebase-design/**',
+  '.agents/skills/context-engineering/**',
+  '.agents/skills/create-adaptable-composable/**',
+  '.agents/skills/design-motion-principles/**',
+  '.agents/skills/docker-patterns/**',
+  '.agents/skills/domain-modeling/**',
+  '.agents/skills/fallow/**',
+  '.agents/skills/fallow-review/**',
+  '.agents/skills/fallow-setup/**',
+  '.agents/skills/find-skills/**',
+  '.agents/skills/frontend-design/**',
+  '.agents/skills/grill-with-docs/**',
+  '.agents/skills/grilling/**',
+  '.agents/skills/gsap-core/**',
+  '.agents/skills/gsap-frameworks/**',
+  '.agents/skills/gsap-performance/**',
+  '.agents/skills/gsap-plugins/**',
+  '.agents/skills/gsap-react/**',
+  '.agents/skills/gsap-scrolltrigger/**',
+  '.agents/skills/gsap-timeline/**',
+  '.agents/skills/gsap-utils/**',
+  '.agents/skills/handoff/**',
+  '.agents/skills/implement-spec/**',
+  '.agents/skills/improve-codebase-architecture/**',
+  '.agents/skills/incremental-implementation/**',
+  '.agents/skills/mcp-builder/**',
+  '.agents/skills/performance-optimization/**',
+  '.agents/skills/pinia/**',
+  '.agents/skills/playwright-cli/**',
+  '.agents/skills/ponytail/**',
+  '.agents/skills/ponytail-audit/**',
+  '.agents/skills/ponytail-debt/**',
+  '.agents/skills/ponytail-gain/**',
+  '.agents/skills/ponytail-help/**',
+  '.agents/skills/ponytail-review/**',
+  '.agents/skills/security-and-hardening/**',
+  '.agents/skills/security-review/**',
+  '.agents/skills/skill-creator/**',
+  '.agents/skills/tdd/**',
+  '.agents/skills/to-spec/**',
+  '.agents/skills/valibot/**',
+  '.agents/skills/vite/**',
+  '.agents/skills/vitest/**',
+  '.agents/skills/vue-best-practices/**',
+  '.agents/skills/vue-debug-guides/**',
+  '.agents/skills/vue-jsx-best-practices/**',
+  '.agents/skills/vue-options-api-best-practices/**',
+  '.agents/skills/vue-pinia-best-practices/**',
+  '.agents/skills/vue-router-best-practices/**',
+  '.agents/skills/vue-testing-best-practices/**',
+  '.agents/skills/vueuse-functions/**',
+  '.agents/skills/web-design-guidelines/**'
+] as const;
 // https://vitejs.dev/config/
 export default defineConfig({
   base,
-  plugins: plugins as PluginOption[],
+  plugins,
   define: {
     __BUILD_TIME__: JSON.stringify(appVersion.match(/build\.(\d{8}-\d{6})/)?.[1] || appVersion),
     __APP_VERSION__: JSON.stringify(appVersion)
@@ -683,7 +172,7 @@ export default defineConfig({
     plugins: () => [fixPkmnSimPlugin()],
     rollupOptions: {
       output: {
-        manualChunks(id) {
+        manualChunks(id): string | undefined {
           if (
             id.includes('node_modules/@pkmn/sim/build/esm/data/learnsets') ||
             id.includes('@pkmn/sim/build/cjs/data/learnsets') ||
@@ -776,7 +265,7 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
-        bypass: (req) => {
+        bypass: (req): string | undefined => {
           if (req.url?.includes('/api/dev-')) {
             return req.url;
           }
@@ -799,7 +288,7 @@ export default defineConfig({
         annotations: true,
         manualPureFunctions: ['console.log', 'console.info', 'console.debug']
       },
-      onwarn(warning, warn) {
+      onwarn(warning, warn): void {
         if (warning.code === 'EVAL' && warning.id?.includes('node_modules')) {
           return;
         }
@@ -840,17 +329,7 @@ export default defineConfig({
         'src/**/*.{ts,js}',
         'scripts/**/*.{ts,js}'
       ],
-      exclude: [
-        'src/**/*.vue',
-        '**/*.d.ts',
-        '**/*.md',
-        '**/*.scss',
-        '**/*.css',
-        'external/**',
-        'dist/**',
-        'scratch/**',
-        'node_modules/**'
-      ],
+      exclude: ['src/**/*.vue', '**/*.d.ts', 'dist/**', 'scratch/**', 'node_modules/**'],
       reporter: ['text', 'json', 'html'],
       reportsDirectory: 'scratch/coverage'
     },
@@ -920,10 +399,6 @@ export default defineConfig({
       ],
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/ban-ts-comment': 'error',
-      '@francogp/domain-type/no-naked-string-union': 'error',
-      '@francogp/domain-type/no-record-string-key': 'error',
-      '@francogp/domain-type/no-untyped-string-set-map': 'error',
-      '@francogp/domain-type/no-broad-string-array': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
       'unicorn/prefer-node-protocol': 'error',
       'no-debugger': 'error',
@@ -994,7 +469,6 @@ export default defineConfig({
       'no-multi-assign': 'error',
       'no-sequences': 'error',
       'no-labels': 'error',
-      'no-void': 'error',
       'no-useless-call': 'error',
       yoda: 'error',
       'no-unneeded-ternary': 'error',
@@ -1066,95 +540,292 @@ export default defineConfig({
           allowDirectConstAssertionInArrowFunctions: true
         }
       ],
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_'
-        }
-      ],
+      '@typescript-eslint/no-unused-vars': 'error',
       'vue/no-required-prop-with-default': 'error',
       'vue/no-deprecated-model-definition': 'error',
       'no-useless-assignment': 'error',
-      'unicode-bom': 'error'
+      'unicode-bom': 'error',
+      'typescript/prefer-as-const': 'error',
+      'typescript/no-for-in-array': 'error',
+      'typescript/no-duplicate-enum-values': 'error',
+      'typescript/no-duplicate-type-constituents': 'error',
+      'typescript/no-extra-non-null-assertion': 'error',
+      'typescript/no-useless-empty-export': 'error',
+      'oxc/const-comparisons': 'error',
+      'oxc/missing-throw': 'error',
+      'oxc/uninvoked-array-callback': 'error',
+      'unicorn/no-new-array': 'error',
+      'unicorn/prefer-set-size': 'error',
+      'typescript/no-wrapper-object-types': 'error',
+      'typescript/no-unnecessary-type-assertion': 'error',
+      'unicorn/no-instanceof-array': 'error',
+      'unicorn/no-useless-fallback-in-spread': 'error',
+      'jsx-a11y/aria-props': 'error',
+      'jsx-a11y/aria-unsupported-elements': 'error',
+      'jsx-a11y/no-aria-hidden-on-focusable': 'error',
+      'jsx-a11y/no-redundant-roles': 'error',
+      '@francogp/domain-type/no-boolean-literal-annotation': 'error',
+      '@francogp/domain-type/no-broad-string-array': 'error',
+      '@francogp/domain-type/watch-reactive-property-getter': 'error',
+      '@francogp/domain-type/no-destructured-reactive': 'error',
+      'no-console': [
+        'error',
+        {
+          allow: ['warn', 'error']
+        }
+      ],
+      '@francogp/domain-type/no-store-destructuring-without-storetorefs': 'error',
+      '@francogp/domain-type/no-direct-state-mutation-outside-actions': 'error',
+      '@francogp/domain-type/no-deprecated-router-next': 'error',
+      '@francogp/domain-type/no-define-async-component-in-router': 'error',
+      '@francogp/domain-type/no-window-location-navigation': 'error',
+      '@francogp/domain-type/no-silent-promise-catch': 'error',
+      '@francogp/domain-type/no-silent-mock-fallbacks': 'error',
+      '@francogp/domain-type/strict-catch-narrowing': 'error',
+      '@francogp/domain-type/dom-event-leak': 'error',
+      '@francogp/domain-type/interval-leak': 'error',
+      '@francogp/domain-type/no-boolean-trap-parameters': 'error',
+      '@francogp/domain-type/no-massive-switch': 'error',
+      '@francogp/domain-type/no-tautological-integration-mocks': 'error',
+      '@francogp/domain-type/playwright-id-locators-only': 'error',
+      '@francogp/domain-type/no-playwright-force-click': 'error',
+      '@francogp/domain-type/no-test-timeout-inflation': 'error',
+      '@francogp/domain-type/no-playwright-polling-waits': 'error',
+      '@francogp/domain-type/script-setup-required': 'error',
+      '@francogp/domain-type/vue-template-quote-escaping': 'error',
+      '@francogp/domain-type/no-data-provider-in-template': 'error',
+      '@francogp/domain-type/no-raw-html-injection': 'error',
+      '@francogp/domain-type/no-insecure-random': 'error',
+      '@francogp/domain-type/no-permissive-cors': 'error',
+      '@francogp/domain-type/no-unvalidated-redirect': 'error',
+      'promise/catch-or-return': 'error',
+      'vitest/expect-expect': 'error',
+      '@francogp/domain-type/no-record-string-key': 'error',
+      '@francogp/domain-type/no-unbranded-id': 'error',
+      '@francogp/domain-type/no-untyped-string-set-map': 'error',
+      '@francogp/domain-type/no-naked-string-union': 'error',
+      '@francogp/domain-type/valibot-schema-type-parity': 'error',
+      '@francogp/domain-type/no-redundant-constant-alias': 'error',
+      '@francogp/domain-type/no-literal-suffix-constant': 'error',
+      '@francogp/domain-type/unsafe-path-concat': 'error',
+      '@francogp/domain-type/unsanitized-env-argv-path': 'error',
+      '@francogp/domain-type/untrusted-url-fetch': 'error',
+      '@francogp/domain-type/hardcoded-slash-path': 'error',
+      '@francogp/domain-type/no-hardcoded-secrets': 'error',
+      '@francogp/domain-type/ephemeral-no-source-temp-references': 'error',
+      '@francogp/domain-type/no-raw-local-storage': 'error',
+      '@francogp/domain-type/no-raw-session-storage': 'error',
+      '@francogp/domain-type/no-direct-process-argv': 'error',
+      '@francogp/domain-type/no-banned-cli-parsers': 'error',
+      '@francogp/domain-type/no-homebrew-flag-parsing': 'error',
+      '@francogp/domain-type/no-cli-eval-bypass': 'error',
+      '@francogp/domain-type/no-await-in-loops-query': 'error',
+      '@francogp/domain-type/no-select-star-in-queries': 'error',
+      '@francogp/domain-type/require-paginated-queries': 'error',
+      '@francogp/domain-type/no-direct-database-instantiation': 'error',
+      '@francogp/domain-type/require-storage-try-catch': 'error',
+      '@francogp/domain-type/no-gsap-layout-properties': 'error',
+      '@francogp/domain-type/gsap-named-timer-constants': 'error',
+      '@francogp/domain-type/no-gsap-banned-ui-timers': 'error',
+      '@francogp/domain-type/require-gsap-cleanup-on-unmount': 'error',
+      '@francogp/domain-type/no-unscoped-component-selectors': 'error',
+      '@francogp/domain-type/no-nested-scrolltrigger': 'error',
+      '@francogp/domain-type/no-scrolltrigger-markers-production': 'error',
+      '@francogp/domain-type/no-file-level-suppressions': 'error',
+      '@francogp/domain-type/auditor-class-inheritance': 'error',
+      '@francogp/domain-type/no-homebrew-file-walker': 'error',
+      '@francogp/domain-type/auditor-rule-description-limit': 'error',
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        {
+          prefer: 'type-imports',
+          fixStyle: 'inline-type-imports'
+        }
+      ]
     },
     ignorePatterns: [
-      'scripts/**',
-      'ui-demo/**',
-      'ui-demo/src/data/**',
-      'test_aventura/data/**',
-      'src/data/ai/random-sets.json',
-      'src/data/**',
-      'src/logic/db/migrations_data.ts',
-      'test_aventura/tests/**',
-      'scripts/e2e/**',
-      'tests/**',
-      'tests/e2e/**',
-      'tests/integration/**',
-      '**/*.spec.ts',
-      '**/*.test.ts',
-      '**/*.simulation.ts',
-      '.tsbuildinfo/**',
-      'external/**',
-      'showdown/**',
-      'backup_legacy_code/**',
-      'supabase/docker/**',
-      'dist/**',
-      'dev-dist/**',
       'node_modules/**',
       'scratch/**',
-      'tmp/**',
+      '.git/**',
+      '.vscode/**',
+      '.github/**',
+      '.gemini/**',
+      '.auditor/**',
       '.agents/**',
+      'tmp/**',
+      'volumes/**',
+      'dist/**',
+      'dev-dist/**',
+      'build/**',
       'coverage/**',
+      'test-results/**',
+      '.vitest-cache/**',
+      '.fallow/**',
+      '.oxlintcache/**',
+      '.stylelintcache/**',
+      '.tsbuildinfo/**',
       '**/*.d.ts',
-      '.agents/skills/**/scripts/**',
-      '.markdownlintignore',
-      '.prettierrc',
-      '.replit',
-      'public/_headers',
-      '_raw-assets/**/desktop.ini',
-      '_raw-assets/**/*.pdn',
-      'docs/**/*.html',
-      'docs/**/*.txt',
-      'docs/**/*.docx',
-      'test_aventura/docs/**/*.docx'
+      'external/**',
+      'src/logic/db/migrations_data.ts',
+      ...LOCKED_SKILLS_IGNORE_PATTERNS
+    ],
+    plugins: ['vitest', 'node', 'promise', 'unicorn', 'typescript', 'vue', 'import', 'jsx-a11y'],
+    overrides: [
+      {
+        files: [
+          '**/tests/**',
+          '**/test_aventura/tests/**',
+          '**/scripts/e2e/**',
+          '**/tests/integration/**'
+        ],
+        rules: {
+          'typescript/explicit-function-return-type': 'off',
+          '@typescript-eslint/explicit-function-return-type': 'off',
+          'vitest/prefer-to-be-truthy': 'off',
+          'vitest/prefer-to-be-falsy': 'off',
+          'vitest/prefer-strict-equal': 'off',
+          'vitest/no-conditional-expect': 'off',
+          'vitest/require-mock-type-parameters': 'off',
+          'vitest/prefer-mock-return-shorthand': 'off',
+          'vitest/expect-expect': 'off',
+          'typescript/no-floating-promises': 'off',
+          '@typescript-eslint/no-floating-promises': 'off',
+          'no-console': 'off',
+          'unicorn/prefer-global-this': 'off',
+          'vue/require-typed-ref': 'off',
+          '@francogp/domain-type/no-double-cast-unknown': 'off',
+          '@francogp/domain-type/no-broad-string-array': 'off',
+          '@francogp/domain-type/no-legacy-date': 'off',
+          '@francogp/domain-type/no-raw-local-storage': 'off',
+          '@francogp/domain-type/no-insecure-random': 'off',
+          '@francogp/domain-type/no-select-star-in-queries': 'off',
+          '@francogp/domain-type/require-paginated-queries': 'off',
+          '@francogp/domain-type/no-untyped-string-set-map': 'off',
+          '@francogp/domain-type/no-hardcoded-secrets': 'off',
+          'typescript/consistent-type-assertions': 'off',
+          'typescript/no-explicit-any': 'off',
+          'typescript/explicit-member-accessibility': 'off',
+          'typescript/await-thenable': 'off',
+          'typescript/unbound-method': 'off',
+          'typescript/require-array-sort-compare': 'off',
+          'unicorn/no-new-array': 'off',
+          'max-depth': 'off',
+          'no-script-url': 'off',
+          'typescript/no-implied-eval': 'off',
+          'no-new-func': 'off',
+          'no-unused-expressions': 'off',
+          '@francogp/domain-type/unsafe-path-concat': 'off',
+          '@francogp/domain-type/hardcoded-slash-path': 'off',
+          '@francogp/domain-type/no-record-string-key': 'off',
+          '@francogp/domain-type/ephemeral-no-source-temp-references': 'off',
+          '@francogp/domain-type/no-direct-process-argv': 'off',
+          '@francogp/domain-type/no-homebrew-flag-parsing': 'off',
+          '@francogp/domain-type/no-file-level-suppressions': 'off',
+          '@francogp/domain-type/auditor-class-inheritance': 'off',
+          '@francogp/domain-type/no-homebrew-file-walker': 'off',
+          '@francogp/domain-type/auditor-rule-description-limit': 'off',
+          '@francogp/domain-type/require-storage-try-catch': 'off',
+          '@francogp/domain-type/no-raw-session-storage': 'off',
+          '@francogp/domain-type/no-silent-promise-catch': 'off',
+          '@francogp/domain-type/no-await-in-loops-query': 'off',
+          '@francogp/domain-type/no-literal-suffix-constant': 'off',
+          '@francogp/domain-type/no-raw-html-injection': 'off',
+          '@francogp/domain-type/no-tautological-integration-mocks': 'off',
+          'unicorn/no-thenable': 'off'
+        }
+      },
+      {
+        files: ['**/scripts/**', '**/supabase/**'],
+        rules: {
+          'no-console': 'off',
+          'unicorn/prefer-global-this': 'off',
+          'typescript/no-floating-promises': 'off',
+          '@typescript-eslint/no-floating-promises': 'off',
+          'typescript/explicit-function-return-type': 'off',
+          '@typescript-eslint/explicit-function-return-type': 'off',
+          '@francogp/domain-type/no-insecure-random': 'off',
+          '@francogp/domain-type/no-broad-string-array': 'off',
+          '@francogp/domain-type/no-raw-local-storage': 'off',
+          '@francogp/domain-type/no-select-star-in-queries': 'off',
+          '@francogp/domain-type/require-paginated-queries': 'off',
+          '@francogp/domain-type/no-untyped-string-set-map': 'off',
+          '@francogp/domain-type/no-direct-database-instantiation': 'off',
+          '@francogp/domain-type/require-storage-try-catch': 'off',
+          'max-depth': 'off',
+          '@francogp/domain-type/unsafe-path-concat': 'off',
+          '@francogp/domain-type/hardcoded-slash-path': 'off',
+          '@francogp/domain-type/no-record-string-key': 'off',
+          '@francogp/domain-type/no-direct-process-argv': 'off',
+          '@francogp/domain-type/no-homebrew-flag-parsing': 'off',
+          '@francogp/domain-type/no-homebrew-file-walker': 'off',
+          '@francogp/domain-type/auditor-rule-description-limit': 'off',
+          '@francogp/domain-type/no-raw-session-storage': 'off'
+        }
+      },
+      {
+        files: ['**/ui-demo/**'],
+        rules: {
+          'no-console': 'off',
+          'unicorn/prefer-global-this': 'off',
+          'typescript/explicit-function-return-type': 'off',
+          '@typescript-eslint/explicit-function-return-type': 'off',
+          '@francogp/domain-type/no-insecure-random': 'off',
+          '@francogp/domain-type/no-broad-string-array': 'off',
+          '@francogp/domain-type/no-gsap-layout-properties': 'off',
+          '@francogp/domain-type/no-record-string-key': 'off'
+        }
+      },
+      {
+        files: ['vite.plugins.ts'],
+        rules: {
+          'no-console': 'off',
+          'unicorn/prefer-global-this': 'off',
+          'typescript/no-floating-promises': 'off',
+          '@typescript-eslint/no-floating-promises': 'off'
+        }
+      },
+      {
+        files: ['src/logic/utils/logger.ts'],
+        rules: {
+          'no-console': 'off'
+        }
+      },
+      {
+        files: ['**/tests/integration/**'],
+        rules: {
+          '@francogp/domain-type/no-tautological-integration-mocks': 'error'
+        }
+      }
     ]
   },
   fmt: {
     ignorePatterns: [
-      'scripts/**',
-      'src/data/**',
-      'ui-demo/**',
-      'ui-demo/src/data/**',
-      'test_aventura/data/**',
-      'src/data/ai/random-sets.json',
-      'package-lock.json',
-      'src/logic/db/migrations_data.ts',
-      'dist/**',
-      'dev-dist/**',
       'node_modules/**',
       'scratch/**',
-      'tmp/**',
+      '.git/**',
+      '.vscode/**',
+      '.github/**',
+      '.gemini/**',
+      '.auditor/**',
       '.agents/**',
+      'tmp/**',
+      'volumes/**',
+      'dist/**',
+      'dev-dist/**',
+      'build/**',
       'coverage/**',
-      '**/*.d.ts',
+      'test-results/**',
+      '.vitest-cache/**',
+      '.fallow/**',
+      '.oxlintcache/**',
+      '.stylelintcache/**',
       '.tsbuildinfo/**',
+      '**/*.d.ts',
+      'package-lock.json',
       'external/**',
-      'showdown/**',
-      'backup_legacy_code/**',
-      'supabase/docker/**',
-      '.agents/skills/**/scripts/**',
-      '.markdownlintignore',
-      '.prettierrc',
-      '.replit',
-      'public/_headers',
-      '_raw-assets/**/desktop.ini',
-      '_raw-assets/**/*.pdn',
-      'docs/**/*.html',
-      'docs/**/*.txt',
-      'docs/**/*.docx',
-      'test_aventura/docs/**/*.docx'
+      'src/logic/db/migrations_data.ts',
+      'src/data/**',
+      ...LOCKED_SKILLS_IGNORE_PATTERNS
     ],
     singleQuote: true,
     semi: true,
@@ -1165,5 +836,8 @@ export default defineConfig({
   },
   staged: {
     '*': 'vp check --fix'
+  },
+  run: {
+    cache: true
   }
 });

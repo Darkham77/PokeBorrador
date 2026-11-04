@@ -51,7 +51,7 @@ function createMockPokemon(partial: Partial<Pokemon> = {}): Pokemon {
 }
 
 const mockLocation: MapLocation = {
-  id: 'route1' as any,
+  id: 'route1',
   name: 'Ruta 1',
   wild: { day: [requirePokemonSpeciesId('pidgey'), requirePokemonSpeciesId('rattata')] },
   rates: { day: [50, 50] },

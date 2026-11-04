@@ -1,7 +1,7 @@
 import { gsap } from 'gsap';
 
 const RANK_CARD_HOVER_X_OFFSET = 4;
-export const RANK_ANIM_FAST_DURATION_SEC = 0.2;
+const RANK_ANIM_FAST_DURATION_SEC = 0.2;
 
 export interface UseRankCardHoverReturn {
   readonly handleCardEnter: (e: MouseEvent) => void;
@@ -50,4 +50,36 @@ export function useRankCardHover(): UseRankCardHoverReturn {
     handleCardEnter,
     handleCardLeave
   };
+}
+
+export interface UseRankTabHoverReturn {
+  readonly handleTabEnter: (e: MouseEvent) => void;
+  readonly handleTabLeave: (e: MouseEvent) => void;
+}
+
+export function useRankTabHover(leaveColor = '#94a3b8'): UseRankTabHoverReturn {
+  const handleTabEnter = (e: MouseEvent): void => {
+    const el = e.currentTarget as HTMLElement;
+    if (el.classList.contains('active')) return;
+    gsap.to(el, {
+      color: '#ffffff',
+      backgroundColor: 'rgba(255, 255, 255, 0.03)',
+      duration: RANK_ANIM_FAST_DURATION_SEC,
+      ease: 'power2.out'
+    });
+  };
+
+  const handleTabLeave = (e: MouseEvent): void => {
+    const el = e.currentTarget as HTMLElement;
+    if (el.classList.contains('active')) return;
+    gsap.to(el, {
+      color: leaveColor,
+      backgroundColor: 'transparent',
+      duration: RANK_ANIM_FAST_DURATION_SEC,
+      ease: 'power2.out',
+      clearProps: 'color,backgroundColor'
+    });
+  };
+
+  return { handleTabEnter, handleTabLeave };
 }

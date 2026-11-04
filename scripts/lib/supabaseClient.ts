@@ -7,6 +7,7 @@
 import fsPromises from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
+
 import { parseArgs as parseCittyArgs } from 'citty';
 
 const ENV_FILE = path.resolve(process.cwd(), '.env');
@@ -168,8 +169,8 @@ export function buildDatabaseUrl(conf: ServerConfig, canonicalName: string): str
           dbUrl = `postgres://postgres.${tenant}:${encodeURIComponent(pass)}@${host}:${port}/postgres`;
         }
       } catch (err) {
-    console.warn('[Handled controlled exception]:', err);
-  }
+        console.warn('[Handled controlled exception]:', err);
+      }
     }
   }
   return dbUrl;
@@ -253,10 +254,9 @@ export function parseServerArguments(
     process.exit(0);
   }
 
-  const isAll = Boolean(
-    parsed.all || parsed.server === 'all' || positionals.includes('all')
-  );
-  const rawServer = typeof parsed['server'] === 'string' ? String(parsed['server']).replace(/^=/, '') : undefined;
+  const isAll = Boolean(parsed.all || parsed.server === 'all' || positionals.includes('all'));
+  const rawServer =
+    typeof parsed['server'] === 'string' ? String(parsed['server']).replace(/^=/, '') : undefined;
   const serverArg =
     (rawServer && rawServer !== 'all' ? rawServer : undefined) ||
     positionals.find((p) => p !== 'all' && (allAvailable.includes(p) || baseProfiles.includes(p)));
@@ -312,15 +312,10 @@ export function resolveServerProfiles(
   baseProfiles: string[],
   allAvailable: string[]
 ): string[] {
-  const rawInput =
-    args.server ||
-    args.target ||
-    (Array.isArray(args._) && args._.length > 0 ? String(args._[0]) : undefined);
+  const rawInput = args.server || args.target;
 
   const cleanInput =
-    typeof rawInput === 'string'
-      ? rawInput.replace(/^(?:server|s)=/, '').trim()
-      : undefined;
+    typeof rawInput === 'string' ? rawInput.replace(/^(?:server|s)=/, '').trim() : undefined;
 
   const isAll = Boolean(args.all || cleanInput === 'all' || args.server === 'all');
 
@@ -333,7 +328,10 @@ export function resolveServerProfiles(
       return [cleanInput];
     }
     console.error(
-      styleText('red', `❌ Error: El perfil de servidor "${cleanInput}" no existe en el archivo .env.`)
+      styleText(
+        'red',
+        `❌ Error: El perfil de servidor "${cleanInput}" no existe en el archivo .env.`
+      )
     );
     console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
     process.exit(1);

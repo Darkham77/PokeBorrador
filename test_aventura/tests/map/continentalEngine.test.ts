@@ -40,7 +40,7 @@ describe('continentalEngine', () => {
 
     expect(result.gridWidth).toBe(expectedGridW);
     expect(result.gridHeight).toBe(expectedGridH);
-    expect(result.biomeGrid.length).toBe(expectedGridH);
+    expect(result.biomeGrid).toHaveLength(expectedGridH);
     expect(result.biomeGrid[0]?.length).toBe(expectedGridW);
   });
 
@@ -70,7 +70,7 @@ describe('continentalEngine', () => {
     const result = generateContinent(baseConfig);
     const nodesList = Object.values(result.nodes);
 
-    expect(nodesList.length).toBe(baseConfig.cityCount);
+    expect(nodesList).toHaveLength(baseConfig.cityCount);
 
     for (const node of nodesList) {
       const gx = Math.floor(node.x / baseConfig.dimensions.tileSize);

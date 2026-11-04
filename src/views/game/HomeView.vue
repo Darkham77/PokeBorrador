@@ -40,7 +40,7 @@ const isBlackMarketAvailable = computed(() => {
 const homeContainerRef = useTemplateRef<HTMLElement>('homeContainerRef');
 let gsapCtx: gsap.Context | null = null;
 
-onMounted(() => {
+onMounted(async () => {
   breedingStore.loadDaycare();
   breedingStore.checkDailyReset();
 
@@ -55,15 +55,14 @@ onMounted(() => {
   }, homeContainerRef.value || undefined);
 
   // Ensure DOM and child widgets are fully laid out and painted before releasing loading overlay
-  nextTick(() => {
-    if (typeof requestAnimationFrame !== 'undefined') {
-      requestAnimationFrame(() => {
-        loadingStore.markAppMounted();
-      });
-    } else {
+  await nextTick();
+  if (typeof requestAnimationFrame !== 'undefined') {
+    requestAnimationFrame(() => {
       loadingStore.markAppMounted();
-    }
-  });
+    });
+  } else {
+    loadingStore.markAppMounted();
+  }
 });
 
 onUnmounted(() => {

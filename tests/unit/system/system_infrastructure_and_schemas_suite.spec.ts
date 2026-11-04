@@ -202,7 +202,9 @@ describe('System Infrastructure, Database & Schemas Suite', () => {
           { sql: 'INVALID SQL SYNTAX ATOMIC FAIL;' }
         ];
 
-        await expect(executeAtomicSaveTransaction(failingQueries)).rejects.toThrow();
+        await expect(executeAtomicSaveTransaction(failingQueries)).rejects.toThrow(
+          /syntax|fail|error/i
+        );
       });
     });
   });

@@ -54,8 +54,8 @@ describe('Deterministic Battle Replay Integration', () => {
   it('replays deterministic turn-by-turn battle to clean completion with zero desyncs', () => {
     const testCase = DETERMINISTIC_REPLAY_CASE;
     const battle = new Battle({ formatid: 'gen9customgame' as any, seed: testCase.seed as any });
-    battle.setPlayer('p1', { name: 'Player', team: testCase.playerTeam as any });
-    battle.setPlayer('p2', { name: 'NPC-Enemy', team: testCase.enemyTeam as any });
+    battle.setPlayer('p1', { name: 'Player', team: testCase.playerTeam });
+    battle.setPlayer('p2', { name: 'NPC-Enemy', team: testCase.enemyTeam });
 
     battle.choose('p1', 'default');
     battle.choose('p2', 'default');
@@ -70,7 +70,7 @@ describe('Deterministic Battle Replay Integration', () => {
         p2Choice: step.p2Choice,
         history: testCase.history as any,
         currentStep: i + 1,
-        certifiedHistoryStep: step as any
+        certifiedHistoryStep: step
       });
 
       expect(result).toBeDefined();

@@ -46,27 +46,11 @@ const closeCosmetics = (): void => {
 import {
   isCosmeticStyleLocked,
   resolveCosmeticLockNotification,
-  checkIsLocalEnvironment,
-  type LockableCosmeticStyle,
-  type CosmeticPlayerContext
+  useCosmeticPlayerContext,
+  type LockableCosmeticStyle
 } from './cosmeticsFilterHelper';
 
-const isLocal = computed(() => {
-  const hn = typeof globalThis.window !== 'undefined' ? globalThis.location.hostname : undefined;
-  return checkIsLocalEnvironment(import.meta.env.DEV, hn);
-});
-
-const isAdmin = computed(() => {
-  return authStore.user?.role === 'admin' || isLocal.value;
-});
-
-const playerContext = computed<CosmeticPlayerContext>(() => ({
-  playerClass: gameStore.state.playerClass,
-  classLevel: gameStore.state.classLevel,
-  trainerLevel: gameStore.state.trainerLevel,
-  faction: gameStore.state.faction,
-  isAdmin: isAdmin.value
-}));
+const { isLocal, isAdmin, playerContext } = useCosmeticPlayerContext(authStore, gameStore);
 
 const isNickLocked = (style: LockableCosmeticStyle): boolean => {
   return isCosmeticStyleLocked(style, playerContext.value);
@@ -147,7 +131,7 @@ const selectNick = (style: LockableCosmeticStyle): void => {
 
   .preview-nick {
     font-size: var(--font-16);
-    font-weight: 800;
+    font-weight: $font-weight-extrabold;
     text-align: center;
     white-space: nowrap;
   }

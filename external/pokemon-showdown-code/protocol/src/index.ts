@@ -2666,6 +2666,30 @@ function upgradeBattleArgs({
       }
       break;
     }
+    case '-fail': {
+      const [, pokemon, effect, arg3] = args;
+      if (kwArgs.from === 'ability: Flower Veil') {
+        return {
+          args: [
+            '-block',
+            kwArgs.of as Protocol.PokemonIdent,
+            'ability: Flower Veil' as Protocol.EffectName
+          ],
+          kwArgs: { of: pokemon }
+        };
+      }
+      if (effect === 'unboost' && arg3) {
+        const statMap: { [key: string]: BoostID } = {
+          Attack: 'atk',
+          Defense: 'def',
+          'Special Attack': 'spa',
+          'Special Defense': 'spd',
+          Speed: 'spe'
+        };
+        if (statMap[arg3]) (args as any)[3] = statMap[arg3];
+      }
+      break;
+    }
     case '-heal': {
       const id = Protocol.parseEffect(kwArgs.from as string, toID).name;
       if (HEALING.has(id)) kwArgs.of = '';
@@ -2675,18 +2699,18 @@ function upgradeBattleArgs({
       const [, num] = args;
       return { args: ['gen', Number(num) as GenerationNum], kwArgs: {} };
     }
-    // @ts-expect-error
+    // @ts-ignore
     case '-restoreboost': {
-      // @ts-expect-error
+      // @ts-ignore
       args[0] = '-clearnegativeboost';
       break;
     }
     case '-weather': {
-      // @ts-expect-error
+      // @ts-ignore
       if (args[1] === 'Snow') args[1] = 'Snowscape';
       break;
     }
-    // @ts-expect-error
+    // @ts-ignore
     case '-nothing':
       // OLD: |-nothing
       // NEW: |-activate||move:Splash

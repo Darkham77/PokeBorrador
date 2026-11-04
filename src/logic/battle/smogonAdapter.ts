@@ -22,8 +22,12 @@ import { CHOICE_ITEM_STAT_MULTIPLIER } from '@/logic/constants/gameplay';
 import { toID } from '@/logic/utils/strings.ts';
 import { isWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry.ts';
 import type { BattleConditionKey, BattleStages } from '@/types/battle/battle';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { Move } from '@/types/pokemon/pokemon';
+import {
+  type Pokemon,
+  type Move,
+  POKEMON_STATUSES,
+  type PokemonStatus
+} from '@/types/pokemon/pokemon';
 
 const GEN = Generations.get(ACTIVE_GENERATION);
 
@@ -103,8 +107,6 @@ function resolveSpecies(id: string): string {
   const normalized = toID(id);
   return map[normalized] ?? id.charAt(0).toUpperCase() + id.slice(1);
 }
-
-import { POKEMON_STATUSES, type PokemonStatus } from '@/types/pokemon/pokemon';
 
 const VALID_SMOGON_STATUSES: ReadonlySet<string> = new Set<string>(POKEMON_STATUSES);
 

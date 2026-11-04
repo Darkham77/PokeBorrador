@@ -219,25 +219,12 @@ const availablePokemon = computed<
     sourceList = battleTeam
       .filter((p): p is Pokemon => p !== null)
       .map((p, i) => ({ pokemon: p, _source: 'team' as const, index: i }));
-  } else if (props.battleMode === 'pvp') {
-    const pvpUids = gameStore.state.pvpTeam ?? [];
-    sourceList = pvpUids
-      .map((uid, index) => {
-        const p = gameStore.getPokemonByUid(uid);
-        if (!p) return null;
-        return {
-          pokemon: p,
-          _source: team.some((tp) => tp && tp.uid === p.uid) ? ('team' as const) : ('box' as const),
-          index
-        };
-      })
-      .filter(
-        (item): item is { pokemon: Pokemon; _source: PokemonStorageLocation; index: number } =>
-          item !== null
-      );
-  } else if (props.battleMode === 'war') {
-    const warUids = gameStore.state.warTeam ?? [];
-    sourceList = warUids
+  } else if (props.battleMode === 'pvp' || props.battleMode === 'war') {
+    const targetUids =
+      props.battleMode === 'pvp'
+        ? (gameStore.state.pvpTeam ?? [])
+        : (gameStore.state.warTeam ?? []);
+    sourceList = targetUids
       .map((uid, index) => {
         const p = gameStore.getPokemonByUid(uid);
         if (!p) return null;

@@ -18,9 +18,9 @@
  */
 
 import fs from 'node:fs';
-import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import ts from 'typescript';
+import path from 'node:path';
+
 import {
   BaseAuditor,
   SharedAstContext,
@@ -28,6 +28,7 @@ import {
   createRuleCapabilities,
   getAuditConfig
 } from '@francogp/auditor';
+import ts from 'typescript';
 
 enableCompileCache();
 
@@ -140,7 +141,7 @@ export const CANONICAL_SHOWDOWN_PROTOCOL_TOKENS = {
 } as const;
 
 export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
-  constructor() {
+  public constructor() {
     const config = getAuditConfig();
     const battleRoot = path.posix.join(config.paths?.logicRoots?.[0] ?? 'src/logic', 'battle');
 
@@ -148,12 +149,12 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
       ruleCapabilities: createRuleCapabilities(SHOWDOWN_PARITY_RULES, {
         speed: 'heavy',
         phase: 'normal',
-        fix: 'none',
         md: false,
         ast: false,
         changedOnly: false,
         critical: false
       }),
+      ruleFixers: {},
       id: 'validate_showdown_parity',
       configKey: 'fsm.showdownParity',
       defaultConfig: {
@@ -188,7 +189,7 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
     let totalTokensAudited = 0;
 
     await this.runSubAuditor('missing-protocol-token', async () => {
-      const battleFiles = await this.context.collectFiles(['src/logic/battle'], new Set(['.ts']));
+      const battleFiles = this.context.collectFiles(['src/logic/battle'], new Set(['.ts']));
       const bridgeFiles = battleFiles.filter((f) => {
         const base = path.basename(f);
         return base.startsWith('showdownBridge') && base.endsWith('.ts');
@@ -203,7 +204,7 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
 
         const sourceFile = astEngine.getSourceFile(fullPath, code);
 
-        const visit = (node: ts.Node) => {
+        const visit = (node: ts.Node): void => {
           // 1. Match Object Literal Keys (CORE_EVENT_DISPATCHER, etc.)
           if (ts.isPropertyAssignment(node)) {
             let keyText = '';

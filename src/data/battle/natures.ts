@@ -218,7 +218,7 @@ export function toNatureId(raw: string): NatureId {
 }
 
 /** Returns the nature details with Spanish name, modifiers and description. Fails loudly on invalid nature. */
-export function getNatureInfo(nature: NatureId) {
+export function getNatureInfo(nature: NatureId): (typeof NATURE_DATA)[NatureId] {
   if (!nature || !(nature in NATURE_DATA)) {
     throw new Error(`[natures] Invalid NatureId: '${nature}'. Must be a valid canonical NatureId.`);
   }

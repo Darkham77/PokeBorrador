@@ -211,7 +211,7 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
   margin: 0;
   color: var(--slate-50);
   font-size: var(--font-14);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -224,7 +224,7 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
   color: var(--sky);
   font-family: monospace;
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .gallery-search-input {
@@ -259,7 +259,7 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
   background: var(--slate-800);
   color: var(--slate-400);
   font-size: var(--font-10);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
 
   &:hover {
@@ -270,7 +270,7 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
   &.active {
     background: var(--sky-dark);
     color: var(--white);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     border-color: var(--sky);
   }
 }
@@ -361,7 +361,7 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
   background: var(--slate-700);
   color: var(--slate-300);
   font-size: var(--font-9);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   text-transform: uppercase;
 
   &.buildings {
@@ -393,7 +393,7 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
   color: var(--sky);
   font-family: monospace;
   font-size: var(--font-12);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

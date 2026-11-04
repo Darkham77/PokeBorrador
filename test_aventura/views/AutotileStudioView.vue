@@ -468,7 +468,7 @@ const categoryLabels: Record<RealPatchCategory, string> = {
   background: Rgb(255 255 255 / 8%);
   color: var(--slate-400);
   font-size: var(--font-12);
-  font-weight: 500;
+  font-weight: $font-weight-medium;
   cursor: pointer;
 }
 
@@ -481,7 +481,7 @@ const categoryLabels: Record<RealPatchCategory, string> = {
   margin: 0;
   color: var(--sky);
   font-size: var(--font-15);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .seed-controls {
@@ -498,7 +498,7 @@ const categoryLabels: Record<RealPatchCategory, string> = {
   color: var(--sky);
   font-family: monospace;
   font-size: var(--font-12);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .action-btn {
@@ -508,7 +508,7 @@ const categoryLabels: Record<RealPatchCategory, string> = {
   background: Rgb(255 255 255 / 10%);
   color: var(--white);
   font-size: var(--font-12);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
 }
 
@@ -531,7 +531,7 @@ const categoryLabels: Record<RealPatchCategory, string> = {
   background: none;
   color: var(--slate-400);
   font-size: var(--font-11);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
 }
 
@@ -553,7 +553,7 @@ const categoryLabels: Record<RealPatchCategory, string> = {
 .limit-label {
   color: var(--slate-400);
   font-size: var(--font-11);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   margin-right: 2px;
 }
 
@@ -564,7 +564,7 @@ const categoryLabels: Record<RealPatchCategory, string> = {
   background: none;
   color: var(--slate-400);
   font-size: var(--font-11);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
 }
 
@@ -587,7 +587,7 @@ const categoryLabels: Record<RealPatchCategory, string> = {
   background: Rgb(255 255 255 / 8%);
   color: var(--white);
   font-size: var(--font-13);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
 }
 
@@ -644,7 +644,7 @@ const categoryLabels: Record<RealPatchCategory, string> = {
 .filter-chip.active {
   background: Rgb(56 189 248 / 20%);
   color: var(--sky);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   border-color: var(--sky);
 }
 
@@ -672,7 +672,7 @@ const categoryLabels: Record<RealPatchCategory, string> = {
 .mountain-subfilter-label {
   color: var(--amber);
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .mountain-subfilter-chips {
@@ -700,7 +700,7 @@ const categoryLabels: Record<RealPatchCategory, string> = {
 .subfilter-chip.active {
   background: Rgb(245 158 11 / 25%);
   color: var(--amber);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   border-color: var(--amber);
 }
 

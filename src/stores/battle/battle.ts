@@ -26,7 +26,6 @@ import {
   triggerNextEncounter,
   startEncounter
 } from '@/logic/battle/searchLoop.ts';
-import type {} from '@/logic/battle/showdown.worker.ts';
 import { gameBus } from '@/logic/events/gameBus.ts';
 import { logger } from '@/logic/utils/logger';
 import { safeStorage } from '@/logic/utils/storage.ts';
@@ -39,8 +38,7 @@ import { useModalStore } from '@/stores/modals.ts';
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts';
 import { useUIStore } from '@/stores/ui.ts';
 import { useWarStore } from '@/stores/war.ts';
-import type { BattleSide } from '@/types/battle/battle';
-import type { BattleState, BattleStages, BattleLog } from '@/types/battle/battle';
+import type { BattleSide, BattleState, BattleStages, BattleLog } from '@/types/battle/battle';
 import type { BattleUiConfig } from '@/types/battle/battleConfig';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Move, Pokemon } from '@/types/pokemon/pokemon';
@@ -417,7 +415,7 @@ export const useBattleStore = defineStore('battle', () => {
     let sub = fsm.currentSubState.value;
 
     if (shouldResetRevivedPlayerSubstate(sub, battle, hasForceSwitchRequest(battle))) {
-      console.debug(
+      logger.debug(
         `[E2E-FSM-Safeguard] Player Pokémon was revived/healed. Resetting FSM substate to ANIM_SYNC.`
       );
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC);

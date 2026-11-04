@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
+
 import { getFilesRecursively } from './audit_helpers.ts';
 
 export interface AnimationAuditResult {

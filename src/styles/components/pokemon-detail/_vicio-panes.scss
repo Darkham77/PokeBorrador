@@ -154,7 +154,7 @@
         gap: $spacing-2xs;
         color: $white;
         font-size: var(--font-7);
-        font-weight: 900;
+        font-weight: $font-weight-black;
 
         @media (width <= 560px) {
           font-size: var(--font-6);
@@ -197,7 +197,7 @@
       .mv-pp-val {
         color: $white;
         font-size: var(--font-7);
-        font-weight: 900;
+        font-weight: $font-weight-black;
 
         @media (width <= 560px) {
           font-size: var(--font-6);
@@ -344,7 +344,7 @@
   .vp-move-lv {
     width: 30px;
     color: var(--yellow);
-    font-weight: 900;
+    font-weight: $font-weight-black;
     text-align: center;
     opacity: 0.9;
   }
@@ -353,7 +353,7 @@
     @include pixelated;
 
     color: $white;
-    font-weight: 900;
+    font-weight: $font-weight-black;
     letter-spacing: 0.5px;
   }
 
@@ -364,7 +364,7 @@
     @include pixelated;
 
     color: Rgb(255 255 255 / 80%);
-    font-weight: 800;
+    font-weight: $font-weight-extrabold;
   }
 }
 
@@ -459,7 +459,7 @@
       @include pixelated;
 
       color: $white;
-      font-weight: 900;
+      font-weight: $font-weight-black;
       text-align: left;
       letter-spacing: 0.5px;
 
@@ -474,7 +474,7 @@
     .move-acc,
     .move-pp {
       color: Rgb(255 255 255 / 80%);
-      font-weight: 800;
+      font-weight: $font-weight-extrabold;
     }
   }
 }

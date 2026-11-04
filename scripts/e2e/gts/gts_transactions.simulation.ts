@@ -1,5 +1,9 @@
+import { DatabaseSync } from 'node:sqlite';
+
 import type { DisplayText } from '@francogp/auditor';
 import { test, expect, type Page } from '@playwright/test';
+
+import type { PokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
 import { BaseE2ESimulation } from '../base_simulation.ts';
 import { waitForStoreReady, clickResilient, type WindowWithResolver } from '../e2e_helpers.ts';
 import {
@@ -16,7 +20,6 @@ import {
   INITIAL_BUYER_MONEY,
   EXPECTED_BUYER_MONEY_AFTER_PURCHASE
 } from '../simulation_config.ts';
-import { DatabaseSync } from 'node:sqlite';
 
 const SIMULATION_SETUP_POKEMON_LEVEL = 5;
 const E2E_EXPLORE_TAB_TIMEOUT_MS = 5000;
@@ -141,7 +144,7 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
           'spearow',
           'ekans',
           'sandshrew'
-        ] as const satisfies readonly import('../../../src/data/pokemon/pokedex.ts').PokemonSpeciesId[];
+        ] as const satisfies readonly PokemonSpeciesId[];
         for (let k = 0; k < pokemonCount; k++) {
           const sp = species[k % species.length]!;
           const pkmn = pokemonDebugService.generate({ id: sp, level: setupLevel });

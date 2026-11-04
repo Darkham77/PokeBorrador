@@ -1,5 +1,4 @@
-import { ModdedDex } from './exported-global-types';
-
+import { Streams, Utils } from '../lib';
 /**
  * Battle Stream
  * Pokemon Showdown - http://pokemonshowdown.com/
@@ -10,12 +9,11 @@ import { ModdedDex } from './exported-global-types';
  *
  * @license MIT
  */
-
-import { Streams, Utils } from '../lib';
-import { Teams } from './teams';
 import { Battle, extractChannelMessages } from './battle';
 import { Dex } from './dex';
+import { ModdedDex } from './exported-global-types';
 import type { ChoiceRequest } from './side';
+import { Teams } from './teams';
 
 export class BattleStream extends Streams.ObjectReadWriteStream<string> {
   debug: boolean;

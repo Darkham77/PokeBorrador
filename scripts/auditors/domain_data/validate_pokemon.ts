@@ -1,16 +1,22 @@
-import type { DisplayText } from '@francogp/auditor';
+import { enableCompileCache } from 'node:module';
 /**
  * scripts/auditors/domain_data/validate_pokemon.ts
  *
  * POKEMON INTEGRITY VALIDATOR (Node.js 26+ Native)
  * Validates integrity of POKEMON_DB stats, types, abilities, and learnsets against Showdown Dex.
  */
-
 import path from 'node:path';
-import { enableCompileCache } from 'node:module';
-import { BaseAuditor, normalizePosixPath, createRuleCapabilities, getAuditConfig } from '@francogp/auditor';
-import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
+
+import type { DisplayText } from '@francogp/auditor';
+import {
+  BaseAuditor,
+  normalizePosixPath,
+  createRuleCapabilities,
+  getAuditConfig
+} from '@francogp/auditor';
 import { Dex, toID } from '@pkmn/sim';
+
+import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
 import { ACTIVE_GENERATION, isEnabledPokemonId } from '../../../src/data/system/constants.ts';
 import type { PokemonBaseData } from '../../../src/types/system/database.ts';
 
@@ -35,7 +41,7 @@ export const POKEMON_DB_RULES: readonly PokemonDbRuleId[] = [
 ] as const;
 
 export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
-  constructor() {
+  public constructor() {
     const config = getAuditConfig();
     const dataRoots = config.paths?.dataRoots ?? [];
     const coverageIncludes = dataRoots.map((r) => path.posix.join(r, 'pokemon/**/*.{ts,json}'));
@@ -44,12 +50,12 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
       ruleCapabilities: createRuleCapabilities(POKEMON_DB_RULES, {
         speed: 'heavy',
         phase: 'normal',
-        fix: 'none',
         md: false,
         ast: false,
         changedOnly: false,
         critical: false
       }),
+      ruleFixers: {},
       id: 'validate_pokemon',
       configKey: 'domain.pokemon',
       defaultConfig: {
@@ -138,7 +144,7 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
   }
 
   public override async runAudit(): Promise<void> {
-    const pokemonDataFiles = await this.context.collectFiles(
+    const pokemonDataFiles = this.context.collectFiles(
       ['src/data/pokemon'],
       new Set(['.ts', '.json'])
     );
@@ -151,9 +157,7 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
     let enabledPokemon: Array<[string, PokemonBaseData]> = [];
 
     this.runSubAuditorSync('pokemon-invalid-species', () => {
-      enabledPokemon = (Object.entries(POKEMON_DB) as Array<[string, PokemonBaseData]>).filter(
-        ([id]) => isEnabledPokemonId(id)
-      );
+      enabledPokemon = Object.entries(POKEMON_DB).filter(([id]) => isEnabledPokemonId(id));
 
       for (const [coreId, corePoke] of enabledPokemon) {
         const tag = `[${corePoke.name} (${coreId})]`;
@@ -177,11 +181,7 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
       for (const [coreId, corePoke] of enabledPokemon) {
         const species = validSpeciesMap.get(coreId);
         if (!species) continue;
-        this.validateBaseStats(
-          corePoke,
-          species as { baseStats: Record<DisplayText, number> },
-          `[${corePoke.name} (${coreId})]`
-        );
+        this.validateBaseStats(corePoke, species, `[${corePoke.name} (${coreId})]`);
       }
     });
 
@@ -189,11 +189,7 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
       for (const [coreId, corePoke] of enabledPokemon) {
         const species = validSpeciesMap.get(coreId);
         if (!species) continue;
-        this.validateTypes(
-          corePoke,
-          species as { types: string[] },
-          `[${corePoke.name} (${coreId})]`
-        );
+        this.validateTypes(corePoke, species, `[${corePoke.name} (${coreId})]`);
       }
     });
 

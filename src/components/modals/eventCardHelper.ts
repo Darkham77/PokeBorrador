@@ -66,10 +66,10 @@ export function formatEventRemainingTime(
     return occurrence.startsInLabel;
   }
   const currentInstant = Temporal.Instant.fromEpochMilliseconds(nowMs);
-  const window = getEventCurrentWindow(event, currentInstant);
-  if (window) {
-    if (Temporal.Instant.compare(window.end, currentInstant) <= 0) return 'Terminando...';
-    const diffMs = window.end.epochMilliseconds - nowMs;
+  const eventWindow = getEventCurrentWindow(event, currentInstant);
+  if (eventWindow) {
+    if (Temporal.Instant.compare(eventWindow.end, currentInstant) <= 0) return 'Terminando...';
+    const diffMs = eventWindow.end.epochMilliseconds - nowMs;
     const totalSecs = Math.max(0, Math.floor(diffMs / MILLIS_PER_SECOND));
     const hours = Math.floor(totalSecs / SECONDS_PER_HOUR);
     const mins = Math.floor((totalSecs % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE);

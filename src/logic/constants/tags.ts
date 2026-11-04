@@ -371,6 +371,23 @@ export const CANONICAL_FILTER_TAGS: readonly FilterTagDefinition[] = [
   }
 ] as const;
 
+type TagEvaluator = (pokemon: Partial<Pokemon>, tags: string[]) => boolean;
+
+const TAG_STRATEGIES: Partial<Record<PokemonFilterTagId, TagEvaluator>> = {
+  comp: (_, tags) => tags.includes('comp') || tags.includes('competitive'),
+  competitive: (_, tags) => tags.includes('comp') || tags.includes('competitive'),
+  iv31: (pokemon, tags) => tags.includes('iv31') || hasMaxIV(pokemon.ivs),
+  hatched: (pokemon, tags) => tags.includes('hatched') || pokemon.obtainedMethod === 'egg',
+  fav: (_, tags) => tags.includes('fav') || tags.includes('favorite'),
+  favorite: (_, tags) => tags.includes('fav') || tags.includes('favorite'),
+  shy: (pokemon) => Boolean(pokemon.isShiny),
+  shiny: (pokemon) => Boolean(pokemon.isShiny),
+  'friendship-evo': (pokemon) => isReadyForFriendshipEvolution(pokemon),
+  'friendship-max': (pokemon) =>
+    (pokemon.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE) >=
+    FRIENDSHIP_BOUNDS.AFFINITY_PERK_THRESHOLD
+};
+
 /**
  * Standardized helper to check if a pokemon possesses a specific tag.
  */
@@ -380,31 +397,8 @@ export const hasPokemonTag = (
 ): boolean => {
   if (!pokemon) return false;
   const tags = pokemon.tags || [];
-
-  switch (tagId) {
-    case 'comp':
-    case 'competitive':
-      return tags.includes('comp') || tags.includes('competitive');
-    case 'iv31':
-      return tags.includes('iv31') || hasMaxIV(pokemon.ivs);
-    case 'hatched':
-      return tags.includes('hatched') || pokemon.obtainedMethod === 'egg';
-    case 'fav':
-    case 'favorite':
-      return tags.includes('fav') || tags.includes('favorite');
-    case 'shy':
-    case 'shiny':
-      return Boolean(pokemon.isShiny);
-    case 'friendship-evo':
-      return isReadyForFriendshipEvolution(pokemon);
-    case 'friendship-max':
-      return (
-        (pokemon.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE) >=
-        FRIENDSHIP_BOUNDS.AFFINITY_PERK_THRESHOLD
-      );
-    default:
-      return tags.includes(tagId);
-  }
+  const evaluator = TAG_STRATEGIES[tagId];
+  return evaluator ? evaluator(pokemon, tags) : tags.includes(tagId);
 };
 
 /**

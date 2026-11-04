@@ -24,7 +24,11 @@ import {
   FALLBACK_MIN_DISTANCE_COMPACT,
   FALLBACK_MIN_DISTANCE_DEFAULT
 } from '../../config/poiPlacementConfig.ts';
-import type { POINode, POIGateway } from '../../types/map/poiTypes.ts';
+import {
+  GEO_CARDINAL_DIRECTIONS,
+  type POINode,
+  type POIGateway
+} from '../../types/map/poiTypes.ts';
 import { generateSettlementLayout, type SettlementTerrainContext } from './cityLayoutEngine.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
 import type { RegionalPOITemplate } from './regionalPoiCatalog.ts';
@@ -474,21 +478,20 @@ function tryPlaceFallbackGate(
   continentMap: ContinentMapResult,
   ctx: PlainSettlementsContext
 ): boolean {
-  for (
-    let y = Math.floor(H * CHOKE_SEARCH_MIN_Y_RATIO);
-    y < Math.floor(H * CHOKE_SEARCH_MAX_Y_RATIO);
-    y += CHOKE_SEARCH_STEP
-  ) {
-    for (
-      let x = Math.floor(W * CHOKE_SEARCH_MIN_X_RATIO);
-      x < Math.floor(W * CHOKE_SEARCH_MAX_X_RATIO);
-      x += CHOKE_SEARCH_STEP
-    ) {
+  const isCompact = Math.min(W, H) <= COMPACT_MAP_THRESHOLD;
+  const minGateDist = isCompact ? 4 : GATE_MIN_DISTANCE_TO_SETTLEMENT;
+  const minYRatio = isCompact ? 0.12 : CHOKE_SEARCH_MIN_Y_RATIO;
+  const maxYRatio = isCompact ? 0.88 : CHOKE_SEARCH_MAX_Y_RATIO;
+  const minXRatio = isCompact ? 0.12 : CHOKE_SEARCH_MIN_X_RATIO;
+  const maxXRatio = isCompact ? 0.88 : CHOKE_SEARCH_MAX_X_RATIO;
+  const step = isCompact ? 2 : CHOKE_SEARCH_STEP;
+
+  for (let y = Math.floor(H * minYRatio); y < Math.floor(H * maxYRatio); y += step) {
+    for (let x = Math.floor(W * minXRatio); x < Math.floor(W * maxXRatio); x += step) {
       if (!ctx.isAreaFree(x, y, gW, gH, 1)) continue;
       if (!isAreaFlatGrass(continentMap, x, y, gW, gH)) continue;
       if (
-        ctx.getMinDistanceToPlaced(x + Math.floor(gW / 2), y + Math.floor(gH / 2)) <
-        GATE_MIN_DISTANCE_TO_SETTLEMENT
+        ctx.getMinDistanceToPlaced(x + Math.floor(gW / 2), y + Math.floor(gH / 2)) < minGateDist
       ) {
         continue;
       }
@@ -534,30 +537,67 @@ export function placeRouteGateCheckpoints(ctx: PlainSettlementsContext): void {
   } = ctx;
   const W = continentMap.width;
   const H = continentMap.height;
+  const seed = continentMap.seed;
 
   const routeGateTemplates = activeCatalog.filter((t) => t.type === 'route_gate');
-  for (const gateTmpl of routeGateTemplates) {
+  const isCompactMap = Math.min(W, H) <= COMPACT_MAP_THRESHOLD;
+
+  for (let gateIdx = 0; gateIdx < routeGateTemplates.length; gateIdx++) {
+    const gateTmpl = routeGateTemplates[gateIdx]!;
     const gW = gateTmpl.width;
     const gH = gateTmpl.height;
     let gatePlaced = false;
 
-    const metroNode = placedNodes.find((n) => n.type === 'metropolis');
-    if (metroNode && !placedNodes.some((n) => n.type === 'route_gate')) {
-      const southGw = metroNode.gateways?.find((g) => g.direction === 'south');
-      if (southGw) {
-        const candX = southGw.x - Math.floor(gW / 2);
-        const candY = southGw.y + 6;
-        const inBounds = candY + gH < H - 4 && candX >= 4 && candX + gW < W - 4;
+    // Gate 0: Procedural settlement anchor selection across diverse seeds and directions.
+    if (gateIdx === 0) {
+      const metroNode = placedNodes.find((n) => n.type === 'metropolis');
+      if (metroNode?.gateways && metroNode.gateways.length > 0) {
+        const preferredDir = GEO_CARDINAL_DIRECTIONS[(seed + 3) % GEO_CARDINAL_DIRECTIONS.length];
+
+        const chosenGw =
+          metroNode.gateways.find((g) => g.direction === preferredDir) ??
+          metroNode.gateways.find((g) => g.direction === 'south') ??
+          metroNode.gateways[0]!;
+
+        const isHorizontal = chosenGw.direction === 'east' || chosenGw.direction === 'west';
+        const offset = isCompactMap ? 4 : 6 + (seed % 3 === 0 ? 0 : (seed % 3) * 2);
+
+        let candX = chosenGw.x;
+        let candY = chosenGw.y;
+        if (chosenGw.direction === 'south') {
+          candX = chosenGw.x - Math.floor(gW / 2);
+          candY = chosenGw.y + offset;
+        } else if (chosenGw.direction === 'north') {
+          candX = chosenGw.x - Math.floor(gW / 2);
+          candY = chosenGw.y - offset - gH;
+        } else if (chosenGw.direction === 'east') {
+          candX = chosenGw.x + offset;
+          candY = chosenGw.y - Math.floor(gH / 2);
+        } else if (chosenGw.direction === 'west') {
+          candX = chosenGw.x - offset - gW;
+          candY = chosenGw.y - Math.floor(gH / 2);
+        }
+
+        const margin = isCompactMap ? 2 : 4;
+        const inBounds =
+          candY >= margin && candY + gH < H - margin && candX >= margin && candX + gW < W - margin;
+
         if (
           inBounds &&
           isAreaFree(candX, candY, gW, gH, 1) &&
           isAreaFlatGrass(continentMap, candX, candY, gW, gH)
         ) {
           const midX = candX + Math.floor(gW / 2);
-          const gateways: POIGateway[] = [
-            { x: midX, y: candY, direction: 'north' },
-            { x: midX, y: candY + gH - 1, direction: 'south' }
-          ];
+          const midY = candY + Math.floor(gH / 2);
+          const gateways: POIGateway[] = isHorizontal
+            ? [
+                { x: candX, y: midY, direction: 'west' },
+                { x: candX + gW - 1, y: midY, direction: 'east' }
+              ]
+            : [
+                { x: midX, y: candY, direction: 'north' },
+                { x: midX, y: candY + gH - 1, direction: 'south' }
+              ];
           const node: POINode = {
             id: gateTmpl.id,
             name: gateTmpl.name,
@@ -567,7 +607,7 @@ export function placeRouteGateCheckpoints(ctx: PlainSettlementsContext): void {
             gridX: candX,
             gridY: candY,
             elevation: 0,
-            facing: 'south',
+            facing: chosenGw.direction,
             gateways
           };
           const layout = generateSettlementLayout(node, getSettlementContext());

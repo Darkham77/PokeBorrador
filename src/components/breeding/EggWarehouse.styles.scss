@@ -42,7 +42,7 @@
   background: Rgba($pokecenter-pink, 0.08);
   color: $pokecenter-pink;
   font-size: var(--font-12);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
 
   &.empty {
     background: Rgb(148 163 184 / 10%);

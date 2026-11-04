@@ -149,7 +149,7 @@ const handleConfirm = (): void => {
     .sub-title {
       color: Rgb(255 255 255 / 60%);
       font-size: var(--font-11);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
       margin-top: 2px;
     }
   }
@@ -166,104 +166,104 @@ const handleConfirm = (): void => {
     font-size: var(--font-8);
     margin-bottom: 24px;
   }
+}
 
-  .selector-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: $spacing-xl;
-    margin-bottom: 24px;
+.selector-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: $spacing-xl;
+  margin-bottom: 24px;
 
-    .control-btn {
-      width: 44px;
-      height: 44px;
-      border: 1px solid Rgb(255 255 255 / 10%);
-      border-radius: $radius-xl;
-      background: Rgb(255 255 255 / 5%);
-      color: var(--white);
-      font-size: var(--font-20);
-      cursor: pointer;
+  .control-btn {
+    width: 44px;
+    height: 44px;
+    border: 1px solid Rgb(255 255 255 / 10%);
+    border-radius: $radius-xl;
+    background: Rgb(255 255 255 / 5%);
+    color: var(--white);
+    font-size: var(--font-20);
+    cursor: pointer;
 
-      &:hover:not(:disabled) {
-        background: Rgb(255 255 255 / 10%);
-        border-color: var(--yellow);
-      }
-      &:disabled {
-        opacity: 0.3;
-      }
+    &:hover:not(:disabled) {
+      background: Rgb(255 255 255 / 10%);
+      border-color: var(--yellow);
     }
-
-    .input-wrapper {
-      position: relative;
-
-      .quantity-input {
-        @include pixelated;
-
-        width: 110px;
-        padding: 12px;
-        border: 2px solid Rgb(255 255 255 / 10%);
-        border-radius: $radius-xl;
-        background: Rgb(0 0 0 / 40%);
-        color: var(--white);
-        font-size: var(--font-20);
-        text-align: center;
-        outline: none;
-        &:focus {
-          border-color: var(--yellow);
-        }
-      }
-
-      .max-badge {
-        @include pixelated;
-
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        padding: 2px 6px;
-        border: none;
-        border-radius: $radius-sm;
-        background: var(--yellow);
-        color: var(--black);
-        font-size: var(--font-8);
-        font-weight: 900;
-        cursor: pointer;
-      }
+    &:disabled {
+      opacity: 0.3;
     }
   }
 
-  .profit-summary {
+  .input-wrapper {
+    position: relative;
+
+    .quantity-input {
+      @include pixelated;
+
+      width: 110px;
+      padding: 12px;
+      border: 2px solid Rgb(255 255 255 / 10%);
+      border-radius: $radius-xl;
+      background: Rgb(0 0 0 / 40%);
+      color: var(--white);
+      font-size: var(--font-20);
+      text-align: center;
+      outline: none;
+      &:focus {
+        border-color: var(--yellow);
+      }
+    }
+
+    .max-badge {
+      @include pixelated;
+
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      padding: 2px 6px;
+      border: none;
+      border-radius: $radius-sm;
+      background: var(--yellow);
+      color: var(--black);
+      font-size: var(--font-8);
+      font-weight: $font-weight-black;
+      cursor: pointer;
+    }
+  }
+}
+
+.profit-summary {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  padding: 16px;
+  border-radius: $radius-xl;
+  background: Rgb(0 0 0 / 20%);
+
+  .summary-line {
     display: flex;
-    flex-direction: column;
-    gap: $spacing-sm;
-    padding: 16px;
-    border-radius: $radius-xl;
-    background: Rgb(0 0 0 / 20%);
+    justify-content: space-between;
+    align-items: center;
 
-    .summary-line {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .label {
+      color: Rgb(255 255 255 / 40%);
+      font-size: var(--font-8);
+      font-weight: $font-weight-bold;
+    }
+    .value {
+      color: var(--white);
+      font-size: var(--font-11);
+      font-weight: $font-weight-extrabold;
+    }
 
-      .label {
-        color: Rgb(255 255 255 / 40%);
-        font-size: var(--font-8);
-        font-weight: 700;
-      }
+    &.total {
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px solid Rgb(255 255 255 / 10%);
       .value {
-        color: var(--white);
-        font-size: var(--font-11);
-        font-weight: 800;
-      }
-
-      &.total {
-        margin-top: 4px;
-        padding-top: 8px;
-        border-top: 1px solid Rgb(255 255 255 / 10%);
-        .value {
-          @include pixelated;
-          color: $green;
-          font-size: var(--font-12);
-        }
+        @include pixelated;
+        color: $green;
+        font-size: var(--font-12);
       }
     }
   }

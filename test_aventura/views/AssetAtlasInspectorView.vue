@@ -188,7 +188,7 @@ function handleSheetChange(event: Event): void {
   margin: 0;
   color: var(--slate-50);
   font-size: var(--font-15);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
   letter-spacing: 0.5px;
 }
 
@@ -199,7 +199,7 @@ function handleSheetChange(event: Event): void {
   color: var(--white);
   font-family: monospace;
   font-size: var(--font-10);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .nav-controls-group {
@@ -217,7 +217,7 @@ function handleSheetChange(event: Event): void {
 .control-label {
   color: var(--slate-400);
   font-size: var(--font-11);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
 }
 
 .sheet-dropdown {
@@ -228,7 +228,7 @@ function handleSheetChange(event: Event): void {
   background: var(--slate-800);
   color: var(--slate-50);
   font-size: var(--font-12);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
 
   &:focus {
     outline: none;
@@ -267,7 +267,7 @@ function handleSheetChange(event: Event): void {
   background: var(--slate-800);
   color: var(--slate-400);
   font-size: var(--font-11);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
 
   &:hover {
@@ -294,7 +294,7 @@ function handleSheetChange(event: Event): void {
   background: var(--slate-800);
   color: var(--slate-200);
   font-size: var(--font-11);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
 
   &:hover {

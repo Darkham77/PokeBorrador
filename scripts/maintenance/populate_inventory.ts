@@ -1,5 +1,6 @@
 import { isMainModule } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
+
 import type { ItemId } from '../../src/data/inventory/items.ts';
 
 /**
@@ -86,5 +87,5 @@ export const command = defineCommand({
 });
 
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

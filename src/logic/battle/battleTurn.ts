@@ -1,3 +1,4 @@
+import { logger } from '@/logic/utils/logger';
 import type { BattleContext } from '@/types/battle/battleContext';
 
 import { decideEnemyMove, evaluateAndUseNPCItem } from './ai/battleAI.ts';
@@ -116,7 +117,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number): Prom
   const p = store.activeBattle.value?.player;
   const e = store.activeBattle.value?.enemy;
   if (p) {
-    console.debug(
+    logger.debug(
       `[E2E-DEBUG-TURN] executeTurn started. moveIndex: ${moveIndex}, active player: "${p.nickname || p.name}" (UID: ${p.uid}), moves: ${JSON.stringify(p.moves.map((m) => m?.id))}`
     );
   }

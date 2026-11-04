@@ -43,7 +43,7 @@ describe('ShowdownBridge Unhandled Logs Regression Tests', () => {
     const unhandledCalls = debugSpy.mock.calls.filter((args) =>
       args[1]?.toString().includes('sin parseador visual específico')
     );
-    expect(unhandledCalls.length).toBe(0);
+    expect(unhandledCalls).toHaveLength(0);
     debugSpy.mockRestore();
   });
 
@@ -58,7 +58,7 @@ describe('ShowdownBridge Unhandled Logs Regression Tests', () => {
     const unhandledCalls = debugSpy.mock.calls.filter((args) =>
       args[1]?.toString().includes('sin parseador visual específico')
     );
-    expect(unhandledCalls.length).toBe(0);
+    expect(unhandledCalls).toHaveLength(0);
     debugSpy.mockRestore();
   });
 
@@ -73,7 +73,7 @@ describe('ShowdownBridge Unhandled Logs Regression Tests', () => {
     const unhandledCalls = debugSpy.mock.calls.filter((args) =>
       args[1]?.toString().includes('sin parseador visual específico')
     );
-    expect(unhandledCalls.length).toBe(0);
+    expect(unhandledCalls).toHaveLength(0);
     debugSpy.mockRestore();
   });
 

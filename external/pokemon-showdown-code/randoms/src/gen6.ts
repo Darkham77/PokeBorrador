@@ -1,5 +1,3 @@
-import { BattleFactorySpecies, RandomGen7Teams, ZeroAttackHPIVs } from './gen7';
-import { MoveCounter, TeamData } from '././gen9';
 import {
   AnyObject,
   Format,
@@ -12,6 +10,9 @@ import {
   StatID,
   toID
 } from '@pkmn/sim';
+
+import { MoveCounter, TeamData } from '././gen9';
+import { BattleFactorySpecies, RandomGen7Teams, ZeroAttackHPIVs } from './gen7';
 
 /* eslint-disable */
 const randomSetsJSON = {
@@ -48,7 +49,7 @@ const randomSetsJSON = {
     ]
   },
   charizard: {
-    level: 84,
+    level: 83,
     sets: [
       {
         role: 'Bulky Attacker',
@@ -103,7 +104,7 @@ const randomSetsJSON = {
     ]
   },
   blastoisemega: {
-    level: 81,
+    level: 80,
     sets: [
       {
         role: 'Bulky Support',
@@ -123,7 +124,7 @@ const randomSetsJSON = {
     ]
   },
   beedrill: {
-    level: 94,
+    level: 95,
     sets: [
       {
         role: 'Fast Support',
@@ -192,7 +193,7 @@ const randomSetsJSON = {
     ]
   },
   arbok: {
-    level: 90,
+    level: 89,
     sets: [
       {
         role: 'Setup Sweeper',
@@ -396,7 +397,7 @@ const randomSetsJSON = {
     level: 86,
     sets: [
       {
-        role: 'Fast Support',
+        role: 'Fast Attacker',
         movepool: ['earthquake', 'honeclaws', 'stealthrock', 'stoneedge', 'suckerpunch'],
         abilities: ['Arena Trap']
       },
@@ -586,7 +587,7 @@ const randomSetsJSON = {
     ]
   },
   golem: {
-    level: 86,
+    level: 85,
     sets: [
       {
         role: 'Bulky Attacker',
@@ -715,7 +716,7 @@ const randomSetsJSON = {
     ]
   },
   gengar: {
-    level: 78,
+    level: 77,
     sets: [
       {
         role: 'Fast Attacker',
@@ -773,7 +774,7 @@ const randomSetsJSON = {
     ]
   },
   electrode: {
-    level: 87,
+    level: 88,
     sets: [
       {
         role: 'Wallbreaker',
@@ -832,7 +833,7 @@ const randomSetsJSON = {
     ]
   },
   hitmonlee: {
-    level: 86,
+    level: 85,
     sets: [
       {
         role: 'Fast Attacker',
@@ -1034,7 +1035,7 @@ const randomSetsJSON = {
     ]
   },
   pinsirmega: {
-    level: 73,
+    level: 72,
     sets: [
       {
         role: 'Bulky Setup',
@@ -1044,7 +1045,7 @@ const randomSetsJSON = {
     ]
   },
   tauros: {
-    level: 82,
+    level: 81,
     sets: [
       {
         role: 'Wallbreaker',
@@ -1099,7 +1100,7 @@ const randomSetsJSON = {
     sets: [{ role: 'Fast Support', movepool: ['transform'], abilities: ['Imposter'] }]
   },
   vaporeon: {
-    level: 84,
+    level: 85,
     sets: [
       {
         role: 'Bulky Support',
@@ -1255,7 +1256,7 @@ const randomSetsJSON = {
     ]
   },
   mewtwo: {
-    level: 70,
+    level: 71,
     sets: [
       {
         role: 'Fast Attacker',
@@ -1372,7 +1373,7 @@ const randomSetsJSON = {
     ]
   },
   noctowl: {
-    level: 95,
+    level: 96,
     sets: [
       {
         role: 'Bulky Support',
@@ -1642,16 +1643,6 @@ const randomSetsJSON = {
       }
     ]
   },
-  unown: {
-    level: 100,
-    sets: [
-      {
-        role: 'Wallbreaker',
-        movepool: ['hiddenpowerfighting', 'hiddenpowerpsychic'],
-        abilities: ['Levitate']
-      }
-    ]
-  },
   wobbuffet: {
     level: 93,
     sets: [
@@ -1682,7 +1673,7 @@ const randomSetsJSON = {
     ]
   },
   forretress: {
-    level: 82,
+    level: 81,
     sets: [
       {
         role: 'Bulky Support',
@@ -1697,7 +1688,7 @@ const randomSetsJSON = {
     ]
   },
   dunsparce: {
-    level: 93,
+    level: 94,
     sets: [
       {
         role: 'Bulky Attacker',
@@ -1743,7 +1734,7 @@ const randomSetsJSON = {
     ]
   },
   steelixmega: {
-    level: 80,
+    level: 79,
     sets: [
       {
         role: 'Bulky Support',
@@ -1753,7 +1744,7 @@ const randomSetsJSON = {
     ]
   },
   granbull: {
-    level: 87,
+    level: 88,
     sets: [
       {
         role: 'Bulky Attacker',
@@ -1781,7 +1772,7 @@ const randomSetsJSON = {
     ]
   },
   scizor: {
-    level: 78,
+    level: 77,
     sets: [
       {
         role: 'Setup Sweeper',
@@ -1860,7 +1851,7 @@ const randomSetsJSON = {
     ]
   },
   ursaring: {
-    level: 85,
+    level: 84,
     sets: [
       {
         role: 'Wallbreaker',
@@ -2189,7 +2180,7 @@ const randomSetsJSON = {
           'bravebird',
           'defog',
           'earthquake',
-          'roost',
+          'recover',
           'sacredfire',
           'substitute',
           'toxic'
@@ -2265,7 +2256,7 @@ const randomSetsJSON = {
     ]
   },
   blaziken: {
-    level: 75,
+    level: 76,
     sets: [
       {
         role: 'Setup Sweeper',
@@ -2285,7 +2276,7 @@ const randomSetsJSON = {
     ]
   },
   swampert: {
-    level: 82,
+    level: 81,
     sets: [
       {
         role: 'Bulky Attacker',
@@ -2356,7 +2347,7 @@ const randomSetsJSON = {
     ]
   },
   ludicolo: {
-    level: 88,
+    level: 89,
     sets: [
       {
         role: 'Setup Sweeper',
@@ -2659,7 +2650,7 @@ const randomSetsJSON = {
     ]
   },
   medicham: {
-    level: 83,
+    level: 84,
     sets: [
       {
         role: 'Fast Attacker',
@@ -2673,7 +2664,12 @@ const randomSetsJSON = {
     sets: [
       {
         role: 'Fast Attacker',
-        movepool: ['fakeout', 'highjumpkick', 'icepunch', 'thunderpunch', 'zenheadbutt'],
+        movepool: ['fakeout', 'highjumpkick', 'thunderpunch', 'zenheadbutt'],
+        abilities: ['Pure Power']
+      },
+      {
+        role: 'Wallbreaker',
+        movepool: ['fakeout', 'highjumpkick', 'icepunch', 'zenheadbutt'],
         abilities: ['Pure Power']
       }
     ]
@@ -2767,17 +2763,17 @@ const randomSetsJSON = {
     ]
   },
   sharpedo: {
-    level: 82,
+    level: 83,
     sets: [
       {
-        role: 'Wallbreaker',
+        role: 'Staller',
         movepool: ['crunch', 'destinybond', 'earthquake', 'icebeam', 'protect', 'waterfall'],
         abilities: ['Speed Boost']
       }
     ]
   },
   sharpedomega: {
-    level: 80,
+    level: 79,
     sets: [
       {
         role: 'Wallbreaker',
@@ -2787,7 +2783,7 @@ const randomSetsJSON = {
     ]
   },
   wailord: {
-    level: 93,
+    level: 92,
     sets: [
       {
         role: 'Bulky Attacker',
@@ -2817,7 +2813,7 @@ const randomSetsJSON = {
     ]
   },
   cameruptmega: {
-    level: 86,
+    level: 85,
     sets: [
       {
         role: 'Bulky Attacker',
@@ -2827,7 +2823,7 @@ const randomSetsJSON = {
     ]
   },
   torkoal: {
-    level: 88,
+    level: 87,
     sets: [
       {
         role: 'Bulky Support',
@@ -2888,7 +2884,7 @@ const randomSetsJSON = {
     ]
   },
   altaria: {
-    level: 88,
+    level: 87,
     sets: [
       {
         role: 'Bulky Setup',
@@ -2903,7 +2899,7 @@ const randomSetsJSON = {
     ]
   },
   altariamega: {
-    level: 77,
+    level: 76,
     sets: [
       {
         role: 'Setup Sweeper',
@@ -2970,7 +2966,7 @@ const randomSetsJSON = {
     ]
   },
   whiscash: {
-    level: 88,
+    level: 89,
     sets: [
       {
         role: 'Setup Sweeper',
@@ -3054,7 +3050,7 @@ const randomSetsJSON = {
     ]
   },
   castform: {
-    level: 97,
+    level: 98,
     sets: [
       {
         role: 'Bulky Attacker',
@@ -3089,7 +3085,7 @@ const randomSetsJSON = {
     ]
   },
   banette: {
-    level: 90,
+    level: 91,
     sets: [
       {
         role: 'Wallbreaker',
@@ -3134,7 +3130,7 @@ const randomSetsJSON = {
     ]
   },
   absol: {
-    level: 84,
+    level: 83,
     sets: [
       {
         role: 'Wallbreaker',
@@ -3251,7 +3247,7 @@ const randomSetsJSON = {
     ]
   },
   salamence: {
-    level: 75,
+    level: 74,
     sets: [
       {
         role: 'Setup Sweeper',
@@ -3321,7 +3317,7 @@ const randomSetsJSON = {
     ]
   },
   regirock: {
-    level: 85,
+    level: 86,
     sets: [
       {
         role: 'Bulky Setup',
@@ -3377,7 +3373,7 @@ const randomSetsJSON = {
     ]
   },
   latias: {
-    level: 74,
+    level: 75,
     sets: [
       {
         role: 'Bulky Attacker',
@@ -3545,7 +3541,7 @@ const randomSetsJSON = {
     ]
   },
   deoxysattack: {
-    level: 72,
+    level: 71,
     sets: [
       {
         role: 'Wallbreaker',
@@ -3721,7 +3717,7 @@ const randomSetsJSON = {
     ]
   },
   bastiodon: {
-    level: 95,
+    level: 93,
     sets: [
       {
         role: 'Bulky Support',
@@ -3758,7 +3754,7 @@ const randomSetsJSON = {
     ]
   },
   wormadamsandy: {
-    level: 90,
+    level: 91,
     sets: [
       {
         role: 'Staller',
@@ -3768,7 +3764,7 @@ const randomSetsJSON = {
     ]
   },
   wormadamtrash: {
-    level: 88,
+    level: 87,
     sets: [
       {
         role: 'Staller',
@@ -3901,7 +3897,7 @@ const randomSetsJSON = {
     ]
   },
   lopunnymega: {
-    level: 76,
+    level: 75,
     sets: [
       {
         role: 'Fast Attacker',
@@ -3947,7 +3943,7 @@ const randomSetsJSON = {
     ]
   },
   skuntank: {
-    level: 85,
+    level: 84,
     sets: [
       {
         role: 'Bulky Attacker',
@@ -4042,7 +4038,7 @@ const randomSetsJSON = {
     ]
   },
   lucario: {
-    level: 82,
+    level: 84,
     sets: [
       {
         role: 'Fast Attacker',
@@ -4127,14 +4123,14 @@ const randomSetsJSON = {
     level: 100,
     sets: [
       {
-        role: 'Bulky Support',
+        role: 'Bulky Attacker',
         movepool: ['knockoff', 'powerwhip', 'sleeppowder', 'swordsdance', 'synthesis', 'toxic'],
         abilities: ['Levitate']
       }
     ]
   },
   lumineon: {
-    level: 90,
+    level: 89,
     sets: [
       {
         role: 'Bulky Support',
@@ -4155,7 +4151,7 @@ const randomSetsJSON = {
     ]
   },
   abomasnowmega: {
-    level: 82,
+    level: 80,
     sets: [
       {
         role: 'Bulky Attacker',
@@ -4317,7 +4313,7 @@ const randomSetsJSON = {
     ]
   },
   yanmega: {
-    level: 81,
+    level: 82,
     sets: [
       {
         role: 'Fast Attacker',
@@ -4332,7 +4328,7 @@ const randomSetsJSON = {
     ]
   },
   leafeon: {
-    level: 87,
+    level: 86,
     sets: [
       {
         role: 'Setup Sweeper',
@@ -4407,7 +4403,7 @@ const randomSetsJSON = {
     ]
   },
   gallade: {
-    level: 82,
+    level: 83,
     sets: [
       {
         role: 'Fast Attacker',
@@ -4490,7 +4486,7 @@ const randomSetsJSON = {
     ]
   },
   rotom: {
-    level: 86,
+    level: 85,
     sets: [
       {
         role: 'Fast Support',
@@ -4555,7 +4551,7 @@ const randomSetsJSON = {
     ]
   },
   rotommow: {
-    level: 86,
+    level: 85,
     sets: [
       {
         role: 'Bulky Attacker',
@@ -4591,23 +4587,8 @@ const randomSetsJSON = {
     ]
   },
   mesprit: {
-    level: 85,
+    level: 84,
     sets: [
-      {
-        role: 'Fast Attacker',
-        movepool: [
-          'calmmind',
-          'healingwish',
-          'hiddenpowerfire',
-          'psychic',
-          'psyshock',
-          'signalbeam',
-          'thunderbolt',
-          'uturn'
-        ],
-        abilities: ['Levitate'],
-        preferredTypes: ['Bug']
-      },
       {
         role: 'Bulky Support',
         movepool: ['knockoff', 'psychic', 'stealthrock', 'thunderwave', 'toxic', 'uturn'],
@@ -4750,7 +4731,7 @@ const randomSetsJSON = {
     ]
   },
   cresselia: {
-    level: 79,
+    level: 80,
     sets: [
       {
         role: 'Bulky Setup',
@@ -5238,7 +5219,7 @@ const randomSetsJSON = {
     ]
   },
   simipour: {
-    level: 86,
+    level: 87,
     sets: [
       {
         role: 'Setup Sweeper',
@@ -5325,7 +5306,7 @@ const randomSetsJSON = {
     ]
   },
   audino: {
-    level: 91,
+    level: 92,
     sets: [
       {
         role: 'Bulky Support',
@@ -5365,7 +5346,7 @@ const randomSetsJSON = {
     ]
   },
   seismitoad: {
-    level: 84,
+    level: 83,
     sets: [
       {
         role: 'Setup Sweeper',
@@ -5523,7 +5504,7 @@ const randomSetsJSON = {
     ]
   },
   scrafty: {
-    level: 83,
+    level: 82,
     sets: [
       {
         role: 'Bulky Attacker',
@@ -5751,7 +5732,7 @@ const randomSetsJSON = {
     ]
   },
   amoonguss: {
-    level: 83,
+    level: 82,
     sets: [
       {
         role: 'Bulky Attacker',
@@ -5937,7 +5918,7 @@ const randomSetsJSON = {
     ]
   },
   stunfisk: {
-    level: 88,
+    level: 87,
     sets: [
       {
         role: 'Bulky Attacker',
@@ -6322,7 +6303,7 @@ const randomSetsJSON = {
     ]
   },
   kyurem: {
-    level: 78,
+    level: 79,
     sets: [
       {
         role: 'Staller',
@@ -6352,7 +6333,7 @@ const randomSetsJSON = {
     ]
   },
   kyuremwhite: {
-    level: 74,
+    level: 73,
     sets: [
       {
         role: 'Fast Attacker',
@@ -6632,7 +6613,7 @@ const randomSetsJSON = {
     ]
   },
   meowsticf: {
-    level: 90,
+    level: 89,
     sets: [
       {
         role: 'Fast Attacker',
@@ -6778,7 +6759,7 @@ const randomSetsJSON = {
     ]
   },
   aurorus: {
-    level: 86,
+    level: 87,
     sets: [
       {
         role: 'Bulky Attacker',
@@ -6846,7 +6827,7 @@ const randomSetsJSON = {
     ]
   },
   carbink: {
-    level: 91,
+    level: 92,
     sets: [
       {
         role: 'Bulky Support',
@@ -6856,7 +6837,7 @@ const randomSetsJSON = {
     ]
   },
   goodra: {
-    level: 85,
+    level: 84,
     sets: [
       {
         role: 'AV Pivot',
@@ -6873,7 +6854,7 @@ const randomSetsJSON = {
     ]
   },
   klefki: {
-    level: 79,
+    level: 78,
     sets: [
       {
         role: 'Bulky Support',
@@ -6999,7 +6980,7 @@ const randomSetsJSON = {
     ]
   },
   zygarde: {
-    level: 77,
+    level: 76,
     sets: [
       {
         role: 'Setup Sweeper',
@@ -7027,7 +7008,7 @@ const randomSetsJSON = {
     ]
   },
   dianciemega: {
-    level: 75,
+    level: 74,
     sets: [
       {
         role: 'Fast Attacker',
@@ -7586,20 +7567,22 @@ export class RandomGen6Teams extends RandomGen7Teams {
       }
     }
 
-    // Enforce Thunder Wave on Prankster users
-    if (movePool.includes('thunderwave') && abilities.includes('Prankster')) {
-      counter = this.addMove(
-        'thunderwave',
-        moves,
-        types,
-        abilities,
-        teamDetails,
-        species,
-        isLead,
-        movePool,
-        preferredType,
-        role
-      );
+    // Enforce Thunder Wave and Encore on Prankster users
+    for (const moveid of ['encore', 'thunderwave']) {
+      if (movePool.includes(moveid) && abilities.includes('Prankster')) {
+        counter = this.addMove(
+          moveid,
+          moves,
+          types,
+          abilities,
+          teamDetails,
+          species,
+          isLead,
+          movePool,
+          preferredType,
+          role
+        );
+      }
     }
 
     // Enforce Shadow Sneak on Kecleon
@@ -8085,7 +8068,6 @@ export class RandomGen6Teams extends RandomGen7Teams {
     if (species.name === 'Shedinja' || species.name === 'Smeargle') return 'Focus Sash';
     if (species.name === 'Talonflame') return 'Sharp Beak';
     if (species.name === 'Unfezant' || moves.has('focusenergy')) return 'Scope Lens';
-    if (species.name === 'Unown') return 'Choice Specs';
     if (species.name === 'Wobbuffet') return 'Custap Berry';
     if (species.name === 'Shuckle') return 'Mental Herb';
     if (species.name === 'Honchkrow') return 'Life Orb';
@@ -8345,11 +8327,13 @@ export class RandomGen6Teams extends RandomGen7Teams {
       if (move.startsWith('hiddenpower')) hasHiddenPower = true;
     }
 
-    if (hasHiddenPower) {
+    if (hasHiddenPower || species.id === 'ditto') {
       let hpType;
       for (const move of moves) {
         if (move.startsWith('hiddenpower')) hpType = move.substr(11);
       }
+      // Ditto gets IVs to copy Hidden Power Ice
+      if (species.id === 'ditto') hpType = 'ice';
       if (!hpType) throw new Error(`hasHiddenPower is true, but no Hidden Power move was found.`);
       const HPivs = ivs.atk === 0 ? ZeroAttackHPIVs[hpType] : this.dex.types.get(hpType).HPivs;
       let iv: StatID;

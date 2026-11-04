@@ -379,67 +379,67 @@ const openGyms = (): void => {
       gap: $spacing-xs-alt;
       width: 100%;
     }
+  }
 
-    .diff-chip {
-      @include pixelated;
+  .diff-chip {
+    @include pixelated;
 
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      width: 14px;
-      height: 13px;
-      padding: 0;
-      border: 1px dashed Rgb(255 255 255 / 15%);
-      border-radius: $radius-xs-alt;
-      background: Rgb(255 255 255 / 4%);
-      color: Rgb(255 255 255 / 30%);
-      font-size: var(--font-6);
-      font-weight: 800;
-      line-height: 1.35;
-      text-align: center;
-      box-sizing: border-box;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 14px;
+    height: 13px;
+    padding: 0;
+    border: 1px dashed Rgb(255 255 255 / 15%);
+    border-radius: $radius-xs-alt;
+    background: Rgb(255 255 255 / 4%);
+    color: Rgb(255 255 255 / 30%);
+    font-size: var(--font-6);
+    font-weight: $font-weight-extrabold;
+    line-height: 1.35;
+    text-align: center;
+    box-sizing: border-box;
 
-      &.won {
-        border-style: solid;
+    &.won {
+      border-style: solid;
 
-        &.is-easy {
-          background: Rgb(74 222 128 / 20%);
-          color: var(--green-light);
-          border-color: Rgb(74 222 128 / 60%);
-        }
+      &.is-easy {
+        background: Rgb(74 222 128 / 20%);
+        color: var(--green-light);
+        border-color: Rgb(74 222 128 / 60%);
+      }
 
-        &.is-normal {
-          background: Rgb(56 189 248 / 20%);
-          color: var(--sky);
-          border-color: Rgb(56 189 248 / 60%);
-        }
+      &.is-normal {
+        background: Rgb(56 189 248 / 20%);
+        color: var(--sky);
+        border-color: Rgb(56 189 248 / 60%);
+      }
 
-        &.is-hard {
-          background: Rgb(250 204 21 / 20%);
-          color: var(--amber-400);
-          border-color: Rgb(250 204 21 / 60%);
-          box-shadow: var(--shadow-glow-yellow-sm);
-        }
+      &.is-hard {
+        background: Rgb(250 204 21 / 20%);
+        color: var(--amber-400);
+        border-color: Rgb(250 204 21 / 60%);
+        box-shadow: var(--shadow-glow-yellow-sm);
       }
     }
+  }
 
-    .badge-status {
-      @include pixelated;
+  .badge-status {
+    @include pixelated;
 
-      color: Rgb(148 163 184 / 70%);
-      font-size: var(--font-6);
-      line-height: 1.35;
+    color: Rgb(148 163 184 / 70%);
+    font-size: var(--font-6);
+    line-height: 1.35;
 
-      &.mastered {
-        color: var(--amber-400);
-        font-weight: bold;
-        text-shadow: 0 0 4px Rgb(250 204 21 / 40%);
-      }
+    &.mastered {
+      color: var(--amber-400);
+      font-weight: bold;
+      text-shadow: 0 0 4px Rgb(250 204 21 / 40%);
+    }
 
-      &.partial {
-        color: var(--sky);
-        font-weight: bold;
-      }
+    &.partial {
+      color: var(--sky);
+      font-weight: bold;
     }
   }
 

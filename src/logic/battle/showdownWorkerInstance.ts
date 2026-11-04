@@ -59,7 +59,7 @@ export function resolveGameStore(): GameStoreAccess | null {
   return null;
 }
 
-export let showdownWorker: Worker | null = null; // singleton-ok: Singleton instance state container
+let showdownWorker: Worker | null = null; // singleton-ok: Singleton instance state container
 
 export function setShowdownWorker(worker: Worker | null): void {
   showdownWorker = worker;

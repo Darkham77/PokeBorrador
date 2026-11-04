@@ -83,7 +83,7 @@ describe('PVTooltip.vue - Viewport Overflow & Ellipsis Truncation', () => {
 
     const lines = document.querySelectorAll('.tooltip-line');
     const EXPECTED_SHORT_LINES_COUNT = 3;
-    expect(lines.length).toBe(EXPECTED_SHORT_LINES_COUNT);
+    expect(lines).toHaveLength(EXPECTED_SHORT_LINES_COUNT);
 
     const ellipsis = document.querySelector('.pv-tooltip-ellipsis');
     expect(ellipsis).toBeNull();

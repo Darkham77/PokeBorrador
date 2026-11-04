@@ -223,10 +223,10 @@ describe('Battle Volatiles, Events & State Transitions Domain Suite', () => {
   describe('Reproduce Outrage / Locked Move Infinite Loop (Tier 1)', () => {
     it('should NOT force move when Showdown request provides all normal moves (not locked by Showdown)', () => {
       const moves: Move[] = [
-        { id: 'agility', name: 'Agilidad', pp: 30, maxPP: 30 } as Move,
-        { id: 'safeguard', name: 'Velo Sagrado', pp: 25, maxPP: 25 } as Move,
-        { id: 'outrage', name: 'Enfado', pp: 16, maxPP: 16 } as Move,
-        { id: 'hyperbeam', name: 'Hiperrayo', pp: 5, maxPP: 5 } as Move
+        { id: 'agility', name: 'Agilidad', pp: 30, maxPP: 30 },
+        { id: 'safeguard', name: 'Velo Sagrado', pp: 25, maxPP: 25 },
+        { id: 'outrage', name: 'Enfado', pp: 16, maxPP: 16 },
+        { id: 'hyperbeam', name: 'Hiperrayo', pp: 5, maxPP: 5 }
       ];
 
       const dragonite: Pokemon = {

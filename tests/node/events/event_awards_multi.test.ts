@@ -230,6 +230,6 @@ describe('Multi-Award Event Claim & Storage Capacity Validation', () => {
     const pe = ctx.pastEvents.value[0];
     expect(pe?.hasUnclaimedAward).toBe(false);
     expect(pe?.isClaimed).toBe(true);
-    expect(ctx.pendingAwards.value.length).toBe(0);
+    expect(ctx.pendingAwards.value).toHaveLength(0);
   });
 });

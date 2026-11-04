@@ -87,7 +87,7 @@
     @include pixelated;
 
     font-size: var(--font-8);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     line-height: 1.35;
   }
 
@@ -215,7 +215,7 @@
 
     color: var(--amber);
     font-size: var(--font-7);
-    font-weight: 800;
+    font-weight: $font-weight-extrabold;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 
@@ -252,7 +252,7 @@
 
     color: Rgb(255 255 255 / 45%);
     font-size: var(--font-7);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
@@ -360,7 +360,7 @@
       display: block;
       color: Rgb(34 197 94 / 100%);
       font-size: var(--font-9);
-      font-weight: 800;
+      font-weight: $font-weight-extrabold;
       line-height: 1.35;
     }
   }
@@ -396,7 +396,7 @@
 
       color: var(--amber-400);
       font-size: var(--font-8);
-      font-weight: 800;
+      font-weight: $font-weight-extrabold;
     }
 
     .operation-timer-text {
@@ -404,7 +404,7 @@
 
       color: var(--gray, #94a3b8);
       font-size: var(--font-8);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
     }
   }
 
@@ -434,17 +434,17 @@
 
       color: Rgb(255 255 255 / 45%);
       font-size: var(--font-7);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
     }
 
     .detail-val {
       color: var(--slate-100);
       font-size: var(--font-8);
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
 
       &.is-reward {
         color: var(--green-light);
-        font-weight: 700;
+        font-weight: $font-weight-bold;
       }
     }
   }

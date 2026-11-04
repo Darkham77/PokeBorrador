@@ -29,10 +29,35 @@ export interface MountainPlateauTrailsContext {
 
 function stampPath(
   path: readonly { readonly x: number; readonly y: number }[],
-  pathGrid: boolean[][]
+  continentMap: ContinentMapResult,
+  pathGrid: boolean[][],
+  W: number,
+  H: number
 ): void {
-  for (const pt of path) {
+  for (let i = 0; i < path.length; i++) {
+    const pt = path[i]!;
+    if (pt.y < 0 || pt.y >= H || pt.x < 0 || pt.x >= W) continue;
+    if (continentMap.cells[pt.y]?.[pt.x]?.terrain === 'water') continue;
+
     pathGrid[pt.y]![pt.x] = true;
+    const prev = path[i - 1] ?? pt;
+    const next = path[i + 1] ?? pt;
+    const dx = next.x - prev.x;
+    const dy = next.y - prev.y;
+    const isHorizontal = Math.abs(dx) >= Math.abs(dy);
+    if (isHorizontal) {
+      if (pt.y + 1 < H && continentMap.cells[pt.y + 1]?.[pt.x]?.terrain !== 'water') {
+        pathGrid[pt.y + 1]![pt.x] = true;
+      } else if (pt.y - 1 >= 0 && continentMap.cells[pt.y - 1]?.[pt.x]?.terrain !== 'water') {
+        pathGrid[pt.y - 1]![pt.x] = true;
+      }
+    } else {
+      if (pt.x + 1 < W && continentMap.cells[pt.y]?.[pt.x + 1]?.terrain !== 'water') {
+        pathGrid[pt.y]![pt.x + 1] = true;
+      } else if (pt.x - 1 >= 0 && continentMap.cells[pt.y]?.[pt.x - 1]?.terrain !== 'water') {
+        pathGrid[pt.y]![pt.x - 1] = true;
+      }
+    }
   }
 }
 
@@ -112,17 +137,38 @@ function findNearestElevationZeroPathPoint(
   return nearest;
 }
 
+function findNearestElevationZeroPoi(
+  lowerX: number,
+  lowerY: number,
+  nodes: readonly POINode[],
+  heightmap: readonly (readonly number[])[]
+): { x: number; y: number } | null {
+  let best: { x: number; y: number } | null = null;
+  let minPoiDist = Infinity;
+  for (const poi of nodes) {
+    if ((heightmap[poi.gridY]?.[poi.gridX] ?? 0) !== 0) continue;
+    const d = Math.hypot(poi.gridX - lowerX, poi.gridY - lowerY);
+    if (d < minPoiDist) {
+      minPoiDist = d;
+      best = { x: poi.gridX, y: poi.gridY };
+    }
+  }
+  return best;
+}
+
 function connectStairPair(
   s1: MountainStairLocation,
   s2: MountainStairLocation,
   continentMap: ContinentMapResult,
-  pathGrid: boolean[][]
+  pathGrid: boolean[][],
+  W: number,
+  H: number
 ): void {
   const d = Math.hypot(s1.x - s2.x, s1.y - s2.y);
   if (d > MAX_PLATEAU_STAIR_PAIR_DISTANCE) return;
   const trail = findPathAStar(continentMap, s1.x, s1.y - 1, s2.x, s2.y - 1, pathGrid, false, []);
   if (trail && trail.path.length > 0) {
-    stampPath(trail.path, pathGrid);
+    stampPath(trail.path, continentMap, pathGrid, W, H);
   }
 }
 
@@ -146,32 +192,72 @@ export function connectMountainPlateauTrails(ctx: MountainPlateauTrailsContext):
       }
     }
 
-    // Connect lower landing (stair.y + 2) to the nearest regional trunk route on elevation 0
+    // Connect lower landing (stair.y + 2) to the route network
     const lowerX = stair.x;
     const lowerY = Math.min(H - 1, stair.y + 2);
-    const nearestPathPoint = findNearestElevationZeroPathPoint(
-      lowerX,
-      lowerY,
-      W,
-      H,
-      pathGrid,
-      continentMap.heightmap,
-      MAX_STAIR_LINK_DISTANCE
-    );
+    const stairElev = continentMap.heightmap[lowerY]?.[lowerX] ?? 0;
+    let targetX: number | undefined;
+    let targetY: number | undefined;
 
-    if (nearestPathPoint) {
+    if (stairElev > 0) {
+      // Find nearest stair whose upper landing is on this same plateau elevation
+      let bestLowerStair: MountainStairLocation | null = null;
+      let minStairDist = Infinity;
+      for (const other of stairs) {
+        if (other === stair) continue;
+        const otherUpperElev = continentMap.heightmap[Math.max(0, other.y - 1)]?.[other.x] ?? 0;
+        if (otherUpperElev !== stairElev) continue;
+        const d = Math.hypot(other.x - lowerX, other.y - 1 - lowerY);
+        if (d < minStairDist) {
+          minStairDist = d;
+          bestLowerStair = other;
+        }
+      }
+      if (bestLowerStair) {
+        targetX = bestLowerStair.x;
+        targetY = Math.max(0, bestLowerStair.y - 1);
+      }
+    } else {
+      const searchRadius = Math.max(MAX_STAIR_LINK_DISTANCE, Math.max(W, H));
+      const nearestPathPoint = findNearestElevationZeroPathPoint(
+        lowerX,
+        lowerY,
+        W,
+        H,
+        pathGrid,
+        continentMap.heightmap,
+        searchRadius
+      );
+      targetX = nearestPathPoint?.x;
+      targetY = nearestPathPoint?.y;
+
+      if (targetX === undefined || targetY === undefined) {
+        const fallbackPoi = findNearestElevationZeroPoi(
+          lowerX,
+          lowerY,
+          nodes,
+          continentMap.heightmap
+        );
+        targetX = fallbackPoi?.x;
+        targetY = fallbackPoi?.y;
+      }
+    }
+
+    if (targetX !== undefined && targetY !== undefined) {
       const link = findPathAStar(
         continentMap,
         lowerX,
         lowerY,
-        nearestPathPoint.x,
-        nearestPathPoint.y,
+        targetX,
+        targetY,
         pathGrid,
-        false,
-        []
+        true,
+        [],
+        undefined,
+        false
       );
       if (link && link.path.length > 0) {
-        stampPath(link.path, pathGrid);
+        stampPath(link.path, continentMap, pathGrid, W, H);
       }
     }
   }
@@ -179,7 +265,7 @@ export function connectMountainPlateauTrails(ctx: MountainPlateauTrailsContext):
   // Connect pairs of stairs across the mountain plateau
   for (let i = 0; i < stairs.length; i++) {
     for (let j = i + 1; j < stairs.length; j++) {
-      connectStairPair(stairs[i]!, stairs[j]!, continentMap, pathGrid);
+      connectStairPair(stairs[i]!, stairs[j]!, continentMap, pathGrid, W, H);
     }
   }
 
@@ -204,7 +290,7 @@ export function connectMountainPlateauTrails(ctx: MountainPlateauTrailsContext):
         []
       );
       if (caveTrail && caveTrail.path.length > 0) {
-        stampPath(caveTrail.path, pathGrid);
+        stampPath(caveTrail.path, continentMap, pathGrid, W, H);
       }
       continue;
     }
@@ -222,7 +308,7 @@ export function connectMountainPlateauTrails(ctx: MountainPlateauTrailsContext):
       []
     );
     if (caveTrail && caveTrail.path.length > 0) {
-      stampPath(caveTrail.path, pathGrid);
+      stampPath(caveTrail.path, continentMap, pathGrid, W, H);
     }
   }
 }

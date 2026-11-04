@@ -29,7 +29,7 @@ import {
   SUBTRACTIVE_WILDERNESS_PATH_THRESHOLD
 } from '../../config/wildernessConfig.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
-import { SimplexNoise } from './noise/simplexNoise.ts';
+import { type SimplexNoise } from './noise/simplexNoise.ts';
 import type { TreePlacement } from './wildernessVegetationEngine.ts';
 
 const ROUTE_FRAME_RADIUS = 3 as const;

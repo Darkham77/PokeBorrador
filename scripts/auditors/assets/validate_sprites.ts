@@ -1,14 +1,14 @@
-import type { DisplayText } from '@francogp/auditor';
+import fs from 'node:fs/promises';
 /**
  * scripts/auditors/assets/validate_sprites.ts
  *
  * SPRITE INTEGRITY VALIDATOR (Node.js 26+ Native)
  * Scans all 9 generations of Pokémon species to verify their sprite assets exist.
  */
-
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import { enableCompileCache } from 'node:module';
+import path from 'node:path';
+
+import type { DisplayText } from '@francogp/auditor';
 import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
 import { Dex } from '@pkmn/sim';
 
@@ -140,17 +140,17 @@ export class SpriteAuditor extends BaseAuditor<SpriteRuleId> {
     return true;
   }
 
-  constructor() {
+  public constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(SPRITE_RULES, {
         speed: 'light',
         phase: 'normal',
-        fix: 'none',
         md: false,
         ast: false,
         changedOnly: false,
         critical: false
       }),
+      ruleFixers: {},
       id: 'validate_sprites',
       configKey: 'assets.sprites',
       defaultConfig: {

@@ -219,7 +219,7 @@ describe('Battle Helpers & Actions Domain Suite', () => {
           (_seatId, _req, explicit) => explicit || 'pass'
         );
 
-        expect(seats.length).toBe(2);
+        expect(seats).toHaveLength(2);
         expect(seats[0]!.id).toBe('p1');
         expect(seats[1]!.id).toBe('p2');
       });
@@ -242,7 +242,7 @@ describe('Battle Helpers & Actions Domain Suite', () => {
         const appliedCheats: { turn: number; side: 'p1'; type: 'heal' }[] = [];
         applyPostTurnHealing(mockBattle, false, {} as any, { ipbActive: true }, appliedCheats);
 
-        expect(appliedCheats.length).toBe(1);
+        expect(appliedCheats).toHaveLength(1);
         expect(appliedCheats[0]!.type).toBe('heal');
       });
 
@@ -262,7 +262,7 @@ describe('Battle Helpers & Actions Domain Suite', () => {
         const appliedCheats: any[] = [];
         applyPostTurnHealing(mockBattle, false, {} as any, { ipbActive: false }, appliedCheats);
 
-        expect(appliedCheats.length).toBe(0);
+        expect(appliedCheats).toHaveLength(0);
       });
     });
   });

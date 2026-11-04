@@ -1,6 +1,6 @@
-import { BattleStateSnapshot, PokemonState, WinCondition, DamageMatchup } from '../types';
 import { DamageCalculator } from '../calculator/damage';
 import { InferenceEngine } from '../inference/engine';
+import { BattleStateSnapshot, PokemonState, WinCondition, DamageMatchup } from '../types';
 
 function toId(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]/g, '');

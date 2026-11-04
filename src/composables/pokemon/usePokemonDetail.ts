@@ -1,6 +1,5 @@
 import type { DisplayText } from '@francogp/auditor';
-import { computed, toValue, type ComputedRef } from 'vue';
-import type { MaybeRefOrGetter } from 'vue';
+import { computed, toValue, type ComputedRef, type MaybeRefOrGetter } from 'vue';
 
 import { isMoveCategory, type MoveCategory, type PokemonMoveId } from '@/data/battle/moves';
 import { toPokemonType } from '@/data/battle/types';

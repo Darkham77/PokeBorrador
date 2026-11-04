@@ -3,7 +3,7 @@ import { setActivePinia, createPinia } from 'pinia';
 /**
  * tests/unit/world/world_gyms_and_guardians_suite.spec.ts
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vite-plus/test';
 
 import { PDEX_ORDER } from '@/data/pokemon/pokedex';
 import { GYMS } from '@/data/world/gyms';
@@ -30,11 +30,7 @@ describe('World Domain: Gyms & Guardians Suite', () => {
 
     it('should give TM on first victory (Easy)', () => {
       const state = { defeatedGyms: [], gymProgress: {} };
-      const result = processGymVictory(
-        mockGym,
-        'easy',
-        state as unknown as Parameters<typeof processGymVictory>[2]
-      );
+      const result = processGymVictory(mockGym, 'easy', state);
 
       expect(result.tmDropped).toBe(true);
       expect(result.isFirstTime).toBe(true);
@@ -160,16 +156,18 @@ describe('World Domain: Gyms & Guardians Suite', () => {
   });
 
   describe('Guardian Lockout System Integrity', () => {
-    let guardianSpy: ReturnType<typeof vi.spyOn> | null = null;
+    let guardianSpy: MockInstance | null = null;
 
     beforeEach(() => {
       setActivePinia(createPinia());
-      guardianSpy = vi.spyOn(guardianEngine, 'getGuardianData').mockImplementation((mapId: any) => {
-        if (mapId === 'route1') {
-          return { id: 'zapdos', lv: 50, pts: 150, tier: 'elite', isGuardian: true };
-        }
-        return null;
-      });
+      guardianSpy = vi
+        .spyOn(guardianEngine, 'getGuardianData')
+        .mockImplementation((mapId: string) => {
+          if (mapId === 'route1') {
+            return { id: 'zapdos', lv: 50, pts: 150, tier: 'elite', isGuardian: true };
+          }
+          return null;
+        });
     });
 
     afterEach(() => {

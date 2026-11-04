@@ -1,5 +1,6 @@
 import type { DisplayText } from '@francogp/auditor';
 
+import { logger } from '@/logic/utils/logger';
 import type { BattleState, ShowdownPlayerRequest } from '@/types/battle/battle';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
@@ -64,7 +65,7 @@ function syncActiveCombatant(
   if (!activeMon || !teamState) return;
   const activeState = findMatchingPokemon(activeMon.uid, teamState);
   if (activeState) {
-    console.debug(
+    logger.debug(
       `[E2E-SYNC-DEBUG] Syncing active combatant (${activeMon.name}) HP: ${activeMon.hp} -> ${activeState.hp}`
     );
     activeMon.hp = activeState.fainted || activeState.hp <= 0 ? 0 : activeState.hp;

@@ -1,4 +1,3 @@
-import { Utils } from './utils';
 import {
   Ability,
   AnyObject,
@@ -22,6 +21,8 @@ import {
   Teams,
   toID
 } from '@pkmn/sim';
+
+import { Utils } from './utils';
 
 /* eslint-disable */
 const randomSetsJSON = {
@@ -312,7 +313,7 @@ const randomSetsJSON = {
     level: 84,
     sets: [
       {
-        role: 'Fast Support',
+        role: 'Fast Attacker',
         movepool: ['Earthquake', 'Stone Edge', 'Sucker Punch', 'Swords Dance'],
         abilities: ['Arena Trap'],
         teraTypes: ['Dark', 'Fairy', 'Flying', 'Ghost', 'Ground']
@@ -752,7 +753,7 @@ const randomSetsJSON = {
     ]
   },
   electrode: {
-    level: 92,
+    level: 93,
     sets: [
       {
         role: 'Fast Support',
@@ -1124,6 +1125,12 @@ const randomSetsJSON = {
         teraTypes: ['Electric', 'Fairy']
       },
       {
+        role: 'Fast Support',
+        movepool: ['Alluring Voice', 'Calm Mind', 'Thunderbolt', 'Volt Switch'],
+        abilities: ['Volt Absorb'],
+        teraTypes: ['Electric', 'Fairy', 'Flying']
+      },
+      {
         role: 'Tera Blast user',
         movepool: ['Calm Mind', 'Substitute', 'Tera Blast', 'Thunderbolt'],
         abilities: ['Volt Absorb'],
@@ -1175,7 +1182,7 @@ const randomSetsJSON = {
     sets: [
       {
         role: 'Fast Bulky Setup',
-        movepool: ['Calm Mind', 'Freezing Glare', 'Hurricane', 'Recover'],
+        movepool: ['Calm Mind', 'Hurricane', 'Psyshock', 'Recover'],
         abilities: ['Competitive'],
         teraTypes: ['Steel']
       }
@@ -2004,6 +2011,23 @@ const randomSetsJSON = {
       }
     ]
   },
+  stantler: {
+    level: 90,
+    sets: [
+      {
+        role: 'Bulky Attacker',
+        movepool: ['Body Slam', 'Earthquake', 'Throat Chop', 'Thunder Wave'],
+        abilities: ['Intimidate'],
+        teraTypes: ['Fairy', 'Ghost', 'Ground', 'Poison']
+      },
+      {
+        role: 'Tera Blast user',
+        movepool: ['Calm Mind', 'Earth Power', 'Shadow Ball', 'Tera Blast'],
+        abilities: ['Intimidate'],
+        teraTypes: ['Fairy']
+      }
+    ]
+  },
   smeargle: {
     level: 95,
     sets: [
@@ -2061,7 +2085,7 @@ const randomSetsJSON = {
     ]
   },
   raikou: {
-    level: 81,
+    level: 82,
     sets: [
       {
         role: 'Bulky Setup',
@@ -2074,6 +2098,12 @@ const randomSetsJSON = {
         movepool: ['Calm Mind', 'Scald', 'Shadow Ball', 'Thunderbolt', 'Volt Switch'],
         abilities: ['Pressure'],
         teraTypes: ['Electric', 'Water']
+      },
+      {
+        role: 'Fast Support',
+        movepool: ['Calm Mind', 'Scald', 'Thunderbolt', 'Volt Switch'],
+        abilities: ['Pressure'],
+        teraTypes: ['Electric', 'Flying', 'Water']
       }
     ]
   },
@@ -2432,7 +2462,7 @@ const randomSetsJSON = {
     ]
   },
   sableye: {
-    level: 88,
+    level: 87,
     sets: [
       {
         role: 'Bulky Support',
@@ -3142,16 +3172,7 @@ const randomSetsJSON = {
     sets: [
       {
         role: 'Bulky Support',
-        movepool: [
-          'Flip Turn',
-          'Ice Beam',
-          'Knock Off',
-          'Roar',
-          'Roost',
-          'Stealth Rock',
-          'Surf',
-          'Yawn'
-        ],
+        movepool: ['Flip Turn', 'Ice Beam', 'Knock Off', 'Roost', 'Stealth Rock', 'Surf', 'Yawn'],
         abilities: ['Competitive'],
         teraTypes: ['Flying', 'Grass']
       }
@@ -3562,14 +3583,14 @@ const randomSetsJSON = {
       },
       {
         role: 'Setup Sweeper',
-        movepool: ['Acrobatics', 'Close Combat', 'Dire Claw', 'Gunk Shot', 'Swords Dance'],
+        movepool: ['Acrobatics', 'Close Combat', 'Dire Claw', 'Swords Dance'],
         abilities: ['Unburden'],
         teraTypes: ['Flying']
       }
     ]
   },
   magnezone: {
-    level: 85,
+    level: 84,
     sets: [
       {
         role: 'Fast Attacker',
@@ -3629,7 +3650,7 @@ const randomSetsJSON = {
           'Volt Switch'
         ],
         abilities: ['Motor Drive'],
-        teraTypes: ['Dark', 'Flying', 'Ground', 'Ice']
+        teraTypes: ['Dark', 'Flying', 'Ground']
       },
       {
         role: 'Setup Sweeper',
@@ -3973,6 +3994,19 @@ const randomSetsJSON = {
         ],
         abilities: ['Levitate'],
         teraTypes: ['Dark', 'Electric', 'Steel']
+      },
+      {
+        role: 'Bulky Setup',
+        movepool: [
+          'Draining Kiss',
+          'Encore',
+          'Nasty Plot',
+          'Psychic Noise',
+          'Psyshock',
+          'Substitute'
+        ],
+        abilities: ['Levitate'],
+        teraTypes: ['Fairy']
       }
     ]
   },
@@ -4462,7 +4496,7 @@ const randomSetsJSON = {
         role: 'Bulky Setup',
         movepool: ['Calm Mind', 'Fire Blast', 'Ice Beam', 'Judgment', 'Recover'],
         abilities: ['Multitype'],
-        teraTypes: ['Dragon', 'Ground']
+        teraTypes: ['Dragon', 'Fire', 'Steel']
       },
       {
         role: 'Setup Sweeper',
@@ -4515,7 +4549,7 @@ const randomSetsJSON = {
     ]
   },
   arceuspsychic: {
-    level: 69,
+    level: 70,
     sets: [
       {
         role: 'Bulky Setup',
@@ -5067,7 +5101,7 @@ const randomSetsJSON = {
     ]
   },
   haxorus: {
-    level: 77,
+    level: 78,
     sets: [
       {
         role: 'Setup Sweeper',
@@ -5510,9 +5544,9 @@ const randomSetsJSON = {
     sets: [
       {
         role: 'Fast Attacker',
-        movepool: ['Draco Meteor', 'Earth Power', 'Freeze-Dry', 'Fusion Flare'],
+        movepool: ['Draco Meteor', 'Earth Power', 'Freeze-Dry', 'Ice Beam'],
         abilities: ['Turboblaze'],
-        teraTypes: ['Dragon', 'Fire']
+        teraTypes: ['Dragon', 'Ice']
       },
       {
         role: 'Bulky Attacker',
@@ -5958,7 +5992,7 @@ const randomSetsJSON = {
     ]
   },
   avalugghisui: {
-    level: 90,
+    level: 91,
     sets: [
       {
         role: 'Bulky Attacker',
@@ -6500,7 +6534,7 @@ const randomSetsJSON = {
     ]
   },
   komala: {
-    level: 88,
+    level: 87,
     sets: [
       {
         role: 'Bulky Support',
@@ -6547,7 +6581,7 @@ const randomSetsJSON = {
     ]
   },
   kommoo: {
-    level: 78,
+    level: 77,
     sets: [
       {
         role: 'Fast Bulky Setup',
@@ -7244,7 +7278,7 @@ const randomSetsJSON = {
           'Substitute'
         ],
         abilities: ['Dauntless Shield'],
-        teraTypes: ['Fighting', 'Steel']
+        teraTypes: ['Steel']
       }
     ]
   },
@@ -7616,7 +7650,7 @@ const randomSetsJSON = {
     ]
   },
   oinkolognef: {
-    level: 92,
+    level: 91,
     sets: [
       {
         role: 'Bulky Setup',
@@ -8067,7 +8101,7 @@ const randomSetsJSON = {
     ]
   },
   cyclizar: {
-    level: 83,
+    level: 84,
     sets: [
       {
         role: 'Fast Support',
@@ -8229,7 +8263,7 @@ const randomSetsJSON = {
     ]
   },
   farigiraf: {
-    level: 90,
+    level: 89,
     sets: [
       {
         role: 'Bulky Support',
@@ -8269,7 +8303,7 @@ const randomSetsJSON = {
         role: 'Bulky Attacker',
         movepool: ['Iron Head', 'Kowtow Cleave', 'Sucker Punch', 'Swords Dance'],
         abilities: ['Supreme Overlord'],
-        teraTypes: ['Dark', 'Flying']
+        teraTypes: ['Dark', 'Flying', 'Ghost']
       }
     ]
   },
@@ -8425,7 +8459,7 @@ const randomSetsJSON = {
         role: 'Setup Sweeper',
         movepool: ['Dragon Dance', 'Earthquake', 'Iron Head', 'Knock Off', 'Outrage', 'Roost'],
         abilities: ['Protosynthesis'],
-        teraTypes: ['Dark', 'Dragon', 'Ground', 'Poison', 'Steel']
+        teraTypes: ['Dark', 'Dragon', 'Fairy', 'Ground', 'Poison', 'Steel']
       },
       {
         role: 'Fast Bulky Setup',
@@ -8539,22 +8573,8 @@ const randomSetsJSON = {
     ]
   },
   ironthorns: {
-    level: 83,
+    level: 82,
     sets: [
-      {
-        role: 'Fast Support',
-        movepool: [
-          'Earthquake',
-          'Ice Punch',
-          'Spikes',
-          'Stealth Rock',
-          'Stone Edge',
-          'Volt Switch',
-          'Wild Charge'
-        ],
-        abilities: ['Quark Drive'],
-        teraTypes: ['Flying', 'Grass', 'Water']
-      },
       {
         role: 'Fast Bulky Setup',
         movepool: ['Dragon Dance', 'Earthquake', 'Ice Punch', 'Stone Edge', 'Wild Charge'],
@@ -8801,7 +8821,7 @@ const randomSetsJSON = {
       },
       {
         role: 'AV Pivot',
-        movepool: ['Fake Out', 'Psychic Noise', 'Sludge Wave', 'U-turn'],
+        movepool: ['Fake Out', 'Focus Blast', 'Psychic Noise', 'Sludge Wave', 'U-turn'],
         abilities: ['Toxic Chain'],
         teraTypes: ['Dark']
       }
@@ -8910,7 +8930,7 @@ const randomSetsJSON = {
     ]
   },
   archaludon: {
-    level: 78,
+    level: 77,
     sets: [
       {
         role: 'Bulky Setup',
@@ -9285,7 +9305,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   wigglytuff: {
-    level: 91,
+    level: 90,
     sets: [
       {
         role: 'Doubles Support',
@@ -9337,7 +9357,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   dugtrio: {
-    level: 91,
+    level: 90,
     sets: [
       {
         role: 'Offensive Protect',
@@ -9384,7 +9404,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   persianalola: {
-    level: 88,
+    level: 87,
     sets: [
       {
         role: 'Doubles Support',
@@ -9491,7 +9511,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   tentacruel: {
-    level: 85,
+    level: 84,
     sets: [
       {
         role: 'Doubles Support',
@@ -9510,7 +9530,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   golem: {
-    level: 87,
+    level: 86,
     sets: [
       {
         role: 'Doubles Wallbreaker',
@@ -9527,7 +9547,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   golemalola: {
-    level: 88,
+    level: 89,
     sets: [
       {
         role: 'Bulky Protect',
@@ -9752,10 +9772,16 @@ const randomDoublesSetsJSON = {
     level: 86,
     sets: [
       {
-        role: 'Offensive Protect',
-        movepool: ['Close Combat', 'Fake Out', 'Knock Off', 'Poison Jab', 'Protect'],
+        role: 'Doubles Fast Attacker',
+        movepool: ['Close Combat', 'Fake Out', 'Knock Off', 'Poison Jab'],
         abilities: ['Unburden'],
         teraTypes: ['Dark', 'Poison']
+      },
+      {
+        role: 'Offensive Protect',
+        movepool: ['Close Combat', 'Fake Out', 'Knock Off', 'Protect'],
+        abilities: ['Unburden'],
+        teraTypes: ['Dark']
       }
     ]
   },
@@ -9764,7 +9790,7 @@ const randomDoublesSetsJSON = {
     sets: [
       {
         role: 'Doubles Bulky Attacker',
-        movepool: ['Close Combat', 'Coaching', 'Fake Out', 'Knock Off', 'Poison Jab'],
+        movepool: ['Close Combat', 'Fake Out', 'Knock Off', 'Poison Jab'],
         abilities: ['Inner Focus'],
         teraTypes: ['Dark', 'Poison']
       }
@@ -9938,7 +9964,7 @@ const randomDoublesSetsJSON = {
     sets: [
       {
         role: 'Doubles Setup Sweeper',
-        movepool: ['Dragon Dance', 'Earthquake', 'Protect', 'Temper Flare', 'Waterfall'],
+        movepool: ['Dragon Dance', 'Earthquake', 'Protect', 'Waterfall'],
         abilities: ['Intimidate'],
         teraTypes: ['Ground']
       },
@@ -9974,26 +10000,7 @@ const randomDoublesSetsJSON = {
         role: 'Doubles Bulky Attacker',
         movepool: ['Transform'],
         abilities: ['Imposter'],
-        teraTypes: [
-          'Bug',
-          'Dark',
-          'Dragon',
-          'Electric',
-          'Fairy',
-          'Fighting',
-          'Fire',
-          'Flying',
-          'Ghost',
-          'Grass',
-          'Ground',
-          'Ice',
-          'Normal',
-          'Poison',
-          'Psychic',
-          'Rock',
-          'Steel',
-          'Water'
-        ]
+        teraTypes: ['Ghost', 'Steel']
       }
     ]
   },
@@ -10002,13 +10009,19 @@ const randomDoublesSetsJSON = {
     sets: [
       {
         role: 'Doubles Support',
-        movepool: ['Helping Hand', 'Icy Wind', 'Muddy Water', 'Protect', 'Scald', 'Yawn'],
+        movepool: ['Icy Wind', 'Muddy Water', 'Protect', 'Scald', 'Yawn'],
         abilities: ['Water Absorb'],
         teraTypes: ['Dragon', 'Fire', 'Ground']
       },
       {
         role: 'Bulky Protect',
-        movepool: ['Icy Wind', 'Muddy Water', 'Protect', 'Scald', 'Wish', 'Yawn'],
+        movepool: ['Icy Wind', 'Muddy Water', 'Protect', 'Scald', 'Wish'],
+        abilities: ['Water Absorb'],
+        teraTypes: ['Dragon', 'Fire', 'Ground']
+      },
+      {
+        role: 'Doubles Support',
+        movepool: ['Helping Hand', 'Icy Wind', 'Muddy Water', 'Protect', 'Scald'],
         abilities: ['Water Absorb'],
         teraTypes: ['Dragon', 'Fire', 'Ground']
       }
@@ -10147,7 +10160,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   moltres: {
-    level: 79,
+    level: 78,
     sets: [
       {
         role: 'Doubles Support',
@@ -10205,7 +10218,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   mewtwo: {
-    level: 73,
+    level: 74,
     sets: [
       {
         role: 'Doubles Fast Attacker',
@@ -10226,19 +10239,19 @@ const randomDoublesSetsJSON = {
     sets: [
       {
         role: 'Doubles Support',
-        movepool: ['Coaching', 'Encore', 'Pollen Puff', 'Tailwind', 'Thunder Wave', 'Will-O-Wisp'],
+        movepool: ['Encore', 'Pollen Puff', 'Psychic', 'Tailwind', 'Thunder Wave', 'Will-O-Wisp'],
         abilities: ['Synchronize'],
         teraTypes: ['Fairy', 'Steel']
       },
       {
         role: 'Doubles Setup Sweeper',
-        movepool: ['Baton Pass', 'Fire Blast', 'Nasty Plot', 'Pollen Puff', 'Psychic'],
+        movepool: ['Fire Blast', 'Nasty Plot', 'Pollen Puff', 'Protect', 'Psychic'],
         abilities: ['Synchronize'],
         teraTypes: ['Fairy', 'Steel']
       },
       {
-        role: 'Doubles Bulky Attacker',
-        movepool: ['Coaching', 'Imprison', 'Pollen Puff', 'Transform'],
+        role: 'Doubles Support',
+        movepool: ['Coaching', 'Imprison', 'Pollen Puff', 'Psychic', 'Transform'],
         abilities: ['Synchronize'],
         teraTypes: ['Fairy', 'Steel']
       }
@@ -10295,7 +10308,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   furret: {
-    level: 98,
+    level: 99,
     sets: [
       {
         role: 'Doubles Setup Sweeper',
@@ -10754,13 +10767,7 @@ const randomDoublesSetsJSON = {
     sets: [
       {
         role: 'Doubles Setup Sweeper',
-        movepool: ['Baton Pass', 'No Retreat', 'Population Bomb', 'Spiky Shield'],
-        abilities: ['Technician'],
-        teraTypes: ['Ghost']
-      },
-      {
-        role: 'Doubles Support',
-        movepool: ['Decorate', 'Fake Out', 'Follow Me', 'Tailwind'],
+        movepool: ['Baneful Bunker', 'Baton Pass', 'No Retreat', 'Population Bomb', 'Spiky Shield'],
         abilities: ['Technician'],
         teraTypes: ['Ghost']
       }
@@ -10977,7 +10984,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   shiftry: {
-    level: 83,
+    level: 82,
     sets: [
       {
         role: 'Doubles Fast Attacker',
@@ -10998,7 +11005,7 @@ const randomDoublesSetsJSON = {
     sets: [
       {
         role: 'Doubles Bulky Attacker',
-        movepool: ['Hurricane', 'Hydro Pump', 'Muddy Water', 'Protect', 'Tailwind', 'Wide Guard'],
+        movepool: ['Hurricane', 'Muddy Water', 'Protect', 'Tailwind', 'Weather Ball', 'Wide Guard'],
         abilities: ['Drizzle'],
         teraTypes: ['Ground', 'Steel']
       }
@@ -11198,7 +11205,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   swalot: {
-    level: 90,
+    level: 91,
     sets: [
       {
         role: 'Doubles Bulky Attacker',
@@ -11266,7 +11273,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   cacturne: {
-    level: 91,
+    level: 92,
     sets: [
       {
         role: 'Offensive Protect',
@@ -11280,13 +11287,12 @@ const randomDoublesSetsJSON = {
     level: 90,
     sets: [
       {
-        role: 'Doubles Bulky Attacker',
+        role: 'Doubles Support',
         movepool: [
           'Brave Bird',
           'Draco Meteor',
           'Fire Blast',
           'Helping Hand',
-          'Roost',
           'Tailwind',
           'Will-O-Wisp'
         ],
@@ -11620,7 +11626,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   deoxysattack: {
-    level: 79,
+    level: 80,
     sets: [
       {
         role: 'Offensive Protect',
@@ -11767,7 +11773,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   bastiodon: {
-    level: 89,
+    level: 90,
     sets: [
       {
         role: 'Doubles Bulky Setup',
@@ -11821,7 +11827,7 @@ const randomDoublesSetsJSON = {
     sets: [
       {
         role: 'Doubles Support',
-        movepool: ['Earth Power', 'Helping Hand', 'Icy Wind', 'Muddy Water', 'Recover', 'Yawn'],
+        movepool: ['Earth Power', 'Helping Hand', 'Icy Wind', 'Muddy Water', 'Recover'],
         abilities: ['Storm Drain'],
         teraTypes: ['Fire']
       },
@@ -12104,7 +12110,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   magmortar: {
-    level: 84,
+    level: 83,
     sets: [
       {
         role: 'Choice Item user',
@@ -12134,7 +12140,7 @@ const randomDoublesSetsJSON = {
     sets: [
       {
         role: 'Doubles Wallbreaker',
-        movepool: ['Air Slash', 'Bug Buzz', 'Giga Drain', 'U-turn'],
+        movepool: ['Air Slash', 'Bug Buzz', 'Struggle Bug', 'U-turn'],
         abilities: ['Tinted Lens'],
         teraTypes: ['Bug']
       },
@@ -12153,7 +12159,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   leafeon: {
-    level: 90,
+    level: 91,
     sets: [
       {
         role: 'Doubles Setup Sweeper',
@@ -12188,7 +12194,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   gliscor: {
-    level: 81,
+    level: 82,
     sets: [
       {
         role: 'Bulky Protect',
@@ -12635,7 +12641,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   darkrai: {
-    level: 80,
+    level: 81,
     sets: [
       {
         role: 'Offensive Protect',
@@ -12858,7 +12864,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   arceuspsychic: {
-    level: 72,
+    level: 73,
     sets: [
       {
         role: 'Doubles Support',
@@ -12968,7 +12974,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   samurotthisui: {
-    level: 83,
+    level: 82,
     sets: [
       {
         role: 'Offensive Protect',
@@ -13009,7 +13015,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   excadrill: {
-    level: 82,
+    level: 83,
     sets: [
       {
         role: 'Doubles Bulky Attacker',
@@ -13060,10 +13066,10 @@ const randomDoublesSetsJSON = {
     ]
   },
   whimsicott: {
-    level: 80,
+    level: 81,
     sets: [
       {
-        role: 'Doubles Bulky Attacker',
+        role: 'Doubles Support',
         movepool: ['Encore', 'Moonblast', 'Tailwind', 'Taunt'],
         abilities: ['Prankster'],
         teraTypes: ['Fire', 'Ghost', 'Steel']
@@ -13171,7 +13177,13 @@ const randomDoublesSetsJSON = {
     sets: [
       {
         role: 'Doubles Support',
-        movepool: ['Close Combat', 'Coaching', 'Fake Out', 'Knock Off', 'Poison Jab', 'Snarl'],
+        movepool: ['Close Combat', 'Fake Out', 'Knock Off', 'Poison Jab', 'Snarl'],
+        abilities: ['Intimidate'],
+        teraTypes: ['Poison']
+      },
+      {
+        role: 'Bulky Protect',
+        movepool: ['Bulk Up', 'Drain Punch', 'Knock Off', 'Protect'],
         abilities: ['Intimidate'],
         teraTypes: ['Poison']
       }
@@ -13182,13 +13194,13 @@ const randomDoublesSetsJSON = {
     sets: [
       {
         role: 'Doubles Wallbreaker',
-        movepool: ['Dark Pulse', 'Flamethrower', 'Focus Blast', 'Protect', 'Sludge Bomb'],
+        movepool: ['Dark Pulse', 'Focus Blast', 'Protect', 'Sludge Bomb', 'Snarl'],
         abilities: ['Illusion'],
         teraTypes: ['Poison']
       },
       {
         role: 'Offensive Protect',
-        movepool: ['Flamethrower', 'Focus Blast', 'Knock Off', 'Protect', 'Sludge Bomb'],
+        movepool: ['Dark Pulse', 'Nasty Plot', 'Protect', 'Sludge Bomb'],
         abilities: ['Illusion'],
         teraTypes: ['Poison']
       }
@@ -13333,7 +13345,7 @@ const randomDoublesSetsJSON = {
           'U-turn'
         ],
         abilities: ['Levitate'],
-        teraTypes: ['Electric', 'Poison']
+        teraTypes: ['Poison', 'Steel']
       }
     ]
   },
@@ -13572,7 +13584,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   tornadustherian: {
-    level: 78,
+    level: 77,
     sets: [
       {
         role: 'Doubles Setup Sweeper',
@@ -13864,7 +13876,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   florges: {
-    level: 84,
+    level: 83,
     sets: [
       {
         role: 'Bulky Protect',
@@ -13886,7 +13898,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   meowstic: {
-    level: 88,
+    level: 87,
     sets: [
       {
         role: 'Doubles Bulky Attacker',
@@ -13971,7 +13983,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   hawlucha: {
-    level: 84,
+    level: 83,
     sets: [
       {
         role: 'Doubles Setup Sweeper',
@@ -14048,7 +14060,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   klefki: {
-    level: 81,
+    level: 78,
     sets: [
       {
         role: 'Doubles Support',
@@ -14092,7 +14104,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   noivern: {
-    level: 84,
+    level: 85,
     sets: [
       {
         role: 'Doubles Fast Attacker',
@@ -14465,7 +14477,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   salazzle: {
-    level: 86,
+    level: 84,
     sets: [
       {
         role: 'Doubles Fast Attacker',
@@ -14756,7 +14768,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   cinderace: {
-    level: 82,
+    level: 81,
     sets: [
       {
         role: 'Offensive Protect',
@@ -15596,7 +15608,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   oinkolognef: {
-    level: 92,
+    level: 93,
     sets: [
       {
         role: 'Doubles Support',
@@ -15704,39 +15716,6 @@ const randomDoublesSetsJSON = {
     ]
   },
   squawkabilly: {
-    level: 91,
-    sets: [
-      {
-        role: 'Offensive Protect',
-        movepool: ['Brave Bird', 'Double-Edge', 'Parting Shot', 'Protect', 'Quick Attack'],
-        abilities: ['Intimidate'],
-        teraTypes: ['Flying', 'Normal', 'Steel']
-      }
-    ]
-  },
-  squawkabillywhite: {
-    level: 91,
-    sets: [
-      {
-        role: 'Offensive Protect',
-        movepool: ['Brave Bird', 'Double-Edge', 'Parting Shot', 'Protect', 'Quick Attack'],
-        abilities: ['Intimidate'],
-        teraTypes: ['Flying', 'Normal', 'Steel']
-      }
-    ]
-  },
-  squawkabillyblue: {
-    level: 91,
-    sets: [
-      {
-        role: 'Offensive Protect',
-        movepool: ['Brave Bird', 'Double-Edge', 'Parting Shot', 'Protect', 'Quick Attack'],
-        abilities: ['Intimidate'],
-        teraTypes: ['Flying', 'Normal', 'Steel']
-      }
-    ]
-  },
-  squawkabillyyellow: {
     level: 91,
     sets: [
       {
@@ -15985,7 +15964,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   palafin: {
-    level: 79,
+    level: 80,
     sets: [
       {
         role: 'Choice Item user',
@@ -16077,11 +16056,17 @@ const randomDoublesSetsJSON = {
         movepool: ['Body Press', 'Last Respects', 'Shadow Sneak', 'Trick'],
         abilities: ['Fluffy'],
         teraTypes: ['Ghost']
+      },
+      {
+        role: 'Choice Item user',
+        movepool: ['Body Press', 'Last Respects', 'Trick', 'Will-O-Wisp'],
+        abilities: ['Fluffy'],
+        teraTypes: ['Ghost']
       }
     ]
   },
   flamigo: {
-    level: 84,
+    level: 85,
     sets: [
       {
         role: 'Choice Item user',
@@ -16108,6 +16093,12 @@ const randomDoublesSetsJSON = {
       {
         role: 'Choice Item user',
         movepool: ['Aqua Cutter', 'Aqua Jet', 'Night Slash', 'Psycho Cut'],
+        abilities: ['Sharpness'],
+        teraTypes: ['Dark', 'Psychic', 'Water']
+      },
+      {
+        role: 'Choice Item user',
+        movepool: ['Aqua Cutter', 'Final Gambit', 'Night Slash', 'Psycho Cut'],
         abilities: ['Sharpness'],
         teraTypes: ['Dark', 'Psychic', 'Water']
       }
@@ -16265,7 +16256,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   screamtail: {
-    level: 82,
+    level: 81,
     sets: [
       {
         role: 'Doubles Support',
@@ -16354,7 +16345,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   ironmoth: {
-    level: 78,
+    level: 76,
     sets: [
       {
         role: 'Offensive Protect',
@@ -16574,6 +16565,12 @@ const randomDoublesSetsJSON = {
         movepool: ['Collision Course', 'Dragon Claw', 'Flare Blitz', 'U-turn'],
         abilities: ['Orichalcum Pulse'],
         teraTypes: ['Fire']
+      },
+      {
+        role: 'Offensive Protect',
+        movepool: ['Close Combat', 'Dragon Claw', 'Flare Blitz', 'Protect'],
+        abilities: ['Orichalcum Pulse'],
+        teraTypes: ['Fire']
       }
     ]
   },
@@ -16709,7 +16706,7 @@ const randomDoublesSetsJSON = {
     ]
   },
   ogerpon: {
-    level: 78,
+    level: 79,
     sets: [
       {
         role: 'Doubles Wallbreaker',
@@ -16939,560 +16936,6 @@ const randomDoublesSetsJSON = {
 } as any;
 /* eslint-enable */
 
-/* eslint-disable */
-const randomMegaInvasionSetsJSON = {
-  venusaurmega: {
-    level: 78,
-    sets: [
-      {
-        role: 'Bulky Attacker',
-        movepool: [
-          'Earth Power',
-          'Giga Drain',
-          'Knock Off',
-          'Sleep Powder',
-          'Sludge Bomb',
-          'Synthesis',
-          'Toxic'
-        ],
-        abilities: ['Chlorophyll'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  charizardmegax: {
-    level: 78,
-    sets: [
-      {
-        role: 'Setup Sweeper',
-        movepool: [
-          'Dragon Claw',
-          'Dragon Dance',
-          'Earthquake',
-          'Flare Blitz',
-          'Outrage',
-          'Thunder Punch'
-        ],
-        abilities: ['Blaze'],
-        teraTypes: ['Stellar']
-      },
-      {
-        role: 'Bulky Setup',
-        movepool: ['Dragon Claw', 'Flame Charge', 'Flare Blitz', 'Outrage', 'Swords Dance'],
-        abilities: ['Blaze'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  charizardmegay: {
-    level: 78,
-    sets: [
-      {
-        role: 'Fast Attacker',
-        movepool: ['Air Slash', 'Dragon Pulse', 'Solar Beam', 'Weather Ball'],
-        abilities: ['Blaze'],
-        teraTypes: ['Stellar']
-      },
-      {
-        role: 'Bulky Attacker',
-        movepool: ['Air Slash', 'Scorching Sands', 'Solar Beam', 'Weather Ball'],
-        abilities: ['Blaze'],
-        teraTypes: ['Stellar']
-      },
-      {
-        role: 'Wallbreaker',
-        movepool: ['Dragon Pulse', 'Scorching Sands', 'Solar Beam', 'Weather Ball'],
-        abilities: ['Blaze'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  blastoisemega: {
-    level: 75,
-    sets: [
-      {
-        role: 'Setup Sweeper',
-        movepool: [
-          'Aura Sphere',
-          'Dark Pulse',
-          'Dragon Pulse',
-          'Ice Beam',
-          'Shell Smash',
-          'Water Pulse'
-        ],
-        abilities: ['Rain Dish'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  slowbromega: {
-    level: 83,
-    sets: [
-      {
-        role: 'Bulky Attacker',
-        movepool: ['Calm Mind', 'Psychic Noise', 'Psyshock', 'Scald', 'Slack Off'],
-        abilities: ['Regenerator'],
-        teraTypes: ['Stellar']
-      },
-      {
-        role: 'Bulky Setup',
-        movepool: ['Body Press', 'Iron Defense', 'Scald', 'Slack Off'],
-        abilities: ['Regenerator'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  gengarmega: {
-    level: 75,
-    sets: [
-      {
-        role: 'Fast Attacker',
-        movepool: ['Encore', 'Nasty Plot', 'Shadow Ball', 'Sludge Wave'],
-        abilities: ['Cursed Body'],
-        teraTypes: ['Stellar']
-      },
-      {
-        role: 'Fast Support',
-        movepool: ['Encore', 'Perish Song', 'Protect', 'Shadow Ball', 'Substitute'],
-        abilities: ['Cursed Body'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  gyaradosmega: {
-    level: 74,
-    sets: [
-      {
-        role: 'Setup Sweeper',
-        movepool: [
-          'Crunch',
-          'Dragon Dance',
-          'Earthquake',
-          'Substitute',
-          'Taunt',
-          'Temper Flare',
-          'Waterfall'
-        ],
-        abilities: ['Intimidate'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  mewtwomegax: {
-    level: 70,
-    sets: [
-      {
-        role: 'Setup Sweeper',
-        movepool: ['Bulk Up', 'Drain Punch', 'Knock Off', 'Recover', 'Zen Headbutt'],
-        abilities: ['Unnerve'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  mewtwomegay: {
-    level: 70,
-    sets: [
-      {
-        role: 'Setup Sweeper',
-        movepool: ['Aura Sphere', 'Dark Pulse', 'Fire Blast', 'Nasty Plot', 'Psystrike', 'Recover'],
-        abilities: ['Unnerve'],
-        teraTypes: ['Fighting', 'Fire']
-      }
-    ]
-  },
-  ampharosmega: {
-    level: 85,
-    sets: [
-      {
-        role: 'Setup Sweeper',
-        movepool: ['Agility', 'Dragon Pulse', 'Focus Blast', 'Thunderbolt'],
-        abilities: ['Static'],
-        teraTypes: ['Stellar']
-      },
-      {
-        role: 'AV Pivot',
-        movepool: [
-          'Discharge',
-          'Dragon Pulse',
-          'Dragon Tail',
-          'Focus Blast',
-          'Thunderbolt',
-          'Volt Switch'
-        ],
-        abilities: ['Static'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  scizormega: {
-    level: 76,
-    sets: [
-      {
-        role: 'Bulky Support',
-        movepool: ['Bullet Punch', 'Close Combat', 'Defog', 'Knock Off', 'U-turn'],
-        abilities: ['Light Metal'],
-        teraTypes: ['Stellar']
-      },
-      {
-        role: 'Bulky Setup',
-        movepool: ['Bug Bite', 'Bullet Punch', 'Close Combat', 'Knock Off', 'Swords Dance'],
-        abilities: ['Light Metal'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  heracrossmega: {
-    level: 78,
-    sets: [
-      {
-        role: 'Wallbreaker',
-        movepool: [
-          'Close Combat',
-          'Earthquake',
-          'Knock Off',
-          'Pin Missile',
-          'Rock Blast',
-          'Trailblaze'
-        ],
-        abilities: ['Moxie'],
-        teraTypes: ['Rock']
-      }
-    ]
-  },
-  houndoommega: {
-    level: 80,
-    sets: [
-      {
-        role: 'Setup Sweeper',
-        movepool: ['Dark Pulse', 'Fire Blast', 'Nasty Plot', 'Sludge Bomb', 'Taunt'],
-        abilities: ['Flash Fire'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  tyranitarmega: {
-    level: 75,
-    sets: [
-      {
-        role: 'Setup Sweeper',
-        movepool: ['Dragon Dance', 'Earthquake', 'Ice Punch', 'Knock Off', 'Stone Edge'],
-        abilities: ['Sand Stream'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  sceptilemega: {
-    level: 82,
-    sets: [
-      {
-        role: 'Fast Attacker',
-        movepool: ['Dragon Pulse', 'Earthquake', 'Focus Blast', 'Giga Drain', 'Leaf Storm'],
-        abilities: ['Overgrow'],
-        teraTypes: ['Stellar']
-      },
-      {
-        role: 'Setup Sweeper',
-        movepool: ['Earthquake', 'Leaf Blade', 'Outrage', 'Swords Dance'],
-        abilities: ['Overgrow'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  blazikenmega: {
-    level: 72,
-    sets: [
-      {
-        role: 'Setup Sweeper',
-        movepool: [
-          'Close Combat',
-          'Flare Blitz',
-          'Knock Off',
-          'Protect',
-          'Stone Edge',
-          'Swords Dance'
-        ],
-        abilities: ['Speed Boost'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  swampertmega: {
-    level: 81,
-    sets: [
-      {
-        role: 'Setup Sweeper',
-        movepool: ['Earthquake', 'Ice Punch', 'Liquidation', 'Rain Dance'],
-        abilities: ['Damp'],
-        teraTypes: ['Stellar']
-      },
-      {
-        role: 'Bulky Setup',
-        movepool: ['Earthquake', 'Liquidation', 'Poison Jab', 'Rain Dance'],
-        abilities: ['Damp'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  gardevoirmega: {
-    level: 79,
-    sets: [
-      {
-        role: 'Setup Sweeper',
-        movepool: ['Calm Mind', 'Focus Blast', 'Hyper Voice', 'Psyshock'],
-        abilities: ['Trace'],
-        teraTypes: ['Stellar']
-      },
-      {
-        role: 'Bulky Setup',
-        movepool: ['Calm Mind', 'Hyper Voice', 'Mystical Fire', 'Psyshock'],
-        abilities: ['Trace'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  sableyemega: {
-    level: 83,
-    sets: [
-      {
-        role: 'Bulky Setup',
-        movepool: ['Calm Mind', 'Dark Pulse', 'Recover', 'Will-O-Wisp'],
-        abilities: ['Prankster'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  medichammega: {
-    level: 78,
-    sets: [
-      {
-        role: 'Fast Attacker',
-        movepool: [
-          'Close Combat',
-          'Fake Out',
-          'Ice Punch',
-          'Poison Jab',
-          'Thief',
-          'Trailblaze',
-          'Zen Headbutt'
-        ],
-        abilities: ['Pure Power'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  cameruptmega: {
-    level: 88,
-    sets: [
-      {
-        role: 'Bulky Attacker',
-        movepool: ['Ancient Power', 'Earth Power', 'Fire Blast', 'Stealth Rock', 'Will-O-Wisp'],
-        abilities: ['Solid Rock'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  altariamega: {
-    level: 78,
-    sets: [
-      {
-        role: 'Bulky Setup',
-        movepool: ['Double-Edge', 'Dragon Dance', 'Earthquake', 'Roost'],
-        abilities: ['Natural Cure'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  banettemega: {
-    level: 85,
-    sets: [
-      {
-        role: 'Fast Support',
-        movepool: ['Destiny Bond', 'Encore', 'Poltergeist', 'Will-O-Wisp'],
-        abilities: ['Frisk'],
-        teraTypes: ['Stellar']
-      },
-      {
-        role: 'Fast Attacker',
-        movepool: ['Destiny Bond', 'Encore', 'Gunk Shot', 'Poltergeist'],
-        abilities: ['Frisk'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  glaliemega: {
-    level: 85,
-    sets: [
-      {
-        role: 'Fast Attacker',
-        movepool: ['Body Slam', 'Earthquake', 'Freeze-Dry', 'Ice Shard'],
-        abilities: ['Inner Focus'],
-        teraTypes: ['Stellar']
-      },
-      {
-        role: 'Fast Support',
-        movepool: ['Body Slam', 'Earthquake', 'Freeze-Dry', 'Spikes'],
-        abilities: ['Inner Focus'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  salamencemega: {
-    level: 70,
-    sets: [
-      {
-        role: 'Setup Sweeper',
-        movepool: ['Double-Edge', 'Dragon Dance', 'Earthquake', 'Roost'],
-        abilities: ['Intimidate'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  metagrossmega: {
-    level: 73,
-    sets: [
-      {
-        role: 'Fast Attacker',
-        movepool: ['Body Press', 'Heavy Slam', 'Knock Off', 'Psychic Fangs'],
-        abilities: ['Clear Body'],
-        teraTypes: ['Stellar']
-      },
-      {
-        role: 'Setup Sweeper',
-        movepool: ['Body Press', 'Heavy Slam', 'Iron Defense', 'Psychic Fangs'],
-        abilities: ['Clear Body'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  latiasmega: {
-    level: 79,
-    sets: [
-      {
-        role: 'Bulky Setup',
-        movepool: ['Calm Mind', 'Draco Meteor', 'Psyshock', 'Recover'],
-        abilities: ['Levitate'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  latiosmega: {
-    level: 78,
-    sets: [
-      {
-        role: 'Bulky Setup',
-        movepool: ['Calm Mind', 'Draco Meteor', 'Psyshock', 'Recover'],
-        abilities: ['Levitate'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  kyogreprimal: {
-    level: 71,
-    sets: [
-      {
-        role: 'Bulky Setup',
-        movepool: ['Calm Mind', 'Ice Beam', 'Origin Pulse', 'Thunder'],
-        abilities: ['Drizzle'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  groudonprimal: {
-    level: 63,
-    sets: [
-      {
-        role: 'Bulky Attacker',
-        movepool: [
-          'Heat Crash',
-          'Precipice Blades',
-          'Roar',
-          'Spikes',
-          'Stealth Rock',
-          'Stone Edge',
-          'Thunder Wave',
-          'Will-O-Wisp'
-        ],
-        abilities: ['Drought'],
-        teraTypes: ['Stellar']
-      },
-      {
-        role: 'Bulky Setup',
-        movepool: ['Heat Crash', 'Precipice Blades', 'Stone Edge', 'Swords Dance', 'Thunder Wave'],
-        abilities: ['Drought'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  garchompmega: {
-    level: 75,
-    sets: [
-      {
-        role: 'Bulky Attacker',
-        movepool: ['Draco Meteor', 'Dragon Tail', 'Earthquake', 'Spikes', 'Stealth Rock'],
-        abilities: ['Rough Skin'],
-        teraTypes: ['Stellar']
-      },
-      {
-        role: 'Setup Sweeper',
-        movepool: ['Earthquake', 'Outrage', 'Scale Shot', 'Swords Dance'],
-        abilities: ['Rough Skin'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  lucariomega: {
-    level: 73,
-    sets: [
-      {
-        role: 'Setup Sweeper',
-        movepool: ['Close Combat', 'Extreme Speed', 'Meteor Mash', 'Swords Dance'],
-        abilities: ['Justified'],
-        teraTypes: ['Stellar']
-      },
-      {
-        role: 'Bulky Setup',
-        movepool: ['Aura Sphere', 'Flash Cannon', 'Nasty Plot', 'Vacuum Wave'],
-        abilities: ['Justified'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  abomasnowmega: {
-    level: 84,
-    sets: [
-      {
-        role: 'Bulky Attacker',
-        movepool: ['Blizzard', 'Earthquake', 'Ice Shard', 'Wood Hammer'],
-        abilities: ['Snow Warning'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  gallademega: {
-    level: 77,
-    sets: [
-      {
-        role: 'Setup Sweeper',
-        movepool: ['Close Combat', 'Knock Off', 'Swords Dance', 'Zen Headbutt'],
-        abilities: ['Justified'],
-        teraTypes: ['Stellar']
-      }
-    ]
-  },
-  dianciemega: {
-    level: 75,
-    sets: [
-      {
-        role: 'Fast Attacker',
-        movepool: ['Calm Mind', 'Diamond Storm', 'Earth Power', 'Moonblast', 'Stealth Rock'],
-        abilities: ['Clear Body'],
-        teraTypes: ['Ground']
-      }
-    ]
-  }
-} as any;
-/* eslint-enable */
-
 export interface TeamData {
   typeCount: { [k: string]: number };
   typeComboCount: { [k: string]: number };
@@ -17660,6 +17103,7 @@ const SETUP = [
   'quiverdance',
   'rockpolish',
   'shellsmash',
+  'shelter',
   'shiftgear',
   'swordsdance',
   'tailglow',
@@ -17750,8 +17194,7 @@ const MOVE_PAIRS = [
   ['sleeptalk', 'rest'],
   ['protect', 'wish'],
   ['leechseed', 'protect'],
-  ['leechseed', 'substitute'],
-  ['perishsong', 'protect']
+  ['leechseed', 'substitute']
 ];
 
 /** Pokemon who always want priority STAB, and are fine with it as its only STAB move of that type */
@@ -17762,19 +17205,32 @@ const PRIORITY_POKEMON = [
   'honchkrow',
   'mimikyu',
   'ragingbolt',
-  'scizor',
-  'scizormega'
+  'scizor'
 ];
 
 /** Pokemon who should never be in the lead slot */
-const NO_LEAD_POKEMON = ['Zacian', 'Zamazenta'];
+const NO_LEAD_POKEMON = [
+  'dugtrio',
+  'gothitelle',
+  'ironthorns',
+  'kingambit',
+  'zacian',
+  'zaciancrowned',
+  'zamazenta',
+  'zamazentacrowned'
+];
 const DOUBLES_NO_LEAD_POKEMON = [
-  'Basculegion',
-  'Houndstone',
-  'Iron Bundle',
-  'Roaring Moon',
-  'Zacian',
-  'Zamazenta'
+  'basculegion',
+  'basculegionf',
+  'dugtrio',
+  'gothitelle',
+  'houndstone',
+  'ironbundle',
+  'roaringmoon',
+  'zacian',
+  'zaciancrowned',
+  'zamazenta',
+  'zamazentacrowned'
 ];
 
 const DEFENSIVE_TERA_BLAST_USERS = ['alcremie', 'bellossom', 'comfey', 'fezandipiti', 'florges'];
@@ -17835,7 +17291,7 @@ export class RandomTeams {
 
     this.moveEnforcementCheckers = {
       Bug: (movePool, moves, abilities, types, counter) =>
-        ['megahorn', 'pinmissile', 'xscissor'].some((m) => movePool.includes(m)) ||
+        ['megahorn', 'xscissor'].some((m) => movePool.includes(m)) ||
         (!counter.get('Bug') && (types.has('Electric') || types.has('Psychic'))),
       Dark: (
         movePool,
@@ -18018,7 +17474,7 @@ export class RandomTeams {
    * Doesn't count bans nested inside other formats/rules.
    */
   private hasDirectCustomBanlistChanges() {
-    if (this.format.ruleTable?.has('+pokemontag:cap')) return false;
+    if (this.format.ruleTable?.has('+tag:cap')) return false;
     if (this.format.banlist.length) {
       if (this.format.banlist[0] !== 'Nonexistent' || this.format.banlist.length > 1) return true;
     }
@@ -18246,13 +17702,14 @@ export class RandomTeams {
         ['haze', 'icywind'],
         [
           ['hydropump', 'muddywater'],
-          ['muddywater', 'scald']
+          ['muddywater', 'scald', 'weatherball']
         ],
         ['disable', 'encore'],
         ['freezedry', 'icebeam'],
         ['energyball', 'leafstorm'],
         ['earthpower', 'sandsearstorm'],
-        ['coaching', ['helpinghand', 'howl']]
+        [PROTECT_MOVES, PROTECT_MOVES],
+        ['coaching', ['helpinghand', 'howl', 'pollenpuff']]
       ];
 
       for (const pair of doublesIncompatiblePairs)
@@ -18352,8 +17809,6 @@ export class RandomTeams {
     if (species.id === 'quagsire') this.incompatibleMoves(moves, movePool, 'spikes', 'icebeam');
     // Taunt/Knock should be Cyclizar's flex moveslot
     if (species.id === 'cyclizar') this.incompatibleMoves(moves, movePool, 'taunt', 'knockoff');
-    // To force Stealth Rock on Camerupt
-    if (species.id === 'camerupt') this.incompatibleMoves(moves, movePool, 'roar', 'willowisp');
     // nothing else rolls these lol
     if (species.id === 'coalossal')
       this.incompatibleMoves(moves, movePool, 'flamethrower', 'overheat');
@@ -18437,6 +17892,22 @@ export class RandomTeams {
       if (species.name.endsWith('Wellspring')) return 'Water';
       if (species.name.endsWith('Hearthflame')) return 'Fire';
       if (species.name.endsWith('Cornerstone')) return 'Rock';
+    }
+
+    if (move.name === 'Terrain Pulse') {
+      if (abilities.includes('Grassy Surge') || abilities.includes('Seed Sower')) return 'Grass';
+      if (abilities.includes('Psychic Surge')) return 'Psychic';
+      if (abilities.includes('Electric Surge')) return 'Electric';
+    }
+
+    const sunAbilities = ['Chlorophyll', 'Drought', 'Mega Sol', 'Orichalcum Pulse'];
+    if (move.name === 'Weather Ball') {
+      if (
+        abilities.some((a) => sunAbilities.includes(a)) ||
+        (species.isMega && Object.values(species.abilities).some((a) => sunAbilities.includes(a)))
+      )
+        return 'Fire';
+      if (abilities.includes('Drizzle')) return 'Water';
     }
 
     const moveType = move.type;
@@ -18610,6 +18081,28 @@ export class RandomTeams {
       if (movePool.includes('defog')) {
         counter = this.addMove(
           'defog',
+          moves,
+          types,
+          abilities,
+          teamDetails,
+          species,
+          isLead,
+          movePool,
+          teraType,
+          role,
+          isDoubles
+        );
+      }
+    }
+
+    // Enforce Stealth Rock on sets with phazing moves and low Speed
+    if (
+      ['dragontail', 'roar', 'whirlwind'].some((m) => movePool.includes(m)) &&
+      species.baseStats.spe <= 60
+    ) {
+      if (movePool.includes('stealthrock') && !teamDetails.stealthRock) {
+        counter = this.addMove(
+          'stealthrock',
           moves,
           types,
           abilities,
@@ -19451,7 +18944,7 @@ export class RandomTeams {
       role === 'Doubles Support' &&
       ability === 'Prankster' &&
       moves.has('tailwind') &&
-      this.randomChance(3, 4)
+      this.randomChance(1, 4)
     )
       return 'Covert Cloak';
     if (
@@ -19627,9 +19120,6 @@ export class RandomTeams {
 
   getLevel(species: Species, isDoubles = false): number {
     if (this.adjustLevel) return this.adjustLevel;
-    // Temporarily modified for Mega Invasion randomized spotlight
-    if (this.format.mod === 'gen9' && species.id in this.randomMegaSets)
-      return this.randomMegaSets[species.id]['level']!;
     // doubles levelling
     if (isDoubles && this.randomDoublesSets[species.id]['level'])
       return this.randomDoublesSets[species.id]['level']!;
@@ -19674,6 +19164,12 @@ export class RandomTeams {
     }
     if (species.baseSpecies === 'Basculin') return 'Basculin' + this.sample(['', '-Blue-Striped']);
     if (species.baseSpecies === 'Magearna') return 'Magearna' + this.sample(['', '-Original']);
+    if (
+      species.baseSpecies === 'Squawkabilly' &&
+      (this.format.mod.startsWith('champions') || this.format.gameType !== 'singles')
+    ) {
+      return 'Squawkabilly' + this.sample(['', '-Blue', '-White', '-Yellow']);
+    }
     if (species.baseSpecies === 'Keldeo' && this.gen <= 7)
       return 'Keldeo' + this.sample(['', '-Resolute']);
     if (
@@ -19707,13 +19203,7 @@ export class RandomTeams {
   ): RandomTeamsTypes.RandomSet {
     const species = this.dex.species.get(s);
     const forme = this.getForme(species);
-    let sets;
-    // Temporarily modified for Mega Invasion randomized spotlight
-    if (Object.keys(this.randomMegaSets).includes(species.id)) {
-      sets = this.randomMegaSets[species.id]['sets'];
-    } else {
-      sets = this[`random${isDoubles ? 'Doubles' : ''}Sets`][species.id]['sets'];
-    }
+    const sets = this[`random${isDoubles ? 'Doubles' : ''}Sets`][species.id]['sets'];
     const possibleSets: RandomTeamsTypes.RandomSetData[] = [];
 
     const ruleTable = this.dex.formats.getRuleTable(this.format);
@@ -20042,9 +19532,12 @@ export class RandomTeams {
       // Prevent conflicting terrain abilities from generating together
       [
         ['pincurchin', 'miraidon'],
-        ['indeedee', 'indeedeef', 'rillaboom']
+        ['indeedee', 'indeedeef', 'rillaboom', 'arboliva']
       ],
-      ['rillaboom', ['indeedee', 'indeedeef']]
+      [
+        ['rillaboom', 'arboliva'],
+        ['indeedee', 'indeedeef']
+      ]
     ];
 
     const incompatibilityList = isDoubles ? doublesIncompatiblePokemon : incompatiblePokemon;
@@ -20099,6 +19592,7 @@ export class RandomTeams {
     );
 
     let leadsRemaining = this.format.gameType === 'doubles' ? 2 : 1;
+    if (ruleTable.has('pickedteamsize') || ruleTable.has('teampreview')) leadsRemaining = 0;
     while (baseSpeciesPool.length && pokemon.length < this.maxTeamSize) {
       const baseSpecies = this.sampleNoReplace(baseSpeciesPool);
       const species = this.dex.species.get(this.sample(pokemonPool[baseSpecies]));
@@ -20195,8 +19689,8 @@ export class RandomTeams {
 
       if (leadsRemaining) {
         if (
-          (isDoubles && DOUBLES_NO_LEAD_POKEMON.includes(species.baseSpecies)) ||
-          (!isDoubles && NO_LEAD_POKEMON.includes(species.baseSpecies))
+          (isDoubles && DOUBLES_NO_LEAD_POKEMON.includes(species.id)) ||
+          (!isDoubles && NO_LEAD_POKEMON.includes(species.id))
         ) {
           if (pokemon.length + leadsRemaining === this.maxTeamSize) continue;
           set = this.randomSet(species, teamDetails, false, isDoubles);
@@ -20303,272 +19797,6 @@ export class RandomTeams {
     return pokemon;
   }
 
-  randomMegaSets: { [species: string]: RandomTeamsTypes.RandomSpeciesData } =
-    randomMegaInvasionSetsJSON;
-
-  randomMegaInvasionTeam(depth = 0): RandomTeamsTypes.RandomSet[] {
-    const forceResult = depth >= 4;
-
-    this.enforceNoDirectCustomBanlistChanges();
-
-    const seed = this.prng.getSeed();
-    const ruleTable = this.dex.formats.getRuleTable(this.format);
-    const pokemon: RandomTeamsTypes.RandomSet[] = [];
-
-    // For Monotype
-    const isMonotype = !!this.forceMonotype || ruleTable.has('sametypeclause');
-    const isDoubles = this.format.gameType !== 'singles';
-    const typePool = this.dex.types.names().filter((name) => name !== 'Stellar');
-    const type = this.forceMonotype || this.sample(typePool);
-
-    const baseFormes: { [k: string]: number } = {};
-    let hasMega = false;
-
-    const typeCount: { [k: string]: number } = {};
-    const typeComboCount: { [k: string]: number } = {};
-    const typeWeaknesses: { [k: string]: number } = {};
-    const typeDoubleWeaknesses: { [k: string]: number } = {};
-    const teamDetails: RandomTeamsTypes.TeamDetails = {};
-    let numMaxLevelPokemon = 0;
-
-    const pokemonList = [...Object.keys(this.randomSets), ...Object.keys(this.randomMegaSets)];
-    const [pokemonPool, baseSpeciesPool] = this.getPokemonPool(
-      type,
-      pokemon,
-      isMonotype,
-      pokemonList
-    );
-
-    let leadsRemaining = this.format.gameType === 'doubles' ? 2 : 1;
-    while (baseSpeciesPool.length && pokemon.length < this.maxTeamSize) {
-      const baseSpecies = this.sampleNoReplace(baseSpeciesPool);
-      const currentSpeciesPool: Species[] = [];
-      // Check if the base species has a mega forme available
-      let canMega = false;
-      for (const poke of pokemonPool[baseSpecies]) {
-        const species = this.dex.species.get(poke);
-        if (!hasMega && species.isMega) canMega = true;
-      }
-      for (const poke of pokemonPool[baseSpecies]) {
-        const species = this.dex.species.get(poke);
-        // Prevent multiple megas
-        if (hasMega && species.isMega) continue;
-        // Prevent base forme, if a mega is available
-        if (canMega && !species.isMega) continue;
-        currentSpeciesPool.push(species);
-      }
-      let species = this.dex.species.get(this.sample(currentSpeciesPool));
-      if (!species.exists) continue;
-
-      // Limit to one of each species (Species Clause)
-      if (baseFormes[species.baseSpecies]) continue;
-
-      // Limit one Mega per team
-      if (hasMega && species.isMega) continue;
-
-      // Treat Ogerpon formes and Terapagos like the Tera Blast user role; reject if team has one already
-      if (
-        ['ogerpon', 'ogerponhearthflame', 'terapagos'].includes(species.id) &&
-        teamDetails.teraBlast
-      )
-        continue;
-
-      // Illusion shouldn't be on the last slot
-      if (species.baseSpecies === 'Zoroark' && pokemon.length >= this.maxTeamSize - 1) continue;
-
-      const types = species.types;
-      const typeCombo = types.slice().sort().join();
-      const weakToFreezeDry =
-        this.dex.getEffectiveness('Ice', species) > 0 ||
-        (this.dex.getEffectiveness('Ice', species) > -2 && types.includes('Water'));
-      // Dynamically scale limits for different team sizes. The default and minimum value is 1.
-      const limitFactor = Math.round(this.maxTeamSize / 6) || 1;
-
-      if (!isMonotype && !this.forceMonotype) {
-        let skip = false;
-
-        // Limit two of any type
-        for (const typeName of types) {
-          if (typeCount[typeName] >= 2 * limitFactor) {
-            skip = true;
-            break;
-          }
-        }
-        if (skip) continue;
-
-        // Limit three weak to any type, and one double weak to any type
-        for (const typeName of this.dex.types.names()) {
-          // it's weak to the type
-          if (this.dex.getEffectiveness(typeName, species) > 0) {
-            if (!typeWeaknesses[typeName]) typeWeaknesses[typeName] = 0;
-            if (typeWeaknesses[typeName] >= 3 * limitFactor) {
-              skip = true;
-              break;
-            }
-          }
-          if (this.dex.getEffectiveness(typeName, species) > 1) {
-            if (!typeDoubleWeaknesses[typeName]) typeDoubleWeaknesses[typeName] = 0;
-            if (typeDoubleWeaknesses[typeName] >= limitFactor) {
-              skip = true;
-              break;
-            }
-          }
-        }
-        if (skip) continue;
-
-        // Count Dry Skin/Fluffy as Fire weaknesses
-        if (
-          this.dex.getEffectiveness('Fire', species) === 0 &&
-          Object.values(species.abilities).filter((a) => ['Dry Skin', 'Fluffy'].includes(a)).length
-        ) {
-          if (!typeWeaknesses['Fire']) typeWeaknesses['Fire'] = 0;
-          if (typeWeaknesses['Fire'] >= 3 * limitFactor) continue;
-        }
-
-        // Limit four weak to Freeze-Dry
-        if (weakToFreezeDry) {
-          if (!typeWeaknesses['Freeze-Dry']) typeWeaknesses['Freeze-Dry'] = 0;
-          if (typeWeaknesses['Freeze-Dry'] >= 4 * limitFactor) continue;
-        }
-
-        // Limit one level 100 Pokemon
-        if (
-          !this.adjustLevel &&
-          this.getLevel(species, isDoubles) === 100 &&
-          numMaxLevelPokemon >= limitFactor
-        ) {
-          continue;
-        }
-
-        // Check compatibility with team
-        if (!this.getPokemonCompatibility(species, pokemon, isDoubles)) continue;
-      }
-
-      // Limit three of any type combination in Monotype
-      if (!this.forceMonotype && isMonotype && typeComboCount[typeCombo] >= 3 * limitFactor)
-        continue;
-
-      // The Pokemon of the Day
-
-      let set: RandomTeamsTypes.RandomSet;
-
-      if (leadsRemaining) {
-        if (
-          (isDoubles && DOUBLES_NO_LEAD_POKEMON.includes(species.baseSpecies)) ||
-          (!isDoubles && NO_LEAD_POKEMON.includes(species.baseSpecies))
-        ) {
-          if (pokemon.length + leadsRemaining === this.maxTeamSize) continue;
-          set = this.randomSet(species, teamDetails, false, isDoubles);
-          pokemon.push(set);
-        } else {
-          set = this.randomSet(species, teamDetails, true, isDoubles);
-          pokemon.unshift(set);
-          leadsRemaining--;
-        }
-      } else {
-        set = this.randomSet(species, teamDetails, false, isDoubles);
-        pokemon.push(set);
-      }
-
-      // Don't bother tracking details for the last Pokemon
-      if (pokemon.length === this.maxTeamSize) break;
-
-      // Now that our Pokemon has passed all checks, we can increment our counters
-      baseFormes[species.baseSpecies] = 1;
-
-      // Increment type counters
-      for (const typeName of types) {
-        if (typeName in typeCount) {
-          typeCount[typeName]++;
-        } else {
-          typeCount[typeName] = 1;
-        }
-      }
-      if (typeCombo in typeComboCount) {
-        typeComboCount[typeCombo]++;
-      } else {
-        typeComboCount[typeCombo] = 1;
-      }
-
-      // Increment weakness counter
-      for (const typeName of this.dex.types.names()) {
-        // it's weak to the type
-        if (this.dex.getEffectiveness(typeName, species) > 0) {
-          typeWeaknesses[typeName]++;
-        }
-        if (this.dex.getEffectiveness(typeName, species) > 1) {
-          typeDoubleWeaknesses[typeName]++;
-        }
-      }
-      // Count Dry Skin/Fluffy as Fire weaknesses
-      if (
-        ['Dry Skin', 'Fluffy'].includes(set.ability) &&
-        this.dex.getEffectiveness('Fire', species) === 0
-      ) {
-        typeWeaknesses['Fire']++;
-      }
-      if (weakToFreezeDry) typeWeaknesses['Freeze-Dry']++;
-
-      // Increment level 100 counter
-      if (set.level === 100) numMaxLevelPokemon++;
-
-      // Track what the team has
-      const item = this.dex.items.get(set.item);
-
-      if (item.megaStone) hasMega = true;
-      if ((set.ability === 'Drizzle' && !item.isPrimalOrb) || set.moves.includes('raindance'))
-        teamDetails.rain = 1;
-      if (
-        (set.ability === 'Drought' && !item.isPrimalOrb) ||
-        set.ability === 'Orichalcum Pulse' ||
-        set.moves.includes('sunnyday')
-      ) {
-        teamDetails.sun = 1;
-      }
-      if (set.ability === 'Sand Stream') teamDetails.sand = 1;
-      if (
-        set.ability === 'Snow Warning' ||
-        set.moves.includes('snowscape') ||
-        set.moves.includes('chillyreception')
-      ) {
-        teamDetails.snow = 1;
-      }
-      if (set.moves.includes('healbell')) teamDetails.statusCure = 1;
-      if (set.moves.includes('spikes') || set.moves.includes('ceaselessedge')) {
-        teamDetails.spikes = (teamDetails.spikes || 0) + 1;
-      }
-      if (set.moves.includes('toxicspikes') || set.ability === 'Toxic Debris')
-        teamDetails.toxicSpikes = 1;
-      if (set.moves.includes('stealthrock') || set.moves.includes('stoneaxe'))
-        teamDetails.stealthRock = 1;
-      if (set.moves.includes('stickyweb')) teamDetails.stickyWeb = 1;
-      if (set.moves.includes('defog')) teamDetails.defog = 1;
-      if (set.moves.includes('rapidspin') || set.moves.includes('mortalspin'))
-        teamDetails.rapidSpin = 1;
-      if (
-        set.moves.includes('auroraveil') ||
-        (set.moves.includes('reflect') && set.moves.includes('lightscreen'))
-      ) {
-        teamDetails.screens = 1;
-      }
-      if (
-        set.role === 'Tera Blast user' ||
-        ['ogerpon', 'ogerponhearthflame', 'terapagos'].includes(species.id)
-      ) {
-        teamDetails.teraBlast = 1;
-      }
-    }
-    if (pokemon.length < this.maxTeamSize && pokemon.length < 12) {
-      // large teams sometimes cannot be built
-      throw new Error(`Could not build a random team for ${this.format} (seed=${seed})`);
-    }
-    if (!forceResult) {
-      if (!hasMega) return this.randomMegaInvasionTeam(++depth);
-    }
-
-    return pokemon;
-  }
-
   randomCCTeam(): RandomTeamsTypes.RandomSet[] {
     this.enforceNoDirectCustomBanlistChanges();
 
@@ -20658,7 +19886,7 @@ export class RandomTeams {
       if (forme === 'Smeargle') {
         pool = this.dex.moves
           .all()
-          .filter((move) => !(move.isNonstandard || move.isZ || move.isMax || move.realMove))
+          .filter((move) => !(move.isNonstandard || move.isZ || move.isMax || move.placeholderFor))
           .map((m) => m.id);
       } else {
         pool = [...this.dex.species.getMovePool(species.id)];
@@ -20804,56 +20032,10 @@ export class RandomTeams {
       this.cachedPool = pool.slice();
       this.cachedSpeciesPool = speciesPool.slice();
     } else {
-      const EXISTENCE_TAG = [
-        'past',
-        'future',
-        'lgpe',
-        'unobtainable',
-        'cap',
-        'custom',
-        'nonexistent'
-      ];
-      const nonexistentBanReason = ruleTable.check('nonexistent');
       // Assume tierSpecies does not differ from species here (mega formes can be used without their stone, etc)
       for (const species of this.dex.species.all()) {
         if (requiredType && !species.types.includes(requiredType)) continue;
-
-        let banReason = ruleTable.check('pokemon:' + species.id);
-        if (banReason) continue;
-        if (banReason !== '') {
-          if (species.isMega && ruleTable.check('pokemontag:mega')) continue;
-
-          banReason = ruleTable.check('basepokemon:' + toID(species.baseSpecies));
-          if (banReason) continue;
-          if (
-            banReason !== '' ||
-            this.dex.species.get(species.baseSpecies).isNonstandard !== species.isNonstandard
-          ) {
-            const nonexistentCheck =
-              Tags.nonexistent.genericFilter!(species) && nonexistentBanReason;
-            let tagWhitelisted = false;
-            let tagBlacklisted = false;
-            for (const ruleid of ruleTable.tagRules) {
-              if (ruleid.startsWith('*')) continue;
-              const tagid = ruleid.slice(12) as ID;
-              const tag = Tags[tagid];
-              if ((tag.speciesFilter || tag.genericFilter)!(species)) {
-                const existenceTag = EXISTENCE_TAG.includes(tagid);
-                if (ruleid.startsWith('+')) {
-                  if (!existenceTag && nonexistentCheck) continue;
-                  tagWhitelisted = true;
-                  break;
-                }
-                tagBlacklisted = true;
-                break;
-              }
-            }
-            if (tagBlacklisted) continue;
-            if (!tagWhitelisted) {
-              if (ruleTable.check('pokemontag:allpokemon')) continue;
-            }
-          }
-        }
+        if (ruleTable.isBannedSpecies(species, this.dex.species.get(species.baseSpecies))) continue;
         speciesPool.push(species);
         const num = species.num;
         if (pool.includes(num)) continue;
@@ -20945,14 +20127,14 @@ export class RandomTeams {
           (item) => item.gen <= this.gen && !item.isNonstandard
         );
       } else {
-        const hasAllItemsBan = ruleTable.check('pokemontag:allitems');
+        const hasAllItemsBan = ruleTable.check('tag:allitems');
         for (const item of this.dex.items.all()) {
           let banReason = ruleTable.check('item:' + item.id);
           if (banReason) continue;
           if (banReason !== '' && item.id) {
             if (hasAllItemsBan) continue;
             if (item.isNonstandard) {
-              banReason = ruleTable.check('pokemontag:' + toID(item.isNonstandard));
+              banReason = ruleTable.check('tag:' + toID(item.isNonstandard));
               if (banReason) continue;
               if (banReason !== '' && item.isNonstandard !== 'Unobtainable') {
                 if (hasNonexistentBan) continue;
@@ -20982,14 +20164,14 @@ export class RandomTeams {
           (ability) => ability.gen <= this.gen && !ability.isNonstandard
         );
       } else {
-        const hasAllAbilitiesBan = ruleTable.check('pokemontag:allabilities');
+        const hasAllAbilitiesBan = ruleTable.check('tag:allabilities');
         for (const ability of this.dex.abilities.all()) {
           let banReason = ruleTable.check('ability:' + ability.id);
           if (banReason) continue;
           if (banReason !== '') {
             if (hasAllAbilitiesBan) continue;
             if (ability.isNonstandard) {
-              banReason = ruleTable.check('pokemontag:' + toID(ability.isNonstandard));
+              banReason = ruleTable.check('tag:' + toID(ability.isNonstandard));
               if (banReason) continue;
               if (banReason !== '') {
                 if (hasNonexistentBan) continue;
@@ -21019,7 +20201,7 @@ export class RandomTeams {
           move.gen <= this.gen && !move.isNonstandard && !move.name.startsWith('Hidden Power ')
       );
     } else {
-      const hasAllMovesBan = ruleTable.check('pokemontag:allmoves');
+      const hasAllMovesBan = ruleTable.check('tag:allmoves');
       for (const move of this.dex.moves.all()) {
         // Legality of specific HP types can't be altered in built formats anyway
         if (move.name.startsWith('Hidden Power ')) continue;
@@ -21028,7 +20210,7 @@ export class RandomTeams {
         if (banReason !== '') {
           if (hasAllMovesBan) continue;
           if (move.isNonstandard) {
-            banReason = ruleTable.check('pokemontag:' + toID(move.isNonstandard));
+            banReason = ruleTable.check('tag:' + toID(move.isNonstandard));
             if (banReason) continue;
             if (banReason !== '' && move.isNonstandard !== 'Unobtainable') {
               if (hasNonexistentBan) continue;
@@ -21053,14 +20235,14 @@ export class RandomTeams {
       if (!hasCustomBans) {
         naturePool = [...this.dex.natures.all()];
       } else {
-        const hasAllNaturesBan = ruleTable.check('pokemontag:allnatures');
+        const hasAllNaturesBan = ruleTable.check('tag:allnatures');
         for (const nature of this.dex.natures.all()) {
           let banReason = ruleTable.check('nature:' + nature.id);
           if (banReason) continue;
           if (banReason !== '' && nature.id) {
             if (hasAllNaturesBan) continue;
             if (nature.isNonstandard) {
-              banReason = ruleTable.check('pokemontag:' + toID(nature.isNonstandard));
+              banReason = ruleTable.check('tag:' + toID(nature.isNonstandard));
               if (banReason) continue;
               if (banReason !== '' && nature.isNonstandard !== 'Unobtainable') {
                 if (hasNonexistentBan) continue;

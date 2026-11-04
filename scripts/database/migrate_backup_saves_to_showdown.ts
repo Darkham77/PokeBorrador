@@ -1,5 +1,5 @@
-import type { DisplayText } from '@francogp/auditor';
-import { defineCommand, runMain } from 'citty';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 /**
  * scripts/database/migrate_backup_saves_to_showdown.ts
  *
@@ -12,9 +12,9 @@ import { defineCommand, runMain } from 'citty';
  *   npm run database:migrate-saves [file=<path>]
  */
 
-import fs from 'node:fs/promises';
-import path from 'node:path';
+import type { DisplayText } from '@francogp/auditor';
 import { Dex } from '@pkmn/sim';
+import { defineCommand, runMain } from 'citty';
 
 interface BackupPoke {
   id?: string;
@@ -754,9 +754,20 @@ function buildMoveMap(showdownMoves: Record<DisplayText, { name?: string }>): Ma
   return moveMap;
 }
 
-function migratePokemonSpecies(poke: Record<string, unknown>): void {
-  if (!poke.id) return;
-  const oldId = String(poke.id);
+interface LegacyPokemonRecord {
+  id?: string;
+  name?: string;
+  species?: string;
+  ability?: string;
+  nature?: string;
+  level?: number;
+  moves?: Array<{ id?: string; name?: string } | null>;
+  [key: string]: unknown;
+}
+
+function migratePokemonSpecies(poke: LegacyPokemonRecord): void {
+  if (typeof poke.id !== 'string') return;
+  const oldId = poke.id;
   const normSpeciesId = normalize(oldId);
   let resolvedSpecies = normSpeciesId;
   if (SPECIES_TO_SHOWDOWN[normSpeciesId]) {
@@ -768,16 +779,13 @@ function migratePokemonSpecies(poke: Record<string, unknown>): void {
   poke.species = resolvedSpecies;
 }
 
-function migratePokemonAbility(
-  poke: Record<string, unknown>,
-  abilityMap: Map<string, string>
-): void {
-  if (!poke.ability || !poke.species) return;
-  const rawAbility = String(poke.ability);
+function migratePokemonAbility(poke: LegacyPokemonRecord, abilityMap: Map<string, string>): void {
+  if (typeof poke.ability !== 'string' || typeof poke.species !== 'string') return;
+  const rawAbility = poke.ability;
   const normAbility = normalize(rawAbility);
   const abilityId = abilityMap.get(normAbility) || normAbility;
   const abilityObj = Dex.abilities.get(abilityId);
-  const speciesData = Dex.species.get(String(poke.species));
+  const speciesData = Dex.species.get(poke.species);
   const validAbilities = speciesData.exists
     ? Object.values(speciesData.abilities).map((a) => Dex.toID(a))
     : ['overgrow'];
@@ -786,7 +794,7 @@ function migratePokemonAbility(
     poke.ability = abilityObj.id;
   } else {
     const fallbackAbility = validAbilities[0] ?? 'overgrow';
-    const pokeLabel = poke.name ? String(poke.name) : String(poke.species);
+    const pokeLabel = typeof poke.name === 'string' ? poke.name : poke.species;
     console.log(
       `[Heal Migration] Pokémon: ${pokeLabel} - Replaced illegal ability "${rawAbility}" with "${fallbackAbility}"`
     );
@@ -835,27 +843,27 @@ function fillRemainingLegalMoves(
   }
 
   if (legalMoves.length === 0 && pool.length > 0) {
-    legalMoves.push({ id: pool[0]!, name: Dex.moves.get(pool[0]!).name || pool[0]! });
+    legalMoves.push({ id: pool[0]!, name: Dex.moves.get(pool[0]).name || pool[0]! });
   }
 }
 
-function healIllegalPokemonMoves(poke: Record<string, unknown>): void {
-  if (!poke.species || !poke.moves || !Array.isArray(poke.moves)) return;
-  const rawSpecies = String(poke.species);
+function healIllegalPokemonMoves(poke: LegacyPokemonRecord): void {
+  if (typeof poke.species !== 'string' || !poke.moves || !Array.isArray(poke.moves)) return;
+  const rawSpecies = poke.species;
   const { legalMoves, currentMoveIds, healedAny } = filterLegalMoves(
     rawSpecies,
-    poke.moves as Array<{ id?: string; name?: string }>
+    poke.moves.filter((m): m is { id?: string; name?: string } => Boolean(m))
   );
 
   if (!healedAny) return;
 
   const originalCount = poke.moves.length;
-  const level = (poke as { level?: number }).level || 5;
+  const level = poke.level || 5;
   const pool = getMovesAtLevel(rawSpecies, level);
 
   fillRemainingLegalMoves(legalMoves, currentMoveIds, pool, originalCount);
 
-  const pokeLabel = poke.name ? String(poke.name) : String(poke.species);
+  const pokeLabel = typeof poke.name === 'string' ? poke.name : poke.species;
   console.log(
     `[Heal Migration] Pokémon: ${pokeLabel} (Lvl ${level}) - Replaced illegal moves. Result:`,
     legalMoves.map((m) => m.id)
@@ -863,7 +871,7 @@ function healIllegalPokemonMoves(poke: Record<string, unknown>): void {
   poke.moves = legalMoves;
 }
 
-function migratePokemonMoves(poke: Record<string, unknown>, moveMap: Map<string, string>): number {
+function migratePokemonMoves(poke: LegacyPokemonRecord, moveMap: Map<string, string>): number {
   let count = 0;
   if (!poke.moves || !Array.isArray(poke.moves)) return count;
 
@@ -882,7 +890,7 @@ function migratePokemonMoves(poke: Record<string, unknown>, moveMap: Map<string,
   return count;
 }
 
-async function main(customFilePath?: string) {
+async function main(customFilePath?: string): Promise<void> {
   const targetBackupFile = customFilePath
     ? path.resolve(process.cwd(), customFilePath)
     : BACKUP_FILE;
@@ -918,15 +926,15 @@ async function main(customFilePath?: string) {
 
     const teams = saveData.team || [];
     const boxes = saveData.box || [];
-    const allPokes = [...teams, ...boxes].filter(Boolean) as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
+    const allPokes = [...teams, ...boxes].filter(Boolean) as LegacyPokemonRecord[];
 
     for (const poke of allPokes) {
       migratedPokes++;
       migratePokemonSpecies(poke);
       migratePokemonAbility(poke, abilityMap);
 
-      if (poke.nature) {
-        const normNature = normalize(String(poke.nature));
+      if (typeof poke.nature === 'string') {
+        const normNature = normalize(poke.nature);
         poke.nature = natureMap.get(normNature) || normNature;
       }
 
@@ -959,4 +967,4 @@ export const command = defineCommand({
   }
 });
 
-runMain(command);
+void runMain(command);

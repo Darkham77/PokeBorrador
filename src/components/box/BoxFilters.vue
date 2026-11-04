@@ -112,24 +112,23 @@ const BOX_FILTERS_LEAVE_DURATION_SEC = 0.25;
 
 const beforeEnter = (el: Element): void => {
   gsap.set(el, {
-    height: 0,
-    opacity: 0,
-    overflow: 'hidden'
+    scaleY: 0,
+    transformOrigin: 'top center',
+    opacity: 0
   });
 };
 
 const enter = (el: Element, done: () => void): void => {
-  // layout-ok: Accordion expand/collapse requires height animation in Vue SFC transition
   gsap.fromTo(
     el,
-    { height: 0, opacity: 0 },
+    { scaleY: 0, opacity: 0, transformOrigin: 'top center' },
     {
-      height: 'auto',
+      scaleY: 1,
       opacity: 1,
       duration: BOX_FILTERS_ENTER_DURATION_SEC,
       ease: 'power2.out',
       onComplete: () => {
-        gsap.set(el, { clearProps: 'height,overflow' });
+        gsap.set(el, { clearProps: 'transform,opacity' });
         done();
       }
     }
@@ -137,10 +136,10 @@ const enter = (el: Element, done: () => void): void => {
 };
 
 const leave = (el: Element, done: () => void): void => {
-  // layout-ok: Accordion expand/collapse requires height animation in Vue SFC transition
   gsap.to(el, {
-    height: 0,
+    scaleY: 0,
     opacity: 0,
+    transformOrigin: 'top center',
     duration: BOX_FILTERS_LEAVE_DURATION_SEC,
     ease: 'power2.in',
     onComplete: done

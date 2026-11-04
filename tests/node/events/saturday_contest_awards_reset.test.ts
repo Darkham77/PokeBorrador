@@ -55,20 +55,20 @@ describeWithDatabase('Saturday Contest Awards Reset Parity', (engine) => {
       let awards = await queryLocal('SELECT * FROM awards WHERE winner_name = ?', [
         'SaturdayChamp'
       ]);
-      expect(awards.length).toBe(2);
+      expect(awards).toHaveLength(2);
 
       // Pass 2 WITHOUT PURGE: Two more awards inserted (RED condition: count = 4)
       await seedAward('aw_3', 'gran_concurso_sabado', 'SaturdayChamp');
       await seedAward('aw_4', 'gran_concurso_sabado', 'SaturdayChamp');
       awards = await queryLocal('SELECT * FROM awards WHERE winner_name = ?', ['SaturdayChamp']);
-      expect(awards.length).toBe(4);
+      expect(awards).toHaveLength(4);
 
       // PURGE CONTRACT VERIFICATION: Purge awards for user/event restores clean count of 2
       await queryLocal('DELETE FROM awards WHERE event_id = ?', ['gran_concurso_sabado']);
       await seedAward('aw_clean_1', 'gran_concurso_sabado', 'SaturdayChamp');
       await seedAward('aw_clean_2', 'gran_concurso_sabado', 'SaturdayChamp');
       awards = await queryLocal('SELECT * FROM awards WHERE winner_name = ?', ['SaturdayChamp']);
-      expect(awards.length).toBe(2);
+      expect(awards).toHaveLength(2);
       return;
     }
 
@@ -107,14 +107,14 @@ describeWithDatabase('Saturday Contest Awards Reset Parity', (engine) => {
       await insertPgAward('a0000000-0000-0000-0000-000000000002');
       let rows =
         await sql`SELECT * FROM public.awards WHERE event_id = 'gran_concurso_sabado' AND winner_name = ${testUser}`;
-      expect(rows.length).toBe(2);
+      expect(rows).toHaveLength(2);
 
       // Pass 2 WITHOUT PURGE: Accumulates to 4 (The RED reproduction of 6B failure)
       await insertPgAward('a0000000-0000-0000-0000-000000000003');
       await insertPgAward('a0000000-0000-0000-0000-000000000004');
       rows =
         await sql`SELECT * FROM public.awards WHERE event_id = 'gran_concurso_sabado' AND winner_name = ${testUser}`;
-      expect(rows.length).toBe(4);
+      expect(rows).toHaveLength(4);
 
       // PURGE CONTRACT: Purging before re-running ensures exactly 2 awards
       await sql`DELETE FROM public.awards WHERE event_id = 'gran_concurso_sabado'`;
@@ -122,7 +122,7 @@ describeWithDatabase('Saturday Contest Awards Reset Parity', (engine) => {
       await insertPgAward('a0000000-0000-0000-0000-000000000006');
       rows =
         await sql`SELECT * FROM public.awards WHERE event_id = 'gran_concurso_sabado' AND winner_name = ${testUser}`;
-      expect(rows.length).toBe(2);
+      expect(rows).toHaveLength(2);
     } finally {
       await sql.end();
     }

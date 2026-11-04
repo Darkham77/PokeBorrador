@@ -25,7 +25,7 @@ describe('organicMountainGenerator', () => {
       const H = 32;
       const matrix = generateOrganicHeightmap(W, H, { seed: 12345 });
 
-      expect(matrix.length).toBe(H);
+      expect(matrix).toHaveLength(H);
       expect(matrix[0]?.length).toBe(W);
 
       const uniqueValues = new Set<number>();

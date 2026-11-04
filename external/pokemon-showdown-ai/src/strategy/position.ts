@@ -1,7 +1,7 @@
+import { BattleState } from '../battle/state';
+import { DamageCalculator } from '../calculator/damage';
 import { CONFIG } from '../config';
 import { BattleStateSnapshot, PositionEvaluation, WinCondition } from '../types';
-import { DamageCalculator } from '../calculator/damage';
-import { BattleState } from '../battle/state';
 
 /**
  * Evaluate the overall board position.

@@ -10,6 +10,7 @@
  * 4. Archaeology minigames MUST NOT be restored on F5; they return to search loop to prevent retries.
  */
 import { test, expect, type Page } from '@playwright/test';
+
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import {
   waitForStoreReady,

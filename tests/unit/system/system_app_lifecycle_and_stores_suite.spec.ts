@@ -5,7 +5,7 @@ import { setActivePinia, createPinia } from 'pinia';
  * update store, error store, audio debouncing, and time utilities.
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vite-plus/test';
 
 import {
   resolveAppLoadingInfo,
@@ -19,6 +19,8 @@ import { formatDisplayDate, formatChatTimestamp } from '@/logic/utils/timeUtils'
 import { useAudioStore } from '@/stores/audio';
 import { useAuthStore } from '@/stores/auth';
 import { useErrorStore } from '@/stores/errorStore';
+import type { useGameStore as useGameStoreImport } from '@/stores/game';
+import type { useLoadingStore as useLoadingStoreImport } from '@/stores/loading';
 import { useUpdateStore } from '@/stores/update';
 
 import { setupLocalStorageMock } from './localStorageMock.ts';
@@ -66,7 +68,7 @@ describe('System App Lifecycle & Core Stores Suite', () => {
         expect(result.active).toBe(true);
         expect(result.msg).toBe('Descargando mapa...');
         expect(result.sub).toBe('Ruta 1');
-        expect(result.global).toBe(true);
+        expect(result.isGlobal).toBe(true);
         expect(result.icon).toBe('🗺️');
       });
 
@@ -86,7 +88,7 @@ describe('System App Lifecycle & Core Stores Suite', () => {
         expect(result.active).toBe(true);
         expect(result.msg).toBe('Iniciando sesión...');
         expect(result.sub).toBe('Conectando con el servidor');
-        expect(result.global).toBe(false);
+        expect(result.isGlobal).toBe(false);
       });
 
       it('handles game engine boot sticky gate', () => {
@@ -392,7 +394,7 @@ describe('System App Lifecycle & Core Stores Suite', () => {
       window.localStorage.clear();
       window.sessionStorage.clear();
       vi.clearAllMocks();
-      globalThis.fetch = vi.fn().mockResolvedValue({ ok: true } as Response);
+      globalThis.fetch = vi.fn().mockResolvedValue({ ok: true });
     });
 
     it('initializes with default up_to_date state', () => {
@@ -588,10 +590,10 @@ describe('System App Lifecycle & Core Stores Suite', () => {
   });
 
   describe('Game Store - loadGame with Timeout & Retries', () => {
-    let useGameStore: () => ReturnType<typeof import('@/stores/game').useGameStore>;
-    let useAuthStoreLocal: () => ReturnType<typeof import('@/stores/auth').useAuthStore>;
-    let useLoadingStore: () => ReturnType<typeof import('@/stores/loading').useLoadingStore>;
-    let loadBestSaveMock: import('vite-plus/test').Mock;
+    let useGameStore: () => ReturnType<typeof useGameStoreImport>;
+    let useAuthStoreLocal: () => ReturnType<typeof useAuthStore>;
+    let useLoadingStore: () => ReturnType<typeof useLoadingStoreImport>;
+    let loadBestSaveMock: Mock;
     let originalReload: () => void;
 
     beforeEach(async () => {
@@ -608,7 +610,7 @@ describe('System App Lifecycle & Core Stores Suite', () => {
 
       const sessionStoreMock: Record<string, string> = {};
       vi.stubGlobal('sessionStorage', {
-        getItem: vi.fn((key: string) => (sessionStoreMock[key] as string | undefined) || null),
+        getItem: vi.fn((key: string) => sessionStoreMock[key] || null),
         setItem: vi.fn((key: string, val: string | number) => {
           sessionStoreMock[key] = val.toString();
         }),
@@ -636,7 +638,7 @@ describe('System App Lifecycle & Core Stores Suite', () => {
       useGameStore = gameModule.useGameStore;
       useAuthStoreLocal = authModule.useAuthStore;
       useLoadingStore = loadingModule.useLoadingStore;
-      loadBestSaveMock = vi.mocked(loadBestSave) as unknown as import('vite-plus/test').Mock;
+      loadBestSaveMock = vi.mocked(loadBestSave);
     }, 30000);
 
     const runTimeoutSession = async () => {

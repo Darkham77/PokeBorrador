@@ -65,7 +65,7 @@ import {
   placeProceduralReliefAndProps,
   placeAllBridges
 } from './kantoProceduralCarver.ts';
-import { DynamicCatalogLoader } from './kantoTileEngine.ts';
+import { type DynamicCatalogLoader } from './kantoTileEngine.ts';
 import { SimplexNoise } from './noise/simplexNoise.ts';
 
 function countSurroundingMountainNeighbors(

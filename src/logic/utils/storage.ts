@@ -108,6 +108,20 @@ export const safeStorage = {
         `Failed to remove item "${key}": ${e instanceof Error ? e.message : String(e)}`
       );
     }
+  },
+
+  clear(): void {
+    try {
+      memoryStore.clear();
+      const storage = getStorageBackend();
+      if (!storage) return;
+      storage.clear();
+    } catch (e: unknown) {
+      logger.warn(
+        'Storage',
+        `Failed to clear storage: ${e instanceof Error ? e.message : String(e)}`
+      );
+    }
   }
 };
 
@@ -152,6 +166,20 @@ export const safeSessionStorage = {
       logger.warn(
         'Storage',
         `Failed to remove session item "${key}": ${e instanceof Error ? e.message : String(e)}`
+      );
+    }
+  },
+
+  clear(): void {
+    try {
+      memorySessionStore.clear();
+      const storage = getSessionStorageBackend();
+      if (!storage) return;
+      storage.clear();
+    } catch (e: unknown) {
+      logger.warn(
+        'Storage',
+        `Failed to clear session storage: ${e instanceof Error ? e.message : String(e)}`
       );
     }
   }

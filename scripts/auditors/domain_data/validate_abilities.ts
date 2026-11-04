@@ -1,33 +1,22 @@
-import type { DisplayText } from '@francogp/auditor';
+import { enableCompileCache } from 'node:module';
 /**
  * scripts/auditors/domain_data/validate_abilities.ts
  *
  * ABILITY INTEGRITY VALIDATOR (Node.js 26+ Native)
  * Validates abilities assigned in POKEMON_DB against the local Showdown DB.
  */
-
 import path from 'node:path';
-import { enableCompileCache } from 'node:module';
+
 import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
-import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
-import { ABILITY_TRANSLATIONS_ES } from '../../../src/data/battle/abilities.ts';
 import { Dex, toID, type ID } from '@pkmn/sim';
+
+import { ABILITY_TRANSLATIONS_ES, isAbilityId } from '../../../src/data/battle/abilities.ts';
+import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
 import { isEnabledPokemonId } from '../../../src/data/system/constants.ts';
 
 enableCompileCache();
 
 const DATA_FILE = path.resolve(process.cwd(), 'src/data/pokemon/pokemonDB.ts');
-interface AbilityTranslationData {
-  readonly name: string;
-  readonly desc: string;
-  readonly icon?: string;
-}
-
-const TRANSLATIONS_MAP: Record<DisplayText, AbilityTranslationData> = ABILITY_TRANSLATIONS_ES;
-
-function hasAbilityTranslation(id: string): boolean {
-  return Object.hasOwn(TRANSLATIONS_MAP, id);
-}
 
 export type AbilityRuleId =
   | 'ability-invalid-showdown'
@@ -41,17 +30,17 @@ export const ABILITY_RULES: readonly AbilityRuleId[] = [
 ] as const;
 
 export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
-  constructor() {
+  public constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(ABILITY_RULES, {
         speed: 'heavy',
         phase: 'normal',
-        fix: 'none',
         md: false,
         ast: false,
         changedOnly: false,
         critical: false
       }),
+      ruleFixers: {},
       id: 'validate_abilities',
       configKey: 'domain.abilities',
       defaultConfig: {
@@ -129,7 +118,7 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
 
     this.runSubAuditorSync('ability-missing-translation', () => {
       for (const abId of abilitiesList) {
-        if (!hasAbilityTranslation(abId)) {
+        if (!isAbilityId(abId)) {
           this.addViolation({
             ruleId: 'ability-missing-translation',
             severity: 'error',
@@ -143,9 +132,11 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
     });
 
     this.runSubAuditorSync('ability-empty-field', () => {
+      const transMap: Record<string, { name?: string; desc?: string; icon?: string }> =
+        ABILITY_TRANSLATIONS_ES;
       for (const abId of abilitiesList) {
-        if (!hasAbilityTranslation(abId)) continue;
-        const trans = TRANSLATIONS_MAP[abId];
+        if (!isAbilityId(abId)) continue;
+        const trans = transMap[abId];
         if (!trans) continue;
         if (!trans.name?.trim()) {
           this.addViolation({

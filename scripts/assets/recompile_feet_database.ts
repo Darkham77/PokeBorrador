@@ -7,6 +7,7 @@
 
 import { isMainModule } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
+
 import { regenerateFeetDatabase } from './helpers/catalogGenerators.ts';
 
 export async function recompileFeetDatabase(): Promise<void> {
@@ -28,5 +29,5 @@ export const command = defineCommand({
 });
 
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

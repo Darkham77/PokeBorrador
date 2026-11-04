@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+
 import { logToInspector } from '../logic/useLiveInspector.ts';
-import type { TeamMember, TeamActiveMode } from './sec9TeamTypes';
 import Sec9TeamMemberCard from './Sec9TeamMemberCard.vue';
+import type { TeamMember, TeamActiveMode } from './sec9TeamTypes';
 
 const activeMode = ref<TeamActiveMode>('aventura');
 

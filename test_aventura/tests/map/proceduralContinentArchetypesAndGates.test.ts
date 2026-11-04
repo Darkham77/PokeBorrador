@@ -14,7 +14,7 @@ import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
 
-describe.skip('Procedural Continent Archetypes, Gateways & Mainland Seaport Invariants', () => {
+describe('Procedural Continent Archetypes, Gateways & Mainland Seaport Invariants', () => {
   const continent = generateContinentMap({
     width: 256,
     height: 256,
@@ -35,7 +35,7 @@ describe.skip('Procedural Continent Archetypes, Gateways & Mainland Seaport Inva
 
   it('guarantees exactly 1 Grand Metropolis is placed without any stacked duplicates', () => {
     const metropolises = pois.filter((p) => p.type === 'metropolis');
-    expect(metropolises.length).toBe(1);
+    expect(metropolises).toHaveLength(1);
 
     const metro = metropolises[0]!;
     expect(metro.name).toContain('Metrópolis');
@@ -53,7 +53,7 @@ describe.skip('Procedural Continent Archetypes, Gateways & Mainland Seaport Inva
 
   it('guarantees the primary port dock is placed strictly on the continental mainland and connects to the road network', () => {
     const ports = pois.filter((p) => p.type === 'port_dock');
-    expect(ports.length).toBe(1);
+    expect(ports).toHaveLength(1);
 
     const port = ports[0]!;
 

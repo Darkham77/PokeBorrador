@@ -397,6 +397,20 @@ export interface RouteSpawnMappedItem {
   eventShinyMult?: number;
 }
 
+interface RouteSpawnItemOptions {
+  isSeen: boolean;
+  isCaught: boolean;
+  sprite: string;
+  percentage: number;
+  baseRate: number;
+  basePercentage: number;
+  diff: number;
+  spawnType: string;
+  statusClass: string;
+  multiplier: number;
+  eventMeta?: { isEventBoosted?: boolean; eventRateMult?: number; eventShinyMult?: number };
+}
+
 function buildRouteSpawnItem(
   id: PokemonSpeciesId,
   pData: {
@@ -410,31 +424,21 @@ function buildRouteSpawnItem(
     spe: number;
     totalStats: number;
   },
-  isSeen: boolean,
-  isCaught: boolean,
-  sprite: string,
-  percentage: number,
-  baseRate: number,
-  basePercentage: number,
-  diff: number,
-  spawnType: string,
-  statusClass: string,
-  multiplier: number,
-  eventMeta?: { isEventBoosted?: boolean; eventRateMult?: number; eventShinyMult?: number }
+  options: RouteSpawnItemOptions
 ): RouteSpawnMappedItem {
   return {
     id,
     name: pData.name,
-    isSeen,
-    isCaught,
-    sprite,
-    percentage,
-    baseRate,
-    basePercentage,
-    diff,
-    spawnType,
-    statusClass,
-    multiplier,
+    isSeen: options.isSeen,
+    isCaught: options.isCaught,
+    sprite: options.sprite,
+    percentage: options.percentage,
+    baseRate: options.baseRate,
+    basePercentage: options.basePercentage,
+    diff: options.diff,
+    spawnType: options.spawnType,
+    statusClass: options.statusClass,
+    multiplier: options.multiplier,
     types: pData.types,
     hp: pData.hp,
     atk: pData.atk,
@@ -443,9 +447,9 @@ function buildRouteSpawnItem(
     spd: pData.spd,
     spe: pData.spe,
     totalStats: pData.totalStats,
-    isEventBoosted: eventMeta?.isEventBoosted,
-    eventRateMult: eventMeta?.eventRateMult,
-    eventShinyMult: eventMeta?.eventShinyMult
+    isEventBoosted: options.eventMeta?.isEventBoosted,
+    eventRateMult: options.eventMeta?.eventRateMult,
+    eventShinyMult: options.eventMeta?.eventShinyMult
   };
 }
 
@@ -493,23 +497,21 @@ export function createPopulatedRouteSpawnItem(params: BuildRouteSpawnParams): Ro
   const { isEventBoosted, finalStatusClass, eventRateMult, eventShinyMult } =
     resolveEventBoostedStatus(params.statusClass, params.speciesBonuses);
 
-  return buildRouteSpawnItem(
-    params.id,
-    pData,
+  return buildRouteSpawnItem(params.id, pData, {
     isSeen,
     isCaught,
-    getAssetUrl(ASSET_TYPES.POKEMON, params.id),
-    params.percentage,
-    params.baseRate,
-    params.basePercentage,
-    params.diff,
-    params.spawnType,
-    finalStatusClass,
-    params.multiplier,
-    {
+    sprite: getAssetUrl(ASSET_TYPES.POKEMON, params.id),
+    percentage: params.percentage,
+    baseRate: params.baseRate,
+    basePercentage: params.basePercentage,
+    diff: params.diff,
+    spawnType: params.spawnType,
+    statusClass: finalStatusClass,
+    multiplier: params.multiplier,
+    eventMeta: {
       isEventBoosted,
       eventRateMult,
       eventShinyMult
     }
-  );
+  });
 }

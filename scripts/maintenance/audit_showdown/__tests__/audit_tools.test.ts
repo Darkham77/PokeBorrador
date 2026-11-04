@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+
+import { test } from 'vite-plus/test';
+
 import { audit4SeatCompatibility } from '../audit_4seat_compatibility.ts';
 import { auditActiveGenSSoT } from '../audit_active_gen_ssot.ts';
 import { auditCatchRateMath } from '../audit_catch_rate_math.ts';

@@ -272,12 +272,9 @@ describe('Battle Rewards Distribution Suite', () => {
       mockCtx.activeBattle.value.isTrainer = false;
       mockCtx.activeBattle.value.isGym = false;
 
-      const awarded = handleNpcBabyEggReward(
-        mockCtx as unknown as BattleContext,
-        mockCtx.activeBattle.value
-      );
+      const awarded = handleNpcBabyEggReward(mockCtx, mockCtx.activeBattle.value);
       expect(awarded).toBe(false);
-      expect(mockState.eggs.length).toBe(0);
+      expect(mockState.eggs).toHaveLength(0);
       expect(mockCtx.addLog).not.toHaveBeenCalled();
     });
 
@@ -287,12 +284,9 @@ describe('Battle Rewards Distribution Suite', () => {
 
       vi.spyOn(Math, 'random').mockReturnValue(0.001);
 
-      const awarded = handleNpcBabyEggReward(
-        mockCtx as unknown as BattleContext,
-        mockCtx.activeBattle.value
-      );
+      const awarded = handleNpcBabyEggReward(mockCtx, mockCtx.activeBattle.value);
       expect(awarded).toBe(false);
-      expect(mockState.eggs.length).toBe(0);
+      expect(mockState.eggs).toHaveLength(0);
       expect(mockCtx.addLog).not.toHaveBeenCalled();
 
       vi.restoreAllMocks();
@@ -304,12 +298,9 @@ describe('Battle Rewards Distribution Suite', () => {
 
       vi.spyOn(Math, 'random').mockReturnValue(0.001);
 
-      const awarded = handleNpcBabyEggReward(
-        mockCtx as unknown as BattleContext,
-        mockCtx.activeBattle.value
-      );
+      const awarded = handleNpcBabyEggReward(mockCtx, mockCtx.activeBattle.value);
       expect(awarded).toBe(false);
-      expect(mockState.eggs.length).toBe(0);
+      expect(mockState.eggs).toHaveLength(0);
       expect(mockCtx.addLog).not.toHaveBeenCalled();
 
       vi.restoreAllMocks();
@@ -320,20 +311,14 @@ describe('Battle Rewards Distribution Suite', () => {
       mockCtx.activeBattle.value.isRival = false;
 
       vi.spyOn(Math, 'random').mockReturnValue(0.021);
-      let awarded = handleNpcBabyEggReward(
-        mockCtx as unknown as BattleContext,
-        mockCtx.activeBattle.value
-      );
+      let awarded = handleNpcBabyEggReward(mockCtx, mockCtx.activeBattle.value);
       expect(awarded).toBe(false);
-      expect(mockState.eggs.length).toBe(0);
+      expect(mockState.eggs).toHaveLength(0);
 
       vi.spyOn(Math, 'random').mockReturnValue(0.015);
-      awarded = handleNpcBabyEggReward(
-        mockCtx as unknown as BattleContext,
-        mockCtx.activeBattle.value
-      );
+      awarded = handleNpcBabyEggReward(mockCtx, mockCtx.activeBattle.value);
       expect(awarded).toBe(true);
-      expect(mockState.eggs.length).toBe(1);
+      expect(mockState.eggs).toHaveLength(1);
 
       const egg = mockState.eggs[0];
       expect(egg).toBeDefined();
@@ -360,20 +345,14 @@ describe('Battle Rewards Distribution Suite', () => {
       mockCtx.activeBattle.value.isRival = true;
 
       vi.spyOn(Math, 'random').mockReturnValue(0.051);
-      let awarded = handleNpcBabyEggReward(
-        mockCtx as unknown as BattleContext,
-        mockCtx.activeBattle.value
-      );
+      let awarded = handleNpcBabyEggReward(mockCtx, mockCtx.activeBattle.value);
       expect(awarded).toBe(false);
-      expect(mockState.eggs.length).toBe(0);
+      expect(mockState.eggs).toHaveLength(0);
 
       vi.spyOn(Math, 'random').mockReturnValue(0.045);
-      awarded = handleNpcBabyEggReward(
-        mockCtx as unknown as BattleContext,
-        mockCtx.activeBattle.value
-      );
+      awarded = handleNpcBabyEggReward(mockCtx, mockCtx.activeBattle.value);
       expect(awarded).toBe(true);
-      expect(mockState.eggs.length).toBe(1);
+      expect(mockState.eggs).toHaveLength(1);
 
       const egg = mockState.eggs[0];
       expect(egg).toBeDefined();
@@ -397,7 +376,7 @@ describe('Battle Rewards Distribution Suite', () => {
 
     it('should hatch an NPC baby egg with full wild vigor (3 to 6)', async () => {
       vi.spyOn(Math, 'random').mockReturnValue(0.01);
-      handleNpcBabyEggReward(mockCtx as unknown as BattleContext, mockCtx.activeBattle.value);
+      handleNpcBabyEggReward(mockCtx, mockCtx.activeBattle.value);
       vi.restoreAllMocks();
 
       const egg = mockState.eggs[0];
@@ -433,12 +412,9 @@ describe('Battle Rewards Distribution Suite', () => {
 
       vi.spyOn(Math, 'random').mockReturnValue(0.001);
 
-      const awarded = handleNpcBabyEggReward(
-        mockCtx as unknown as BattleContext,
-        mockCtx.activeBattle.value
-      );
+      const awarded = handleNpcBabyEggReward(mockCtx, mockCtx.activeBattle.value);
       expect(awarded).toBe(false);
-      expect(mockState.eggs.length).toBe(1);
+      expect(mockState.eggs).toHaveLength(1);
       expect(mockCtx.addLog).not.toHaveBeenCalled();
 
       vi.restoreAllMocks();
@@ -454,12 +430,9 @@ describe('Battle Rewards Distribution Suite', () => {
 
       vi.spyOn(Math, 'random').mockReturnValue(0.001);
 
-      const awarded = handleNpcBabyEggReward(
-        mockCtx as unknown as BattleContext,
-        mockCtx.activeBattle.value
-      );
+      const awarded = handleNpcBabyEggReward(mockCtx, mockCtx.activeBattle.value);
       expect(awarded).toBe(false);
-      expect(mockState.eggs.length).toBe(7);
+      expect(mockState.eggs).toHaveLength(7);
       expect(mockCtx.addLog).not.toHaveBeenCalled();
 
       vi.restoreAllMocks();

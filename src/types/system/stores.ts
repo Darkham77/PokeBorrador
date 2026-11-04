@@ -33,8 +33,7 @@ import type {
   PokemonCompetitionRank,
   PokemonStatKey
 } from '@/types/pokemon/pokemon';
-import type { GameState, GenderId } from '@/types/system/game';
-import type { FactionId } from '@/types/system/game';
+import type { GameState, GenderId, FactionId } from '@/types/system/game';
 import type { DayPhase } from '@/types/system/time';
 
 export interface WorldMap {

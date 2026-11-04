@@ -207,29 +207,30 @@ function onImageError(e: Event): void {
 
     .item-details {
       flex: 1;
-      .i-name {
+    }
+
+    .i-name {
+      @include pixelated;
+
+      display: block;
+      color: var(--white);
+      font-size: var(--font-9);
+      font-weight: bold;
+      line-height: 1.5;
+      margin-bottom: 4px;
+      padding-top: 2px;
+    }
+
+    .i-meta {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+
+      .i-qty {
         @include pixelated;
 
-        display: block;
-        color: var(--white);
-        font-size: var(--font-9);
-        font-weight: bold;
-        line-height: 1.5;
-        margin-bottom: 4px;
-        padding-top: 2px;
-      }
-
-      .i-meta {
-        display: flex;
-        align-items: center;
-        gap: $spacing-sm;
-
-        .i-qty {
-          @include pixelated;
-
-          color: $gray;
-          font-size: var(--font-8);
-        }
+        color: $gray;
+        font-size: var(--font-8);
       }
     }
   }

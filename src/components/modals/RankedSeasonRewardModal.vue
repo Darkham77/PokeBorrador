@@ -64,27 +64,26 @@ const isTopPodium = computed(() => Boolean(props.rank && props.rank <= TOP_PODIU
 // Animation on modal show
 watch(
   () => props.show,
-  (val) => {
+  async (val) => {
     if (val) {
-      nextTick(() => {
-        const badge = document.querySelector('.reward-tier-badge');
-        const items = document.querySelectorAll('.reward-prize-item');
-        if (badge) {
-          gsap.fromTo(
-            badge,
-            { scale: 0.6, opacity: 0 },
-            { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }
-          );
-        }
-        if (items.length > 0) {
-          const PRIZE_ITEM_ENTRANCE_OFFSET_Y_PX = 15 as const;
-          gsap.fromTo(
-            items,
-            { y: PRIZE_ITEM_ENTRANCE_OFFSET_Y_PX, opacity: 0 },
-            { y: 0, opacity: 1, duration: 0.35, stagger: 0.08, ease: 'power2.out' }
-          );
-        }
-      });
+      await nextTick();
+      const badge = document.querySelector('.reward-tier-badge');
+      const items = document.querySelectorAll('.reward-prize-item');
+      if (badge) {
+        gsap.fromTo(
+          badge,
+          { scale: 0.6, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }
+        );
+      }
+      if (items.length > 0) {
+        const PRIZE_ITEM_ENTRANCE_OFFSET_Y_PX = 15 as const;
+        gsap.fromTo(
+          items,
+          { y: PRIZE_ITEM_ENTRANCE_OFFSET_Y_PX, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.35, stagger: 0.08, ease: 'power2.out' }
+        );
+      }
     }
   },
   { immediate: true }
@@ -263,7 +262,7 @@ function handleClose(): void {
     margin: 0;
     color: var(--amber-300);
     font-size: var(--font-18);
-    font-weight: 800;
+    font-weight: $font-weight-extrabold;
     text-transform: uppercase;
     text-shadow: 0 0 8px Rgb(234 179 8 / 40%);
   }
@@ -305,7 +304,7 @@ function handleClose(): void {
 
     .tier-name {
       font-size: var(--font-16);
-      font-weight: 800;
+      font-weight: $font-weight-extrabold;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -313,7 +312,7 @@ function handleClose(): void {
     .final-elo {
       color: var(--slate-300);
       font-size: var(--font-13);
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
     }
   }
 
@@ -324,7 +323,7 @@ function handleClose(): void {
     background: Rgb(234 179 8 / 30%);
     color: var(--yellow-light);
     font-size: var(--font-11);
-    font-weight: 800;
+    font-weight: $font-weight-extrabold;
   }
 }
 
@@ -360,7 +359,7 @@ function handleClose(): void {
     margin: 0 0 8px;
     color: var(--slate-300);
     font-size: var(--font-13);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
@@ -385,7 +384,7 @@ function handleClose(): void {
     background: Linear-Gradient(135deg, var(--amber-300) 0%, var(--amber-400) 100%);
     color: var(--slate-900);
     font-size: var(--font-14);
-    font-weight: 800;
+    font-weight: $font-weight-extrabold;
     cursor: pointer;
     box-shadow: $shadow-glow-amber;
 

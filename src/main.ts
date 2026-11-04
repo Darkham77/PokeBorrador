@@ -5,6 +5,7 @@ import { createApp } from 'vue';
 import { DataLoaderPlugin } from 'vue-router/experimental';
 
 import { gameBus } from '@/logic/events/gameBus';
+import { logger } from '@/logic/utils/logger';
 import { useErrorStore } from '@/stores/errorStore';
 
 import '@/styles/_index.scss';
@@ -37,7 +38,7 @@ if (typeof globalThis.window !== 'undefined') {
   globalThis.window.gsap = gsap;
   if (globalThis.window.__E2E__ || globalThis.location.search.includes('e2e=true')) {
     gsap.globalTimeline.timeScale(100);
-    console.debug('⚡ [E2E] GSAP timeScale set to 100x for instant animations.');
+    logger.debug('⚡ [E2E] GSAP timeScale set to 100x for instant animations.');
   }
 }
 
@@ -59,9 +60,9 @@ app.config.errorHandler = (err, _instance, info) => {
       source: info
     });
   } catch (e) {
-    console.error('Failed to log Vue error to errorStore:', e);
+    logger.error('VueErrorHandler', `Failed to log Vue error to errorStore: ${String(e)}`);
   }
-  console.error('[Vue error]:', err);
+  logger.error('VueErrorHandler', `[Vue error]: ${String(err)}`);
 };
 
 app.mount('#app');
@@ -84,7 +85,7 @@ if (typeof globalThis.window !== 'undefined') {
 
   globalThis.addEventListener('vite:preloadError', (event) => {
     event.preventDefault();
-    console.warn(
+    logger.warn(
       '[Vite] Chunk preload error detected (stale deployment assets). Triggering update flow via gameBus.'
     );
     try {

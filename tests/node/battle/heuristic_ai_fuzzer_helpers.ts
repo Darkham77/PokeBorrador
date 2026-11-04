@@ -5,7 +5,7 @@
  */
 
 import type { PokemonMoveId } from '../../../src/data/battle/moves.ts';
-import { heuristicDecision } from '../../../src/logic/battle/ai/heuristic/heuristicEngine.ts';
+import { type heuristicDecision } from '../../../src/logic/battle/ai/heuristic/heuristicEngine.ts';
 import type {
   HeuristicBattleSnapshot,
   HeuristicPokemonState,

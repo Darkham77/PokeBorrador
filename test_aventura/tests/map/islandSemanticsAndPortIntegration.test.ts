@@ -84,7 +84,7 @@ describe('islandSemanticsAndPortIntegration (Tier 1 Architecture Verification)',
       pathGrid[11]![10] = true;
 
       const pruned = pruneRedundantStairs(stairs, pathGrid);
-      expect(pruned.length).toBe(1);
+      expect(pruned).toHaveLength(1);
       expect(pruned[0]!.x).toBe(10);
       expect(pruned[0]!.y).toBe(10);
     });

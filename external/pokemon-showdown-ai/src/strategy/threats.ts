@@ -1,7 +1,7 @@
-import { CONFIG } from '../config';
-import { BattleStateSnapshot, PokemonState, ThreatAssessment } from '../types';
 import { DamageCalculator } from '../calculator/damage';
+import { CONFIG } from '../config';
 import { InferenceEngine } from '../inference/engine';
+import { BattleStateSnapshot, PokemonState, ThreatAssessment } from '../types';
 
 function toId(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]/g, '');

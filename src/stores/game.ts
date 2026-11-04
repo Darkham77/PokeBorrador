@@ -7,7 +7,7 @@ import { requireMapRouteId } from '@/data/world/map-assets';
 import { saveCoordinator } from '@/logic/auth/saveCoordinator.ts';
 import { MAX_NOTIFICATION_HISTORY_ITEMS } from '@/logic/constants/gameplay.ts';
 import { DURATION_24_HOURS_MS, BUFF_DURATION_30_MIN_MS } from '@/logic/constants/items.ts';
-import { DBRouter } from '@/logic/db/dbRouter';
+import { type DBRouter } from '@/logic/db/dbRouter';
 import { supabase } from '@/logic/db/supabase';
 import { gameBus } from '@/logic/events/gameBus.ts';
 import { logger } from '@/logic/utils/logger';

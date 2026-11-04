@@ -88,7 +88,7 @@ describeWithDatabase('Friendship Lifecycle & Persistence Parity Suite', (_engine
     expect(result.transition).not.toBeNull();
     expect(result.transition?.newTier).toBe('distrust');
     expect(result.transition?.direction).toBe('down');
-    expect(logs.length).toBe(1);
+    expect(logs).toHaveLength(1);
     expect(logs[0]).toContain('profunda desconfianza');
   });
 
@@ -185,18 +185,18 @@ describeWithDatabase('Friendship Lifecycle & Persistence Parity Suite', (_engine
       'SELECT save_data FROM game_saves WHERE user_id = ?',
       [testUserId]
     );
-    expect(rows.length).toBe(1);
+    expect(rows).toHaveLength(1);
 
     const rawSaveData = rows[0]!.save_data;
     const loadedData =
-      typeof rawSaveData === 'string' ? (JSON.parse(rawSaveData) as any) : (rawSaveData as any);
+      typeof rawSaveData === 'string' ? JSON.parse(rawSaveData) : (rawSaveData as any);
 
     expect(loadedData).toBeDefined();
     expect(Array.isArray(loadedData.team)).toBe(true);
 
     // 5. Deserialization into Runtime Entities
     const loadedTeam = deserializePokemonTeam(loadedData.team);
-    expect(loadedTeam.length).toBe(6);
+    expect(loadedTeam).toHaveLength(6);
 
     // 6. 1:1 Parity Assertions
     // p1: 0 (Distrust)
@@ -232,7 +232,7 @@ describeWithDatabase('Friendship Lifecycle & Persistence Parity Suite', (_engine
 
     // Box mon: 220
     const loadedBox = deserializePokemonTeam(loadedData.box);
-    expect(loadedBox.length).toBe(1);
+    expect(loadedBox).toHaveLength(1);
     expect(loadedBox[0]!.uid).toBe('mon-box-220');
     expect(loadedBox[0]!.friendship).toBe(220);
     expect(resolveFriendshipSealTier(loadedBox[0]!.friendship)).toBe('best_friends');

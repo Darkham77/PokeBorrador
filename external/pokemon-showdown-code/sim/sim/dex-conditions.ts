@@ -1,3 +1,6 @@
+import { Utils } from '../lib/utils';
+import { assignMissingFields, BasicEffect, toID, type ModdedEffectText } from './dex-data';
+import type { SecondaryEffect, MoveEventMethods } from './dex-moves';
 import {
   ActiveMove,
   AnyObject,
@@ -13,10 +16,6 @@ import {
   Side,
   SparseBoostsTable
 } from './exported-global-types';
-
-import { Utils } from '../lib/utils';
-import { assignMissingFields, BasicEffect, toID } from './dex-data';
-import type { SecondaryEffect, MoveEventMethods } from './dex-moves';
 
 /**
  * Event method prefixes:
@@ -34,7 +33,7 @@ export interface EventMethods {
     source: Pokemon,
     move: ActiveMove
   ) => void;
-  onEmergencyExit?: (this: Battle, pokemon: Pokemon) => void;
+  onEmergencyExit?: (this: Battle, originalHp: number, pokemon: Pokemon) => void;
   onAfterEachBoost?: (
     this: Battle,
     boost: SparseBoostsTable,
@@ -52,6 +51,7 @@ export interface EventMethods {
     effect: Effect
   ) => void;
   onAfterSubDamage?: MoveEventMethods['onAfterSubDamage'];
+  onAfterEntryHazard?: (this: Battle, pokemon: Pokemon) => void;
   onAfterSwitchInSelf?: (this: Battle, pokemon: Pokemon) => void;
   onAfterTerastallization?: (this: Battle, pokemon: Pokemon) => void;
   onAfterUseItem?: (this: Battle, item: Item, pokemon: Pokemon) => void;
@@ -890,6 +890,7 @@ export interface EventMethods {
   onDragOutPriority?: number;
   onDisableMovePriority?: number;
   onEffectivenessPriority?: number;
+  onEntryHazardPriority?: number;
   onFoeBasePowerPriority?: number;
   onFoeBeforeMovePriority?: number;
   onFoeModifyDefPriority?: number;
@@ -1159,7 +1160,7 @@ export interface FieldConditionData
 
 export type ConditionData = PokemonConditionData | SideConditionData | FieldConditionData;
 
-export type ModdedConditionData = ConditionData & { inherit?: true };
+export type ModdedConditionData = ConditionData & ModdedEffectText & { inherit?: true };
 export interface ConditionDataTable {
   [id: IDEntry]: ConditionData;
 }

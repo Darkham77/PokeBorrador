@@ -12,6 +12,22 @@ export function formatExecutionTimestamp(
   return instant.toString().replace('T', ' ').slice(0, 19);
 }
 
+function formatLogArg(arg: unknown): string {
+  if (typeof arg === 'string') return arg;
+  if (typeof arg === 'number' || typeof arg === 'boolean' || arg === null || arg === undefined) {
+    return String(arg);
+  }
+  if (typeof arg === 'object') {
+    try {
+      return JSON.stringify(arg);
+    } catch {
+      return '[Unserializable Object]';
+    }
+  }
+  if (typeof arg === 'symbol') return arg.toString();
+  return typeof arg;
+}
+
 export abstract class BaseRunnerLogger {
   protected readonly logName: string;
   protected readonly reportDir: string;
@@ -131,16 +147,12 @@ export abstract class BaseRunnerLogger {
     this.isIntercepting = true;
 
     console.debug = (...args: unknown[]) => {
-      const line = args
-        .map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a)))
-        .join(' ');
+      const line = args.map(formatLogArg).join(' ');
       this.debug(line);
     };
 
     console.log = (...args: unknown[]) => {
-      const line = args
-        .map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a)))
-        .join(' ');
+      const line = args.map(formatLogArg).join(' ');
       if (this.isProgressLog(line)) {
         this.originalConsoleLog.apply(console, args);
       } else {

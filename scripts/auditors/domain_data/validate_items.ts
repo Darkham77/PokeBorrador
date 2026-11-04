@@ -7,10 +7,11 @@
  *   - src/logic/items/itemEffects.ts -> HEALING_ITEMS{}
  */
 
-import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import path from 'node:path';
+import fs from 'node:fs/promises';
 import { enableCompileCache } from 'node:module';
+import path from 'node:path';
+
 import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
 
 enableCompileCache();
@@ -65,7 +66,14 @@ export const ITEM_RULES: readonly ItemRuleId[] = [
   'item-sprite-collision'
 ] as const;
 
-const MUST_BE_USABLE_VALUES = ['pociones', 'potions', 'utility', 'booster', 'stones', 'stone'] as const;
+const MUST_BE_USABLE_VALUES = [
+  'pociones',
+  'potions',
+  'utility',
+  'booster',
+  'stones',
+  'stone'
+] as const;
 const MUST_BE_USABLE: ReadonlySet<string> = new Set<string>(MUST_BE_USABLE_VALUES);
 
 const MUST_NOT_BE_USABLE_VALUES = [
@@ -80,9 +88,7 @@ const MUST_NOT_BE_USABLE_VALUES = [
   'machinery',
   'tms'
 ] as const;
-const MUST_NOT_BE_USABLE: ReadonlySet<string> = new Set<string>(
-  MUST_NOT_BE_USABLE_VALUES
-);
+const MUST_NOT_BE_USABLE: ReadonlySet<string> = new Set<string>(MUST_NOT_BE_USABLE_VALUES);
 const REQUIRED_FIELDS = ['id', 'name', 'cat', 'sprite', 'icon', 'desc', 'price'] as const;
 const VALID_CAT_VALUES = [
   'pociones',
@@ -119,9 +125,7 @@ const ALLOWED_USABLE_HELD_VALUES = [
   'grepaberry',
   'tamatoberry'
 ] as const;
-const ALLOWED_USABLE_HELD: ReadonlySet<string> = new Set<string>(
-  ALLOWED_USABLE_HELD_VALUES
-);
+const ALLOWED_USABLE_HELD: ReadonlySet<string> = new Set<string>(ALLOWED_USABLE_HELD_VALUES);
 const FORBIDDEN_DESC_PATTERNS = [
   /\bholder('s)?\b/i,
   /\braises?\b/i,
@@ -156,7 +160,7 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
   private validateRequiredFields(item: ShopItem, tag: string): void {
     REQUIRED_FIELDS.forEach((f) => {
       const val = item[f];
-      if (val == null || val === '') {
+      if (val === null || val === undefined || val === '') {
         this.addViolation({
           ruleId: 'item-missing-field',
           severity: 'error',
@@ -320,17 +324,17 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
       }
     }
   }
-  constructor() {
+  public constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(ITEM_RULES, {
         speed: 'heavy',
         phase: 'normal',
-        fix: 'none',
         md: false,
         ast: false,
         changedOnly: false,
         critical: false
       }),
+      ruleFixers: {},
       id: 'validate_items',
       configKey: 'domain.items',
       defaultConfig: {

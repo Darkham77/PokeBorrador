@@ -1,4 +1,4 @@
-import { isMainModule } from '@francogp/auditor';
+import { spawnSync } from 'node:child_process';
 /**
  * @file generate_migrations.js
  * @description Generador automático de manifiesto de migraciones SQL.
@@ -14,12 +14,12 @@ import { isMainModule } from '@francogp/auditor';
  *
  * Se ejecuta automáticamente durante el proceso de build y en Hot Update mediante Vite.
  */
-
 import fs from 'node:fs/promises';
-import path from 'node:path';
-import { spawnSync } from 'node:child_process';
-import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
+import path from 'node:path';
+import { styleText } from 'node:util';
+
+import { isMainModule } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
 
 enableCompileCache();
@@ -28,7 +28,7 @@ const MIGRATIONS_DIR = path.resolve(process.cwd(), 'database/migrations');
 const OUTPUT_FILE = path.resolve(process.cwd(), 'src/logic/db/migrations_data.ts');
 const VERSION_OUTPUT_FILE = path.resolve(process.cwd(), 'src/logic/db/migrations_version.ts');
 
-export async function generateMigrations() {
+export async function generateMigrations(): Promise<void> {
   const relOutputDir = path
     .relative(process.cwd(), OUTPUT_FILE)
     .split(path.sep)
@@ -146,7 +146,7 @@ export const DATABASE_MIGRATIONS = ${JSON.stringify(migrations, null, 2)};
 
   const latestMigration = migrations.length > 0 ? migrations[migrations.length - 1] : null;
   const latestId = latestMigration ? latestMigration.id : '';
-  const latestVersion = latestId ? parseInt(latestId.split('_')[0] || '0') : 0;
+  const latestVersion = latestId ? parseInt(latestId.split('_')[0] || '0', 10) : 0;
 
   const versionOutput = `/**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
@@ -183,7 +183,7 @@ export const LATEST_MIGRATION_ID = '${latestId}';
       return;
     }
   } catch (err) {
-    err;
+    console.warn('[Handled controlled exception]:', err);
   }
 
   {
@@ -327,13 +327,13 @@ export const command = defineCommand({
   async run({ args }) {
     const isSkip = Boolean(
       args['no-test'] ||
-        args['skip-test'] ||
-        args.target === 'skip-test' ||
-        args.target === 'no-test'
+      args['skip-test'] ||
+      args.target === 'skip-test' ||
+      args.target === 'no-test'
     );
     await runDirectCliPipeline(isSkip);
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

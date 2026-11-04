@@ -1,4 +1,4 @@
-import { isMainModule } from '@francogp/auditor';
+import { existsSync, readFileSync } from 'node:fs';
 /**
  * scripts/assets/download_assets.ts
  *
@@ -21,14 +21,14 @@ import { isMainModule } from '@francogp/auditor';
  *   npm run assets:download [items | pokemon | all]
  *   npm run assets:download:items
  */
-
 import fs from 'node:fs/promises';
-import { existsSync, readFileSync } from 'node:fs';
+import { enableCompileCache } from 'node:module';
 import path from 'node:path';
 import { styleText } from 'node:util';
-import { defineCommand, runMain } from 'citty';
-import { enableCompileCache } from 'node:module';
+
+import { isMainModule } from '@francogp/auditor';
 import { Dex, toID } from '@pkmn/sim';
+import { defineCommand, runMain } from 'citty';
 
 enableCompileCache();
 
@@ -159,9 +159,7 @@ const ALLOWED_ASSET_HOST_VALUES = [
   'play.pokemonshowdown.com',
   'img.pokemondb.net'
 ] as const;
-const ALLOWED_ASSET_HOSTS: ReadonlySet<string> = new Set<string>(
-  ALLOWED_ASSET_HOST_VALUES
-);
+const ALLOWED_ASSET_HOSTS: ReadonlySet<string> = new Set<string>(ALLOWED_ASSET_HOST_VALUES);
 
 function isAllowedAssetUrl(parsed: URL): boolean {
   return parsed.protocol === 'https:' && ALLOWED_ASSET_HOSTS.has(parsed.hostname);
@@ -197,7 +195,7 @@ async function tryFetchAssetBuffer(url: string): Promise<Buffer | null> {
       return buf;
     }
   } catch (err) {
-    err;
+    console.warn('[Handled controlled exception]:', err);
   }
   return null;
 }
@@ -284,7 +282,7 @@ export async function downloadAllItems(): Promise<{
           downloadedCount++;
           console.log(
             styleText('green', `   ✅ [${item.id}]`),
-            `${item.name || item.id} (desde ${result.sourceUrl})`
+            `${item.name} (desde ${result.sourceUrl})`
           );
         } else {
           failed.push(item.id);
@@ -311,7 +309,7 @@ export async function downloadAllItems(): Promise<{
   };
 }
 
-async function downloadPokemon(limit: number) {
+async function downloadPokemon(limit: number): Promise<void> {
   const pokeFolder = path.join(RAW_ASSETS_DIR, 'pokemon');
   await fs.mkdir(pokeFolder, { recursive: true });
   console.log(styleText('yellow', `\n📦 Descargando sprites de Pokémon (1 a ${limit})...`));
@@ -332,7 +330,7 @@ async function downloadPokemon(limit: number) {
         await fs.writeFile(target, buf);
       }
     } catch (err) {
-      err;
+      console.warn('[Handled controlled exception]:', err);
     }
   }
 }
@@ -367,7 +365,9 @@ export const command = defineCommand({
     const pokemonLimit =
       typeof args.limit === 'string' ? parseInt(args.limit, 10) : TOTAL_POKEMON_SPECIES;
 
-    console.log(styleText('bold', '\n--- 📥 UNIVERSAL ASSET DOWNLOADER & MULTI-SOURCE SCRAPER ---'));
+    console.log(
+      styleText('bold', '\n--- 📥 UNIVERSAL ASSET DOWNLOADER & MULTI-SOURCE SCRAPER ---')
+    );
 
     if (doItems) {
       await downloadAllItems();
@@ -379,5 +379,5 @@ export const command = defineCommand({
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

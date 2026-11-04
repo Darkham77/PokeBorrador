@@ -1,8 +1,8 @@
-import { GYM_IDS, type GymId } from '@/data/world/gyms';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { ItemId } from '@/data/inventory/items';
-import type { GameState } from '@/types/system/game';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { GYM_IDS, type GymId } from '@/data/world/gyms';
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
+import type { GameState } from '@/types/system/game';
 
 export interface GymRematchRewardItem {
   readonly itemId: ItemId;

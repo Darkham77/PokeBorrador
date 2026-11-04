@@ -52,7 +52,7 @@ watch(
         lastLogId.value = lastLog.id;
 
         if (isNew) {
-          nextTick(() => {
+          void nextTick().then(() => {
             const entries = logContainer.value?.querySelectorAll('.log-entry');
             if (entries && entries.length > 0) {
               const lastEntry = entries[entries.length - 1] as HTMLElement;
@@ -360,7 +360,7 @@ onMounted(() => {
 /* Compatibility with new types (Text only overrides) */
 :deep(.log-info) {
   color: var(--yellow);
-  font-weight: 500;
+  font-weight: $font-weight-medium;
 }
 
 :deep(.log-player) {
@@ -406,7 +406,7 @@ onMounted(() => {
 
   strong {
     color: var(--white);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
   }
 }
 
@@ -421,12 +421,12 @@ onMounted(() => {
 
 :deep(.reward-lvl) {
   color: var(--yellow, var(--gold));
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
 }
 
 :deep(.reward-exp) {
   color: var(--green-light);
-  font-weight: 500;
+  font-weight: $font-weight-medium;
 }
 
 :deep(.reward-evs) {
@@ -435,6 +435,6 @@ onMounted(() => {
 
 :deep(.reward-friendship) {
   color: var(--rose);
-  font-weight: 500;
+  font-weight: $font-weight-medium;
 }
 </style>

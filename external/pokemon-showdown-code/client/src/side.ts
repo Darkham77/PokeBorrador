@@ -320,6 +320,7 @@ export class Side {
     pokemon.beingCalledBack = true;
     pokemon.statusState.toxicTurns = 0;
     if (this.battle.gen.num === 5) pokemon.statusState.sleepTurns = 0;
+    if (this.battle.tier.includes('Champions')) pokemon.timesAttacked = 0;
     this.lastPokemon = pokemon;
     this.active[slot] = null;
   }
@@ -379,7 +380,7 @@ export class Side {
 
   destroy() {
     this.clearPokemon();
-    // @ts-expect-error readonly
+    // @ts-ignore readonly
     this.battle = null!;
     this.foe = null!;
   }

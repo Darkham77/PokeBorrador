@@ -1,5 +1,5 @@
-import type { DisplayText } from '@francogp/auditor';
-import { isMainModule } from '@francogp/auditor';
+import fs from 'node:fs';
+import { enableCompileCache } from 'node:module';
 /**
  * scripts/maintenance/diagnose_account.ts
  *
@@ -25,30 +25,28 @@ import { isMainModule } from '@francogp/auditor';
  *   npm run database:diagnose-account file=database/backups/server_franco/backup.json user=Angianemar
  *   npm run database:diagnose-account user=local_ash
  */
-
-import fs from 'node:fs';
 import path from 'node:path';
-import { enableCompileCache } from 'node:module';
-import { styleText } from 'node:util';
-import { defineCommand, runMain } from 'citty';
 import { DatabaseSync } from 'node:sqlite';
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { styleText } from 'node:util';
 
-import { validateSaveData } from '../../src/logic/validation/schemas.ts';
-import { checkPokemonLegality } from '../../src/logic/pokemon/pokemonLegality.ts';
-import { repairAccountsInSqlite } from './repair_account_legality.ts';
+import type { DisplayText, FindingSeverity } from '@francogp/auditor';
+import { isMainModule } from '@francogp/auditor';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { defineCommand, runMain } from 'citty';
+
 import { SHOP_ITEMS } from '../../src/data/inventory/items.ts';
+import { isEnabledPokemonId } from '../../src/data/system/constants.ts';
 import { DATABASE_MIGRATIONS } from '../../src/logic/db/migrations_data.ts';
 import { splitSQLStatements, translatePostgresToSqlite } from '../../src/logic/db/sqlTranslator.ts';
-import { initTestDatabaseSchema } from '../auditors/persistence/_testDbHelper.ts';
-import { readAndParseEnv, findServerConfig } from '../lib/supabaseClient.ts';
-import { parseUnmatchedArgs } from '../lib/cliHelpers.ts';
-import { isEnabledPokemonId } from '../../src/data/system/constants.ts';
+import { checkPokemonLegality } from '../../src/logic/pokemon/pokemonLegality.ts';
 import { toID } from '../../src/logic/utils/strings.ts';
-import type { GameState } from '../../src/types/system/game.ts';
+import { validateSaveData } from '../../src/logic/validation/schemas.ts';
 import type { Pokemon } from '../../src/types/pokemon/pokemon.ts';
-
-import type { FindingSeverity } from '@francogp/auditor';
+import type { GameState } from '../../src/types/system/game.ts';
+import { initTestDatabaseSchema } from '../auditors/persistence/_testDbHelper.ts';
+import { parseUnmatchedArgs } from '../lib/cliHelpers.ts';
+import { readAndParseEnv, findServerConfig } from '../lib/supabaseClient.ts';
+import { repairAccountsInSqlite } from './repair_account_legality.ts';
 
 enableCompileCache();
 
@@ -88,7 +86,7 @@ interface BackupProfileRow {
 
 interface BackupSaveRow {
   user_id?: string;
-  save_data?: string | GameState;
+  save_data?: unknown;
   last_save_id?: string;
 }
 
@@ -442,11 +440,12 @@ function validateValibotSchema(saveData: GameState, findings: DiagnosticFinding[
     for (const issue of valibotResult.issues) {
       const pathStr =
         issue.path
-          ?.map((p) =>
-            (p as { type: string; key: unknown }).type === 'array'
-              ? `[${(p as { key: unknown }).key}]`
-              : (p as { key: unknown }).key
-          )
+          ?.map((p) => {
+            const item = p as { type?: string; key?: unknown };
+            const keyStr =
+              typeof item.key === 'string' || typeof item.key === 'number' ? String(item.key) : '';
+            return item.type === 'array' ? `[${keyStr}]` : keyStr;
+          })
           .join('.') || 'root';
       findings.push({
         severity: 'error',
@@ -514,10 +513,12 @@ function validatePokemonEntry(
     poke.expNeeded === undefined ||
     typeof poke.expNeeded !== 'number'
   ) {
+    const expStr =
+      typeof poke.expNeeded === 'object' ? JSON.stringify(poke.expNeeded) : String(poke.expNeeded);
     findings.push({
       severity: 'error',
       category: 'pokemon',
-      message: `expNeeded inválido (${poke.expNeeded}) en ${location} (${poke.name} Nivel ${poke.level}).`,
+      message: `expNeeded inválido (${expStr}) en ${location} (${poke.name} Nivel ${poke.level}).`,
       path: `${location}.expNeeded`
     });
   }
@@ -592,7 +593,8 @@ function validateDaycareWarehouse(
   for (let wIdx = 0; wIdx < warehouse.length; wIdx++) {
     const entry = warehouse[wIdx];
     if (!entry || typeof entry !== 'object') continue;
-    const rawSpecies = String((entry as { id?: unknown }).id || '');
+    const rawId = (entry as { id?: unknown }).id;
+    const rawSpecies = typeof rawId === 'string' ? rawId : '';
     const cleanSpecies = rawSpecies.startsWith('egg_')
       ? rawSpecies.replace(/^egg_\d+_[a-z0-9]+_?/, '')
       : rawSpecies;
@@ -923,19 +925,19 @@ export const command = defineCommand({
     }
   },
   async run({ args }) {
-    const { barePositionals, hasFlag, getParam } = parseUnmatchedArgs(args._);
-    const cleanTarget = (args.target || barePositionals[0] || '').trim();
+    const parsed = parseUnmatchedArgs(args._);
+    const cleanTarget = (args.target || parsed.barePositionals[0] || '').trim();
     const isAll = Boolean(
       args.all ||
-        args.user === 'all' ||
-        cleanTarget === 'all' ||
-        hasFlag('all') ||
-        getParam('user') === 'all'
+      args.user === 'all' ||
+      cleanTarget === 'all' ||
+      parsed.hasFlag('all') ||
+      parsed.getParam('user') === 'all'
     );
-    const userInput = !isAll ? (args.user || cleanTarget || getParam('user', 'u')) : undefined;
-    const serverInput = args.server || getParam('server', 's');
-    const fileInput = args.file || getParam('file', 'f');
-    const dbInput = args.db || getParam('db', 'd') || 'poke_local.db';
+    const userInput = !isAll ? args.user || cleanTarget || parsed.getParam('user', 'u') : undefined;
+    const serverInput = args.server || parsed.getParam('server', 's');
+    const fileInput = args.file || parsed.getParam('file', 'f');
+    const dbInput = args.db || parsed.getParam('db', 'd') || 'poke_local.db';
 
     if (!isAll && !userInput) {
       console.error(
@@ -972,5 +974,5 @@ export const command = defineCommand({
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

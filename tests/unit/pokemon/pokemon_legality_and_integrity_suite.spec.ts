@@ -335,7 +335,7 @@ describe('Pokemon Legality & Integrity Domain Suite', () => {
     it('every species ID (key) must be lowercase and consistent', () => {
       Object.keys(POKEMON_DB).forEach((id) => {
         expect(id, `Pokemon ID "${id}" must be lowercase`).toBe(id.toLowerCase());
-        expect(id.includes(' '), `Pokemon ID "${id}" should not contain spaces`).toBe(false);
+        expect(id).not.toContain(' ');
       });
     });
 

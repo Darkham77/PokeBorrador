@@ -453,7 +453,7 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
     background: transparent;
     color: var(--slate-400);
     font-size: var(--font-12);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     cursor: pointer;
 
     &.active {
@@ -480,7 +480,7 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
   background: var(--slate-800);
   color: var(--slate-300);
   font-size: var(--font-11);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
 
   &:hover {
@@ -504,7 +504,7 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
   background: var(--slate-900);
   color: var(--slate-50);
   font-size: var(--font-11);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
 
   &:focus {
@@ -521,7 +521,7 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
   border: none;
   border-radius: $radius-md-alt;
   font-size: var(--font-11);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
 
   &.btn-generate {

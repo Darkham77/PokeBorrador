@@ -9,8 +9,10 @@
 
 import { describe, it, expect } from 'vite-plus/test';
 
+import { getSeasonalThemeForMonth } from '@/data/system/rankedData.ts';
 import type { DBRouter } from '@/logic/db/dbRouter.ts';
 import { checkAndResolveSeasonEnd } from '@/logic/pvp/rankedSeasonRewardEngine.ts';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils.ts';
 import { INITIAL_STATE } from '@/stores/gameInitialState.ts';
 import { fetchActiveSeasonRules, findInvalidDefendingPokemon } from '@/stores/pvpDataHelper.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon.ts';
@@ -76,9 +78,13 @@ describe('Reproduction: Season Rollover, Rewards & Active Rules', () => {
       const rules = await fetchActiveSeasonRules(mockStaleDb);
 
       expect(rules).not.toBeNull();
-      // RED ASSERTION: Since we are in October (Halloween), the stale September rules MUST be discarded
-      expect(rules?.name).toBe('Noche de Brujas');
-      expect(rules?.allowedTypes).toEqual(['ghost', 'dark', 'poison']);
+      const now = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE);
+      const currentTheme = getSeasonalThemeForMonth(now.month);
+      // RED ASSERTION: The stale September rules MUST be discarded in favor of current month theme
+      expect(rules?.name).toBe(currentTheme.name);
+      expect(rules?.allowedTypes).toEqual(
+        currentTheme.allowedTypes ? [...currentTheme.allowedTypes] : []
+      );
     });
 
     it('rejects defending team with non-Halloween types when October theme is active', () => {

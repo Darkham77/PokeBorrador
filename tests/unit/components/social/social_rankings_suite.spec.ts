@@ -12,8 +12,7 @@ import { useLivePvPStore } from '@/stores/livePvP';
 import { useModalStore } from '@/stores/modals';
 import { usePvPStore } from '@/stores/pvp';
 import { useSocialStore } from '@/stores/social/social';
-import type { RankedPodiumWinner } from '@/types/battle/pvp';
-import type { BattleCode } from '@/types/battle/pvp';
+import type { RankedPodiumWinner, BattleCode } from '@/types/battle/pvp';
 
 describe('Social Rankings & Theater Suite', () => {
   describe('SocialRankings.vue', () => {
@@ -24,7 +23,7 @@ describe('Social Rankings & Theater Suite', () => {
       authStore.user = {
         id: 'my_user_id',
         email: 'me@example.com'
-      } as unknown as typeof authStore.user;
+      };
 
       const pvpStore = usePvPStore();
       pvpStore.elo = 1850;

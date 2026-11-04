@@ -6,7 +6,7 @@
 
 import type { ItemId } from '@/data/inventory/items';
 import type { ItemEffectResult } from '@/types/inventory/items';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export const ITEM_FAMILY_IDS = [
   'healing_direct',
@@ -355,19 +355,19 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
       'Enseña una técnica directamente (<4 movimientos) o abre cola diferida de reemplazo (=4 movimientos).',
     testCases: [
       {
-        itemId: 'tm01' as ItemId,
+        itemId: 'tm01',
         name: 'MT01 (Mega Puño)',
         subCategory: 'Direct Learn (< 4 moves)',
         isDeferred: true,
         requiresTarget: true,
         setupValidTarget: (mon) => {
           mon.id = 'pikachu';
-          mon.moves = [{ id: 'thundershock', name: 'Impactrueno', pp: 30, maxPP: 30 } as Move];
+          mon.moves = [{ id: 'thundershock', name: 'Impactrueno', pp: 30, maxPP: 30 }];
         },
         verifySuccessEffect: (_mon, res) => res.success && res.resultType === 'learn_move'
       },
       {
-        itemId: 'tm01' as ItemId,
+        itemId: 'tm01',
         name: 'MT01 (Mega Puño)',
         subCategory: 'Replace Learn (= 4 moves)',
         isDeferred: true,
@@ -375,10 +375,10 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
         setupValidTarget: (mon) => {
           mon.id = 'pikachu';
           mon.moves = [
-            { id: 'thundershock', name: 'Impactrueno', pp: 30, maxPP: 30 } as Move,
-            { id: 'quickattack', name: 'Ataque Rápido', pp: 30, maxPP: 30 } as Move,
-            { id: 'thunderwave', name: 'Onda Trueno', pp: 20, maxPP: 20 } as Move,
-            { id: 'electroball', name: 'Bola Voltio', pp: 20, maxPP: 20 } as Move
+            { id: 'thundershock', name: 'Impactrueno', pp: 30, maxPP: 30 },
+            { id: 'quickattack', name: 'Ataque Rápido', pp: 30, maxPP: 30 },
+            { id: 'thunderwave', name: 'Onda Trueno', pp: 20, maxPP: 20 },
+            { id: 'electroball', name: 'Bola Voltio', pp: 20, maxPP: 20 }
           ];
         },
         verifySuccessEffect: (_mon, res) => res.success && res.resultType === 'learn_move'
@@ -402,7 +402,7 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
         setupValidTarget: (mon) => {
           mon.id = 'raichu';
           mon.level = 50;
-          mon.moves = [{ id: 'thunderbolt', name: 'Rayo', pp: 15, maxPP: 15 } as Move];
+          mon.moves = [{ id: 'thunderbolt', name: 'Rayo', pp: 15, maxPP: 15 }];
         },
         verifySuccessEffect: (_mon, res) => res.success && res.resultType === 'relearner'
       }
@@ -446,7 +446,7 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
         isDeferred: true,
         requiresTarget: true,
         setupValidTarget: (mon) => {
-          mon.moves = [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35 } as Move];
+          mon.moves = [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35 }];
         },
         verifySuccessEffect: (_mon, res) => res.success && res.resultType === 'pp_up'
       },
@@ -457,7 +457,7 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
         isDeferred: true,
         requiresTarget: true,
         setupValidTarget: (mon) => {
-          mon.moves = [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35 } as Move];
+          mon.moves = [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35 }];
         },
         verifySuccessEffect: (_mon, res) => res.success && res.resultType === 'ppmax'
       }

@@ -1,21 +1,21 @@
-// scripts/battle-tester/fuzzer-item-generator.ts
-import { Dex, type GenderName } from '@pkmn/sim';
-import { SHOP_ITEMS } from '../../../../src/data/inventory/items.ts';
-import { getShowdownNickname } from '../../../../src/logic/battle/showdownUidMapper.ts';
-
 import crypto from 'node:crypto';
 
+// scripts/battle-tester/fuzzer-item-generator.ts
+import { Dex, type GenderName } from '@pkmn/sim';
+
+import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
+import { toPokemonType, type PokemonType } from '../../../../src/data/battle/types.ts';
+import { SHOP_ITEMS } from '../../../../src/data/inventory/items.ts';
+import type { ItemId } from '../../../../src/data/inventory/items.ts';
 import {
   requirePokemonSpeciesId,
   type PokemonSpeciesId
 } from '../../../../src/data/pokemon/pokedex.ts';
-import type { ItemId } from '../../../../src/data/inventory/items.ts';
-import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
-import type { PokemonMoveId } from '../../../../src/types/pokemon/pokemon.ts';
-import { toPokemonType, type PokemonType } from '../../../../src/data/battle/types.ts';
-import type { FuzzerPokemonSet, TestBatch } from './fuzzer_team_generator.ts';
-import { pokemonDataProvider } from '../../../../src/logic/providers/pokemonDataProvider.ts';
 import { PokemonLegalityValidator } from '../../../../src/logic/battle/engine/pokemonLegalityValidator.ts';
+import { getShowdownNickname } from '../../../../src/logic/battle/showdownUidMapper.ts';
+import { pokemonDataProvider } from '../../../../src/logic/providers/pokemonDataProvider.ts';
+import type { PokemonMoveId } from '../../../../src/types/pokemon/pokemon.ts';
+import type { FuzzerPokemonSet, TestBatch } from './fuzzer_team_generator.ts';
 
 export interface ItemTestBatch extends Pick<
   TestBatch,
@@ -277,7 +277,9 @@ const REQUIRED_ENEMY_ITEMS: Readonly<Partial<Record<ItemId, ItemId>>> = {
 
 const MAX_SPECIAL_ATTACK_ENEMY_ITEMS = ['focussash'] as const;
 export type MaxSpecialAttackEnemyItem = (typeof MAX_SPECIAL_ATTACK_ENEMY_ITEMS)[number];
-const MAX_SPECIAL_ATTACK_ENEMY_ITEM_IDS: ReadonlySet<ItemId> = new Set(MAX_SPECIAL_ATTACK_ENEMY_ITEMS);
+const MAX_SPECIAL_ATTACK_ENEMY_ITEM_IDS: ReadonlySet<ItemId> = new Set(
+  MAX_SPECIAL_ATTACK_ENEMY_ITEMS
+);
 
 const MAX_ATTACK_ENEMY_ITEMS = [
   'aguavberry',
@@ -301,7 +303,7 @@ const MAX_ATTACK_ENEMY_ITEM_IDS: ReadonlySet<ItemId> = new Set(MAX_ATTACK_ENEMY_
 function getSpeciesLegalGender(speciesId: string): GenderName {
   const s = Dex.species.get(speciesId);
   if (!s || !s.exists) return 'N';
-  if (s.gender === 'N' || s.gender === 'M' || s.gender === 'F') return s.gender as GenderName;
+  if (s.gender === 'N' || s.gender === 'M' || s.gender === 'F') return s.gender;
   if (s.genderRatio?.F === 1) return 'F';
   if (s.genderRatio?.M === 1) return 'M';
   if (s.genderRatio?.M === 0 && s.genderRatio?.F === 0) return 'N';
@@ -312,14 +314,14 @@ function getRequiredHolderAbility(itemId: ItemId, speciesId: PokemonSpeciesId): 
   const explicit = REQUIRED_HOLDER_ABILITIES[itemId];
   if (explicit) return explicit;
   const legal = pokemonDataProvider.getSpeciesAbilities(speciesId);
-  return (legal[0] ?? 'synchronize') as AbilityId;
+  return legal[0] ?? 'synchronize';
 }
 
 function getRequiredEnemyAbility(itemId: ItemId, enemySpeciesId: PokemonSpeciesId): AbilityId {
   const explicit = REQUIRED_ENEMY_ABILITIES[itemId];
   if (explicit) return explicit;
   const legal = pokemonDataProvider.getSpeciesAbilities(enemySpeciesId);
-  return (legal[0] ?? 'naturalcure') as AbilityId;
+  return legal[0] ?? 'naturalcure';
 }
 
 function getRequiredEnemySpecies(itemId: ItemId, fallback: PokemonSpeciesId): PokemonSpeciesId {
@@ -441,7 +443,7 @@ function createItemlessSupportPokemon(species: PokemonSpeciesId = 'mew'): Fuzzer
   const uid = crypto.randomUUID();
   const gender = getSpeciesLegalGender(species);
   const legalAbilities = pokemonDataProvider.getSpeciesAbilities(species);
-  const ability = (legalAbilities[0] ?? 'synchronize') as AbilityId;
+  const ability = legalAbilities[0] ?? 'synchronize';
   return {
     name: getShowdownNickname(uid),
     species,
@@ -457,14 +459,8 @@ function createItemlessSupportPokemon(species: PokemonSpeciesId = 'mew'): Fuzzer
   };
 }
 
-const PINCH_BERRY_ITEM_IDS = [
-  'magoberry',
-  'starfberry',
-  'wikiberry'
-] as const;
-const PINCH_BERRIES: ReadonlySet<string> = new Set<string>(
-  PINCH_BERRY_ITEM_IDS
-);
+const PINCH_BERRY_ITEM_IDS = ['magoberry', 'starfberry', 'wikiberry'] as const;
+const PINCH_BERRIES: ReadonlySet<string> = new Set<string>(PINCH_BERRY_ITEM_IDS);
 
 function getItemTriggerPlan(itemId: ItemId): Pick<
   ItemTestBatch,

@@ -15,9 +15,9 @@
  */
 
 import fs from 'node:fs';
-import path from 'node:path';
-import ts from 'typescript';
 import { enableCompileCache } from 'node:module';
+import path from 'node:path';
+
 import {
   BaseAuditor,
   type SharedAstContext,
@@ -27,6 +27,7 @@ import {
   getAuditConfig,
   DEFAULT_AUDIT_CONFIG
 } from '@francogp/auditor';
+import ts from 'typescript';
 
 enableCompileCache();
 
@@ -246,7 +247,7 @@ export function checkDistAssetsForSimChunks(
 export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDecouplingRuleId> {
   private readonly scannableRoots: readonly string[];
 
-  constructor() {
+  public constructor() {
     const config = getAuditConfig();
     const scannableRoots = config.paths?.srcRoots ?? DEFAULT_AUDIT_CONFIG.paths.srcRoots;
     const includes = [
@@ -258,12 +259,12 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
       ruleCapabilities: createRuleCapabilities(CLIENT_SIM_DECOUPLING_RULES, {
         speed: 'light',
         phase: 'normal',
-        fix: 'none',
         md: false,
         ast: true,
         changedOnly: false,
         critical: false
       }),
+      ruleFixers: {},
       id: 'validate_client_sim_decoupling',
       configKey: 'architecture.clientSimDecoupling',
       defaultConfig: {
@@ -309,7 +310,7 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
     }[] = [];
 
     await this.runSubAuditor('client-sim-value-import', async () => {
-      const files = await this.context.collectFiles(this.scannableRoots, new Set(['.ts', '.vue', '.js']));
+      const files = this.context.collectFiles(this.scannableRoots, new Set(['.ts', '.vue', '.js']));
       for (const file of files) {
         const relPath = normalizePosixPath(path.relative(cwd, file));
         if (isWorkerBoundaryFile(relPath)) {

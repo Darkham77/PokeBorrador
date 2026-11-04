@@ -9,6 +9,7 @@ Frontend Developers / Systems Engineers.
 ## Local Contracts
 
 - Follow standard repository modularity guidelines.
+- **Dart Sass 2.0+ Modular Forwarding**: Components importing modular stylesheets (such as `_shop.scss`) require explicit `@forward` directives for nested sub-modules (`_shop_cards.scss`, `_shop_variants.scss`) so that mixins remain accessible to consumer SFC components under Dart Sass 2.0+ private module scoping.
 
 ## Key Files
 

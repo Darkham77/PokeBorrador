@@ -113,7 +113,7 @@ describe('TeamManagementModal.vue', () => {
     });
 
     const slotButtons = wrapper.findAll('.replace-btn');
-    expect(slotButtons.length).toBe(3);
+    expect(slotButtons).toHaveLength(3);
 
     // Click replace on slot 0 (currently occupied by Pikachu)
     await slotButtons[0]?.trigger('click');

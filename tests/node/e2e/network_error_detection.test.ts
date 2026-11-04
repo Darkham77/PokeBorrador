@@ -86,7 +86,7 @@ describe('Transient Infrastructure Network Error Detection', () => {
 
     it('rejects empty or null error messages', () => {
       expect(isTransientNetworkError('')).toBe(false);
-      expect(isTransientNetworkError(null as unknown as string)).toBe(false);
+      expect(isTransientNetworkError(null)).toBe(false);
       expect(isTransientNetworkError(undefined as unknown as string)).toBe(false);
     });
   });

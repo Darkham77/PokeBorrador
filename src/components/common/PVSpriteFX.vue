@@ -11,7 +11,7 @@ import { gsap } from 'gsap';
  * Centralized orchestrator for visual effects on Pokémon sprites.
  * 1:1 MIGRATION - Modularized with identical logic.
  */
-import { computed, inject, type Ref, ref, watch, nextTick, onUnmounted, type PropType } from 'vue';
+import { computed, inject, type Ref, ref, watch, nextTick, onUnmounted } from 'vue';
 
 import { resolveEffectSettings } from '@/data/battle/fx-configs';
 import { Z_LAYERS } from '@/logic/constants/visuals';
@@ -39,45 +39,86 @@ interface FXData {
 const battleStore = useBattleStore();
 const uiStore = useUIStore();
 
-const props = defineProps({
-  pokeId: { type: [String, Number], default: null },
-  isShiny: { type: Boolean, default: false },
-  isGuardian: { type: Boolean, default: false },
-  status: { type: String, default: null },
-  isConfused: { type: Boolean, default: false },
-  isTaunted: { type: Boolean, default: false },
-  isSubstitute: { type: Boolean, default: false },
-  isFlinched: { type: Boolean, default: false },
-  isDisabled: { type: Boolean, default: false },
-  isEncored: { type: Boolean, default: false },
-  isCursed: { type: Boolean, default: false },
-  isSeeded: { type: Boolean, default: false },
-  isTrapped: { type: Boolean, default: false },
-  attracted: { type: Boolean, default: false },
-  isFocusEnergy: { type: Boolean, default: false },
-  isProtected: { type: Boolean, default: false },
-  isEnduring: { type: Boolean, default: false },
-  isLockOn: { type: Boolean, default: false },
-  hasReflect: { type: Boolean, default: false },
-  hasLightScreen: { type: Boolean, default: false },
-  hasSafeguard: { type: Boolean, default: false },
-  hasMist: { type: Boolean, default: false },
-  hasSpikes: { type: Boolean, default: false },
-  hasStealthRock: { type: Boolean, default: false },
-  hasToxicSpikes: { type: Boolean, default: false },
-  isIngrained: { type: Boolean, default: false },
-  isPerishSong: { type: Boolean, default: false },
-  sparkleCount: { type: Number, default: DEFAULT_SPARKLE_COUNT },
-  enabled: { type: Boolean, default: true },
-  vibrant: { type: Boolean, default: false },
-  isSilhouette: { type: Boolean, default: false },
-  radius: { type: Number, default: DEFAULT_RADIUS_PX },
-  spriteScale: { type: Number, default: 1 },
-  pokeScale: { type: Number, default: 1 },
-  animState: { type: String as PropType<string | null>, default: null },
-  isBattle: { type: Boolean, default: false },
-  hideStatusOverlay: { type: Boolean, default: false },
-  overlayOnly: { type: Boolean, default: false }
+interface Props {
+  pokeId?: string | number | null;
+  isShiny?: boolean;
+  isGuardian?: boolean;
+  status?: string | null;
+  isConfused?: boolean;
+  isTaunted?: boolean;
+  isSubstitute?: boolean;
+  isFlinched?: boolean;
+  isDisabled?: boolean;
+  isEncored?: boolean;
+  isCursed?: boolean;
+  isSeeded?: boolean;
+  isTrapped?: boolean;
+  attracted?: boolean;
+  isFocusEnergy?: boolean;
+  isProtected?: boolean;
+  isEnduring?: boolean;
+  isLockOn?: boolean;
+  hasReflect?: boolean;
+  hasLightScreen?: boolean;
+  hasSafeguard?: boolean;
+  hasMist?: boolean;
+  hasSpikes?: boolean;
+  hasStealthRock?: boolean;
+  hasToxicSpikes?: boolean;
+  isIngrained?: boolean;
+  isPerishSong?: boolean;
+  sparkleCount?: number;
+  enabled?: boolean;
+  vibrant?: boolean;
+  isSilhouette?: boolean;
+  radius?: number;
+  spriteScale?: number;
+  pokeScale?: number;
+  animState?: string | null;
+  isBattle?: boolean;
+  hideStatusOverlay?: boolean;
+  overlayOnly?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  pokeId: null,
+  isShiny: false,
+  isGuardian: false,
+  status: null,
+  isConfused: false,
+  isTaunted: false,
+  isSubstitute: false,
+  isFlinched: false,
+  isDisabled: false,
+  isEncored: false,
+  isCursed: false,
+  isSeeded: false,
+  isTrapped: false,
+  attracted: false,
+  isFocusEnergy: false,
+  isProtected: false,
+  isEnduring: false,
+  isLockOn: false,
+  hasReflect: false,
+  hasLightScreen: false,
+  hasSafeguard: false,
+  hasMist: false,
+  hasSpikes: false,
+  hasStealthRock: false,
+  hasToxicSpikes: false,
+  isIngrained: false,
+  isPerishSong: false,
+  sparkleCount: DEFAULT_SPARKLE_COUNT,
+  enabled: true,
+  vibrant: false,
+  isSilhouette: false,
+  radius: DEFAULT_RADIUS_PX,
+  spriteScale: 1,
+  pokeScale: 1,
+  animState: null,
+  isBattle: false,
+  hideStatusOverlay: false,
+  overlayOnly: false
 });
 
 const isModalFast =
@@ -223,8 +264,9 @@ watch(
     () => props.isGuardian,
     isSimplified
   ],
-  () => {
-    nextTick(() => refreshPersistentFX());
+  async () => {
+    await nextTick();
+    refreshPersistentFX();
   },
   { immediate: true }
 );

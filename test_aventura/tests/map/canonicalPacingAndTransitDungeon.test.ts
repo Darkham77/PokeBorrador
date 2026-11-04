@@ -16,7 +16,7 @@ import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
 import { computeTransitableGrid } from '../../logic/map/transitableGridEngine.ts';
 import { generateWildernessLayer } from '../../logic/map/wildernessVegetationEngine.ts';
 
-describe.skip('Canonical Level Design Adjustments', () => {
+describe('Canonical Level Design Adjustments', () => {
   it('enforces port consolidation: strictly <= 2 maritime docks/landmarks with zero parallel dock clustering', () => {
     // Test procedural catalog with large targetCount
     const catalog = generateProceduralPOICatalog(24);
@@ -109,7 +109,7 @@ describe.skip('Canonical Level Design Adjustments', () => {
     const hedgeBlocks = wilderness.props.filter(
       (p) => p.prefabFile === 'poke_hedge_wall_block.png'
     );
-    expect(hedgeBlocks.length).toBe(0);
+    expect(hedgeBlocks).toHaveLength(0);
   });
 
   it('implements transit dungeon caves: paired entry and exit across mountain ridge with interrupted outdoor path', () => {

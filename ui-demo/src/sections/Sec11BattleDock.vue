@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import type { ItemId } from '@/data/inventory/itemIds';
+
 import type { PokemonType } from '@/data/battle/types';
+import type { ItemId } from '@/data/inventory/itemIds';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import type { PokemonGender } from '@/types/pokemon/pokemon';
 
 interface DockPokemon {

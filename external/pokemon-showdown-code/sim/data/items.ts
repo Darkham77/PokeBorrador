@@ -9,7 +9,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     // Neutralizing Gas protection implemented in Pokemon.ignoringAbility() within sim/pokemon.ts
     // and in Neutralizing Gas itself within data/abilities.ts
     onSetAbility(ability, target, source, effect) {
-      if (effect && effect.effectType === 'Ability' && effect.name !== 'Trace') {
+      if (effect?.effectType === 'Ability' && effect.name !== 'Trace') {
         this.add('-ability', source, effect);
       }
       this.add('-block', target, 'item: Ability Shield');
@@ -517,6 +517,12 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     num: 544,
     gen: 5
   },
+  blackaugurite: {
+    name: 'Black Augurite',
+    num: 1691,
+    gen: 8,
+    isNonstandard: 'Legends'
+  },
   blackbelt: {
     name: 'Black Belt',
     spritenum: 32,
@@ -525,7 +531,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     onBasePowerPriority: 15,
     onBasePower(basePower, user, target, move) {
-      if (move && move.type === 'Fighting') {
+      if (move?.type === 'Fighting') {
         return this.chainModify([4915, 4096]);
       }
     },
@@ -540,7 +546,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     onBasePowerPriority: 15,
     onBasePower(basePower, user, target, move) {
-      if (move && move.type === 'Dark') {
+      if (move?.type === 'Dark') {
         return this.chainModify([4915, 4096]);
       }
     },
@@ -564,6 +570,12 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     num: 281,
     gen: 4
+  },
+  blankplate: {
+    name: 'Blank Plate',
+    num: 1780,
+    gen: 8,
+    isNonstandard: 'Legends'
   },
   blastoisinite: {
     name: 'Blastoisinite',
@@ -722,7 +734,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     spritenum: 673,
     onMemory: 'Bug',
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 773) || pokemon.baseSpecies.num === 773) {
+      if (source?.baseSpecies.num === 773 || pokemon.baseSpecies.num === 773) {
         return false;
       }
       return true;
@@ -737,7 +749,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     name: 'Burn Drive',
     spritenum: 54,
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 649) || pokemon.baseSpecies.num === 649) {
+      if (source?.baseSpecies.num === 649 || pokemon.baseSpecies.num === 649) {
         return false;
       }
       return true;
@@ -798,7 +810,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     onBasePowerPriority: 15,
     onBasePower(basePower, user, target, move) {
-      if (move && move.type === 'Fire') {
+      if (move?.type === 'Fire') {
         return this.chainModify([4915, 4096]);
       }
     },
@@ -948,7 +960,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     name: 'Chill Drive',
     spritenum: 67,
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 649) || pokemon.baseSpecies.num === 649) {
+      if (source?.baseSpecies.num === 649 || pokemon.baseSpecies.num === 649) {
         return false;
       }
       return true;
@@ -1275,7 +1287,8 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
       type: 'Ghost'
     },
     onFractionalPriorityPriority: -2,
-    onFractionalPriority(priority, pokemon) {
+    onFractionalPriority(priority, pokemon, target, move) {
+      if (move.category === 'Status' && pokemon.hasAbility('myceliummight')) return;
       if (
         priority <= 0 &&
         (pokemon.hp <= pokemon.maxhp / 4 ||
@@ -1333,7 +1346,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     spritenum: 683,
     onMemory: 'Dark',
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 773) || pokemon.baseSpecies.num === 773) {
+      if (source?.baseSpecies.num === 773 || pokemon.baseSpecies.num === 773) {
         return false;
       }
       return true;
@@ -1470,7 +1483,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     name: 'Douse Drive',
     spritenum: 103,
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 649) || pokemon.baseSpecies.num === 649) {
+      if (source?.baseSpecies.num === 649 || pokemon.baseSpecies.num === 649) {
         return false;
       }
       return true;
@@ -1488,12 +1501,12 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     onPlate: 'Dragon',
     onBasePowerPriority: 15,
     onBasePower(basePower, user, target, move) {
-      if (move && move.type === 'Dragon') {
+      if (move?.type === 'Dragon') {
         return this.chainModify([4915, 4096]);
       }
     },
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 493) || pokemon.baseSpecies.num === 493) {
+      if (source?.baseSpecies.num === 493 || pokemon.baseSpecies.num === 493) {
         return false;
       }
       return true;
@@ -1522,7 +1535,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     onBasePowerPriority: 15,
     onBasePower(basePower, user, target, move) {
-      if (move && move.type === 'Dragon') {
+      if (move?.type === 'Dragon') {
         return this.chainModify([4915, 4096]);
       }
     },
@@ -1572,7 +1585,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     spritenum: 682,
     onMemory: 'Dragon',
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 773) || pokemon.baseSpecies.num === 773) {
+      if (source?.baseSpecies.num === 773 || pokemon.baseSpecies.num === 773) {
         return false;
       }
       return true;
@@ -1610,12 +1623,12 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     onPlate: 'Dark',
     onBasePowerPriority: 15,
     onBasePower(basePower, user, target, move) {
-      if (move && move.type === 'Dark') {
+      if (move?.type === 'Dark') {
         return this.chainModify([4915, 4096]);
       }
     },
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 493) || pokemon.baseSpecies.num === 493) {
+      if (source?.baseSpecies.num === 493 || pokemon.baseSpecies.num === 493) {
         return false;
       }
       return true;
@@ -1675,12 +1688,12 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     onPlate: 'Ground',
     onBasePowerPriority: 15,
     onBasePower(basePower, user, target, move) {
-      if (move && move.type === 'Ground') {
+      if (move?.type === 'Ground') {
         return this.chainModify([4915, 4096]);
       }
     },
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 493) || pokemon.baseSpecies.num === 493) {
+      if (source?.baseSpecies.num === 493 || pokemon.baseSpecies.num === 493) {
         return false;
       }
       return true;
@@ -1770,19 +1783,23 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     onAnySwitchIn() {
       if (!this.effectState.eject) return;
       (this.effectState.target as Pokemon).useItem();
+      delete this.effectState.eject;
     },
     onAnyAfterMega() {
       if (!this.effectState.eject) return;
       (this.effectState.target as Pokemon).useItem();
+      delete this.effectState.eject;
     },
     onAnyAfterMove() {
       if (!this.effectState.eject) return;
       (this.effectState.target as Pokemon).useItem();
+      delete this.effectState.eject;
     },
     onResidualOrder: 29,
     onResidual(pokemon) {
       if (!this.effectState.eject) return;
       (this.effectState.target as Pokemon).useItem();
+      delete this.effectState.eject;
     },
     onUseItem(item, pokemon) {
       if (!this.canSwitch(pokemon.side)) return false;
@@ -1829,7 +1846,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     spritenum: 679,
     onMemory: 'Electric',
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 773) || pokemon.baseSpecies.num === 773) {
+      if (source?.baseSpecies.num === 773 || pokemon.baseSpecies.num === 773) {
         return false;
       }
       return true;
@@ -1977,7 +1994,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     onBasePowerPriority: 15,
     onBasePower(basePower, user, target, move) {
-      if (move && move.type === 'Fairy') {
+      if (move?.type === 'Fairy') {
         return this.chainModify([4915, 4096]);
       }
     },
@@ -2003,7 +2020,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     spritenum: 684,
     onMemory: 'Fairy',
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 773) || pokemon.baseSpecies.num === 773) {
+      if (source?.baseSpecies.num === 773 || pokemon.baseSpecies.num === 773) {
         return false;
       }
       return true;
@@ -2064,7 +2081,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     spritenum: 668,
     onMemory: 'Fighting',
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 773) || pokemon.baseSpecies.num === 773) {
+      if (source?.baseSpecies.num === 773 || pokemon.baseSpecies.num === 773) {
         return false;
       }
       return true;
@@ -2137,7 +2154,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     spritenum: 676,
     onMemory: 'Fire',
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 773) || pokemon.baseSpecies.num === 773) {
+      if (source?.baseSpecies.num === 773 || pokemon.baseSpecies.num === 773) {
         return false;
       }
       return true;
@@ -2175,12 +2192,12 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     onPlate: 'Fighting',
     onBasePowerPriority: 15,
     onBasePower(basePower, user, target, move) {
-      if (move && move.type === 'Fighting') {
+      if (move?.type === 'Fighting') {
         return this.chainModify([4915, 4096]);
       }
     },
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 493) || pokemon.baseSpecies.num === 493) {
+      if (source?.baseSpecies.num === 493 || pokemon.baseSpecies.num === 493) {
         return false;
       }
       return true;
@@ -2210,12 +2227,12 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     onPlate: 'Fire',
     onBasePowerPriority: 15,
     onBasePower(basePower, user, target, move) {
-      if (move && move.type === 'Fire') {
+      if (move?.type === 'Fire') {
         return this.chainModify([4915, 4096]);
       }
     },
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 493) || pokemon.baseSpecies.num === 493) {
+      if (source?.baseSpecies.num === 493 || pokemon.baseSpecies.num === 493) {
         return false;
       }
       return true;
@@ -2280,7 +2297,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     spritenum: 669,
     onMemory: 'Flying',
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 773) || pokemon.baseSpecies.num === 773) {
+      if (source?.baseSpecies.num === 773 || pokemon.baseSpecies.num === 773) {
         return false;
       }
       return true;
@@ -2311,12 +2328,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     onDamagePriority: -40,
     onDamage(damage, target, source, effect) {
-      if (
-        this.randomChance(1, 10) &&
-        damage >= target.hp &&
-        effect &&
-        effect.effectType === 'Move'
-      ) {
+      if (this.randomChance(1, 10) && damage >= target.hp && effect?.effectType === 'Move') {
         this.add('-activate', target, 'item: Focus Band');
         return target.hp - 1;
       }
@@ -2332,12 +2344,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     onDamagePriority: -40,
     onDamage(damage, target, source, effect) {
-      if (
-        target.hp === target.maxhp &&
-        damage >= target.hp &&
-        effect &&
-        effect.effectType === 'Move'
-      ) {
+      if (target.hp === target.maxhp && damage >= target.hp && effect?.effectType === 'Move') {
         if (target.useItem()) {
           return target.hp - 1;
         }
@@ -2549,7 +2556,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     spritenum: 674,
     onMemory: 'Ghost',
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 773) || pokemon.baseSpecies.num === 773) {
+      if (source?.baseSpecies.num === 773 || pokemon.baseSpecies.num === 773) {
         return false;
       }
       return true;
@@ -2648,7 +2655,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     spritenum: 678,
     onMemory: 'Grass',
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 773) || pokemon.baseSpecies.num === 773) {
+      if (source?.baseSpecies.num === 773 || pokemon.baseSpecies.num === 773) {
         return false;
       }
       return true;
@@ -2791,7 +2798,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     spritenum: 671,
     onMemory: 'Ground',
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 773) || pokemon.baseSpecies.num === 773) {
+      if (source?.baseSpecies.num === 773 || pokemon.baseSpecies.num === 773) {
         return false;
       }
       return true;
@@ -2849,7 +2856,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     onBasePowerPriority: 15,
     onBasePower(basePower, user, target, move) {
-      if (move && move.type === 'Rock') {
+      if (move?.type === 'Rock') {
         return this.chainModify([4915, 4096]);
       }
     },
@@ -3030,7 +3037,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     spritenum: 681,
     onMemory: 'Ice',
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 773) || pokemon.baseSpecies.num === 773) {
+      if (source?.baseSpecies.num === 773 || pokemon.baseSpecies.num === 773) {
         return false;
       }
       return true;
@@ -3061,7 +3068,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
       }
     },
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 493) || pokemon.baseSpecies.num === 493) {
+      if (source?.baseSpecies.num === 493 || pokemon.baseSpecies.num === 493) {
         return false;
       }
       return true;
@@ -3113,7 +3120,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
       }
     },
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 493) || pokemon.baseSpecies.num === 493) {
+      if (source?.baseSpecies.num === 493 || pokemon.baseSpecies.num === 493) {
         return false;
       }
       return true;
@@ -3156,7 +3163,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
       }
     },
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 493) || pokemon.baseSpecies.num === 493) {
+      if (source?.baseSpecies.num === 493 || pokemon.baseSpecies.num === 493) {
         return false;
       }
       return true;
@@ -3443,6 +3450,12 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     num: 234,
     gen: 2
+  },
+  legendplate: {
+    name: 'Legend Plate',
+    num: 1828,
+    gen: 8,
+    isNonstandard: 'Legends'
   },
   leppaberry: {
     name: 'Leppa Berry',
@@ -3989,7 +4002,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
       }
     },
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 493) || pokemon.baseSpecies.num === 493) {
+      if (source?.baseSpecies.num === 493 || pokemon.baseSpecies.num === 493) {
         return false;
       }
       return true;
@@ -4267,7 +4280,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
       }
     },
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 493) || pokemon.baseSpecies.num === 493) {
+      if (source?.baseSpecies.num === 493 || pokemon.baseSpecies.num === 493) {
         return false;
       }
       return true;
@@ -4647,6 +4660,12 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     num: 193,
     gen: 4
   },
+  peatblock: {
+    name: 'Peat Block',
+    num: 1692,
+    gen: 8,
+    isNonstandard: 'Legends'
+  },
   pechaberry: {
     name: 'Pecha Berry',
     spritenum: 333,
@@ -4784,12 +4803,12 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     onPlate: 'Fairy',
     onBasePowerPriority: 15,
     onBasePower(basePower, user, target, move) {
-      if (move && move.type === 'Fairy') {
+      if (move?.type === 'Fairy') {
         return this.chainModify([4915, 4096]);
       }
     },
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 493) || pokemon.baseSpecies.num === 493) {
+      if (source?.baseSpecies.num === 493 || pokemon.baseSpecies.num === 493) {
         return false;
       }
       return true;
@@ -4855,7 +4874,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     spritenum: 670,
     onMemory: 'Poison',
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 773) || pokemon.baseSpecies.num === 773) {
+      if (source?.baseSpecies.num === 773 || pokemon.baseSpecies.num === 773) {
         return false;
       }
       return true;
@@ -5054,7 +5073,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     spritenum: 680,
     onMemory: 'Psychic',
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 773) || pokemon.baseSpecies.num === 773) {
+      if (source?.baseSpecies.num === 773 || pokemon.baseSpecies.num === 773) {
         return false;
       }
       return true;
@@ -5461,7 +5480,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     spritenum: 672,
     onMemory: 'Rock',
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 773) || pokemon.baseSpecies.num === 773) {
+      if (source?.baseSpecies.num === 773 || pokemon.baseSpecies.num === 773) {
         return false;
       }
       return true;
@@ -5592,7 +5611,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     name: 'Rusted Shield',
     spritenum: 699,
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 889) || pokemon.baseSpecies.num === 889) {
+      if (source?.baseSpecies.num === 889 || pokemon.baseSpecies.num === 889) {
         return false;
       }
       return true;
@@ -5605,7 +5624,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     name: 'Rusted Sword',
     spritenum: 698,
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 888) || pokemon.baseSpecies.num === 888) {
+      if (source?.baseSpecies.num === 888 || pokemon.baseSpecies.num === 888) {
         return false;
       }
       return true;
@@ -5787,7 +5806,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     onBasePowerPriority: 15,
     onBasePower(basePower, user, target, move) {
-      if (move && move.type === 'Water') {
+      if (move?.type === 'Water') {
         return this.chainModify([4915, 4096]);
       }
     },
@@ -5803,7 +5822,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     onBasePowerPriority: 15,
     onBasePower(basePower, user, target, move) {
-      if (move && move.type === 'Flying') {
+      if (move?.type === 'Flying') {
         return this.chainModify([4915, 4096]);
       }
     },
@@ -5867,7 +5886,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     name: 'Shock Drive',
     spritenum: 442,
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 649) || pokemon.baseSpecies.num === 649) {
+      if (source?.baseSpecies.num === 649 || pokemon.baseSpecies.num === 649) {
         return false;
       }
       return true;
@@ -5992,7 +6011,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
       }
     },
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 493) || pokemon.baseSpecies.num === 493) {
+      if (source?.baseSpecies.num === 493 || pokemon.baseSpecies.num === 493) {
         return false;
       }
       return true;
@@ -6135,7 +6154,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
       }
     },
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 493) || pokemon.baseSpecies.num === 493) {
+      if (source?.baseSpecies.num === 493 || pokemon.baseSpecies.num === 493) {
         return false;
       }
       return true;
@@ -6155,7 +6174,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
       }
     },
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 493) || pokemon.baseSpecies.num === 493) {
+      if (source?.baseSpecies.num === 493 || pokemon.baseSpecies.num === 493) {
         return false;
       }
       return true;
@@ -6283,7 +6302,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     spritenum: 675,
     onMemory: 'Steel',
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 773) || pokemon.baseSpecies.num === 773) {
+      if (source?.baseSpecies.num === 773 || pokemon.baseSpecies.num === 773) {
         return false;
       }
       return true;
@@ -6349,7 +6368,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
       }
     },
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 493) || pokemon.baseSpecies.num === 493) {
+      if (source?.baseSpecies.num === 493 || pokemon.baseSpecies.num === 493) {
         return false;
       }
       return true;
@@ -6581,7 +6600,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
       }
     },
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 493) || pokemon.baseSpecies.num === 493) {
+      if (source?.baseSpecies.num === 493 || pokemon.baseSpecies.num === 493) {
         return false;
       }
       return true;
@@ -7775,7 +7794,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     spritenum: 677,
     onMemory: 'Water',
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 773) || pokemon.baseSpecies.num === 773) {
+      if (source?.baseSpecies.num === 773 || pokemon.baseSpecies.num === 773) {
         return false;
       }
       return true;
@@ -8040,7 +8059,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
       }
     },
     onTakeItem(item, pokemon, source) {
-      if ((source && source.baseSpecies.num === 493) || pokemon.baseSpecies.num === 493) {
+      if (source?.baseSpecies.num === 493 || pokemon.baseSpecies.num === 493) {
         return false;
       }
       return true;
@@ -8102,7 +8121,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     onResidualOrder: 10,
     onResidual(pokemon) {
-      if (pokemon.hp <= pokemon.maxhp / 2) {
+      if (pokemon.hp < pokemon.maxhp / 2) {
         pokemon.eatItem();
       }
     },
@@ -8114,6 +8133,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     num: 155,
     gen: 2,
+    tags: ['True Past'],
     isNonstandard: 'Past'
   },
   berserkgene: {
@@ -8129,6 +8149,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     num: 0,
     gen: 2,
+    tags: ['True Past'],
     isNonstandard: 'Past'
   },
   bitterberry: {
@@ -8149,6 +8170,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     num: 156,
     gen: 2,
+    tags: ['True Past'],
     isNonstandard: 'Past'
   },
   burntberry: {
@@ -8171,6 +8193,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     num: 153,
     gen: 2,
+    tags: ['True Past'],
     isNonstandard: 'Past'
   },
   goldberry: {
@@ -8183,7 +8206,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     onResidualOrder: 10,
     onResidual(pokemon) {
-      if (pokemon.hp <= pokemon.maxhp / 2) {
+      if (pokemon.hp < pokemon.maxhp / 2) {
         pokemon.eatItem();
       }
     },
@@ -8195,6 +8218,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     num: 158,
     gen: 2,
+    tags: ['True Past'],
     isNonstandard: 'Past'
   },
   iceberry: {
@@ -8217,6 +8241,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     num: 152,
     gen: 2,
+    tags: ['True Past'],
     isNonstandard: 'Past'
   },
   mintberry: {
@@ -8239,6 +8264,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     num: 150,
     gen: 2,
+    tags: ['True Past'],
     isNonstandard: 'Past'
   },
   miracleberry: {
@@ -8260,6 +8286,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     num: 157,
     gen: 2,
+    tags: ['True Past'],
     isNonstandard: 'Past'
   },
   mysteryberry: {
@@ -8273,7 +8300,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     onUpdate(pokemon) {
       if (!pokemon.hp) return;
       const moveSlot = pokemon.lastMove && pokemon.getMoveData(pokemon.lastMove.id);
-      if (moveSlot && moveSlot.pp === 0) {
+      if (moveSlot?.pp === 0) {
         pokemon.addVolatile('leppaberry');
         pokemon.volatiles['leppaberry'].moveSlot = moveSlot;
         pokemon.eatItem();
@@ -8299,6 +8326,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     num: 154,
     gen: 2,
+    tags: ['True Past'],
     isNonstandard: 'Past'
   },
   pinkbow: {
@@ -8311,6 +8339,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     num: 251,
     gen: 2,
+    tags: ['True Past'],
     isNonstandard: 'Past'
   },
   polkadotbow: {
@@ -8323,6 +8352,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     num: 251,
     gen: 2,
+    tags: ['True Past'],
     isNonstandard: 'Past'
   },
   przcureberry: {
@@ -8345,6 +8375,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     num: 149,
     gen: 2,
+    tags: ['True Past'],
     isNonstandard: 'Past'
   },
   psncureberry: {
@@ -8367,6 +8398,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     },
     num: 151,
     gen: 2,
+    tags: ['True Past'],
     isNonstandard: 'Past'
   },
 

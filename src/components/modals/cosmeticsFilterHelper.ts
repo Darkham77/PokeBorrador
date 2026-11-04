@@ -1,3 +1,5 @@
+import { computed, type ComputedRef } from 'vue';
+
 export const UNLOCK_MIN_CLASS_LEVEL = 25 as const;
 
 const _SHAPE_FILTER_OPTIONS = ['all', 'circular', 'square'] as const;
@@ -94,4 +96,39 @@ export function formatCosmeticRequirement(style: LockableCosmeticStyle): string 
     return `${style.requiredClass.toUpperCase()} (NIVEL ${UNLOCK_MIN_CLASS_LEVEL})`;
   if (style.requiredFaction) return `TEAM ${style.requiredFaction.toUpperCase()}`;
   return '';
+}
+
+export function useCosmeticPlayerContext(
+  authStore: { user?: { role?: string } | null },
+  gameStore: {
+    state: {
+      playerClass?: string | null;
+      classLevel?: number | null;
+      trainerLevel?: number | null;
+      faction?: string | null;
+    };
+  }
+): {
+  isLocal: ComputedRef<boolean>;
+  isAdmin: ComputedRef<boolean>;
+  playerContext: ComputedRef<CosmeticPlayerContext>;
+} {
+  const isLocal = computed(() => {
+    const hn = typeof globalThis.window !== 'undefined' ? globalThis.location.hostname : undefined;
+    return checkIsLocalEnvironment(import.meta.env.DEV, hn);
+  });
+
+  const isAdmin = computed(() => {
+    return authStore.user?.role === 'admin' || isLocal.value;
+  });
+
+  const playerContext = computed<CosmeticPlayerContext>(() => ({
+    playerClass: gameStore.state.playerClass,
+    classLevel: gameStore.state.classLevel,
+    trainerLevel: gameStore.state.trainerLevel,
+    faction: gameStore.state.faction,
+    isAdmin: isAdmin.value
+  }));
+
+  return { isLocal, isAdmin, playerContext };
 }

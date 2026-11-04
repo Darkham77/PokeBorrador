@@ -26,6 +26,12 @@ import {
   type WildernessPropType
 } from './wildernessVegetationEngine.ts';
 
+const ALLOWED_NON_GRASS_PROP_TYPES: ReadonlySet<WildernessPropType> = new Set<WildernessPropType>([
+  'boulder',
+  'fence_h',
+  'fence_v'
+]);
+
 export interface StampedStandingEntity {
   readonly file: string;
   readonly px: number;
@@ -119,8 +125,10 @@ export function collectStandingDepthEntities(
   if (wilderness?.props) {
     for (const prop of wilderness.props) {
       if (buildingFootprintMask[prop.y]?.[prop.x]) continue;
-      if (continent.terrainMatrix[prop.y]?.[prop.x] !== 'grass' && prop.type !== 'boulder')
-        continue;
+      const terr = continent.terrainMatrix[prop.y]?.[prop.x];
+      const isAllowedTerrain =
+        terr === 'grass' || terr === 'sand' || ALLOWED_NON_GRASS_PROP_TYPES.has(prop.type);
+      if (!isAllowedTerrain) continue;
       if ((continent.heightmap[prop.y]?.[prop.x] ?? 0) !== 0) continue;
       if (continent.resolvedMountain.occupiedFootCells[prop.y]?.[prop.x]) continue;
 

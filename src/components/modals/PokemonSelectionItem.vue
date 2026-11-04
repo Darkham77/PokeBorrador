@@ -230,6 +230,7 @@ function handleClick(): void {
       <div class="check-circle">
         <svg
           v-if="isSelected"
+          aria-hidden="true"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"

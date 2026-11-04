@@ -10,7 +10,7 @@ import { cleanCapturedPokemonForStorage } from '@/logic/battle/battleCatchProces
 import { makePokemon, validatePokemon } from '@/logic/pokemon/pokemonFactory';
 import { cloneReactive } from '@/logic/utils/cloneUtils';
 import type { BattleContext } from '@/types/battle/battleContext';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Wild Encounters, Visibility & Ditto Combat Domain Suite', () => {
   beforeEach(() => {
@@ -30,7 +30,7 @@ describe('Wild Encounters, Visibility & Ditto Combat Domain Suite', () => {
         acc: 90,
         pp: 5,
         maxPP: 5
-      } as Move);
+      });
 
       const playerMon = makePokemon('pikachu', 50, { bypassWhitelist: true }) as Pokemon;
 
@@ -73,7 +73,7 @@ describe('Wild Encounters, Visibility & Ditto Combat Domain Suite', () => {
           acc: 100,
           pp: 5,
           maxPP: 5
-        } as Move
+        }
       ];
 
       const cleaned = cleanCapturedPokemonForStorage(transformedDitto, null, 'pokeball');
@@ -92,7 +92,7 @@ describe('Wild Encounters, Visibility & Ditto Combat Domain Suite', () => {
       expect(pureDitto.id).toBe('ditto');
       expect(['limber', 'imposter']).toContain(pureDitto.ability);
 
-      const transformedDitto = cloneReactive(pureDitto) as Pokemon;
+      const transformedDitto = cloneReactive(pureDitto);
       transformedDitto.isTransformed = true;
       transformedDitto._originalId = 'ditto';
       transformedDitto._originalName = 'Ditto';
@@ -110,7 +110,7 @@ describe('Wild Encounters, Visibility & Ditto Combat Domain Suite', () => {
           acc: 100,
           pp: 5,
           maxPP: 5
-        } as Move
+        }
       ];
 
       const cleanedWithoutInitial = cleanCapturedPokemonForStorage(
@@ -129,9 +129,9 @@ describe('Wild Encounters, Visibility & Ditto Combat Domain Suite', () => {
     it('restores pure snapshot when clean initialEnemy snapshot is provided even if combat entity had pressure', () => {
       const pureDitto = makePokemon('ditto', 27, { bypassWhitelist: true }) as Pokemon;
       pureDitto.ability = 'limber';
-      const initialEnemySnapshot = cloneReactive(pureDitto) as Pokemon;
+      const initialEnemySnapshot = cloneReactive(pureDitto);
 
-      const inCombatDitto = cloneReactive(pureDitto) as Pokemon;
+      const inCombatDitto = cloneReactive(pureDitto);
       inCombatDitto.isTransformed = true;
       inCombatDitto.id = 'mewtwo';
       inCombatDitto.name = 'Mewtwo';
@@ -230,7 +230,7 @@ describe('Wild Encounters, Visibility & Ditto Combat Domain Suite', () => {
           ...m,
           pp: 5,
           maxPP: 5
-        } as Move;
+        };
       });
 
       expect(wildDitto.isTransformed).toBe(true);
@@ -259,7 +259,7 @@ describe('Wild Encounters, Visibility & Ditto Combat Domain Suite', () => {
       expect(captured.maxHp).toBe(originalMaxHp);
       expect(captured.atk).toBe(originalAtk);
       expect(captured.def).toBe(originalDef);
-      expect(captured.moves.length).toBe(1);
+      expect(captured.moves).toHaveLength(1);
       expect(captured.moves[0]?.id).toBe('transform');
       expect(captured.moves[0]?.pp).toBe(10);
       expect(captured.moves[0]?.maxPP).toBe(10);

@@ -252,7 +252,7 @@ const getPokemonName = (id: string): string => {
   .stone-name {
     color: var(--white);
     font-size: var(--font-14);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
   }
   .evo-target {
     color: Rgb(255 255 255 / 30%);

@@ -86,7 +86,7 @@ defineProps<{
   .mv-pp-val {
     color: $white;
     font-size: var(--font-7);
-    font-weight: 900;
+    font-weight: $font-weight-black;
 
     @media (width <= 560px) {
       font-size: var(--font-6);

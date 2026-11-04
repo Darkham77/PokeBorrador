@@ -26,7 +26,7 @@ describe('O(1) Data Structure Dictionaries Integrity', () => {
     });
 
     it('should throw on invalid item identifier', () => {
-      expect(() => requireItemId('non_existent_item_xyz_999')).toThrow();
+      expect(() => requireItemId('non_existent_item_xyz_999')).toThrow(/item|invalid|not found/i);
     });
 
     it('should calculate getMaxBuffDuration correctly in O(1) through dictionary', () => {
@@ -55,7 +55,7 @@ describe('O(1) Data Structure Dictionaries Integrity', () => {
 
   describe('Player Classes Catalog (playerClasses.ts)', () => {
     it('should index all CLASS_MISSIONS into CLASS_MISSIONS_BY_ID in O(1)', () => {
-      expect(CLASS_MISSIONS.length).toBe(3);
+      expect(CLASS_MISSIONS).toHaveLength(3);
       for (const mission of CLASS_MISSIONS) {
         expect(CLASS_MISSIONS_BY_ID[mission.id]).toBeDefined();
         expect(CLASS_MISSIONS_BY_ID[mission.id].durationHs).toBe(mission.durationHs);

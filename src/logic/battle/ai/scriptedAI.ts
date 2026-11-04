@@ -1,3 +1,5 @@
+import { logger } from '@/logic/utils/logger';
+
 import type { BattleStages } from '../../../types/battle/battle.ts';
 import type { BattleContext } from '../../../types/battle/battleContext.ts';
 import type { Pokemon, Move } from '../../../types/pokemon/pokemon.ts';
@@ -31,7 +33,7 @@ export class ScriptedAI implements CombatAI {
       const moveIdx = parseInt(splitPart, 10) - 1;
       const targetMove = enemy.moves[moveIdx];
       if (targetMove) {
-        console.debug(
+        logger.debug(
           `[DEBUG-AI] [E2E-MOCK] ScriptedAI decideMove replaying choice #${idx}: ${choiceStr} -> ${targetMove.id}`
         );
         return targetMove;
@@ -51,7 +53,7 @@ export class ScriptedAI implements CombatAI {
     const { mockChoices, idx } = state;
     const choiceStr = mockChoices[idx];
     if (choiceStr && choiceStr.startsWith('switch ')) {
-      console.debug(
+      logger.debug(
         `[DEBUG-AI] [E2E-MOCK] ScriptedAI shouldSwitch replaying choice #${idx}: true (choice is ${choiceStr})`
       );
       return true;
@@ -83,7 +85,7 @@ export class ScriptedAI implements CombatAI {
       if (targetPoke) {
         const teamIdx = enemyTeam.findIndex((p) => p && p.uid === targetPoke.uid);
         if (teamIdx !== -1) {
-          console.debug(
+          logger.debug(
             `[DEBUG-AI] [E2E-MOCK] ScriptedAI findBestSwitchIndex replaying choice #${idx}: ${choiceStr} -> UID ${targetPoke.uid} at idx ${teamIdx}`
           );
           return teamIdx;
@@ -95,7 +97,7 @@ export class ScriptedAI implements CombatAI {
 
   // Deterministic simulations strictly follow the script and do not use items automatically
   public async evaluateAndUseItem(_ctx: BattleContext, _e: Pokemon): Promise<boolean> {
-    console.debug(
+    logger.debug(
       '[DEBUG-AI] [E2E-MOCK] ScriptedAI evaluateAndUseItem returning false (items disabled during E2E simulation)'
     );
     return false;

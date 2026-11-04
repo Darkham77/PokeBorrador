@@ -1,5 +1,5 @@
-import type { DisplayText } from '@francogp/auditor';
-import { isMainModule } from '@francogp/auditor';
+import fsPromises from 'node:fs/promises';
+import { enableCompileCache } from 'node:module';
 /**
  * @file upgrade_backup.ts
  * @description Upgrades legacy database backup JSON files to the latest game schema and Showdown legality.
@@ -14,16 +14,17 @@ import { isMainModule } from '@francogp/auditor';
  *   npm run database:upgrade-backup file=database/backups/server_franco/server_franco_backup_2026-06-27T05-06-25-158315918Z.json
  *   npm run database:upgrade-backup server=server_franco
  */
-
-import fsPromises from 'node:fs/promises';
 import path from 'node:path';
-import { styleText } from 'node:util';
-import { enableCompileCache } from 'node:module';
-import { defineCommand, runMain } from 'citty';
-import { serverCliArgs } from '../lib/supabaseClient.ts';
 import { DatabaseSync } from 'node:sqlite';
+import { styleText } from 'node:util';
+
+import type { DisplayText } from '@francogp/auditor';
+import { isMainModule } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
+
 import { DATABASE_MIGRATIONS } from '../../src/logic/db/migrations_data.ts';
 import { splitSQLStatements, translatePostgresToSqlite } from '../../src/logic/db/sqlTranslator.ts';
+import { serverCliArgs } from '../lib/supabaseClient.ts';
 
 enableCompileCache();
 
@@ -96,8 +97,10 @@ function loadBackupIntoMemorySqlite(
       const vals = cols.map((c) => {
         const v = r[c];
         if (v === null || v === undefined) return null;
+        if (typeof v === 'string' || typeof v === 'number' || typeof v === 'bigint') return v;
+        if (typeof v === 'boolean') return v ? 1 : 0;
         if (typeof v === 'object') return JSON.stringify(v);
-        return String(v);
+        return '';
       });
       stmt.run(...vals);
     }
@@ -177,8 +180,8 @@ function applyPendingBackupMigrations(db: DatabaseSync, appliedSet: ReadonlySet<
     } catch (migErr: unknown) {
       try {
         db.exec('ROLLBACK;');
-      } catch (rollbackErr) {
-        rollbackErr;
+      } catch (err) {
+        console.warn('[Handled controlled exception]:', err);
       }
       throw migErr;
     }
@@ -186,9 +189,7 @@ function applyPendingBackupMigrations(db: DatabaseSync, appliedSet: ReadonlySet<
   return appliedCount;
 }
 
-interface DatabaseTableRow {
-  readonly [column: string]: unknown;
-}
+type DatabaseTableRow = Readonly<Record<string, unknown>>;
 
 function isDatabaseTableRow(row: unknown): row is DatabaseTableRow {
   return typeof row === 'object' && row !== null;
@@ -235,10 +236,12 @@ interface BackupObject {
   auth?: unknown;
 }
 
-export async function upgradeBackup(options?: {
+export interface UpgradeBackupOptions {
   server?: string;
   file?: string;
-}): Promise<string> {
+}
+
+export async function upgradeBackup(options?: UpgradeBackupOptions): Promise<string> {
   console.log(
     styleText('bold', '\n--- 🔄 DATABASE BACKUP UPGRADE & NORMALIZATION TOOL (Node.js 26+) ---')
   );
@@ -335,7 +338,11 @@ export const command = defineCommand({
     }
   },
   async run({ args }) {
-    const rawTarget = args.target ? String(args.target).replace(/^(?:server|s)=/, '').trim() : undefined;
+    const rawTarget = args.target
+      ? String(args.target)
+          .replace(/^(?:server|s)=/, '')
+          .trim()
+      : undefined;
     await upgradeBackup({
       server: args.server || rawTarget,
       file: args.file
@@ -343,5 +350,5 @@ export const command = defineCommand({
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

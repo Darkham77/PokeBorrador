@@ -1,5 +1,4 @@
-import { Effect, ID, Move, Pokemon } from './exported-global-types';
-
+import type { Battle } from './battle';
 /**
  * Simulator Battle Action Queue
  * Pokemon Showdown - http://pokemonshowdown.com/
@@ -14,8 +13,7 @@ import { Effect, ID, Move, Pokemon } from './exported-global-types';
  *
  * @license MIT
  */
-
-import type { Battle } from './battle';
+import { Effect, ID, Move, Pokemon, Side } from './exported-global-types';
 
 /** Actions are sorted based on order (lower first)
  * followed by priority (higher first)
@@ -295,6 +293,14 @@ export class BattleQueue {
       let target = null;
       action.move = this.battle.dex.getActiveMove(action.move);
 
+      if (
+        this.battle.dex.currentMod.startsWith('champions') &&
+        action.move.id === 'curse' &&
+        !action.pokemon.hasType('Ghost')
+      ) {
+        action.move.target = 'self';
+      }
+
       if (!action.targetLoc) {
         target = this.battle.getRandomTarget(action.pokemon, action.move);
         // TODO: what actually happens here?
@@ -364,7 +370,7 @@ export class BattleQueue {
   cancelAction(pokemon: Pokemon) {
     const oldLength = this.list.length;
     for (let i = 0; i < this.list.length; i++) {
-      if (this.list[i].pokemon === pokemon) {
+      if (this.list[i].pokemon === pokemon && this.list[i].choice !== 'runSwitch') {
         this.list.splice(i, 1);
         i--;
       }
@@ -389,6 +395,14 @@ export class BattleQueue {
       }
     }
     return null;
+  }
+
+  getSwitches(side?: Side) {
+    return this.list.filter(
+      (action) =>
+        ['switch', 'instaswitch'].includes(action.choice) &&
+        (!side || (action as SwitchAction).pokemon.side === side)
+    ) as SwitchAction[];
   }
 
   /**

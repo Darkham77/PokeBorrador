@@ -1,4 +1,4 @@
-import { getActivePinia } from 'pinia';
+import { type getActivePinia } from 'pinia';
 
 import type { AbilityId } from '@/data/battle/abilities';
 import type { NatureId } from '@/data/battle/natures';

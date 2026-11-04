@@ -11,10 +11,9 @@ import {
   isCosmeticStyleLocked,
   resolveCosmeticLockNotification,
   filterAvatarStylesByShape,
-  checkIsLocalEnvironment,
+  useCosmeticPlayerContext,
   type ShapeFilterOption,
-  type LockableCosmeticStyle,
-  type CosmeticPlayerContext
+  type LockableCosmeticStyle
 } from './cosmeticsFilterHelper';
 
 const uiStore = useUIStore();
@@ -28,22 +27,7 @@ const filteredAvatarStyles = computed(() => {
   return filterAvatarStylesByShape(cosmeticsStore.allAvatarStyles, activeShapeFilter.value);
 });
 
-const isLocal = computed(() => {
-  const hn = typeof globalThis.window !== 'undefined' ? globalThis.location.hostname : undefined;
-  return checkIsLocalEnvironment(import.meta.env.DEV, hn);
-});
-
-const isAdmin = computed(() => {
-  return authStore.user?.role === 'admin' || isLocal.value;
-});
-
-const playerContext = computed<CosmeticPlayerContext>(() => ({
-  playerClass: gameStore.state.playerClass,
-  classLevel: gameStore.state.classLevel,
-  trainerLevel: gameStore.state.trainerLevel,
-  faction: gameStore.state.faction,
-  isAdmin: isAdmin.value
-}));
+const { isLocal, isAdmin, playerContext } = useCosmeticPlayerContext(authStore, gameStore);
 
 const isAvatarLocked = (style: LockableCosmeticStyle): boolean => {
   return isCosmeticStyleLocked(style, playerContext.value);
@@ -147,7 +131,7 @@ const selectAvatar = (style: LockableCosmeticStyle): void => {
   color: var(--slate-400);
   font-family: inherit;
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   cursor: pointer;
 
   &:hover {

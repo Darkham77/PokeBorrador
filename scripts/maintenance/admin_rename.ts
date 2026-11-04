@@ -1,6 +1,7 @@
 import { isMainModule } from '@francogp/auditor';
-import { createClient, type PostgrestError } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 import { defineCommand, runMain } from 'citty';
+
 import { parseUnmatchedArgs } from '../lib/cliHelpers.ts';
 
 export const command = defineCommand({
@@ -31,10 +32,13 @@ export const command = defineCommand({
     }
   },
   async run({ args }) {
-    const { barePositionals, getParam } = parseUnmatchedArgs([args.firstArg, args.secondArg]);
-    const targetUser = args.user || getParam('user', 'u') || barePositionals[0];
+    const parsed = parseUnmatchedArgs([args.firstArg, args.secondArg]);
+    const targetUser = args.user || parsed.getParam('user', 'u') || parsed.barePositionals[0];
     const newName =
-      args.name || getParam('name', 'n') || getParam('username') || barePositionals[1];
+      args.name ||
+      parsed.getParam('name', 'n') ||
+      parsed.getParam('username') ||
+      parsed.barePositionals[1];
 
     if (!targetUser || !newName) {
       console.log('Uso: npm run admin:rename user=<user_id_o_nombre_actual> name=<nuevo_nombre>');
@@ -65,8 +69,8 @@ export const command = defineCommand({
       .eq('id', targetUser)
       .single();
 
-    const err1 = firstError as PostgrestError | null;
-    const data1 = firstCheck as { id: string; username: string } | null;
+    const err1 = firstError;
+    const data1 = firstCheck;
 
     if (err1 || !data1) {
       console.log(`No encontrado por ID. Buscando por nombre de usuario...`);
@@ -75,8 +79,8 @@ export const command = defineCommand({
         .select('id, username')
         .ilike('username', targetUser);
 
-      const err2 = errByName as PostgrestError | null;
-      const data2 = profilesByName as { id: string; username: string }[] | null;
+      const err2 = errByName;
+      const data2 = profilesByName;
 
       if (err2 || !data2 || data2.length === 0) {
         console.error(`❌ Usuario no encontrado.`);
@@ -118,5 +122,5 @@ export const command = defineCommand({
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

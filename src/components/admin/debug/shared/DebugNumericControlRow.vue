@@ -223,7 +223,7 @@ const isDefaultActive = (): boolean => {
       color: var(--white);
       font-size: var(--font-9);
 
-      &:focus {
+      &:focus:not(:focus-visible) {
         outline: none;
       }
     }
@@ -233,28 +233,28 @@ const isDefaultActive = (): boolean => {
     display: flex;
     gap: $spacing-xs;
     flex: 1;
+  }
 
-    .preset-btn {
-      @include btn-vicio-base;
-      @include btn-vicio-size('xs');
-      @include btn-vicio-variant('secondary', 'xs');
+  .preset-btn {
+    @include btn-vicio-base;
+    @include btn-vicio-size('xs');
+    @include btn-vicio-variant('secondary', 'xs');
 
-      min-width: 0;
-      height: 26px;
-      padding: 0 4px;
-      font-size: var(--font-7);
-      flex: 1;
+    min-width: 0;
+    height: 26px;
+    padding: 0 4px;
+    font-size: var(--font-7);
+    flex: 1;
 
-      &.default-btn {
-        color: var(--blue-300);
-        flex: 1.1;
-        border-color: Rgb(59 130 246 / 40%);
+    &.default-btn {
+      color: var(--blue-300);
+      flex: 1.1;
+      border-color: Rgb(59 130 246 / 40%);
 
-        &:hover,
-        &.active {
-          background: Rgb(59 130 246 / 30%);
-          color: var(--white);
-        }
+      &:hover,
+      &.active {
+        background: Rgb(59 130 246 / 30%);
+        color: var(--white);
       }
     }
   }

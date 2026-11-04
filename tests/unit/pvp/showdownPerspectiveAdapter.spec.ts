@@ -35,8 +35,8 @@ describe('ShowdownPerspectiveAdapter', () => {
         active: [
           {
             moves: [
-              { id: 'thunderbolt' as any, move: 'Thunderbolt', pp: 15, maxpp: 15 },
-              { id: 'voltswitch' as any, move: 'Volt Switch', pp: 20, maxpp: 20 }
+              { id: 'thunderbolt', move: 'Thunderbolt', pp: 15, maxpp: 15 },
+              { id: 'voltswitch', move: 'Volt Switch', pp: 20, maxpp: 20 }
             ],
             trapped: false
           }

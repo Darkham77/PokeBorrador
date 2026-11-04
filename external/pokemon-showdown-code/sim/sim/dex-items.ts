@@ -1,3 +1,6 @@
+import { Utils } from '../lib/utils';
+import type { PokemonEventMethods, ConditionData, ModdedConditionData } from './dex-conditions';
+import { assignMissingFields, BasicEffect, toID, type ModdedEffectText } from './dex-data';
 import {
   AnyObject,
   Battle,
@@ -8,10 +11,6 @@ import {
   Pokemon,
   SparseBoostsTable
 } from './exported-global-types';
-
-import type { PokemonEventMethods, ConditionData, ModdedConditionData } from './dex-conditions';
-import { assignMissingFields, BasicEffect, toID } from './dex-data';
-import { Utils } from '../lib/utils';
 
 interface FlingData {
   basePower: number;
@@ -24,14 +23,16 @@ export interface ItemData extends Partial<Item>, PokemonEventMethods {
   name: string;
 }
 
-export type ModdedItemData =
+export type ModdedItemData = (
   | ItemData
   | (Partial<Omit<ItemData, 'name'>> & {
       inherit: true;
       onCustap?: (this: Battle, pokemon: Pokemon) => void;
       onWhiteHerb?: (this: Battle, pokemon: Pokemon) => void;
       condition?: ModdedConditionData;
-    });
+    })
+) &
+  ModdedEffectText;
 
 export interface ItemDataTable {
   [itemid: IDEntry]: ItemData;
@@ -161,7 +162,7 @@ export class Item extends BasicEffect implements Readonly<BasicEffect> {
     }
 
     if (this.isBerry) this.fling = { basePower: 10 };
-    if (this.id.endsWith('plate')) this.fling = { basePower: 90 };
+    if (this.onPlate && this.id.endsWith('plate')) this.fling = { basePower: 90 };
     if (this.onDrive) this.fling = { basePower: 70 };
     if (this.megaStone) this.fling = { basePower: 80 };
     if (this.onMemory) this.fling = { basePower: 50 };
@@ -205,11 +206,10 @@ export class DexItems {
     }
     if (id && this.dex.data.Items.hasOwnProperty(id)) {
       const itemData = this.dex.data.Items[id] as any;
-      const itemTextData = this.dex.getDescs('Items', id, itemData);
       item = new Item({
         name: id,
         ...itemData,
-        ...itemTextData
+        ...this.dex.getDescs('Items', id, itemData)
       });
       if (item.gen > this.dex.gen) {
         (item as any).isNonstandard = 'Future';

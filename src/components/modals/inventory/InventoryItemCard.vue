@@ -254,6 +254,7 @@ onMounted(() => {
       <div v-if="multiSelectMode" class="selection-check">
         <div class="check-box" :class="{ checked: isSelected }">
           <svg
+            aria-hidden="true"
             v-if="isSelected"
             viewBox="0 0 24 24"
             fill="none"
@@ -385,7 +386,7 @@ onMounted(() => {
 
         color: var(--white);
         font-size: clamp(8px, 6cqw, 9px);
-        font-weight: 900;
+        font-weight: $font-weight-black;
       }
     }
   }
@@ -452,7 +453,7 @@ onMounted(() => {
 
       color: var(--green-light);
       font-size: clamp(6.5px, 7cqw, 8.5px);
-      font-weight: 900;
+      font-weight: $font-weight-black;
       letter-spacing: 0.03em;
     }
   }

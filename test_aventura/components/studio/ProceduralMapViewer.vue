@@ -634,7 +634,7 @@ onMounted(() => {
     background: var(--slate-600);
     color: var(--slate-300);
     font-size: var(--font-10);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
 
     &.ready {
       background: var(--emerald-500);
@@ -770,7 +770,7 @@ onMounted(() => {
 
   .stamping-title {
     color: var(--slate-200);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
   }
 
   .stamping-controls {

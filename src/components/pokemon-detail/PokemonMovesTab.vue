@@ -131,7 +131,7 @@ function handleReorder(fromIndex: number, toIndex: number): void {
 .infinity-emoji {
   font-family: $font-family-sans !important;
   font-size: var(--font-13) !important;
-  font-weight: 900 !important;
+  font-weight: $font-weight-black !important;
   line-height: 1 !important;
   vertical-align: middle;
   -webkit-font-smoothing: antialiased !important;

@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+
 import { CONFIG } from '../config';
 import { BattleLogEntry, BattleRecord, Decision, StrategicState } from '../types';
 

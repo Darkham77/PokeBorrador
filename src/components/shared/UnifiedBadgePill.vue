@@ -272,7 +272,7 @@ const handleItemImageError = (e: Event): void => {
     justify-content: center !important;
     align-items: center !important;
     color: var(--badge-color, #ccc);
-    font-weight: 900;
+    font-weight: $font-weight-black;
     line-height: 1 !important;
     text-align: center;
 
@@ -288,7 +288,7 @@ const handleItemImageError = (e: Event): void => {
       @include pixelated;
       font-family: var(--font-pixel) !important;
       font-size: var(--font-12);
-      font-weight: 900;
+      font-weight: $font-weight-black;
       letter-spacing: -0.5px;
     }
     &.is-fav {

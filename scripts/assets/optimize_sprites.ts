@@ -1,10 +1,11 @@
-import { isMainModule } from '@francogp/auditor';
 import fs from 'node:fs/promises';
-import path from 'node:path';
-import { defineCommand, runMain } from 'citty';
-import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 import os from 'node:os';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
+
+import { isMainModule } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 import sharp from 'sharp';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -30,7 +31,7 @@ import { analyzeVariantImage } from './variantImageAnalyzer.ts';
 if (!isMainThread) {
   const { fileName } = workerData as { fileName: string };
 
-  const runWorker = async () => {
+  const runWorker = async (): Promise<void> => {
     const name = path.parse(fileName).name;
     const match = name.match(/^(\d+)(.*)$/);
     if (!match) {
@@ -122,7 +123,10 @@ if (!isMainThread) {
       };
 
       const varNewSize = varSize + 2;
-      const saveVarSpritesheet = async (paddedFrames: Buffer[], outputPath: string) => {
+      const saveVarSpritesheet = async (
+        paddedFrames: Buffer[],
+        outputPath: string
+      ): Promise<void> => {
         const compositeInputs = paddedFrames.map((buf, index) => ({
           input: buf,
           left: index * varNewSize,
@@ -210,7 +214,7 @@ if (!isMainThread) {
   };
 
   runWorker().catch((err) => {
-    const msg = err instanceof Error ? (err as Error).message : String(err);
+    const msg = err instanceof Error ? err.message : String(err);
     parentPort?.postMessage({ success: false, error: msg });
   });
 }
@@ -237,7 +241,6 @@ interface PokemonAnimData {
   idle: string | null;
   variation: string | null;
 }
-
 
 if (isMainThread && isMainModule(import.meta.url)) {
   const extraAnimationsReport: ExtraAnimationReportItem[] = [];
@@ -385,7 +388,7 @@ if (isMainThread && isMainModule(import.meta.url)) {
       let hasErrors = false;
       let fileIndex = 0;
 
-      const runNextWorker = () => {
+      const runNextWorker = (): void => {
         if (fileIndex >= filteredFiles.length) {
           if (activeWorkers === 0) {
             writeFinalReport()

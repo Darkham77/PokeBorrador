@@ -53,7 +53,7 @@
   padding: 1px 4px;
   border-radius: $radius-xs-alt;
   font-size: var(--font-8);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
   letter-spacing: 0.5px;
   white-space: nowrap;
 
@@ -72,7 +72,7 @@
   padding: 1px 4px;
   border-radius: $radius-xs-alt;
   font-size: var(--font-8);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
   letter-spacing: 0.5px;
   white-space: nowrap;
 
@@ -199,7 +199,7 @@
   color: var(--slate-400);
   font-family: monospace;
   font-size: var(--font-10);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
   flex-shrink: 0;
   user-select: none;
 }
@@ -227,7 +227,7 @@
   color: var(--slate-50);
   font-family: monospace;
   font-size: var(--font-10);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   text-align: center;
   flex-shrink: 0;
   appearance: textfield;
@@ -311,7 +311,7 @@
 .flying-text {
   color: var(--slate-300);
   font-size: var(--font-10);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   white-space: nowrap;
 }
 
@@ -360,7 +360,7 @@
   background: var(--slate-700);
   color: var(--slate-300);
   font-size: var(--font-9);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
   cursor: pointer;
   flex-shrink: 0;
 

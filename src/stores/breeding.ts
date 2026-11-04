@@ -17,8 +17,12 @@ import { useEventStore } from '@/stores/events.ts';
 import { useGameStore } from '@/stores/game.ts';
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts';
 import { useUIStore } from '@/stores/ui.ts';
-import type { BreedingActivitySource } from '@/types/breeding/breeding';
-import type { DaycareSlot, DaycareEgg, DaycareMission } from '@/types/breeding/breeding';
+import type {
+  BreedingActivitySource,
+  DaycareSlot,
+  DaycareEgg,
+  DaycareMission
+} from '@/types/breeding/breeding';
 import type { BreedingCompatibility, Pokemon } from '@/types/pokemon/pokemon';
 
 import {

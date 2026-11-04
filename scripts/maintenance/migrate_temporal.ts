@@ -6,9 +6,10 @@
  * Basado en los estándares del proyecto (Regla 7).
  */
 
-import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
+import { defineCommand, runMain } from 'citty';
 
 const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', '_raw-assets', 'scripts']); // runtime-set: Fast O(1) membership lookup set
 
@@ -25,7 +26,7 @@ async function getFilesToMigrate(dir: string): Promise<string[]> {
   return files;
 }
 
-async function migrate(filePath: string) {
+async function migrate(filePath: string): Promise<void> {
   if (filePath.includes('migrate_temporal.ts')) {
     return;
   }
@@ -77,7 +78,7 @@ async function migrate(filePath: string) {
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   const targets = ['src', 'tests']; // no-domain: Non-domain utility collection or data structure
   for (const t of targets) {
     const files = await getFilesToMigrate(path.join(process.cwd(), t));
@@ -98,4 +99,4 @@ export const command = defineCommand({
   }
 });
 
-runMain(command);
+void runMain(command);

@@ -132,7 +132,7 @@ export function useBattleCaptureAnimations(
         seat.exit.isCaptureActive ||
         seat.exit.isAnimatingCapture
       ) {
-        console.debug(
+        logger.debug(
           `[E2E-CAPTURE-ACTIVE] seat: ${key}, entry.isCaptureActive: ${seat.entry.isCaptureActive}, entry.isAnimatingCapture: ${seat.entry.isAnimatingCapture}, exit.isCaptureActive: ${seat.exit.isCaptureActive}, exit.isAnimatingCapture: ${seat.exit.isAnimatingCapture}`
         );
         return true;

@@ -57,7 +57,7 @@ describe('System Navigation & Modals Suite', () => {
       store.open('TestA', { val: 1 });
       store.open('TestB', { val: 2 });
 
-      expect(store.stack.length).toBe(2);
+      expect(store.stack).toHaveLength(2);
       expect(store.stack[0]!.name).toBe('TestA');
       expect(store.stack[1]!.name).toBe('TestB');
     });
@@ -72,7 +72,7 @@ describe('System Navigation & Modals Suite', () => {
       store.closeTop();
       vi.advanceTimersByTime(600);
 
-      expect(store.stack.length).toBe(1);
+      expect(store.stack).toHaveLength(1);
       expect(store.stack[0]!.name).toBe('TestA');
       vi.useRealTimers();
     });
@@ -87,7 +87,7 @@ describe('System Navigation & Modals Suite', () => {
       store.close(idA!);
       vi.advanceTimersByTime(600);
 
-      expect(store.stack.length).toBe(1);
+      expect(store.stack).toHaveLength(1);
       expect(store.stack[0]!.name).toBe('TestB');
       vi.useRealTimers();
     });
@@ -99,7 +99,7 @@ describe('System Navigation & Modals Suite', () => {
       store.open('TestB');
       store.closeAll();
 
-      expect(store.stack.length).toBe(0);
+      expect(store.stack).toHaveLength(0);
     });
 
     it('should correctly report isOpen status', () => {
@@ -157,7 +157,7 @@ describe('System Navigation & Modals Suite', () => {
         await wrapper.vm.$nextTick();
 
         let providers = wrapper.findAll('.hierarchy-provider');
-        expect(providers.length).toBe(1);
+        expect(providers).toHaveLength(1);
         expect(providers[0]!.attributes('data-top')).toBe('true');
         expect(providers[0]!.attributes('data-simplified')).toBe('false');
 
@@ -166,7 +166,7 @@ describe('System Navigation & Modals Suite', () => {
         await wrapper.vm.$nextTick();
 
         providers = wrapper.findAll('.hierarchy-provider');
-        expect(providers.length).toBe(2);
+        expect(providers).toHaveLength(2);
         expect(providers[0]!.attributes('data-simplified')).toBe('true');
         expect(providers[1]!.attributes('data-top')).toBe('true');
 

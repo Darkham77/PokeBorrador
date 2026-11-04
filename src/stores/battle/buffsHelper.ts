@@ -101,10 +101,10 @@ export function buildActiveEventBuffs(
   const list: ActiveBuffItem[] = [];
 
   for (const ev of activeEvents) {
-    const window = getEventCurrentWindow(ev, nowInstant);
+    const eventWindow = getEventCurrentWindow(ev, nowInstant);
     let secsLeft = 0;
-    if (window) {
-      secsLeft = Math.max(0, Math.floor((window.end.epochMilliseconds - nowMs) / 1000));
+    if (eventWindow) {
+      secsLeft = Math.max(0, Math.floor((eventWindow.end.epochMilliseconds - nowMs) / 1000));
     } else if (ev.end_at) {
       try {
         const endInstant = Temporal.Instant.from(ev.end_at);

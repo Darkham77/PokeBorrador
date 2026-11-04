@@ -7,6 +7,7 @@ import { describe, it, expect, vi } from 'vite-plus/test';
 
 import { calculateCatchRate } from '@/logic/battle/battleEngine';
 import { makePokemon, levelUpPokemon } from '@/logic/pokemon/pokemonFactory';
+import type * as PokemonUtilsModule from '@/logic/pokemon/pokemonUtils';
 import { getDayCycle } from '@/logic/utils/timeUtils';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
@@ -113,7 +114,7 @@ vi.mock('@/stores/war', () => ({
 }));
 
 vi.mock('@/logic/pokemon/pokemonUtils', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/logic/pokemon/pokemonUtils')>();
+  const actual = await importOriginal<typeof PokemonUtilsModule>();
   return {
     ...actual,
     getMovesAtLevel: vi.fn(() => [{ id: 'scratch', name: 'Arañazo', pp: 35, maxPP: 35 }])
@@ -134,11 +135,13 @@ describe('Pokemon Factory & Capture Domain Suite', () => {
       });
 
       it('should throw an error if species is missing', () => {
-        expect(() => makePokemon('missing_id', 5)).toThrow();
+        expect(() => makePokemon('missing_id', 5)).toThrow(/missing|invalid|not found|species/i);
       });
 
       it('should handle numeric IDs correctly by casting to string and throw if invalid', () => {
-        expect(() => makePokemon(1776736888069.925, 5)).toThrow();
+        expect(() => makePokemon(1776736888069.925, 5)).toThrow(
+          /missing|invalid|not found|species/i
+        );
       });
 
       it('should respect level limits', () => {
@@ -189,9 +192,9 @@ describe('Pokemon Factory & Capture Domain Suite', () => {
         ];
 
         const pending = levelUpPokemon(p!);
-        expect(pending!.length).toBe(1);
+        expect(pending!).toHaveLength(1);
         expect(pending![0]!.name).toBe('Lanzallamas');
-        expect(p!.moves.length).toBe(4);
+        expect(p!.moves).toHaveLength(4);
       });
     });
   });
@@ -305,13 +308,13 @@ describe('Pokemon Factory & Capture Domain Suite', () => {
 
         const turn1 = calculateCatchRate(mockPokemon as unknown as Pokemon, 'timerball', 1, {
           turnCount: 1
-        } as unknown as Parameters<typeof calculateCatchRate>[3]);
+        });
         const turn10 = calculateCatchRate(mockPokemon as unknown as Pokemon, 'timerball', 1, {
           turnCount: 10
-        } as unknown as Parameters<typeof calculateCatchRate>[3]);
+        });
         const turn30 = calculateCatchRate(mockPokemon as unknown as Pokemon, 'timerball', 1, {
           turnCount: 30
-        } as unknown as Parameters<typeof calculateCatchRate>[3]);
+        });
 
         expect(turn30.shakes).toBeGreaterThanOrEqual(turn10.shakes);
         expect(turn10.shakes).toBeGreaterThanOrEqual(turn1.shakes);

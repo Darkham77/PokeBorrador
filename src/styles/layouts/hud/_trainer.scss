@@ -45,7 +45,7 @@
     font-size: var(--font-11);
     span {
       color: var(--white);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
     }
   }
 }

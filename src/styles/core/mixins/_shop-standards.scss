@@ -290,7 +290,7 @@
     gap: $spacing-sm-alt;
     color: var(--white);
     font-size: var(--font-16);
-    font-weight: 900;
+    font-weight: $font-weight-black;
 
     &.colored {
       color: $color;

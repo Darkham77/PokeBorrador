@@ -134,9 +134,10 @@ export const BATTLE_CONDITION_KEYS = [
   'wonderroom'
 ] as const;
 export type BattleConditionKey = (typeof BATTLE_CONDITION_KEYS)[number];
+const BATTLE_CONDITION_KEYS_SET = new Set<string>(BATTLE_CONDITION_KEYS);
 
 function isBattleConditionKey(value: string): value is BattleConditionKey {
-  return BATTLE_CONDITION_KEYS.includes(value as BattleConditionKey);
+  return BATTLE_CONDITION_KEYS_SET.has(value);
 }
 
 export function requireBattleConditionKey(value: string): BattleConditionKey {

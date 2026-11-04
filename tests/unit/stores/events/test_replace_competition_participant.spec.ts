@@ -41,7 +41,7 @@ describe('Tier 1: Participant Replacement in submitCompetitionEntry', () => {
       player_name: 'Player',
       player_email: 'p@test.com',
       pokemon_uid: 'poke-a-uid',
-      data: { score: 120 } as any,
+      data: { score: 120 },
       submitted_at: '2026-08-11T18:00:00Z'
     };
 

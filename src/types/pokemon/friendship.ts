@@ -13,6 +13,7 @@ export const FRIENDSHIP_SEAL_TIERS = [
   'radiant_prism',
   'best_friends'
 ] as const;
+const FRIENDSHIP_SEAL_TIERS_SET = new Set<string>(FRIENDSHIP_SEAL_TIERS);
 
 export type FriendshipSealTier = (typeof FRIENDSHIP_SEAL_TIERS)[number];
 
@@ -119,7 +120,7 @@ export const FRIENDSHIP_SEAL_MAP: Readonly<Record<FriendshipSealTier, Friendship
   });
 
 export function isFriendshipSealTier(value: unknown): value is FriendshipSealTier {
-  return typeof value === 'string' && FRIENDSHIP_SEAL_TIERS.includes(value as FriendshipSealTier);
+  return typeof value === 'string' && FRIENDSHIP_SEAL_TIERS_SET.has(value);
 }
 
 export function requireFriendshipSealTier(value: unknown): FriendshipSealTier {

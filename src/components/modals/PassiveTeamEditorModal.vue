@@ -23,9 +23,10 @@ const confirmSave = (): void => {
 
 // Shim for legacy code - we keep this but use the prop as source of truth
 if (typeof globalThis.window !== 'undefined') {
-  Reflect.set(globalThis, 'openPassiveTeamEditor', () => {
+  Reflect.set(globalThis, 'openPassiveTeamEditor', async () => {
     // This is now managed by the store/host, but we keep the shim for event-based calls
-    import('@/stores/modals').then((m) => m.useModalStore().open('PassiveTeamEditor'));
+    const m = await import('@/stores/modals');
+    m.useModalStore().open('PassiveTeamEditor');
   });
 }
 </script>

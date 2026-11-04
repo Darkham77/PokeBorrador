@@ -183,7 +183,7 @@ describe('2.5D Depth Sorting (Y = Z) & Prop Clearance', () => {
       }
     });
 
-    expect(treeIndices.length).toBe(2);
+    expect(treeIndices).toHaveLength(2);
     // Upper tree (y=3) must be drawn first, lower tree (y=5) must be drawn second
     expect(treeIndices[0]).toBeLessThan(treeIndices[1]!);
   });
@@ -205,7 +205,7 @@ describe('2.5D Depth Sorting (Y = Z) & Prop Clearance', () => {
     const context = {
       width: 30,
       height: 30,
-      terrainMatrix: Array.from({ length: 30 }, () => Array(30).fill('grass' as WaterTerrainKind)),
+      terrainMatrix: Array.from({ length: 30 }, () => Array(30).fill('grass')),
       heightmap: Array.from({ length: 30 }, () => Array(30).fill(0)),
       occupiedFootCells: Array.from({ length: 30 }, () => Array(30).fill(false))
     };

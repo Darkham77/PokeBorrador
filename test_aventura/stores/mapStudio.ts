@@ -9,6 +9,8 @@ import type { DisplayText } from '@francogp/auditor';
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 
+import { safeStorage } from '@/logic/utils/storage';
+
 import { MAP_PROPS_REGISTRY, type MapPropDefinition } from '../config/mapProps.ts';
 import {
   type StructureTemplate,
@@ -612,9 +614,9 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
    * Auto-save state to browser local storage.
    */
   function autoSave(): void {
-    if (!currentMap.value || typeof localStorage === 'undefined') return;
+    if (!currentMap.value) return;
     try {
-      localStorage.setItem(AUTOSAVE_STORAGE_KEY, JSON.stringify(currentMap.value));
+      safeStorage.setItem(AUTOSAVE_STORAGE_KEY, JSON.stringify(currentMap.value));
     } catch (err) {
       console.warn('Handled controlled exception:', err);
     }
@@ -624,9 +626,8 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
    * Load saved map from browser local storage.
    */
   function loadFromStorage(): boolean {
-    if (typeof localStorage === 'undefined') return false;
     try {
-      const raw = localStorage.getItem(AUTOSAVE_STORAGE_KEY);
+      const raw = safeStorage.getItem(AUTOSAVE_STORAGE_KEY);
       if (!raw) return false;
       const parsed = JSON.parse(raw) as GeneratedMap;
       setMap(parsed);

@@ -120,7 +120,7 @@ const percentLabelText = computed(() => {
 
   color: Rgb(239 68 68 / 100%);
   font-size: var(--font-10);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
   transform: Rotate(180deg);
   margin-top: 8px;
   text-shadow:

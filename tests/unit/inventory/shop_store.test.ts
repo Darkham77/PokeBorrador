@@ -100,8 +100,8 @@ describe('Shop Store', () => {
     const success = shop.healAllPokemon();
 
     expect(success).toBe(true);
-    expect(game.state.team![0]!.hp).toBe(100);
-    expect(game.state.team![0]!.status).toBe('');
-    expect(game.state.team![0]!.moves![0]!.pp).toBe(20);
+    expect(game.state.team[0]!.hp).toBe(100);
+    expect(game.state.team[0]!.status).toBe('');
+    expect(game.state.team[0]!.moves[0]!.pp).toBe(20);
   });
 });

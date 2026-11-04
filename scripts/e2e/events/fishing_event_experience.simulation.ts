@@ -1,4 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
+
+import type { MapLocation } from '../../../src/types/pokemon/encounters.ts';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import {
   armBattleReadyForInput,
@@ -11,6 +13,7 @@ import {
 
 interface WindowWithCapturedLogs extends Window {
   __CAPTURED_COMBAT_LOGS__?: string[];
+  __BATTLE_LOG_HANDLER__?: (e: Event) => void;
 }
 
 const DEFAULT_ATTACK_POWER = 90;
@@ -128,12 +131,17 @@ class FishingEventSimulation extends BaseBattleSimulation {
     await this.page.evaluate(() => {
       const win = window as WindowWithCapturedLogs;
       win.__CAPTURED_COMBAT_LOGS__ = [];
-      window.addEventListener('battle-log-added', (e: Event) => {
+      if (win.__BATTLE_LOG_HANDLER__) {
+        window.removeEventListener('battle-log-added', win.__BATTLE_LOG_HANDLER__);
+      }
+      const handler = (e: Event): void => {
         const detail = (e as CustomEvent<{ msg: string }>).detail;
         if (detail?.msg) {
           win.__CAPTURED_COMBAT_LOGS__?.push(detail.msg);
         }
-      });
+      };
+      win.__BATTLE_LOG_HANDLER__ = handler;
+      window.addEventListener('battle-log-added', handler);
     });
   }
 
@@ -156,7 +164,6 @@ class FishingEventSimulation extends BaseBattleSimulation {
       const { calculateEncounterTypeWeights } =
         await import('../../../src/logic/encounters/encounterHelpers.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
-      type MapLocation = import('../../../src/types/pokemon/encounters.ts').MapLocation;
 
       const testLocation: MapLocation = {
         id: 'route22',

@@ -238,9 +238,9 @@ describe('maritimeBridgesAndUrbanClearance (Tier 1 Architecture Verification)', 
           if (mass.length > 25) {
             const maxElev = Math.max(...mass.map((m) => m.elev));
             expect(
-              maxElev >= 2,
+              maxElev,
               `Massif of size ${mass.length} at (${x}, ${y}) has max elevation ${maxElev}, expected >= 2`
-            ).toBe(true);
+            ).toBeGreaterThanOrEqual(2);
           }
         }
       }

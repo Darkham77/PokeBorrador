@@ -150,7 +150,7 @@ describe('urbanZoningEngine', () => {
         baseLayer: createTestMatrix(dims.width, dims.height, null),
         elevationLayer: createTestMatrix(dims.width, dims.height, null),
         objectLayer: createTestMatrix(dims.width, dims.height, null),
-        collisionGrid: createTestMatrix(dims.width, dims.height, false as TileCollision),
+        collisionGrid: createTestMatrix(dims.width, dims.height, false),
         isPathCell: createTestMatrix(dims.width, dims.height, false),
         warps: [],
         spawns: [],

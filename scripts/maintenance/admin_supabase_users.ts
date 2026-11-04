@@ -1,4 +1,4 @@
-import { isMainModule } from '@francogp/auditor';
+import { enableCompileCache } from 'node:module';
 /**
  * @file admin_supabase_users.ts
  * @description Script automático de administración de usuarios Supabase (Nube o NAS),
@@ -14,15 +14,16 @@ import { isMainModule } from '@francogp/auditor';
  * - Estándares Node.js 26+ (Explicit Resource Management con 'using', prefijos node:).
  * - Arquitectura Zero-Warning y Zero-Any.
  */
-
 import { styleText } from 'node:util';
-import { enableCompileCache } from 'node:module';
+
+import { isMainModule } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
 
 const ADMIN_TARGET_NODE_VERSION_LABEL = '26';
 import postgres from 'postgres';
-import { buildDatabaseUrl, getValidatedServerConfigs } from '../lib/supabaseClient.ts';
+
 import { parseUnmatchedArgs } from '../lib/cliHelpers.ts';
+import { buildDatabaseUrl, getValidatedServerConfigs } from '../lib/supabaseClient.ts';
 
 // Optimizar ejecución en ejecuciones sucesivas
 enableCompileCache();
@@ -297,7 +298,7 @@ export async function adminSupabaseUsers(parsed?: Partial<AdminParsedArgs>): Pro
     try {
       await sql.end();
     } catch (err) {
-      err;
+      console.warn('[Handled controlled exception]:', err);
     }
     process.exit(1);
   }
@@ -340,13 +341,13 @@ export const command = defineCommand({
     }
   },
   async run({ args }) {
-    const { getParam } = parseUnmatchedArgs(args._);
-    const serverArg = args.server || getParam('server', 's');
-    const actionArg = args.action || getParam('action', 'a');
-    const emailArg = args.email || getParam('email', 'e');
-    const passwordArg = args.password || getParam('password', 'p');
-    const newEmailArg = args['new-email'] || getParam('new-email');
-    const usernameArg = args.username || getParam('username', 'u');
+    const parsed = parseUnmatchedArgs(args._);
+    const serverArg = args.server || parsed.getParam('server', 's');
+    const actionArg = args.action || parsed.getParam('action', 'a');
+    const emailArg = args.email || parsed.getParam('email', 'e');
+    const passwordArg = args.password || parsed.getParam('password', 'p');
+    const newEmailArg = args['new-email'] || parsed.getParam('new-email');
+    const usernameArg = args.username || parsed.getParam('username', 'u');
 
     await adminSupabaseUsers({
       serverArg,
@@ -360,5 +361,5 @@ export const command = defineCommand({
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

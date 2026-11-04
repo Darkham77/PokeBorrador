@@ -60,21 +60,21 @@ describe('NPC Baby Egg Reward Lifecycle & Daycare Separation', () => {
 
     expect(awarded).toBe(true);
     expect(gs.state.eggs).toBeDefined();
-    expect(gs.state.eggs!.length).toBe(1);
+    expect(gs.state.eggs).toHaveLength(1);
 
-    const egg = gs.state.eggs![0]!;
+    const egg = gs.state.eggs[0]!;
     expect(egg.isNpc).toBe(true);
     expect(egg.tint).toBe(NPC_EGG_TINT);
     expect(NPC_BABY_POKEMON_POOL).toContain(egg.id);
 
     // Verifies battle log received 'npc_egg' as source
-    expect(logs.length).toBe(1);
+    expect(logs).toHaveLength(1);
     expect(logs[0]!.source).toBe('npc_egg');
     expect(logs[0]!.type).toBe('log-catch');
     expect(logs[0]!.msg).toContain('¡El Entrenador te ha regalado un misterioso Huevo Pokémon!');
 
     // Verifies UI notification toast
-    expect(notifications.length).toBe(1);
+    expect(notifications).toHaveLength(1);
     expect(notifications[0]!.msg).toContain('¡Recibiste un Huevo Pokémon (NPC)!');
 
     vi.restoreAllMocks();
@@ -125,11 +125,11 @@ describe('NPC Baby Egg Reward Lifecycle & Daycare Separation', () => {
     handleNpcBabyEggReward(mockCtx as unknown as BattleContext, mockCtx.activeBattle.value);
 
     // Mochila has 1 egg (+1 NPC slot)
-    expect(gs.state.eggs.length).toBe(1);
+    expect(gs.state.eggs).toHaveLength(1);
     expect(gs.state.eggs[0]!.isNpc).toBe(true);
 
     // Daycare warehouse (0/30) is completely untouched
-    expect(gs.state.daycareWarehouse.length).toBe(0);
+    expect(gs.state.daycareWarehouse).toHaveLength(0);
 
     vi.restoreAllMocks();
   });
@@ -157,8 +157,8 @@ describe('NPC Baby Egg Reward Lifecycle & Daycare Separation', () => {
     );
 
     expect(awarded).toBe(false);
-    expect(gs.state.eggs.length).toBe(1);
-    expect(logs.length).toBe(0);
+    expect(gs.state.eggs).toHaveLength(1);
+    expect(logs).toHaveLength(0);
 
     vi.restoreAllMocks();
   });
@@ -182,8 +182,8 @@ describe('NPC Baby Egg Reward Lifecycle & Daycare Separation', () => {
     );
 
     expect(awarded).toBe(false);
-    expect(gs.state.eggs.length).toBe(7);
-    expect(logs.length).toBe(0);
+    expect(gs.state.eggs).toHaveLength(7);
+    expect(logs).toHaveLength(0);
 
     vi.restoreAllMocks();
   });
@@ -196,7 +196,7 @@ describe('NPC Baby Egg Reward Lifecycle & Daycare Separation', () => {
 
     handleNpcBabyEggReward(mockCtx as unknown as BattleContext, mockCtx.activeBattle.value);
 
-    const egg = gs.state.eggs![0]!;
+    const egg = gs.state.eggs[0]!;
     expect(egg.isNpc).toBe(true);
 
     const scheduleSave = vi.fn().mockResolvedValue(undefined);
@@ -243,7 +243,7 @@ describe('NPC Baby Egg Reward Lifecycle & Daycare Separation', () => {
 
     const savedEggs = validationResult.output.eggs;
     expect(savedEggs).toBeDefined();
-    expect(savedEggs!.length).toBe(1);
+    expect(savedEggs!).toHaveLength(1);
     expect(savedEggs![0]!.isNpc).toBe(true);
     expect(savedEggs![0]!.tint).toBe(NPC_EGG_TINT);
   });

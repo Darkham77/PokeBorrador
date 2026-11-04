@@ -24,7 +24,7 @@ describe('realContinentPatchExtractor', () => {
     for (const patch of patches) {
       expect(patch.seed).toBe(42);
       expect(patch.radius).toBe(2);
-      expect(patch.cells.length).toBe(5); // 2 * radius + 1
+      expect(patch.cells).toHaveLength(5); // 2 * radius + 1
       expect(patch.cells[0]?.length).toBe(5);
 
       const center = patch.cells[2]![2]!;
@@ -50,7 +50,7 @@ describe('realContinentPatchExtractor', () => {
 
     expect(patches.length).toBeGreaterThan(0);
     const first = patches[0]!;
-    expect(first.cells.length).toBe(3);
+    expect(first.cells).toHaveLength(3);
     expect(first.cells[0]?.length).toBe(3);
     expect(first.cells[1]![1]?.isCenter).toBe(true);
   });
@@ -63,7 +63,7 @@ describe('realContinentPatchExtractor', () => {
     });
 
     const neighborhood = extractCellNeighborhood(continent, 32, 32);
-    expect(neighborhood.cells.length).toBe(3);
+    expect(neighborhood.cells).toHaveLength(3);
     expect(neighborhood.cells[0]?.length).toBe(3);
     expect(neighborhood.cells[1]![1]?.dir).toBe('C');
     expect(neighborhood.cells[0]![0]?.dir).toBe('NW');
@@ -87,7 +87,7 @@ describe('realContinentPatchExtractor', () => {
     expect(patches.length).toBeGreaterThan(0);
     const first = patches[0]!;
     expect(first.radius).toBe(3);
-    expect(first.cells.length).toBe(7);
+    expect(first.cells).toHaveLength(7);
     expect(first.cells[0]?.length).toBe(7);
     expect(first.cells[3]![3]?.isCenter).toBe(true);
     expect(first.cells[3]![3]?.x).toBe(first.centerX);

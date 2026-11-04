@@ -1,13 +1,4 @@
-import {
-  Ability,
-  ActiveMove,
-  AnyObject,
-  Condition,
-  Item,
-  Move,
-  Species
-} from './exported-global-types';
-
+import { Battle } from './battle';
 /**
  * Simulator State
  * Pokemon Showdown - http://pokemonshowdown.com/
@@ -18,9 +9,16 @@ import {
  *
  * @license MIT
  */
-
-import { Battle } from './battle';
 import { Dex } from './dex';
+import {
+  Ability,
+  ActiveMove,
+  AnyObject,
+  Condition,
+  Item,
+  Move,
+  Species
+} from './exported-global-types';
 import { Field } from './field';
 import { Pokemon } from './pokemon';
 import { PRNG } from './prng';
@@ -365,7 +363,7 @@ export const State = new (class {
         }
         return o;
       default:
-        throw new TypeError(`Unexpected typeof === '${typeof obj}': ${obj}`);
+        throw new TypeError(`Unexpected typeof === '${typeof obj}': ${String(obj)}`);
     }
   }
 
@@ -396,7 +394,7 @@ export const State = new (class {
         return o;
       case 'function': // lol wtf
       default:
-        throw new TypeError(`Unexpected typeof === '${typeof obj}': ${obj}`);
+        throw new TypeError(`Unexpected typeof === '${typeof obj}': ${String(obj)}`);
     }
   }
 

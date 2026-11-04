@@ -1,15 +1,13 @@
-import { AnyObject, Battle, Condition, Effect, ID, Pokemon, Side } from './exported-global-types';
-
+import { toID } from './dex';
 /**
  * Simulator Field
  * Pokemon Showdown - http://pokemonshowdown.com/
  *
  * @license MIT
  */
-
-import { State } from './state';
+import { AnyObject, Battle, Condition, Effect, ID, Pokemon, Side } from './exported-global-types';
 import { type EffectState } from './pokemon';
-import { toID } from './dex';
+import { State } from './state';
 
 export class Field {
   readonly battle: Battle;
@@ -49,7 +47,7 @@ export class Field {
     if (source === 'debug') source = this.battle.sides[0].active[0];
 
     if (this.weather === status.id) {
-      if (sourceEffect && sourceEffect.effectType === 'Ability') {
+      if (sourceEffect?.effectType === 'Ability') {
         if (this.battle.gen > 5 || this.weatherState.duration === 0) {
           return false;
         }
@@ -63,7 +61,7 @@ export class Field {
         if (result === false) {
           if ((sourceEffect as Move)?.weather) {
             this.battle.add('-fail', source, sourceEffect, '[from] ' + this.weather);
-          } else if (sourceEffect && sourceEffect.effectType === 'Ability') {
+          } else if (sourceEffect?.effectType === 'Ability') {
             this.battle.add('-ability', source, sourceEffect, '[from] ' + this.weather, '[fail]');
           }
         }

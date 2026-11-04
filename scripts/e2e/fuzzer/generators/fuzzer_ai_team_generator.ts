@@ -1,3 +1,5 @@
+import crypto from 'node:crypto';
+
 // scripts/e2e/fuzzer/generators/fuzzer_ai_team_generator.ts
 //
 // Generates batches of random Gen 9 battles for the AI vs AI fuzzer.
@@ -6,9 +8,9 @@
 //
 import { Dex, toID } from '@pkmn/sim';
 import type { PokemonSet } from '@pkmn/sim';
-import crypto from 'node:crypto';
-import { getShowdownNickname } from '../../../../src/logic/battle/showdownUidMapper.ts';
+
 import { MAX_POKEMON_LEVEL, ACTIVE_GENERATION } from '../../../../src/data/system/constants.ts';
+import { getShowdownNickname } from '../../../../src/logic/battle/showdownUidMapper.ts';
 
 export interface AiBattleBatch {
   id: string;

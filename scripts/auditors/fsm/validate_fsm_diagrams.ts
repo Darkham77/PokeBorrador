@@ -3,8 +3,9 @@
  * Auditoría FSM vs Manual: compara el diagrama Mermaid contra las constantes en TS.
  */
 import fs from 'node:fs/promises';
-import path from 'node:path';
 import { enableCompileCache } from 'node:module';
+import path from 'node:path';
+
 import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
 
 enableCompileCache();
@@ -21,7 +22,12 @@ export interface FsmTransition {
   to: string;
 }
 
-export function parseMermaid(manualCode: string) {
+export interface ParsedMermaidDiagram {
+  states: Set<string>;
+  transitions: FsmTransition[];
+}
+
+export function parseMermaid(manualCode: string): ParsedMermaidDiagram {
   const states = new Set<string>();
   const transitions: FsmTransition[] = [];
 
@@ -62,7 +68,12 @@ export function parseMermaid(manualCode: string) {
   return { states, transitions };
 }
 
-export function parseJsFsm(fsmCode: string) {
+export interface ParsedJsFsm {
+  allKeys: Set<string>;
+  jsTransitions: { from: string; to: string }[];
+}
+
+export function parseJsFsm(fsmCode: string): ParsedJsFsm {
   const allKeys = new Set<string>();
   const objRx = /export const (BATTLE_(?:SUB)?STATES)\s*=\s*\{([\s\S]*?)\}\s*(as const)?\s*;/g;
   let m: RegExpExecArray | null;
@@ -105,17 +116,17 @@ export const FSM_DIAGRAM_RULES: readonly FsmDiagramRuleId[] = [
 ] as const;
 
 export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
-  constructor() {
+  public constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(FSM_DIAGRAM_RULES, {
         speed: 'light',
         phase: 'normal',
-        fix: 'none',
         md: false,
         ast: false,
         changedOnly: false,
         critical: false
       }),
+      ruleFixers: {},
       id: 'validate_fsm_diagrams',
       configKey: 'fsm.diagrams',
       defaultConfig: {
@@ -208,9 +219,7 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
       'BUILD_QUEUE',
       'POP_ACTION'
     ] as const;
-    const IGNORED_JS_STATES: ReadonlySet<string> = new Set<string>(
-      IGNORED_JS_STATE_VALUES
-    );
+    const IGNORED_JS_STATES: ReadonlySet<string> = new Set<string>(IGNORED_JS_STATE_VALUES);
 
     this.runSubAuditorSync('fsm-undocumented-js-state', () => {
       const undocumented = Array.from(jsKeys).filter(

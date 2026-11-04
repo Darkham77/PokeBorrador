@@ -115,7 +115,7 @@ describe('bridgeRectilinearWaterCrossing', () => {
       for (const y of interiorWaterYs) {
         const rowBlits = faroWaterBlits.filter((b) => b.y === y);
         const cols = rowBlits.map((b) => b.x).sort((a, b) => a - b);
-        expect(cols.length).toBe(2);
+        expect(cols).toHaveLength(2);
         if (!commonCols) {
           commonCols = cols;
         } else {
@@ -129,7 +129,7 @@ describe('bridgeRectilinearWaterCrossing', () => {
       for (const x of interiorWaterXs) {
         const colBlits = faroWaterBlits.filter((b) => b.x === x);
         const rows = colBlits.map((b) => b.y).sort((a, b) => a - b);
-        expect(rows.length).toBe(2);
+        expect(rows).toHaveLength(2);
         if (!commonRows) {
           commonRows = rows;
         } else {
@@ -143,11 +143,11 @@ describe('bridgeRectilinearWaterCrossing', () => {
       (b) =>
         b.file === 'poke_bridge_h_single.png' || (isVertical && b.file === 'poke_bridge_h_top.png')
     );
-    expect(strayRailings.length).toBe(0);
+    expect(strayRailings).toHaveLength(0);
 
     // Zero bridge blits on sand
     const sandBlits = faroWaterBlits.filter((b) => continent.cells[b.y]![b.x]!.terrain === 'sand');
-    expect(sandBlits.length).toBe(0);
+    expect(sandBlits).toHaveLength(0);
 
     // Guarantee the start and end of the bridge corridor land on solid sand
     const firstWaterIdx = faroEdge!.waypoints.findIndex(

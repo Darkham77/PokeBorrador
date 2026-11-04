@@ -172,7 +172,7 @@ describe('Busy Pokémon Security & Lifecycle System (Missions & Events)', () => 
       const released = box.doBoxRelease();
 
       expect(released).toEqual(['Pidgey']);
-      expect(gs.state.box.length).toBe(2);
+      expect(gs.state.box).toHaveLength(2);
       expect(gs.state.box[0]?.uid).toBe('box-mis');
       expect(gs.state.box[1]?.uid).toBe('box-eve');
     });
@@ -202,7 +202,7 @@ describe('Busy Pokémon Security & Lifecycle System (Missions & Events)', () => 
       const soldResult = box.doBoxRocketSell();
       expect(soldResult.count).toBe(0);
       expect(soldResult.value).toBe(0);
-      expect(gs.state.box.length).toBe(3); // None sold
+      expect(gs.state.box).toHaveLength(3); // None sold
     });
 
     it('should block moving or swapping busy Pokémon between Box and Team', () => {
@@ -408,7 +408,7 @@ describe('Busy Pokémon Security & Lifecycle System (Missions & Events)', () => 
       const sold = box.doBoxRocketSell();
       expect(sold.count).toBe(1);
       expect(sold.value).toBeGreaterThan(0);
-      expect(gs.state.box.length).toBe(0);
+      expect(gs.state.box).toHaveLength(0);
     });
   });
 });

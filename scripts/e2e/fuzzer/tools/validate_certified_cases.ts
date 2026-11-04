@@ -1,6 +1,8 @@
-import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import { defineCommand, runMain } from 'citty';
+
 import { requireCertifiedBattleCaseDocument } from '../core/certifiedBattleCase.ts';
 
 export function validateCertifiedCases(targetFilePath?: string): void {
@@ -37,7 +39,8 @@ export function validateCertifiedCases(targetFilePath?: string): void {
 export const command = defineCommand({
   meta: {
     name: 'validate-certified-cases',
-    description: 'Valida la integridad y esquema del documento JSON de casos certificados del fuzzer'
+    description:
+      'Valida la integridad y esquema del documento JSON de casos certificados del fuzzer'
   },
   args: {
     file: {

@@ -569,7 +569,7 @@ describe('System Events Engine Domain Suite', () => {
 
         // 1. Wild spawns test on Route 1
         const wildState = useRouteSpawnsWild({
-          map: route1!,
+          map: route1,
           cycle: 'day',
           weather: 'clear'
         });
@@ -585,7 +585,7 @@ describe('System Events Engine Domain Suite', () => {
 
         // 2. Fishing spawns test on Route 4 (has fishing)
         const fishingState = useRouteSpawnsFishing({
-          map: route4!,
+          map: route4,
           cycle: 'day',
           weather: 'clear'
         });
@@ -627,7 +627,7 @@ describe('System Events Engine Domain Suite', () => {
       pidgey.obtainedAt = nowMs;
 
       const competitionEvents = ALL_SYSTEM_EVENTS.filter((e) => e.type === 'competition');
-      expect(competitionEvents.length).toBe(3); // torneo_pesca, torneo_caza, gran_concurso_sabado
+      expect(competitionEvents).toHaveLength(3); // torneo_pesca, torneo_caza, gran_concurso_sabado
 
       for (const ev of competitionEvents) {
         const subComps = resolveEventSubCompetitions(ev);

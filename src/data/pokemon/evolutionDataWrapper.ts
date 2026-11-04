@@ -5,11 +5,10 @@
  * Enforces strict PokemonSpeciesId and ItemId types.
  */
 
+import type { PokemonMoveId } from '../battle/moves.ts';
+import type { ItemId } from '../inventory/items.ts';
 import dbJson from './evolutionData.json' with { type: 'json' };
 import type { PokemonSpeciesId } from './pokedex.ts';
-import type { ItemId } from '../inventory/items.ts';
-
-import type { PokemonMoveId } from '../battle/moves.ts';
 
 export const EVOLUTION_TIMES = ['day', 'night'] as const;
 export type EvolutionTime = (typeof EVOLUTION_TIMES)[number];

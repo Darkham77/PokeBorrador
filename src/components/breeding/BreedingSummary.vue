@@ -285,7 +285,7 @@ const getCompatText = (label: string): string => {
     align-items: center;
     gap: $spacing-sm;
     font-size: var(--font-10);
-    font-weight: 800;
+    font-weight: $font-weight-extrabold;
     margin-bottom: 4px;
     text-transform: uppercase;
 
@@ -347,7 +347,7 @@ const getCompatText = (label: string): string => {
     h4 {
       color: $white;
       font-size: var(--font-11);
-      font-weight: 800;
+      font-weight: $font-weight-extrabold;
       line-height: 1.5;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -379,7 +379,7 @@ const getCompatText = (label: string): string => {
   .label {
     color: $muted;
     font-size: var(--font-8);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     line-height: 1.4;
     text-align: left;
   }
@@ -387,7 +387,7 @@ const getCompatText = (label: string): string => {
   .value {
     color: $white;
     font-size: var(--font-10);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     line-height: 1.4;
     text-align: left;
   }

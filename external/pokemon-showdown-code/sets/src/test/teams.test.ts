@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 
 import { Team, Teams } from '../teams';
-
 import { GEN } from './data';
 
 const readTeam = (file: string) => fs.readFileSync(`${__dirname}/fixtures/${file}`, 'utf8');

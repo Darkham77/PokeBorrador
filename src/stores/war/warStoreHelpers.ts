@@ -193,11 +193,13 @@ export async function fetchUserWeeklyProgress(
   state: GuardianCapturesState,
   today: string
 ): Promise<UserWeeklyProgressData> {
+  const MAX_WAR_BATCH_LIMIT = 500;
   const { data: pts } = await db
     .from('war_user_points')
     .select('points')
     .eq('user_id', userId)
-    .eq('week_id', weekId);
+    .eq('week_id', weekId)
+    .limit(MAX_WAR_BATCH_LIMIT);
 
   const weeklyPoints =
     (pts as Array<{ points: number }> | null)?.reduce((acc, r) => acc + (r.points || 0), 0) || 0;
@@ -206,7 +208,8 @@ export async function fetchUserWeeklyProgress(
     .from('guardian_captures')
     .select('map_id')
     .eq('user_id', userId)
-    .eq('capture_date', today);
+    .eq('capture_date', today)
+    .limit(MAX_WAR_BATCH_LIMIT);
 
   const typedGuardians = (guardians as GuardianCaptureEntry[] | null) || [];
   const guardianRoutes = syncGuardianCapturesState(state, typedGuardians, today);
@@ -309,17 +312,20 @@ export async function executeResolveWeekDominance(
   db: DBRouter,
   prevWeek: string // infra-id-ok: Temporal ISO week identifier string (YYYY-Www)
 ): Promise<void> {
+  const MAX_DOMINANCE_LIMIT = 500;
   const { data: existingDom } = await db
     .from('war_dominance')
     .select('map_id')
-    .eq('week_id', prevWeek);
+    .eq('week_id', prevWeek)
+    .limit(MAX_DOMINANCE_LIMIT);
 
   if (Array.isArray(existingDom) && existingDom.length > 0) return;
 
   const { data: pointsData } = await db
     .from('war_points')
     .select('map_id, faction, points')
-    .eq('week_id', prevWeek);
+    .eq('week_id', prevWeek)
+    .limit(MAX_DOMINANCE_LIMIT);
 
   const pointsList = pointsData as WarPointsRecord[] | null;
   if (!pointsList || pointsList.length === 0) return;
@@ -346,11 +352,13 @@ export async function fetchWeeklyRewardCalculation(
   prevWeek: string, // infra-id-ok: Temporal ISO week identifier string (YYYY-Www)
   userFaction: FactionId
 ): Promise<WeeklyRewardResult | null> {
+  const MAX_REWARD_RECORDS_LIMIT = 500;
   const { data: ptsData } = await db
     .from('war_user_points')
     .select('points')
     .eq('user_id', userId)
-    .eq('week_id', prevWeek);
+    .eq('week_id', prevWeek)
+    .limit(MAX_REWARD_RECORDS_LIMIT);
 
   const userPts = sumPoints(ptsData as Array<{ points: number }> | null);
   if (userPts <= 0) return null;
@@ -360,7 +368,8 @@ export async function fetchWeeklyRewardCalculation(
   const { data: domData } = await db
     .from('war_dominance')
     .select('winner_faction')
-    .eq('week_id', prevWeek);
+    .eq('week_id', prevWeek)
+    .limit(MAX_REWARD_RECORDS_LIMIT);
 
   const victoryBonus = computeVictoryBonus(domData as DominanceRecord[] | null, userFaction);
   const totalReward = milestoneCoins + victoryBonus;

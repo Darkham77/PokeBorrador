@@ -346,114 +346,113 @@ const handleEggClick = (): void => {
       );
 
       // At peak flash (100% white screen), perform the hatch reveal
-      hatchTimeline.call(() => {
+      hatchTimeline.call(async () => {
         stage.value = 'reveal';
         showParticles.value = true;
         showAuras.value = true;
         playSound('evolution_complete');
 
-        nextTick(() => {
-          // Entry animation for Stats card and Pokémon
-          gsap.fromTo(
-            '.reveal-info-wrapper',
-            { opacity: 0 },
-            { opacity: 1, duration: HATCH_REVEAL_ANIM_DUR_SEC, ease: 'power2.out' }
-          );
+        await nextTick();
+        // Entry animation for Stats card and Pokémon
+        gsap.fromTo(
+          '.reveal-info-wrapper',
+          { opacity: 0 },
+          { opacity: 1, duration: HATCH_REVEAL_ANIM_DUR_SEC, ease: 'power2.out' }
+        );
 
-          gsap.fromTo(
-            '.pokemon-sprite-fx',
-            { scale: 0 },
-            {
-              scale: MAP_FACTION_PODER_MAX_SCALE,
-              duration: HATCH_REVEAL_ANIM_DUR_SEC,
-              ease: 'back.out(1.5)',
-              onComplete: () => {
-                gsap.to('.pokemon-sprite-fx', {
-                  scale: HATCH_SPRITE_FINAL_SCALE,
-                  duration: HATCH_FLASH_DURATION_SEC
-                });
-              }
+        gsap.fromTo(
+          '.pokemon-sprite-fx',
+          { scale: 0 },
+          {
+            scale: MAP_FACTION_PODER_MAX_SCALE,
+            duration: HATCH_REVEAL_ANIM_DUR_SEC,
+            ease: 'back.out(1.5)',
+            onComplete: () => {
+              gsap.to('.pokemon-sprite-fx', {
+                scale: HATCH_SPRITE_FINAL_SCALE,
+                duration: HATCH_FLASH_DURATION_SEC
+              });
             }
-          );
-
-          // Counter-phase animations for concentric auras
-          if (rareAuraRef.value && atmosAuraRef.value) {
-            // Concentric scale and opacity breathing (counter-phase)
-            gsap.fromTo(
-              rareAuraRef.value,
-              { scale: HATCH_RARE_AURA_MIN_SCALE, opacity: HATCH_RARE_AURA_MIN_OPACITY },
-              {
-                scale: HATCH_RARE_AURA_MAX_SCALE,
-                opacity: HATCH_RARE_AURA_MAX_OPACITY,
-                duration: HATCH_AURA_ANIM_DUR_SEC,
-                yoyo: true,
-                repeat: -1,
-                ease: 'sine.inOut'
-              }
-            );
-            gsap.fromTo(
-              atmosAuraRef.value,
-              { scale: HATCH_RARE_AURA_MAX_SCALE, opacity: HATCH_RARE_AURA_MAX_OPACITY },
-              {
-                scale: HATCH_RARE_AURA_MIN_SCALE,
-                opacity: HATCH_RARE_AURA_MIN_OPACITY,
-                duration: HATCH_AURA_ANIM_DUR_SEC,
-                yoyo: true,
-                repeat: -1,
-                ease: 'sine.inOut'
-              }
-            );
           }
+        );
 
-          // Particle burst
-          particlesRef.value.forEach((el) => {
-            if (!el) return;
-            const angle = Math.random() * Math.PI * 2;
-            const distance =
-              HATCH_PARTICLE_MIN_DISTANCE_PX + Math.random() * HATCH_PARTICLE_MAX_SPREAD_PX;
-            const tx = Math.cos(angle) * distance;
-            const ty = Math.sin(angle) * distance;
-
-            gsap.fromTo(
-              el,
-              { x: 0, y: 0, opacity: 1, scale: 1 },
-              {
-                x: tx,
-                y: ty,
-                opacity: 0,
-                scale: 0,
-                duration: 'random(1.2, 2.0)',
-                delay: 'random(0, 0.25)',
-                ease: 'power2.out'
-              }
-            );
-          });
-
-          // Smooth stats card entrance
+        // Counter-phase animations for concentric auras
+        if (rareAuraRef.value && atmosAuraRef.value) {
+          // Concentric scale and opacity breathing (counter-phase)
           gsap.fromTo(
-            '.stats-card',
-            { opacity: 0, y: HATCH_STATS_CARD_INITIAL_Y_OFFSET },
+            rareAuraRef.value,
+            { scale: HATCH_RARE_AURA_MIN_SCALE, opacity: HATCH_RARE_AURA_MIN_OPACITY },
             {
-              opacity: 1,
-              y: 0,
-              duration: HATCH_STATS_CARD_ANIM_DUR_SEC,
-              delay: HATCH_STATS_CARD_ANIM_DELAY_SEC,
-              ease: 'power2.out'
+              scale: HATCH_RARE_AURA_MAX_SCALE,
+              opacity: HATCH_RARE_AURA_MAX_OPACITY,
+              duration: HATCH_AURA_ANIM_DUR_SEC,
+              yoyo: true,
+              repeat: -1,
+              ease: 'sine.inOut'
             }
           );
+          gsap.fromTo(
+            atmosAuraRef.value,
+            { scale: HATCH_RARE_AURA_MAX_SCALE, opacity: HATCH_RARE_AURA_MAX_OPACITY },
+            {
+              scale: HATCH_RARE_AURA_MIN_SCALE,
+              opacity: HATCH_RARE_AURA_MIN_OPACITY,
+              duration: HATCH_AURA_ANIM_DUR_SEC,
+              yoyo: true,
+              repeat: -1,
+              ease: 'sine.inOut'
+            }
+          );
+        }
+
+        // Particle burst
+        particlesRef.value.forEach((el) => {
+          if (!el) return;
+          const angle = Math.random() * Math.PI * 2;
+          const distance =
+            HATCH_PARTICLE_MIN_DISTANCE_PX + Math.random() * HATCH_PARTICLE_MAX_SPREAD_PX;
+          const tx = Math.cos(angle) * distance;
+          const ty = Math.sin(angle) * distance;
 
           gsap.fromTo(
-            '.btn-confirm',
-            { opacity: 0, y: HATCH_STATS_CARD_INITIAL_Y_OFFSET },
+            el,
+            { x: 0, y: 0, opacity: 1, scale: 1 },
             {
-              opacity: 1,
-              y: 0,
-              duration: HATCH_STATS_CARD_ANIM_DUR_SEC,
-              delay: HATCH_CONFIRM_BTN_ANIM_DELAY_SEC,
+              x: tx,
+              y: ty,
+              opacity: 0,
+              scale: 0,
+              duration: 'random(1.2, 2.0)',
+              delay: 'random(0, 0.25)',
               ease: 'power2.out'
             }
           );
         });
+
+        // Smooth stats card entrance
+        gsap.fromTo(
+          '.stats-card',
+          { opacity: 0, y: HATCH_STATS_CARD_INITIAL_Y_OFFSET },
+          {
+            opacity: 1,
+            y: 0,
+            duration: HATCH_STATS_CARD_ANIM_DUR_SEC,
+            delay: HATCH_STATS_CARD_ANIM_DELAY_SEC,
+            ease: 'power2.out'
+          }
+        );
+
+        gsap.fromTo(
+          '.btn-confirm',
+          { opacity: 0, y: HATCH_STATS_CARD_INITIAL_Y_OFFSET },
+          {
+            opacity: 1,
+            y: 0,
+            duration: HATCH_STATS_CARD_ANIM_DUR_SEC,
+            delay: HATCH_CONFIRM_BTN_ANIM_DELAY_SEC,
+            ease: 'power2.out'
+          }
+        );
       });
 
       // Fade out white flash while revealing new creature

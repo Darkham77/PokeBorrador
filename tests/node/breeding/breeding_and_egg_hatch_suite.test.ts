@@ -18,7 +18,12 @@ import { useBreedingActions } from '@/stores/game/actions/breedingActions';
 import type { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon';
 import type { GameState } from '@/types/system/game';
 
-import { NATURES, toNatureId, isNatureId } from '../../../src/data/battle/natures.ts';
+import {
+  NATURES,
+  toNatureId,
+  isNatureId,
+  type NatureId
+} from '../../../src/data/battle/natures.ts';
 import { eggFactory } from '../../../src/logic/breeding/eggFactory.ts';
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
 import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
@@ -38,13 +43,13 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
 
     it('RED: non-canonical Spanish/capitalized nature on egg fails makePokemon without migration', () => {
       const legacyNature = 'Serio';
-      expect(() => toNatureId(legacyNature)).toThrow();
+      expect(() => toNatureId(legacyNature)).toThrow(/nature|invalid/i);
       expect(() => {
         makePokemon('lapras', 1, {
-          nature: legacyNature as unknown as import('../../../src/data/battle/natures.ts').NatureId,
+          nature: legacyNature as unknown as NatureId,
           obtainedMethod: 'egg'
         });
-      }).toThrow();
+      }).toThrow(/nature|invalid/i);
     });
 
     it('synchronizes warehouseEggs with gameStore.state.daycareWarehouse on save and load', async () => {
@@ -70,7 +75,7 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
 
       await breedingStore.loadDaycare(true);
 
-      expect(breedingStore.warehouseEggs.length).toBe(1);
+      expect(breedingStore.warehouseEggs).toHaveLength(1);
       expect(breedingStore.warehouseEggs[0]?.species).toBe('lapras');
 
       const secondEgg: DaycareEgg = {
@@ -243,7 +248,7 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
         .get('kenviota_missing_wh_id') as { save_data: string };
       const migrated2 = JSON.parse(row2.save_data);
       expect(Array.isArray(migrated2.daycareWarehouse)).toBe(true);
-      expect(migrated2.daycareWarehouse.length).toBe(0);
+      expect(migrated2.daycareWarehouse).toHaveLength(0);
 
       const validationRes = validateSaveData(migrated1);
       expect(validationRes.success).toBe(true);
@@ -570,7 +575,7 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
 
       expect(() => {
         makePokemon('charmander', 1, {
-          nature: 'Serio' as unknown as import('@/data/battle/natures').NatureId,
+          nature: 'Serio' as unknown as NatureId,
           obtainedMethod: 'egg'
         });
       }).toThrow("[natures] Invalid NatureId: 'serio'");
@@ -590,7 +595,7 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
       expect(() => {
         eggFactory.createPokemonEgg({
           species: unmigratedEgg.species,
-          nature: unmigratedEgg.nature as any,
+          nature: unmigratedEgg.nature,
           steps: unmigratedEgg.steps,
           ivs: unmigratedEgg.ivs,
           movesAtBirth: unmigratedEgg.movesAtBirth,

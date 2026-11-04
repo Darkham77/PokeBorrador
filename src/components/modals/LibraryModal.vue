@@ -165,7 +165,7 @@ const selectTab = (tabId: string): void => {
     border-radius: $radius-lg-alt;
     color: var(--gray, var(--slate-400));
     font-size: var(--font-12);
-    font-weight: 400;
+    font-weight: $font-weight-normal;
     line-height: 1.2;
     margin-bottom: 6px;
     cursor: pointer;
@@ -235,7 +235,7 @@ const selectTab = (tabId: string): void => {
     margin: 32px 0 16px;
     color: var(--purple, $purple);
     font-size: var(--font-10);
-    font-weight: 800;
+    font-weight: $font-weight-extrabold;
     text-shadow: 2px 2px 0 Rgb(0 0 0 / 50%);
   }
 
@@ -255,7 +255,7 @@ const selectTab = (tabId: string): void => {
 
   :deep(strong) {
     color: $white;
-    font-weight: 700;
+    font-weight: $font-weight-bold;
   }
 
   :deep(table) {

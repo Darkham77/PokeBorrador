@@ -5,7 +5,6 @@ import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 
 import { useUnifiedRewards } from '@/composables/rewards/useUnifiedRewards';
 import { simulatePastEventAndMissionsReward } from '@/logic/debug/rewardsDebugSimulation';
-import type { Event as GameEvent } from '@/logic/events/eventEngine';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { useAuthStore } from '@/stores/auth';
 import { useEventStore } from '@/stores/events';
@@ -14,7 +13,6 @@ import { useGTSStore } from '@/stores/gts';
 import { useModalStore } from '@/stores/modals';
 import { usePvPStore } from '@/stores/pvp';
 import { useUIStore } from '@/stores/ui';
-import type { AuthUser } from '@/types/auth/auth';
 
 describe('reproduce claim all rewards bug', () => {
   beforeEach(() => {
@@ -30,7 +28,7 @@ describe('reproduce claim all rewards bug', () => {
     const gtsStore = useGTSStore();
     const pvpStore = usePvPStore();
 
-    authStore.user = { id: 'local_user', user_metadata: { username: 'Franco' } } as AuthUser;
+    authStore.user = { id: 'local_user', user_metadata: { username: 'Franco' } };
     gameStore.state.starterChosen = true;
     gameStore.state.trainer = 'Franco';
     const poke = makePokemon('pikachu', 25)!;
@@ -52,7 +50,7 @@ describe('reproduce claim all rewards bug', () => {
             third: { money: 5000 }
           }
         }
-      } as unknown as GameEvent
+      }
     ];
 
     await simulatePastEventAndMissionsReward(

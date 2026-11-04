@@ -158,7 +158,7 @@ describe('Profile Sync SQLite Column Parity', () => {
         email: `${targetUserId}@local`,
         db_version: 3,
         user_metadata: { username: 'ash' }
-      } as unknown as AuthUser;
+      };
 
       const mockSaveData: SaveDataDto = {
         trainer: 'ash',
@@ -218,7 +218,7 @@ describe('Profile Sync SQLite Column Parity', () => {
         email: 'gary@local',
         db_version: 3,
         user_metadata: { username: 'gary' }
-      } as unknown as AuthUser;
+      };
 
       await syncUserProfileData(mockDBRouter, newGaryUser, mockSaveData);
 
@@ -243,8 +243,9 @@ describe('Profile Sync SQLite Column Parity', () => {
     }
   });
 
-  if (process.env.TEST_POSTGRES_URL) {
-    it('verifies that syncUserProfileData columns match PostgreSQL profiles table schema', async () => {
+  it.runIf(Boolean(process.env.TEST_POSTGRES_URL))(
+    'verifies that syncUserProfileData columns match PostgreSQL profiles table schema',
+    async () => {
       const postgres = (await import('postgres')).default;
       const sql = postgres(process.env.TEST_POSTGRES_URL!, { max: 1, onnotice: () => {} });
 
@@ -283,6 +284,6 @@ describe('Profile Sync SQLite Column Parity', () => {
       } finally {
         await sql.end();
       }
-    });
-  }
+    }
+  );
 });

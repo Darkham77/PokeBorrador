@@ -126,7 +126,7 @@ describe('MapStatusSummary.vue - Multi-Slot Dynamic Event Carousel', () => {
 
     // 4 pagination dots for 4 total active events
     const dots = wrapper.findAll('.carousel-dot');
-    expect(dots.length).toBe(4);
+    expect(dots).toHaveLength(4);
   });
 
   it('renders all events statically side-by-side when active count equals visible slots without carousel', async () => {
@@ -151,7 +151,7 @@ describe('MapStatusSummary.vue - Multi-Slot Dynamic Event Carousel', () => {
     const staticGrid = wrapper.find('.event-banners-grid');
     expect(staticGrid.exists()).toBe(true);
     const banners = wrapper.findAll('.single-event-banner');
-    expect(banners.length).toBe(3);
+    expect(banners).toHaveLength(3);
 
     // Pokémon Center banner must also exist
     const pokecenter = wrapper.find('.pokecenter-banner');

@@ -1,12 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { ref } from 'vue';
 
+import type * as WeatherRegistryModule from '@/logic/weather/weatherRegistry';
 import type { BattleState, BattleStages } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 vi.mock('@/logic/weather/weatherRegistry', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/logic/weather/weatherRegistry')>();
+  const actual = await importOriginal<typeof WeatherRegistryModule>();
   return {
     ...actual,
     requireWeatherId: vi.fn((id: string) => id),
@@ -92,10 +93,10 @@ function makeMockCtx(battleState: BattleState, player: Pokemon): MockCtx {
     spikes: 0
   };
   return {
-    activeBattle: ref(battleState) as unknown as MockCtx['activeBattle'],
-    playerStages: ref({ ...stages }) as unknown as MockCtx['playerStages'],
-    enemyStages: ref({ ...stages }) as unknown as MockCtx['enemyStages'],
-    faintedSides: ref(new Set<string>()) as unknown as MockCtx['faintedSides'],
+    activeBattle: ref(battleState),
+    playerStages: ref({ ...stages }),
+    enemyStages: ref({ ...stages }),
+    faintedSides: ref(new Set<string>()),
     clearLogs: vi.fn(),
     gs: { state: { team: [player] } }
   };

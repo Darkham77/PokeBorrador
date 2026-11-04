@@ -39,7 +39,7 @@ const PARALYSIS_SPEED_MULTIPLIER_GEN7_PLUS = 0.5;
 const PARALYSIS_SPEED_MULTIPLIER_LEGACY = 0.25;
 const TAILWIND_SPE_MULTIPLIER = 2.0;
 const SWAMP_SPE_MULTIPLIER = 0.25;
-export type BattleStageKey =
+export type BattleStageTierKey =
   | '-6'
   | '-5'
   | '-4'
@@ -54,7 +54,7 @@ export type BattleStageKey =
   | '5'
   | '6';
 
-export const STAGE_MULTIPLIERS_MAP: Record<BattleStageKey, number> = {
+export const STAGE_MULTIPLIERS_MAP: Record<BattleStageTierKey, number> = {
   '-6': 2 / 8,
   '-5': 2 / 7,
   '-4': 2 / 6,
@@ -488,7 +488,7 @@ function resolveStageModifier(
 ): { stage: number; stageMult: number } {
   const rawStage = stages[statKey] ?? 0;
   const stage = Math.max(-6, Math.min(6, rawStage));
-  const stageMult = STAGE_MULTIPLIERS_MAP[String(stage) as BattleStageKey] ?? 1.0;
+  const stageMult = STAGE_MULTIPLIERS_MAP[String(stage) as BattleStageTierKey] ?? 1.0;
   if (stage !== 0) {
     sources.push({
       name: `Nivel de Combate (${stage > 0 ? `+${stage}` : stage})`,

@@ -13,7 +13,7 @@ describe('Showdown UID Mapper - Unit Tests', () => {
       const uid = 'aba755ed-9c60-48b9-8400-da73ab30619b';
       const nickname = getShowdownNickname(uid);
       expect(nickname).toBe('aba755ed');
-      expect(nickname.length).toBe(8);
+      expect(nickname).toHaveLength(8);
     });
 
     it('debería manejar correctamente UIDs más cortos de 8 caracteres sin cortar', () => {

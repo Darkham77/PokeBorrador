@@ -54,7 +54,7 @@ export class BasicEffect<NameT extends string = string> implements T.BasicEffect
     Object.assign(this, data);
 
     this.name = getString(data.name).trim() as NameT;
-    this.id = data.realMove ? toID(data.realMove) : toID(this.name); // Hidden Power hack
+    this.id = toID(this.name);
     this.fullname = getString(data.fullname) || this.name;
     this.effectType = (getString(data.effectType) as T.EffectType) || 'Condition';
     this.kind = 'Condition';
@@ -246,6 +246,7 @@ export class Item extends BasicEffect<T.ItemName> implements T.Item {
   readonly isPrimalOrb?: boolean;
   readonly naturalGift?: { basePower: number; type: T.TypeName };
   readonly boosts?: Partial<T.BoostsTable> | false;
+  readonly tags?: ('True Past' | 'Past Unobtainable')[];
 
   constructor(data: AnyObject) {
     super(data);
@@ -276,7 +277,7 @@ export class Item extends BasicEffect<T.ItemName> implements T.Item {
     }
 
     if (this.isBerry) this.fling = { basePower: 10 };
-    if (this.id.endsWith('plate')) this.fling = { basePower: 90 };
+    if (this.onPlate && this.id.endsWith('plate')) this.fling = { basePower: 90 };
     if (this.onDrive) this.fling = { basePower: 70 };
     if (this.megaStone) this.fling = { basePower: 80 };
     if (this.onMemory) this.fling = { basePower: 50 };
@@ -380,6 +381,7 @@ export class Move extends BasicEffect<T.MoveName> implements T.Move {
   readonly recoil?: [number, number];
   readonly drain?: [number, number];
   readonly mindBlownRecoil?: boolean;
+  readonly chloroblastRecoil?: boolean;
   readonly struggleRecoil?: boolean;
   readonly stealsBoosts?: boolean;
   readonly secondary?: T.SecondaryEffect;
@@ -411,7 +413,6 @@ export class Move extends BasicEffect<T.MoveName> implements T.Move {
   readonly noCopy?: boolean;
   readonly noDamageVariance?: boolean;
   readonly noFaint?: boolean;
-  readonly nonGhostTarget?: T.MoveTarget;
   readonly pressureTarget?: T.MoveTarget;
   readonly sleepUsable?: boolean;
   readonly smartTarget?: boolean;
@@ -424,9 +425,12 @@ export class Move extends BasicEffect<T.MoveName> implements T.Move {
   readonly hasSheerForceBoost?: boolean;
   readonly isConfusionSelfHit?: boolean;
   readonly stallingMove?: boolean;
+  readonly placeholderFor?: T.MoveName;
+  readonly tags?: ('True Past' | 'Past Unobtainable')[];
 
   constructor(data: AnyObject) {
     super(data);
+    if (data.placeholderFor) this.id = toID(data.placeholderFor); // Hidden Power hack
     data = this;
 
     this.fullname = `move: ${this.name}`;
@@ -451,7 +455,6 @@ export class Move extends BasicEffect<T.MoveName> implements T.Move {
         ? (data.selfSwitch as 'copyvolatile' | 'shedtail')
         : data.selfSwitch) || undefined;
     this.pressureTarget = data.pressureTarget || undefined;
-    this.nonGhostTarget = data.nonGhostTarget || undefined;
     this.ignoreAbility = data.ignoreAbility || false;
     this.volatileStatus =
       typeof data.volatileStatus === 'string' ? (data.volatileStatus as T.ID) : undefined;
@@ -713,13 +716,13 @@ export class Species extends BasicEffect<T.SpeciesName> implements T.Species {
   readonly isPrimal?: boolean;
   readonly battleOnly?: T.SpeciesName | T.SpeciesName[];
   readonly canGigantamax?: T.MoveName;
-  readonly gmaxUnreleased?: boolean;
   readonly cannotDynamax?: boolean;
   readonly requiredTeraType?: T.TypeName;
   readonly requiredAbility?: T.AbilityName;
   readonly requiredItem?: T.ItemName;
   readonly requiredItems?: T.ItemName[];
   readonly requiredMove?: T.MoveName;
+  readonly placeholderFor?: T.SpeciesName;
   readonly gender?: T.GenderName;
   readonly maxHP?: number;
   readonly evoMove?: T.MoveName;
@@ -776,10 +779,10 @@ export class Species extends BasicEffect<T.SpeciesName> implements T.Species {
     this.tags = data.tags || [];
     this.unreleasedHidden = data.unreleasedHidden || false;
     this.maleOnlyHidden = !!data.maleOnlyHidden;
-    this.isMega = !!(this.forme && ['Mega', 'Mega-X', 'Mega-Y'].includes(this.forme)) || undefined;
+    this.isMega =
+      !!(this.forme && ['Mega', 'Mega-X', 'Mega-Y', 'Mega-Z'].includes(this.forme)) || undefined;
     this.isPrimal = this.forme === 'Primal' || undefined;
     this.mother = data.mother;
-    this.gmaxUnreleased = !!data.gmaxUnreleased;
     this.cannotDynamax = !!data.cannotDynamax;
     this.requiredTeraType = data.requiredTeraType;
     this.battleOnly =
@@ -1059,7 +1062,7 @@ class DexLearnsets {
       try {
         DATA.Learnsets = (await import('./data/learnsets.json')).default as Data<T.LearnsetData>;
       } catch {
-        // @ts-expect-error If we're being used via a <script> tag we depend on Learnsets being required
+        // @ts-ignore If we're being used via a <script> tag we depend on Learnsets being required
         DATA.Learnsets = (window as any).pkmn?.learnsets as Data<T.LearnsetData>;
         if (!DATA.Learnsets) throw new Error('Learnsets have not been included!');
       }
@@ -1356,7 +1359,7 @@ export class ModdedDex implements T.Dex {
     target: { getTypes: () => string[] } | { types: string[] } | string[] | string
   ): boolean {
     const sourceType: string = typeof source !== 'string' ? source.type : source;
-    // @ts-expect-error
+    // @ts-ignore
     const targetTyping: string[] | string = target.getTypes?.() || target.types || target;
     if (Array.isArray(targetTyping)) {
       for (const type of targetTyping) {
@@ -1374,7 +1377,7 @@ export class ModdedDex implements T.Dex {
     target: { getTypes: () => string[] } | { types: string[] } | string[] | string
   ): number {
     const sourceType: string = typeof source !== 'string' ? source.type : source;
-    // @ts-expect-error
+    // @ts-ignore
     const targetTyping: string[] | string = target.getTypes?.() || target.types || target;
     let totalTypeMod = 0;
     if (Array.isArray(targetTyping)) {

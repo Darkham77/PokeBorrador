@@ -310,7 +310,7 @@
 
   color: var(--gray);
   font-size: var(--font-8);
-  font-weight: 700; // Keep titles bold
+  font-weight: $font-weight-bold; // Keep titles bold
   text-transform: uppercase;
   letter-spacing: 1px;
   white-space: normal; // Allow wrapping if extremely tight
@@ -330,7 +330,7 @@
   min-width: 0;
   color: var(--white);
   font-size: var(--font-8);
-  font-weight: 400 !important; // Remove bold
+  font-weight: $font-weight-normal !important; // Remove bold
   line-height: 1.4;
   flex: 1 1 180px;
   white-space: normal; // Ensure wrapping

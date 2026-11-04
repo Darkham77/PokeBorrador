@@ -120,7 +120,7 @@
 
         color: var(--white);
         font-size: var(--font-8);
-        font-weight: 800;
+        font-weight: $font-weight-extrabold;
 
         &.is-species {
           text-transform: uppercase;

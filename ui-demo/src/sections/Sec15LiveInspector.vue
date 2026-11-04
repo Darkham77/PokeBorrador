@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import { useLiveInspector } from '../logic/useLiveInspector.ts';
 
 const { logs, serializedData, clear, log } = useLiveInspector();

@@ -29,7 +29,7 @@ describe('Multi-Region World Projects & Regional Registry', () => {
 
     const blank = getBlankDefaultProject('Test Region');
     expect(blank.archetype).toBe('blank');
-    expect(Object.keys(blank.nodes).length).toBe(0);
+    expect(Object.keys(blank.nodes)).toHaveLength(0);
   });
 
   it('validates stamping prefabs catalog contains valid GBA structures', () => {
@@ -123,7 +123,7 @@ describe('Multi-Region World Projects & Regional Registry', () => {
     expect(generator.occupancy.has(76, 22, OCCUPANCY_FLAGS.WATER)).toBe(false);
 
     // Buildings array should be empty because autoBuildings is false
-    expect(generator.buildings.length).toBe(0);
+    expect(generator.buildings).toHaveLength(0);
   });
 
   it('synchronizes custom structure placement to occupancy matrix', () => {

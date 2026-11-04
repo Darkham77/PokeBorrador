@@ -12,10 +12,7 @@ vi.mock('@/logic/db/sqliteEngine.ts', () => ({
     const isSelect = trimmed.toUpperCase().startsWith('SELECT');
     const stmt = memoryDb.prepare(sql);
     if (isSelect) {
-      return stmt.all(...(params as (string | number | bigint | null)[])) as Record<
-        string,
-        unknown
-      >[];
+      return stmt.all(...(params as (string | number | bigint | null)[]));
     }
     stmt.run(...(params as (string | number | bigint | null)[]));
     return [];
@@ -246,22 +243,22 @@ describe('Tier 1: PL/pgSQL Variable Scope & Multi-Category Event Awarding', () =
       winners: Array<{ rank: string; category_id: string; player_name: string }>;
     };
     expect(data.ok).toBe(true);
-    expect(data.winners.length).toBe(6); // 3 in ivs, 2 in weight, 1 in height
+    expect(data.winners).toHaveLength(6); // 3 in ivs, 2 in weight, 1 in height
 
     // Verify awards table populated
     const awardRows = await queryLocal(`SELECT * FROM awards WHERE event_id = 'torneo_pesca'`);
-    expect(awardRows.length).toBe(6);
+    expect(awardRows).toHaveLength(6);
 
     // Verify competition_results table populated
     const resultRows = await queryLocal(
       `SELECT * FROM competition_results WHERE event_id = 'torneo_pesca'`
     );
-    expect(resultRows.length).toBe(1);
+    expect(resultRows).toHaveLength(1);
 
     // Verify competition_entries are cleared
     const remainingEntries = await queryLocal(
       `SELECT * FROM competition_entries WHERE event_id = 'torneo_pesca'`
     );
-    expect(remainingEntries.length).toBe(0);
+    expect(remainingEntries).toHaveLength(0);
   });
 });

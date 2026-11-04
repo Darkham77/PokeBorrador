@@ -62,101 +62,151 @@ function cleanupAnimation(el: HTMLElement): void {
 const INLINE_BLOCK_STYLE_VALUES = ['water', 'flying', 'psychic', 'admin'] as const;
 const INLINE_BLOCK_STYLES_SET: ReadonlySet<string> = new Set<string>(INLINE_BLOCK_STYLE_VALUES);
 
+type ElementalAnimationFactory = (el: HTMLElement) => gsap.core.Tween;
+
+const ELEMENTAL_ANIMATION_STYLES = [
+  'fire',
+  'water',
+  'flying',
+  'cazabichos',
+  'grass',
+  'bug',
+  'ice',
+  'psychic',
+  'poison',
+  'fairy'
+] as const;
+type ElementalAnimationStyle = (typeof ELEMENTAL_ANIMATION_STYLES)[number];
+
+const ELEMENTAL_ANIMATIONS: Record<ElementalAnimationStyle, ElementalAnimationFactory> = {
+  fire: (el) =>
+    gsap.fromTo(
+      el,
+      { textShadow: '0 0 5px rgba(239, 68, 68, 1)' },
+      {
+        textShadow: '0 0 15px rgba(249, 115, 22, 1), 0 0 25px rgba(250, 204, 21, 1)',
+        duration: 2,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut'
+      }
+    ),
+  water: (el) =>
+    gsap.fromTo(
+      el,
+      { y: 0 },
+      {
+        y: WATER_FLYING_BOB_OFFSET_PX,
+        duration: 1.5,
+        yoyo: true,
+        repeat: -1,
+        ease: 'power1.inOut'
+      }
+    ),
+  flying: (el) =>
+    gsap.fromTo(
+      el,
+      { y: 0 },
+      {
+        y: WATER_FLYING_BOB_OFFSET_PX,
+        duration: 1.5,
+        yoyo: true,
+        repeat: -1,
+        ease: 'power1.inOut'
+      }
+    ),
+  cazabichos: (el) =>
+    gsap.fromTo(
+      el,
+      { textShadow: '0 0 5px rgba(34, 197, 94, 0.6)' },
+      {
+        textShadow: '0 0 12px rgba(34, 197, 94, 0.8), 0 0 20px rgba(134, 239, 172, 0.4)',
+        duration: 2,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut'
+      }
+    ),
+  grass: (el) =>
+    gsap.fromTo(
+      el,
+      { textShadow: '0 0 5px rgba(34, 197, 94, 0.6)' },
+      {
+        textShadow: '0 0 12px rgba(34, 197, 94, 0.8), 0 0 20px rgba(134, 239, 172, 0.4)',
+        duration: 2,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut'
+      }
+    ),
+  bug: (el) =>
+    gsap.fromTo(
+      el,
+      { textShadow: '0 0 5px rgba(34, 197, 94, 0.6)' },
+      {
+        textShadow: '0 0 12px rgba(34, 197, 94, 0.8), 0 0 20px rgba(134, 239, 172, 0.4)',
+        duration: 2,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut'
+      }
+    ),
+  ice: (el) =>
+    gsap.fromTo(
+      el,
+      { textShadow: '0 0 5px rgba(56, 189, 248, 0.6)' },
+      {
+        textShadow: '0 0 15px rgba(56, 189, 248, 0.9), 0 0 25px rgba(255, 255, 255, 0.8)',
+        duration: 2.5,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut'
+      }
+    ),
+  psychic: (el) =>
+    gsap.fromTo(
+      el,
+      { scale: 1, textShadow: '0 0 6px rgba(236, 72, 153, 0.5)' },
+      {
+        scale: 1.02,
+        textShadow: '0 0 15px rgba(236, 72, 153, 0.9), 0 0 25px rgba(168, 85, 247, 0.6)',
+        duration: 1.5,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut'
+      }
+    ),
+  poison: (el) =>
+    gsap.fromTo(
+      el,
+      { opacity: 0.85, textShadow: '0 0 4px rgba(168, 85, 247, 0.4)' },
+      {
+        opacity: 1,
+        textShadow: '0 0 12px rgba(168, 85, 247, 0.7)',
+        duration: 2,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut'
+      }
+    ),
+  fairy: (el) =>
+    gsap.fromTo(
+      el,
+      { opacity: 0.9, textShadow: '0 0 6px rgba(244, 114, 182, 0.5)' },
+      {
+        opacity: 1,
+        textShadow: '0 0 18px rgba(244, 114, 182, 0.9), 0 0 30px rgba(253, 244, 255, 0.7)',
+        duration: 2,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut'
+      }
+    )
+};
+
 function createElementalAnimation(el: HTMLElement, style: string): gsap.core.Tween | null {
-  switch (style) {
-    case 'fire':
-      return gsap.fromTo(
-        el,
-        { textShadow: '0 0 5px rgba(239, 68, 68, 1)' },
-        {
-          textShadow: '0 0 15px rgba(249, 115, 22, 1), 0 0 25px rgba(250, 204, 21, 1)',
-          duration: 2,
-          yoyo: true,
-          repeat: -1,
-          ease: 'sine.inOut'
-        }
-      );
-    case 'water':
-    case 'flying':
-      return gsap.fromTo(
-        el,
-        { y: 0 },
-        {
-          y: WATER_FLYING_BOB_OFFSET_PX,
-          duration: 1.5,
-          yoyo: true,
-          repeat: -1,
-          ease: 'power1.inOut'
-        }
-      );
-    case 'cazabichos':
-    case 'grass':
-    case 'bug':
-      return gsap.fromTo(
-        el,
-        { textShadow: '0 0 5px rgba(34, 197, 94, 0.6)' },
-        {
-          textShadow: '0 0 12px rgba(34, 197, 94, 0.8), 0 0 20px rgba(134, 239, 172, 0.4)',
-          duration: 2,
-          yoyo: true,
-          repeat: -1,
-          ease: 'sine.inOut'
-        }
-      );
-    case 'ice':
-      return gsap.fromTo(
-        el,
-        { textShadow: '0 0 5px rgba(56, 189, 248, 0.6)' },
-        {
-          textShadow: '0 0 15px rgba(56, 189, 248, 0.9), 0 0 25px rgba(255, 255, 255, 0.8)',
-          duration: 2.5,
-          yoyo: true,
-          repeat: -1,
-          ease: 'sine.inOut'
-        }
-      );
-    case 'psychic':
-      return gsap.fromTo(
-        el,
-        { scale: 1, textShadow: '0 0 6px rgba(236, 72, 153, 0.5)' },
-        {
-          scale: 1.02,
-          textShadow: '0 0 15px rgba(236, 72, 153, 0.9), 0 0 25px rgba(168, 85, 247, 0.6)',
-          duration: 1.5,
-          yoyo: true,
-          repeat: -1,
-          ease: 'sine.inOut'
-        }
-      );
-    case 'poison':
-      return gsap.fromTo(
-        el,
-        { opacity: 0.85, textShadow: '0 0 4px rgba(168, 85, 247, 0.4)' },
-        {
-          opacity: 1,
-          textShadow: '0 0 12px rgba(168, 85, 247, 0.7)',
-          duration: 2,
-          yoyo: true,
-          repeat: -1,
-          ease: 'sine.inOut'
-        }
-      );
-    case 'fairy':
-      return gsap.fromTo(
-        el,
-        { opacity: 0.9, textShadow: '0 0 6px rgba(244, 114, 182, 0.5)' },
-        {
-          opacity: 1,
-          textShadow: '0 0 18px rgba(244, 114, 182, 0.9), 0 0 30px rgba(253, 244, 255, 0.7)',
-          duration: 2,
-          yoyo: true,
-          repeat: -1,
-          ease: 'sine.inOut'
-        }
-      );
-    default:
-      return null;
-  }
+  const factory = ELEMENTAL_ANIMATIONS[style as ElementalAnimationStyle];
+  return factory ? factory(el) : null;
 }
 
 function createClassFactionAnimation(el: HTMLElement, style: string): gsap.core.Tween | null {

@@ -24,45 +24,45 @@ describe('All Modals & Base Pages Fast Mode (Modo Rápido) Contract', () => {
   describe('Modal Registry Complete Fast Mode Activation Contract', () => {
     const allModalKeys = Object.keys(MODAL_REGISTRY) as ModalRegistryKey[];
 
+    const blockingModalKeys = allModalKeys.filter((k) => k !== 'Profile');
+
     it('should have at least 40 registered modals in MODAL_REGISTRY', () => {
       expect(allModalKeys.length).toBeGreaterThanOrEqual(40);
     });
 
+    it('[Profile] should keep fast mode disabled for non-obscuring Profile modal', () => {
+      const modalStore = useModalStore();
+      const uiStore = useUIStore();
+
+      expect(uiStore.isFastMode).toBe(false);
+      modalStore.open('Profile');
+      expect(uiStore.isFastMode).toBe(false);
+
+      modalStore.close('Profile');
+      expect(uiStore.isFastMode).toBe(false);
+    });
+
     // Test every single modal in MODAL_REGISTRY to guarantee 100% contract compliance
-    for (const modalKey of allModalKeys) {
-      if (modalKey === 'Profile') {
-        it(`[${modalKey}] should keep fast mode disabled for non-obscuring Profile modal`, () => {
-          const modalStore = useModalStore();
-          const uiStore = useUIStore();
+    for (const modalKey of blockingModalKeys) {
+      it(`[${modalKey}] should immediately activate Modo Rápido (isFastMode) upon opening and deactivate upon close`, () => {
+        const modalStore = useModalStore();
+        const uiStore = useUIStore();
 
-          expect(uiStore.isFastMode).toBe(false);
-          modalStore.open('Profile');
-          expect(uiStore.isFastMode).toBe(false);
+        expect(uiStore.isAnyBlockingModalOpen).toBe(false);
+        expect(uiStore.isFastMode).toBe(false);
 
-          modalStore.close('Profile');
-          expect(uiStore.isFastMode).toBe(false);
-        });
-      } else {
-        it(`[${modalKey}] should immediately activate Modo Rápido (isFastMode) upon opening and deactivate upon close`, () => {
-          const modalStore = useModalStore();
-          const uiStore = useUIStore();
+        // 1. Inmediata activación al llamar open()
+        modalStore.open(modalKey);
+        expect(modalStore.isOpen(modalKey)).toBe(true);
+        expect(uiStore.isAnyBlockingModalOpen).toBe(true);
+        expect(uiStore.isFastMode).toBe(true);
 
-          expect(uiStore.isAnyBlockingModalOpen).toBe(false);
-          expect(uiStore.isFastMode).toBe(false);
-
-          // 1. Inmediata activación al llamar open()
-          modalStore.open(modalKey);
-          expect(modalStore.isOpen(modalKey)).toBe(true);
-          expect(uiStore.isAnyBlockingModalOpen).toBe(true);
-          expect(uiStore.isFastMode).toBe(true);
-
-          // 2. Inmediata desactivación al llamar close()
-          modalStore.close(modalKey);
-          expect(modalStore.isOpen(modalKey)).toBe(false);
-          expect(uiStore.isAnyBlockingModalOpen).toBe(false);
-          expect(uiStore.isFastMode).toBe(false);
-        });
-      }
+        // 2. Inmediata desactivación al llamar close()
+        modalStore.close(modalKey);
+        expect(modalStore.isOpen(modalKey)).toBe(false);
+        expect(uiStore.isAnyBlockingModalOpen).toBe(false);
+        expect(uiStore.isFastMode).toBe(false);
+      });
     }
   });
 
@@ -78,7 +78,7 @@ describe('All Modals & Base Pages Fast Mode (Modo Rápido) Contract', () => {
 
       modalStore.open('Confirm', { title: 'Comprar?', message: 'Seguro?' });
       expect(uiStore.isFastMode).toBe(true);
-      expect(modalStore.stack.length).toBe(2);
+      expect(modalStore.stack).toHaveLength(2);
 
       // Cerrar el modal superior no desactiva el modo rápido si queda otro modal debajo
       modalStore.close('Confirm');
@@ -93,7 +93,7 @@ describe('All Modals & Base Pages Fast Mode (Modo Rápido) Contract', () => {
       const modalStore = useModalStore();
       const uiStore = useUIStore();
 
-      modalStore.open('Inventory', { overlay: 'none' } as Record<string, unknown>);
+      modalStore.open('Inventory', { overlay: 'none' });
       expect(uiStore.isFastMode).toBe(false);
 
       modalStore.close('Inventory');

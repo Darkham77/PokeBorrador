@@ -43,7 +43,7 @@ describe('Local Ranked Matchmaking Queue Parity', () => {
     const rows = dbSync
       .prepare('SELECT * FROM ranked_queue WHERE user_id = ?')
       .all('local_ash') as Record<string, unknown>[];
-    expect(rows.length).toBe(1);
+    expect(rows).toHaveLength(1);
     expect(rows[0]!.user_id).toBe('local_ash');
     expect(rows[0]!.elo).toBe(1000);
     expect(rows[0]!.status).toBe('searching');
@@ -69,7 +69,7 @@ describe('Local Ranked Matchmaking Queue Parity', () => {
     `)
       .all() as Record<string, unknown>[];
 
-    expect(rows.length).toBe(1);
+    expect(rows).toHaveLength(1);
     expect(rows[0]!.user_id).toBe('player_early');
   });
 });

@@ -4,8 +4,8 @@
  * Wrapper to export evolution tables loaded from JSON.
  */
 import dbJson from './evolutionData.json' with { type: 'json' };
-import { isPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from './pokedex.ts';
 import { EVOLUTION_TABLE } from './evolutionDataWrapper.ts';
+import { isPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from './pokedex.ts';
 
 export { EVOLUTION_TABLE };
 export type LevelEvolutionSpeciesId = keyof typeof EVOLUTION_TABLE;
@@ -62,7 +62,7 @@ export function getStoneEvolution(id: string): { stone: string; to: PokemonSpeci
   const prefix = `${id}_`;
   for (const [key, val] of Object.entries(STONE_EVOLUTIONS)) {
     if (key.startsWith(prefix)) {
-      const entry = val as { stone: string; to: string };
+      const entry = val;
       return { stone: entry.stone, to: requirePokemonSpeciesId(entry.to) };
     }
   }

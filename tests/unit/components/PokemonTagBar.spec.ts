@@ -50,8 +50,7 @@ describe('PokemonTagBar.vue', () => {
   it('marks active tag buttons and emits update:modelValue on click', async () => {
     const wrapper = mount(PokemonTagBar, {
       props: {
-        modelValue: ['fav'] as PokemonFilterTagId[],
-        'onUpdate:modelValue': (val: PokemonFilterTagId[]) => wrapper.setProps({ modelValue: val })
+        modelValue: ['fav'] as PokemonFilterTagId[]
       }
     });
 

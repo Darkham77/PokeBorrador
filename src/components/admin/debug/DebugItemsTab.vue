@@ -176,7 +176,7 @@ function onBtnDown(e: Event): void {
   .name {
     color: $text;
     font-size: var(--font-16);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     flex: 1;
   }
   .add {

@@ -484,7 +484,7 @@ function getPropIconY(p: UrbanPropPlacement): number {
 
 .perimeter-name-badge {
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   fill: var(--sky);
   letter-spacing: 0.5px;
 }
@@ -510,21 +510,21 @@ function getPropIconY(p: UrbanPropPlacement): number {
 
   .building-title-label {
     font-size: var(--font-10);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     fill: var(--slate-50);
     pointer-events: none;
   }
 
   .building-coords-label {
     font-size: var(--font-9);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     fill: var(--slate-400);
     pointer-events: none;
   }
 
   .building-collision-label {
     font-size: var(--font-9);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     fill: var(--red-light);
     pointer-events: none;
   }

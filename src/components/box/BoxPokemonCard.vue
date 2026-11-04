@@ -318,6 +318,7 @@ onUnmounted(() => {
       <div ref="checkBoxRef" class="check-box" :class="{ checked: props.isSelected }">
         <svg
           v-if="props.isSelected"
+          aria-hidden="true"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -489,7 +490,7 @@ onUnmounted(() => {
     .danger-label {
       color: var(--rose);
       font-size: var(--font-9);
-      font-weight: 900;
+      font-weight: $font-weight-black;
       letter-spacing: 0.5px;
       margin-top: 1px;
     }

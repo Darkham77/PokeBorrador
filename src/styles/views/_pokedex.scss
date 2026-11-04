@@ -65,7 +65,7 @@
       margin: 0;
       color: var(--gray);
       font-size: var(--font-8);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
       letter-spacing: 4px;
       text-transform: uppercase;
 
@@ -116,7 +116,7 @@
 
       color: var(--white);
       font-size: var(--font-24);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
 
       small {
         color: var(--gray);

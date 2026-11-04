@@ -17,6 +17,9 @@ import type { POINode } from '../../types/map/poiTypes.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
 import type { RegionalPOITemplate } from './regionalPoiCatalog.ts';
 
+const CAVE_BACKING_DEPTH_COMPACT = 2 as const;
+const CAVE_BACKING_DEPTH_STANDARD = 3 as const;
+
 export interface CavePlacementContext {
   readonly continentMap: ContinentMapResult;
   readonly activeCatalog: readonly RegionalPOITemplate[];
@@ -42,13 +45,18 @@ function isCaveFootFlat(
 function hasDeepMountainBacking(
   x: number,
   y: number,
-  minElev: number,
+  elev: number,
   heightmap: readonly (readonly number[])[],
   depth = 3
 ): boolean {
+  // 1. Mandatory flat roof terrace directly above the cave mouth:
+  // For dy in [1, depth] and dx in [-1, 0, 1], elevation must strictly match elev
+  // (ensuring a spacious flat plateau roof with no second-tier cliff plunging onto the door).
   for (let dy = 1; dy <= depth; dy++) {
-    if ((heightmap[y - dy]?.[x] ?? 0) < minElev) {
-      return false;
+    for (let dx = -1; dx <= 1; dx++) {
+      if ((heightmap[y - dy]?.[x + dx] ?? 0) !== elev) {
+        return false;
+      }
     }
   }
   return true;
@@ -97,13 +105,15 @@ export function placeCaveEntrances(ctx: CavePlacementContext): void {
           (continentMap.heightmap[y + 1]?.[x - 2] ?? 0) === 0 &&
           (continentMap.heightmap[y + 1]?.[x + 2] ?? 0) === 0;
 
-        // Deep solid mountain backing behind entrance (depth >= 3 tiles into massif)
+        // Deep solid mountain backing behind entrance (at least 3 tiles terrace, 2 on compact)
+        const isCompact = Math.min(W, H) <= COMPACT_MAP_THRESHOLD;
+        const requiredDepth = isCompact ? CAVE_BACKING_DEPTH_COMPACT : CAVE_BACKING_DEPTH_STANDARD;
         const hasDeepBacking = hasDeepMountainBacking(
           x,
           y,
           cell.elevation,
           continentMap.heightmap,
-          3
+          requiredDepth
         );
 
         if (flatFoot && hasFlanks && noJuttingCorner && hasDeepBacking) {

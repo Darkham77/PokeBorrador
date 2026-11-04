@@ -126,7 +126,7 @@ describe('NPC Trainer Inventory Logic and Budget Formulas', () => {
       };
 
       const classLevel = 5;
-      const maxLimit = 8 * Math.pow(classLevel, 2); // 200 coins
+      const maxLimit = 8 * classLevel ** 2; // 200 coins
 
       const playerInventory: Record<string, number> = {};
       let stolenTotalCost = 0;

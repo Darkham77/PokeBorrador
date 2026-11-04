@@ -4,6 +4,7 @@
  * Tier 1 Unit Test: Validates the procedural map generator engine and layer integrity.
  */
 
+import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -21,9 +22,7 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
 
   beforeAll(() => {
     const registryPath = path.resolve('test_aventura/assets/tiles_registry.json');
-    expect(fs.existsSync(registryPath), 'test_aventura/assets/tiles_registry.json must exist').toBe(
-      true
-    );
+    assert.ok(fs.existsSync(registryPath), 'test_aventura/assets/tiles_registry.json must exist');
     const raw = fs.readFileSync(registryPath, 'utf-8');
     const data = JSON.parse(raw) as TilesRegistryJson;
     registryService = new TilesRegistryService(data);
@@ -37,11 +36,11 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
     expect(map.width).toBe(24);
     expect(map.height).toBe(20);
     expect(map.tileSize).toBe(16);
-    expect(map.baseLayer.length).toBe(20);
+    expect(map.baseLayer).toHaveLength(20);
     expect(map.baseLayer[0]?.length).toBe(24);
-    expect(map.elevationLayer.length).toBe(20);
-    expect(map.objectLayer.length).toBe(20);
-    expect(map.collisionGrid.length).toBe(20);
+    expect(map.elevationLayer).toHaveLength(20);
+    expect(map.objectLayer).toHaveLength(20);
+    expect(map.collisionGrid).toHaveLength(20);
   });
 
   it('guarantees 100% deterministic generation with the same seed', () => {
@@ -106,12 +105,12 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
     );
 
     expect(result.layers).toBeDefined();
-    expect(result.layers.ground.length).toBe(20);
-    expect(result.layers.elevation.length).toBe(20);
-    expect(result.layers.decorations.length).toBe(20);
+    expect(result.layers.ground).toHaveLength(20);
+    expect(result.layers.elevation).toHaveLength(20);
+    expect(result.layers.decorations).toHaveLength(20);
 
     expect(result.collisionMatrix).toBeDefined();
-    expect(result.collisionMatrix.length).toBe(20);
+    expect(result.collisionMatrix).toHaveLength(20);
     expect(result.collisionMatrix[0]?.length).toBe(20);
 
     // Verify matrix values are strictly 0 (walkable), 1 (solid), or 2 (water)

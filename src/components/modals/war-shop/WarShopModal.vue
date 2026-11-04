@@ -72,30 +72,29 @@ const availableCategories = computed<string[]>(() => {
   return Array.from(cats);
 });
 
-const animateGrid = (): void => {
-  nextTick(() => {
-    const cards = document.querySelectorAll('.war-shop-item-card');
-    if (cards.length > 0) {
-      gsap.killTweensOf(cards);
-      gsap.fromTo(
-        cards,
-        {
-          opacity: WAR_SHOP_CARD_INITIAL_OPACITY,
-          y: WAR_SHOP_CARD_INITIAL_Y_OFFSET,
-          scale: WAR_SHOP_CARD_INITIAL_SCALE
-        },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.2,
-          stagger: WAR_SHOP_GRID_ANIM_STAGGER_SEC,
-          ease: 'power1.out',
-          clearProps: 'transform,scale'
-        }
-      );
-    }
-  });
+const animateGrid = async (): Promise<void> => {
+  await nextTick();
+  const cards = document.querySelectorAll('.war-shop-item-card');
+  if (cards.length > 0) {
+    gsap.killTweensOf(cards);
+    gsap.fromTo(
+      cards,
+      {
+        opacity: WAR_SHOP_CARD_INITIAL_OPACITY,
+        y: WAR_SHOP_CARD_INITIAL_Y_OFFSET,
+        scale: WAR_SHOP_CARD_INITIAL_SCALE
+      },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.2,
+        stagger: WAR_SHOP_GRID_ANIM_STAGGER_SEC,
+        ease: 'power1.out',
+        clearProps: 'transform,scale'
+      }
+    );
+  }
 };
 
 watch([activeTab, search], () => {

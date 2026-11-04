@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+
 import { RandomBattleData, RandomBattleSetEntry } from '../types';
 
 function toId(text: string): string {

@@ -189,7 +189,7 @@ const close = (): void => {
 
   .a-name {
     font-size: var(--font-15);
-    font-weight: 800;
+    font-weight: $font-weight-extrabold;
   }
   .a-current {
     @include pixelated;

@@ -231,7 +231,7 @@ describe('Battle Certified Inventory & Item Actions Domain Suite', () => {
         }
       };
 
-      const choice = agent.testDecideForcedSwitch(req as any);
+      const choice = agent.testDecideForcedSwitch(req);
       expect(choice).toBe('switch 4');
     });
 

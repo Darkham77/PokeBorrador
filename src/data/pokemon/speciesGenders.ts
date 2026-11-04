@@ -1,3 +1,6 @@
+import type { GenderName } from '@pkmn/types';
+
+import type { PokemonSpeciesId } from './pokedex.ts';
 /**
  * src/data/pokemon/speciesGenders.ts
  *
@@ -5,8 +8,6 @@
  * Avoids loading @pkmn/sim Dex into the client runtime.
  */
 import gendersJson from './speciesGenders.json' with { type: 'json' };
-import type { GenderName } from '@pkmn/types';
-import type { PokemonSpeciesId } from './pokedex.ts';
 
 export type SpeciesGenderRule = GenderName | number;
 

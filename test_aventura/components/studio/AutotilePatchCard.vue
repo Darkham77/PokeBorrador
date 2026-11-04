@@ -284,7 +284,7 @@ watch(
   color: var(--sky);
   font-family: monospace;
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .patch-status-badge {
@@ -293,7 +293,7 @@ watch(
   background: Rgb(255 255 255 / 8%);
   color: var(--slate-400);
   font-size: var(--font-10);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
 }
 
 .patch-status-badge.error-active {
@@ -308,7 +308,7 @@ watch(
   background: Rgb(245 158 11 / 15%);
   color: var(--amber);
   font-size: var(--font-10);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .elev-badge.high-tier {
@@ -322,7 +322,7 @@ watch(
   max-width: 100%;
   color: var(--slate-100);
   font-size: var(--font-11);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;

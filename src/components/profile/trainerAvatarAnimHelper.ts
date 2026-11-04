@@ -12,7 +12,7 @@ import {
   FULL_ROTATION_DEG
 } from '@/logic/constants/animations';
 
-type GsapTimeline = ReturnType<typeof import('gsap').gsap.timeline>;
+type GsapTimeline = gsap.core.Timeline;
 
 const GHOST_MIN_OPACITY = 0.78;
 const BLINK_RED_PULSE_DUR_SEC = 0.75;

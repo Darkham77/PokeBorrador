@@ -1,75 +1,97 @@
 /**
- * src/logic/map/continentGenerator.worker.ts
+ * test_aventura/logic/map/continentGenerator.worker.ts
  *
- * WEB WORKER FOR ASYNCHRONOUS PROCEDURAL CONTINENT GENERATION & FAST A* REROUTING
+ * WEB WORKER FOR ASYNCHRONOUS PROCEDURAL CONTINENT GENERATION, PRESETS, HEALING & FAST A* REROUTING
  *
  * Responsibilities:
- *   1. Offloads heavy procedural pipeline (terrain, mountain autotiling, POIs, A* routing, wilderness)
- *      from the main UI thread to guarantee 60 FPS slider responsiveness.
- *   2. Performs targeted incident A* recalculations on POI drag-and-drop ('pointerup') without
- *      recomputing unaffected regional routes.
- *   3. Supports Zero-Copy Memory Transfer of raw grid buffers via transferable ArrayBuffer.
- *   4. Cleanly exports execution functions for 100% testability in Node/Vitest.
+ *   1. Offloads heavy procedural pipeline (terrain, mountain autotiling, POIs, A* routing, wilderness,
+ *      defect scanning, and packed binary tile compilation) from the main UI thread.
+ *   2. Executes canonical Kanto/Johto preset generation and full-map Auto-Sanar off-main-thread.
+ *   3. Performs targeted incident A* recalculations on POI drag-and-drop ('pointerup').
+ *   4. Transfers raw RGBA preview buffers and Int32Array tile blit buffers via zero-copy Transferable.
  */
 
-import {
-  RGBA_ALPHA_OPAQUE,
-  PATH_PREVIEW_RGBA,
-  WATER_PREVIEW_RGBA,
-  SAND_PREVIEW_RGBA,
-  MOUNTAIN_GRAY_HIGH_ELEV,
-  MOUNTAIN_GRAY_LOW_ELEV,
-  MOUNTAIN_VOLCANIC_HIGH_ELEV,
-  MOUNTAIN_VOLCANIC_LOW_ELEV,
-  MOUNTAIN_VOLCANIC_GREEN,
-  MOUNTAIN_VOLCANIC_BLUE,
-  MOUNTAIN_BROWN_HIGH_ELEV,
-  MOUNTAIN_BROWN_LOW_ELEV,
-  MOUNTAIN_BROWN_GREEN_RATIO,
-  MOUNTAIN_BROWN_BLUE_RATIO,
-  BIOME_BUFFER_PREVIEW_RGB,
-  BIOME_MINT_HIGHLAND_PREVIEW_RGB,
-  BIOME_ARID_DESERT_PREVIEW_RGB,
-  BIOME_VOLCANIC_PLATEAU_PREVIEW_RGB,
-  BIOME_VIRIDIAN_FOREST_PREVIEW_RGB,
-  BIOME_DEFAULT_PLAIN_PREVIEW_RGB
-} from '../../config/continentWorkerConfig.ts';
+import type { HealingDomain } from '../../types/map/autotileHealingTypes.ts';
+import type {
+  ContinentGenerationPhase,
+  PackedMapBlitPayload
+} from '../../types/map/continentTypes.ts';
 import type { POINode, RouteEdge } from '../../types/map/poiTypes.ts';
+import { scanContinentAutotileDefects } from './autotileDefectScanner.ts';
+import { healAllContinentDefects } from './autotileHealingEngine.ts';
+import {
+  buildZeroCopyPreviewBuffer,
+  compilePackedMapBlitBuffer,
+  type RegionalGenerationPipelineResult
+} from './canvasTileRenderer.ts';
+import {
+  buildCanonicalRegionMap,
+  type CanonicalPresetId
+} from './continent/canonicalRegionPresets.ts';
 import { generatePokemonContinentalWorld } from './continent/continentalEngine.ts';
 import {
   generateContinentMap,
-  type ContinentMapResult,
-  type ContinentGeneratorOptions
+  type ContinentGeneratorOptions,
+  type ContinentMapResult
 } from './continentGenerator.ts';
 import { placeRegionalPOIs, type POIPlacementOptions } from './poiPlacementEngine.ts';
 import {
   generateRouteNetwork,
-  type RouteNetworkOptions,
-  type ResolvedRouteNetworkResult
+  type ResolvedRouteNetworkResult,
+  type RouteNetworkOptions
 } from './routeNetworkEngine.ts';
 import { rerouteIncidentEdges } from './routePathfinding.ts';
 import { computeTransitableGrid } from './transitableGridEngine.ts';
 import {
   generateWildernessLayer,
-  type WildernessOptions,
-  type WildernessLayerResult
+  type WildernessLayerResult,
+  type WildernessOptions
 } from './wildernessVegetationEngine.ts';
 
 export interface RegionalGenerationOptions
   extends ContinentGeneratorOptions, POIPlacementOptions, RouteNetworkOptions, WildernessOptions {}
 
-export interface RegionalGenerationPipelineResult {
+export interface FullWorkerGenerationOutput {
+  readonly result: RegionalGenerationPipelineResult;
+  readonly detectedDefectCount: number;
+  readonly packedBlit: PackedMapBlitPayload;
+}
+
+export interface HealAllWorkerJobInput {
   readonly continent: ContinentMapResult;
-  readonly pois: readonly POINode[];
-  readonly routeNetwork: ResolvedRouteNetworkResult;
-  readonly wilderness: WildernessLayerResult;
-  readonly rawBuffer?: ArrayBuffer;
+  readonly pathGrid: readonly (readonly boolean[])[];
+  readonly bridgeGrid?: readonly (readonly boolean[])[];
+  readonly pois?: readonly POINode[];
+  readonly wilderness?: WildernessLayerResult | null;
+  readonly domain?: HealingDomain;
+}
+
+export interface HealAllWorkerJobOutput {
+  readonly continent: ContinentMapResult;
+  readonly pathGrid: readonly (readonly boolean[])[];
+  readonly detectedDefectCount: number;
+  readonly repairedCount: number;
+  readonly rawBuffer: ArrayBuffer;
+  readonly packedBlit: PackedMapBlitPayload;
 }
 
 export interface GenerateMapRequest {
   readonly type: 'GENERATE_REGIONAL_MAP';
   readonly jobId: number;
   readonly options: RegionalGenerationOptions;
+}
+
+export interface LoadCanonicalPresetRequest {
+  readonly type: 'LOAD_CANONICAL_PRESET';
+  readonly jobId: number;
+  readonly presetId: CanonicalPresetId;
+  readonly seed: number;
+}
+
+export interface HealAllDefectsRequest {
+  readonly type: 'HEAL_ALL_DEFECTS';
+  readonly jobId: number;
+  readonly input: HealAllWorkerJobInput;
 }
 
 export interface RerouteNodeRequest {
@@ -84,13 +106,32 @@ export interface RerouteNodeRequest {
   readonly allowBridges?: boolean;
 }
 
-export type WorkerInboundMessage = GenerateMapRequest | RerouteNodeRequest;
+export type WorkerInboundMessage =
+  | GenerateMapRequest
+  | LoadCanonicalPresetRequest
+  | HealAllDefectsRequest
+  | RerouteNodeRequest;
+
+export interface GenerationProgressResponse {
+  readonly type: 'GENERATION_PROGRESS';
+  readonly jobId: number;
+  readonly phase: ContinentGenerationPhase;
+  readonly percent: number;
+}
 
 export interface GenerationSuccessResponse {
   readonly type: 'GENERATION_COMPLETE';
   readonly jobId: number;
   readonly result: RegionalGenerationPipelineResult;
   readonly rawBuffer?: ArrayBuffer;
+  readonly detectedDefectCount: number;
+  readonly packedBlit: PackedMapBlitPayload;
+}
+
+export interface HealAllSuccessResponse {
+  readonly type: 'HEAL_ALL_COMPLETE';
+  readonly jobId: number;
+  readonly output: HealAllWorkerJobOutput;
 }
 
 export interface RerouteSuccessResponse {
@@ -108,96 +149,18 @@ export interface WorkerErrorResponse {
 }
 
 export type WorkerOutboundResponse =
+  | GenerationProgressResponse
   | GenerationSuccessResponse
+  | HealAllSuccessResponse
   | RerouteSuccessResponse
   | WorkerErrorResponse;
 
-/**
- * Encodes a compact Uint8ClampedArray RGBA preview of the continental terrain and routes
- * for zero-copy memory transfer to the main UI thread.
- */
-export function buildZeroCopyPreviewBuffer(
-  continent: ContinentMapResult,
-  pathGrid: readonly (readonly boolean[])[]
-): ArrayBuffer {
-  const W = continent.width;
-  const H = continent.height;
-  const buffer = new Uint8ClampedArray(W * H * 4);
-
-  for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) {
-      const idx = (y * W + x) * 4;
-      const t = continent.terrainMatrix[y]?.[x];
-      const elev = continent.heightmap[y]?.[x] ?? 0;
-      const isPath = pathGrid[y]?.[x];
-
-      if (isPath) {
-        // Dirt path: golden sand/brown (#d4a373)
-        buffer[idx] = PATH_PREVIEW_RGBA[0];
-        buffer[idx + 1] = PATH_PREVIEW_RGBA[1];
-        buffer[idx + 2] = PATH_PREVIEW_RGBA[2];
-        buffer[idx + 3] = PATH_PREVIEW_RGBA[3];
-      } else if (elev > 0) {
-        // Mountain rock: check geological massif palette
-        const pal = continent.geologicalClusters?.paletteMatrix[y]?.[x] ?? 'brown';
-        if (pal === 'gray') {
-          const tone = elev === 2 ? MOUNTAIN_GRAY_HIGH_ELEV : MOUNTAIN_GRAY_LOW_ELEV;
-          buffer[idx] = tone;
-          buffer[idx + 1] = tone;
-          buffer[idx + 2] = tone;
-        } else if (pal === 'volcanic') {
-          buffer[idx] = elev === 2 ? MOUNTAIN_VOLCANIC_HIGH_ELEV : MOUNTAIN_VOLCANIC_LOW_ELEV;
-          buffer[idx + 1] = MOUNTAIN_VOLCANIC_GREEN;
-          buffer[idx + 2] = MOUNTAIN_VOLCANIC_BLUE;
-        } else {
-          const tone = elev === 2 ? MOUNTAIN_BROWN_HIGH_ELEV : MOUNTAIN_BROWN_LOW_ELEV;
-          buffer[idx] = tone;
-          buffer[idx + 1] = Math.floor(tone * MOUNTAIN_BROWN_GREEN_RATIO);
-          buffer[idx + 2] = Math.floor(tone * MOUNTAIN_BROWN_BLUE_RATIO);
-        }
-        buffer[idx + 3] = RGBA_ALPHA_OPAQUE;
-      } else if (t === 'water' || t === 'water_deep') {
-        // Ocean & Lake water: deep cyan blue (#3a86c8)
-        buffer[idx] = WATER_PREVIEW_RGBA[0];
-        buffer[idx + 1] = WATER_PREVIEW_RGBA[1];
-        buffer[idx + 2] = WATER_PREVIEW_RGBA[2];
-        buffer[idx + 3] = WATER_PREVIEW_RGBA[3];
-      } else if (t === 'sand') {
-        // Coast beach: warm yellow (#e9d8a6)
-        buffer[idx] = SAND_PREVIEW_RGBA[0];
-        buffer[idx + 1] = SAND_PREVIEW_RGBA[1];
-        buffer[idx + 2] = SAND_PREVIEW_RGBA[2];
-        buffer[idx + 3] = SAND_PREVIEW_RGBA[3];
-      } else {
-        // Continental plain: check macro biome and containment buffer
-        const mBiome = continent.macroBiomes?.biomeGrid[y]?.[x];
-        const isBuffer = continent.macroBiomes?.transitionBufferGrid[y]?.[x];
-        let rgb: readonly [number, number, number];
-        if (isBuffer) {
-          rgb = BIOME_BUFFER_PREVIEW_RGB;
-        } else if (mBiome === 'mint_highland') {
-          rgb = BIOME_MINT_HIGHLAND_PREVIEW_RGB;
-        } else if (mBiome === 'arid_desert') {
-          rgb = BIOME_ARID_DESERT_PREVIEW_RGB;
-        } else if (mBiome === 'volcanic_plateau') {
-          rgb = BIOME_VOLCANIC_PLATEAU_PREVIEW_RGB;
-        } else if (mBiome === 'viridian_forest') {
-          rgb = BIOME_VIRIDIAN_FOREST_PREVIEW_RGB;
-        } else {
-          rgb = BIOME_DEFAULT_PLAIN_PREVIEW_RGB;
-        }
-        buffer[idx] = rgb[0];
-        buffer[idx + 1] = rgb[1];
-        buffer[idx + 2] = rgb[2];
-        buffer[idx + 3] = RGBA_ALPHA_OPAQUE;
-      }
-    }
-  }
-
-  return buffer.buffer;
-}
-
 const MIN_CONTINENTAL_WORLD_WIDTH = 400;
+const PROGRESS_PERCENT_SCULPTING = 15;
+const PROGRESS_PERCENT_SCANNING = 70;
+const PROGRESS_PERCENT_COMPILING_TILES = 88;
+
+export type WorkerProgressCallback = (phase: ContinentGenerationPhase, percent: number) => void;
 
 /**
  * Pure execution function for full regional generation pipeline.
@@ -263,6 +226,87 @@ export function executeRegionalGenerationJob(
   };
 }
 
+function finalizeWorkerPipelineOutput(
+  result: RegionalGenerationPipelineResult,
+  onProgress?: WorkerProgressCallback
+): FullWorkerGenerationOutput {
+  onProgress?.('scanning', PROGRESS_PERCENT_SCANNING);
+  const defectReport = scanContinentAutotileDefects({
+    continent: result.continent,
+    pathGrid: result.routeNetwork.pathGrid,
+    bridgeGrid: result.routeNetwork.bridgeGrid,
+    pois: result.pois
+  });
+
+  onProgress?.('compiling_tiles', PROGRESS_PERCENT_COMPILING_TILES);
+  const packedBlit = compilePackedMapBlitBuffer(
+    result.continent,
+    result.pois,
+    result.routeNetwork.pathGrid,
+    result.routeNetwork.bridgeGrid,
+    result.wilderness
+  );
+
+  return {
+    result,
+    detectedDefectCount: defectReport.totalDefects,
+    packedBlit
+  };
+}
+
+/**
+ * Executes regional generation plus off-main-thread defect scanning and binary tile compilation.
+ */
+export function executeFullWorkerGeneration(
+  options: RegionalGenerationOptions,
+  onProgress?: WorkerProgressCallback
+): FullWorkerGenerationOutput {
+  onProgress?.('sculpting', PROGRESS_PERCENT_SCULPTING);
+  const result = executeRegionalGenerationJob(options);
+  return finalizeWorkerPipelineOutput(result, onProgress);
+}
+
+/**
+ * Executes canonical preset generation ('kanto' | 'johto') off-main-thread with packed blits.
+ */
+export function executePresetWorkerJob(
+  presetId: CanonicalPresetId,
+  seed: number,
+  onProgress?: WorkerProgressCallback
+): FullWorkerGenerationOutput {
+  onProgress?.('sculpting', PROGRESS_PERCENT_SCULPTING);
+  const result = buildCanonicalRegionMap(presetId, seed);
+  return finalizeWorkerPipelineOutput(result, onProgress);
+}
+
+/**
+ * Executes global Auto-Sanar defect healing and recompiles packed blits off-main-thread.
+ */
+export function executeHealAllWorkerJob(input: HealAllWorkerJobInput): HealAllWorkerJobOutput {
+  const mutation = healAllContinentDefects(input.continent, input.pathGrid, {
+    domain: input.domain ?? 'auto',
+    pois: input.pois,
+    bridgeGrid: input.bridgeGrid
+  });
+  const rawBuffer = buildZeroCopyPreviewBuffer(mutation.continent, mutation.pathGrid);
+  const packedBlit = compilePackedMapBlitBuffer(
+    mutation.continent,
+    input.pois ?? [],
+    mutation.pathGrid,
+    input.bridgeGrid,
+    input.wilderness
+  );
+
+  return {
+    continent: mutation.continent,
+    pathGrid: mutation.pathGrid,
+    detectedDefectCount: mutation.summary.defectsAfter,
+    repairedCount: mutation.summary.repairedCount,
+    rawBuffer,
+    packedBlit
+  };
+}
+
 /**
  * Pure execution function for localized incident A* rerouting.
  * Exported for 100% deterministic unit testing in Vitest.
@@ -282,10 +326,74 @@ export function executeRerouteJob(req: Omit<RerouteNodeRequest, 'type'>): {
   );
 }
 
-// ---------------------------------------------------------------------------
 interface DedicatedWorkerScope {
-  postMessage(message: unknown, transfer?: Transferable[]): void;
+  postMessage(message: WorkerOutboundResponse, transfer?: Transferable[]): void;
   onmessage: ((event: MessageEvent<WorkerInboundMessage>) => void) | null;
+}
+
+function postGenerationOutput(
+  scope: DedicatedWorkerScope,
+  jobId: number,
+  genOut: FullWorkerGenerationOutput
+): void {
+  const rawBuffer = genOut.result.rawBuffer;
+  const response: GenerationSuccessResponse = {
+    type: 'GENERATION_COMPLETE',
+    jobId,
+    result: genOut.result,
+    rawBuffer,
+    detectedDefectCount: genOut.detectedDefectCount,
+    packedBlit: genOut.packedBlit
+  };
+  const transfers: Transferable[] = [genOut.packedBlit.coordsBuffer];
+  if (rawBuffer) {
+    transfers.push(rawBuffer);
+  }
+  scope.postMessage(response, transfers);
+}
+
+function dispatchWorkerMessage(scope: DedicatedWorkerScope, msg: WorkerInboundMessage): void {
+  const emitProgress: WorkerProgressCallback = (phase, percent) => {
+    scope.postMessage({
+      type: 'GENERATION_PROGRESS',
+      jobId: msg.jobId,
+      phase,
+      percent
+    });
+  };
+
+  if (msg.type === 'GENERATE_REGIONAL_MAP') {
+    postGenerationOutput(scope, msg.jobId, executeFullWorkerGeneration(msg.options, emitProgress));
+    return;
+  }
+  if (msg.type === 'LOAD_CANONICAL_PRESET') {
+    postGenerationOutput(
+      scope,
+      msg.jobId,
+      executePresetWorkerJob(msg.presetId, msg.seed, emitProgress)
+    );
+    return;
+  }
+  if (msg.type === 'HEAL_ALL_DEFECTS') {
+    const output = executeHealAllWorkerJob(msg.input);
+    scope.postMessage(
+      {
+        type: 'HEAL_ALL_COMPLETE',
+        jobId: msg.jobId,
+        output
+      },
+      [output.rawBuffer, output.packedBlit.coordsBuffer]
+    );
+    return;
+  }
+  const rerouteResult = executeRerouteJob(msg);
+  scope.postMessage({
+    type: 'REROUTE_COMPLETE',
+    jobId: msg.jobId,
+    movedNodeId: msg.movedNodeId,
+    updatedNodes: rerouteResult.updatedNodes,
+    updatedEdges: rerouteResult.updatedEdges
+  });
 }
 
 const workerScope: DedicatedWorkerScope | null =
@@ -299,41 +407,14 @@ if (workerScope) {
     if (!msg || !msg.type) return;
 
     try {
-      if (msg.type === 'GENERATE_REGIONAL_MAP') {
-        const result = executeRegionalGenerationJob(msg.options);
-        const rawBuffer = result.rawBuffer;
-
-        const response: GenerationSuccessResponse = {
-          type: 'GENERATION_COMPLETE',
-          jobId: msg.jobId,
-          result,
-          rawBuffer
-        };
-
-        if (rawBuffer) {
-          workerScope.postMessage(response, [rawBuffer]);
-        } else {
-          workerScope.postMessage(response);
-        }
-      } else if (msg.type === 'REROUTE_INCIDENT_NODE') {
-        const rerouteResult = executeRerouteJob(msg);
-        const response: RerouteSuccessResponse = {
-          type: 'REROUTE_COMPLETE',
-          jobId: msg.jobId,
-          movedNodeId: msg.movedNodeId,
-          updatedNodes: rerouteResult.updatedNodes,
-          updatedEdges: rerouteResult.updatedEdges
-        };
-        workerScope.postMessage(response);
-      }
-    } catch (err: unknown) {
+      dispatchWorkerMessage(workerScope, msg);
+    } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      const errorResponse: WorkerErrorResponse = {
+      workerScope.postMessage({
         type: 'ERROR',
         jobId: msg.jobId,
         error: errorMessage
-      };
-      workerScope.postMessage(errorResponse);
+      });
     }
   };
 }

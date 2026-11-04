@@ -2,9 +2,11 @@
  * AUDITOR MAESTRO FSM v7.6 - RIGUROSIDAD QUIRÚRGICA TOTAL + DINAMISMO.
  */
 import fs from 'node:fs/promises';
-import path from 'node:path';
 import { enableCompileCache } from 'node:module';
+import path from 'node:path';
+
 import { BaseAuditor, normalizePosixPath, createRuleCapabilities } from '@francogp/auditor';
+
 import { collectFsmFiles } from './_fsmParityParser.ts';
 
 enableCompileCache();
@@ -18,7 +20,12 @@ const IMPL_FSM_PATH = path.join(IMPL_SRC_ROOT, 'logic/battle/battleStateMachine.
 const FSM_AUDIT_CHECK_INDEX_TEN_LABEL_TEXT = 'CHECK 10';
 const LOG_PREVIEW_TRUNCATE_LENGTH = 60;
 
-export async function discoverFsmRelatedFiles() {
+export interface DiscoveredFsmFiles {
+  relevant: { path: string; content: string }[];
+  allFiles: string[];
+}
+
+export async function discoverFsmRelatedFiles(): Promise<DiscoveredFsmFiles> {
   const allFiles = collectFsmFiles(IMPL_SRC_ROOT);
   const relevant: { path: string; content: string }[] = [];
   for (const file of allFiles) {
@@ -36,7 +43,12 @@ export async function discoverFsmRelatedFiles() {
   return { relevant, allFiles };
 }
 
-export function parseMermaid(manualCode: string) {
+export interface ParsedMermaid {
+  states: Set<string>;
+  syncRequired: Set<string>;
+}
+
+export function parseMermaid(manualCode: string): ParsedMermaid {
   const states = new Set<string>();
   const syncRequired = new Set<string>();
   const blockRx = /```mermaid\n([\s\S]*?)```/g;
@@ -172,17 +184,17 @@ export const FSM_IMPLEMENTATION_RULES: readonly FsmImplementationRuleId[] = [
 ] as const;
 
 export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleId> {
-  constructor() {
+  public constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(FSM_IMPLEMENTATION_RULES, {
         speed: 'heavy',
         phase: 'normal',
-        fix: 'none',
         md: false,
         ast: true,
         changedOnly: false,
         critical: false
       }),
+      ruleFixers: {},
       id: 'validate_fsm_implementation',
       configKey: 'fsm.implementation',
       defaultConfig: {
@@ -311,7 +323,7 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
       allKeys.forEach((k) => {
         if (suppressedKeys.has(k)) return;
         const usageRx = new RegExp(`(?:\\.|'|")(${k})(?:'|")?`, 'g');
-        if (!externalCode.match(usageRx)) {
+        if (!usageRx.test(externalCode)) {
           this.addViolation({
             ruleId: 'fsm-unused-constant',
             severity: 'warning',
@@ -332,7 +344,7 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
           `(?:isSubState|fsm\\.transition|emit|SUBSTATES)\\s*\\(\\s*[^)]*${s}|['"]${s}['"]`,
           'g'
         );
-        if (!externalCode.match(refRx)) {
+        if (!refRx.test(externalCode)) {
           this.addViolation({
             ruleId: 'fsm-orphan-substate',
             severity: 'warning',

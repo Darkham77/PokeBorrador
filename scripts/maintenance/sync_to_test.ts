@@ -1,7 +1,8 @@
+import { execSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execSync } from 'node:child_process';
+
 import { isMainModule } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
 
@@ -35,13 +36,11 @@ const FILES_TO_COPY = [
   path.join('tests', 'vitest.setup.ts')
 ] as const;
 
-const PRESERVED_PATTERNS: readonly string[] = [
-  '.git',
-  '.github'
-];
+const PRESERVED_PATTERNS: readonly string[] = ['.git', '.github'];
+const PRESERVED_PATTERNS_SET = new Set<string>(PRESERVED_PATTERNS);
 
 function shouldPreserve(name: string): boolean {
-  return PRESERVED_PATTERNS.includes(name) || name.startsWith('.git') || name.startsWith('.github');
+  return PRESERVED_PATTERNS_SET.has(name) || name.startsWith('.git') || name.startsWith('.github');
 }
 
 async function copyRecursive(
@@ -73,7 +72,7 @@ async function main(): Promise<void> {
   // 1. Validate Source Path
   try {
     await fs.access(SOURCE_DIR);
-  } catch (_err) {
+  } catch {
     console.error(`❌ Error: Source directory ${SOURCE_DIR} does not exist.`);
     process.exit(1);
   }
@@ -160,5 +159,5 @@ export const command = defineCommand({
 });
 
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

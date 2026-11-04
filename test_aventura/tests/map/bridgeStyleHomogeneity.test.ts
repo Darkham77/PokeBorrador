@@ -20,7 +20,7 @@ import {
 } from '../../logic/map/canonicalBridgeEngine.ts';
 import { BRIDGE_STYLES } from '../../types/map/poiTypes.ts';
 
-describe.skip('Bridge Style Isolation & Homogeneity Invariants', () => {
+describe('Bridge Style Isolation & Homogeneity Invariants', () => {
   it('defines the canonical BRIDGE_STYLES union', () => {
     expect(BRIDGE_STYLES).toContain('silence_wood');
     expect(BRIDGE_STYLES).toContain('golden_wood');

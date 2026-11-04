@@ -1,3 +1,4 @@
+import { logger } from '@/logic/utils/logger';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { CertifiedBattleGameAction } from '@/types/battle/certifiedBattleActions';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -130,7 +131,7 @@ async function executeWorkerEnemyAction(
     p2Choice = resolveCertifiedReplayBagResponse(replayDebug, bagAction);
   }
 
-  console.debug(
+  logger.debug(
     `[BattleTurn] [runEnemyAction] Sending choices: p1Choice: "", p2Choice: "${p2Choice}", p1Skip: true, p2Skip: ${p2Skip}`
   );
 

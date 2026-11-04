@@ -104,7 +104,7 @@ describe('Save Shield Validation Lock & Auto-Unlock', () => {
 
   it('hard-locks when SaveData contains invalid non-numeric types', () => {
     const corruptSave = JSON.parse(JSON.stringify(validBaseSave));
-    corruptSave.money = 'MILLIONAIRE' as unknown as number; // String instead of number
+    corruptSave.money = 'MILLIONAIRE'; // String instead of number
 
     const parseRes = validateSaveData(corruptSave);
     assert.strictEqual(parseRes.success, false, 'Non-numeric field must fail schema parsing');
@@ -113,7 +113,7 @@ describe('Save Shield Validation Lock & Auto-Unlock', () => {
   it('dynamically auto-unlocks when updated/fixed data restores full schema compliance', () => {
     // 1. Start with invalid data (locked state)
     const mutableSave = JSON.parse(JSON.stringify(validBaseSave));
-    mutableSave.team[0].hp = 'dead' as unknown as number;
+    mutableSave.team[0].hp = 'dead';
 
     const firstCheck = validateAndSanitize(mutableSave);
     assert.strictEqual(firstCheck.valid, false, 'Initial corrupted state must be invalid');

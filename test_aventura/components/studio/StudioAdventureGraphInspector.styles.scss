@@ -28,7 +28,7 @@
   margin: 0 0 12px;
   color: var(--amber);
   font-size: var(--font-11);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
   letter-spacing: 0.08em;
 }
 
@@ -45,7 +45,7 @@
   background: var(--slate-800);
   color: var(--slate-200);
   font-size: var(--font-11);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   text-align: left;
   cursor: pointer;
   white-space: nowrap;
@@ -78,7 +78,7 @@
   background: var(--sky-dark);
   color: var(--white);
   font-size: var(--font-10);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
   text-transform: uppercase;
 }
 
@@ -92,7 +92,7 @@
   margin: 0 0 14px;
   color: var(--slate-50);
   font-size: var(--font-16);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
 }
 
 .form-group {
@@ -105,7 +105,7 @@
 .form-label {
   color: var(--amber-dark);
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .form-input,
@@ -140,7 +140,7 @@
   width: 14px;
   color: var(--amber-dark);
   font-size: var(--font-11);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
 }
 
 .nudge-btn {
@@ -151,7 +151,7 @@
   color: var(--slate-300);
   font-family: monospace;
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   flex: 1;
   cursor: pointer;
   &:hover {
@@ -181,7 +181,7 @@
   border: none;
   border-radius: $radius-md;
   font-size: var(--font-12);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   cursor: pointer;
 }
 
@@ -220,7 +220,7 @@
   margin: 0;
   color: var(--amber);
   font-size: var(--font-14);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
 }
 
 .overview-desc {
@@ -254,7 +254,7 @@
 .stat-val {
   color: var(--sky);
   font-family: monospace;
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .biomes-list {
@@ -282,7 +282,7 @@
   &.is-selected {
     background: var(--sky-dark);
     color: var(--white);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     border-color: var(--sky);
   }
 }
@@ -318,7 +318,7 @@
 .brush-size-val {
   font-family: monospace;
   font-size: var(--font-11);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
 }
 
 .brush-px {
@@ -396,7 +396,7 @@
 
 .prefab-name {
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -476,7 +476,7 @@
   background: var(--bg-surface-darker, #090d16);
   color: var(--slate-50);
   font-size: var(--font-12);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   cursor: pointer;
 }
 

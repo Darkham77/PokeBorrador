@@ -202,7 +202,7 @@ describe('System Auth, Session & Migration Domain Suite', () => {
             single: async () => ({ data: cloudSave, error: null })
           })
         })
-      } as unknown as ReturnType<(...args: unknown[]) => unknown>);
+      });
 
       const result = await loadBestSave(mockUser, db);
       expect(result.data!.trainer).toBe('CloudHero');
@@ -316,7 +316,7 @@ describe('System Auth, Session & Migration Domain Suite', () => {
       localStorage.setItem('pokemon_local_save_test_user', JSON.stringify(corruptedSave));
 
       const result = await loadBestSave(mockUser, db);
-      expect(result.data!.team.length).toBe(1);
+      expect(result.data!.team).toHaveLength(1);
       expect(result.issues).toContain('Duplicado de UID detectado: same_id (Squirtle) en equipo');
     });
 
@@ -475,7 +475,7 @@ describe('System Auth, Session & Migration Domain Suite', () => {
         writable: true
       });
 
-      globalThis.fetch = vi.fn().mockResolvedValue({ ok: true } as Response);
+      globalThis.fetch = vi.fn().mockResolvedValue({ ok: true });
 
       const { handleUpdate } = usePWA();
       await handleUpdate();

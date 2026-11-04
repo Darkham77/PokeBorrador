@@ -143,7 +143,7 @@ describe('All Consumable Items - Comprehensive Unit & Integrity Suite', () => {
 
         const res = effectFn(mon);
         assert.ok(res.success);
-        assert.ok(mon.moves[0]!.pp > 2);
+        assert.ok(mon.moves[0].pp > 2);
       });
     });
   });

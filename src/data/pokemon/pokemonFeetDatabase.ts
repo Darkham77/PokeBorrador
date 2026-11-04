@@ -51,10 +51,10 @@ for (const [key, prefix] of [
   const group = PACKED_DATA[key] ?? {};
   for (const [subKey, tuple] of Object.entries(group)) {
     const dbPath: FeetDatabasePath = `${prefix}${subKey}.webp`;
-    const y = requireFeetMetric(tuple as readonly number[], dbPath, 0);
-    const x = requireFeetMetric(tuple as readonly number[], dbPath, 1);
-    const isFlying = (tuple as readonly number[])[2] === 1;
-    const shadowScale = (tuple as readonly number[])[3];
+    const y = requireFeetMetric(tuple, dbPath, 0);
+    const x = requireFeetMetric(tuple, dbPath, 1);
+    const isFlying = (tuple)[2] === 1;
+    const shadowScale = (tuple)[3];
     POKEMON_FEET_DATABASE[dbPath] = {
       feetY: y,
       feetX: x,

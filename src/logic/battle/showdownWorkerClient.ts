@@ -12,7 +12,6 @@ import {
   type WorkerSuccessPayload
 } from './showdownTurnSyncHelper.ts';
 import {
-  showdownWorker,
   setShowdownWorker,
   getShowdownWorker,
   preloadShowdownWorker,
@@ -22,7 +21,6 @@ import {
 } from './showdownWorkerInstance.ts';
 
 export {
-  showdownWorker,
   setShowdownWorker,
   getShowdownWorker,
   preloadShowdownWorker,

@@ -105,44 +105,17 @@ function selectActiveLayer(layer: StudioLayer): void {
 
 <style scoped lang="scss">
 @use '@/styles/core/tools' as *;
+@use '../../styles/studio_panels' as *;
 
 .studio-layers-panel {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-md-alt;
-  padding: 10px;
-  border: 1px solid var(--slate-800);
-  border-radius: $radius-md;
-  background: var(--slate-900);
-  font-family: $font-family-mono;
-  user-select: none;
-}
-
-.panel-header {
-  display: flex;
-  align-items: center;
-  gap: $spacing-sm-alt;
-  border-bottom: 1px solid var(--slate-800);
-  padding-bottom: 6px;
-
-  .header-icon {
-    font-size: var(--font-13);
-  }
-
-  .panel-title {
-    margin: 0;
-    color: var(--sky);
-    font-size: var(--font-11);
-    font-weight: bold;
-    letter-spacing: 0.5px;
-  }
+  @include studio-dock-panel;
 }
 
 .section-label {
   display: block;
   color: var(--slate-500);
   font-size: var(--font-10);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   margin-bottom: 6px;
   text-transform: uppercase;
 }

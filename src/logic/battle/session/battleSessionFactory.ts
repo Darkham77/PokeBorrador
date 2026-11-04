@@ -6,7 +6,7 @@ import type { BattleMode, BattleUiConfig } from '@/types/battle/battleConfig';
 import type { BattleContext } from '@/types/battle/battleContext';
 
 import type { ITacticalReplayEngine } from '../replay/tacticalReplayEngine.ts';
-import { BaseBattleSession } from './baseBattleSession.ts';
+import { type BaseBattleSession } from './baseBattleSession.ts';
 import { GymBattleSession } from './gymBattleSession.ts';
 import { PvEBattleSession } from './pveBattleSession.ts';
 import { PvPBattleSession } from './pvpBattleSession.ts';

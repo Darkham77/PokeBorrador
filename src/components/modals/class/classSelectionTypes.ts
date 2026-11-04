@@ -3,7 +3,7 @@
  *
  * Domain display contracts for trainer class selection.
  */
-import { PLAYER_CLASSES, type PlayerClassId } from '@/data/player/playerClasses';
+import { type PLAYER_CLASSES, type PlayerClassId } from '@/data/player/playerClasses';
 
 type PlayerClassDefinition = (typeof PLAYER_CLASSES)[keyof typeof PLAYER_CLASSES];
 

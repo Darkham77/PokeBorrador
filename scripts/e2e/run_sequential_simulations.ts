@@ -1,15 +1,18 @@
-import type { DisplayText } from '@francogp/auditor';
-import { isMainModule } from '@francogp/auditor';
 /**
  * scripts/e2e/run_sequential_simulations.ts
  * Sequential E2E Simulation Orchestrator.
  * Dynamically discovers all individual simulation files (.simulation.ts) under scripts/e2e/
  * and executes each file strictly one by one. Stops immediately on failure.
  */
-import { execSync, spawnSync } from 'node:child_process';
+import { execSync, spawnSync, spawn, type ChildProcess } from 'node:child_process';
 import fs from 'node:fs';
+import https from 'node:https';
 import path from 'node:path';
+
+import type { DisplayText } from '@francogp/auditor';
+import { isMainModule } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
+
 import { parseUnmatchedArgs } from '../lib/cliHelpers.ts';
 import {
   clearAllCheckpoints,
@@ -275,10 +278,8 @@ function renderList(): void {
   });
 }
 
-import { spawn, type ChildProcess } from 'node:child_process';
-import https from 'node:https';
-import { SimulationRunnerLogger } from './logging/simulation_runner_logger.ts';
 import { formatExecutionTimestamp } from './logging/base_runner_logger.ts';
+import { SimulationRunnerLogger } from './logging/simulation_runner_logger.ts';
 
 const logger = new SimulationRunnerLogger();
 
@@ -356,7 +357,10 @@ function stopPersistentViteServer(viteProcess: ChildProcess | null): void {
   }
 }
 
-function runCommandStreamed(command: string, extraEnv: Record<DisplayText, string> = {}): Promise<void> {
+function runCommandStreamed(
+  command: string,
+  extraEnv: Record<DisplayText, string> = {}
+): Promise<void> {
   return new Promise((resolve, reject) => {
     let executable = process.execPath;
     let cmdArgs: string[];
@@ -614,7 +618,7 @@ async function executeDualDriverTarget(
     const sqliteStart = Temporal.Now.instant().epochMilliseconds;
     try {
       await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'sqlite' });
-    } catch (_err: unknown) {
+    } catch {
       const durationSec = ((Temporal.Now.instant().epochMilliseconds - sqliteStart) / 1000).toFixed(
         1
       );
@@ -655,7 +659,7 @@ async function executeDualDriverTarget(
   const pgStart = Temporal.Now.instant().epochMilliseconds;
   try {
     await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'postgres' });
-  } catch (_err: unknown) {
+  } catch {
     const durationSec = ((Temporal.Now.instant().epochMilliseconds - pgStart) / 1000).toFixed(1);
     logger.error(
       `\n❌ [${suiteDisplayIdx}/${totalDisplayCount}] FAIL en [PostgreSQL]: "${target.name}" ha fallado tras ${durationSec}s.`
@@ -721,7 +725,7 @@ async function executeSingleDriverTarget(
         completedSuiteName: target.name
       });
     }
-  } catch (_err: unknown) {
+  } catch {
     const durationSec = ((Temporal.Now.instant().epochMilliseconds - startTime) / 1000).toFixed(1);
     logger.error(
       `\n❌ [${i + 1}/${activeTargets.length}] FAIL en [${driverName}]: "${target.name}" ha fallado tras ${durationSec}s.`
@@ -771,7 +775,7 @@ async function executeIntraSuiteCleanPass(
   const cleanSqliteStart = Temporal.Now.instant().epochMilliseconds;
   try {
     await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'sqlite', ...cleanEnv });
-  } catch (_err: unknown) {
+  } catch {
     logger.error(
       `\n❌ [6B: REGRESIÓN EN SQLITE] "${target.name}" falló en su validación limpia desde CERO en SQLite.`
     );
@@ -796,7 +800,7 @@ async function executeIntraSuiteCleanPass(
   const cleanPgStart = Temporal.Now.instant().epochMilliseconds;
   try {
     await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'postgres', ...cleanEnv });
-  } catch (_err: unknown) {
+  } catch {
     logger.error(
       `\n❌ [6B: REGRESIÓN EN POSTGRESQL] "${target.name}" falló en su validación limpia desde CERO en PostgreSQL.`
     );

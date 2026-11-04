@@ -51,7 +51,7 @@ describe('Event Auto-Enrollment & Greedy Auto-Fill Engine', () => {
     height = 1,
     uid = `uid-${id}`
   ): Pokemon => {
-    const poke = makePokemon(id as never, 50);
+    const poke = makePokemon(id, 50);
     if (!poke) throw new Error(`Failed to create test pokemon: ${id}`);
     poke.uid = uid;
     poke.ivs = {
@@ -79,7 +79,7 @@ describe('Event Auto-Enrollment & Greedy Auto-Fill Engine', () => {
       const poke = createTestPokemon('snorlax', 160, 460, 2.1);
       const candidates = evaluateCapturedPokemonForEvents(poke, [mockCompetitionEvent], {});
 
-      expect(candidates.length).toBe(3);
+      expect(candidates).toHaveLength(3);
       expect(candidates.map((c) => c.categoryId)).toEqual(['ivs', 'weight', 'height']);
       expect(candidates.every((c) => c.isFirstEntry)).toBe(true);
     });
@@ -192,7 +192,7 @@ describe('Event Auto-Enrollment & Greedy Auto-Fill Engine', () => {
         {}
       );
 
-      expect(assignments.length).toBe(3);
+      expect(assignments).toHaveLength(3);
 
       const assignedUids = assignments.map((a) => a.pokemon.uid);
       const uniqueUids = new Set(assignedUids);

@@ -1,3 +1,4 @@
+import { DamageCalculator } from '../calculator/damage';
 import {
   BattleStateSnapshot,
   PokemonState,
@@ -5,7 +6,6 @@ import {
   WinCondition,
   ThreatAssessment
 } from '../types';
-import { DamageCalculator } from '../calculator/damage';
 
 function toId(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]/g, '');

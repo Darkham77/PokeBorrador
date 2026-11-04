@@ -1,4 +1,5 @@
 import { RADIX_DECIMAL } from '@/logic/constants/gameplay.ts';
+import { logger } from '@/logic/utils/logger';
 import type { ShowdownPlayerRequest, BattleState } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -59,7 +60,7 @@ function syncPlayerRequestPokemon(active: BattleState, ctx: BattleContext): void
         teamPoke.hp = hp;
         teamPoke.status = status;
         teamPoke.fainted = hp <= 0;
-        console.debug(
+        logger.debug(
           `[SYNC-TEAM-HP] Player GS Poké ${teamPoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`
         );
       }
@@ -69,7 +70,7 @@ function syncPlayerRequestPokemon(active: BattleState, ctx: BattleContext): void
         battlePoke.hp = hp;
         battlePoke.status = status;
         battlePoke.fainted = hp <= 0;
-        console.debug(
+        logger.debug(
           `[SYNC-TEAM-HP] Player Battle Poké ${battlePoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`
         );
       }
@@ -93,7 +94,7 @@ function syncEnemyTeamState(active: BattleState): void {
   if (enemyTeam) {
     enemyTeam.forEach((enemyPoke: Pokemon) => {
       if (enemyPoke) {
-        console.debug(
+        logger.debug(
           `[SYNC-TEAM-HP] Enemy Battle Poké ${enemyPoke.nickname || enemyPoke.name} (uid: ${enemyPoke.uid}): HP ${enemyPoke.hp}, status: ${enemyPoke.status}, fainted: ${enemyPoke.fainted}`
         );
       }
@@ -144,11 +145,11 @@ export function syncTeamHP(ctx: BattleContext): void {
   if (!active) return;
 
   if (active.playerUsedItem) {
-    console.debug('[SYNC-TEAM-HP] Player used an item. Skipping sync from outdated playerRequest.');
+    logger.debug('[SYNC-TEAM-HP] Player used an item. Skipping sync from outdated playerRequest.');
     return;
   }
 
-  console.debug(
+  logger.debug(
     `[SYNC-TEAM-HP] Running syncTeamHP. playerRequest: ${!!active.playerRequest}, enemyRequest: ${!!active.enemyRequest}`
   );
 

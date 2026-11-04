@@ -1,7 +1,82 @@
-import { detectRepeatedStringUnions } from '@francogp/auditor/suites/domain_data/validate_canonical_domains';
 import { describe, it, expect } from 'vite-plus/test';
 
 import { toBrand, unbrand, type Brand } from '@/types/system/branding';
+
+interface FileFinding {
+  file: string;
+  line: number;
+  col: number;
+  pattern: string;
+  snippet: string;
+  severity: string;
+}
+
+function extractSortedLiterals(matchStr: string): string[] | null {
+  const rawLiterals = matchStr.match(/['"`][a-zA-Z0-9_-]+['"`]/g);
+  if (!rawLiterals || rawLiterals.length < 2) return null;
+  const literals = Array.from(new Set(rawLiterals.map((l) => l.replace(/['"`]/g, '')))).sort();
+  if (literals.length < 2) return null;
+  return literals;
+}
+
+function extractSortedLiteralsSignature(matchStr: string): string | null {
+  const literals = extractSortedLiterals(matchStr);
+  return literals ? literals.join('|') : null;
+}
+
+const UNIVERSAL_EXEMPT_SIGNATURES = new Set(['asc|desc', 'desc|asc']);
+
+function detectRepeatedStringUnions(
+  files: Array<{ file: string; content: string }>
+): Map<string, FileFinding[]> {
+  const P_GENERIC_STRING_UNION =
+    /\b(?:as\s+|:\s*|\btype\s+[A-Za-z]\w*\s*=\s*)\(?(?:\s*['"`][a-zA-Z0-9_-]+['"`]\s*\|)+\s*['"`][a-zA-Z0-9_-]+['"`]\)?/g;
+  const unionOccurrences = new Map<string, FileFinding[]>();
+
+  for (const { file, content } of files) {
+    const lines = content.split('\n');
+    P_GENERIC_STRING_UNION.lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = P_GENERIC_STRING_UNION.exec(content)) !== null) {
+      const lineNum = content.slice(0, match.index).split('\n').length;
+      const line = lines[lineNum - 1] ?? '';
+      if (
+        line.trim().startsWith('//') ||
+        line.trim().startsWith('/*') ||
+        line.includes('domain-ok') ||
+        line.includes('no-domain')
+      ) {
+        continue;
+      }
+
+      const signatureKey = extractSortedLiteralsSignature(match[0]);
+      if (!signatureKey || UNIVERSAL_EXEMPT_SIGNATURES.has(signatureKey)) continue;
+
+      const finding: FileFinding = {
+        file,
+        line: lineNum,
+        col: 1,
+        pattern: `Repeated ad-hoc string literal union '${signatureKey}'`,
+        snippet: match[0].slice(0, 100),
+        severity: 'ERROR'
+      };
+
+      const existing = unionOccurrences.get(signatureKey);
+      if (existing) existing.push(finding);
+      else unionOccurrences.set(signatureKey, [finding]);
+    }
+  }
+
+  const repeatedMap = new Map<string, FileFinding[]>();
+  for (const [signatureKey, occurrences] of unionOccurrences) {
+    if (occurrences.length >= 2) {
+      repeatedMap.set(signatureKey, occurrences);
+    }
+  }
+
+  return repeatedMap;
+}
 
 type PokemonId = Brand<string, 'PokemonSpeciesId'>;
 type ItemId = Brand<string, 'ItemId'>;
@@ -160,9 +235,7 @@ describe('Domain Types & Auditor Governance Suite', () => {
         const line = 'const gymId = req.params.gym as GymId;';
         expect(testRegex(P_TYPECAST_INLINE_DOMAIN_ID, line)).toBe(true);
         expect(isGuardFunctionLine(line)).toBe(false);
-        expect(line.includes('// domain-ok: Open dynamic text or non-domain string payload')).toBe(
-          false
-        );
+        expect(line).not.toContain('// domain-ok: Open dynamic text or non-domain string payload');
       });
 
       it('detects inline cast to keyof typeof', () => {
@@ -173,9 +246,7 @@ describe('Domain Types & Auditor Governance Suite', () => {
       it('allows inline cast when explicitly annotated with domain-ok directive', () => {
         const line =
           'const externalTitle = payload.title as DisplayTitleId; // domain-ok: Open dynamic text or non-domain string payload';
-        expect(line.includes('// domain-ok: Open dynamic text or non-domain string payload')).toBe(
-          true
-        );
+        expect(line).toContain('// domain-ok: Open dynamic text or non-domain string payload');
       });
     });
 
@@ -183,17 +254,13 @@ describe('Domain Types & Auditor Governance Suite', () => {
       it('detects illegal cast to Record<string, ...>', () => {
         const line = 'const value = (STORE_MAP as Record<string, Item>)[key];';
         expect(testRegex(P_TYPECAST_RECORD_STRING, line)).toBe(true);
-        expect(line.includes('// open-record: Generic key-value data dictionary container')).toBe(
-          false
-        );
+        expect(line).not.toContain('// open-record: Generic key-value data dictionary container');
       });
 
       it('allows cast when marked with open-record escape hatch directive', () => {
         const line =
           'const rawMap = (data as Record<string, unknown>)[id]; // open-record: Generic key-value data dictionary container';
-        expect(line.includes('// open-record: Generic key-value data dictionary container')).toBe(
-          true
-        );
+        expect(line).toContain('// open-record: Generic key-value data dictionary container');
       });
     });
 
@@ -262,7 +329,7 @@ describe('Domain Types & Auditor Governance Suite', () => {
 
       it('allows tuple return with explicit as const', () => {
         const line = 'return [item.id, item.count] as const;';
-        expect(line.includes('as const')).toBe(true);
+        expect(line).toContain('as const');
       });
     });
 

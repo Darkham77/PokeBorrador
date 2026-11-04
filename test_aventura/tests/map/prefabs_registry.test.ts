@@ -87,7 +87,7 @@ describe('PrefabsRegistryService', () => {
       const loaded = await service.loadManifest('/mock/manifest.json');
       expect(loaded).not.toBeNull();
       expect(loaded?.version).toBe('2.0.0');
-      expect(service.getAllPrefabs().length).toBe(3);
+      expect(service.getAllPrefabs()).toHaveLength(3);
 
       const house = service.getPrefabById('house_blue');
       expect(house).toBeDefined();
@@ -119,19 +119,19 @@ describe('PrefabsRegistryService', () => {
     try {
       await service.loadManifest();
       const buildings = service.getPrefabsByCategory('buildings');
-      expect(buildings.length).toBe(1);
+      expect(buildings).toHaveLength(1);
       expect(buildings[0]?.id).toBe('house_blue');
 
       const veg = service.getPrefabsByCategory('vegetation');
-      expect(veg.length).toBe(1);
+      expect(veg).toHaveLength(1);
       expect(veg[0]?.id).toBe('tree_poke');
 
       const props = service.getPrefabsByCategory('props');
-      expect(props.length).toBe(1);
+      expect(props).toHaveLength(1);
       expect(props[0]?.id).toBe('street_lamp');
 
       const all = service.getPrefabsByCategory('all');
-      expect(all.length).toBe(3);
+      expect(all).toHaveLength(3);
     } finally {
       globalThis.fetch = originalFetch;
     }

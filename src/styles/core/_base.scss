@@ -332,7 +332,7 @@ select,
 textarea,
 button {
   font-family: inherit;
-  &:focus {
+  &:focus:not(:focus-visible) {
     outline: none;
   }
 }
@@ -520,7 +520,7 @@ img.event-banner-img {
         margin: 0;
         color: var(--white);
         font-size: var(--font-12);
-        font-weight: 900;
+        font-weight: $font-weight-black;
         letter-spacing: 0.5px;
         text-transform: uppercase;
       }

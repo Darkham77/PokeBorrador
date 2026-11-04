@@ -47,7 +47,7 @@ describe('ItemSpriteCollisionAuditor', () => {
         { id: 'item_b', name: 'Item B', cat: 'misc', sprite: 'items/potion' }
       ];
       const collisions = findSpriteCollisions(items);
-      expect(collisions.length).toBe(1);
+      expect(collisions).toHaveLength(1);
       expect(collisions[0]!.count).toBe(2);
       expect(collisions[0]!.sprite).toBe('items/potion');
     });
@@ -55,7 +55,7 @@ describe('ItemSpriteCollisionAuditor', () => {
     it('flags items missing sprite property definition', () => {
       const items: ShopItem[] = [{ id: 'item_ghost', name: 'Ghost Item', cat: 'misc' }];
       const missing = findMissingSprites(items);
-      expect(missing.length).toBe(1);
+      expect(missing).toHaveLength(1);
       expect(missing[0]!.reason).toBe('missing_property');
     });
   });
@@ -74,7 +74,7 @@ describe('ItemSpriteCollisionAuditor', () => {
   describe('Clean Execution Verification', () => {
     it('executes cleanly with zero errors on repository dataset', async () => {
       const auditor = new ItemSpriteCollisionAuditor();
-      const result = await auditor.execute();
+      const result = await auditor.audit();
 
       expect(result.summary.errors).toBe(0);
       expect(result.status).toBe('passed');

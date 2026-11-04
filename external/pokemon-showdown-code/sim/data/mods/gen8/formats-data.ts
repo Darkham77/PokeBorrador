@@ -16,7 +16,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'UUBL'
   },
   venusaurgmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -43,7 +42,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'OU'
   },
   charizardgmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -65,7 +63,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'Uber'
   },
   blastoisegmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -82,7 +79,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   butterfreegmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -248,7 +244,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     tier: 'Illegal'
   },
   pikachugmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -264,7 +259,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   raichualola: {
-    tier: 'PUBL',
+    tier: 'PU',
     doublesTier: '(DUU)',
     natDexTier: 'RU'
   },
@@ -422,7 +417,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     tier: 'LC'
   },
   meowthgmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -520,7 +514,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   machampgmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -719,7 +712,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'AG'
   },
   gengargmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -756,7 +748,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   kinglergmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -1016,7 +1007,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   laprasgmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -1034,7 +1024,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     tier: 'Illegal'
   },
   eeveegmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -1127,7 +1116,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   snorlaxgmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -3299,7 +3287,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   garbodorgmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -3616,7 +3603,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RUBL'
   },
   virizion: {
-    tier: 'PUBL',
+    tier: 'PU',
     doublesTier: '(DUU)',
     natDexTier: 'RU'
   },
@@ -4622,7 +4609,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'OU'
   },
   guzzlord: {
-    tier: 'PUBL',
+    tier: 'PU',
     doublesTier: '(DUU)',
     natDexTier: 'RU'
   },
@@ -4691,7 +4678,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'UUBL'
   },
   melmetalgmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -4710,7 +4696,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'OU'
   },
   rillaboomgmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -4727,7 +4712,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'Uber'
   },
   cinderacegmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -4744,7 +4728,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   inteleongmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -4769,7 +4752,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'OU'
   },
   corviknightgmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -4786,7 +4768,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   orbeetlegmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -4824,7 +4805,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   drednawgmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -4849,7 +4829,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   coalossalgmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -4863,7 +4842,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   flapplegmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -4874,7 +4852,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   appletungmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -4888,7 +4865,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   sandacondagmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -4930,13 +4906,11 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   toxtricitygmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
   },
   toxtricitylowkeygmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -4950,7 +4924,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   centiskorchgmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -4986,7 +4959,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'UU'
   },
   hatterenegmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -5003,7 +4975,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   grimmsnarlgmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -5017,7 +4988,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   alcremiegmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -5079,7 +5049,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   copperajahgmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -5110,7 +5079,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'RU'
   },
   duraludongmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
@@ -5169,13 +5137,11 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
     natDexTier: 'UU'
   },
   urshifugmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'
   },
   urshifurapidstrikegmax: {
-    isNonstandard: 'Gigantamax',
     tier: 'AG',
     doublesTier: '(DUber)',
     natDexTier: '(AG)'

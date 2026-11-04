@@ -22,9 +22,9 @@ import {
   type Event as GameEvent,
   type EventConfig,
   type ResolvedSubCompetition,
-  type WeeklyRotationEntry
+  type WeeklyRotationEntry,
+  type UpcomingEventOccurrence
 } from '@/logic/events/eventEngine';
-import type { UpcomingEventOccurrence } from '@/logic/events/eventEngine';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import {
   getServerTime,

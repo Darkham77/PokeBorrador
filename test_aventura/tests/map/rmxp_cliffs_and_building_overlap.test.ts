@@ -3,8 +3,7 @@ import { describe, it, expect } from 'vitest';
 
 import { placeProceduralTownArchitectures } from '../../logic/map/kantoProceduralCarver.ts';
 import { KantoRegionalWorldGenerator } from '../../logic/map/kantoRegionalGenerator.ts';
-import { resolveRmxpSubtiles } from '../../logic/map/kantoTileEngine.ts';
-import { DynamicCatalogLoader } from '../../logic/map/kantoTileEngine.ts';
+import { resolveRmxpSubtiles, DynamicCatalogLoader } from '../../logic/map/kantoTileEngine.ts';
 import { CELL_BIOME, type KantoNodeCoordinate } from '../../types/map/kantoGridModel.ts';
 
 describe('RMXP Cliffs, Water and Procedural Urban Architecture', () => {

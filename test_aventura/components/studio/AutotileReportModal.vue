@@ -259,7 +259,7 @@ async function copyToClipboard(): Promise<void> {
 .modal-title {
   margin: 0;
   font-size: var(--font-16);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .report-badge {
@@ -268,7 +268,7 @@ async function copyToClipboard(): Promise<void> {
   background: var(--red-light);
   color: var(--white);
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .close-btn {
@@ -297,7 +297,7 @@ async function copyToClipboard(): Promise<void> {
   background: none;
   color: var(--slate-400);
   font-size: var(--font-13);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   border-bottom: 2px solid transparent;
   cursor: pointer;
 }
@@ -357,7 +357,7 @@ async function copyToClipboard(): Promise<void> {
   border-radius: $radius-sm;
   font-family: monospace;
   font-size: var(--font-11);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .seed-badge {
@@ -429,7 +429,7 @@ async function copyToClipboard(): Promise<void> {
 .neighborhood-title {
   color: var(--slate-400);
   font-size: var(--font-11);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
 }
 
 .neighborhood-grid {
@@ -459,7 +459,7 @@ async function copyToClipboard(): Promise<void> {
   border: 1px solid var(--red-light);
   background: Rgb(239 68 68 / 25%);
   color: var(--red-300);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .n-dir {
@@ -469,7 +469,7 @@ async function copyToClipboard(): Promise<void> {
 
 .n-terrain {
   color: var(--slate-300);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
 }
 
 .note-field {
@@ -516,7 +516,7 @@ async function copyToClipboard(): Promise<void> {
   border: none;
   border-radius: $radius-md;
   font-size: var(--font-13);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
 }
 

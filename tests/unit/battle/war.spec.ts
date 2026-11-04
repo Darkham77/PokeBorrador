@@ -102,6 +102,19 @@ describe('War Engine & Guardian Logic', () => {
   });
 });
 
+function mockChainableQuery<T>(data: T) {
+  const payload = { data, error: null };
+  const promise = Promise.resolve(payload);
+  const builder: Record<string, unknown> = {
+    then: promise.then.bind(promise),
+    catch: promise.catch.bind(promise),
+    limit: vi.fn().mockReturnValue(promise),
+    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+    eq: vi.fn().mockImplementation(() => builder)
+  };
+  return builder;
+}
+
 describe('War Store Logic', () => {
   beforeEach(async () => {
     setActivePinia(createPinia());
@@ -122,12 +135,7 @@ describe('War Store Logic', () => {
     gs.db = {
       rpc: vi.fn().mockResolvedValue({ error: null }),
       from: vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ data: [], error: null }),
-            maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null })
-          })
-        }),
+        select: vi.fn().mockReturnValue(mockChainableQuery([])),
         upsert: vi.fn().mockResolvedValue({ error: null }),
         delete: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
@@ -141,7 +149,7 @@ describe('War Store Logic', () => {
     auth.user = {
       id: 'test_user',
       user_metadata: { username: 'test_user' }
-    } as unknown as typeof auth.user;
+    };
 
     const war = useWarStore();
     await war.loadWarData();
@@ -203,33 +211,24 @@ describe('War Store Logic', () => {
       from: vi.fn().mockImplementation((table: string) => {
         if (table === 'war_user_points') {
           return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({
-                eq: vi.fn().mockResolvedValue({ data: [{ points: 600 }], error: null })
-              })
-            })
+            select: vi.fn().mockReturnValue(mockChainableQuery([{ points: 600 }]))
           };
         }
         if (table === 'war_dominance') {
           return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockResolvedValue({
-                data: [
+            select: vi
+              .fn()
+              .mockReturnValue(
+                mockChainableQuery([
                   { winner_faction: 'union' },
                   { winner_faction: 'union' },
                   { winner_faction: 'poder' }
-                ],
-                error: null
-              })
-            })
+                ])
+              )
           };
         }
         return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              eq: vi.fn().mockResolvedValue({ data: [], error: null })
-            })
-          }),
+          select: vi.fn().mockReturnValue(mockChainableQuery([])),
           upsert: vi.fn().mockResolvedValue({ error: null })
         };
       })

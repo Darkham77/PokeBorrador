@@ -30,21 +30,21 @@ You are working on **Poké Vicio** (a hybrid retro-modern 2D web video game buil
 
 ### Platform & Dimension Selection
 
-| If the task targets...                 | Use Reference             |
-| :------------------------------------- | :------------------------ |
+| If the task targets...                  | Use Reference                             |
+| :-------------------------------------- | :---------------------------------------- |
 | Web browsers (HTML5, Canvas, WebGL/GPU) | [web-games.md](./references/web-games.md) |
 | 2D games (sprites, tilemaps, pixel art) | [2d-games.md](./references/2d-games.md)   |
 | 3D reference patterns (if applicable)   | [3d-games.md](./references/3d-games.md)   |
 
 ### Specialty Areas
 
-| If you need...                          | Use Reference                                           |
-| :-------------------------------------- | :------------------------------------------------------ |
-| GDD, balancing, player psychology       | [game-design.md](./references/game-design.md)           |
-| Multiplayer, networking                 | [multiplayer.md](./references/multiplayer.md)           |
-| Visual style, asset pipeline, animation | [game-art.md](./references/game-art.md)                 |
+| If you need...                          | Use Reference                                                 |
+| :-------------------------------------- | :------------------------------------------------------------ |
+| GDD, balancing, player psychology       | [game-design.md](./references/game-design.md)                 |
+| Multiplayer, networking                 | [multiplayer.md](./references/multiplayer.md)                 |
+| Visual style, asset pipeline, animation | [game-art.md](./references/game-art.md)                       |
 | Atmospheric & Weather Effects           | [atmospheric_effects.md](./references/atmospheric_effects.md) |
-| Sound design, music, adaptive audio     | [game-audio.md](./references/game-audio.md)             |
+| Sound design, music, adaptive audio     | [game-audio.md](./references/game-audio.md)                   |
 
 ---
 

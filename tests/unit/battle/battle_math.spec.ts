@@ -274,7 +274,7 @@ describe('Battle Math Core (Weather & Cycles)', () => {
         0
       );
       expect(accGen3.final).toBe(100);
-      expect(accGen3.list.length).toBe(0);
+      expect(accGen3.list).toHaveLength(0);
 
       // In Gen 4+, visual 'fog' maps to 'fog' official weather. Reduces accuracy to 0.6x (60%).
       const officialWeatherGen4 = mapVisualToOfficialWeather('fog', 4);

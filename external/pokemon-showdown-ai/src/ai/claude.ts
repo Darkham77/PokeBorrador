@@ -1,5 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk';
+
 import { CONFIG } from '../config';
+import { InferenceEngine } from '../inference/engine';
+import { log, logError, logDebug } from '../logging/logger';
+import { formatStrategicSummary } from '../strategy/evaluation';
 import {
   Decision,
   BattleStateSnapshot,
@@ -8,9 +12,6 @@ import {
   StrategicState,
   DamageMatchup
 } from '../types';
-import { InferenceEngine } from '../inference/engine';
-import { formatStrategicSummary } from '../strategy/evaluation';
-import { log, logError, logDebug } from '../logging/logger';
 
 export class ClaudeEngine {
   private client: Anthropic;

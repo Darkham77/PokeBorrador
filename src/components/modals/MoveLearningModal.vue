@@ -126,7 +126,7 @@ const handleForget = (): void => {
     line-height: 1.5;
     .highlight {
       color: var(--yellow);
-      font-weight: 800;
+      font-weight: $font-weight-extrabold;
     }
   }
 }

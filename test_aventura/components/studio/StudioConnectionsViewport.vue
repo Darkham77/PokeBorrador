@@ -385,7 +385,7 @@ function handleCanvasClick(e: MouseEvent): void {
 .node-label {
   font-family: sans-serif;
   font-size: var(--font-13);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   fill: var(--white);
   text-shadow: 0 2px 4px Rgb(0 0 0 / 90%);
   pointer-events: none;
@@ -407,7 +407,7 @@ function handleCanvasClick(e: MouseEvent): void {
     background: Rgb(15 23 42 / 85%);
     color: var(--slate-50);
     font-size: var(--font-11);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     backdrop-filter: Blur(6px);
   }
 }

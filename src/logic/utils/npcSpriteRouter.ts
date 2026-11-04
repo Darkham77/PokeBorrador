@@ -1,7 +1,7 @@
 import type { TrainerTypeKey } from '../../data/player/trainerTypes.ts';
 import {
   ARCHETYPE_SPRITES,
-  VALID_NPC_SPRITES,
+  VALID_NPC_SPRITES_SET,
   type NpcSpriteId
 } from '../../data/pokemon/npcSpriteCatalog.ts';
 export type { NpcSpriteId } from '../../data/pokemon/npcSpriteCatalog.ts';
@@ -365,6 +365,6 @@ export function getSpritesForArchetype(archetype: NpcArchetype): readonly string
 }
 
 export function resolveNpcSprite(spriteId: NpcSpriteId): NpcSpriteId {
-  if (VALID_NPC_SPRITES.includes(spriteId)) return spriteId;
+  if (VALID_NPC_SPRITES_SET.has(spriteId)) return spriteId;
   throw new Error(`[npcSpriteRouter] Invalid NPC sprite identifier: '${spriteId}'`);
 }

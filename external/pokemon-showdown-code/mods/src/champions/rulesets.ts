@@ -24,6 +24,16 @@ export const Rulesets: ModdedFormatDataTable = {
       'Evasion Clause'
     ]
   },
+  standarddoubles: {
+    inherit: true,
+    ruleset: [
+      'Standard AG',
+      'Nickname Clause',
+      'OHKO Clause',
+      'Evasion Moves Clause',
+      'Gravity Sleep Clause'
+    ]
+  },
   standarddraft: {
     inherit: true,
     ruleset: [
@@ -90,5 +100,12 @@ export const Rulesets: ModdedFormatDataTable = {
       );
     }
     // Implemented in mods/champions/scripts.ts
+  },
+  natdexmod: {
+    effectType: 'ValidatorRule',
+    name: 'NatDex Mod',
+    desc: 'Mechanics for National Dex formats',
+    ruleset: ['+Unobtainable', '+Past', 'Sketch Post-Gen 7 Moves']
+    // implemented in the champions natdex draft format
   }
 };

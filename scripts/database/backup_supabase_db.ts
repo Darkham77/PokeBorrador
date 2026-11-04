@@ -1,5 +1,5 @@
-import type { DisplayText } from '@francogp/auditor';
-import { isMainModule } from '@francogp/auditor';
+import fsPromises from 'node:fs/promises';
+import { enableCompileCache } from 'node:module';
 /**
  * @file backup_supabase_db.ts
  * @description Script automático para descargar un respaldo completo (backup) en formato JSON
@@ -14,13 +14,14 @@ import { isMainModule } from '@francogp/auditor';
  * - Estándares Node.js 26+ (Explicit Resource Management con 'using', prefijos node:).
  * - Arquitectura Zero-Warning y Zero-Any.
  */
-
-import fsPromises from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
-import { enableCompileCache } from 'node:module';
-import postgres from 'postgres';
+
+import type { DisplayText } from '@francogp/auditor';
+import { isMainModule } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
+import postgres from 'postgres';
+
 import {
   readAndParseEnv,
   buildDatabaseUrl,
@@ -220,12 +221,14 @@ async function backupSingleServerProfile(
     try {
       await sql.end();
     } catch (err) {
-      err;
+      console.warn('[Handled controlled exception]:', err);
     }
   }
 }
 
-export async function backupSupabaseDb(options: { server?: string; all?: boolean } = {}) {
+export async function backupSupabaseDb(
+  options: { server?: string; all?: boolean } = {}
+): Promise<void> {
   console.log(
     styleText(
       'bold',
@@ -287,5 +290,5 @@ export const command = defineCommand({
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

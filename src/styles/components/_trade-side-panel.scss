@@ -170,7 +170,7 @@
       background: Rgb(0 0 0 / 40%);
       color: $coin-gold;
       font-size: var(--font-15);
-      font-weight: 900;
+      font-weight: $font-weight-black;
       outline: none;
       box-sizing: border-box;
 
@@ -215,7 +215,7 @@
     display: block;
     color: var(--green);
     font-size: var(--font-11);
-    font-weight: 900;
+    font-weight: $font-weight-black;
     margin-bottom: 8px;
     letter-spacing: 1px;
   }

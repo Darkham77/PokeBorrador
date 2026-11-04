@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
-import { ref } from 'vue';
+import { ref, type Ref } from 'vue';
 
 import {
   createBattleStateMachine,
@@ -16,6 +16,7 @@ import {
 import { resolveTurnChoices } from '@/logic/battle/battleTurnChoiceHelper';
 import { processFaint } from '@/logic/battle/resolution';
 import { handleBattleFlowCompletion } from '@/logic/battle/searchLoop';
+import type { BattleStages } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
@@ -224,12 +225,8 @@ describe('Battle Stale Flow Safety Tests', () => {
       type: 'poison'
     } as unknown as Pokemon;
     mockCtx.activeBattle.value!.weather = { type: 'sandstorm', visual: 'sandstorm', turns: 5 };
-    mockCtx.playerStages = { value: {} } as unknown as import('vue').Ref<
-      import('@/types/battle/battle').BattleStages
-    >;
-    mockCtx.enemyStages = { value: {} } as unknown as import('vue').Ref<
-      import('@/types/battle/battle').BattleStages
-    >;
+    mockCtx.playerStages = { value: {} } as unknown as Ref<BattleStages>;
+    mockCtx.enemyStages = { value: {} } as unknown as Ref<BattleStages>;
 
     await applyEndTurnEffects(mockCtx);
 

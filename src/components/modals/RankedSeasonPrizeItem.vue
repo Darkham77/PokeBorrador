@@ -92,7 +92,7 @@ const prizeType = computed(() => String(props.prize.type || ''));
     .prize-title {
       color: var(--slate-50);
       font-size: var(--font-13);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
       text-transform: uppercase;
     }
 

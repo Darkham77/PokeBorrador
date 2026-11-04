@@ -26,8 +26,8 @@ describe('Orthogonal Graph Embedding Engine (Phase 2)', () => {
   it('computes valid band grid dimensions for variable node counts', () => {
     const grid16 = computeBandGrid(12, 128, 128);
     expect(grid16.cols * grid16.rows).toBeGreaterThanOrEqual(14);
-    expect(grid16.colX.length).toBe(grid16.cols);
-    expect(grid16.rowY.length).toBe(grid16.rows);
+    expect(grid16.colX).toHaveLength(grid16.cols);
+    expect(grid16.rowY).toHaveLength(grid16.rows);
 
     // Columns and rows should be monotonically increasing
     for (let i = 0; i < grid16.colX.length - 1; i++) {
@@ -45,8 +45,8 @@ describe('Orthogonal Graph Embedding Engine (Phase 2)', () => {
     const embeddedA = embedPokemonTopology(graphA, { seed: 42 });
     const embeddedB = embedPokemonTopology(graphB, { seed: 42 });
 
-    expect(embeddedA.nodes.length).toBe(embeddedB.nodes.length);
-    expect(embeddedA.corridors.length).toBe(embeddedB.corridors.length);
+    expect(embeddedA.nodes).toHaveLength(embeddedB.nodes.length);
+    expect(embeddedA.corridors).toHaveLength(embeddedB.corridors.length);
 
     for (let i = 0; i < embeddedA.nodes.length; i++) {
       expect(embeddedA.nodes[i]!.gridX).toBe(embeddedB.nodes[i]!.gridX);
@@ -64,8 +64,8 @@ describe('Orthogonal Graph Embedding Engine (Phase 2)', () => {
 
     for (const corridor of embedded.corridors) {
       if (corridor.kind === 'wormhole_tunnel') {
-        expect(corridor.waypoints.length).toBe(0);
-        expect(corridor.pathCells.length).toBe(0);
+        expect(corridor.waypoints).toHaveLength(0);
+        expect(corridor.pathCells).toHaveLength(0);
         continue;
       }
 
@@ -90,10 +90,10 @@ describe('Orthogonal Graph Embedding Engine (Phase 2)', () => {
       if (wormholes.length > 0) {
         const embedded = embedPokemonTopology(graph, { seed: s });
         const embeddedWormholes = embedded.corridors.filter((c) => c.kind === 'wormhole_tunnel');
-        expect(embeddedWormholes.length).toBe(wormholes.length);
+        expect(embeddedWormholes).toHaveLength(wormholes.length);
         for (const ew of embeddedWormholes) {
-          expect(ew.waypoints.length).toBe(0);
-          expect(ew.pathCells.length).toBe(0);
+          expect(ew.waypoints).toHaveLength(0);
+          expect(ew.pathCells).toHaveLength(0);
           expect(ew.tunnelPairId).toBeDefined();
         }
         break;

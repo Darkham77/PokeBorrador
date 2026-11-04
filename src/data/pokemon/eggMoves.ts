@@ -1,3 +1,4 @@
+import type { PokemonMoveId } from '../battle/moves.ts';
 /**
  * src/data/pokemon/eggMoves.ts
  *
@@ -5,7 +6,6 @@
  * Avoids loading @pkmn/sim Dex into the client runtime.
  */
 import eggMovesJson from './eggMoves.json' with { type: 'json' };
-import type { PokemonMoveId } from '../battle/moves.ts';
 import type { PokemonSpeciesId } from './pokedex.ts';
 
 const EGG_MOVES_MAP: Partial<Record<PokemonSpeciesId, readonly PokemonMoveId[]>> =

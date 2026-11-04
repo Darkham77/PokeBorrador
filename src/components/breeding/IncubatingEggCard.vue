@@ -231,7 +231,7 @@ const progress = computed(() => {
     background: Rgb(239 68 68 / 15%);
     color: var(--rose);
     font-size: var(--font-8);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     letter-spacing: 0.5px;
     flex-shrink: 0;
   }

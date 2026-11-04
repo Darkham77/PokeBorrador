@@ -1,22 +1,25 @@
-import { isMainModule } from '@francogp/auditor';
 import { enableCompileCache } from 'node:module';
+
+import { isMainModule } from '@francogp/auditor';
 enableCompileCache?.();
 
-import { DatabaseSync } from 'node:sqlite';
-import path from 'node:path';
 import fs from 'node:fs';
+import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
+
 import { defineCommand, runMain } from 'citty';
 import postgres from 'postgres';
+
+import { isEnabledPokemonId } from '../../src/data/system/constants.ts';
+import { makePokemon } from '../../src/logic/pokemon/pokemonFactory.ts';
 import {
   repairPokemonLegality,
   checkPokemonLegality
 } from '../../src/logic/pokemon/pokemonLegality.ts';
-import { isEnabledPokemonId } from '../../src/data/system/constants.ts';
-import { makePokemon } from '../../src/logic/pokemon/pokemonFactory.ts';
-import { buildDatabaseUrl, getValidatedServerConfigs } from '../lib/supabaseClient.ts';
-import { parseUnmatchedArgs } from '../lib/cliHelpers.ts';
-import type { Pokemon } from '../../src/types/pokemon/pokemon.ts';
 import type { SaveDataDto } from '../../src/logic/validation/schemas.ts';
+import type { Pokemon } from '../../src/types/pokemon/pokemon.ts';
+import { parseUnmatchedArgs } from '../lib/cliHelpers.ts';
+import { buildDatabaseUrl, getValidatedServerConfigs } from '../lib/supabaseClient.ts';
 
 export interface RepairAccountOptions {
   userId?: string | null;
@@ -426,7 +429,7 @@ function repairSingleMarketListingItem(
       }
     }
   } catch (err) {
-    err;
+    console.warn('[Handled controlled exception]:', err);
   }
 }
 
@@ -444,7 +447,7 @@ function repairSqliteMarketListings(
       repairSingleMarketListingItem(mRow, db, isSilent, summary);
     }
   } catch (err) {
-    err;
+    console.warn('[Handled controlled exception]:', err);
   }
 }
 
@@ -549,9 +552,9 @@ export function repairAccountsInSqlite(options: RepairAccountOptions): RepairSum
 async function fetchTargetSupabaseRows(
   sql: postgres.Sql,
   targetUser: string | null,
-  isAll: boolean,
-  isSilent: boolean
+  options: { isAll?: boolean; isSilent?: boolean } = {}
 ): Promise<Array<{ user_id: string; save_data: unknown }>> {
+  const { isAll = false, isSilent = false } = options;
   if (isAll || !targetUser) {
     return (await sql`SELECT user_id, save_data FROM public.game_saves ORDER BY user_id ASC`) as Array<{
       user_id: string;
@@ -706,7 +709,7 @@ export async function repairAccountsInSupabase(
   };
 
   try {
-    const rows = await fetchTargetSupabaseRows(sql, targetUser, isAll, isSilent);
+    const rows = await fetchTargetSupabaseRows(sql, targetUser, { isAll, isSilent });
 
     summary.accountsAudited = rows.length;
 
@@ -795,14 +798,12 @@ export const command = defineCommand({
     const cleanTarget = (args.target || barePositionals[0] || '').trim();
     const isAll = Boolean(
       args.all ||
-        args.user === 'all' ||
-        cleanTarget === 'all' ||
-        hasFlag('all') ||
-        getParam('user') === 'all'
+      args.user === 'all' ||
+      cleanTarget === 'all' ||
+      hasFlag('all') ||
+      getParam('user') === 'all'
     );
-    const targetUserId = isAll
-      ? null
-      : (args.user ?? cleanTarget ?? getParam('user', 'u') ?? null);
+    const targetUserId = isAll ? null : (args.user ?? cleanTarget ?? getParam('user', 'u') ?? null);
     const server = args.server || getParam('server', 's');
     const dbPath = args.db || getParam('db', 'd');
 
@@ -827,5 +828,5 @@ export const command = defineCommand({
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

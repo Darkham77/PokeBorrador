@@ -152,7 +152,7 @@ describe('marketMyItemsHelper', () => {
     claimsMap.set('c2', claim2);
 
     const merged = buildDisplayHistory(history, claims, claimsMap, 0.05);
-    expect(merged.length).toBe(2);
+    expect(merged).toHaveLength(2);
     const first = merged[0];
     expect(first?.id).toBe('unmatched_sale');
   });

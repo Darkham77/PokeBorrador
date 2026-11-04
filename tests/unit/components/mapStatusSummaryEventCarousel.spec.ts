@@ -74,7 +74,7 @@ describe('MapStatusSummary.vue - Event Carousel & Dynamic Responsive Layout', ()
     expect(vm.needsCarousel).toBe(false);
 
     const eventBanners = wrapper.findAll('.event-banner');
-    expect(eventBanners.length).toBe(2);
+    expect(eventBanners).toHaveLength(2);
 
     // Click first banner -> emits doble_exp
     await eventBanners[0]?.trigger('click');
@@ -109,7 +109,7 @@ describe('MapStatusSummary.vue - Event Carousel & Dynamic Responsive Layout', ()
 
     // Dots should be visible when carousel is needed with 2 events
     const dots = wrapper.findAll('.carousel-dot');
-    expect(dots.length).toBe(2);
+    expect(dots).toHaveLength(2);
 
     // Go to slide 1 (Gran Concurso)
     vm.goToSlide(1);
@@ -145,7 +145,7 @@ describe('MapStatusSummary.vue - Event Carousel & Dynamic Responsive Layout', ()
     expect(vm.needsCarousel).toBe(false);
 
     const eventBanners = wrapper.findAll('.event-banner');
-    expect(eventBanners.length).toBe(2);
+    expect(eventBanners).toHaveLength(2);
   });
 
   it('activates carousel in tablet 2-row mode when 3 events are active but only 2 slots fit (800px)', async () => {
@@ -168,7 +168,7 @@ describe('MapStatusSummary.vue - Event Carousel & Dynamic Responsive Layout', ()
     expect(vm.needsCarousel).toBe(true);
 
     const dots = wrapper.findAll('.carousel-dot');
-    expect(dots.length).toBe(3);
+    expect(dots).toHaveLength(3);
   });
 
   it('renders static single banner with no carousel dots when only 1 event is active', async () => {
@@ -180,7 +180,7 @@ describe('MapStatusSummary.vue - Event Carousel & Dynamic Responsive Layout', ()
     });
 
     const dots = wrapper.findAll('.carousel-dot');
-    expect(dots.length).toBe(0);
+    expect(dots).toHaveLength(0);
 
     const eventBanner = wrapper.find('.event-banner');
     expect(eventBanner.exists()).toBe(true);

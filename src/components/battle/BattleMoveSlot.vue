@@ -84,8 +84,10 @@ const isDisabled = computed(() =>
 
 const weatherAuraClass = computed(() =>
   resolveWeatherAuraClass(
-    Boolean(props.move),
-    Boolean(moveModifier.value),
+    {
+      hasMove: Boolean(props.move),
+      hasMoveModifier: Boolean(moveModifier.value)
+    },
     battleStore.state?.weather
   )
 );

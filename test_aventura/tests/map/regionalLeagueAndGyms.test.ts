@@ -58,21 +58,21 @@ describe('regionalLeagueAndGyms', () => {
         totalGyms += gyms.length;
         gymSettlements.push(poi);
         // Each gym city has at most 1 gym
-        expect(gyms.length).toBe(1);
+        expect(gyms).toHaveLength(1);
         // Gym prefab must be canonical (gym_gold or gym)
         expect(['gym_gold.png', 'gym.png']).toContain(gyms[0]!.prefabFile);
       }
     }
 
     expect(totalGyms).toBe(8);
-    expect(gymSettlements.length).toBe(8);
+    expect(gymSettlements).toHaveLength(8);
   });
 
   it('guarantees exactly 1 Regional Pokémon League (Meseta Añil) is anchored in the northern mountain massif', () => {
     const leagueNodes = pois.filter(
       (p) => p.type === 'pokemon_league' || p.id === 'pokemon_league_plateau'
     );
-    expect(leagueNodes.length).toBe(1);
+    expect(leagueNodes).toHaveLength(1);
 
     const league = leagueNodes[0]!;
     expect(league.name).toContain('Liga');
@@ -98,7 +98,7 @@ describe('regionalLeagueAndGyms', () => {
 
     // League Climax Ceremonial Simplicity Mandate: standalone poke_statue eliminated (integrated in palace facade)
     const statues = layout.props.filter((p) => p.prefabFile === 'poke_statue.png');
-    expect(statues.length).toBe(0);
+    expect(statues).toHaveLength(0);
 
     // Flanking ceremonial street lamps present
     const lamps = layout.props.filter((p) => p.type === 'lamp');
@@ -106,7 +106,7 @@ describe('regionalLeagueAndGyms', () => {
 
     // Direct ceremonial avenue running down the plateau over natural grass
     expect(layout.internalStreets.length).toBeGreaterThan(0);
-    expect(layout.pavedPlazaCells.length).toBe(0);
+    expect(layout.pavedPlazaCells).toHaveLength(0);
 
     // Zero hardcoded checkpoint gates on Meseta Añil (procedural gates placed along routes)
     const gate = layout.buildings.find((b) => b.prefabFile === 'poke_league_checkpoint_gate.png');

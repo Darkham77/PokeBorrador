@@ -1,11 +1,42 @@
-import * as Utils from '../lib/utils';
-import { Condition, DexConditions } from './dex-conditions';
-import { DataMove, DexMoves } from './dex-moves';
-import { Item, DexItems } from './dex-items';
-import { Ability, DexAbilities } from './dex-abilities';
-import { Species, DexSpecies, DexLearnsets, ModdedLearnsetData } from './dex-species';
-import { Format, FormatList, DexFormats, RuleTable } from './dex-formats';
+import * as gen9 from '../data';
 import { Aliases } from '../data/aliases';
+import * as formats9 from '../data/formats-data';
+import * as learn9 from '../data/learnsets';
+import * as legality9 from '../data/legality';
+import * as gen1 from '../data/mods/gen1';
+import * as gen2 from '../data/mods/gen2';
+import * as learn2 from '../data/mods/gen2/learnsets';
+import * as legality2 from '../data/mods/gen2/legality';
+import * as gen3 from '../data/mods/gen3';
+import * as gen4 from '../data/mods/gen4';
+import * as gen5 from '../data/mods/gen5';
+import * as gen6 from '../data/mods/gen6';
+import * as learn6 from '../data/mods/gen6/learnsets';
+import * as legality6 from '../data/mods/gen6/legality';
+import * as gen7 from '../data/mods/gen7';
+import * as gen8 from '../data/mods/gen8';
+import * as learn8 from '../data/mods/gen8/learnsets';
+import * as legality8 from '../data/mods/gen8/legality';
+import * as gen8bdsp from '../data/mods/gen8bdsp';
+import * as learn8bdsp from '../data/mods/gen8bdsp/learnsets';
+import * as legality8bdsp from '../data/mods/gen8bdsp/legality';
+import * as gen8legends from '../data/mods/gen8legends';
+import * as learn8legends from '../data/mods/gen8legends/learnsets';
+import * as legality8legends from '../data/mods/gen8legends/legality';
+import * as pokemongo from '../data/pokemongo';
+import { Tags } from '../data/tags';
+import { AbilitiesText } from '../data/text/abilities';
+import { DefaultText } from '../data/text/default';
+import { ItemsText } from '../data/text/items';
+import { MovesText } from '../data/text/moves';
+import * as Utils from '../lib/utils';
+import { Ability, DexAbilities } from './dex-abilities';
+import { Condition, DexConditions } from './dex-conditions';
+import * as Data from './dex-data';
+import { Format, FormatList, DexFormats, RuleTable } from './dex-formats';
+import { Item, DexItems } from './dex-items';
+import { DataMove, DexMoves } from './dex-moves';
+import { Species, DexSpecies, DexLearnsets, ModdedLearnsetData } from './dex-species';
 import {
   AbilityText,
   ActiveMove,
@@ -18,43 +49,6 @@ import {
   MoveText,
   StatsTable
 } from './exported-global-types';
-
-import * as gen1 from '../data/mods/gen1';
-import * as gen2 from '../data/mods/gen2';
-import * as gen3 from '../data/mods/gen3';
-import * as gen4 from '../data/mods/gen4';
-import * as gen5 from '../data/mods/gen5';
-import * as gen6 from '../data/mods/gen6';
-import * as gen7 from '../data/mods/gen7';
-import * as gen8 from '../data/mods/gen8';
-import * as gen8bdsp from '../data/mods/gen8bdsp';
-import * as gen8legends from '../data/mods/gen8legends';
-import * as gen9 from '../data';
-
-import * as formats9 from '../data/formats-data';
-
-import * as learn2 from '../data/mods/gen2/learnsets';
-import * as learn6 from '../data/mods/gen6/learnsets';
-import * as learn8 from '../data/mods/gen8/learnsets';
-import * as learn8bdsp from '../data/mods/gen8bdsp/learnsets';
-import * as learn8legends from '../data/mods/gen8legends/learnsets';
-import * as learn9 from '../data/learnsets';
-
-import * as pokemongo from '../data/pokemongo';
-
-import * as legality2 from '../data/mods/gen2/legality';
-import * as legality6 from '../data/mods/gen6/legality';
-import * as legality8 from '../data/mods/gen8/legality';
-import * as legality8bdsp from '../data/mods/gen8bdsp/legality';
-import * as legality8legends from '../data/mods/gen8legends/legality';
-import * as legality9 from '../data/legality';
-
-import { AbilitiesText } from '../data/text/abilities';
-import { ItemsText } from '../data/text/items';
-import { MovesText } from '../data/text/moves';
-import { DefaultText } from '../data/text/default';
-
-import * as Data from './dex-data';
 
 const BASE_MOD = 'gen9' as ID;
 
@@ -83,7 +77,7 @@ function merge(learnsets: { Learnsets: Learnsets }, legality: { Legality: Learns
           }
         }
       } else {
-        // @ts-expect-error
+        // @ts-ignore
         merged.Learnsets[id][key] = legality.Legality[id][key];
       }
     }
@@ -260,7 +254,7 @@ export class ModdedDex {
     if (modData?.Species && !modData.Pokedex) modData.Pokedex = modData.Species;
     const dex = modid in dexes && !modData ? dexes[modid] : new ModdedDex(modid);
     dex.loadData(modData);
-    if (!(modid in dexes)) dexes[modid] = dex;
+    dexes[modid] = dex;
     if (modData?.Formats) dex.formats.extend(modData?.Formats);
     return dex;
   }
@@ -332,7 +326,7 @@ export class ModdedDex {
     target: { getTypes: () => string[] } | { types: string[] } | string[] | string
   ): boolean {
     const sourceType: string = typeof source !== 'string' ? source.type : source;
-    // @ts-expect-error
+    // @ts-ignore
     const targetTyping: string[] | string = target.getTypes?.() || target.types || target;
     if (Array.isArray(targetTyping)) {
       for (const type of targetTyping) {
@@ -350,7 +344,7 @@ export class ModdedDex {
     target: { getTypes: () => string[] } | { types: string[] } | string[] | string
   ): number {
     const sourceType: string = typeof source !== 'string' ? source.type : source;
-    // @ts-expect-error
+    // @ts-ignore
     const targetTyping: string[] | string = target.getTypes?.() || target.types || target;
     let totalTypeMod = 0;
     if (Array.isArray(targetTyping)) {
@@ -372,32 +366,55 @@ export class ModdedDex {
     }
   }
 
+  isTagged(thing: Species | Move | Item | Ability, tagName: string) {
+    const tag = Tags[toID(tagName)];
+    if (!tag) return undefined;
+    if (thing.effectType === 'Pokemon') {
+      return !!(tag.speciesFilter || tag.genericFilter)?.(thing);
+    }
+    if (thing.effectType === 'Move') {
+      return !!(tag.moveFilter || tag.genericFilter)?.(thing);
+    }
+    return !!tag.genericFilter?.(thing);
+  }
+
   getDescs(table: keyof typeof TEXT, id: ID, dataEntry: AnyObject) {
-    if (dataEntry.shortDesc) {
+    if (dataEntry.desc && dataEntry.shortDesc) {
       return {
         desc: dataEntry.desc,
         shortDesc: dataEntry.shortDesc
       };
     }
     const entry = TEXT[table][id];
-    if (!entry) return null;
+    if (!entry && !dataEntry.desc && !dataEntry.shortDesc) return null;
     const descs = {
-      desc: '',
-      shortDesc: ''
+      desc: dataEntry.desc || '',
+      shortDesc: dataEntry.shortDesc || ''
     };
-    for (let i = this.gen; i < dexes['base'].gen; i++) {
-      const curDesc = entry[`gen${i}` as keyof typeof entry]?.desc;
-      const curShortDesc = entry[`gen${i}` as keyof typeof entry]?.shortDesc;
-      if (!descs.desc && curDesc) {
-        descs.desc = curDesc;
+    if (entry) {
+      if (!this.isBase) {
+        const mod = entry[this.currentMod as keyof typeof entry] as
+          | Data.ModdedEffectText
+          | undefined;
+        if (!descs.desc && mod?.desc) descs.desc = mod.desc;
+        if (!descs.shortDesc && mod?.shortDesc) descs.shortDesc = mod.shortDesc;
       }
-      if (!descs.shortDesc && curShortDesc) {
-        descs.shortDesc = curShortDesc;
+      for (let i = this.gen; i < dexes['base'].gen; i++) {
+        const curDesc = entry[`gen${i}` as keyof typeof entry]?.desc;
+        const curShortDesc = entry[`gen${i}` as keyof typeof entry]?.shortDesc;
+        if (!descs.desc && curDesc) {
+          descs.desc = curDesc;
+        }
+        if (!descs.shortDesc && curShortDesc) {
+          descs.shortDesc = curShortDesc;
+        }
+        if (descs.desc && descs.shortDesc) break;
       }
-      if (descs.desc && descs.shortDesc) break;
+      if (!descs.shortDesc) descs.shortDesc = entry.shortDesc || '';
+      if (!descs.desc) descs.desc = entry.desc || descs.shortDesc;
     }
-    if (!descs.shortDesc) descs.shortDesc = entry.shortDesc || '';
-    if (!descs.desc) descs.desc = entry.desc || descs.shortDesc;
+    if (!descs.desc) descs.desc = descs.shortDesc;
+    if (!descs.shortDesc) descs.shortDesc = descs.desc;
     return descs;
   }
 

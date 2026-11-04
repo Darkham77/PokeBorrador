@@ -196,7 +196,9 @@ describe('PPUpModal (pp_max) — integración', () => {
 
     await mountPPUpModal();
 
-    const cancelBtn = document.querySelector('.btn-vicio-secondary') as HTMLElement | null;
+    const cancelBtn = document.querySelector<HTMLButtonElement | HTMLElement>(
+      '.btn-vicio-secondary'
+    );
     if (cancelBtn) cancelBtn.click();
     else uiStore.isPPUpOpen = false;
     await flushPromises();

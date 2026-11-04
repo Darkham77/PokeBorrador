@@ -18,12 +18,16 @@
  */
 
 import { enableCompileCache } from 'node:module';
+import path from 'node:path';
+
 import {
   BaseAuditor,
   FileScanAuditor,
   parseVueSfc,
   hasPrecedingComment,
-  createRuleCapabilities
+  createRuleCapabilities,
+  resolveFileScanRoots,
+  type FileScanRootsOptions
 } from '@francogp/auditor';
 
 enableCompileCache();
@@ -53,17 +57,23 @@ const FORBIDDEN_STATE_PATTERNS = [
 ] as const;
 
 export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingRuleId> {
-  constructor(roots: readonly string[] = ['src/components/battle']) {
+  public constructor(options: FileScanRootsOptions = {}) {
+    const { effectiveRoot, targetRoots } = resolveFileScanRoots(options, (config) => [
+      path.posix.join(config.paths?.componentsRoots?.[0] ?? 'src/components', 'battle')
+    ]);
+
     super({
+      projectRoot: effectiveRoot,
+      roots: targetRoots,
       ruleCapabilities: createRuleCapabilities(BATTLE_UI_BRANCHING_RULES, {
         speed: 'light',
         phase: 'normal',
-        fix: 'none',
         md: false,
         ast: true,
         changedOnly: false,
         critical: false
       }),
+      ruleFixers: {},
       id: 'validate_battle_ui_branching',
       configKey: 'architecture.battleUiBranching',
       defaultConfig: {
@@ -89,7 +99,6 @@ export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingR
           'Reemplaza cannotEscape por la propiedad declarativa uiConfig.allowFlee.'
       },
       remediationPhase: 'behavior',
-      roots,
       allowedExtensions: new Set(['.vue'])
     });
   }

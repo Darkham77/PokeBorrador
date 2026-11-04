@@ -34,7 +34,7 @@ describe('Showdown Custom Stats Injection Unit Tests', () => {
       }
     ];
 
-    battle.setPlayer('p1', { name: 'Player 1', team: p1Team as any });
+    battle.setPlayer('p1', { name: 'Player 1', team: p1Team });
     const pikachu = battle.p1.pokemon[0];
     assert.ok(pikachu);
 
@@ -74,7 +74,7 @@ describe('Showdown Custom Stats Injection Unit Tests', () => {
       }
     ];
 
-    battle.setPlayer('p1', { name: 'Player 1', team: p1Team as any });
+    battle.setPlayer('p1', { name: 'Player 1', team: p1Team });
     const pikachu = battle.p1.pokemon[0];
     assert.ok(pikachu);
 

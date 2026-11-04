@@ -10,7 +10,8 @@ import {
   onUnmounted,
   nextTick,
   reactive,
-  onWatcherCleanup
+  onWatcherCleanup,
+  type ComponentPublicInstance
 } from 'vue';
 
 import { logger } from '@/logic/utils/logger';
@@ -327,8 +328,6 @@ const weatherTooltipDescription = computed(() => {
   return lines.length > 0 ? `${baseDesc}\n${lines.join('\n')}` : baseDesc;
 });
 
-import type { ComponentPublicInstance } from 'vue';
-
 const envPillRef = ref<ComponentPublicInstance | HTMLElement | null>(null);
 let pillContext: gsap.Context | null = null;
 
@@ -439,13 +438,12 @@ async function disableScreenWakeLock(): Promise<void> {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (battleStore.isBattleActive) {
     enableScreenWakeLock();
   }
-  nextTick(() => {
-    initBattlePillAnimation();
-  });
+  await nextTick();
+  initBattlePillAnimation();
 });
 
 onUnmounted(() => {
@@ -463,10 +461,9 @@ watch(
     () => uiStore.isFastMode,
     () => uiStore.isLowPowerActive
   ],
-  () => {
-    nextTick(() => {
-      initBattlePillAnimation();
-    });
+  async () => {
+    await nextTick();
+    initBattlePillAnimation();
   },
   { flush: 'post' }
 );
@@ -587,5 +584,7 @@ const showEnvironmentPill = computed(() => {
   </BaseModal>
 </template>
 
-<style src="./BattleArena.styles.scss" lang="scss"></style>
 <style scoped src="./BattleArena.scoped.scss" lang="scss"></style>
+<style lang="scss">
+@use './BattleArena.styles';
+</style>

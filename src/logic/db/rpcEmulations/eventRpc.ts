@@ -199,23 +199,23 @@ async function evaluateSubCompetitionWinners(
   const prizes = sub.prizes || cfg.prizes || {};
   const winners: RankedWinner[] = [];
 
-  for (let i = 0; i < top3.length; i++) {
-    const entry = top3[i]!;
-    const rank = POKEMON_COMPETITION_RANKS[i]!;
-    const rawPrize = prizes[rank] || { type: 'money', amount: DEFAULT_PRIZE_AMOUNT };
-    const resolvedCategoryName = getSubCompTitle(targetEventKey, sub);
-    const prize =
-      typeof rawPrize === 'object' && rawPrize !== null
-        ? { ...rawPrize, rank }
-        : { rank, type: 'money', amount: DEFAULT_PRIZE_AMOUNT };
-    const awardId = `award_${targetEventKey}_${sub.id}_${entry.player_id}_${getServerInstant().epochMilliseconds}_${i}`;
+  if (top3.length > 0) {
+    const valuePlaceholders: string[] = [];
+    const params: unknown[] = [];
 
-    await queryLocal(
-      `
-      INSERT INTO awards (id, event_id, winner_id, winner_name, winner_email, prize, awarded_at, claimed, received_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 0, NULL)
-    `,
-      [
+    for (let i = 0; i < top3.length; i++) {
+      const entry = top3[i]!;
+      const rank = POKEMON_COMPETITION_RANKS[i]!;
+      const rawPrize = prizes[rank] || { type: 'money', amount: DEFAULT_PRIZE_AMOUNT };
+      const resolvedCategoryName = getSubCompTitle(targetEventKey, sub);
+      const prize =
+        typeof rawPrize === 'object' && rawPrize !== null
+          ? { ...rawPrize, rank }
+          : { rank, type: 'money', amount: DEFAULT_PRIZE_AMOUNT };
+      const awardId = `award_${targetEventKey}_${sub.id}_${entry.player_id}_${getServerInstant().epochMilliseconds}_${i}`;
+
+      valuePlaceholders.push('(?, ?, ?, ?, ?, ?, ?, 0, NULL)');
+      params.push(
         awardId,
         targetEventKey,
         entry.player_id,
@@ -223,23 +223,31 @@ async function evaluateSubCompetitionWinners(
         entry.player_email || '',
         JSON.stringify(prize),
         nowIso
-      ]
-    );
+      );
 
-    winners.push({
-      rank,
-      category_id: sub.id,
-      category_name: resolvedCategoryName,
-      player_id: entry.player_id,
-      player_name: entry.player_name,
-      player_class: entry.data.player_class,
-      player_level: entry.data.trainer_level,
-      avatar_style: entry.data.avatar_style,
-      nick_style: entry.data.nick_style,
-      gender: entry.data.gender,
-      score: entry.score,
-      entry_data: entry.data
-    });
+      winners.push({
+        rank,
+        category_id: sub.id,
+        category_name: resolvedCategoryName,
+        player_id: entry.player_id,
+        player_name: entry.player_name,
+        player_class: entry.data.player_class,
+        player_level: entry.data.trainer_level,
+        avatar_style: entry.data.avatar_style,
+        nick_style: entry.data.nick_style,
+        gender: entry.data.gender,
+        score: entry.score,
+        entry_data: entry.data
+      });
+    }
+
+    await queryLocal(
+      `
+      INSERT INTO awards (id, event_id, winner_id, winner_name, winner_email, prize, awarded_at, claimed, received_at)
+      VALUES ${valuePlaceholders.join(', ')}
+    `,
+      params
+    );
   }
 
   return winners;

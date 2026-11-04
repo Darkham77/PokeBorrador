@@ -70,12 +70,12 @@ describe('Reproduction: Turn 1 KO and forced switch synchronization', () => {
 
     battle.p1.pokemon.forEach((pokemon, idx) => {
       if (pokemon && p1Team[idx]?.uid) {
-        Reflect.set(pokemon, 'uid', p1Team[idx]!.uid);
+        Reflect.set(pokemon, 'uid', p1Team[idx].uid);
       }
     });
     battle.p2.pokemon.forEach((pokemon, idx) => {
       if (pokemon && p2Team[idx]?.uid) {
-        Reflect.set(pokemon, 'uid', p2Team[idx]!.uid);
+        Reflect.set(pokemon, 'uid', p2Team[idx].uid);
       }
     });
 

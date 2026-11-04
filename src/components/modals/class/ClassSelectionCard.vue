@@ -320,67 +320,67 @@ const onCardHover = (event: MouseEvent, isEntering: boolean): void => {
   margin-bottom: 20px;
   flex: 1;
   padding-right: 4px;
+}
 
-  .stats-section {
-    h3 {
-      @include pixelated;
+.stats-section {
+  h3 {
+    @include pixelated;
 
-      display: flex;
-      align-items: center;
-      gap: $spacing-sm;
-      font-size: var(--font-9);
-      margin-bottom: 12px;
-    }
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    font-size: var(--font-9);
+    margin-bottom: 12px;
+  }
 
-    &.pros h3 {
-      color: Rgb(34 197 94 / 100%);
-    }
-    &.cons h3 {
-      color: Rgb(239 68 68 / 100%);
-    }
+  &.pros h3 {
+    color: Rgb(34 197 94 / 100%);
+  }
+  &.cons h3 {
+    color: Rgb(239 68 68 / 100%);
+  }
 
-    ul {
-      display: flex;
-      flex-direction: column;
-      gap: $spacing-sm;
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    padding: 0;
+    list-style: none;
+    li {
+      position: relative;
       padding: 0;
-      list-style: none;
-      li {
-        position: relative;
-        padding: 0;
-        color: Rgb(255 255 255 / 85%);
-        font-size: var(--font-11);
-        line-height: 1.4;
-
-        :deep(.pv-tooltip-wrapper) {
-          display: flex !important;
-          width: 100%;
-          line-height: 1.4 !important;
-        }
-      }
-    }
-
-    .bullet-item-flex {
-      display: flex;
-      align-items: flex-start;
-      gap: $spacing-sm-alt;
-      width: 100%;
+      color: Rgb(255 255 255 / 85%);
+      font-size: var(--font-11);
       line-height: 1.4;
 
-      .bullet-icon {
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        width: 16px;
-        height: 16px;
-        font-size: var(--font-13);
-        line-height: 1.4;
-        flex-shrink: 0;
+      :deep(.pv-tooltip-wrapper) {
+        display: flex !important;
+        width: 100%;
+        line-height: 1.4 !important;
       }
+    }
+  }
 
-      .bullet-text {
-        flex: 1;
-      }
+  .bullet-item-flex {
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-sm-alt;
+    width: 100%;
+    line-height: 1.4;
+
+    .bullet-icon {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 16px;
+      height: 16px;
+      font-size: var(--font-13);
+      line-height: 1.4;
+      flex-shrink: 0;
+    }
+
+    .bullet-text {
+      flex: 1;
     }
   }
 }

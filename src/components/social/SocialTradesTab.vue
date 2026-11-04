@@ -46,23 +46,22 @@ const validationMap = computed(() => {
 });
 
 /* ── Animation ── */
-function animateCards(): void {
-  nextTick(() => {
-    if (!listRef.value) return;
-    const cards = listRef.value.querySelectorAll('.trade-card, .claim-card');
-    if (!cards.length) return;
-    listRef.value.classList.add('tab-mounting');
-    gsap.killTweensOf(cards);
-    gsap.from(cards, {
-      opacity: TRADE_CARD_INITIAL_OPACITY,
-      x: TRADE_CARD_INITIAL_X_OFFSET,
-      scale: TRADE_CARD_INITIAL_SCALE,
-      duration: TRADE_CARD_ANIM_DURATION_SEC,
-      stagger: TRADE_CARD_ANIM_STAGGER_SEC,
-      ease: 'back.out(1.2)',
-      clearProps: 'all',
-      onComplete: () => listRef.value?.classList.remove('tab-mounting')
-    });
+async function animateCards(): Promise<void> {
+  await nextTick();
+  if (!listRef.value) return;
+  const cards = listRef.value.querySelectorAll('.trade-card, .claim-card');
+  if (!cards.length) return;
+  listRef.value.classList.add('tab-mounting');
+  gsap.killTweensOf(cards);
+  gsap.from(cards, {
+    opacity: TRADE_CARD_INITIAL_OPACITY,
+    x: TRADE_CARD_INITIAL_X_OFFSET,
+    scale: TRADE_CARD_INITIAL_SCALE,
+    duration: TRADE_CARD_ANIM_DURATION_SEC,
+    stagger: TRADE_CARD_ANIM_STAGGER_SEC,
+    ease: 'back.out(1.2)',
+    clearProps: 'all',
+    onComplete: () => listRef.value?.classList.remove('tab-mounting')
   });
 }
 

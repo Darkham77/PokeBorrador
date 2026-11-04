@@ -40,7 +40,7 @@ describe('useRouteSpawnsWild - Open Competition Event with species "*"', () => {
     expect(route1Map).toBeDefined();
 
     const props: RouteSpawnsProps = {
-      map: route1Map!,
+      map: route1Map,
       cycle: 'day',
       weather: 'clear'
     };
@@ -92,7 +92,7 @@ describe('useRouteSpawnsWild - Open Competition Event with species "*"', () => {
 
     const route1Map = getMapLocationById('route1');
     const props: RouteSpawnsProps = {
-      map: route1Map!,
+      map: route1Map,
       cycle: 'day',
       weather: 'clear'
     };
@@ -126,7 +126,7 @@ describe('useRouteSpawnsWild - Open Competition Event with species "*"', () => {
     ];
 
     expect(() => {
-      const result = getFinalGroundRates(route1Map!, 'day', 'clear', activeEvents);
+      const result = getFinalGroundRates(route1Map, 'day', 'clear', activeEvents);
       expect(result.pool.length).toBeGreaterThan(0);
     }).not.toThrow();
   });

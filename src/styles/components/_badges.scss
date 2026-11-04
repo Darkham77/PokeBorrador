@@ -21,7 +21,7 @@
   color: $color;
   font-family: var(--font-pixel);
   font-size: var(--font-8);
-  font-weight: 900;
+  font-weight: $font-weight-black;
 
   // Per-size vertical centering
   line-height: 14px;
@@ -96,7 +96,7 @@
   background: var(--tier-bg, Rgb(255 255 255 / 5%));
   color: var(--tier-color, white);
   font-size: $font-size;
-  font-weight: 900;
+  font-weight: $font-weight-black;
 
   // Font-specific centering (Pixel fonts usually need 1px lower line-height than height)
   line-height: $actual-size;
@@ -142,7 +142,7 @@
   border-radius: $radius-md;
   color: var(--white) !important;
   font-size: var(--font-10);
-  font-weight: 900;
+  font-weight: $font-weight-black;
   line-height: 1.25;
   box-sizing: border-box;
   vertical-align: middle;
@@ -340,7 +340,7 @@
   padding: 2px 6px;
   border-radius: $radius-sm;
   font-size: var(--font-8);
-  font-weight: 900;
+  font-weight: $font-weight-black;
 
   &.team {
     border: 1px solid Rgb(59 139 255 / 20%);

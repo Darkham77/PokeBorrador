@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
 import { gsap } from 'gsap';
+import { ref, watch } from 'vue';
+
 import { logToInspector, updateSerializedFormData } from '../logic/useLiveInspector.ts';
 
 // Group A & Controls

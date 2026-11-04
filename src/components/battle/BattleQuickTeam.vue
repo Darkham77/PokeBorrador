@@ -5,6 +5,7 @@ import BoxPokemonCard from '@/components/box/BoxPokemonCard.vue';
 import { isRevivingForceSwitchRequest } from '@/logic/battle/helpers/requestHelper.ts';
 import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay';
 import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils';
+import { logger } from '@/logic/utils/logger';
 import { useBattleStore } from '@/stores/battle/battle';
 import { useGameStore } from '@/stores/game';
 import { useLivePvPStore } from '@/stores/livePvP';
@@ -63,13 +64,13 @@ const handleSwitch = (index: number): void => {
     : gameStore.state.team || [];
   const originalIndex = originalTeam.findIndex((p) => p && p.uid === pokemon.uid);
   if (originalIndex === -1) {
-    console.warn('[BattleQuickTeam] Could not find original index for UID:', pokemon.uid);
+    logger.warn('[BattleQuickTeam] Could not find original index for UID:', pokemon.uid);
     return;
   }
 
   const isForced =
     uiStore.isBattleSwitchForced || toValue(battleStore.currentSubState) === 'SWITCH_MENU';
-  console.debug(
+  logger.debug(
     `[BattleQuickTeam] handleSwitch clicked for index: ${index} (original: ${originalIndex}), pokemon: ${pokemon.name}, hp: ${pokemon.hp}, activeUid: ${activePokemonUid.value}, canSwitch: ${canSwitch.value}, isForced: ${isForced}`
   );
 
@@ -77,18 +78,18 @@ const handleSwitch = (index: number): void => {
     (pokemon.hp <= 0 && !isSelectingReviveTarget.value) ||
     pokemon.uid === activePokemonUid.value
   ) {
-    console.debug(`[BattleQuickTeam] handleSwitch early return check failed`);
+    logger.debug('[BattleQuickTeam] handleSwitch early return check failed');
     return;
   }
   if (!canSwitch.value) {
-    console.debug(`[BattleQuickTeam] handleSwitch canSwitch is false`);
+    logger.debug('[BattleQuickTeam] handleSwitch canSwitch is false');
     return;
   }
 
   if (livePvP.battleState.active) {
     livePvP._commitPick({ type: 'switch', switchIndex: originalIndex });
   } else {
-    console.debug(
+    logger.debug(
       `[BattleQuickTeam] Calling battleStore.executeSwitch with originalIndex: ${originalIndex}, isForced: ${isForced}`
     );
     battleStore.executeSwitch(originalIndex, isForced);

@@ -15,8 +15,7 @@ import { FIRE_RED_MAPS } from '@/data/world/maps';
 import {
   ROUTE_WEATHER_TABLES,
   requireWeatherSeasonId,
-  requireWeatherTableRouteId,
-  type RouteWeatherTable
+  requireWeatherTableRouteId
 } from '@/data/world/weather-tables';
 import { checkSpecialEncounters } from '@/logic/encounters/encounterHelpers';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
@@ -84,7 +83,7 @@ describe('World Weather & Atmosphere Domain Suite', () => {
       await nextTick();
 
       const leaves = wrapper.findAll('.leaf-element');
-      expect(leaves.length).toBe(8);
+      expect(leaves).toHaveLength(8);
     });
 
     it('should render half the leaf elements when low power mode is active', async () => {
@@ -101,7 +100,7 @@ describe('World Weather & Atmosphere Domain Suite', () => {
       await nextTick();
 
       const leaves = wrapper.findAll('.leaf-element');
-      expect(leaves.length).toBe(4);
+      expect(leaves).toHaveLength(4);
     });
 
     it('should render 15 leaves when weather is storm', async () => {
@@ -117,7 +116,7 @@ describe('World Weather & Atmosphere Domain Suite', () => {
       await nextTick();
 
       const leaves = wrapper.findAll('.leaf-element');
-      expect(leaves.length).toBe(15);
+      expect(leaves).toHaveLength(15);
     });
 
     it('should react to weather changes', async () => {
@@ -132,7 +131,7 @@ describe('World Weather & Atmosphere Domain Suite', () => {
       await nextTick();
       await nextTick();
 
-      expect(wrapper.findAll('.leaf-element').length).toBe(0);
+      expect(wrapper.findAll('.leaf-element')).toHaveLength(0);
 
       // Set weather to wind
       await wrapper.setProps({ weather: 'wind' } as Record<string, unknown>);
@@ -142,7 +141,7 @@ describe('World Weather & Atmosphere Domain Suite', () => {
       await nextTick();
       await nextTick();
 
-      expect(wrapper.findAll('.leaf-element').length).toBe(8);
+      expect(wrapper.findAll('.leaf-element')).toHaveLength(8);
     });
 
     it('should cleanup animations when weather is clear', async () => {
@@ -157,7 +156,7 @@ describe('World Weather & Atmosphere Domain Suite', () => {
       await nextTick();
       await nextTick();
 
-      expect(wrapper.findAll('.leaf-element').length).toBe(8);
+      expect(wrapper.findAll('.leaf-element')).toHaveLength(8);
 
       // Set weather to clear
       await wrapper.setProps({ weather: 'clear' } as Record<string, unknown>);
@@ -167,7 +166,7 @@ describe('World Weather & Atmosphere Domain Suite', () => {
       await nextTick();
       await nextTick();
 
-      expect(wrapper.findAll('.leaf-element').length).toBe(0);
+      expect(wrapper.findAll('.leaf-element')).toHaveLength(0);
     });
 
     it('should not render leaf elements when isFastMode is true', async () => {
@@ -182,7 +181,7 @@ describe('World Weather & Atmosphere Domain Suite', () => {
       await nextTick();
       await nextTick();
 
-      expect(wrapper.findAll('.leaf-element').length).toBe(0);
+      expect(wrapper.findAll('.leaf-element')).toHaveLength(0);
     });
   });
 
@@ -234,13 +233,13 @@ describe('World Weather & Atmosphere Domain Suite', () => {
           dusk: { clear: 100 },
           night: { clear: 100 }
         }
-      } as RouteWeatherTable;
+      };
 
       (ROUTE_WEATHER_TABLES as Record<string, unknown>).bad_route = {
         spring: {
           morning: { clear: 10, rain: 10 }
         }
-      } as unknown as RouteWeatherTable;
+      };
     });
 
     afterAll(() => {
@@ -269,11 +268,13 @@ describe('World Weather & Atmosphere Domain Suite', () => {
 
     describe('getRouteWeather', () => {
       it('should throw Error if route has no registered weather table', () => {
-        expect(() => getRouteWeather('unknown_route' as any, 'spring', 100)).toThrow();
+        expect(() => getRouteWeather('unknown_route' as any, 'spring', 100)).toThrow(/weather/i);
       });
 
       it('should throw Error if season has no data', () => {
-        expect(() => getRouteWeather('test_route' as any, 'winter' as any, 100)).toThrow();
+        expect(() => getRouteWeather('test_route' as any, 'winter' as any, 100)).toThrow(
+          /weather|season/i
+        );
       });
 
       it('should be deterministic for the same epoch hour and route', () => {
@@ -300,7 +301,9 @@ describe('World Weather & Atmosphere Domain Suite', () => {
       });
 
       it('should throw Error on invalid probability tables', () => {
-        expect(() => getRouteWeather('bad_route' as any, 'spring', 0, 'morning')).toThrow();
+        expect(() => getRouteWeather('bad_route' as any, 'spring', 0, 'morning')).toThrow(
+          /weather|probability|table/i
+        );
       });
     });
 
@@ -369,7 +372,7 @@ describe('World Weather & Atmosphere Domain Suite', () => {
     for (const rawRouteId in ROUTE_WEATHER_TABLES) {
       if (rawRouteId === 'test_route' || rawRouteId === 'bad_route') continue;
       const routeId = requireWeatherTableRouteId(rawRouteId);
-      collectRouteWeathers(ROUTE_WEATHER_TABLES[routeId] as any, usedWeatherKeys);
+      collectRouteWeathers(ROUTE_WEATHER_TABLES[routeId], usedWeatherKeys);
     }
     return usedWeatherKeys;
   }
@@ -395,7 +398,7 @@ describe('World Weather & Atmosphere Domain Suite', () => {
         try {
           const data = pokemonDataProvider.getPokemonData(id);
           return data;
-        } catch (_e) {
+        } catch {
           return null;
         }
       };
@@ -416,10 +419,7 @@ describe('World Weather & Atmosphere Domain Suite', () => {
                   const data = getAndValidatePokemon(id);
                   if (!data) return;
                   const types = [data.type, data.type2].filter(Boolean) as string[];
-                  expect(
-                    types.includes('water'),
-                    `El exclusivo de pesca ${id} en clima ${wKey} de ${map.name} debe tener tipo agua (water)`
-                  ).toBe(true);
+                  expect(types).toContain('water');
                 });
               }
 
@@ -431,10 +431,7 @@ describe('World Weather & Atmosphere Domain Suite', () => {
                   const data = getAndValidatePokemon(id);
                   if (!data) return;
                   const types = [data.type, data.type2].filter(Boolean) as string[];
-                  expect(
-                    types.includes('water'),
-                    `El visitante de pesca ${id} en clima ${wKey} de ${map.name} debe tener tipo agua (water)`
-                  ).toBe(true);
+                  expect(types).toContain('water');
                 });
               }
             });
@@ -456,10 +453,7 @@ describe('World Weather & Atmosphere Domain Suite', () => {
 
             const hasWater = types.includes('water');
             if (hasWater) {
-              expect(
-                types.length,
-                `El Pokémon terrestre ${id} en ${context} tiene tipo agua pero no es de doble tipo`
-              ).toBe(2);
+              expect(types).toHaveLength(2);
               const nonWaterType = types.find((t: string) => t !== 'water');
               expect(
                 nonWaterType,
@@ -612,9 +606,7 @@ describe('World Weather & Atmosphere Domain Suite', () => {
           const map = mapById.get(routeId);
           if (!map) continue;
 
-          const possibleWeathers = extractPossibleWeathersForRoute(
-            ROUTE_WEATHER_TABLES[routeId] as any
-          );
+          const possibleWeathers = extractPossibleWeathersForRoute(ROUTE_WEATHER_TABLES[routeId]);
           checkMapWeatherConfigured(map, routeId, possibleWeathers, missingConfigs);
         }
 

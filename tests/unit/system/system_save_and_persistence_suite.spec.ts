@@ -542,9 +542,9 @@ describe('System Save & Persistence Domain Suite', () => {
         expect(roundtripData.badges).toBe(loadedDto.badges);
         expect(roundtripData.balls).toBe(loadedDto.balls);
         expect(roundtripData.starterChosen).toBe(loadedDto.starterChosen);
-        expect(roundtripData.team.length).toBe(loadedDto.team.length);
-        expect(roundtripData.box.length).toBe(loadedDto.box.length);
-        expect(roundtripData.pokedex.length).toBe(loadedDto.pokedex.length);
+        expect(roundtripData.team).toHaveLength(loadedDto.team.length);
+        expect(roundtripData.box).toHaveLength(loadedDto.box.length);
+        expect(roundtripData.pokedex).toHaveLength(loadedDto.pokedex.length);
         expect(roundtripData.defeatedGyms).toEqual(loadedDto.defeatedGyms);
         expect(roundtripData.inventory).toEqual(loadedDto.inventory);
 

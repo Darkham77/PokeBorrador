@@ -173,7 +173,7 @@ export class SQLiteQueryBuilder implements QueryBuilder {
   }
 
   public async single(): Promise<{ data: Record<string, unknown> | null; error: string | null }> {
-    const res = await this.then();
+    const res = await this;
     return { data: (res[0] as Record<string, unknown>) || null, error: null };
   }
 

@@ -1,5 +1,5 @@
-import type { DisplayText } from '@francogp/auditor';
-import { isMainModule } from '@francogp/auditor';
+import fsPromises from 'node:fs/promises';
+import { enableCompileCache } from 'node:module';
 /**
  * @file configure_official_servers.ts
  * @description Script automático para parsear el archivo .env maestro y generar src/data/system/servers.local.json en PokéBorrador.
@@ -13,12 +13,13 @@ import { isMainModule } from '@francogp/auditor';
  * - Regla de Aislamiento y Parseo Multi-Servidor (env-multi-server-parser).
  * - Estándares Node.js 26+ (styleText, compileCache, formato JSON nativo).
  */
-
-import fsPromises from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
-import { enableCompileCache } from 'node:module';
+
+import type { DisplayText } from '@francogp/auditor';
+import { isMainModule } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
+
 import type { OfficialServer } from '../../src/data/system/official_servers.ts';
 
 enableCompileCache();
@@ -191,5 +192,5 @@ export const command = defineCommand({
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

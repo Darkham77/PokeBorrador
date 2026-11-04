@@ -1,8 +1,7 @@
 import type { DisplayText } from '@francogp/auditor';
 import { ref, computed, watch, type ComputedRef, type Ref } from 'vue';
 
-import { SHOP_ITEMS, requireItemId, type ItemId } from '@/data/inventory/items';
-import type { ShopItemData } from '@/data/inventory/items';
+import { SHOP_ITEMS, requireItemId, type ItemId, type ShopItemData } from '@/data/inventory/items';
 import { isMapRouteId } from '@/data/world/map-assets';
 import { MAPS_BY_ROUTE_ID } from '@/data/world/maps';
 import {
@@ -19,10 +18,10 @@ import {
   type TravelBuffItemId
 } from '@/logic/utils/routeSpawnHelpers';
 import { useBuffsStore } from '@/stores/battle/buffs';
-import { useGameStore } from '@/stores/game';
-import { useInventoryStore } from '@/stores/inventory/inventory';
-import { useShopStore } from '@/stores/inventory/shop';
-import { useMapStore } from '@/stores/map';
+import { type useGameStore } from '@/stores/game';
+import { type useInventoryStore } from '@/stores/inventory/inventory';
+import { type useShopStore } from '@/stores/inventory/shop';
+import { type useMapStore } from '@/stores/map';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
 import {

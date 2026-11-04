@@ -128,7 +128,7 @@ const handleCancel = (): void => {
     border: none;
     border-radius: $radius-xl;
     font-size: var(--font-9);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     flex: 1;
     cursor: pointer;
 

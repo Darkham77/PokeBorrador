@@ -208,6 +208,13 @@ $font-weight-semibold: 600;
 $font-weight-bold: 700;
 $font-weight-extrabold: 800;
 $font-weight-black: 900;
+$font-bold: $font-weight-bold;
+$font-semibold: $font-weight-semibold;
+$font-medium: $font-weight-medium;
+$font-normal: $font-weight-normal;
+$font-light: $font-weight-light;
+$font-extrabold: $font-weight-extrabold;
+$font-black: $font-weight-black;
 
 // Canonical Design System Tokens: Transitions & Easings
 $transition-duration-fast: 0.15s;

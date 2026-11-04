@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
 import type { ItemId } from '@/data/inventory/itemIds';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
 import { logToInspector } from '../logic/useLiveInspector.ts';
 
 interface Props {

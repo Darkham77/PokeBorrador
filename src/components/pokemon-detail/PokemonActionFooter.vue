@@ -86,7 +86,7 @@ const hasActions = computed(() => {
 
     color: var(--yellow);
     font-size: var(--font-14);
-    font-weight: 900;
+    font-weight: $font-weight-black;
     text-align: center;
     text-shadow: 0 0 10px Rgb(255 214 10 / 30%);
   }

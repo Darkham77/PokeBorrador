@@ -37,7 +37,7 @@ export async function parseShowdownLogLine(
   }
 
   if (updateLogSkippingState(battle, type, parts)) {
-    console.debug(`[BRIDGE-SKIP] Ignorando línea por p2Skip: "${line}"`);
+    logger.debug(`[BRIDGE-SKIP] Ignorando línea por p2Skip: "${line}"`);
     return;
   }
 

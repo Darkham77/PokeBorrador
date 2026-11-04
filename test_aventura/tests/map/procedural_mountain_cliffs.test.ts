@@ -91,7 +91,7 @@ describe('Procedural Mountain Cliffs & Autotiling Integrity', () => {
       }
     }
 
-    expect(thinPinchCells.length).toBe(0);
+    expect(thinPinchCells).toHaveLength(0);
 
     // Tier 2 candidate evaluation: requires distance >= 2 from grass
     const elevation: Uint8Array[] = Array.from({ length: H }, () => new Uint8Array(W).fill(1));

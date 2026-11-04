@@ -1,23 +1,15 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
   "ignorePatterns": [
+    ".agents/**",
     ".auditor/**",
     "scratch/**",
     "scripts/e2e/fuzzer/**",
     "scripts/e2e/battle/**",
-    "supabase/**",
-    ".agents/**",
     "external/**",
-    "packages/**",
-    "dist/**",
-    "dev-dist/**",
-    "src/logic/render/MapRenderer.ts",
-    "src/logic/render/render.worker.ts",
     "src/logic/db/migrations_data.ts",
     "src/**/*.scss",
-    "src/**/*.css",
-    "test_aventura/**/*.scss",
-    "test_aventura/**/*.css"
+    "test_aventura/**/*.scss"
   ],
   "entry": [
     "src/index.{ts,tsx,js,jsx}",
@@ -33,38 +25,68 @@
     "test_aventura/tests/**/*.{ts,js}"
   ],
   "duplicates": {
+    "nearMiss": true,
+    "mode": "strict",
     "minOccurrences": 2,
-    "minLines": 20,
-    "minTokens": 120
+    "minLines": 15,
+    "minTokens": 100
   },
   "ignoreDependencies": [
     "postgres",
     "@pkmn/sim",
-    "vite-plus",
     "@rolldown/binding-wasm32-wasi",
     "ws",
     "sql.js",
-    "html-validate",
-    "html-validate-vue",
-    "vue-tsc"
+    "html-validate-vue"
   ],
   "health": {
+    "maxCrap": 0,
     "maxCyclomatic": 25,
     "maxCognitive": 20,
-    "maxCrap": 500
+    "cyclomaticPolicy": "standard"
   },
   "boundaries": {
     "zones": [
-      { "name": "types", "patterns": ["src/types/**", "test_aventura/types/**"] },
-      { "name": "data", "patterns": ["src/data/**", "test_aventura/data/**"] },
-      { "name": "modals", "patterns": ["src/logic/modals/**"] },
-      { "name": "minigameHelpers", "patterns": ["src/components/modals/fishingGameHelper.ts"] },
-      { "name": "logic", "patterns": ["src/logic/**", "test_aventura/logic/**"] },
-      { "name": "stores", "patterns": ["src/stores/**", "test_aventura/stores/**"] },
-      { "name": "composables", "patterns": ["src/composables/**", "test_aventura/composables/**"] },
-      { "name": "loaders", "patterns": ["src/loaders/**"] },
-      { "name": "components", "patterns": ["src/components/**", "test_aventura/components/**"] },
-      { "name": "views", "patterns": ["src/views/**", "test_aventura/views/**"] }
+      {
+        "name": "types",
+        "patterns": ["src/types/**", "test_aventura/types/**"]
+      },
+      {
+        "name": "data",
+        "patterns": ["src/data/**", "test_aventura/data/**"]
+      },
+      {
+        "name": "modals",
+        "patterns": ["src/logic/modals/**"]
+      },
+      {
+        "name": "minigameHelpers",
+        "patterns": ["src/components/modals/fishingGameHelper.ts"]
+      },
+      {
+        "name": "logic",
+        "patterns": ["src/logic/**", "test_aventura/logic/**"]
+      },
+      {
+        "name": "stores",
+        "patterns": ["src/stores/**", "test_aventura/stores/**"]
+      },
+      {
+        "name": "composables",
+        "patterns": ["src/composables/**", "test_aventura/composables/**"]
+      },
+      {
+        "name": "loaders",
+        "patterns": ["src/loaders/**"]
+      },
+      {
+        "name": "components",
+        "patterns": ["src/components/**", "test_aventura/components/**"]
+      },
+      {
+        "name": "views",
+        "patterns": ["src/views/**", "test_aventura/views/**"]
+      }
     ],
     "rules": [
       {
@@ -72,16 +94,34 @@
         "allow": ["types", "data", "logic"],
         "allowTypeOnly": ["stores", "composables"]
       },
-      { "from": "data", "allow": ["types", "data", "logic"] },
-      { "from": "modals", "allow": ["types", "data", "logic", "stores", "components"] },
-      { "from": "minigameHelpers", "allow": ["types", "data", "logic"] },
-      { "from": "logic", "allow": ["types", "data", "logic", "stores"] },
-      { "from": "stores", "allow": ["types", "data", "logic", "stores", "modals"] },
+      {
+        "from": "data",
+        "allow": ["types", "data", "logic"]
+      },
+      {
+        "from": "modals",
+        "allow": ["types", "data", "logic", "stores", "components"]
+      },
+      {
+        "from": "minigameHelpers",
+        "allow": ["types", "data", "logic"]
+      },
+      {
+        "from": "logic",
+        "allow": ["types", "data", "logic", "stores"]
+      },
+      {
+        "from": "stores",
+        "allow": ["types", "data", "logic", "stores", "modals"]
+      },
       {
         "from": "composables",
         "allow": ["types", "data", "logic", "stores", "composables", "minigameHelpers"]
       },
-      { "from": "loaders", "allow": ["types", "data", "logic", "stores", "loaders"] },
+      {
+        "from": "loaders",
+        "allow": ["types", "data", "logic", "stores", "loaders"]
+      },
       {
         "from": "components",
         "allow": [
@@ -569,7 +609,6 @@
     {
       "file": "src/logic/battle/orchestrator.ts",
       "exports": [
-        "showdownWorker",
         "setShowdownWorker",
         "getSimulatorState",
         "executeTurnInWorker",

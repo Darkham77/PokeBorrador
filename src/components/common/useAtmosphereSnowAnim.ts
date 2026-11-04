@@ -11,7 +11,7 @@ import {
   applySnowLayerAnimation
 } from './atmosphereSnowHelper.ts';
 
-type GsapTimeline = ReturnType<typeof import('gsap').gsap.timeline>;
+type GsapTimeline = gsap.core.Timeline;
 
 interface SnowLayersOptions {
   isBlizzard: boolean;

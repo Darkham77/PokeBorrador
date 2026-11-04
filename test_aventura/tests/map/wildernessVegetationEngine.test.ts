@@ -38,9 +38,9 @@ describe('wildernessVegetationEngine', () => {
     const layerA = generateWildernessLayer(continent, pois, routeResult.pathGrid, { seed: 999 });
     const layerB = generateWildernessLayer(continent, pois, routeResult.pathGrid, { seed: 999 });
 
-    expect(layerA.trees.length).toBe(layerB.trees.length);
-    expect(layerA.props.length).toBe(layerB.props.length);
-    expect(layerA.tallGrassPatches.length).toBe(layerB.tallGrassPatches.length);
+    expect(layerA.trees).toHaveLength(layerB.trees.length);
+    expect(layerA.props).toHaveLength(layerB.props.length);
+    expect(layerA.tallGrassPatches).toHaveLength(layerB.tallGrassPatches.length);
 
     for (let i = 0; i < layerA.trees.length; i++) {
       expect(layerA.trees[i]).toEqual(layerB.trees[i]);

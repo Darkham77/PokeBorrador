@@ -78,13 +78,13 @@ describe('Unified Combatant Rewards Log (Tier 1)', () => {
     const faintedLogs = loggedEntries.filter(
       (l) => l.source && (l.source as Pokemon).uid === faintedMon.uid
     );
-    expect(faintedLogs.length).toBe(0);
+    expect(faintedLogs).toHaveLength(0);
 
     // Check that nidorino got exactly ONE unified log entry
     const nidorinoLogs = loggedEntries.filter(
       (l) => l.source && (l.source as Pokemon).uid === nidorino.uid
     );
-    expect(nidorinoLogs.length).toBe(1);
+    expect(nidorinoLogs).toHaveLength(1);
 
     const nidorinoMsg = nidorinoLogs[0]!.msg;
     // Renglón 1 must contain name, level, and EXP
@@ -101,7 +101,7 @@ describe('Unified Combatant Rewards Log (Tier 1)', () => {
     const blastoiseLogs = loggedEntries.filter(
       (l) => l.source && (l.source as Pokemon).uid === blastoise.uid
     );
-    expect(blastoiseLogs.length).toBe(1);
+    expect(blastoiseLogs).toHaveLength(1);
     const blastoiseMsg = blastoiseLogs[0]!.msg;
     expect(blastoiseMsg).toContain('Blastoise');
     expect(blastoiseMsg).toContain('+3 Atk');
@@ -157,7 +157,7 @@ describe('Unified Combatant Rewards Log (Tier 1)', () => {
     const pokeLogs = loggedEntries.filter(
       (l) => l.source && (l.source as Pokemon).uid === maxEvMon.uid
     );
-    expect(pokeLogs.length).toBe(1);
+    expect(pokeLogs).toHaveLength(1);
 
     const msg = pokeLogs[0]!.msg;
     expect(msg).toContain('Pikachu');
@@ -216,7 +216,7 @@ describe('Unified Combatant Rewards Log (Tier 1)', () => {
     const pokeLogs = loggedEntries.filter(
       (l) => l.source && (l.source as Pokemon).uid === lowLevelMon.uid
     );
-    expect(pokeLogs.length).toBe(1);
+    expect(pokeLogs).toHaveLength(1);
 
     const msg = pokeLogs[0]!.msg;
     expect(msg).toContain('Caterpie');

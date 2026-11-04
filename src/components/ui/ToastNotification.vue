@@ -102,7 +102,7 @@ function onLeave(el: Element, done: () => void): void {
   color: var(--white);
   font-family: var(--font-ui);
   font-size: var(--font-10);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   pointer-events: all;
   -webkit-will-change: opacity;
   will-change: opacity;

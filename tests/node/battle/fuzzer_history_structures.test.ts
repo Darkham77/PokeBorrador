@@ -190,8 +190,8 @@ describe('fuzzer history structures & simulator recognition', () => {
         active: [
           {
             moves: [
-              { move: 'Thunderbolt', id: 'thunderbolt' as any, pp: 15, maxpp: 15, disabled: false },
-              { move: 'Quick Attack', id: 'quickattack' as any, pp: 30, maxpp: 30, disabled: false }
+              { move: 'Thunderbolt', id: 'thunderbolt', pp: 15, maxpp: 15, disabled: false },
+              { move: 'Quick Attack', id: 'quickattack', pp: 30, maxpp: 30, disabled: false }
             ]
           }
         ]
@@ -211,8 +211,8 @@ describe('fuzzer history structures & simulator recognition', () => {
         active: [
           {
             moves: [
-              { move: 'Thunderbolt', id: 'thunderbolt' as any, pp: 15, maxpp: 15, disabled: true },
-              { move: 'Quick Attack', id: 'quickattack' as any, pp: 30, maxpp: 30, disabled: false }
+              { move: 'Thunderbolt', id: 'thunderbolt', pp: 15, maxpp: 15, disabled: true },
+              { move: 'Quick Attack', id: 'quickattack', pp: 30, maxpp: 30, disabled: false }
             ]
           }
         ]
@@ -229,7 +229,7 @@ describe('fuzzer history structures & simulator recognition', () => {
       const rechargeRequest: ShowdownPlayerRequest = {
         active: [
           {
-            moves: [{ move: 'Recharge', id: 'recharge' as any, pp: 0, maxpp: 0, disabled: false }]
+            moves: [{ move: 'Recharge', id: 'recharge', pp: 0, maxpp: 0, disabled: false }]
           }
         ]
       };

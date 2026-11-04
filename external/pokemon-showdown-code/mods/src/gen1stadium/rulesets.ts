@@ -3,15 +3,20 @@ import type { ModdedFormatDataTable } from '@pkmn/sim';
 export const Rulesets: ModdedFormatDataTable = {
   standardag: {
     inherit: true,
-    ruleset: ['Obtainable', 'Exact HP Mod', 'Cancel Mod']
+    ruleset: [
+      'Obtainable',
+      'Exact HP Mod',
+      'Cancel Mod',
+      'Stadium Sleep Clause',
+      'Freeze Clause Mod',
+      'Team Preview'
+    ]
   },
   standard: {
     effectType: 'ValidatorRule',
     name: 'Standard',
     ruleset: [
       'Standard AG',
-      'Stadium Sleep Clause',
-      'Freeze Clause Mod',
       'Species Clause',
       'Nickname Clause',
       'OHKO Clause',
@@ -456,7 +461,7 @@ export const Rulesets: ModdedFormatDataTable = {
         case 'Dewgong':
           set.evs = { hp: 113, atk: 112, def: 112, spa: 112, spd: 112, spe: 112 };
           set.ivs = { hp: 4, atk: 4, def: 4, spa: 4, spd: 4, spe: 6 };
-          set.moves = ['Aurora Beam', 'Heabutt', 'Rest', 'Surf'];
+          set.moves = ['Aurora Beam', 'Headbutt', 'Rest', 'Surf'];
           break;
         case 'Grimer':
           set.evs = { hp: 145, atk: 144, def: 144, spa: 144, spd: 144, spe: 144 };

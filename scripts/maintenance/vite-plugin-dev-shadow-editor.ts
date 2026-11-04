@@ -4,12 +4,14 @@
  * immediately recompiling static feet and shadow databases into disk.
  */
 
-import type { Plugin, ViteDevServer } from 'vite-plus';
-import type { IncomingMessage, ServerResponse } from 'node:http';
 import fs from 'node:fs/promises';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import path from 'node:path';
-import { regenerateFeetDatabase } from '../assets/helpers/catalogGenerators.ts';
+
+import type { Plugin, ViteDevServer } from 'vite-plus';
+
 import type { SpriteShadowOverridesMap } from '../../src/types/pokemon/spriteShadows.ts';
+import { regenerateFeetDatabase } from '../assets/helpers/catalogGenerators.ts';
 
 const DEFAULT_FALLBACK_WIDTH_RATIO = 1.0 as const;
 const DEFAULT_FALLBACK_HEIGHT_RATIO = 0.28 as const;
@@ -30,7 +32,7 @@ async function handleRebuildFeetDatabase(
     Connection: 'keep-alive'
   });
 
-  const sendEvent = (progress: number, message: string, done: boolean) => {
+  const sendEvent = (progress: number, message: string, done: boolean): void => {
     res.write(`data: ${JSON.stringify({ progress, message, done })}\n\n`);
   };
 
@@ -86,7 +88,7 @@ async function handleLoadShadowOverrides(
       globalShadowConfig = db.shadow;
     }
   } catch (err) {
-    err;
+    console.warn('[Handled controlled exception]:', err);
   }
 
   res.writeHead(HTTP_STATUS_OK, { 'Content-Type': 'application/json' });

@@ -800,7 +800,7 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
   }
 
   destroy() {
-    // @ts-expect-error readonly
+    // @ts-ignore readonly
     this.side = null!;
   }
 }

@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import { provide, toRef } from 'vue';
 
-const props = defineProps({
-  id: { type: String, default: '' },
-  isTop: { type: Boolean, default: true },
-  isSimplified: { type: Boolean, default: false }
+interface Props {
+  id?: string;
+  isTop?: boolean;
+  isSimplified?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  id: '',
+  isTop: true,
+  isSimplified: false
 });
 
 // Provide the performance and modal identity state to all children (BaseModal, PokemonDisplayCard, etc.)

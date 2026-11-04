@@ -12,10 +12,7 @@ vi.mock('@/logic/db/sqliteEngine.ts', () => ({
     const isSelect = trimmed.toUpperCase().startsWith('SELECT');
     const stmt = memoryDb.prepare(sql);
     if (isSelect) {
-      return stmt.all(...(params as (string | number | bigint | null)[])) as Record<
-        string,
-        unknown
-      >[]; // open-record: Generic key-value data dictionary container
+      return stmt.all(...(params as (string | number | bigint | null)[])); // open-record: Generic key-value data dictionary container
     }
     stmt.run(...(params as (string | number | bigint | null)[]));
     return [];
@@ -178,7 +175,7 @@ describe('Tier 2 Integration: Ranked Season Awarding & Passive Combat Parity', (
 
     // Verify Maestro awards
     const maestroAwards = awards.filter((a) => a.winner_id === 'u_maestro');
-    expect(maestroAwards.length).toBe(5); // 1 medal + 1 pokemon + 2 tickets + 1 bc
+    expect(maestroAwards).toHaveLength(5); // 1 medal + 1 pokemon + 2 tickets + 1 bc
     const maestroMedal = maestroAwards.find((a) => a.prize.includes('"ranked_medal"'));
     expect(maestroMedal).toBeDefined();
     expect(maestroMedal!.prize).toContain('"tier":"maestro"');
@@ -189,14 +186,14 @@ describe('Tier 2 Integration: Ranked Season Awarding & Passive Combat Parity', (
 
     // Verify Ineligible received 0 awards
     const ineligibleAwards = awards.filter((a) => a.winner_id === 'u_ineligible');
-    expect(ineligibleAwards.length).toBe(0);
+    expect(ineligibleAwards).toHaveLength(0);
 
     // Verify podium was saved in competition_results
     const results = (await queryLocal(`SELECT * FROM competition_results`)) as Array<{
       event_id: string;
       winners: string;
     }>;
-    expect(results.length).toBe(1);
+    expect(results).toHaveLength(1);
     expect(results[0]!.event_id).toBe('ranked_season_Temporada 1');
     const podiumParsed = JSON.parse(results[0]!.winners) as Array<{
       rank: number;
@@ -285,7 +282,7 @@ describe('Tier 2 Integration: Ranked Season Awarding & Passive Combat Parity', (
       result: string;
       report_data: string;
     }>;
-    expect(reports.length).toBe(2);
+    expect(reports).toHaveLength(2);
     expect(reports[0]!.result).toBe('defeat');
     expect(reports[1]!.result).toBe('victory');
   });

@@ -8,7 +8,17 @@ type DelayedCall = { kill: () => void };
 
 import { DEFAULT_INITIAL_ELO } from '@/logic/constants/gameplay.ts';
 import { gameBus } from '@/logic/events/gameBus.ts';
-import { getMatchmakingTimeoutSec } from '@/logic/pvp/livePvPMatchmakingHandler.ts';
+import {
+  getMatchmakingTimeoutSec,
+  executePollMatchmaking,
+  executeInitInvitePoller,
+  executeStartSearch,
+  executeCancelSearch,
+  executeSendInvite,
+  executeAcceptInvite,
+  executeDeclineInvite,
+  executeStartSearchCountdown
+} from '@/logic/pvp/livePvPMatchmakingHandler.ts';
 import {
   createRoomAction,
   cancelRoomAction,
@@ -21,8 +31,8 @@ import { useGameStore } from '@/stores/game.ts';
 import { useModalStore } from '@/stores/modals.ts';
 import { usePvPStore } from '@/stores/pvp.ts';
 import { useUIStore } from '@/stores/ui.ts';
-import type { PvPAction } from '@/types/battle/pvp';
 import {
+  type PvPAction,
   PVP_TURN_TIMEOUT_SEC,
   PVP_RECONNECT_WINDOW_SEC,
   type BattleInvite,
@@ -51,16 +61,6 @@ import {
   type OpponentTeamBroadcastPayload
 } from '@/logic/pvp/livePvPBattleSetupHandler.ts';
 import { executeForfeit, executeEndBattle } from '@/logic/pvp/livePvPEndBattleHandler.ts';
-import {
-  executePollMatchmaking,
-  executeInitInvitePoller,
-  executeStartSearch,
-  executeCancelSearch,
-  executeSendInvite,
-  executeAcceptInvite,
-  executeDeclineInvite,
-  executeStartSearchCountdown
-} from '@/logic/pvp/livePvPMatchmakingHandler.ts';
 import {
   executeStartPassiveBattle,
   executeFallbackToPassiveBattle

@@ -1,3 +1,10 @@
+import { toID } from './dex';
+/**
+ * Simulator Pokemon
+ * Pokemon Showdown - http://pokemonshowdown.com/
+ *
+ * @license MIT license
+ */
 import {
   Ability,
   ActiveMove,
@@ -20,22 +27,13 @@ import {
   StatsExceptHPTable,
   StatsTable
 } from './exported-global-types';
-
-/**
- * Simulator Pokemon
- * Pokemon Showdown - http://pokemonshowdown.com/
- *
- * @license MIT license
- */
-
-import { State } from './state';
-import { toID } from './dex';
 import type {
   DynamaxOptions,
   MoveRequestData,
   PokemonMoveRequestData,
   PokemonSwitchRequestData
 } from './side';
+import { State } from './state';
 
 /** A Pokemon's move slot. */
 interface MoveSlot {
@@ -197,8 +195,29 @@ export class Pokemon {
    */
   switchFlag: ID | boolean;
   forceSwitchFlag: boolean;
-  skipBeforeSwitchOutEventFlag: boolean;
-  draggedIn: number | null;
+  /**
+   * Set on the target trying to switch out if Pursuit activates.
+   * Prevents duplicate activation messages and makes sure the target
+   * still switches before checking for winners if Destiny Bond
+   * KOs the Pursuit user in Gen 2-4.
+   *
+   * Not cleared by fainting or clearVolatile. Cleared on its replacement's
+   * switchIn, whether or not a Pursuit KO made you choose a new replacement.
+   * Also cleared by runPursuitActivation if the switch was canceled, e.g. when
+   * Emergency Exit cancels U-turn.
+   */
+  pursuitActivated: boolean;
+  /**
+   * Set by Baton Pass and Shed Tail to avoid Pursuit.
+   * Also set on the target trying to switch out during `BeforeSwitchOut`
+   * to prevent the event from running twice during U-turn switches.
+   *
+   * Not cleared by fainting or clearVolatile. Cleared on its replacement's
+   * switchIn, whether or not a Pursuit KO made you choose a new replacement.
+   * Also cleared by runPursuitActivation if the switch was canceled, e.g. when
+   * Emergency Exit cancels U-turn.
+   */
+  skipPursuit: boolean;
   newlySwitched: boolean;
   beingCalledBack: boolean;
 
@@ -498,8 +517,8 @@ export class Pokemon {
 
     this.switchFlag = false;
     this.forceSwitchFlag = false;
-    this.skipBeforeSwitchOutEventFlag = false;
-    this.draggedIn = null;
+    this.pursuitActivated = false;
+    this.skipPursuit = false;
     this.newlySwitched = false;
     this.beingCalledBack = false;
 
@@ -896,24 +915,7 @@ export class Pokemon {
           target = possibleTarget;
         }
         if (this.battle.activePerHalf > 1 && !move.tracksTarget) {
-          const isCharging =
-            move.flags['charge'] &&
-            !this.volatiles['twoturnmove'] &&
-            !(
-              move.id.startsWith('solarb') &&
-              ['sunnyday', 'desolateland'].includes(this.effectiveWeather(move))
-            ) &&
-            !(
-              move.id === 'electroshot' &&
-              ['raindance', 'primordialsea'].includes(this.effectiveWeather(move))
-            ) &&
-            !(this.hasItem('powerherb') && move.id !== 'skydrop');
-          if (
-            !isCharging &&
-            !(move.id === 'pursuit' && (target.beingCalledBack || target.switchFlag))
-          ) {
-            target = this.battle.priorityEvent('RedirectTarget', this, this, move, target);
-          }
+          target = this.battle.priorityEvent('RedirectTarget', this, this, move, target);
         }
         if (move.smartTarget) {
           targets = this.getSmartTargets(target, move);
@@ -1100,7 +1102,7 @@ export class Pokemon {
       switch (moveSlot.id) {
         case 'curse':
           if (!this.hasType('Ghost')) {
-            target = this.battle.dex.moves.get('curse').nonGhostTarget;
+            target = 'self';
           }
           break;
         case 'pollenpuff':
@@ -1842,6 +1844,7 @@ export class Pokemon {
     ignoreImmunities = false
   ) {
     if (!this.hp) return false;
+    if (!this.isActive && status) return false;
     status = this.battle.dex.conditions.get(status);
     if (this.battle.event) {
       if (!source) source = this.battle.event.source;
@@ -1986,11 +1989,17 @@ export class Pokemon {
     if (this.battle.runEvent('UseItem', this, null, null, item)) {
       switch (item.id) {
         case 'redcard':
-          this.battle.add('-enditem', this, item, `[of] ${source}`);
+          this.battle.add('-enditem', this, item, `[of] ${source!}`);
           break;
         default:
           if (item.isGem) {
-            this.battle.add('-enditem', this, item, '[from] gem');
+            this.battle.add(
+              '-enditem',
+              this,
+              item,
+              '[from] gem',
+              `[move] ${this.battle.activeMove!.name}`
+            );
           } else {
             this.battle.add('-enditem', this, item);
           }
@@ -2014,7 +2023,7 @@ export class Pokemon {
 
   takeItem(source?: Pokemon) {
     if (!source) source = this;
-    if (this.battle.gen <= 4 && (this.itemKnockedOff || source.itemKnockedOff)) return false;
+    if (this.battle.gen === 4 && (this.itemKnockedOff || source.itemKnockedOff)) return false;
     if (!this.item) return;
     const item = this.getItem();
     if (this.battle.runEvent('TakeItem', this, source, null, item)) {
@@ -2403,7 +2412,7 @@ export class Pokemon {
   isSkyDropped() {
     if (this.volatiles['skydrop']) return true;
     for (const foeActive of this.side.foe.active) {
-      if (foeActive.volatiles['skydrop'] && foeActive.volatiles['skydrop'].source === this) {
+      if (foeActive.volatiles['skydrop']?.source === this) {
         return true;
       }
     }
@@ -2437,8 +2446,7 @@ export class Pokemon {
       sourceEffect &&
       (sourceEffect.id === 'megasol' ||
         sourceEffect.effectType === 'Move' ||
-        sourceEffect.effectType === 'Weather') &&
-      sourceEffect.id !== 'electroshot'
+        sourceEffect.effectType === 'Weather')
     ) {
       if (weather !== 'sunnyday' && message)
         this.battle.add('-activate', this, 'ability: Mega Sol');
@@ -2514,7 +2522,13 @@ export class Pokemon {
     if (notImmune) return true;
     if (!message) return false;
     if (notImmune === null) {
-      this.battle.add('-immune', this, '[from] ability: Levitate');
+      if (this.hasAbility('levitate')) {
+        this.battle.add('-immune', this, '[from] ability: Levitate');
+      } else if (this.hasAbility('eelevate')) {
+        this.battle.add('-immune', this, '[from] ability: Eelevate');
+      } else {
+        this.battle.add('-immune', this);
+      }
     } else {
       this.battle.add('-immune', this);
     }

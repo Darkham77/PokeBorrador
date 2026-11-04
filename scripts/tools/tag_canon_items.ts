@@ -1,4 +1,4 @@
-import { isMainModule } from '@francogp/auditor';
+import { readFileSync, writeFileSync } from 'node:fs';
 /**
  * scripts/tools/tag_canon_items.ts
  *
@@ -9,19 +9,14 @@ import { isMainModule } from '@francogp/auditor';
  * Usage:
  *   node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/tools/tag_canon_items.ts
  */
-
-import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { styleText } from 'node:util';
-import { defineCommand, runMain } from 'citty';
-import { Dex, toID } from '@pkmn/sim';
 
-const CANON_CATEGORY_LIST = [
-  'pokeballs',
-  'stones',
-  'potions',
-  'combat_held'
-] as const;
+import { isMainModule } from '@francogp/auditor';
+import { Dex, toID } from '@pkmn/sim';
+import { defineCommand, runMain } from 'citty';
+
+const CANON_CATEGORY_LIST = ['pokeballs', 'stones', 'potions', 'combat_held'] as const;
 type CanonCategory = (typeof CANON_CATEGORY_LIST)[number];
 const CANON_CATEGORIES: ReadonlySet<CanonCategory> = new Set<CanonCategory>(CANON_CATEGORY_LIST);
 
@@ -33,7 +28,9 @@ const CUSTOM_CATEGORY_LIST = [
   'tools'
 ] as const;
 type CustomCategory = (typeof CUSTOM_CATEGORY_LIST)[number];
-const CUSTOM_CATEGORIES: ReadonlySet<CustomCategory> = new Set<CustomCategory>(CUSTOM_CATEGORY_LIST);
+const CUSTOM_CATEGORIES: ReadonlySet<CustomCategory> = new Set<CustomCategory>(
+  CUSTOM_CATEGORY_LIST
+);
 
 const CUSTOM_ITEM_ID_LIST = [
   'ticketsafari',
@@ -159,7 +156,9 @@ const CANON_SPECIAL_ID_LIST = [
   'abilitypatch'
 ] as const;
 type CanonSpecialId = (typeof CANON_SPECIAL_ID_LIST)[number];
-const CANON_SPECIAL_IDS: ReadonlySet<CanonSpecialId> = new Set<CanonSpecialId>(CANON_SPECIAL_ID_LIST);
+const CANON_SPECIAL_IDS: ReadonlySet<CanonSpecialId> = new Set<CanonSpecialId>(
+  CANON_SPECIAL_ID_LIST
+);
 
 function isCustomCategory(value: string): value is CustomCategory {
   return (CUSTOM_CATEGORIES as ReadonlySet<string>).has(value);
@@ -212,11 +211,7 @@ export function tagAllItems(): { canonCount: number; customCount: number; total:
 
     // Check if special canon or in Showdown Dex
     const dexItem = Dex.items.get(toID(id));
-    if (
-      dexItem.exists ||
-      isCanonSpecialId(id) ||
-      (cat && isCanonCategory(cat))
-    ) {
+    if (dexItem.exists || isCanonSpecialId(id) || (cat && isCanonCategory(cat))) {
       item.isCanon = true;
       canonCount++;
     } else {
@@ -247,5 +242,5 @@ export const command = defineCommand({
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

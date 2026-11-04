@@ -1,5 +1,5 @@
-import { isMainModule, type DisplayText } from '@francogp/auditor';
-import { defineCommand, runMain } from 'citty';
+import fs from 'node:fs/promises';
+import { enableCompileCache } from 'node:module';
 /**
  * scripts/convert_assets.ts
  *
@@ -7,16 +7,16 @@ import { defineCommand, runMain } from 'citty';
  *
  * Escanea _raw-assets, convierte a WebP en paralelo y genera catálogos y bases de datos.
  */
-
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import os from 'node:os';
-import { isMainThread, parentPort, Worker } from 'node:worker_threads';
-import sharp, { type WebpOptions } from 'sharp';
+import path from 'node:path';
 import { styleText } from 'node:util';
-import { enableCompileCache } from 'node:module';
-import { MAP_ROUTE_MAPPING } from '../../src/data/world/map-assets.ts';
+import { isMainThread, parentPort, Worker } from 'node:worker_threads';
 
+import { isMainModule, type DisplayText } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
+import sharp, { type WebpOptions } from 'sharp';
+
+import { MAP_ROUTE_MAPPING } from '../../src/data/world/map-assets.ts';
 import {
   findFeetPointsFromBuffer,
   analyzeImageBufferBounds
@@ -106,7 +106,16 @@ if (!isMainThread) {
   });
 }
 
-async function handleProcessFile(filePath: string) {
+interface ProcessFileResult {
+  success: boolean;
+  destFiles: string[];
+  environmentFile?: string;
+  feetPoints?: { feetY: number; feetX: number };
+  isMap?: boolean;
+  error?: string;
+}
+
+async function handleProcessFile(filePath: string): Promise<ProcessFileResult> {
   const ext = path.extname(filePath).toLowerCase();
   if (!['.png', '.jpg', '.jpeg', '.webp'].includes(ext)) {
     return { success: false, destFiles: [], error: 'Unsupported extension' };
@@ -196,7 +205,22 @@ async function calculateFeetPointsWorker(
   }
 }
 
-async function handleAnalyzeAnimated(filePath: string) {
+interface AnalyzeAnimatedResult {
+  success: boolean;
+  spriteKey: string;
+  animatedData?: {
+    frames: number;
+    size: number;
+    feetY: number;
+    feetX: number;
+    bodyH: number;
+    bodyW: number;
+    bodyRadius: number;
+  };
+  error?: string;
+}
+
+async function handleAnalyzeAnimated(filePath: string): Promise<AnalyzeAnimatedResult> {
   try {
     const spriteKey = path.parse(filePath).name;
     const image = sharp(filePath);
@@ -263,7 +287,7 @@ function runTasksInParallel(tasks: WorkerTask[], maxWorkers: number): Promise<Wo
       return;
     }
 
-    const startWorker = () => {
+    const startWorker = (): void => {
       const worker = new Worker(import.meta.filename, {
         execArgv: [...process.execArgv, '--no-warnings']
       });
@@ -274,7 +298,7 @@ function runTasksInParallel(tasks: WorkerTask[], maxWorkers: number): Promise<Wo
           const nextTask = tasks[taskIndex++];
           if (nextTask) worker.postMessage(nextTask);
         } else {
-          worker.terminate();
+          void worker.terminate();
           activeWorkers--;
           if (activeWorkers === 0) {
             resolve(results);
@@ -284,7 +308,7 @@ function runTasksInParallel(tasks: WorkerTask[], maxWorkers: number): Promise<Wo
 
       worker.on('error', (err: Error) => {
         console.error(styleText('red', `Worker Error: ${err.message}`));
-        worker.terminate();
+        void worker.terminate();
         activeWorkers--;
         if (activeWorkers === 0) {
           resolve(results);
@@ -368,10 +392,7 @@ function collectAnimatedResults(
       pipelineErrors.push(`Análisis animado falló en ${res.filePath}: ${res.error}`);
       continue;
     }
-    const isBackFile = res.filePath
-      .split(path.sep)
-      .join(path.posix.sep)
-      .includes('/animated/Back');
+    const isBackFile = res.filePath.split(path.sep).join(path.posix.sep).includes('/animated/Back');
     const key = isBackFile ? `${res.spriteKey}_back` : res.spriteKey;
 
     animatedDbData[key] = res.animatedData;
@@ -448,7 +469,7 @@ async function processAnimatedSprites(
         (f) => f.endsWith('.webp') || f.endsWith('.png')
       );
     } catch (err) {
-      err;
+      console.warn('[Handled controlled exception]:', err);
     }
 
     const analyzeTasks: WorkerTask[] = [
@@ -552,7 +573,7 @@ function renderPipelineSummary(
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.log(
     styleText('bold', '🚀 INICIANDO CONVERSIÓN Y PROCESAMIENTO MULTICORE DE ASSETS (Node.js 26+)')
   );
@@ -623,5 +644,5 @@ export const command = defineCommand({
 });
 
 if (isMainThread && isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

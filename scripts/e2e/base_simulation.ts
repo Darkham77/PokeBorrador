@@ -1,4 +1,5 @@
 import { type Page, expect } from '@playwright/test';
+
 import { loginE2ETestUser, waitForStoreReady, flushE2ELogs } from './e2e_helpers.ts';
 import { MAX_PER_ACTION_TIMEOUT_MS, MS_TO_SECONDS_DIVISOR } from './simulation_config.ts';
 
@@ -371,8 +372,8 @@ export abstract class BaseE2ESimulation {
         await useGameStore().saveGame();
       })
       .catch(() => {
-      0;
-    });
+        0;
+      });
     await this.page.reload();
     await waitForStoreReady(this.page, timeoutMs);
   }

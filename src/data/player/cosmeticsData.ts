@@ -2,6 +2,7 @@
  * Styles for nickname and avatar customization.
  */
 import type { DisplayText, CssClassName } from '@francogp/auditor';
+
 import type { PlayerClassId } from '@/data/player/playerClasses';
 import type { FactionId } from '@/types/system/game';
 

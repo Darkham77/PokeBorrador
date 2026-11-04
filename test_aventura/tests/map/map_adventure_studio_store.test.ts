@@ -35,7 +35,7 @@ describe('Map Adventure Studio Store (useMapAdventureStudioStore)', () => {
     const newId = store.addNode(1500, 2200, { name: 'Ruta Nueva', type: 'route' });
 
     expect(newId).toMatch(/^node_/);
-    expect(Object.keys(store.nodes).length).toBe(initialCount + 1);
+    expect(Object.keys(store.nodes)).toHaveLength(initialCount + 1);
     expect(store.nodes[newId]).toBeDefined();
     expect(store.nodes[newId]?.x).toBe(1500);
     expect(store.nodes[newId]?.y).toBe(2200);
@@ -71,7 +71,7 @@ describe('Map Adventure Studio Store (useMapAdventureStudioStore)', () => {
 
     // Connect pallet and pewter directly
     store.toggleConnection('pallet', 'pewter');
-    expect(store.connections.length).toBe(initialConnections + 1);
+    expect(store.connections).toHaveLength(initialConnections + 1);
     expect(
       store.connections.some(
         ([a, b]: any) => (a === 'pallet' && b === 'pewter') || (a === 'pewter' && b === 'pallet')
@@ -80,7 +80,7 @@ describe('Map Adventure Studio Store (useMapAdventureStudioStore)', () => {
 
     // Toggle again removes the connection
     store.toggleConnection('pallet', 'pewter');
-    expect(store.connections.length).toBe(initialConnections);
+    expect(store.connections).toHaveLength(initialConnections);
   });
 
   it('deletes a node and cascades removal of all associated connections', () => {
@@ -100,7 +100,7 @@ describe('Map Adventure Studio Store (useMapAdventureStudioStore)', () => {
     const palletConnectionsAfter = store.connections.filter(
       ([a, b]: any) => a === 'pallet' || b === 'pallet'
     );
-    expect(palletConnectionsAfter.length).toBe(0);
+    expect(palletConnectionsAfter).toHaveLength(0);
   });
 
   it('tests GPS shortest path using Dijkstra algorithm', () => {
@@ -119,16 +119,16 @@ describe('Map Adventure Studio Store (useMapAdventureStudioStore)', () => {
     const initialCount = Object.keys(store.nodes).length;
 
     const newId = store.addNode(1000, 1000);
-    expect(Object.keys(store.nodes).length).toBe(initialCount + 1);
+    expect(Object.keys(store.nodes)).toHaveLength(initialCount + 1);
     expect(store.canUndo).toBe(true);
 
     store.undo();
-    expect(Object.keys(store.nodes).length).toBe(initialCount);
+    expect(Object.keys(store.nodes)).toHaveLength(initialCount);
     expect(store.nodes[newId]).toBeUndefined();
     expect(store.canRedo).toBe(true);
 
     store.redo();
-    expect(Object.keys(store.nodes).length).toBe(initialCount + 1);
+    expect(Object.keys(store.nodes)).toHaveLength(initialCount + 1);
     expect(store.nodes[newId]).toBeDefined();
   });
 

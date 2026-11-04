@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { gsap } from 'gsap';
-import { ref, onMounted, watch, nextTick } from 'vue';
+import { ref, onMounted, watch, nextTick, onUnmounted } from 'vue';
 
 import { MIN_SEARCH_QUERY_LENGTH } from '@/logic/constants/gameplay';
 import { useSocialStore } from '@/stores/social/social';
@@ -38,27 +38,26 @@ async function handleSearch(): Promise<void> {
   });
 }
 
-function animateCards(): void {
-  nextTick(() => {
-    if (!listRef.value) return;
-    const cards = listRef.value.querySelectorAll('.trainer-card');
-    if (cards.length > 0) {
-      listRef.value.classList.add('tab-mounting');
-      gsap.killTweensOf(cards);
-      gsap.from(cards, {
-        opacity: 0,
-        x: CARD_ANIM_X_OFFSET,
-        scale: CARD_ANIM_SCALE_MIN,
-        duration: CARD_ANIM_DURATION_SEC,
-        stagger: CARD_ANIM_STAGGER_SEC,
-        ease: 'back.out(1.2)',
-        clearProps: 'all',
-        onComplete: () => {
-          listRef.value?.classList.remove('tab-mounting');
-        }
-      });
-    }
-  });
+async function animateCards(): Promise<void> {
+  await nextTick();
+  if (!listRef.value) return;
+  const cards = listRef.value.querySelectorAll('.trainer-card');
+  if (cards.length > 0) {
+    listRef.value.classList.add('tab-mounting');
+    gsap.killTweensOf(cards);
+    gsap.from(cards, {
+      opacity: 0,
+      x: CARD_ANIM_X_OFFSET,
+      scale: CARD_ANIM_SCALE_MIN,
+      duration: CARD_ANIM_DURATION_SEC,
+      stagger: CARD_ANIM_STAGGER_SEC,
+      ease: 'back.out(1.2)',
+      clearProps: 'all',
+      onComplete: () => {
+        listRef.value?.classList.remove('tab-mounting');
+      }
+    });
+  }
 }
 
 const loaderTween = ref<gsap.core.Tween | null>(null);
@@ -66,29 +65,27 @@ const loaderMiniRef = ref<HTMLElement | null>(null);
 
 watch(
   () => socialStore.searchLoading,
-  (loading) => {
-    nextTick(() => {
-      if (loading) {
-        if (!loaderTween.value && loaderMiniRef.value) {
-          loaderTween.value = gsap.to(loaderMiniRef.value, {
-            rotation: LOADER_SPINNER_ROTATION_DEG,
-            duration: 0.8,
-            repeat: -1,
-            ease: 'none'
-          });
-        }
-      } else {
-        if (loaderTween.value) {
-          loaderTween.value.kill();
-          loaderTween.value = null;
-        }
+  async (loading) => {
+    await nextTick();
+    if (loading) {
+      if (!loaderTween.value && loaderMiniRef.value) {
+        loaderTween.value = gsap.to(loaderMiniRef.value, {
+          rotation: LOADER_SPINNER_ROTATION_DEG,
+          duration: 0.8,
+          repeat: -1,
+          ease: 'none'
+        });
       }
-    });
+    } else {
+      if (loaderTween.value) {
+        loaderTween.value.kill();
+        loaderTween.value = null;
+      }
+    }
   },
   { immediate: true }
 );
 
-import { onUnmounted } from 'vue';
 onUnmounted(() => {
   if (loaderTween.value) {
     loaderTween.value.kill();

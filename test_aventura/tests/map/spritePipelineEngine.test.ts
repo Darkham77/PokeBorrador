@@ -92,7 +92,7 @@ describe('spritePipelineEngine', () => {
 
     const boxes = sliceConnectedSprites(buf);
 
-    expect(boxes.length).toBe(2);
+    expect(boxes).toHaveLength(2);
 
     const b1 = boxes.find((b) => b.minX === 10 && b.minY === 10);
     expect(b1).toBeDefined();
@@ -177,7 +177,7 @@ describe('spritePipelineEngine', () => {
 
     const results = processSpriteSheet(sheet, { sourceName: 'test_sheet' });
 
-    expect(results.length).toBe(2);
+    expect(results).toHaveLength(2);
     expect(results.some((s) => s.category === 'tree')).toBe(true);
     expect(results.some((s) => s.category === 'prop')).toBe(true);
 

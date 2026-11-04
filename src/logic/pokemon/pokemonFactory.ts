@@ -80,9 +80,9 @@ export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
   p.spd = calculated.spd;
   p.spe = calculated.spe;
 
-  const stats: (keyof Pokemon)[] = ['maxHp', 'atk', 'def', 'spa', 'spd', 'spe'];
+  const stats = ['maxHp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
   stats.forEach((s) => {
-    const val = p[s] as number;
+    const val = p[s];
     if (isNaN(val) || val === undefined) {
       Reflect.set(p, s, DEFAULT_FALLBACK_BASE_STAT);
     }

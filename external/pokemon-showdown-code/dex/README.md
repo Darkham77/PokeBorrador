@@ -10,7 +10,7 @@ A unification of [smogon/pokemon-showdown](https://github.com/smogon/pokemon-sho
 ## Installation
 
 ```sh
-npm install @pkmn/dex
+$ npm install @pkmn/dex
 ```
 
 Alternatively, as [detailed below](#browser), if you are using `@pkmn/dex` in the browser and want a
@@ -88,8 +88,8 @@ The [`@pkmn/data`](../data) package wraps this data layer with `Generations` whi
 alternative, higher-level data API than `Dex` which irons out a couple of Pokémon Showdown quirks.
 
 ```ts
-import { Dex } from '@pkmn/dex';
 import { Generations } from '@pkmn/data';
+import { Dex } from '@pkmn/dex';
 
 const gens = new Generations(Dex);
 assert(gens.get(1).types.get('Ghost').effectiveness['Psychic'] === 0);

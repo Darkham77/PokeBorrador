@@ -13,9 +13,10 @@
  *   node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/assets/validate_asset_usage.ts
  */
 
-import fs from 'node:fs/promises';
 import { existsSync, readFileSync } from 'node:fs';
+import fs from 'node:fs/promises';
 import path from 'node:path';
+
 import {
   BaseAuditor,
   normalizePosixPath,
@@ -60,17 +61,17 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
   private scannedDataFiles = 0;
   private verifiedAssets = 0;
 
-  constructor() {
+  public constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(ASSET_USAGE_RULES, {
         speed: 'light',
         phase: 'normal',
-        fix: 'none',
         md: false,
         ast: false,
         changedOnly: false,
         critical: false
       }),
+      ruleFixers: {},
       id: 'validate_asset_usage',
       configKey: 'assets.assetUsage',
       defaultConfig: {

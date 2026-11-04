@@ -204,7 +204,7 @@ describe('System Past Events & Rewards Claiming Suite', () => {
     authStore.user = {
       id: 'player-1',
       email: 'ash@pokemon.com'
-    } as import('@/types/auth/auth').AuthUser;
+    };
 
     // Mock DB select for pending awards
     gameStore.db = {
@@ -228,7 +228,7 @@ describe('System Past Events & Rewards Claiming Suite', () => {
       '¡Tienes 1 recompensa de evento pendiente por reclamar!',
       '🎁'
     );
-    expect(eventStore.pendingAwards.length).toBe(1);
+    expect(eventStore.pendingAwards).toHaveLength(1);
   });
 
   it('displays the event schedule window (inicio y fin) in PastEventCard header', () => {
@@ -427,9 +427,7 @@ describe('System Past Events & Rewards Claiming Suite', () => {
       description: 'Pesca Magikarp gigantes',
       active: false
     };
-    eventStore.allEvents = [
-      knownGameEvent as unknown as import('@/logic/events/eventEngine').Event
-    ];
+    eventStore.allEvents = [knownGameEvent];
 
     const wrapper = mount(PastEventsList, {
       props: { pastEvents: [mockPastEvents[0]!], isLoading: false }

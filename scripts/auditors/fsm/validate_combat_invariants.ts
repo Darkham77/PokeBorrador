@@ -20,6 +20,7 @@
  */
 
 import { enableCompileCache } from 'node:module';
+
 import { BaseAuditor, FileScanAuditor, createRuleCapabilities } from '@francogp/auditor';
 
 enableCompileCache();
@@ -38,17 +39,17 @@ const BINARY_SEAT_BRANCH_REGEX =
   /\b(?:seat|sideID|side|targetSide)\s*===\s*['"]p1['"]\s*\?\s*['"]p2['"]\s*:\s*['"]p1['"]/;
 
 export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRuleId> {
-  constructor() {
+  public constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(COMBAT_INVARIANTS_RULES, {
         speed: 'heavy',
         phase: 'normal',
-        fix: 'none',
         md: false,
         ast: false,
         changedOnly: false,
         critical: false
       }),
+      ruleFixers: {},
       id: 'validate_combat_invariants',
       configKey: 'fsm.combatInvariants',
       defaultConfig: {

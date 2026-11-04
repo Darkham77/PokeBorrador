@@ -70,23 +70,22 @@ const getUnreadCount = (friendId: string | number): number => {
   return chatStore.privateChats[String(friendId) as DisplayText]?.unreadCount || 0;
 };
 
-function animateCards(): void {
-  nextTick(() => {
-    if (!listRef.value) return;
-    const cards = listRef.value.querySelectorAll('.trainer-card');
-    if (cards.length > 0) {
-      gsap.killTweensOf(cards);
-      gsap.from(cards, {
-        opacity: FRIEND_CARD_INITIAL_OPACITY,
-        x: FRIEND_CARD_INITIAL_X_OFFSET,
-        scale: FRIEND_CARD_INITIAL_SCALE,
-        duration: FRIEND_CARD_ANIM_DURATION_SEC,
-        stagger: FRIEND_CARD_ANIM_STAGGER_SEC,
-        ease: 'back.out(1.2)',
-        clearProps: 'opacity,x,scale'
-      });
-    }
-  });
+async function animateCards(): Promise<void> {
+  await nextTick();
+  if (!listRef.value) return;
+  const cards = listRef.value.querySelectorAll('.trainer-card');
+  if (cards.length > 0) {
+    gsap.killTweensOf(cards);
+    gsap.from(cards, {
+      opacity: FRIEND_CARD_INITIAL_OPACITY,
+      x: FRIEND_CARD_INITIAL_X_OFFSET,
+      scale: FRIEND_CARD_INITIAL_SCALE,
+      duration: FRIEND_CARD_ANIM_DURATION_SEC,
+      stagger: FRIEND_CARD_ANIM_STAGGER_SEC,
+      ease: 'back.out(1.2)',
+      clearProps: 'opacity,x,scale'
+    });
+  }
 }
 
 onMounted(() => {

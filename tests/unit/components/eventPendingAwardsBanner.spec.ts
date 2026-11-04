@@ -104,9 +104,9 @@ describe('EventPendingAwardsBanner.vue', () => {
 
     const wrapper = mount(EventPendingAwardsBanner);
     expect(wrapper.text()).toContain('RECOMPENSAS PENDIENTES (2)');
-    expect(wrapper.findAll('.award-item').length).toBe(2);
+    expect(wrapper.findAll('.award-item')).toHaveLength(2);
     expect(wrapper.text()).toMatch(/Torneo Magikarp & Gyarados|Torneo de Pesca/);
-    expect(wrapper.findAll('.claim-action-btn').length).toBe(2);
-    expect(wrapper.findAll('.discard-action-btn').length).toBe(2);
+    expect(wrapper.findAll('.claim-action-btn')).toHaveLength(2);
+    expect(wrapper.findAll('.discard-action-btn')).toHaveLength(2);
   });
 });

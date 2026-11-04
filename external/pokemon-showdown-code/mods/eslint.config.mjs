@@ -18,7 +18,7 @@ export default [
       'src/gen9predlc/*.ts',
       'src/gen9dlc1/*.ts',
       'src/champions/*.ts',
-      'src/championsregma/*.ts'
+      'src/championsregmb/*.ts'
     ],
     rules: {
       '@stylistic/eol-last': 'off',

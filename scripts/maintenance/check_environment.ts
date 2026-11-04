@@ -16,10 +16,7 @@ function parseSemver(v: string): SemverVersion {
   };
 }
 
-function compareVersions(
-  current: SemverVersion,
-  required: SemverVersion
-): boolean {
+function compareVersions(current: SemverVersion, required: SemverVersion): boolean {
   // type-ok: Type contract declaration
   if (current.major > required.major) return true;
   if (current.major < required.major) return false;

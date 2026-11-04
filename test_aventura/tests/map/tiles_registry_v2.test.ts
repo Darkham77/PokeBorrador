@@ -4,6 +4,7 @@
  * Tier 1 Unit Test: Validates the SSoT v2.0 Tiles Registry and runtime query API.
  */
 
+import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -24,9 +25,7 @@ describe('Canonical Tiles Registry API (SSoT v2.0)', () => {
 
   beforeAll(() => {
     const registryPath = path.resolve('test_aventura/assets/tiles_registry.json');
-    expect(fs.existsSync(registryPath), 'test_aventura/assets/tiles_registry.json must exist').toBe(
-      true
-    );
+    assert.ok(fs.existsSync(registryPath), 'test_aventura/assets/tiles_registry.json must exist');
     const raw = fs.readFileSync(registryPath, 'utf-8');
     registryData = JSON.parse(raw) as TilesRegistryJson;
 
@@ -149,7 +148,7 @@ describe('Canonical Tiles Registry API (SSoT v2.0)', () => {
     const customService = new TilesRegistryService(registryData);
     expect(customService.count).toBe(registryData.tiles.length);
     expect(customService.registryVersion).toBe('2.0');
-    expect(customService.getAllTiles().length).toBe(registryData.tiles.length);
+    expect(customService.getAllTiles()).toHaveLength(registryData.tiles.length);
   });
 
   it('correctly associates and filters structure category tiles by game source tags', () => {

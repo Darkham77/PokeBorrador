@@ -135,7 +135,7 @@
     background: Rgb(255 255 255 / 3%);
     color: Rgb(241 245 249 / 90%);
     font-size: var(--font-9);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     cursor: help;
     box-sizing: border-box;
 

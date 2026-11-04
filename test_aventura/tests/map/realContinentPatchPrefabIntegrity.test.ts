@@ -133,11 +133,11 @@ describe('realContinentPatchPrefabIntegrity', () => {
     // Patch centered at tile (3, 3) -> cx: 3, cy: 3, radius: 1
     // Bounds in px: [ (3-1)*32, (3-1)*32, (3+2)*32, (3+2)*32 ] = [64, 64, 160, 160]
     const intersecting = findPatchInstructions(instructions, 3, 3, 1);
-    expect(intersecting.length).toBe(1);
+    expect(intersecting).toHaveLength(1);
     expect(intersecting[0]?.filename).toBe('poke_tree_oak_clean.png');
 
     // Patch far away at (20, 20) -> should not intersect tree
     const farPatch = findPatchInstructions(instructions, 20, 20, 1);
-    expect(farPatch.length).toBe(0);
+    expect(farPatch).toHaveLength(0);
   });
 });

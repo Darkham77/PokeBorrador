@@ -138,114 +138,114 @@ const formatDate = (timestamp: number): string => {
     flex-direction: column;
     gap: $spacing-sm;
   }
+}
 
-  .trophy-card {
+.trophy-card {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: 10px 14px;
+  border: 1px solid Rgb(255 255 255 / 10%);
+  border-radius: $radius-lg;
+  background: Rgb(0 0 0 / 35%);
+
+  &.rank-gold {
+    background: Linear-Gradient(135deg, Rgb(250 204 21 / 8%), Rgb(0 0 0 / 40%));
+    border-color: Rgb(250 204 21 / 40%);
+    box-shadow: var(--shadow-glow-yellow);
+
+    .trophy-rank-badge {
+      border: 1px solid Rgb(250 204 21 / 30%);
+      background: Rgb(250 204 21 / 15%);
+      color: var(--amber-300);
+    }
+  }
+
+  &.rank-silver {
+    background: Linear-Gradient(135deg, Rgb(226 232 240 / 8%), Rgb(0 0 0 / 40%));
+    border-color: Rgb(226 232 240 / 40%);
+
+    .trophy-rank-badge {
+      border: 1px solid Rgb(226 232 240 / 30%);
+      background: Rgb(226 232 240 / 15%);
+      color: var(--slate-100);
+    }
+  }
+
+  &.rank-bronze {
+    background: Linear-Gradient(135deg, Rgb(217 119 6 / 8%), Rgb(0 0 0 / 40%));
+    border-color: Rgb(217 119 6 / 40%);
+
+    .trophy-rank-badge {
+      border: 1px solid Rgb(217 119 6 / 30%);
+      background: Rgb(217 119 6 / 15%);
+      color: var(--amber-300);
+    }
+  }
+
+  .trophy-medal-box {
     display: flex;
+    justify-content: center;
     align-items: center;
-    gap: $spacing-md;
-    padding: 10px 14px;
-    border: 1px solid Rgb(255 255 255 / 10%);
+    width: 42px;
+    height: 42px;
     border-radius: $radius-lg;
-    background: Rgb(0 0 0 / 35%);
+    background: Rgb(255 255 255 / 4%);
+    font-size: var(--font-28);
+    flex-shrink: 0;
+  }
 
-    &.rank-gold {
-      background: Linear-Gradient(135deg, Rgb(250 204 21 / 8%), Rgb(0 0 0 / 40%));
-      border-color: Rgb(250 204 21 / 40%);
-      box-shadow: var(--shadow-glow-yellow);
+  .trophy-info-box {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs-alt;
+    flex: 1;
 
-      .trophy-rank-badge {
-        border: 1px solid Rgb(250 204 21 / 30%);
-        background: Rgb(250 204 21 / 15%);
-        color: var(--amber-300);
-      }
-    }
-
-    &.rank-silver {
-      background: Linear-Gradient(135deg, Rgb(226 232 240 / 8%), Rgb(0 0 0 / 40%));
-      border-color: Rgb(226 232 240 / 40%);
-
-      .trophy-rank-badge {
-        border: 1px solid Rgb(226 232 240 / 30%);
-        background: Rgb(226 232 240 / 15%);
-        color: var(--slate-100);
-      }
-    }
-
-    &.rank-bronze {
-      background: Linear-Gradient(135deg, Rgb(217 119 6 / 8%), Rgb(0 0 0 / 40%));
-      border-color: Rgb(217 119 6 / 40%);
-
-      .trophy-rank-badge {
-        border: 1px solid Rgb(217 119 6 / 30%);
-        background: Rgb(217 119 6 / 15%);
-        color: var(--amber-300);
-      }
-    }
-
-    .trophy-medal-box {
+    .trophy-header-row {
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      width: 42px;
-      height: 42px;
-      border-radius: $radius-lg;
-      background: Rgb(255 255 255 / 4%);
-      font-size: var(--font-28);
-      flex-shrink: 0;
     }
 
-    .trophy-info-box {
+    .trophy-rank-badge {
+      padding: 2px 6px;
+      border-radius: $radius-sm;
+      font-size: var(--font-7);
+      font-weight: bold;
+    }
+
+    .trophy-date {
+      color: var(--gray);
+      font-size: var(--font-7);
+    }
+
+    .trophy-event-title {
+      margin: 2px 0 0;
+      color: var(--white);
+      font-size: var(--font-12);
+      font-weight: bold;
+    }
+
+    .trophy-category-row,
+    .trophy-score-row {
       display: flex;
-      flex-direction: column;
-      gap: $spacing-xs-alt;
-      flex: 1;
+      align-items: center;
+      gap: $spacing-sm-alt;
 
-      .trophy-header-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .trophy-rank-badge {
-        padding: 2px 6px;
-        border-radius: $radius-sm;
-        font-size: var(--font-7);
-        font-weight: bold;
-      }
-
-      .trophy-date {
+      .category-lbl,
+      .score-lbl {
         color: var(--gray);
+        font-size: var(--font-6);
+      }
+
+      .category-val {
+        color: var(--blue-300);
         font-size: var(--font-7);
       }
 
-      .trophy-event-title {
-        margin: 2px 0 0;
-        color: var(--white);
-        font-size: var(--font-12);
-        font-weight: bold;
-      }
-
-      .trophy-category-row,
-      .trophy-score-row {
-        display: flex;
-        align-items: center;
-        gap: $spacing-sm-alt;
-
-        .category-lbl,
-        .score-lbl {
-          color: var(--gray);
-          font-size: var(--font-6);
-        }
-
-        .category-val {
-          color: var(--blue-300);
-          font-size: var(--font-7);
-        }
-
-        .score-val {
-          color: var(--green-bright);
-          font-size: var(--font-7);
-        }
+      .score-val {
+        color: var(--green-bright);
+        font-size: var(--font-7);
       }
     }
   }

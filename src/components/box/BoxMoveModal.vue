@@ -144,7 +144,7 @@ const handleMove = (targetBoxIndex: number): void => {
 
     .p-name {
       color: var(--yellow);
-      font-weight: 900;
+      font-weight: $font-weight-black;
     }
   }
 }
@@ -238,7 +238,7 @@ const handleMove = (targetBoxIndex: number): void => {
 
       color: var(--white);
       font-size: var(--font-14);
-      font-weight: 900;
+      font-weight: $font-weight-black;
     }
     .max {
       color: var(--gray);

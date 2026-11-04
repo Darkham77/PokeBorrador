@@ -59,7 +59,7 @@ describe('Showdown Direct UID Mapping & Sync Unit Tests', () => {
     };
 
     // Run injection
-    const updatedRequest = injectUidsIntoRequest(battle, 'p1', request) as any;
+    const updatedRequest = injectUidsIntoRequest(battle, 'p1', request);
 
     assert.strictEqual(updatedRequest.side.pokemon[0].uid, 'vaporeon-uid');
     assert.strictEqual(updatedRequest.side.pokemon[1].uid, 'gengar-uid');
@@ -111,7 +111,7 @@ describe('Showdown Direct UID Mapping & Sync Unit Tests', () => {
       }
     };
 
-    const updatedRequest = injectUidsIntoRequest(battle, 'p1', request) as any;
+    const updatedRequest = injectUidsIntoRequest(battle, 'p1', request);
 
     assert.strictEqual(
       updatedRequest.side.pokemon[0].uid,
@@ -161,7 +161,7 @@ describe('Showdown Direct UID Mapping & Sync Unit Tests', () => {
       }
     };
 
-    const updated1 = injectUidsIntoRequest(battle, 'p1', request1) as any;
+    const updated1 = injectUidsIntoRequest(battle, 'p1', request1);
     assert.strictEqual(updated1.side.pokemon[0].uid, 'bulb1111-uid1');
     assert.strictEqual(updated1.side.pokemon[1].uid, 'bulb2222-uid2');
 
@@ -182,7 +182,7 @@ describe('Showdown Direct UID Mapping & Sync Unit Tests', () => {
       }
     };
 
-    const updated2 = injectUidsIntoRequest(battle, 'p1', request2) as any;
+    const updated2 = injectUidsIntoRequest(battle, 'p1', request2);
     assert.strictEqual(updated2.side.pokemon[0].uid, 'bulb2222-uid2');
     assert.strictEqual(updated2.side.pokemon[1].uid, 'bulb1111-uid1');
   });

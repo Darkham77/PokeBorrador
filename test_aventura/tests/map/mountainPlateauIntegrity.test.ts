@@ -67,10 +67,7 @@ describe('Mountain Plateau Integrity & Consolidation (Elimination of Grass Holes
       }
     }
 
-    expect(
-      violations.length,
-      `Found ${violations.length} elevated cells with poke_grass_plain base ground! Examples: ${JSON.stringify(violations.slice(0, 5))}`
-    ).toBe(0);
+    expect(violations).toHaveLength(0);
   });
 
   it('ensures gray massifs never contain brown plateau rock variation tiles', () => {
@@ -86,10 +83,7 @@ describe('Mountain Plateau Integrity & Consolidation (Elimination of Grass Holes
       }
     }
 
-    expect(
-      grayMassifViolations.length,
-      `Found ${grayMassifViolations.length} brown rock tiles inside gray massifs! Examples: ${JSON.stringify(grayMassifViolations.slice(0, 5))}`
-    ).toBe(0);
+    expect(grayMassifViolations).toHaveLength(0);
   });
 
   it('ensures cave entrance POIs cover their entire footprint without exposing base ground gaps', () => {
@@ -134,10 +128,7 @@ describe('Mountain Plateau Integrity & Consolidation (Elimination of Grass Holes
       }
     }
 
-    expect(
-      footprintGaps.length,
-      `Found ${footprintGaps.length} exposed footprint gap cells next to caves! Examples: ${JSON.stringify(footprintGaps)}`
-    ).toBe(0);
+    expect(footprintGaps).toHaveLength(0);
   });
 
   it('ensures no elevated mountain cell has grass_top or pure grass tiles stamped on it (excluding outer corners bordering elevation 0)', () => {
@@ -169,9 +160,6 @@ describe('Mountain Plateau Integrity & Consolidation (Elimination of Grass Holes
       }
     }
 
-    expect(
-      grassOnMountain.length,
-      `Found ${grassOnMountain.length} grass tiles on elevated mountain massif! Examples: ${JSON.stringify(grassOnMountain.slice(0, 5))}`
-    ).toBe(0);
+    expect(grassOnMountain).toHaveLength(0);
   });
 });

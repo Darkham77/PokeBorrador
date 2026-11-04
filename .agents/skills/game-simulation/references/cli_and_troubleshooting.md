@@ -28,10 +28,10 @@
 
 ### Layers 1 & 2: Unit & Parity Tests
 
-| Script      | Command             | Purpose                                                                           |
-| ----------- | ------------------- | --------------------------------------------------------------------------------- |
+| Script      | Command             | Purpose                                                                               |
+| ----------- | ------------------- | ------------------------------------------------------------------------------------- |
 | `test:node` | `npm run test:node` | All `tests/node/**/*.test.ts` via Vite+ / Vitest `node` project (100% green required) |
-| `test`      | `npm run test`      | Full Vite+ / Vitest test suite (`unit` + `node` workspace projects)               |
+| `test`      | `npm run test`      | Full Vite+ / Vitest test suite (`unit` + `node` workspace projects)                   |
 
 ### Layer 3: Playwright E2E Simulations
 

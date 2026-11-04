@@ -19,6 +19,10 @@ import { useRegionalContinentStudioStore } from '../../stores/continentStudioSto
 
 const store = useRegionalContinentStudioStore();
 
+const emit = defineEmits<{
+  (e: 'close'): void;
+}>();
+
 const MAP_DIMENSIONS = [64, 128, 256, 400] as const;
 
 const oceanWaterPercentText = computed(
@@ -40,13 +44,24 @@ function handleSliderChange(): void {
         <span class="icon">🧭</span>
         <h2>Generador Regional</h2>
       </div>
-      <div
-        id="status-continent-generator"
-        class="status-indicator"
-        :class="{ 'is-loading': store.isGenerating }"
-      >
-        <span v-gsap-loop="{ effect: 'pulse', active: store.isGenerating }" class="dot" />
-        <span class="text">{{ store.isGenerating ? 'Generando...' : 'Listo' }}</span>
+      <div class="header-actions">
+        <div
+          id="status-continent-generator"
+          class="status-indicator"
+          :class="{ 'is-loading': store.isBusy }"
+        >
+          <span v-gsap-loop="{ effect: 'pulse', active: store.isBusy }" class="dot" />
+          <span class="text">{{ store.statusLabel }}</span>
+        </div>
+        <button
+          id="btn-close-mobile-controls"
+          type="button"
+          class="mobile-close-btn"
+          aria-label="Cerrar panel de controles"
+          @click="emit('close')"
+        >
+          ✕
+        </button>
       </div>
     </header>
 
@@ -280,6 +295,22 @@ function handleSliderChange(): void {
   backdrop-filter: Blur(12px);
   border-right: 1px solid Rgb(255 255 255 / 10%);
   overflow-y: auto;
+
+  @media (width <= 768px) {
+    position: fixed;
+    top: var(--header-height, 48px);
+    bottom: 0;
+    left: 0;
+    z-index: calc(var(--z-modal) + 10);
+    width: min(340px, 85dvw);
+    max-width: 85dvw;
+    transform: Translatex(-100%);
+    box-shadow: var(--shadow-xl);
+
+    &.is-mobile-open {
+      transform: Translatex(0);
+    }
+  }
 }
 
 .controls-header {
@@ -302,7 +333,36 @@ function handleSliderChange(): void {
       margin: 0;
       color: var(--sky);
       font-size: var(--font-16);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  .mobile-close-btn {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid Rgb(255 255 255 / 15%);
+    border-radius: $radius-full;
+    background: Rgb(255 255 255 / 10%);
+    color: var(--slate-300);
+    font-size: var(--font-14);
+    cursor: pointer;
+
+    &:hover {
+      background: Rgb(255 255 255 / 20%);
+      color: var(--white);
+    }
+
+    @media (width <= 768px) {
+      display: flex;
     }
   }
 
@@ -342,7 +402,7 @@ function handleSliderChange(): void {
   .section-label {
     color: var(--slate-400);
     font-size: var(--font-12);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -363,7 +423,7 @@ function handleSliderChange(): void {
     background: transparent;
     color: var(--slate-400);
     font-size: var(--font-12);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     cursor: pointer;
 
     &:hover {
@@ -463,7 +523,7 @@ function handleSliderChange(): void {
     .value {
       color: var(--sky);
       font-family: monospace;
-      font-weight: 700;
+      font-weight: $font-weight-bold;
     }
   }
 
@@ -517,7 +577,7 @@ function handleSliderChange(): void {
       color: var(--sky);
       font-family: monospace;
       font-size: var(--font-14);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
     }
   }
 }

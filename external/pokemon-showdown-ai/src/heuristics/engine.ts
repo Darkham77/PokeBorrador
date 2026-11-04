@@ -1,3 +1,7 @@
+import { BattleState } from '../battle/state';
+import { DamageCalculator } from '../calculator/damage';
+import { InferenceEngine } from '../inference/engine';
+import { logDebug } from '../logging/logger';
 import {
   Decision,
   DamageMatchup,
@@ -8,10 +12,6 @@ import {
   StrategicState,
   SackOrderEntry
 } from '../types';
-import { DamageCalculator } from '../calculator/damage';
-import { InferenceEngine } from '../inference/engine';
-import { BattleState } from '../battle/state';
-import { logDebug } from '../logging/logger';
 
 function toId(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]/g, '');

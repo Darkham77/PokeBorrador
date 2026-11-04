@@ -1,11 +1,13 @@
+import crypto from 'node:crypto';
+
 import type { DisplayText } from '@francogp/auditor';
 import { Dex, toID, type PokemonSet, type ID, type GenderName } from '@pkmn/sim';
-import crypto from 'node:crypto';
-import { EXCLUDED_FROM_SINGLES_REPORT } from '../scenarios/fuzzer_excluded_abilities.ts';
-import { ABILITY_SCENARIOS } from '../scenarios/fuzzer_ability_scenarios.ts';
-import { getShowdownNickname } from '../../../../src/logic/battle/showdownUidMapper.ts';
+
 import { resolveBaseStats } from '../../../../src/logic/battle/showdownAdapter.ts';
+import { getShowdownNickname } from '../../../../src/logic/battle/showdownUidMapper.ts';
 import { calcStatsPure } from '../../../../src/logic/pokemon/statsMath.ts';
+import { ABILITY_SCENARIOS } from '../scenarios/fuzzer_ability_scenarios.ts';
+import { EXCLUDED_FROM_SINGLES_REPORT } from '../scenarios/fuzzer_excluded_abilities.ts';
 
 export function generateBatchHash(batch: {
   playerTeam: unknown[];
@@ -21,16 +23,15 @@ export function generateBatchHash(batch: {
   return crypto.createHash('md5').update(JSON.stringify(data)).digest('hex').substring(0, 12);
 }
 
-import type { PokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
-import type { ItemId } from '../../../../src/data/inventory/items.ts';
 import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
 import type { NatureId } from '../../../../src/data/battle/natures.ts';
-import type { PokemonMoveId } from '../../../../src/types/pokemon/pokemon.ts';
-import type { CertifiedBattleGameAction } from '../../../../src/types/battle/certifiedBattleActions.ts';
+import type { ItemId } from '../../../../src/data/inventory/items.ts';
+import type { PokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
 import { PokemonLegalityValidator } from '../../../../src/logic/battle/engine/pokemonLegalityValidator.ts';
-import { pokemonDataProvider } from '../../../../src/logic/providers/pokemonDataProvider.ts';
-
 import type { CalculatedStats } from '../../../../src/logic/pokemon/statsMath.ts';
+import { pokemonDataProvider } from '../../../../src/logic/providers/pokemonDataProvider.ts';
+import type { CertifiedBattleGameAction } from '../../../../src/types/battle/certifiedBattleActions.ts';
+import type { PokemonMoveId } from '../../../../src/types/pokemon/pokemon.ts';
 
 export interface FuzzerPokemonSet extends Omit<
   PokemonSet,
@@ -330,11 +331,7 @@ export function getTriggerSlot(abilityId: string): number | null {
 
 import { ACTIVE_GENERATION } from '../../../../src/data/system/constants.ts';
 
-const EXCLUDED_NONSTANDARD_STATUS_VALUES = [
-  'CAP',
-  'Custom',
-  'Future'
-] as const;
+const EXCLUDED_NONSTANDARD_STATUS_VALUES = ['CAP', 'Custom', 'Future'] as const;
 const EXCLUDED_NONSTANDARD_STATUSES: ReadonlySet<string> = new Set<string>(
   EXCLUDED_NONSTANDARD_STATUS_VALUES
 );
@@ -367,7 +364,7 @@ export function findLegalSpeciesAndGenderForAbility(
     }
     return { species: speciesId, gender, ability: cleanAbility as AbilityId };
   }
-  return { species: 'mew' as PokemonSpeciesId, gender: 'N', ability: 'synchronize' as AbilityId };
+  return { species: 'mew', gender: 'N', ability: 'synchronize' };
 }
 
 export function generateTestBatches(batchSize: number = 6): TestBatch[] {
@@ -498,9 +495,9 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
       // El NPC siempre tiene disponibles: eléctrico, agua, fuego y contacto.
       // If player has focuspunch, NPC must not attack so concentration isn't broken.
       // 'splash' does nothing — no healing, no damage — so Blissey can still faint naturally.
-      const eMoves: PokemonMoveId[] = (
-        hasFocusPunch ? ['splash', 'sunnyday', 'raindance', 'sandstorm'] : [...ENEMY_TRIGGER_MOVES]
-      ) as PokemonMoveId[];
+      const eMoves: PokemonMoveId[] = hasFocusPunch
+        ? ['splash', 'sunnyday', 'raindance', 'sandstorm']
+        : [...ENEMY_TRIGGER_MOVES];
 
       const eUid = crypto.randomUUID();
       const eNickname = getShowdownNickname(eUid);

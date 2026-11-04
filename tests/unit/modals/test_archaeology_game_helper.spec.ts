@@ -27,7 +27,7 @@ describe('archaeologyGameHelper', () => {
   describe('generateArchaeologyGrid', () => {
     it('generates grid with correct dimensions and fossil part count', () => {
       const grid = generateArchaeologyGrid(5, 3);
-      expect(grid.length).toBe(25);
+      expect(grid).toHaveLength(25);
       const fossilCount = grid.filter((t) => t.isFossil).length;
       expect(fossilCount).toBe(3);
     });
@@ -35,7 +35,7 @@ describe('archaeologyGameHelper', () => {
     it('generates contiguous fossil parts', () => {
       const grid = generateArchaeologyGrid(6, 4);
       const fossilTiles = grid.filter((t) => t.isFossil);
-      expect(fossilTiles.length).toBe(4);
+      expect(fossilTiles).toHaveLength(4);
 
       // Check that every fossil piece is adjacent to at least one other fossil piece
       for (const piece of fossilTiles) {

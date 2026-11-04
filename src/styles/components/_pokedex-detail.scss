@@ -13,7 +13,7 @@
   color: $black;
   font-family: $font-family-ui;
   font-size: var(--font-11);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
   box-shadow: var(--shadow-md);
   text-shadow: none;
 }

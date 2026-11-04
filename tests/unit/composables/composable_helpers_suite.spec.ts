@@ -18,8 +18,7 @@ import {
   type ExtendedEventConfig
 } from '@/composables/events/useEventDetailBonuses';
 import { BATTLE_STATES } from '@/logic/battle/battleStateMachine';
-import type { Event as GameEvent } from '@/logic/events/eventEngine';
-import type { SubCompetitionConfig } from '@/logic/events/eventEngine';
+import type { Event as GameEvent, SubCompetitionConfig } from '@/logic/events/eventEngine';
 import { useBattleStore } from '@/stores/battle/battle';
 import { useGameStore } from '@/stores/game';
 import { useInventoryStore } from '@/stores/inventory/inventory';

@@ -1,10 +1,12 @@
 import { setTimeout } from 'node:timers/promises';
+
 import type { Page } from '@playwright/test';
-import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
+
 import type {
   GameStoreReadyDetail,
   StarterSelectReadyDetail
 } from '../../../src/types/system/gameEvents.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 import {
   armGameStoreReady,
   awaitGameStoreReady,
@@ -58,7 +60,13 @@ export function isCriticalConsoleMessage(text: string, msgType: string): boolean
 export function isTransientNetworkError(error: unknown): boolean {
   if (!error) return false;
   const text =
-    typeof error === 'string' ? error : error instanceof Error ? error.message : String(error);
+    typeof error === 'string'
+      ? error
+      : error instanceof Error
+        ? error.message
+        : typeof error === 'object' && error !== null && 'message' in error
+          ? String(error.message)
+          : '';
   if (!text || typeof text !== 'string') return false;
 
   if (
@@ -154,12 +162,12 @@ export async function setupE2ESession(
         if (key) {
           localStorage.setItem('pokevicio_sqlite_key', key);
         }
-      } catch (_e) {
+      } catch {
         0;
       }
       try {
         sessionStorage.removeItem('pokevicio_logout_reason');
-      } catch (_e) {
+      } catch {
         0;
       }
       if ('Notification' in window) {
@@ -190,7 +198,7 @@ export async function setupE2ESession(
             ) {
               (val.globalTimeline as { timeScale: (n: number) => void }).timeScale(scale);
             }
-          } catch (_e) {
+          } catch {
             0;
           }
         }
@@ -298,7 +306,7 @@ export async function loginTestUser(
           localStorage.setItem('pokevicio_selected_server_id', 'test_postgres');
           localStorage.setItem('pokevicio_local_user', JSON.stringify(testUserObj));
           localStorage.setItem('pokevicio_auth_token', token);
-        } catch (_e) {
+        } catch {
           0;
         }
       },

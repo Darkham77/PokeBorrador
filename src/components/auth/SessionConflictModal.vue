@@ -79,7 +79,7 @@ async function handleLogout(): Promise<void> {
   background: Rgb(255 255 255 / 10%);
   font-family: var(--font-pixel);
   font-size: var(--font-11);
-  font-weight: 900;
+  font-weight: $font-weight-black;
   cursor: pointer;
   box-shadow: $shadow-retro-btn;
 

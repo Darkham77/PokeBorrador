@@ -1,6 +1,8 @@
-import type { DisplayText } from '@francogp/auditor';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import type { DisplayText } from '@francogp/auditor';
+
 import movesJson from '../../src/data/battle/moves.json' with { type: 'json' };
 import itemsJson from '../../src/data/inventory/items.json' with { type: 'json' };
 

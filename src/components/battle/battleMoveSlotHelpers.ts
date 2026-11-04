@@ -81,11 +81,16 @@ export function isBattleMoveDisabled(
   return false;
 }
 
+export interface WeatherAuraFlags {
+  hasMove: boolean;
+  hasMoveModifier: boolean;
+}
+
 export function resolveWeatherAuraClass(
-  hasMove: boolean,
-  hasMoveModifier: boolean,
+  flags: WeatherAuraFlags,
   weather: { turns?: number; visual?: string; type?: string } | null | undefined
 ): string | null {
+  const { hasMove, hasMoveModifier } = flags;
   if (!hasMove || !hasMoveModifier || !weather || weather.turns === 0) return null;
   const wType = (weather.visual || weather.type || '').toLowerCase();
 

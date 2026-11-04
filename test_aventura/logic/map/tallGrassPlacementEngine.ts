@@ -34,7 +34,7 @@ import {
 } from '../../config/wildernessConfig.ts';
 import type { POINode, RouteWaypoint } from '../../types/map/poiTypes.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
-import { SimplexNoise } from './noise/simplexNoise.ts';
+import { type SimplexNoise } from './noise/simplexNoise.ts';
 import type { TallGrassPatch } from './wildernessVegetationEngine.ts';
 
 export interface TallGrassPlacementContext {

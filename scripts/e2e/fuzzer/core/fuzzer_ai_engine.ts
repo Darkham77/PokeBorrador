@@ -8,20 +8,21 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
-import type { PokemonSet, SideID } from '@pkmn/sim';
-import { ShowdownBattleEngine } from '../../../../src/logic/battle/engine/showdownBattleEngine.ts';
 
-import { generateAiBattles } from '../generators/fuzzer_ai_team_generator.ts';
-import { BattleAgent, type ChoiceRequest } from './fuzzer_agent.ts';
-import { type ActiveSlotRequest } from '../../../../src/logic/battle/helpers/showdownBattleAgent.ts';
-import { createLocalPoke } from './fuzzer_engine.ts';
-import { patchShowdownSpreadModify } from '../../../../src/logic/battle/engine/showdownSpreadModifyHelper.ts';
-import { HeuristicAI } from '../../../../src/logic/battle/ai/heuristicAI.ts';
-import { createMockBattleContext } from './fuzzer_mock_battle_store.ts';
+import type { PokemonSet, SideID } from '@pkmn/sim';
+
 import { requireAbilityId } from '../../../../src/data/battle/abilities.ts';
 import { MAX_POKEMON_LEVEL, MAX_BATTLE_TURNS } from '../../../../src/data/system/constants.ts';
-import type { FuzzerResult } from './fuzzer_runner.ts';
+import { HeuristicAI } from '../../../../src/logic/battle/ai/heuristicAI.ts';
+import { ShowdownBattleEngine } from '../../../../src/logic/battle/engine/showdownBattleEngine.ts';
+import { patchShowdownSpreadModify } from '../../../../src/logic/battle/engine/showdownSpreadModifyHelper.ts';
+import { type ActiveSlotRequest } from '../../../../src/logic/battle/helpers/showdownBattleAgent.ts';
 import { fileWriterQueue } from '../../helpers/fileWriterQueue.ts';
+import { generateAiBattles } from '../generators/fuzzer_ai_team_generator.ts';
+import { BattleAgent, type ChoiceRequest } from './fuzzer_agent.ts';
+import { createLocalPoke } from './fuzzer_engine.ts';
+import { createMockBattleContext } from './fuzzer_mock_battle_store.ts';
+import type { FuzzerResult } from './fuzzer_runner.ts';
 
 const RESULTS_DIR = path.resolve(process.cwd(), 'scripts/e2e/results');
 
@@ -243,8 +244,8 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
         const prevTurn = simBattle.turn;
 
         const { p1AcceptedChoice, p2AcceptedChoice } = engine.executeTurn({
-          p1Agent: agentP1 as { decide(req: unknown): string },
-          p2Agent: agentP2 as { decide(req: unknown): string }
+          p1Agent: agentP1,
+          p2Agent: agentP2
         });
 
         if (p1AcceptedChoice && p1AcceptedChoice !== 'pass') p1Choices.push(p1AcceptedChoice);

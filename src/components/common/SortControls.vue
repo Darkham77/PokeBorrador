@@ -73,7 +73,7 @@ const setSort = (key: SortKey): void => {
       @click.stop="setSort('rarity')"
     >
       <slot name="rarity-icon">
-        <svg viewBox="0 0 24 24" class="star-icon" fill="currentColor">
+        <svg aria-hidden="true" viewBox="0 0 24 24" class="star-icon" fill="currentColor">
           <polygon points="12,2 22,12 12,22 2,12" />
         </svg>
       </slot>

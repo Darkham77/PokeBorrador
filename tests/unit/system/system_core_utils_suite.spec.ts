@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from 'pinia';
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test';
 
+import type { ItemId } from '@/data/inventory/items';
 import { calculateDamageForTooltip } from '@/logic/battle/smogonAdapter';
 import { calculateButtonHoverEnterVars } from '@/logic/hover/hoverEnterChildren';
 import { resolveCssColor } from '@/logic/hover/hoverHelpers';
@@ -125,7 +126,7 @@ describe('System Core Utilities Domain Suite', () => {
       store.start('test', 'Loading...');
       store.finish('test');
       expect(store.isActive).toBe(false);
-      expect(store.current).toBe(null);
+      expect(store.current).toBeNull();
     });
 
     it('should handle a stack of loading states', () => {
@@ -174,9 +175,7 @@ describe('System Core Utilities Domain Suite', () => {
     it('should calculate sell prices as half of buying price', () => {
       expect(getSellPrice('pokeball')).toBe(100);
       expect(getSellPrice('greatball')).toBe(250);
-      expect(
-        getSellPrice('objeto_imaginario' as unknown as import('@/data/inventory/items').ItemId)
-      ).toBe(0);
+      expect(getSellPrice('objeto_imaginario' as unknown as ItemId)).toBe(0);
     });
 
     it('should filter inventory by category', () => {
@@ -188,11 +187,11 @@ describe('System Core Utilities Domain Suite', () => {
       };
 
       const balls = filterInventoryByCategory(inv, 'pokeballs');
-      expect(balls.length).toBe(1);
+      expect(balls).toHaveLength(1);
       expect(balls[0]![0]).toBe('pokeball');
 
       const potions = filterInventoryByCategory(inv, 'potions');
-      expect(potions.length).toBe(1);
+      expect(potions).toHaveLength(1);
       expect(potions[0]![0]).toBe('potion');
     });
   });

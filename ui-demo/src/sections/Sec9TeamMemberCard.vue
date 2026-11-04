@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
 import type { TeamMember } from './sec9TeamTypes';
 
 const props = defineProps<{

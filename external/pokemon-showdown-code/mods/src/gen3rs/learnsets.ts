@@ -26,13 +26,11 @@ export const Learnsets: ModdedLearnsetDataTable = {
       shockwave: ['3M'],
       sweetkiss: ['3L11'],
       tailwhip: ['3L6'],
-      teeterdance: ['3S0'],
       thunder: ['3M'],
       thunderbolt: ['3M'],
       thundershock: ['3L1'],
       thunderwave: ['3L8'],
-      toxic: ['3M'],
-      wish: ['3S1']
+      toxic: ['3M']
     }
   },
   pikachu: {
@@ -47,7 +45,7 @@ export const Learnsets: ModdedLearnsetDataTable = {
       flash: ['3M'],
       focuspunch: ['3M'],
       frustration: ['3M'],
-      growl: ['3L1', '3S10'],
+      growl: ['3L1'],
       hiddenpower: ['3M'],
       irontail: ['3M'],
       lightscreen: ['3M', '3L50'],
@@ -61,11 +59,11 @@ export const Learnsets: ModdedLearnsetDataTable = {
       shockwave: ['3M'],
       slam: ['3L20'],
       strength: ['3M'],
-      tailwhip: ['3L6', '3S10'],
+      tailwhip: ['3L6'],
       thunder: ['3M', '3L41'],
       thunderbolt: ['3M', '3L26'],
-      thundershock: ['3L1', '3S10'],
-      thunderwave: ['3L8', '3S10'],
+      thundershock: ['3L1'],
+      thunderwave: ['3L8'],
       toxic: ['3M']
     }
   },
@@ -213,7 +211,6 @@ export const Learnsets: ModdedLearnsetDataTable = {
       roar: ['3M', '3L9'],
       safeguard: ['3M', '3L33'],
       secretpower: ['3M'],
-      spite: ['3E'],
       sunnyday: ['3M'],
       tailwhip: ['3L5'],
       toxic: ['3M'],
@@ -280,8 +277,7 @@ export const Learnsets: ModdedLearnsetDataTable = {
       sunnyday: ['3M'],
       sweetkiss: ['3L14'],
       toxic: ['3M'],
-      waterpulse: ['3M'],
-      wish: ['3E']
+      waterpulse: ['3M']
     }
   },
   jigglypuff: {
@@ -2262,8 +2258,7 @@ export const Learnsets: ModdedLearnsetDataTable = {
       thief: ['3M'],
       thunder: ['3M'],
       thunderbolt: ['3M'],
-      toxic: ['3M'],
-      wish: ['3E']
+      toxic: ['3M']
     }
   },
   heracross: {
@@ -3536,7 +3531,6 @@ export const Learnsets: ModdedLearnsetDataTable = {
     learnset: {
       attract: ['3M'],
       calmmind: ['3M', '3L21'],
-      charm: ['3S0'],
       confusion: ['3L6'],
       destinybond: ['3E'],
       disable: ['3E'],
@@ -3572,8 +3566,7 @@ export const Learnsets: ModdedLearnsetDataTable = {
       thunderbolt: ['3M'],
       torment: ['3M'],
       toxic: ['3M'],
-      willowisp: ['3E'],
-      wish: ['3S1']
+      willowisp: ['3E']
     }
   },
   kirlia: {
@@ -4357,8 +4350,7 @@ export const Learnsets: ModdedLearnsetDataTable = {
       tickle: ['3E'],
       toxic: ['3M'],
       uproar: ['3E'],
-      waterpulse: ['3M'],
-      wish: ['3E']
+      waterpulse: ['3M']
     }
   },
   delcatty: {
@@ -4815,8 +4807,7 @@ export const Learnsets: ModdedLearnsetDataTable = {
       thunder: ['3M', '3L37'],
       thunderbolt: ['3M'],
       thunderwave: ['3L4'],
-      toxic: ['3M'],
-      wish: ['3E']
+      toxic: ['3M']
     }
   },
   minun: {
@@ -4849,8 +4840,7 @@ export const Learnsets: ModdedLearnsetDataTable = {
       thunder: ['3M', '3L37'],
       thunderbolt: ['3M'],
       thunderwave: ['3L4'],
-      toxic: ['3M'],
-      wish: ['3E']
+      toxic: ['3M']
     }
   },
   volbeat: {
@@ -5466,8 +5456,7 @@ export const Learnsets: ModdedLearnsetDataTable = {
       toxic: ['3M'],
       trick: ['3E'],
       uproar: ['3L5'],
-      waterpulse: ['3M'],
-      wish: ['3E']
+      waterpulse: ['3M']
     }
   },
   trapinch: {
@@ -6749,7 +6738,6 @@ export const Learnsets: ModdedLearnsetDataTable = {
       shockwave: ['3M'],
       slash: ['3L36'],
       snatch: ['3M'],
-      spite: ['3S0'],
       strength: ['3M'],
       substitute: ['3E'],
       sunnyday: ['3M'],
@@ -6760,8 +6748,7 @@ export const Learnsets: ModdedLearnsetDataTable = {
       thunderbolt: ['3M'],
       torment: ['3M'],
       toxic: ['3M'],
-      waterpulse: ['3M'],
-      wish: ['3S1']
+      waterpulse: ['3M']
     }
   },
   snorunt: {
@@ -7156,7 +7143,6 @@ export const Learnsets: ModdedLearnsetDataTable = {
       headbutt: ['3L17'],
       hiddenpower: ['3M'],
       hydropump: ['3E'],
-      irondefense: ['3S0'],
       leer: ['3L9'],
       protect: ['3M'],
       rage: ['3L1'],
@@ -7172,9 +7158,7 @@ export const Learnsets: ModdedLearnsetDataTable = {
       sunnyday: ['3M'],
       thrash: ['3E'],
       toxic: ['3M'],
-      twister: ['3E'],
-      spite: ['3S1'],
-      wish: ['3S1']
+      twister: ['3E']
     }
   },
   shelgon: {

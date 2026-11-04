@@ -1,7 +1,9 @@
-import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { Battle } from '@pkmn/sim';
+import { describe, it, expect } from 'vitest';
+
 import { executeBattleTurn } from '../../../src/logic/battle/helpers/showdownExecutor.ts';
 import { patchShowdownSpreadModify } from '../../../src/logic/battle/showdownAdapter.ts';
 

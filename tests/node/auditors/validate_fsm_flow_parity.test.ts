@@ -45,7 +45,7 @@ stateDiagram-v2
 \`\`\`
       `;
       const sequences = parseMermaidSequences(mermaidContent);
-      expect(sequences.length).toBe(1);
+      expect(sequences).toHaveLength(1);
       expect(sequences[0]![0]).toEqual({ from: 'INTRO', to: 'ACTION_SELECT', isLoop: false });
       expect(sequences[0]![1]).toEqual({
         from: 'ACTION_SELECT',
@@ -66,7 +66,7 @@ stateDiagram-v2
   describe('Clean Execution Verification', () => {
     it('executes cleanly with zero errors on repository dataset', async () => {
       const auditor = new FsmFlowParityAuditor();
-      const result = await auditor.execute();
+      const result = await auditor.audit();
 
       expect(result.summary.errors).toBe(0);
       expect(result.status).toBe('passed');

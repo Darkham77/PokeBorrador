@@ -347,7 +347,8 @@ export function generateSettlementLayout(
       const Wmax = context?.width ?? 9999;
       const Hmax = context?.height ?? 9999;
       if (x < 0 || x >= Wmax || y < 0 || y >= Hmax) return false;
-      if (context?.heightmap && (context.heightmap[y]?.[x] ?? 0) !== 0) return false;
+      const nodeElev = node.elevation ?? 0;
+      if (context?.heightmap && (context.heightmap[y]?.[x] ?? 0) !== nodeElev) return false;
       if (context?.occupiedFootCells?.[y]?.[x]) return false;
       if (context?.terrainMatrix) {
         const t = context.terrainMatrix[y]?.[x];
@@ -359,7 +360,7 @@ export function generateSettlementLayout(
           const ny = y + dy;
           const nx = x + dx;
           if (ny < 0 || ny >= Hmax || nx < 0 || nx >= Wmax) continue;
-          if (context?.heightmap && (context.heightmap[ny]?.[nx] ?? 0) > 0) return false;
+          if (context?.heightmap && (context.heightmap[ny]?.[nx] ?? 0) !== nodeElev) return false;
           if (context?.occupiedFootCells?.[ny]?.[nx]) return false;
           const role = context?.mountainCellRoles?.[ny]?.[nx];
           if (

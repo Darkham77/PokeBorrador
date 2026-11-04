@@ -1,3 +1,6 @@
+import type { AssetUri } from '@francogp/auditor';
+
+import { isPokemonSpeciesId, type PokemonSpeciesId } from './pokedex.ts';
 /**
  * src/data/pokemon/pokemonCriesDatabase.ts
  *
@@ -5,8 +8,6 @@
  * Avoids pulling the heavy pokemonFeetDatabase (1.2 MB) on app boot.
  */
 import criesJson from './pokemonCriesDatabase.json' with { type: 'json' };
-import type { AssetUri } from '@francogp/auditor';
-import { isPokemonSpeciesId, type PokemonSpeciesId } from './pokedex.ts';
 
 // fallow-ignore-next-line unused-export
 export const POKEMON_CRIES_DATABASE: Partial<Record<PokemonSpeciesId, AssetUri>> = criesJson;

@@ -159,7 +159,7 @@ describe('Pokemon Box & Storage Domain Suite', () => {
       gs.sendToBox(0);
 
       expect(bulbasaur.hp).toBe(5);
-      expect(bulbasaur.moves![0]!.pp).toBe(0);
+      expect(bulbasaur.moves[0]!.pp).toBe(0);
       expect(gs.state.box).toContain(bulbasaur);
     });
 
@@ -264,7 +264,7 @@ describe('Pokemon Box & Storage Domain Suite', () => {
 
       expect(released).toEqual(['Zubat']);
       expect(gs.state.box[0]?.id).toBe('pidgey');
-      expect(gs.state.box.length).toBe(1);
+      expect(gs.state.box).toHaveLength(1);
 
       gs.state.box = [
         {
@@ -553,8 +553,9 @@ describe('Pokemon Box & Storage Domain Suite', () => {
       expect(vm.sortOrder).toBe('asc');
 
       const itemsMin = wrapper.findAllComponents(PokemonSelectionItem);
-      expect(itemsMin.length).toBe(2);
-      expect(itemsMin[0]?.props('item')?.pokemon.uid).toBe('p2');
+      expect(itemsMin).toHaveLength(2);
+      const minProps = (itemsMin[0]?.props() as { item?: { pokemon?: { uid?: string } } })?.item;
+      expect(minProps?.pokemon?.uid).toBe('p2');
 
       const subHeightMax: ResolvedSubCompetition = {
         id: 'height_magikarp',
@@ -564,13 +565,16 @@ describe('Pokemon Box & Storage Domain Suite', () => {
         speciesScope: 'per_species',
         targetSpecies: 'magikarp'
       };
-      await wrapper.setProps({ subCompetition: subHeightMax });
+      await (
+        wrapper as unknown as { setProps(props: Record<string, unknown>): Promise<void> }
+      ).setProps({ subCompetition: subHeightMax });
 
       expect(vm.sortBy).toBe('height');
       expect(vm.sortOrder).toBe('desc');
 
       const itemsMax = wrapper.findAllComponents(PokemonSelectionItem);
-      expect(itemsMax[0]?.props('item')?.pokemon.uid).toBe('p1');
+      const maxProps = (itemsMax[0]?.props() as { item?: { pokemon?: { uid?: string } } })?.item;
+      expect(maxProps?.pokemon?.uid).toBe('p1');
     });
   });
 

@@ -254,8 +254,8 @@ describe('Illegal Pokémon Security System (Markets, GTS, Box, and Trades)', () 
       const res = box.moveBoxToTeam(0);
       expect(res.success).toBe(false);
       expect(res.msg).toContain('ilegal');
-      expect(gs.state.team.length).toBe(1);
-      expect(gs.state.box.length).toBe(1);
+      expect(gs.state.team).toHaveLength(1);
+      expect(gs.state.box).toHaveLength(1);
       expect(illegalPoke.isIllegal).toBe(true);
     });
 
@@ -300,7 +300,7 @@ describe('Illegal Pokémon Security System (Markets, GTS, Box, and Trades)', () 
       const soldResult = box.doBoxRocketSell();
       expect(soldResult.count).toBe(0);
       expect(soldResult.value).toBe(0);
-      expect(gs.state.box.length).toBe(1); // Not sold, preserved in quarantine
+      expect(gs.state.box).toHaveLength(1); // Not sold, preserved in quarantine
     });
 
     it('should perform Pure Release of illegal Pokémon without returning held items', () => {
@@ -314,7 +314,7 @@ describe('Illegal Pokémon Security System (Markets, GTS, Box, and Trades)', () 
       const released = box.doBoxRelease();
 
       expect(released).toEqual(['Caterpie']);
-      expect(gs.state.box.length).toBe(0);
+      expect(gs.state.box).toHaveLength(0);
       // Masterball was NOT returned to player inventory
       expect(gs.state.inventory['masterball']).toBeUndefined();
     });

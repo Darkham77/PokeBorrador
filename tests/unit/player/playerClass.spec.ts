@@ -110,7 +110,7 @@ describe('Player Class Logic (V3)', () => {
 
     await classStore.collectMission();
 
-    expect(gameStore.state.box.length).toBe(0);
+    expect(gameStore.state.box).toHaveLength(0);
     expect(gameStore.state.money).toBe(500);
     expect(gameStore.state.classData.blackMarketSales).toBe(1);
     expect(inventoryMock.addItem).toHaveBeenCalledWith('firestone', 1);

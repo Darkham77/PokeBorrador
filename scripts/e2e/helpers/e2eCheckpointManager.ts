@@ -1,6 +1,7 @@
-import type { DisplayText } from '@francogp/auditor';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import type { DisplayText } from '@francogp/auditor';
 
 export type SimDriver = 'sqlite' | 'postgres' | 'dual';
 
@@ -164,8 +165,10 @@ export function recordSuiteFailure(
 
   // If a failure was already recorded for this suite, do not overwrite with a higher batch index
   if (
-    existing?.failedBatchIndex != null &&
-    params.failedBatchIndex != null &&
+    existing?.failedBatchIndex !== null &&
+    existing?.failedBatchIndex !== undefined &&
+    params.failedBatchIndex !== null &&
+    params.failedBatchIndex !== undefined &&
     params.failedBatchIndex > existing.failedBatchIndex
   ) {
     return;

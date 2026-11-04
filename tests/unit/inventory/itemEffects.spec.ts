@@ -557,7 +557,7 @@ describe('Subida de PP (pp_up) — flujo completo', () => {
     const move = useGameStore().state.team[0]!.moves[0]!;
     const basePP = 35;
     const maxPossible = Math.floor(basePP * 1.6); // 56
-    expect(move.maxPP >= maxPossible).toBe(true); // guard triggers → no change
+    expect(move.maxPP).toBeGreaterThanOrEqual(maxPossible); // guard triggers → no change
     expect(useGameStore().state.inventory['ppup']).toBe(1); // not consumed
   });
 });
@@ -609,7 +609,7 @@ describe('Máximo PP (pp_max) — flujo completo', () => {
     const move = useGameStore().state.team[0]!.moves[0]!;
     const maxPossible = Math.floor(35 * 1.6); // 56
     // guard in modal: move.maxPP >= maxPossible → notify and return without consuming
-    expect(move.maxPP >= maxPossible).toBe(true);
+    expect(move.maxPP).toBeGreaterThanOrEqual(maxPossible);
     expect(useGameStore().state.inventory['ppmax']).toBe(1);
   });
 

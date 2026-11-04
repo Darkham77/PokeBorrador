@@ -25,7 +25,7 @@ import {
 import { useBreedingStore } from '@/stores/breeding';
 import { useEvolutionStore } from '@/stores/evolution';
 import { useGameStore } from '@/stores/game';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { Pokemon, Move, PokemonIVs } from '@/types/pokemon/pokemon';
 
 import {
   LEGENDARIES,
@@ -74,7 +74,7 @@ describe('Pokemon Evolution & Breeding Domain Suite', () => {
   describe('Breeding Engine - Compatibility & Inheritance', () => {
     describe('requirePokemonSpeciesId', () => {
       it('should require canonical species ids', () => {
-        expect(() => requirePokemonSpeciesId('pikachu_m')).toThrow();
+        expect(() => requirePokemonSpeciesId('pikachu_m')).toThrow(/species|canonical|invalid/i);
         expect(requirePokemonSpeciesId('nidoranf')).toBe('nidoranf');
         expect(requirePokemonSpeciesId('bulbasaur')).toBe('bulbasaur');
       });
@@ -550,8 +550,8 @@ describe('Pokemon Evolution & Breeding Domain Suite', () => {
         e.spa = orig.spa as number;
         e.spd = orig.spd as number;
         e.spe = orig.spe as number;
-        e.moves = orig.moves as unknown as (import('@/types/pokemon/pokemon').Move | null)[];
-        e.ivs = orig.ivs as unknown as import('@/types/pokemon/pokemon').PokemonIVs;
+        e.moves = orig.moves as (Move | null)[];
+        e.ivs = orig.ivs as PokemonIVs;
         e.isShiny = orig.isShiny as boolean;
         e.level = orig.level as number;
         e.nature = toNatureId(orig.nature as string);

@@ -3,9 +3,11 @@
  * Auditoría de paridad de flujo: Compara secuencias Mermaid vs Implementación Dinámica.
  */
 import fs from 'node:fs/promises';
-import path from 'node:path';
 import { enableCompileCache } from 'node:module';
+import path from 'node:path';
+
 import { BaseAuditor, normalizePosixPath, createRuleCapabilities } from '@francogp/auditor';
+
 import { collectFsmFiles } from './_fsmParityParser.ts';
 
 enableCompileCache();
@@ -44,7 +46,7 @@ export async function getExecutionSequence(): Promise<string[]> {
   return sequence.map((s) => s.state);
 }
 
-export function parseMermaidSequences(content: string) {
+export function parseMermaidSequences(content: string): TransitionStep[][] {
   const sequences: TransitionStep[][] = [];
   const blockRx = /```mermaid\n([\s\S]*?)```/g;
   let m: RegExpExecArray | null;
@@ -80,17 +82,17 @@ export const FSM_FLOW_PARITY_RULES: readonly FsmFlowParityRuleId[] = [
 ] as const;
 
 export class FsmFlowParityAuditor extends BaseAuditor<FsmFlowParityRuleId> {
-  constructor() {
+  public constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(FSM_FLOW_PARITY_RULES, {
         speed: 'heavy',
         phase: 'normal',
-        fix: 'none',
         md: false,
         ast: false,
         changedOnly: false,
         critical: false
       }),
+      ruleFixers: {},
       id: 'validate_fsm_flow_parity',
       configKey: 'fsm.flowParity',
       defaultConfig: {

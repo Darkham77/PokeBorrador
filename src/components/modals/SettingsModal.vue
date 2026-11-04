@@ -207,13 +207,13 @@ const handleZoomInput = (e: Event): void => {
   display: block;
   color: var(--white);
   font-size: var(--font-14);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   margin-bottom: 20px;
 }
 
 .zoom-value {
   color: var(--yellow);
-  font-weight: 800;
+  font-weight: $font-weight-extrabold;
 }
 
 .zoom-slider {
@@ -242,7 +242,7 @@ const handleZoomInput = (e: Event): void => {
   display: block;
   color: var(--white);
   font-size: var(--font-14);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
   margin-bottom: 12px;
 }
 

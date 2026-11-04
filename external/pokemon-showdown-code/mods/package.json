@@ -1,6 +1,6 @@
 {
   "name": "@pkmn/mods",
-  "version": "0.10.11",
+  "version": "0.10.12",
   "description": "Support for non-standard mods to @pkmn/sim and @pkmn/dex",
   "license": "MIT",
   "author": "Guangcong Luo <guangcongluo@gmail.com> (http://guangcongluo.com)",
@@ -60,8 +60,8 @@
       "champions": [
         "./build/champions/index.d.ts"
       ],
-      "championsregma": [
-        "./build/championsregma/index.d.ts"
+      "championsregmb": [
+        "./build/championsregmb/index.d.ts"
       ]
     }
   },
@@ -84,7 +84,7 @@
     },
     "./gen3frlg": {
       "require": "./build/gen3frlg/index.js",
-      "import": "./build/gengen3frlg/index.mjs"
+      "import": "./build/gen3frlg/index.mjs"
     },
     "./gen3rs": {
       "require": "./build/gen3rs/index.js",
@@ -126,9 +126,9 @@
       "require": "./build/champions/index.js",
       "import": "./build/champions/index.mjs"
     },
-    "./championsregma": {
-      "require": "./build/championsregma/index.js",
-      "import": "./build/championsregma/index.mjs"
+    "./championsregmb": {
+      "require": "./build/championsregmb/index.js",
+      "import": "./build/championsregmb/index.mjs"
     }
   },
   "publishConfig": {
@@ -144,11 +144,11 @@
     "posttest": "npm run lint"
   },
   "dependencies": {
-    "@pkmn/dex-types": "^0.10.11"
+    "@pkmn/dex-types": "^0.10.12"
   },
   "devDependencies": {
-    "@pkmn/dex": "^0.10.11",
-    "@pkmn/sim": "^0.10.11"
+    "@pkmn/dex": "^0.10.12",
+    "@pkmn/sim": "^0.10.12"
   },
   "jest": {
     "preset": "ts-jest",

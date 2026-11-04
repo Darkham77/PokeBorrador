@@ -21,7 +21,7 @@ import {
   type TerrainCell
 } from '../../logic/map/canonicalBridgeEngine.ts';
 
-describe.skip('Bridge Turn Continuity & Zero-Diced Invariant', () => {
+describe('Bridge Turn Continuity & Zero-Diced Invariant', () => {
   it('guarantees L-turns render unbroken horizontal spans and clean vertical entrances', () => {
     const W = 15;
     const H = 15;

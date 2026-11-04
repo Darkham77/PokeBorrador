@@ -14,6 +14,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { isMainModule } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
 
@@ -383,7 +384,8 @@ function main(): void {
 export const command = defineCommand({
   meta: {
     name: 'migrate-dox-sections',
-    description: 'Migra los archivos AGENTS.md a las 6 secciones canónicas requeridas por la arquitectura'
+    description:
+      'Migra los archivos AGENTS.md a las 6 secciones canónicas requeridas por la arquitectura'
   },
   run() {
     main();
@@ -391,5 +393,5 @@ export const command = defineCommand({
 });
 
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

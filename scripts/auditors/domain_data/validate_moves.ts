@@ -1,19 +1,24 @@
-import type { DisplayText } from '@francogp/auditor';
+import fs from 'node:fs/promises';
 /**
  * scripts/auditors/domain_data/validate_moves.ts
  *
  * MOVE INTEGRITY VALIDATOR (Node.js 26+ Native)
  * Validates learnset moves against Gen 3 Showdown Dex and local Spanish translations.
  */
-
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { Dex, toID, type ID } from '@pkmn/sim';
-import { ACTIVE_GENERATION, isEnabledPokemonId } from '../../../src/data/system/constants.ts';
+import path from 'node:path';
+
+import type { DisplayText } from '@francogp/auditor';
 import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
+import { Dex, toID, type ID } from '@pkmn/sim';
+
+import {
+  MOVE_TRANSLATIONS_ES,
+  isPokemonMoveId,
+  type PokemonMoveId
+} from '../../../src/data/battle/moves.ts';
 import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
-import { MOVE_TRANSLATIONS_ES, isPokemonMoveId, type PokemonMoveId } from '../../../src/data/battle/moves.ts';
+import { ACTIVE_GENERATION, isEnabledPokemonId } from '../../../src/data/system/constants.ts';
 
 enableCompileCache();
 
@@ -148,17 +153,17 @@ function resolveSelfBoostEffect(self: {
 }
 
 export class MoveAuditor extends BaseAuditor<MoveRuleId> {
-  constructor() {
+  public constructor() {
     super({
       ruleCapabilities: createRuleCapabilities(MOVE_RULES, {
         speed: 'heavy',
         phase: 'normal',
-        fix: 'none',
         md: false,
         ast: false,
         changedOnly: false,
         critical: false
       }),
+      ruleFixers: {},
       id: 'validate_moves',
       configKey: 'domain.moves',
       defaultConfig: {
@@ -304,7 +309,7 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
           });
         }
       } catch (err) {
-        err;
+        console.warn('[Handled controlled exception]:', err);
       }
     });
 

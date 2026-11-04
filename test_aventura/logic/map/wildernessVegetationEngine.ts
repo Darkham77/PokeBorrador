@@ -192,7 +192,8 @@ export function generateWildernessLayer(
         trees: rawTrees,
         props,
         pathGrid,
-        blockedMask: treeBlocked
+        blockedMask: treeBlocked,
+        pois
       });
     }
   }

@@ -47,6 +47,5 @@
       "@/styles/*": ["./src/styles/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "ui-demo/**/*.ts", "ui-demo/**/*.vue"],
-  "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "ui-demo/**/*.ts", "ui-demo/**/*.vue"]
 }

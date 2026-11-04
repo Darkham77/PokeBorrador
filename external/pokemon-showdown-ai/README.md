@@ -4,7 +4,7 @@
 
 built this because I wanted to see how far you can push an AI agent in competitive pokemon. no manual input, no handholding — it logs in, queues games, reads the board, and makes decisions using a layered heuristic + LLM pipeline. it plays gen 9 random battles on the official ladder, handles switching, hazards, setup, sacking, and even throws in occasional imperfect plays so it doesn't look like a bot.
 
-## ✨ what you'll get
+## ✨ what you'll get:
 
 - 🧠 **claude-powered decision making** — feeds full battle context, damage calcs, inference data, and strategic evaluation to Claude when heuristics can't resolve
 - 🎯 **9-layer heuristic engine** — handles guaranteed KOs, priority finishes, hazard management, setup opportunities, and bad matchup pivots before ever calling the API
@@ -17,7 +17,7 @@ built this because I wanted to see how far you can push an AI agent in competiti
 - 🔌 **auto-reconnect** — exponential backoff reconnection with up to 5 retry attempts
 - 🆓 **always free** — no subscriptions, no telemetry, no locked features
 
-## 🚀 getting it running
+## 🚀 getting it running:
 
 ### ⚡ quick deploy
 
@@ -74,7 +74,7 @@ MAX_BATTLES=0          # 0 = unlimited
 VERBOSE=true           # enables debug logging
 ```
 
-## 💻 local development
+## 💻 local development:
 
 **requirements:** Node.js 18+ and npm
 
@@ -101,7 +101,7 @@ npm start
 
 open your terminal and start battling! 💻
 
-## 🔧 how it's built
+## 🔧 how it's built:
 
 TypeScript because types matter when you're tracking 12 pokemon states simultaneously. WebSocket because that's how Showdown works. Claude because sometimes the board state is too nuanced for hardcoded rules.
 
@@ -134,7 +134,7 @@ every turn runs through a layered decision pipeline:
 - probabilistic reasoning over assumptions
 - zero external dependencies beyond what's needed
 
-## 🧠 decision pipeline breakdown
+## 🧠 decision pipeline breakdown:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -158,7 +158,7 @@ every turn runs through a layered decision pipeline:
 └─────────────────────────────────────────────────────────┘
 ```
 
-## 📁 project structure
+## 📁 project structure:
 
 ```
 pokemon-showdown-ai/
@@ -198,7 +198,7 @@ pokemon-showdown-ai/
 └── tsconfig.json
 ```
 
-## 🤝 contributing
+## 🤝 contributing:
 
 found a bug? have an idea? contributions are welcome!
 
@@ -211,7 +211,7 @@ found a bug? have an idea? contributions are welcome!
 
 please keep TypeScript strict, add proper types, and follow the existing module patterns.
 
-## 🗺️ roadmap
+## 🗺️ roadmap:
 
 - [ ] team preview optimization for non-random formats
 - [ ] multi-format support (OU, UU, etc.)

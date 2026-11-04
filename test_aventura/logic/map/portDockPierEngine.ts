@@ -70,29 +70,12 @@ export function stampPortDockPier(options: StampPortDockPierOptions): void {
         }
       }
     }
-  } else if (facing === 'east') {
-    const startX = node.gridX + node.footprint.width;
+  } else if (facing === 'east' || facing === 'west') {
+    const dir = facing === 'east' ? 1 : -1;
+    const startX = facing === 'east' ? node.gridX + node.footprint.width : node.gridX - 1;
     const py = node.gridY + 2;
     for (let dx = 0; dx < pierLength; dx++) {
-      const px = startX + dx;
-      if (py >= 0 && py + 2 < H && px >= 0 && px < W) {
-        if (isWaterAt(px, py) && isWaterAt(px, py + 1) && isWaterAt(px, py + 2)) {
-          bridgeGrid[py]![px] = true;
-          bridgeGrid[py + 1]![px] = true;
-          bridgeGrid[py + 2]![px] = true;
-          portDockBridgeKeys.add(`${px}_${py}`);
-          portDockBridgeKeys.add(`${px}_${py + 1}`);
-          portDockBridgeKeys.add(`${px}_${py + 2}`);
-        } else {
-          break;
-        }
-      }
-    }
-  } else if (facing === 'west') {
-    const startX = node.gridX - 1;
-    const py = node.gridY + 2;
-    for (let dx = 0; dx < pierLength; dx++) {
-      const px = startX - dx;
+      const px = startX + dx * dir;
       if (py >= 0 && py + 2 < H && px >= 0 && px < W) {
         if (isWaterAt(px, py) && isWaterAt(px, py + 1) && isWaterAt(px, py + 2)) {
           bridgeGrid[py]![px] = true;

@@ -127,7 +127,7 @@ function handlePillLeave(e: MouseEvent): void {
   background: Rgb(255 255 255 / 3%);
   color: Rgb(241 245 249 / 90%);
   font-size: var(--font-9);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   cursor: help;
   user-select: none;
   box-sizing: border-box;
@@ -143,7 +143,7 @@ function handlePillLeave(e: MouseEvent): void {
 
   .reward-icon {
     font-size: var(--font-11);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     line-height: 1;
   }
 

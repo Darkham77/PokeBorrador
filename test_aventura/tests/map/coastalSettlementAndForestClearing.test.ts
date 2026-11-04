@@ -37,17 +37,17 @@ describe('coastalSettlementAndForestClearing', () => {
 
     const layout = generateSettlementLayout(leagueNode);
     expect(layout.nodeId).toBe('pokemon_league_plateau');
-    expect(layout.buildings.length).toBe(1);
+    expect(layout.buildings).toHaveLength(1);
 
     // League Climax Ceremonial Simplicity Mandate: 0 pavedPlazaCells
-    expect(layout.pavedPlazaCells.length).toBe(0);
+    expect(layout.pavedPlazaCells).toHaveLength(0);
 
     // Direct ceremonial path connecting palace down the plateau
     expect(layout.internalStreets.length).toBeGreaterThan(0);
 
     // Standalone / orphan statues strictly forbidden
     const statues = layout.props.filter((p) => p.type === 'statue');
-    expect(statues.length).toBe(0);
+    expect(statues).toHaveLength(0);
 
     // Flanking ceremonial street lamps present
     const lamps = layout.props.filter((p) => p.type === 'lamp');
@@ -78,7 +78,7 @@ describe('coastalSettlementAndForestClearing', () => {
     const layout = generateSettlementLayout(cinnabarNode);
 
     // Coastal & Island Settlement Natural Ground Mandate: 0 cobblestone slabs
-    expect(layout.pavedPlazaCells.length).toBe(0);
+    expect(layout.pavedPlazaCells).toHaveLength(0);
     expect(layout.roadMaterial).toBe('dirt');
     expect(layout.curbs?.length ?? 0).toBe(0);
 
@@ -147,7 +147,7 @@ describe('coastalSettlementAndForestClearing', () => {
 
     // Zero Fences on Stone Plaza Mandate: fences with baked-in green backgrounds are strictly forbidden
     const fences = layout.props.filter((p) => p.type === 'fence_h');
-    expect(fences.length).toBe(0);
+    expect(fences).toHaveLength(0);
 
     // Zero Mailbox on Stone Plaza Mandate: rural mailboxes are strictly excluded from urban metropolises
     const mailbox = layout.props.find((p) => p.type === 'mailbox');

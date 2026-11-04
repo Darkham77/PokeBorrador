@@ -4,13 +4,14 @@
  * for testing and Playwright simulation environments.
  */
 
+import { spawnSync, spawn } from 'node:child_process';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import fsPromises from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { styleText } from 'node:util';
-import { spawnSync, spawn } from 'node:child_process';
-import crypto from 'node:crypto';
+
 import postgres from 'postgres';
 
 export const CONTAINER_NAME = 'pokevicio-test-postgres';
@@ -25,7 +26,7 @@ export const JWT_SECRET = 'super-secret-jwt-token-with-at-least-32-characters-lo
 
 export function createSignedJwt(payload: Record<string, unknown>, secret = JWT_SECRET): string {
   const header = { alg: 'HS256', typ: 'JWT' };
-  const b64 = (obj: unknown) => Buffer.from(JSON.stringify(obj)).toString('base64url');
+  const b64 = (obj: unknown): string => Buffer.from(JSON.stringify(obj)).toString('base64url');
   const unsigned = `${b64(header)}.${b64(payload)}`;
   const signature = crypto.createHmac('sha256', secret).update(unsigned).digest('base64url');
   return `${unsigned}.${signature}`;
@@ -79,7 +80,7 @@ function findDockerInSystemPath(isWin: boolean): string | null {
       }
     }
   } catch (err) {
-    err;
+    console.warn('[Handled controlled exception]:', err);
   }
   return null;
 }
@@ -191,7 +192,7 @@ export async function tryStartDockerDaemon(dockerBin: string): Promise<boolean> 
       spawnSync('sudo', ['systemctl', 'start', 'docker'], { stdio: 'ignore' });
     }
   } catch (err) {
-    err;
+    console.warn('[Handled controlled exception]:', err);
   }
 
   for (let i = 1; i <= DOCKER_START_POLL_ATTEMPTS; i++) {
@@ -204,8 +205,9 @@ export async function tryStartDockerDaemon(dockerBin: string): Promise<boolean> 
 
   console.log(
     styleText(
-      'yellow',
-      '⚠️  No se pudo iniciar el servicio de Docker automáticamente en el tiempo límite.'
+      'red',
+      '🚨 [DOCKER APAGADO] No se pudo iniciar el servicio de Docker automáticamente en el tiempo límite.\n' +
+        '👉 POR FAVOR, ABRE Y ENCIENDE DOCKER DESKTOP MANUALMENTE PARA CONTINUAR.'
     )
   );
   return false;
@@ -448,7 +450,7 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
     try {
       await sql.unsafe("NOTIFY pgrst, 'reload schema';");
     } catch (err) {
-      err;
+      console.warn('[Handled controlled exception]:', err);
     }
   } finally {
     await sql.end();
@@ -488,7 +490,7 @@ export async function waitForPostgrest(maxRetries = POSTGRES_READY_MAX_RETRIES):
         return true;
       }
     } catch (err) {
-      err;
+      console.warn('[Handled controlled exception]:', err);
     }
     await new Promise((resolve) => setTimeout(resolve, POSTGRES_POLL_INTERVAL_MS));
   }
@@ -506,7 +508,7 @@ export function stopPostgresTestContainer(dockerBin?: string | null): void {
       spawnSync(bin, ['rm', '-f', POSTGREST_CONTAINER_NAME], { stdio: 'ignore' });
       spawnSync(bin, ['rm', '-f', CONTAINER_NAME], { stdio: 'ignore' });
     } catch (err) {
-      err;
+      console.warn('[Handled controlled exception]:', err);
     }
   }
 }

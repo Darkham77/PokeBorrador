@@ -24,6 +24,7 @@ interface AtmosphereLayerProps {
 }
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { logger } from '@/logic/utils/logger';
 
 import { GOLDEN_RATIO_FACTOR } from './atmosphereSandstormHelper';
 
@@ -305,13 +306,17 @@ const initWeatherAnim = (): void => {
   };
 
   if (shouldActivateCanvas(w)) {
-    nextTick(() => {
-      if (canvasRef.value && !worker) {
-        initWorker();
-      } else {
-        updateWorkerParams();
-      }
-    });
+    nextTick()
+      .then(() => {
+        if (canvasRef.value && !worker) {
+          initWorker();
+        } else {
+          updateWorkerParams();
+        }
+      })
+      .catch((err: unknown) => {
+        logger.warn('AtmosphereLayer', err);
+      });
   } else {
     pauseWorker();
   }

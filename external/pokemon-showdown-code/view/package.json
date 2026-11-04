@@ -1,6 +1,6 @@
 {
   "name": "@pkmn/view",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "Library for building Pokémon Showdown client UIs",
   "license": "MIT",
   "repository": "github:pkmn/ps",
@@ -27,8 +27,8 @@
     "posttest": "npm run lint"
   },
   "dependencies": {
-    "@pkmn/protocol": "^0.7.3",
-    "@pkmn/types": "^4.0.0"
+    "@pkmn/protocol": "^0.7.4",
+    "@pkmn/types": "^5.0.0"
   },
   "jest": {
     "preset": "ts-jest",

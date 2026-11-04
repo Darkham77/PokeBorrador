@@ -7,6 +7,7 @@
  */
 
 import type { AssetUri, DisplayText } from '@francogp/auditor';
+
 import type { POINode, RouteType, UrbanRoadMaterial } from '../../types/map/poiTypes.ts';
 
 export type CanonicalPresetId = 'kanto' | 'johto';

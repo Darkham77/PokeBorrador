@@ -14,6 +14,7 @@ import { defineComponent, ref } from 'vue';
 import { useBattleCombatantSpriteLoop } from '@/components/battle/useBattleCombatantSpriteLoop';
 import { useBattleCombatantState } from '@/components/battle/useBattleCombatantState';
 import { useCombatantStatus } from '@/composables/battle/useCombatantStatus';
+import type * as ConstantsModule from '@/data/system/constants';
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
 import {
   POKEMON_SPRITE_IDLE_FPS,
@@ -33,7 +34,7 @@ vi.mock('@/logic/services/assetService', () => ({
 }));
 
 vi.mock('@/data/system/constants', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/data/system/constants')>();
+  const actual = await importOriginal<typeof ConstantsModule>();
   return {
     ...actual,
     ACTIVE_GENERATION: 4,

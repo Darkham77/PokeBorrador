@@ -18,8 +18,9 @@ import {
 import { FEET_COORDINATES_DATA } from '@/data/pokemon/feetCoordinatesData';
 import { GLOBAL_SHADOW_CONFIG } from '@/data/pokemon/pokemonFeetDatabase';
 import { logger } from '@/logic/utils/logger';
-import type { BinaryGender } from '@/types/pokemon/spriteShadows';
+import { safeSessionStorage } from '@/logic/utils/storage';
 import type {
+  BinaryGender,
   SpriteShadowOverridesMap,
   SpriteShadowOverride,
   EditorEntity,
@@ -122,10 +123,8 @@ export function useShadowEditor(): UseShadowEditorReturn {
 
   // Helper to read from sessionStorage safely
   const getSessionNumber = (key: string, fallback: number): number => {
-    if (typeof globalThis.window === 'undefined' || typeof sessionStorage === 'undefined')
-      return fallback;
     try {
-      const val = sessionStorage.getItem(key);
+      const val = safeSessionStorage.getItem(key);
       if (val !== null) {
         const num = parseFloat(val);
         if (!isNaN(num) && num > 0) return num;
@@ -137,9 +136,8 @@ export function useShadowEditor(): UseShadowEditorReturn {
   };
 
   const setSessionValue = (key: string, val: string): void => {
-    if (typeof globalThis.window === 'undefined' || typeof sessionStorage === 'undefined') return;
     try {
-      sessionStorage.setItem(key, val);
+      safeSessionStorage.setItem(key, val);
     } catch (err) {
       logger.warn('Handled controlled exception:', { cause: err });
     }

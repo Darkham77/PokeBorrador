@@ -38,7 +38,7 @@ describe('Asset Banner Resolution & GitHub Pages Parity', () => {
   });
 
   it('guarantees that all 12 seasonal tournament themes store canonical IDs without hardcoded /assets/ prefix', () => {
-    expect(SEASONAL_ANNUAL_THEMES.length).toBe(12);
+    expect(SEASONAL_ANNUAL_THEMES).toHaveLength(12);
     for (const theme of SEASONAL_ANNUAL_THEMES) {
       expect(theme.bannerImage).not.toContain('/assets/');
       expect(theme.bannerImage).not.toContain('.webp');

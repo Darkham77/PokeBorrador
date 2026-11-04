@@ -31,7 +31,9 @@ async function handleWatch(): Promise<void> {
 
     const { data, error } = await gameStore.db
       .from('battle_replays')
-      .select('*')
+      .select(
+        'id, battle_code, p1_id, p2_id, p1_data, p2_data, choice_stream, initial_seed, winner_side, total_turns, seasonal_theme_id, created_at'
+      )
       .eq('battle_code', props.battleCode)
       .single();
 

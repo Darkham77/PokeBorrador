@@ -1,8 +1,9 @@
 import { test, expect, type Page } from '@playwright/test';
+
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { waitForWaitInput, verifyHpParity, type CertifiedTestBatch } from '../e2e_helpers.ts';
-import { loadCertifiedBattleCases } from '../helpers/certifiedCaseLoader.ts';
 import { registerCertifiedBatchTests } from '../helpers/batchSimulationHarness.ts';
+import { loadCertifiedBattleCases } from '../helpers/certifiedCaseLoader.ts';
 import { MAX_SUITE_TOTAL_TIMEOUT_MS } from '../simulation_config.ts';
 
 const E2E_SNORLAX_LEVEL = 50;

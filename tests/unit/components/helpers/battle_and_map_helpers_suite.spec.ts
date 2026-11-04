@@ -56,7 +56,6 @@ import {
   EQUIPPED_TOOL_WEIGHT_BONUS,
   BASE_GROUND_WEIGHT
 } from '@/composables/modals/routeSpawnsCalculationHelper';
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 function createMockPokemon(overrides: Partial<Pokemon> = {}): Pokemon {
@@ -399,7 +398,7 @@ describe('Battle & Map Helpers Domain Suite', () => {
       it('calculates boosted weight on rainy weather and equipped rod', () => {
         const res = calculateFishingWeight({
           hasFishing: true,
-          weather: 'rain' as WeatherId,
+          weather: 'rain',
           hasFishingRod: true,
           eventFishingBonus: 1.5
         });
@@ -456,7 +455,7 @@ describe('Battle & Map Helpers Domain Suite', () => {
     describe('computeActiveWeights', () => {
       it('computes ground weight only when no fishing or archaeology', () => {
         const map = createMockLocation();
-        const res = computeActiveWeights(map, 'clear' as WeatherId, {
+        const res = computeActiveWeights(map, 'clear', {
           hasFishingRod: false,
           hasPickaxeOrBrush: false
         });
@@ -475,7 +474,7 @@ describe('Battle & Map Helpers Domain Suite', () => {
       it('parses boost prefix and identifies types', () => {
         const desc = 'POTENCIA: Movimientos de tipo Fuego.';
         const res = parseWeatherDescription(desc);
-        expect(res.length).toBe(1);
+        expect(res).toHaveLength(1);
         expect(res[0]?.typeClass).toBe('boost');
         expect(res[0]?.icon).toBe('▲ ');
         expect(res[0]?.label).toBe('POTENCIA:');
@@ -487,7 +486,7 @@ describe('Battle & Map Helpers Domain Suite', () => {
       it('parses debuff prefix and identifies types', () => {
         const desc = 'DEBILITA: Ataques de tipo Agua.';
         const res = parseWeatherDescription(desc);
-        expect(res.length).toBe(1);
+        expect(res).toHaveLength(1);
         expect(res[0]?.typeClass).toBe('debuff');
         expect(res[0]?.icon).toBe('▼ ');
         const aguaSegment = res[0]?.segments.find((s) => s.type === 'water');

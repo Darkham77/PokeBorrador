@@ -20,8 +20,7 @@ import {
   getSelectableNatures,
   getSelectableAbilities
 } from '@/logic/utils/routeSpawnHelpers';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { PokemonStatKey, PokemonMoveId } from '@/types/pokemon/pokemon';
+import type { Pokemon, PokemonStatKey, PokemonMoveId } from '@/types/pokemon/pokemon';
 
 // Subcomponents
 import DebugSearchSelect from './DebugSearchSelect.vue';

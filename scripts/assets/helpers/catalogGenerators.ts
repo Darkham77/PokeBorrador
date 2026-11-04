@@ -1,16 +1,17 @@
-import type { DisplayText } from '@francogp/auditor';
+import fsSync from 'node:fs';
 /**
  * scripts/assets/helpers/catalogGenerators.ts
  *
  * Immutable static database and catalog generators for the asset conversion pipeline.
  * Generates bushCatalog, map-assets, pokemonFeetDatabase, npcSpriteCatalog, and animatedSpriteDatabase.
  */
-
 import fs from 'node:fs/promises';
-import fsSync from 'node:fs';
 import path from 'node:path';
 import { styleText } from 'node:util';
+
+import type { DisplayText } from '@francogp/auditor';
 import { Dex, toID } from '@pkmn/sim';
+
 import type {
   SpriteShadowOverride,
   SpriteShadowOverridesMap,
@@ -291,7 +292,10 @@ function resolveShadowOverridesSync(
 ): Record<DisplayText, SpriteShadowOverride> {
   if (overrides) return overrides;
   try {
-    const overridesPath = path.resolve(process.cwd(), 'src/data/pokemon/spriteShadowOverrides.json');
+    const overridesPath = path.resolve(
+      process.cwd(),
+      'src/data/pokemon/spriteShadowOverrides.json'
+    );
     if (fsSync.existsSync(overridesPath)) {
       return JSON.parse(fsSync.readFileSync(overridesPath, 'utf8'));
     }
@@ -686,7 +690,7 @@ async function loadShadowOverrides(overridesPath: string): Promise<{
       }
     }
   } catch (err) {
-    err;
+    console.warn('[Handled controlled exception]:', err);
   }
   return { overrides, globalShadowConfig };
 }
@@ -716,13 +720,13 @@ async function populateFlatFeetDb(
 ): Promise<Record<DisplayText, { feetY: number; feetX: number }>> {
   const flatDb: Record<DisplayText, { feetY: number; feetX: number }> = {};
   for (const [subKey, tuple] of Object.entries(existingPacked.p || {})) {
-    flatDb[`/assets/sprites/pokemon/${subKey}.webp`] = { feetY: tuple[0]!, feetX: tuple[1]! };
+    flatDb[`/assets/sprites/pokemon/${subKey}.webp`] = { feetY: tuple[0], feetX: tuple[1] };
   }
   for (const [subKey, tuple] of Object.entries(existingPacked.n || {})) {
-    flatDb[`/assets/sprites/npc/${subKey}.webp`] = { feetY: tuple[0]!, feetX: tuple[1]! };
+    flatDb[`/assets/sprites/npc/${subKey}.webp`] = { feetY: tuple[0], feetX: tuple[1] };
   }
   for (const [subKey, tuple] of Object.entries(existingPacked.t || {})) {
-    flatDb[`/assets/sprites/trainers/${subKey}.webp`] = { feetY: tuple[0]!, feetX: tuple[1]! };
+    flatDb[`/assets/sprites/trainers/${subKey}.webp`] = { feetY: tuple[0], feetX: tuple[1] };
   }
 
   await scanDirectoryForMissingSprites(
@@ -871,7 +875,7 @@ export async function generateNpcSpriteCatalog(
 
   for (const key of Object.keys(catalogLists)) {
     catalogLists[key] = Array.from(new Set(catalogLists[key])).sort();
-    if (catalogLists[key]!.length === 0) {
+    if (catalogLists[key].length === 0) {
       catalogLists[key] = ['entrenador_h_front'];
     }
   }

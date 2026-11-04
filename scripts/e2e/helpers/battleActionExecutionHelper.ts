@@ -1,5 +1,7 @@
 import type { Page } from '@playwright/test';
-import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
+
+import type { ItemId } from '../../../src/data/inventory/items.ts';
+import type { BattleReadyForInputDetail } from '../../../src/types/battle/battleEvents.ts';
 import {
   armBattleReadyForInput,
   awaitBattleReadyForInput,
@@ -8,8 +10,7 @@ import {
   clickResilient,
   type WindowWithResolver
 } from '../e2e_helpers.ts';
-import type { BattleReadyForInputDetail } from '../../../src/types/battle/battleEvents.ts';
-import type { ItemId } from '../../../src/data/inventory/items.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 
 const THROW_BALL_TIMEOUT_MULTIPLIER = 2;
 
@@ -134,25 +135,20 @@ export async function getBattleStoreStateHelper(page: Page): Promise<BattleStore
 export async function isHealthyBenchUidHelper(page: Page, uid?: string): Promise<boolean> {
   if (!uid) return false;
   return await page.evaluate((targetUid) => {
-    const debug = window.__VITE_DEBUG__ as
-      | {
-          useGameStore?: () => {
-            state?: { team?: Array<{ uid?: string; hp?: number }> };
-            team?: Array<{ uid?: string; hp?: number }>;
-          };
-          useBattleStore?: () => {
-            player?: { uid?: string };
-            activeBattle?: { player?: { uid?: string } };
-          };
-        }
-      | undefined;
-    const gameStore = debug?.useGameStore?.();
-    const battleStore = debug?.useBattleStore?.();
-    const team = (gameStore?.team || gameStore?.state?.team || []) as Array<{
-      uid?: string;
-      hp?: number;
-    }>;
-    const activeUid = battleStore?.player?.uid ?? null;
+    const win = window as unknown as {
+      __VITE_DEBUG__?: {
+        useGameStore?: () => {
+          team?: Array<{ uid?: string; hp?: number }>;
+          state?: { team?: Array<{ uid?: string; hp?: number }> };
+        };
+        useBattleStore?: () => { player?: { uid?: string } };
+      };
+    };
+    const team =
+      win.__VITE_DEBUG__?.useGameStore?.()?.team ||
+      win.__VITE_DEBUG__?.useGameStore?.()?.state?.team ||
+      [];
+    const activeUid = win.__VITE_DEBUG__?.useBattleStore?.()?.player?.uid ?? null;
     const p = team.find((poke) => poke && poke.uid === targetUid);
     return Boolean(p && typeof p.hp === 'number' && p.hp > 0 && p.uid !== activeUid);
   }, uid);
@@ -160,25 +156,20 @@ export async function isHealthyBenchUidHelper(page: Page, uid?: string): Promise
 
 export async function getHealthyBenchUidHelper(page: Page): Promise<string | undefined> {
   return await page.evaluate(() => {
-    const debug = window.__VITE_DEBUG__ as
-      | {
-          useGameStore?: () => {
-            state?: { team?: Array<{ uid?: string; hp?: number }> };
-            team?: Array<{ uid?: string; hp?: number }>;
-          };
-          useBattleStore?: () => {
-            player?: { uid?: string };
-            activeBattle?: { player?: { uid?: string } };
-          };
-        }
-      | undefined;
-    const gameStore = debug?.useGameStore?.();
-    const battleStore = debug?.useBattleStore?.();
-    const team = (gameStore?.team || gameStore?.state?.team || []) as Array<{
-      uid?: string;
-      hp?: number;
-    }>;
-    const activeUid = battleStore?.player?.uid ?? null;
+    const win = window as unknown as {
+      __VITE_DEBUG__?: {
+        useGameStore?: () => {
+          team?: Array<{ uid?: string; hp?: number }>;
+          state?: { team?: Array<{ uid?: string; hp?: number }> };
+        };
+        useBattleStore?: () => { player?: { uid?: string } };
+      };
+    };
+    const team =
+      win.__VITE_DEBUG__?.useGameStore?.()?.team ||
+      win.__VITE_DEBUG__?.useGameStore?.()?.state?.team ||
+      [];
+    const activeUid = win.__VITE_DEBUG__?.useBattleStore?.()?.player?.uid ?? null;
     const healthy = team.find(
       (p) => p && typeof p.hp === 'number' && p.hp > 0 && Boolean(p.uid) && p.uid !== activeUid
     );
@@ -348,11 +339,15 @@ export async function voluntarySwitchHelper(
     const forceSw = bState?.playerRequest?.forceSwitch;
     const hasPendingForceSwitch = Array.isArray(forceSw) ? forceSw.some(Boolean) : Boolean(forceSw);
     const subStateRaw = battleStore?.currentSubState;
+    const subStateRawVal =
+      subStateRaw && typeof subStateRaw === 'object' && 'value' in subStateRaw
+        ? (subStateRaw as { value?: unknown }).value
+        : undefined;
     const subStateStr =
       typeof subStateRaw === 'string'
         ? subStateRaw
-        : subStateRaw && typeof subStateRaw === 'object' && 'value' in subStateRaw
-          ? String((subStateRaw as { value?: unknown }).value ?? '')
+        : typeof subStateRawVal === 'string'
+          ? subStateRawVal
           : '';
     const isForced =
       Boolean(uiStore?.isBattleSwitchForced) ||

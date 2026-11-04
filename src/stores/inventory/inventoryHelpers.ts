@@ -1,7 +1,7 @@
 import { getItemById, requireItemId, isItemId, type ItemId } from '@/data/inventory/items';
 import { itemEffects as ITEM_EFFECTS, getDynamicItemEffect } from '@/logic/items/itemEffects';
 import { isGlobalItem } from '@/logic/providers/itemProvider.ts';
-import { useGameStore } from '@/stores/game.ts';
+import { type useGameStore } from '@/stores/game.ts';
 import type {
   Inventory,
   Item as ItemData,

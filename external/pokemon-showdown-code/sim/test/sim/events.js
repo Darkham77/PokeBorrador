@@ -57,7 +57,7 @@ describe('Battle#onEvent', () => {
       [{ species: 'Pidgeot', ability: 'keeneye', moves: ['bulkup'] }],
       [{ species: 'Talonflame', ability: 'galewings', moves: ['peck'] }]
     ]);
-    assert.throws(battle.onEvent, TypeError);
+    assert.throws(() => battle.onEvent(), TypeError);
     assert.throws(() => {
       battle.onEvent('Hit');
     }, TypeError);

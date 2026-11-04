@@ -308,10 +308,24 @@ describe('New set format (slow)', () => {
       roles: [
         'Fast Attacker',
         'Setup Sweeper',
+        'Wallbreaker',
         'Bulky Attacker',
         'Bulky Setup',
         'Bulky Support',
         'Fast Support'
+      ]
+    },
+    gen9championsrandomdoublesbattle: {
+      filename: 'champions/doubles-sets',
+      roles: [
+        'Doubles Fast Attacker',
+        'Doubles Setup Sweeper',
+        'Doubles Wallbreaker',
+        'Doubles Bulky Attacker',
+        'Doubles Bulky Setup',
+        'Offensive Protect',
+        'Doubles Support',
+        'Choice Item user'
       ]
     }
   };
@@ -414,7 +428,10 @@ describe('New set format (slow)', () => {
       testTeam({ format, rounds }, (team) => {
         for (const pokemon of team)
           assert(
-            pokemon.name === 'Ditto' || pokemon.name === 'Unown' || pokemon.moves.length === 4,
+            pokemon.name === 'Ditto' ||
+              pokemon.name === 'Unown' ||
+              pokemon.moves.includes('lastresort') ||
+              pokemon.moves.length === 4,
             `In ${format}, ${pokemon.name} can generate with ${pokemon.moves.length} moves`
           );
       });
@@ -466,7 +483,7 @@ describe('New set format (slow)', () => {
                 m.startsWith('hiddenpower') ? m : dex.moves.get(m).id
               );
               let moveSet;
-              if (mod === 'gen9') {
+              if (dex.gen === 9) {
                 moveSet = generator.randomMoveset(
                   types,
                   abilities,

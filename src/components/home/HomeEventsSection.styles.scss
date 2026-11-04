@@ -288,7 +288,7 @@
   background: transparent;
   color: var(--white, #fff);
   font-size: var(--font-11);
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
 
   &:hover {

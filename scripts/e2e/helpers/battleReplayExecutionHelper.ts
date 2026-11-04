@@ -1,7 +1,8 @@
 import type { DisplayText } from '@francogp/auditor';
 import type { Page } from '@playwright/test';
-import { awaitBattleReadyForInput, type CertifiedTestBatch } from '../e2e_helpers.ts';
+
 import type { BattleReadyForInputDetail } from '../../../src/types/battle/battleEvents.ts';
+import { awaitBattleReadyForInput, type CertifiedTestBatch } from '../e2e_helpers.ts';
 import {
   isHealthyBenchUidHelper,
   getHealthyBenchUidHelper,

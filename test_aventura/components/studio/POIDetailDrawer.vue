@@ -249,7 +249,7 @@ function onDrawerLeave(el: Element, done: () => void): void {
       padding: 2px 8px;
       border-radius: $radius-sm;
       font-size: var(--font-10);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
       align-self: flex-start;
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -292,7 +292,7 @@ function onDrawerLeave(el: Element, done: () => void): void {
       margin: 0;
       color: var(--white);
       font-size: var(--font-18);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
     }
   }
 
@@ -330,7 +330,7 @@ function onDrawerLeave(el: Element, done: () => void): void {
     margin: 0;
     color: var(--slate-400);
     font-size: var(--font-12);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -357,7 +357,7 @@ function onDrawerLeave(el: Element, done: () => void): void {
       color: var(--sky);
       font-family: monospace;
       font-size: var(--font-14);
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
     }
   }
 }
@@ -379,7 +379,7 @@ function onDrawerLeave(el: Element, done: () => void): void {
       color: var(--sky);
       font-family: monospace;
       font-size: var(--font-18);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
     }
     .b-label {
       color: var(--slate-400);
@@ -415,7 +415,7 @@ function onDrawerLeave(el: Element, done: () => void): void {
       .b-type {
         color: var(--slate-100);
         font-size: var(--font-13);
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         text-transform: capitalize;
       }
       .b-door {
@@ -434,67 +434,67 @@ function onDrawerLeave(el: Element, done: () => void): void {
   margin: 0;
   padding: 0;
   list-style: none;
+}
 
-  .route-item {
+.route-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: $radius-md;
+  background: Rgb(0 0 0 / 20%);
+  cursor: pointer;
+
+  &:hover,
+  &.is-selected {
+    background: Rgb(2 132 199 / 15%);
+    border-color: var(--sky-dark);
+  }
+
+  .route-lead {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 8px 10px;
-    border: 1px solid transparent;
-    border-radius: $radius-md;
-    background: Rgb(0 0 0 / 20%);
-    cursor: pointer;
+    gap: $spacing-sm;
 
-    &:hover,
-    &.is-selected {
-      background: Rgb(2 132 199 / 15%);
-      border-color: var(--sky-dark);
-    }
+    .route-bullet {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
 
-    .route-lead {
-      display: flex;
-      align-items: center;
-      gap: $spacing-sm;
-
-      .route-bullet {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-
-        &.road {
-          background: var(--gold);
-        }
-        &.mountain_pass {
-          background: var(--bronze);
-        }
-        &.water_crossing {
-          background: var(--cyan);
-        }
-        &.forest_path {
-          background: var(--emerald);
-        }
+      &.road {
+        background: var(--gold);
       }
-
-      .dest-name {
-        font-size: var(--font-13);
-        font-weight: 600;
+      &.mountain_pass {
+        background: var(--bronze);
+      }
+      &.water_crossing {
+        background: var(--cyan);
+      }
+      &.forest_path {
+        background: var(--emerald);
       }
     }
 
-    .route-meta {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
+    .dest-name {
+      font-size: var(--font-13);
+      font-weight: $font-weight-semibold;
+    }
+  }
 
-      .route-type-badge {
-        color: var(--slate-400);
-        font-size: var(--font-10);
-      }
-      .route-dist {
-        color: var(--sky);
-        font-family: monospace;
-        font-size: var(--font-12);
-      }
+  .route-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+    .route-type-badge {
+      color: var(--slate-400);
+      font-size: var(--font-10);
+    }
+    .route-dist {
+      color: var(--sky);
+      font-family: monospace;
+      font-size: var(--font-12);
     }
   }
 }

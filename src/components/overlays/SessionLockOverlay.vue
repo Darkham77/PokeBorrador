@@ -66,7 +66,7 @@ const emit = defineEmits<{
   &.reclaim-btn {
     background: var(--green);
     color: var(--black);
-    font-weight: 900;
+    font-weight: $font-weight-black;
     border-color: $white;
     &:hover {
       background: $white;

@@ -5,7 +5,6 @@ import type { BattleOptions } from '@/types/system/stores.ts';
 import { logger } from '../utils/logger.ts';
 import { initBattleSequence } from './helpers/battleLifecycleInitializer.ts';
 import {
-  showdownWorker,
   setShowdownWorker,
   getSimulatorState,
   executeTurnInWorker,
@@ -15,7 +14,6 @@ import {
 export type { BattleOptions };
 
 export {
-  showdownWorker,
   setShowdownWorker,
   getSimulatorState,
   executeTurnInWorker,

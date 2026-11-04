@@ -69,7 +69,7 @@ describe('Batch Simulation Harness Helpers', () => {
         { id: '6', heavy: false }
       ];
       const interleaved = interleaveHeavyBatches(items, (item) => item.heavy);
-      expect(interleaved.length).toBe(items.length);
+      expect(interleaved).toHaveLength(items.length);
       expect(interleaved.map((i) => i.id).sort()).toEqual(items.map((i) => i.id).sort());
     });
 
@@ -96,28 +96,28 @@ describe('Batch Simulation Harness Helpers', () => {
 
     it('returns all items when no filters are set', () => {
       const filtered = filterBatchesByEnv(batches, {});
-      expect(filtered.length).toBe(4);
+      expect(filtered).toHaveLength(4);
       expect(filtered[0]!.originalIndex).toBe(0);
       expect(filtered[3]!.originalIndex).toBe(3);
     });
 
     it('filters by single caseId', () => {
       const filtered = filterBatchesByEnv(batches, { caseIdFilter: 'case-beta' });
-      expect(filtered.length).toBe(1);
+      expect(filtered).toHaveLength(1);
       expect(filtered[0]!.item.id).toBe('case-beta');
       expect(filtered[0]!.originalIndex).toBe(1);
     });
 
     it('filters by comma-separated caseId list', () => {
       const filtered = filterBatchesByEnv(batches, { caseIdFilter: 'case-alpha, case-delta' });
-      expect(filtered.length).toBe(2);
+      expect(filtered).toHaveLength(2);
       expect(filtered[0]!.item.id).toBe('case-alpha');
       expect(filtered[1]!.item.id).toBe('case-delta');
     });
 
     it('filters by 1-based case index', () => {
       const filtered = filterBatchesByEnv(batches, { caseFilter: '3' });
-      expect(filtered.length).toBe(1);
+      expect(filtered).toHaveLength(1);
       expect(filtered[0]!.item.id).toBe('case-gamma');
       expect(filtered[0]!.originalIndex).toBe(2);
     });

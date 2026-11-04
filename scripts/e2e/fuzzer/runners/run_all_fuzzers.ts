@@ -2,6 +2,11 @@
 Reflect.set(globalThis, '__E2E__', true);
 process.env.VITE_E2E = 'true';
 
+import { isMainModule } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
+
+import { formatExecutionTimestamp } from '../../logging/base_runner_logger.ts';
+import { FuzzerRunnerLogger } from '../../logging/fuzzer_runner_logger.ts';
 import {
   runMovesFuzzer,
   runAbilitiesFuzzer,
@@ -11,10 +16,6 @@ import {
 } from '../core/fuzzer_engine.ts';
 import { runMedicineFuzzer } from '../core/fuzzer_medicine_cases.ts';
 import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
-import { FuzzerRunnerLogger } from '../../logging/fuzzer_runner_logger.ts';
-import { isMainModule } from '@francogp/auditor';
-import { defineCommand, runMain } from 'citty';
-import { formatExecutionTimestamp } from '../../logging/base_runner_logger.ts';
 
 async function main() {
   const logger = new FuzzerRunnerLogger();

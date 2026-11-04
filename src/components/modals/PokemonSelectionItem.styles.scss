@@ -65,7 +65,7 @@
 
     color: var(--yellow);
     font-size: var(--font-10);
-    font-weight: 800;
+    font-weight: $font-weight-extrabold;
     flex-shrink: 0;
   }
 
@@ -90,7 +90,7 @@
     min-width: 65px;
     color: $white;
     font-size: var(--font-10);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     text-align: right;
     flex-shrink: 0;
   }
@@ -203,7 +203,7 @@
 
   .competition-label {
     color: Rgb(254 240 138 / 75%);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
   }
 
   .competition-value {
@@ -268,7 +268,7 @@
   .danger-label {
     color: var(--rose);
     font-size: var(--font-8);
-    font-weight: 900;
+    font-weight: $font-weight-black;
     letter-spacing: 0.5px;
     margin-top: 1px;
   }

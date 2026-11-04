@@ -28,7 +28,7 @@ export interface MapEntities {
   readonly warps: readonly MapWarp[];
 }
 
-export interface PlacedStructure {
+export interface PlacedProceduralStructure {
   readonly template: StructureTemplate;
   readonly x: number;
   readonly y: number;
@@ -44,7 +44,7 @@ export interface ProceduralMapOptions {
   readonly withHills?: boolean;
   readonly withVegetation?: boolean;
   readonly withTown?: boolean;
-  readonly structures?: readonly PlacedStructure[];
+  readonly structures?: readonly PlacedProceduralStructure[];
   readonly waterPercent?: number; // 0 to 100
   readonly mountainPercent?: number; // 0 to 100
   readonly forestPercent?: number; // 0 to 100

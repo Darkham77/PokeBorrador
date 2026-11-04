@@ -77,7 +77,9 @@ describe('Exhaustive Multi-Engine & Multi-Table Data Migration Suite (2026090901
         const v = r[c];
         if (v === null || v === undefined) return null;
         if (typeof v === 'object') return JSON.stringify(v);
-        return String(v);
+        if (typeof v === 'string') return v;
+        if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+        return '';
       });
       stmt.run(...vals);
     }
@@ -559,7 +561,7 @@ describe('Exhaustive Multi-Engine & Multi-Table Data Migration Suite (2026090901
     await validatePostgresWarAndPassive(sql);
 
     const configs = await sql`SELECT value FROM system_config WHERE key = 'db_version'`;
-    expect(configs.length).toBe(1);
+    expect(configs).toHaveLength(1);
     const firstConfig = configs[0];
     const valStr =
       typeof firstConfig?.value === 'string'

@@ -4,13 +4,13 @@
  * DOWNLOADS KANTO GYM BADGES FROM BULBAPEDIA ARCHIVES (Node.js 26+)
  */
 
-import { defineCommand, runMain } from 'citty';
 import fs from 'node:fs/promises';
+import { enableCompileCache } from 'node:module';
 import path from 'node:path';
 import { styleText } from 'node:util';
-import { enableCompileCache } from 'node:module';
 
 import { safeResolve, safeWriteFile, safeFetch } from '@francogp/auditor';
+import { defineCommand, runMain } from 'citty';
 
 enableCompileCache();
 
@@ -73,7 +73,7 @@ const BADGES = [
   }
 ];
 
-async function downloadFile(rawUrl: string, filepath: string) {
+async function downloadFile(rawUrl: string, filepath: string): Promise<void> {
   try {
     const safeTargetFile = safeResolve(filepath);
 
@@ -92,7 +92,7 @@ async function downloadFile(rawUrl: string, filepath: string) {
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.log(styleText('bold', '\n--- 🏆 KANTO GYM BADGES DOWNLOADER ---'));
   console.log(styleText('yellow', `Creating directory: ${DEST_DIR}`));
   await fs.mkdir(DEST_DIR, { recursive: true });
@@ -125,4 +125,4 @@ export const command = defineCommand({
   }
 });
 
-runMain(command);
+void runMain(command);

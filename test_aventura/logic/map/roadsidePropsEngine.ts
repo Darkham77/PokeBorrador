@@ -16,6 +16,7 @@ import {
   ROADSIDE_PROP_CLEARANCE_DEFAULT,
   ROADSIDE_SIGNPOST_CLEARANCE,
   ROADSIDE_BOULDER_CLEARANCE,
+  CLIFF_BASE_BOULDER_CLEARANCE,
   CLIFF_BASE_BOULDER_NOISE_THRESHOLD,
   CLIFF_BOULDER_NOISE_SCALE,
   ROADSIDE_PROP_NOISE_SCALE,
@@ -34,7 +35,7 @@ import {
 import type { POINode } from '../../types/map/poiTypes.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
 import { isCellAdjacentToMountainStairs } from './continentMountainEngine.ts';
-import { SimplexNoise } from './noise/simplexNoise.ts';
+import { type SimplexNoise } from './noise/simplexNoise.ts';
 import type { WildernessPropPlacement } from './wildernessVegetationEngine.ts';
 
 export interface RoadsidePropsContext {
@@ -115,13 +116,22 @@ function tryPlaceStairSignpost(
   return false;
 }
 
-function resolveBoulderPrefabForBiome(biome: string): string {
+const BOULDER_HASH_PRIME_X = 17 as const;
+const BOULDER_HASH_PRIME_Y = 31 as const;
+const BOULDER_VARIETIES_COUNT = 3 as const;
+
+function resolveBoulderPrefabForBiome(biome: string, x = 0, y = 0): string {
   if (biome === 'arid_desert') {
     return 'poke_rock_boulder_brown_large.png';
   }
   if (biome === 'volcanic_plateau') {
     return 'poke_boulder_gray.png';
   }
+  // Natural variety between mossy boulders and natural stones
+  const hash =
+    Math.abs(x * BOULDER_HASH_PRIME_X + y * BOULDER_HASH_PRIME_Y) % BOULDER_VARIETIES_COUNT;
+  if (hash === 1) return 'poke_rock_boulder_mossy_2.png';
+  if (hash === 2) return 'poke_rock_small.png';
   return 'poke_rock_boulder_mossy_1.png';
 }
 
@@ -173,10 +183,9 @@ export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
           const ny = y + dy;
           const nx = x + dx;
           if (ny < 0 || ny >= H || nx < 0 || nx >= W) continue;
-          const mCell = continent.resolvedMountain.cellDetails[ny]?.[nx];
-          if (mCell && (mCell.role.includes('cliff') || mCell.role.includes('edge_south'))) {
-            return false;
-          }
+          if ((continent.heightmap[ny]?.[nx] ?? 0) !== 0) return false;
+          if (continent.resolvedMountain.cellDetails[ny]?.[nx]) return false;
+          if (continent.resolvedMountain.occupiedFootCells[ny]?.[nx]) return false;
         }
       }
     }
@@ -259,7 +268,7 @@ export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
         const n = prng.noise2D(x * CLIFF_BOULDER_NOISE_SCALE, y * CLIFF_BOULDER_NOISE_SCALE);
         if (n > CLIFF_BASE_BOULDER_NOISE_THRESHOLD) {
           const mBiome = continent.macroBiomes?.biomeGrid[y]?.[x] ?? 'temperate_meadow';
-          const boulderFile = resolveBoulderPrefabForBiome(mBiome);
+          const boulderFile = resolveBoulderPrefabForBiome(mBiome, x, y);
 
           addRoadsideProp(
             {
@@ -268,7 +277,7 @@ export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
               y,
               prefabFile: boulderFile
             },
-            ROADSIDE_BOULDER_CLEARANCE
+            CLIFF_BASE_BOULDER_CLEARANCE
           );
         }
       }
@@ -348,7 +357,11 @@ export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
             },
             ROADSIDE_BOULDER_CLEARANCE
           );
-        } else if (n < VIRIDIAN_LOG_THRESHOLD) {
+        } else if (
+          n < VIRIDIAN_LOG_THRESHOLD &&
+          isCandidatePropCell(x + 1, y) &&
+          isCandidatePropCell(x + 2, y)
+        ) {
           addRoadsideProp(
             {
               type: 'log',

@@ -9,6 +9,7 @@ import { requireMapRouteId } from '@/data/world/map-assets';
 import { FIRE_RED_MAPS } from '@/data/world/maps';
 import { isWeatherTableRouteId, requireWeatherSeasonId } from '@/data/world/weather-tables';
 import { getMapSpawnPoolData } from '@/logic/encounters/encounterHelpers';
+import { safeStorage } from '@/logic/utils/storage';
 import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
 import { getRouteWeather } from '@/logic/weather/weatherUtils';
 // Import Poké Vicio Stores and Data
@@ -134,7 +135,7 @@ const STORAGE_LOCATION_KEY = 'poke_vicio_adventure_location' as const;
 
 function safeGetStorage(key: string, fallbackJson: string): string {
   try {
-    return localStorage.getItem(key) ?? fallbackJson;
+    return safeStorage.getItem(key) ?? fallbackJson;
   } catch {
     // catch-ok: Storage access restricted in private browsing mode
     return fallbackJson;
@@ -143,10 +144,10 @@ function safeGetStorage(key: string, fallbackJson: string): string {
 
 function safeSetStorage(key: string, value: string): void {
   try {
-    localStorage.setItem(key, value);
+    safeStorage.setItem(key, value);
   } catch (err) {
     // catch-ok: QuotaExceededError or private browsing storage restriction
-    console.warn(`[KantoAdventureView] Could not persist to localStorage (${key}):`, err);
+    console.warn(`[KantoAdventureView] Could not persist to storage (${key}):`, err);
   }
 }
 
@@ -690,7 +691,7 @@ function nextAlternative(): void {
 
 function drawPreviewPath(nodeIds: string[], isFly: boolean): void {
   if (!previewLinesSvg.value) return;
-  previewLinesSvg.value.innerHTML = '';
+  previewLinesSvg.value.replaceChildren();
   for (let i = 0; i < nodeIds.length - 1; i++) {
     const fromId = nodeIds[i];
     const toId = nodeIds[i + 1];
@@ -710,7 +711,7 @@ function drawPreviewPath(nodeIds: string[], isFly: boolean): void {
 
 function cancelPlanning(): void {
   isPlanning.value = false;
-  if (previewLinesSvg.value) previewLinesSvg.value.innerHTML = '';
+  if (previewLinesSvg.value) previewLinesSvg.value.replaceChildren();
   enterParkedMode();
 }
 
@@ -742,7 +743,7 @@ async function confirmTravel(): Promise<void> {
   isPlanning.value = false;
   isMoving.value = true;
   isTravelingProgressActive.value = true;
-  if (previewLinesSvg.value) previewLinesSvg.value.innerHTML = '';
+  if (previewLinesSvg.value) previewLinesSvg.value.replaceChildren();
 
   if (pathData.isFly) {
     setStatus(`Volando...`, true);
@@ -1064,12 +1065,12 @@ function debugHardReset(): void {
     )
   ) {
     try {
-      localStorage.removeItem(STORAGE_INVENTORY_KEY);
-      localStorage.removeItem(STORAGE_DISCOVERED_KEY);
-      localStorage.removeItem(STORAGE_COMPANION_KEY);
-      localStorage.removeItem(STORAGE_LOCATION_KEY);
-    } catch (err) {
-      console.warn('Handled controlled exception:', err);
+      safeStorage.removeItem(STORAGE_INVENTORY_KEY);
+      safeStorage.removeItem(STORAGE_DISCOVERED_KEY);
+      safeStorage.removeItem(STORAGE_COMPANION_KEY);
+      safeStorage.removeItem(STORAGE_LOCATION_KEY);
+    } catch {
+      // catch-ok: Storage access restricted in private browsing mode
     }
     location.reload();
   }
@@ -1125,7 +1126,7 @@ function handleResize(): void {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   preloadTrainerSprites();
   triggerSwarm();
   updatePlayerVisuals();
@@ -1145,9 +1146,8 @@ onMounted(() => {
   }
 
   // Initial draw connections
-  nextTick(() => {
-    enterParkedMode();
-  });
+  await nextTick();
+  enterParkedMode();
 
   onUnmounted(() => {
     if (dayNightTimer) dayNightTimer.kill();
@@ -1237,6 +1237,7 @@ onMounted(() => {
         <!-- Svg Connections -->
         <svg
           id="route-lines"
+          aria-hidden="true"
           class="absolute top-0 left-0 w-full h-full pointer-events-none z-0"
           style="stroke-linejoin: round"
         >

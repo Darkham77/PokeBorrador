@@ -58,6 +58,8 @@ QA / Automation Engineers.
   - Companion SQLite migration files (`.sqlite.sql`) must be executed in bulk via `db.exec(migration.sqlite_sql)` rather than string-splitting into individual JavaScript loops.
 - **Cross-Platform Vitest Environment Directive**:
   - Tests requiring JSDOM MUST explicitly declare `// @vitest-environment jsdom` at line 1. This guarantees deterministic environment routing across both Windows (with backslashes `\`) and POSIX (`/`) file systems without relying on path glob nuances.
+- **Mandatory Docker Daemon & Dual Validation Standard**:
+  - PostgreSQL integration suites and container lifecycle tests must ALWAYS execute against real Docker containers. Silently skipping or omitting Docker-dependent tests via environment flags or bypass directives is strictly prohibited. If Docker is inactive and cannot be started automatically by the harness, the system and AI assistant MUST explicitly warn and instruct the user to start Docker Desktop.
 - All test suites run under **Vite+** (`vp test`) via unified `vite.config.ts`. Regression checks MUST ALWAYS run the full test suite (`npm run test`), never subset commands like `test:unit` or `test:node` alone.
 - **Vite+ Unified Multi-Project Architecture Mandate**:
   - Isolated heavy suites (such as `migrations`) are declared as dedicated inline projects with `pool: 'forks'`. Developer test runs (`npm run test` via `scripts/testing/run_tests.ts`) orchestrate the `unit` (Vue/JSDOM) and `node` projects sequentially to eliminate SQLite thread contention and database collisions, while test workers within each project execute concurrently with full CPU saturation.

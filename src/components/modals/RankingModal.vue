@@ -5,7 +5,7 @@ import { ref, onMounted, watch, nextTick, computed } from 'vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 import BaseRefreshButton from '@/components/common/BaseRefreshButton.vue';
 import SeasonTournamentCard from '@/components/modals/SeasonTournamentCard.vue';
-import { RANK_ANIM_FAST_DURATION_SEC } from '@/composables/arena/useRankCardHover';
+import { useRankTabHover } from '@/composables/arena/useRankCardHover';
 import { toPokemonType, type PokemonType } from '@/data/battle/types';
 import { getSeasonalThemeForMonth } from '@/data/system/rankedData';
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
@@ -52,28 +52,7 @@ const allowedTypes = computed<PokemonType[]>(() =>
   (currentTheme.value.allowedTypes || []).map(toPokemonType)
 );
 
-const handleTabEnter = (e: MouseEvent): void => {
-  const el = e.currentTarget as HTMLElement;
-  if (el.classList.contains('active')) return;
-  gsap.to(el, {
-    color: '#ffffff',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    duration: RANK_ANIM_FAST_DURATION_SEC,
-    ease: 'power2.out'
-  });
-};
-
-const handleTabLeave = (e: MouseEvent): void => {
-  const el = e.currentTarget as HTMLElement;
-  if (el.classList.contains('active')) return;
-  gsap.to(el, {
-    color: '#94a3b8',
-    backgroundColor: 'transparent',
-    duration: RANK_ANIM_FAST_DURATION_SEC,
-    ease: 'power2.out',
-    clearProps: 'color,backgroundColor'
-  });
-};
+const { handleTabEnter, handleTabLeave } = useRankTabHover();
 
 // Fetch leaderboards
 const loadLeaderboard = async (): Promise<void> => {
@@ -81,62 +60,59 @@ const loadLeaderboard = async (): Promise<void> => {
 };
 
 // GSAP Stagger Entrance Animations
-const animateList = (): void => {
-  nextTick(() => {
-    if (!listRef.value) return;
-    const cards = listRef.value.querySelectorAll('.rank-card');
-    if (cards.length > 0) {
-      listRef.value.classList.add('list-animating');
-      gsap.killTweensOf(cards);
-      gsap.from(cards, {
-        opacity: 0,
-        x: RANK_LIST_ANIM_X_OFFSET,
-        scale: RANK_LIST_ANIM_SCALE_MIN,
-        duration: RANK_LIST_ANIM_DURATION_SEC,
-        stagger: RANK_LIST_ANIM_STAGGER_SEC,
-        ease: RANK_LIST_EASE_STRING,
-        clearProps: 'all',
-        onComplete: () => {
-          listRef.value?.classList.remove('list-animating');
-        }
-      });
-    }
-  });
+const animateList = async (): Promise<void> => {
+  await nextTick();
+  if (!listRef.value) return;
+  const cards = listRef.value.querySelectorAll('.rank-card');
+  if (cards.length > 0) {
+    listRef.value.classList.add('list-animating');
+    gsap.killTweensOf(cards);
+    gsap.from(cards, {
+      opacity: 0,
+      x: RANK_LIST_ANIM_X_OFFSET,
+      scale: RANK_LIST_ANIM_SCALE_MIN,
+      duration: RANK_LIST_ANIM_DURATION_SEC,
+      stagger: RANK_LIST_ANIM_STAGGER_SEC,
+      ease: RANK_LIST_EASE_STRING,
+      clearProps: 'all',
+      onComplete: () => {
+        listRef.value?.classList.remove('list-animating');
+      }
+    });
+  }
 };
 
 // Hooks & Watchers
 onMounted(async () => {
   await loadLeaderboard();
-  animateList();
+  await animateList();
 });
 
 watch(activeSort, async () => {
   await loadLeaderboard();
-  nextTick(() => {
-    const tabs = document.querySelectorAll('.sort-tab');
-    tabs.forEach((tab) => {
-      gsap.killTweensOf(tab);
-      gsap.set(tab, { clearProps: 'color,backgroundColor' });
-    });
+  await nextTick();
+  const tabs = document.querySelectorAll('.sort-tab');
+  tabs.forEach((tab) => {
+    gsap.killTweensOf(tab);
+    gsap.set(tab, { clearProps: 'color,backgroundColor' });
   });
-  animateList();
+  await animateList();
 });
 
 // Watch loading state to animate the spinner via GSAP
 watch(
   () => socialStore.leaderboardLoading,
-  (newVal) => {
-    nextTick(() => {
-      const spinner = document.querySelector('.retro-spinner');
-      if (newVal && spinner) {
-        gsap.to(spinner, {
-          rotation: RANK_SPINNER_ROTATION_DEG,
-          duration: RANK_SPINNER_DURATION_SEC,
-          repeat: -1,
-          ease: 'none'
-        });
-      }
-    });
+  async (newVal) => {
+    await nextTick();
+    const spinner = document.querySelector('.retro-spinner');
+    if (newVal && spinner) {
+      gsap.to(spinner, {
+        rotation: RANK_SPINNER_ROTATION_DEG,
+        duration: RANK_SPINNER_DURATION_SEC,
+        repeat: -1,
+        ease: 'none'
+      });
+    }
   },
   { immediate: true }
 );

@@ -6,13 +6,13 @@
  */
 
 import fs from 'node:fs/promises';
+import { enableCompileCache } from 'node:module';
 import path from 'node:path';
 import { styleText } from 'node:util';
-import { enableCompileCache } from 'node:module';
-import sharp from 'sharp';
 
 import { safeResolve, safeWriteFile, safeFetch, isMainModule } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
+import sharp from 'sharp';
 
 enableCompileCache();
 
@@ -156,5 +156,5 @@ export const command = defineCommand({
 });
 
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

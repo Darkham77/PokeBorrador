@@ -14,6 +14,7 @@
 import { CANVAS_RENDERER } from '../../config/canvasRendererConfig.ts';
 import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
+import { CARDINAL_DELTAS, hasDropped2DInnerCorner } from './autotileDefectScanner.ts';
 import { resolveCanonicalBridges } from './canonicalBridgeEngine.ts';
 import type { BuildMapBlitOptions } from './canvasTileRenderer.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
@@ -54,6 +55,298 @@ function blitTileWithOverlays(
       addBlit(ov, px, py);
     }
   }
+}
+
+const MAX_CLIP_POLISH_ITERS = 16;
+const MIN_CLIPPED_SNIPPET_CELLS = 12;
+
+interface ClippedPathPolishContext {
+  readonly pathGrid: boolean[][];
+  readonly continent: ContinentMapResult;
+  readonly pois: readonly POINode[];
+  readonly bridgeGrid: readonly (readonly boolean[])[] | undefined;
+  readonly buildingFootprintMask: readonly (readonly boolean[])[];
+  readonly urbanRoadSet: ReadonlySet<string>;
+  readonly plazaGrid: readonly (readonly boolean[])[];
+  readonly isPavedSector: (r: number, c: number) => boolean;
+}
+
+function hasClippedEffectivePath(ctx: ClippedPathPolishContext, x: number, y: number): boolean {
+  const { continent, pathGrid, bridgeGrid } = ctx;
+  if (x < 0 || x >= continent.width || y < 0 || y >= continent.height) return true;
+  return Boolean(pathGrid[y]?.[x] || bridgeGrid?.[y]?.[x]);
+}
+
+function canFillClippedPathCell(ctx: ClippedPathPolishContext, x: number, y: number): boolean {
+  const { continent, buildingFootprintMask, isPavedSector } = ctx;
+  if (x < 0 || x >= continent.width || y < 0 || y >= continent.height) return false;
+  if (continent.terrainMatrix[y]?.[x] !== 'grass') return false;
+  if (buildingFootprintMask[y]?.[x] || continent.resolvedMountain.occupiedFootCells[y]?.[x]) {
+    return false;
+  }
+  return isPavedSector(y, x);
+}
+
+function collectCellClippedElbows(
+  ctx: ClippedPathPolishContext,
+  x: number,
+  y: number,
+  additions: { x: number; y: number }[]
+): void {
+  const pN = hasClippedEffectivePath(ctx, x, y - 1);
+  const pS = hasClippedEffectivePath(ctx, x, y + 1);
+  const pW = hasClippedEffectivePath(ctx, x - 1, y);
+  const pE = hasClippedEffectivePath(ctx, x + 1, y);
+  if (
+    pN &&
+    pW &&
+    !hasClippedEffectivePath(ctx, x - 1, y - 1) &&
+    canFillClippedPathCell(ctx, x - 1, y - 1)
+  ) {
+    additions.push({ x: x - 1, y: y - 1 });
+  }
+  if (
+    pN &&
+    pE &&
+    !hasClippedEffectivePath(ctx, x + 1, y - 1) &&
+    canFillClippedPathCell(ctx, x + 1, y - 1)
+  ) {
+    additions.push({ x: x + 1, y: y - 1 });
+  }
+  if (
+    pS &&
+    pW &&
+    !hasClippedEffectivePath(ctx, x - 1, y + 1) &&
+    canFillClippedPathCell(ctx, x - 1, y + 1)
+  ) {
+    additions.push({ x: x - 1, y: y + 1 });
+  }
+  if (
+    pS &&
+    pE &&
+    !hasClippedEffectivePath(ctx, x + 1, y + 1) &&
+    canFillClippedPathCell(ctx, x + 1, y + 1)
+  ) {
+    additions.push({ x: x + 1, y: y + 1 });
+  }
+}
+
+function fillClippedPathElbowsOnce(ctx: ClippedPathPolishContext): void {
+  const additions: { x: number; y: number }[] = [];
+  for (let y = 0; y < ctx.continent.height; y++) {
+    for (let x = 0; x < ctx.continent.width; x++) {
+      if (ctx.pathGrid[y]?.[x]) {
+        collectCellClippedElbows(ctx, x, y, additions);
+      }
+    }
+  }
+  for (const pt of additions) {
+    ctx.pathGrid[pt.y]![pt.x] = true;
+  }
+}
+
+function isInvalidClippedPathCell(ctx: ClippedPathPolishContext, x: number, y: number): boolean {
+  if (!ctx.pathGrid[y]?.[x] || ctx.bridgeGrid?.[y]?.[x]) return false;
+  const pN = hasClippedEffectivePath(ctx, x, y - 1);
+  const pS = hasClippedEffectivePath(ctx, x, y + 1);
+  const pW = hasClippedEffectivePath(ctx, x - 1, y);
+  const pE = hasClippedEffectivePath(ctx, x + 1, y);
+  if ((!pN && !pS) || (!pW && !pE)) return true;
+  return hasDropped2DInnerCorner({
+    sameN: pN,
+    sameS: pS,
+    sameW: pW,
+    sameE: pE,
+    sameNW: hasClippedEffectivePath(ctx, x - 1, y - 1),
+    sameNE: hasClippedEffectivePath(ctx, x + 1, y - 1),
+    sameSW: hasClippedEffectivePath(ctx, x - 1, y + 1),
+    sameSE: hasClippedEffectivePath(ctx, x + 1, y + 1)
+  });
+}
+
+function clearClippedPair(
+  ctx: ClippedPathPolishContext,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number
+): boolean {
+  let cleared = false;
+  const row1 = ctx.pathGrid[y1];
+  if (row1?.[x1] && !ctx.bridgeGrid?.[y1]?.[x1]) {
+    row1[x1] = false;
+    cleared = true;
+  }
+  const row2 = ctx.pathGrid[y2];
+  if (row2?.[x2] && !ctx.bridgeGrid?.[y2]?.[x2]) {
+    row2[x2] = false;
+    cleared = true;
+  }
+  return cleared;
+}
+
+function pruneClippedQuadPinchesPass(ctx: ClippedPathPolishContext): boolean {
+  let changed = false;
+  for (let y = 0; y < ctx.continent.height - 1; y++) {
+    for (let x = 0; x < ctx.continent.width - 1; x++) {
+      const tl = hasClippedEffectivePath(ctx, x, y);
+      const tr = hasClippedEffectivePath(ctx, x + 1, y);
+      const bl = hasClippedEffectivePath(ctx, x, y + 1);
+      const br = hasClippedEffectivePath(ctx, x + 1, y + 1);
+      if (tl && br && !tr && !bl && clearClippedPair(ctx, x, y, x + 1, y + 1)) {
+        changed = true;
+      } else if (tr && bl && !tl && !br && clearClippedPair(ctx, x + 1, y, x, y + 1)) {
+        changed = true;
+      }
+    }
+  }
+  return changed;
+}
+
+function pruneClippedSliversPass(ctx: ClippedPathPolishContext): boolean {
+  const removals: { x: number; y: number }[] = [];
+  for (let y = 0; y < ctx.continent.height; y++) {
+    for (let x = 0; x < ctx.continent.width; x++) {
+      if (isInvalidClippedPathCell(ctx, x, y)) {
+        removals.push({ x, y });
+      }
+    }
+  }
+  for (const pt of removals) {
+    ctx.pathGrid[pt.y]![pt.x] = false;
+  }
+  return removals.length > 0;
+}
+
+function pruneInvalidClippedPathCells(ctx: ClippedPathPolishContext): void {
+  for (let iter = 0; iter < MAX_CLIP_POLISH_ITERS; iter++) {
+    const pinchChanged = pruneClippedQuadPinchesPass(ctx);
+    const sliverChanged = pruneClippedSliversPass(ctx);
+    if (!pinchChanged && !sliverChanged) break;
+  }
+}
+
+function addRectAnchorKeys(
+  anchorKeys: Set<string>,
+  startX: number,
+  startY: number,
+  width: number,
+  height: number
+): void {
+  for (let dy = 0; dy < height; dy++) {
+    for (let dx = 0; dx < width; dx++) {
+      anchorKeys.add(`${startX + dx}_${startY + dy}`);
+    }
+  }
+}
+
+function addPoiCoreAnchors(poi: POINode, anchorKeys: Set<string>): void {
+  if (poi.gateways) {
+    for (const gw of poi.gateways) {
+      anchorKeys.add(`${gw.x}_${gw.y}`);
+    }
+  }
+  if (poi.urbanLayout) {
+    for (const st of poi.urbanLayout.internalStreets) {
+      anchorKeys.add(`${st.x}_${st.y}`);
+    }
+    for (const b of poi.urbanLayout.buildings) {
+      addRectAnchorKeys(anchorKeys, b.x, b.y, b.width, b.height);
+    }
+    return;
+  }
+  addRectAnchorKeys(anchorKeys, poi.gridX, poi.gridY, poi.footprint.width, poi.footprint.height);
+}
+
+function buildClippedPathAnchorSet(ctx: ClippedPathPolishContext): ReadonlySet<string> {
+  const anchorKeys = new Set<string>(ctx.urbanRoadSet);
+  for (const poi of ctx.pois) {
+    addPoiCoreAnchors(poi, anchorKeys);
+  }
+  return anchorKeys;
+}
+
+function isNeighborCellAnchor(
+  ctx: ClippedPathPolishContext,
+  anchorKeys: ReadonlySet<string>,
+  nx: number,
+  ny: number
+): boolean {
+  const { continent, bridgeGrid, plazaGrid } = ctx;
+  if (nx < 0 || nx >= continent.width || ny < 0 || ny >= continent.height) return true;
+  if (anchorKeys.has(`${nx}_${ny}`) || bridgeGrid?.[ny]?.[nx] || plazaGrid[ny]?.[nx]) return true;
+  const mRole = continent.resolvedMountain.cellDetails[ny]?.[nx]?.role;
+  return mRole === 'stairs_l' || mRole === 'stairs_r';
+}
+
+function isClippedCellAnchored(
+  ctx: ClippedPathPolishContext,
+  anchorKeys: ReadonlySet<string>,
+  x: number,
+  y: number
+): boolean {
+  const { continent } = ctx;
+  if ((continent.heightmap[y]?.[x] ?? 0) >= 1) return true;
+  const biome = continent.macroBiomes?.biomeGrid[y]?.[x];
+  if (biome === 'arid_desert' || biome === 'volcanic_plateau') return true;
+  if (isNeighborCellAnchor(ctx, anchorKeys, x, y)) return true;
+  for (const d of CARDINAL_DELTAS) {
+    if (isNeighborCellAnchor(ctx, anchorKeys, x + d.dx, y + d.dy)) return true;
+  }
+  return false;
+}
+
+function collectClippedComponent(
+  ctx: ClippedPathPolishContext,
+  startX: number,
+  startY: number,
+  visited: Set<string>,
+  anchorKeys: ReadonlySet<string>
+): { cells: { x: number; y: number }[]; anchored: boolean } {
+  const cells: { x: number; y: number }[] = [{ x: startX, y: startY }];
+  visited.add(`${startX}_${startY}`);
+  let anchored = false;
+  let head = 0;
+
+  while (head < cells.length) {
+    const cur = cells[head++]!;
+    if (!anchored && isClippedCellAnchored(ctx, anchorKeys, cur.x, cur.y)) {
+      anchored = true;
+    }
+    for (const d of CARDINAL_DELTAS) {
+      const nx = cur.x + d.dx;
+      const ny = cur.y + d.dy;
+      const key = `${nx}_${ny}`;
+      if (ctx.pathGrid[ny]?.[nx] && !visited.has(key)) {
+        visited.add(key);
+        cells.push({ x: nx, y: ny });
+      }
+    }
+  }
+
+  return { cells, anchored };
+}
+
+function pruneUnanchoredClippedSnippets(ctx: ClippedPathPolishContext): void {
+  const anchorKeys = buildClippedPathAnchorSet(ctx);
+  const visited = new Set<string>();
+  for (let y = 0; y < ctx.continent.height; y++) {
+    for (let x = 0; x < ctx.continent.width; x++) {
+      if (!ctx.pathGrid[y]?.[x] || visited.has(`${x}_${y}`)) continue;
+      const comp = collectClippedComponent(ctx, x, y, visited, anchorKeys);
+      if (!comp.anchored && comp.cells.length < MIN_CLIPPED_SNIPPET_CELLS) {
+        for (const pt of comp.cells) {
+          ctx.pathGrid[pt.y]![pt.x] = false;
+        }
+      }
+    }
+  }
+}
+
+function polishClippedPathGrid(ctx: ClippedPathPolishContext): void {
+  fillClippedPathElbowsOnce(ctx);
+  pruneInvalidClippedPathCells(ctx);
+  pruneUnanchoredClippedSnippets(ctx);
 }
 
 /**
@@ -345,6 +638,7 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
       if (
         continent.terrainMatrix[r]?.[c] === 'sand' ||
         buildingFootprintMask[r]?.[c] ||
+        continent.resolvedMountain.occupiedFootCells[r]?.[c] ||
         !isPavedSector(r, c)
       ) {
         unifiedPathGrid[r]![c] = false;
@@ -352,6 +646,16 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
     }
   }
   const sanitizedPathGrid = sanitizePathGridWidth(unifiedPathGrid, continent.terrainMatrix);
+  polishClippedPathGrid({
+    pathGrid: sanitizedPathGrid,
+    continent,
+    pois,
+    bridgeGrid,
+    buildingFootprintMask,
+    urbanRoadSet,
+    plazaGrid,
+    isPavedSector
+  });
   const pathAutotile = resolvePathGrid(sanitizedPathGrid, bridgeGrid);
   for (let r = 0; r < H; r++) {
     for (let c = 0; c < W; c++) {
@@ -467,33 +771,24 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
   }
 
   // 4. Mountain Cliffs, Stairs, South Feet & Plateau Rock Textures
-  const renderCellCliffs = (r: number, c: number): void => {
-    if (buildingFootprintMask[r]?.[c]) return;
-
+  const renderOwnCellCliff = (r: number, c: number, px: number, py: number): void => {
     const mCell = continent.resolvedMountain.cellDetails[r]?.[c];
     if (!mCell || mCell.elevation <= 0) return;
-
-    const px = c * CANVAS_TILE_SIZE;
-    const py = r * CANVAS_TILE_SIZE;
 
     if (mCell.role === 'floor_center') {
       const isRoadOrPlaza =
         urbanRoadSet.has(`${c}_${r}`) || plazaGrid[r]?.[c] || sanitizedPathGrid[r]?.[c];
       if (!isRoadOrPlaza) {
         const h = Math.sin(c * CANVAS_RENDERER.PLATEAU_HASH_X + r * CANVAS_RENDERER.PLATEAU_HASH_Y);
-        if (h > CANVAS_RENDERER.PLATEAU_ROCK_THRESHOLD) {
-          const mtnPal =
-            continent.geologicalClusters?.paletteMatrix?.[r]?.[c] ??
-            continent.mountainPalette ??
-            'brown';
-          const rockFloor =
-            mtnPal === 'gray'
-              ? 'poke_cliff_gray_plateau_rock.png'
-              : 'poke_cliff_brown_plateau_rock.png';
-          addBlit(rockFloor, px, py);
-        } else {
-          addBlit(mCell.primaryTile, px, py);
-        }
+        const mtnPal =
+          continent.geologicalClusters?.paletteMatrix?.[r]?.[c] ??
+          continent.mountainPalette ??
+          'brown';
+        const rockFloor =
+          mtnPal === 'gray'
+            ? 'poke_cliff_gray_plateau_rock.png'
+            : 'poke_cliff_brown_plateau_rock.png';
+        addBlit(h > CANVAS_RENDERER.PLATEAU_ROCK_THRESHOLD ? rockFloor : mCell.primaryTile, px, py);
       }
     } else {
       addBlit(mCell.primaryTile, px, py);
@@ -504,10 +799,19 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
         addBlit(ov, px, py);
       }
     }
+  };
 
-    if (r > 0) {
+  const renderCellCliffs = (r: number, c: number): void => {
+    if (buildingFootprintMask[r]?.[c]) return;
+
+    const px = c * CANVAS_TILE_SIZE;
+    const py = r * CANVAS_TILE_SIZE;
+
+    renderOwnCellCliff(r, c, px, py);
+
+    if (r > 0 && !bridgeGrid?.[r]?.[c]) {
       const northMtn = continent.resolvedMountain.cellDetails[r - 1]?.[c];
-      if (northMtn?.projectedFoot && !buildingFootprintMask[r]?.[c]) {
+      if (northMtn?.projectedFoot) {
         addBlit(northMtn.projectedFoot.tile, px, py);
       }
     }

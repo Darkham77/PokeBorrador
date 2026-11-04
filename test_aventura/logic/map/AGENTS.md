@@ -62,6 +62,8 @@ Frontend Developers / Systems Engineers.
 - [`adventureProjectFactory.ts`](./adventureProjectFactory.ts): Canonical adventure project factory generating Kanto, Johto, and blank regional world projects.
 - [`archipelagoGenerator.ts`](./archipelagoGenerator.ts): Module implementation.
 - [`assetWebPathResolver.ts`](./assetWebPathResolver.ts): Canonical web path resolver for test_aventura sprites, tiles, and prefabs.
+- [`autotileDefectScanner.ts`](./autotileDefectScanner.ts): Deterministic defect scanner classifying invalid tile topologies across mountain, water, path, and macro-biome domains.
+- [`autotileHealingEngine.ts`](./autotileHealingEngine.ts): Model-first canonical autotile healing brush engine repairing semantic terrain, elevation, path, and macro-biome matrices with Lyapunov convergence.
 - [`autotileMatrixGenerator.ts`](./autotileMatrixGenerator.ts): Module implementation.
 - [`biomeDistributionEngine.ts`](./biomeDistributionEngine.ts): Module implementation.
 - [`buildingPlacementSolver.ts`](./buildingPlacementSolver.ts): Module implementation.

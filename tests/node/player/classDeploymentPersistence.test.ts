@@ -135,10 +135,10 @@ describeWithDatabase(
         'SELECT save_data FROM game_saves WHERE user_id = ?',
         [testUserId]
       );
-      expect(rows.length).toBe(1);
+      expect(rows).toHaveLength(1);
       const loadedData =
         typeof rows[0]!.save_data === 'string'
-          ? (JSON.parse(rows[0]!.save_data as string) as any)
+          ? JSON.parse(rows[0]!.save_data)
           : (rows[0]!.save_data as any);
 
       expect(loadedData).toBeDefined();

@@ -4,6 +4,7 @@
  * including wild encounters, trainers, rivals, fishing minigames, and archaeology minigames.
  */
 import { test, type Page } from '@playwright/test';
+
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import {
   confirmAndStartBattle,
@@ -244,7 +245,7 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
       { num: E2E_SEQUENTIAL_BATTLES_COUNT_LIMIT, type: 'wild', label: 'Wild Encounter' }
     ] as const satisfies readonly { num: number; type: SearchEncounterType; label: string }[];
 
-    await sim.forceEncounterType(encountersToTest[0]!.type);
+    await sim.forceEncounterType(encountersToTest[0].type);
     await sim.navigateToRoute1();
 
     for (let i = 0; i < encountersToTest.length; i++) {

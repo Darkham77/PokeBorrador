@@ -285,35 +285,36 @@ function connectBridgeShoreEnds(
   W: number,
   H: number
 ): void {
-  const prevShore = waterRunStart > 0 ? path[waterRunStart - 1] : null;
-  if (prevShore && continentMap.cells[prevShore.y]?.[prevShore.x]?.terrain !== 'water') {
-    pathGrid[prevShore.y]![prevShore.x] = true;
-    const firstComp = companions[0];
-    if (firstComp?.compY !== undefined && firstComp.compY >= 0 && firstComp.compY < H) {
-      if (continentMap.cells[firstComp.compY]?.[prevShore.x]?.terrain !== 'water') {
-        pathGrid[firstComp.compY]![prevShore.x] = true;
+  const stampShorePoint = (p: RouteWaypoint | null, comp: SegmentCompanion | undefined): void => {
+    if (!p || continentMap.cells[p.y]?.[p.x]?.terrain === 'water') return;
+    pathGrid[p.y]![p.x] = true;
+    if (comp?.compY !== undefined && comp.compY >= 0 && comp.compY < H) {
+      if (continentMap.cells[comp.compY]?.[p.x]?.terrain !== 'water') {
+        pathGrid[comp.compY]![p.x] = true;
       }
     }
-    if (firstComp?.compX !== undefined && firstComp.compX >= 0 && firstComp.compX < W) {
-      if (continentMap.cells[prevShore.y]?.[firstComp.compX]?.terrain !== 'water') {
-        pathGrid[prevShore.y]![firstComp.compX] = true;
+    if (comp?.compX !== undefined && comp.compX >= 0 && comp.compX < W) {
+      if (continentMap.cells[p.y]?.[comp.compX]?.terrain !== 'water') {
+        pathGrid[p.y]![comp.compX] = true;
       }
+    }
+  };
+
+  // Stamp 2 steps inland on entrance shore
+  const firstComp = companions[0];
+  if (waterRunStart > 0) {
+    stampShorePoint(path[waterRunStart - 1] ?? null, firstComp);
+    if (waterRunStart > 1) {
+      stampShorePoint(path[waterRunStart - 2] ?? null, firstComp);
     }
   }
 
-  const nextShore = waterRunEnd + 1 < path.length ? path[waterRunEnd + 1] : null;
-  if (nextShore && continentMap.cells[nextShore.y]?.[nextShore.x]?.terrain !== 'water') {
-    pathGrid[nextShore.y]![nextShore.x] = true;
-    const lastComp = companions[companions.length - 1];
-    if (lastComp?.compY !== undefined && lastComp.compY >= 0 && lastComp.compY < H) {
-      if (continentMap.cells[lastComp.compY]?.[nextShore.x]?.terrain !== 'water') {
-        pathGrid[lastComp.compY]![nextShore.x] = true;
-      }
-    }
-    if (lastComp?.compX !== undefined && lastComp.compX >= 0 && lastComp.compX < W) {
-      if (continentMap.cells[nextShore.y]?.[lastComp.compX]?.terrain !== 'water') {
-        pathGrid[nextShore.y]![lastComp.compX] = true;
-      }
+  // Stamp 2 steps inland on exit shore
+  const lastComp = companions[companions.length - 1];
+  if (waterRunEnd + 1 < path.length) {
+    stampShorePoint(path[waterRunEnd + 1] ?? null, lastComp);
+    if (waterRunEnd + 2 < path.length) {
+      stampShorePoint(path[waterRunEnd + 2] ?? null, lastComp);
     }
   }
 }

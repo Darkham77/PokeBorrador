@@ -61,10 +61,10 @@ function resolveEventTimeframe(
   }
 
   if (startMs === null || endMs === null) {
-    const window = getEventCurrentWindow(event, date);
-    if (window) {
-      startMs = window.start.epochMilliseconds;
-      endMs = window.end.epochMilliseconds;
+    const eventWindow = getEventCurrentWindow(event, date);
+    if (eventWindow) {
+      startMs = eventWindow.start.epochMilliseconds;
+      endMs = eventWindow.end.epochMilliseconds;
     }
   }
 

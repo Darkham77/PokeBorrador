@@ -47,7 +47,7 @@ describe('healStuckEventPokemon (Tier 1 Unit Test)', () => {
         category_id: 'ivs',
         player_id: 'user1',
         pokemon_uid: 'poke-1',
-        data: {} as unknown as CompetitionEntry['data'],
+        data: {},
         submitted_at: nowIso
       }
     };
@@ -83,7 +83,7 @@ describe('healStuckEventPokemon (Tier 1 Unit Test)', () => {
         category_id: 'ivs',
         player_id: 'user1',
         pokemon_uid: 'poke-1',
-        data: {} as unknown as CompetitionEntry['data'],
+        data: {},
         submitted_at: pastIsoStart
       }
     };
@@ -107,7 +107,7 @@ describe('healStuckEventPokemon (Tier 1 Unit Test)', () => {
         category_id: 'ivs',
         player_id: 'user1',
         pokemon_uid: 'poke-legacy-1',
-        data: {} as unknown as CompetitionEntry['data'],
+        data: {},
         submitted_at: '2026-01-01T00:00:00Z'
       }
     };

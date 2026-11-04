@@ -1,16 +1,17 @@
-import type { DisplayText } from '@francogp/auditor';
-import { isMainModule } from '@francogp/auditor';
+import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
 /**
  * @file run_tests.ts
  * @description Testing orchestrator script with multi-platform Docker auto-discovery,
  * daemon auto-start, ephemeral PostgreSQL container lifecycle, and dual-engine Vite+ / Vitest execution.
  */
-
-import { styleText } from 'node:util';
-import { spawnSync } from 'node:child_process';
-import fs from 'node:fs';
 import path from 'node:path';
+import { styleText } from 'node:util';
+
+import type { DisplayText } from '@francogp/auditor';
+import { isMainModule } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
+
 import { parseUnmatchedArgs } from '../lib/cliHelpers.ts';
 import {
   inspectDocker,
@@ -62,7 +63,7 @@ async function setupTestEnvironment(dockerInfo: DockerDiscovery): Promise<{
   let postgresReady = false;
   const dockerBin = dockerInfo.dockerBin;
 
-  const cleanupContainer = () => {
+  const cleanupContainer = (): void => {
     if (containerStarted && dockerBin) {
       stopPostgresTestContainer(dockerBin);
     }
@@ -81,8 +82,11 @@ async function setupTestEnvironment(dockerInfo: DockerDiscovery): Promise<{
   } else {
     console.log(
       styleText(
-        'cyan',
-        'ℹ️  Docker no detectado o no disponible. Ejecutando tests exclusivamente en SQLite (RAM)...'
+        'red',
+        '\n🚨 ==========================================================================\n' +
+          '🚨 AVISO AL USUARIO: DOCKER ESTÁ APAGADO O NO DISPONIBLE EN EL SISTEMA\n' +
+          '👉 Por favor, abre y enciende Docker Desktop para validar PostgreSQL efímero.\n' +
+          '==========================================================================\n'
       )
     );
   }
@@ -113,7 +117,10 @@ interface VitestCliOptions {
   filter?: string;
 }
 
-function executeVitestSuite(options: VitestCliOptions, childEnv: Record<DisplayText, string>): number {
+function executeVitestSuite(
+  options: VitestCliOptions,
+  childEnv: Record<DisplayText, string>
+): number {
   if (!options.project && !options.coverage && !options.filter) {
     console.log(
       styleText(
@@ -333,11 +340,13 @@ export const command = defineCommand({
     }
   },
   async run({ args }) {
-    const { barePositionals, hasFlag, getParam } = parseUnmatchedArgs(args._);
-    const resolvedProject = args.project || getParam('project', 'p');
+    const parsed = parseUnmatchedArgs(args._);
+    const resolvedProject = args.project || parsed.getParam('project', 'p');
     const resolvedFilter =
-      args.filter || getParam('filter') || (barePositionals.length > 0 ? barePositionals[0] : undefined);
-    const resolvedCoverage = Boolean(args.coverage || hasFlag('coverage'));
+      args.filter ||
+      parsed.getParam('filter') ||
+      (parsed.barePositionals.length > 0 ? parsed.barePositionals[0] : undefined);
+    const resolvedCoverage = Boolean(args.coverage || parsed.hasFlag('coverage'));
 
     await runTestRunner({
       project: resolvedProject,
@@ -347,5 +356,5 @@ export const command = defineCommand({
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

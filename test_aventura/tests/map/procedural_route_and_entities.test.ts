@@ -5,6 +5,7 @@
  * Game Entities metadata (Warps & Spawns), and the connected Urban Flow network.
  */
 
+import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -23,9 +24,7 @@ describe('Procedural Route, Ledges & Game Entities (v2.5)', () => {
 
   beforeAll(() => {
     const registryPath = path.resolve('test_aventura/assets/tiles_registry.json');
-    expect(fs.existsSync(registryPath), 'test_aventura/assets/tiles_registry.json must exist').toBe(
-      true
-    );
+    assert.ok(fs.existsSync(registryPath), 'test_aventura/assets/tiles_registry.json must exist');
     const raw = fs.readFileSync(registryPath, 'utf-8');
     const data = JSON.parse(raw) as TilesRegistryJson;
     registryService = new TilesRegistryService(data);

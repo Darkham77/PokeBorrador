@@ -53,7 +53,7 @@ const emit = defineEmits<{
     margin: 0;
     color: var(--yellow, #facc15);
     font-size: var(--font-10);
-    font-weight: 800;
+    font-weight: $font-weight-extrabold;
     overflow-wrap: break-word;
   }
 

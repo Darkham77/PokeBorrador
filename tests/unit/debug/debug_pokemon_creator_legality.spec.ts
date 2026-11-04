@@ -8,6 +8,7 @@ import {
   validatePokemonLegality,
   type PokemonConfig
 } from '@/components/admin/debug/useDebugPokemonCreator.ts';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 describe('Debug Pokemon Creator Legality Guard & Modal', () => {
   beforeEach(() => {
@@ -277,7 +278,7 @@ describe('Debug Pokemon Creator Legality Guard & Modal', () => {
       'snorlax',
       'dragonite',
       'eevee'
-    ] as const satisfies readonly import('@/data/pokemon/pokedex').PokemonSpeciesId[];
+    ] as const satisfies readonly PokemonSpeciesId[];
 
     for (let i = 0; i < 50; i++) {
       const sp = testSpecies[i % testSpecies.length] || 'bulbasaur';

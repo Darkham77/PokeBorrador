@@ -65,7 +65,7 @@ $poder-color: var(--red);
   .team-val {
     color: var(--white);
     font-size: var(--font-16);
-    font-weight: 900;
+    font-weight: $font-weight-black;
   }
 }
 
@@ -94,7 +94,7 @@ $poder-color: var(--red);
     @include pixelated;
     color: var(--white);
     font-size: var(--font-13);
-    font-weight: 800;
+    font-weight: $font-weight-extrabold;
   }
 }
 

@@ -23,7 +23,7 @@ describe('Reproduce Battle Weather Visibility & Fast Mode (RED -> GREEN)', () =>
     const uiStore = useUIStore();
     const modalStore = useModalStore();
 
-    expect(modalStore.stack.length).toBe(0);
+    expect(modalStore.stack).toHaveLength(0);
     expect(uiStore.isFastMode).toBe(false);
 
     // Activating battle should NOT put the foreground UI into fast mode
@@ -55,7 +55,7 @@ describe('Reproduce Battle Weather Visibility & Fast Mode (RED -> GREEN)', () =>
 
     // 2. Both rain precipitation layers must exist and be visible
     const rainLayers = wrapper.findAll('.rain-layer');
-    expect(rainLayers.length).toBe(2);
+    expect(rainLayers).toHaveLength(2);
 
     // 3. Lightning elements must exist for storm
     const lightning = wrapper.find('.lightning-bolt');
@@ -87,6 +87,6 @@ describe('Reproduce Battle Weather Visibility & Fast Mode (RED -> GREEN)', () =>
     const overlay = wrapper.find('.weather-overlay');
     expect(overlay.exists()).toBe(true);
     expect(overlay.isVisible()).toBe(true);
-    expect(wrapper.findAll('.rain-layer').length).toBe(2);
+    expect(wrapper.findAll('.rain-layer')).toHaveLength(2);
   });
 });

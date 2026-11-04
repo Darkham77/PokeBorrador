@@ -136,7 +136,7 @@
     .tag-badge {
       color: var(--tag-color, Rgb(204 204 204 / 100%));
       font-size: var(--font-7);
-      font-weight: 900;
+      font-weight: $font-weight-black;
       letter-spacing: -1px;
     }
 

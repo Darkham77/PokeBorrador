@@ -1,10 +1,12 @@
-import { isMainModule } from '@francogp/auditor';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import { isMainModule } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
+
 import { ENABLED_POKEMON_IDS } from '../../src/data/system/constants.ts';
 
-export function generateSpeciesPurgeMigration() {
+export function generateSpeciesPurgeMigration(): void {
   const enabledListSql = ENABLED_POKEMON_IDS.map((id) => `'${id}'`).join(',');
   const enabledArrayPg = `ARRAY[\n    ${ENABLED_POKEMON_IDS.map((id) => `'${id}'`).join(', ')}\n  ]`;
 
@@ -326,5 +328,5 @@ export const command = defineCommand({
   }
 });
 if (isMainModule(import.meta.url)) {
-  runMain(command);
+  void runMain(command);
 }

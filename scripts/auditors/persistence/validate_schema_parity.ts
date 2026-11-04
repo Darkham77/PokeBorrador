@@ -20,19 +20,17 @@
  */
 
 import fs from 'node:fs';
-import path from 'node:path';
 import { enableCompileCache } from 'node:module';
+import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import {
-  BaseAuditor,
-  createRuleCapabilities,
-  getAuditConfig
-} from '@francogp/auditor';
+
+import { BaseAuditor, createRuleCapabilities, getAuditConfig } from '@francogp/auditor';
+
+import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
 import {
   splitSQLStatements,
   translatePostgresToSqlite
 } from '../../../src/logic/db/sqlTranslator.ts';
-import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
 import { initTestDatabaseSchema } from './_testDbHelper.ts';
 
 enableCompileCache();
@@ -70,7 +68,7 @@ function applyMigrationToDb(
     try {
       db.exec(sql);
     } catch (err) {
-      err;
+      console.warn('[Handled controlled exception]:', err);
     }
   }
 }
@@ -101,7 +99,7 @@ function extractSqliteTables(db: DatabaseSync): Map<string, Set<string>> {
 export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
   private readonly migrationsDir: string;
 
-  constructor() {
+  public constructor() {
     const auditConfig = getAuditConfig();
     const configuredDir = auditConfig.paths?.migrationsDir;
     const migrationsRoot =
@@ -113,12 +111,12 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
       ruleCapabilities: createRuleCapabilities(SCHEMA_PARITY_RULES, {
         speed: 'heavy',
         phase: 'normal',
-        fix: 'none',
         md: false,
         ast: false,
         changedOnly: false,
         critical: false
       }),
+      ruleFixers: {},
       id: 'validate_schema_parity',
       configKey: 'persistence.schemaParity',
       defaultConfig: {

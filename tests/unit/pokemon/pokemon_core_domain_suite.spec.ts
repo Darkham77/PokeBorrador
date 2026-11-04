@@ -250,7 +250,7 @@ describe('Pokemon Core Domain Suite', () => {
       expect(p.nature).toBe('adamant');
       expect(p.ability).toBe('cursedbody');
 
-      expect(p.moves.length).toBe(4);
+      expect(p.moves).toHaveLength(4);
       expect(p.moves[0]?.id).toBe('shadowball');
       expect(p.moves[1]?.id).toBe('hypnosis');
       expect(p.moves[2]?.id).toBe('sludgebomb');
@@ -313,18 +313,18 @@ describe('Pokemon Core Domain Suite', () => {
 
   describe('pokemonLearnset - getLegalSpeciesMoves', () => {
     it('returns legal moves for a given species and level', () => {
-      const pikachuMoves = getLegalSpeciesMoves('pikachu' as PokemonSpeciesId, 10);
+      const pikachuMoves = getLegalSpeciesMoves('pikachu', 10);
       expect(pikachuMoves.length).toBeGreaterThan(0);
     });
 
     it('restricts moves based on level limit', () => {
-      const lowLevel = getLegalSpeciesMoves('charmander' as PokemonSpeciesId, 1);
-      const highLevel = getLegalSpeciesMoves('charmander' as PokemonSpeciesId, 100);
+      const lowLevel = getLegalSpeciesMoves('charmander', 1);
+      const highLevel = getLegalSpeciesMoves('charmander', 100);
       expect(highLevel.length).toBeGreaterThanOrEqual(lowLevel.length);
     });
 
     it('calculates max allowed moves correctly', () => {
-      const count = getMaxAllowedMoves('pikachu' as PokemonSpeciesId, 25);
+      const count = getMaxAllowedMoves('pikachu', 25);
       expect(count).toBeGreaterThanOrEqual(1);
       expect(count).toBeLessThanOrEqual(4);
     });
@@ -342,14 +342,14 @@ describe('Pokemon Core Domain Suite', () => {
         expect(getTypeEffectivenessMsg(4)).toBe('¡Es muy eficaz!');
         expect(getTypeEffectivenessMsg(0.5)).toBe('No es muy eficaz...');
         expect(getTypeEffectivenessMsg(0.25)).toBe('No es muy eficaz...');
-        expect(getTypeEffectivenessMsg(1)).toBe(null);
+        expect(getTypeEffectivenessMsg(1)).toBeNull();
       });
     });
 
     describe('getMoveDescription', () => {
       it('should return specific messages for effects', () => {
         expect(getMoveDescription('explosion')).toContain('debilita');
-        expect(() => getMoveDescription('non-existent')).toThrow();
+        expect(() => getMoveDescription('non-existent')).toThrow(/move|not found|invalid|unknown/i);
       });
 
       it('should return default message for normal status move', () => {
@@ -385,7 +385,7 @@ describe('Pokemon Core Domain Suite', () => {
       const pokemon = {
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
       };
-      const tier = getPokemonTier(pokemon as Partial<Pokemon>);
+      const tier = getPokemonTier(pokemon);
       expect(tier.tier).toBe('S+');
       expect(tier.total).toBe(186);
     });
@@ -394,7 +394,7 @@ describe('Pokemon Core Domain Suite', () => {
       const pokemon = {
         ivs: { hp: 30, atk: 30, def: 30, spa: 30, spd: 25, spe: 25 }
       };
-      const tier = getPokemonTier(pokemon as Partial<Pokemon>);
+      const tier = getPokemonTier(pokemon);
       expect(tier.tier).toBe('S');
       expect(tier.total).toBe(170);
     });
@@ -403,7 +403,7 @@ describe('Pokemon Core Domain Suite', () => {
       const pokemon = {
         ivs: { hp: 25, atk: 25, def: 25, spa: 25, spd: 25, spe: 25 }
       };
-      const tier = getPokemonTier(pokemon as Partial<Pokemon>);
+      const tier = getPokemonTier(pokemon);
       expect(tier.tier).toBe('A');
       expect(tier.total).toBe(150);
     });

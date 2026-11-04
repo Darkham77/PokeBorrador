@@ -47,13 +47,14 @@ describe('HomeBlackMarketWidget.vue and BlackMarketModal.vue', () => {
 
     // Check that items are rendered
     const cards = wrapper.findAll('.bm-mini-card');
-    expect(cards.length).toBe(3);
+    expect(cards).toHaveLength(3);
 
     // Check that tooltips are attached to each item
     const tooltips = wrapper.findAllComponents(PVTooltip);
-    expect(tooltips.length).toBe(3);
-    expect(tooltips[0]!.props('title')).toBe('Ultra Ball');
-    expect(tooltips[0]!.props('description')).toBeTruthy();
+    expect(tooltips).toHaveLength(3);
+    const firstTooltipProps = tooltips[0]!.props() as Record<string, unknown>;
+    expect(firstTooltipProps['title']).toBe('Ultra Ball');
+    expect(firstTooltipProps['description']).toBeTruthy();
 
     // The first item is marked purchased ('ultraball')
     expect(cards[0]!.classes()).toContain('is-sold');
@@ -133,7 +134,7 @@ describe('HomeBlackMarketWidget.vue and BlackMarketModal.vue', () => {
     expect(wrapper.find('.header-stats .stat-node.level .value').text()).toContain('Nv. 12');
 
     const cards = wrapper.findAll('.bm-card');
-    expect(cards.length).toBe(3);
+    expect(cards).toHaveLength(3);
     expect(wrapper.text()).toContain('OFERTA DIARIA DEL SINDICATO');
   });
 });

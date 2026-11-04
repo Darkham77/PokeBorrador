@@ -1,4 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
+
+import type { Pokemon } from '@/types/pokemon/pokemon';
+
 import { BaseE2ESimulation } from '../base_simulation.ts';
 
 const LEGAL_STARTER_LEVEL = 10;
@@ -133,7 +136,7 @@ test.describe('Illegal Pokémon Security System E2E Simulation', () => {
 
       const game = useGameStore();
       const allPokemon = [...(game.state.team || []), ...(game.state.box || [])].filter(
-        (p): p is import('../../../src/types/pokemon/pokemon.ts').Pokemon => Boolean(p)
+        (p): p is Pokemon => Boolean(p)
       );
       const valid = allPokemon.filter((p) => !p.isIllegal && checkPokemonLegality(p).isLegal);
 

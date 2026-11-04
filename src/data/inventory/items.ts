@@ -1,9 +1,3 @@
-/**
- * src/data/inventory/items.ts
- *
- * Wrapper to export item configurations loaded from JSON.
- */
-import dbJson from './items.json' with { type: 'json' };
 import {
   ITEM_CATEGORIES,
   ITEM_TIERS,
@@ -15,6 +9,13 @@ import {
   type ItemKind,
   type ItemTier
 } from '@/types/inventory/items';
+
+/**
+ * src/data/inventory/items.ts
+ *
+ * Wrapper to export item configurations loaded from JSON.
+ */
+import dbJson from './items.json' with { type: 'json' };
 
 const ITEM_DATA_CATEGORIES_SET: ReadonlySet<string> = new Set<string>(ITEM_CATEGORIES); // runtime-set: Fast O(1) membership lookup set
 const ITEM_TIERS_SET: ReadonlySet<string> = new Set<string>(ITEM_TIERS); // runtime-set: Fast O(1) membership lookup set
@@ -113,6 +114,7 @@ export const BUFF_FIELDS = [
   'ivScannerSecs',
   'incenseSecs'
 ] as const;
+export const BUFF_FIELDS_SET = new Set<BuffField>(BUFF_FIELDS);
 export type BuffField = (typeof BUFF_FIELDS)[number];
 
 export const BUFF_FIELD_TO_ITEM_IDS: Record<BuffField, readonly ItemId[]> = {

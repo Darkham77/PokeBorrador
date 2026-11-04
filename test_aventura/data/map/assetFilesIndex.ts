@@ -6,6 +6,7 @@
  */
 
 import type { AssetUri, DisplayText } from '@francogp/auditor';
+
 import assetFilesJson from './assetFilesIndex.json';
 
 export const ASSET_FILES_INDEX: Readonly<Record<DisplayText, AssetUri>> = assetFilesJson;

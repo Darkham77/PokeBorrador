@@ -126,10 +126,9 @@ const restoreScroll = (): void => {
   }
 };
 
-onMounted(() => {
-  nextTick(() => {
-    restoreScroll();
-  });
+onMounted(async () => {
+  await nextTick();
+  restoreScroll();
 });
 </script>
 

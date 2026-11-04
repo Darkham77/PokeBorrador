@@ -2,7 +2,7 @@ import { MAX_POKEMON_LEVEL } from '@/data/system/constants.ts';
 import { gameBus } from '@/logic/events/gameBus';
 import { calculatePoliceBail, POLICE_STEAL_CHANCE_PERCENT } from '@/logic/player/classMath.ts';
 import type { useUIStore } from '@/stores/ui';
-import type { BattleOutcomeFlags } from '@/types/battle/battle';
+import type { BattleOutcomeFlags, BattleSide } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
@@ -132,8 +132,6 @@ export async function animatePlayerAutoSwap(
     }
   }
 }
-
-import type { BattleSide } from '@/types/battle/battle';
 
 function pickNextEnemySwitchCandidate(
   active: NonNullable<BattleContext['activeBattle']['value']>,

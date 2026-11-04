@@ -1,7 +1,8 @@
 import { test, expect, type Page } from '@playwright/test';
+
 import { BaseE2ESimulation } from '../base_simulation.ts';
-import { MAX_PER_ACTION_TIMEOUT_MS, MAX_UI_SETTLE_TIMEOUT_MS } from '../simulation_config.ts';
 import { waitForStoreReady } from '../e2e_helpers.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS, MAX_UI_SETTLE_TIMEOUT_MS } from '../simulation_config.ts';
 
 const SIMULATION_POKEMON_LEVEL = 50;
 const SIMULATION_VIGOR_VAL = 10;

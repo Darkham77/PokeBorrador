@@ -34,7 +34,7 @@ describe('Offline Rival Asynchronous Combat Lifecycle Integration', () => {
     authStore.user = {
       id: 'usr-attacker-1',
       user_metadata: { username: 'AttackerRed' }
-    } as unknown as typeof authStore.user;
+    };
 
     const gameStore = useGameStore();
     Object.assign(gameStore.state, {
@@ -100,7 +100,7 @@ describe('Offline Rival Asynchronous Combat Lifecycle Integration', () => {
     };
 
     const team3v3 = resolveOfflineRivalTeam(rawSave, '3v3');
-    expect(team3v3.length).toBe(3);
+    expect(team3v3).toHaveLength(3);
     expect(team3v3[0]!.uid).toBe('def-1');
     expect(team3v3.map((p) => p.uid)).toContain('def-2');
     expect(team3v3.map((p) => p.uid)).toContain('def-3');
@@ -140,7 +140,7 @@ describe('Offline Rival Asynchronous Combat Lifecycle Integration', () => {
     expect(useGameStore().state.battleCoins).toBe(attackerInitialBc + 15); // +15 BC for ranked win
 
     // RPC record_passive_battle_result was invoked for DefenderBlue
-    expect(rpcCalls.length).toBe(1);
+    expect(rpcCalls).toHaveLength(1);
     const rpc = rpcCalls[0]!;
     expect(rpc.name).toBe('record_passive_battle_result');
     expect(rpc.params.p_defender_id).toBe('usr-defender-blue');

@@ -22,10 +22,7 @@ vi.mock('@/logic/db/sqliteEngine.ts', () => ({
     const isSelect = trimmed.toUpperCase().startsWith('SELECT');
     const stmt = memoryDb.prepare(sql);
     if (isSelect) {
-      return stmt.all(...(params as (string | number | bigint | null)[])) as Record<
-        string,
-        unknown
-      >[];
+      return stmt.all(...(params as (string | number | bigint | null)[]));
     }
     stmt.run(...(params as (string | number | bigint | null)[]));
     return [];

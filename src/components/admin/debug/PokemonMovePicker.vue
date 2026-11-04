@@ -185,34 +185,34 @@ function removeMove(slotIndex: number): void {
       display: flex;
       gap: $spacing-sm-alt;
     }
+  }
 
-    .btn-magic-fill {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 24px;
-      height: 24px;
-      border: 1px solid Rgb(124 58 237 / 20%);
-      border-radius: $radius-md;
-      background: Rgb(124 58 237 / 10%);
-      color: var(--vicio-primary);
-      cursor: pointer;
+  .btn-magic-fill {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 24px;
+    height: 24px;
+    border: 1px solid Rgb(124 58 237 / 20%);
+    border-radius: $radius-md;
+    background: Rgb(124 58 237 / 10%);
+    color: var(--vicio-primary);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--vicio-primary);
+      color: var(--white);
+      transform: Scale(1.1);
+    }
+
+    &.btn-random-fill {
+      background: Rgb(255 170 0 / 10%);
+      color: var(--yellow);
+      border-color: Rgb(255 170 0 / 20%);
 
       &:hover {
-        background: var(--vicio-primary);
-        color: var(--white);
-        transform: Scale(1.1);
-      }
-
-      &.btn-random-fill {
-        background: Rgb(255 170 0 / 10%);
-        color: var(--yellow);
-        border-color: Rgb(255 170 0 / 20%);
-
-        &:hover {
-          background: var(--yellow);
-          color: $black;
-        }
+        background: var(--yellow);
+        color: $black;
       }
     }
   }
@@ -330,17 +330,17 @@ function removeMove(slotIndex: number): void {
         font-size: var(--font-9);
         letter-spacing: 1px;
       }
+    }
 
-      .move-item {
-        padding: 8px 12px;
-        border-radius: $radius-md;
-        font-size: var(--font-11);
-        cursor: pointer;
+    .move-item {
+      padding: 8px 12px;
+      border-radius: $radius-md;
+      font-size: var(--font-11);
+      cursor: pointer;
 
-        &:hover {
-          background: Rgb(124 58 237 / 10%);
-          color: var(--vicio-primary);
-        }
+      &:hover {
+        background: Rgb(124 58 237 / 10%);
+        color: var(--vicio-primary);
       }
     }
 

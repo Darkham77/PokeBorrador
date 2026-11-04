@@ -42,7 +42,7 @@ if (typeof localStorage === 'undefined') {
     },
     length: 0,
     key: (_index: number) => null
-  } as unknown as Storage;
+  };
 }
 
 describe('Events Integration with Debug API', () => {

@@ -337,7 +337,7 @@
 
         color: var(--yellow);
         font-size: var(--font-11);
-        font-weight: 800;
+        font-weight: $font-weight-extrabold;
         letter-spacing: 0.5px;
       }
     }
@@ -383,7 +383,7 @@
         background: transparent;
         color: var(--white);
         font-size: var(--font-12);
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
         text-align: center;
         outline: none;
 

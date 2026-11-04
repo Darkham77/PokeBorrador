@@ -1,6 +1,7 @@
 import { test, type Page } from '@playwright/test';
-import { BaseBattleSimulation } from '../base_battle_simulation.ts';
+
 import type { ItemId } from '../../../src/data/inventory/items.ts';
+import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import type { CertifiedTestBatch } from '../e2e_helpers.ts';
 import { certifyBattleCase } from '../fuzzer/core/certifiedBattleCase.ts';
 import { getMedicineCase } from '../fuzzer/core/fuzzer_medicine_cases.ts';

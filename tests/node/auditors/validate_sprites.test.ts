@@ -53,7 +53,7 @@ describe('SpriteAuditor', () => {
   describe('Clean Execution Verification', () => {
     it('executes cleanly with zero critical errors on repository dataset', async () => {
       const auditor = new SpriteAuditor();
-      const result = await auditor.execute();
+      const result = await auditor.audit();
 
       expect(result.summary.errors).toBe(0);
       expect(result.metrics['Total species checked']).toBeGreaterThan(0);

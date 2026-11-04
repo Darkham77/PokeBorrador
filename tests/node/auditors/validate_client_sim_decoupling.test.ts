@@ -18,7 +18,7 @@ describe('ValidateClientSimDecouplingAuditor', () => {
   describe('isWorkerBoundaryFile', () => {
     it('correctly identifies web worker and worker boundary paths', () => {
       expect(isWorkerBoundaryFile('src/logic/battle/showdown.worker.ts')).toBe(true);
-      expect(isWorkerBoundaryFile('src/logic/render/render.worker.ts')).toBe(true);
+      expect(isWorkerBoundaryFile('src/logic/render/atmosphere.worker.ts')).toBe(true);
       expect(isWorkerBoundaryFile('src/logic/battle/worker/spreadPatch.ts')).toBe(true);
       expect(isWorkerBoundaryFile('src/logic/battle/worker/helper.ts')).toBe(true);
     });

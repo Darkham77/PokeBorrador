@@ -14,9 +14,10 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
+
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { MAX_SUITE_TOTAL_TIMEOUT_MS } from '../simulation_config.ts';
 import { clickResilient } from '../e2e_helpers.ts';
+import { MAX_SUITE_TOTAL_TIMEOUT_MS } from '../simulation_config.ts';
 
 class PostBattleSequenceSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {

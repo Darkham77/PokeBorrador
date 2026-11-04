@@ -1,21 +1,19 @@
-import { PokemonSet } from '../exported-global-types';
-
+import { strict as assert } from 'assert';
 /**
  * Battle Simulator runner.
  * Pokemon Showdown - http://pokemonshowdown.com/
  *
  * @license MIT
  */
-
-import { strict as assert } from 'assert';
 import * as fs from 'fs';
 
 import { Dex } from '..';
 import { type ObjectReadWriteStream } from '../../lib/streams';
 import { Battle } from '../battle';
 import * as BattleStreams from '../battle-stream';
-import { State } from '../state';
+import { PokemonSet } from '../exported-global-types';
 import { PRNG, type PRNGSeed } from '../prng';
+import { State } from '../state';
 import { RandomPlayerAI } from './random-player-ai';
 
 export interface AIOptions {

@@ -129,7 +129,7 @@ const handleGiftChange = (e: Event): void => {
   background: Linear-Gradient(135deg, var(--purple), Rgb(142 36 170 / 100%));
   color: $white;
   font-size: var(--font-9);
-  font-weight: 900;
+  font-weight: $font-weight-black;
   cursor: pointer;
   box-shadow: var(--shadow-md);
 

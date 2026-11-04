@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+
 import type {
   Reporter,
   FullConfig,
@@ -9,6 +10,7 @@ import type {
   TestError,
   FullResult
 } from '@playwright/test/reporter';
+
 import {
   recordSuiteFailure,
   clearSuiteCheckpoint,

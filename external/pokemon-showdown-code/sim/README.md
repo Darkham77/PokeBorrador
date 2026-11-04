@@ -28,14 +28,14 @@ logic required to implement the game mechanics and battle system, **please see
 ## Installation
 
 ```sh
-npm install @pkmn/sim
+$ npm install @pkmn/sim
 ```
 
 ## Usage
 
 ```ts
-import { Dex, BattleStreams, RandomPlayerAI, Teams } from '@pkmn/sim';
 import { TeamGenerators } from '@pkmn/randoms';
+import { Dex, BattleStreams, RandomPlayerAI, Teams } from '@pkmn/sim';
 
 Teams.setGeneratorFactory(TeamGenerators);
 
@@ -149,7 +149,7 @@ You can copy Pokémon Showdown's formats verbatim by simply fetching the latest 
 the file locally.
 
 ```sh
-curl -o myformats.ts https://raw.githubusercontent.com/smogon/pokemon-showdown/master/config/formats.ts
+$ curl -o myformats.ts https://raw.githubusercontent.com/smogon/pokemon-showdown/master/config/formats.ts
 ```
 
 Note that not all of Pokémon Showdown's formats are expected to work out of the box, you may need to

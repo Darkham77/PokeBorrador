@@ -53,10 +53,10 @@ function setupBattle(p1Team: FullCustomSet[], p2Team: FullCustomSet[], seed = '1
   battle.setPlayer('p2', { name: 'Player 2', team: p2Team as never });
 
   battle.p1.pokemon.forEach((pokemon, idx) => {
-    if (pokemon && p1Team[idx]?.uid) Reflect.set(pokemon, 'uid', p1Team[idx]!.uid);
+    if (pokemon && p1Team[idx]?.uid) Reflect.set(pokemon, 'uid', p1Team[idx].uid);
   });
   battle.p2.pokemon.forEach((pokemon, idx) => {
-    if (pokemon && p2Team[idx]?.uid) Reflect.set(pokemon, 'uid', p2Team[idx]!.uid);
+    if (pokemon && p2Team[idx]?.uid) Reflect.set(pokemon, 'uid', p2Team[idx].uid);
   });
 
   const engine = new ShowdownBattleEngine({ mode: 'replayer' });

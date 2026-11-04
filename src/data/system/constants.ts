@@ -1,6 +1,6 @@
-import { PDEX_ORDER } from '../pokemon/pokedex.ts';
-
 import type { FactionId } from '@/types/system/game.ts';
+
+import { PDEX_ORDER } from '../pokemon/pokedex.ts';
 
 export const ACTIVE_GENERATION = 9;
 export const ACTIVE_SHOWDOWN_FORMAT =

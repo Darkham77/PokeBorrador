@@ -49,13 +49,13 @@ describe('In-Browser Tile Processor Pipeline', () => {
 
     // Tile at (0, 0) is fully inside
     const tile00 = extractTilePixels(grid, 0, 0);
-    expect(tile00.length).toBe(16 * 16 * 4);
+    expect(tile00).toHaveLength(16 * 16 * 4);
     // Upper-left pixel matches grid
     expect(tile00[0]).toBe(grid.data[0]);
 
     // Tile at (1, 1) has pixels outside grid width (24) and height (20)
     const tile11 = extractTilePixels(grid, 1, 1);
-    expect(tile11.length).toBe(16 * 16 * 4);
+    expect(tile11).toHaveLength(16 * 16 * 4);
     // Pixel (x=8, y=4) in tile corresponds to (16+8=24, 16+4=20) which is out of bounds -> transparent
     const outOfBoundsIdx = (4 * 16 + 8) * 4;
     expect(tile11[outOfBoundsIdx + 3]).toBe(0); // alpha = 0
@@ -110,7 +110,7 @@ describe('In-Browser Tile Processor Pipeline', () => {
     const hash2 = await computeTileHash(sample);
 
     expect(hash1).toBe(hash2);
-    expect(hash1.length).toBe(10);
+    expect(hash1).toHaveLength(10);
 
     const dataUrl = encodeRgbaToPngDataUrl(sample, 16, 16);
     expect(dataUrl.startsWith('data:image/png;base64,')).toBe(true);
@@ -141,7 +141,7 @@ describe('In-Browser Tile Processor Pipeline', () => {
     expect(res.totalSliced).toBe(2);
     expect(res.addedCount).toBe(1);
     expect(res.reusedCount).toBe(1);
-    expect(res.tiles.length).toBe(2);
+    expect(res.tiles).toHaveLength(2);
     expect(res.tiles[0]?.id).toBe(res.tiles[1]?.id);
 
     // Verify presence in registry
@@ -171,7 +171,7 @@ describe('In-Browser Tile Processor Pipeline', () => {
     expect(res.footprint.height).toBe(2);
     expect(res.template.id).toBe('kanto_gym_custom');
     expect(res.template.name).toBe('Gimnasio Personalizado');
-    expect(res.template.tiles.length).toBe(2);
+    expect(res.template.tiles).toHaveLength(2);
     expect(res.template.tiles[0]?.length).toBe(3);
     expect(res.template.collisionMask).toEqual(customMask);
 

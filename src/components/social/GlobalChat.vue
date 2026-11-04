@@ -44,13 +44,12 @@ const displayMessages = computed(() => {
   }));
 });
 
-function toggleChat(): void {
+async function toggleChat(): Promise<void> {
   isOpen.value = !isOpen.value;
   if (isOpen.value) {
-    nextTick(() => {
-      scrollToBottom();
-      inputField.value?.focus();
-    });
+    await nextTick();
+    scrollToBottom();
+    inputField.value?.focus();
   }
 }
 
@@ -72,9 +71,10 @@ function scrollToBottom(): void {
 // Auto-scroll when new messages arrive if panel is open
 watch(
   () => chatStore.globalMessages.length,
-  () => {
+  async () => {
     if (isOpen.value) {
-      nextTick(scrollToBottom);
+      await nextTick();
+      scrollToBottom();
     }
     chatStore.fetchMissingCosmetics();
   }
@@ -395,7 +395,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     @extend %hint-base;
 
     color: Rgb(248 113 113 / 100%);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
   }
 }
 

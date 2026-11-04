@@ -82,7 +82,7 @@ describe('Audit System & Dynamic Auto-Discovery Engine', () => {
 
   it('should filter tasks by specific task ID', async () => {
     const pokemonTasks = await discoverAuditors({ task: 'pokemon' });
-    expect(pokemonTasks.length).toBe(1);
+    expect(pokemonTasks).toHaveLength(1);
     expect(pokemonTasks[0]?.id).toBe('validate_pokemon');
     expect(pokemonTasks[0]?.family).toBe('domain_data');
   });
@@ -204,10 +204,8 @@ describe('Unified Theme Presentation Engine', () => {
     ];
 
     const md = renderMarkdownReport(results, 1, 15);
-    expect(md).toContain('# 🛡️ Reporte Consolidado de Auditoría Global');
-    expect(md).toContain(
-      '| Estado | Auditoría | Duración | Métrica Principal | Errores | Advertencias |'
-    );
+    expect(md).toContain('# 🛡️ Consolidated Global Audit Report');
+    expect(md).toContain('| Status | Auditor | Duration | Primary Metric | Errors | Warnings |');
     expect(md).toContain('Item Database Integrity');
     expect(md).toContain('`15 ms`');
     expect(md).toContain('✅ Pass');
@@ -272,7 +270,7 @@ describe('Integrity & False-Positive Prevention Tests for Sub-Auditors', () => {
       `;
 
       const statements = splitSQLStatements(sqlWithFunction);
-      expect(statements.length).toBe(3);
+      expect(statements).toHaveLength(3);
       expect(statements[0]).toContain('ALTER TABLE profiles');
       expect(statements[1]).toContain('CREATE OR REPLACE FUNCTION test_func');
       expect(statements[1]).toContain('LANGUAGE plpgsql');

@@ -365,7 +365,7 @@ export const useGTSStore = defineStore('gts', () => {
 
   async function cancelListing(listingId: string | number): Promise<boolean> {
     try {
-      console.debug('[GTS] Accion: cancelListing iniciada para ID:', listingId, typeof listingId);
+      logger.debug('[GTS] Accion: cancelListing iniciada para ID:', String(listingId));
       ui.setLoading(true);
       ui.notify('Retirando publicación...', '🔄');
 
@@ -374,7 +374,7 @@ export const useGTSStore = defineStore('gts', () => {
       })) as { data: GameState | null; error: { message: string } | null };
 
       if (error) {
-        console.error('[GTS] Error RPC cancel_listing_v2:', error);
+        logger.error('GTS', `Error RPC cancel_listing_v2: ${error.message}`);
         throw error;
       }
 
@@ -389,8 +389,7 @@ export const useGTSStore = defineStore('gts', () => {
       return true;
     } catch (e) {
       const err = e as Error;
-      console.error('[GTS] Excepción en cancelListing:', err);
-      logger.error('GTS', `Error al cancelar: ${err.message}`);
+      logger.error('GTS', `Excepción en cancelListing: ${err.message}`);
       ui.notify(err.message || 'Error al cancelar', '❌');
       return false;
     } finally {

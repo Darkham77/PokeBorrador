@@ -1,3 +1,4 @@
+import { logger } from '@/logic/utils/logger';
 import type {
   BattleSide,
   ShowdownPlayerRequest,
@@ -28,9 +29,9 @@ async function validateWorkerAndTransition(ctx: BattleContext): Promise<void> {
     throw new Error('[switchAction] Showdown Web Worker is not available to process switch turn.');
   }
 
-  console.debug('[switchAction] transitioning FSM to BUILD_QUEUE...');
+  logger.debug('[switchAction] transitioning FSM to BUILD_QUEUE...');
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE);
-  console.debug('[switchAction] transitioning FSM to POP_ACTION...');
+  logger.debug('[switchAction] transitioning FSM to POP_ACTION...');
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POP_ACTION);
 }
 
@@ -63,7 +64,7 @@ async function resolveInitialSwitchChoices(
   newPokeUid: string,
   side: BattleSide
 ): Promise<{ p1Choice: string; p2Choice: string }> {
-  console.debug('[switchAction] resolving slot...');
+  logger.debug('[switchAction] resolving slot...');
   const req = side === 'player' ? active.playerRequest : active.enemyRequest;
   const slot = ShowdownTeamResolver.getShowdownSlotForUid(req, newPokeUid);
   const isWild = !active.isTrainer && !active.isGym;
@@ -108,18 +109,18 @@ async function resolveReplayChoices(
   const certifiedP1Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p1');
   const certifiedP2Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2');
   const historyIdx = Reflect.get(debugObj, 'replayHistoryIdx');
-  console.debug(
+  logger.debug(
     `[switchWorkerTurn] side=${side}, idx=${historyIdx}, certifiedP1Choice="${certifiedP1Choice}", certifiedP2Choice="${certifiedP2Choice}"`
   );
 
   if (side === 'player' && !certifiedP1Choice.startsWith('switch ')) {
-    console.debug(
+    logger.debug(
       `[switchWorkerTurn] Certified player choice is not a switch (${certifiedP1Choice}) at idx=${historyIdx}. Replacement was already processed in Showdown worker.`
     );
     return { ...initial, earlyReturn: true };
   }
   if (side === 'enemy' && !certifiedP2Choice.startsWith('switch ')) {
-    console.debug(
+    logger.debug(
       `[switchWorkerTurn] Certified enemy choice is not a switch (${certifiedP2Choice}). Replacement was already processed in Showdown worker.`
     );
     return { ...initial, earlyReturn: true };
@@ -141,13 +142,13 @@ function resolveMockEnemyChoice(initialP2Choice: string, p2Skip: boolean): strin
   if (debug?.nextEnemyChoice) {
     if (!p2Skip) {
       const choice = debug.nextEnemyChoice;
-      console.debug(
+      logger.debug(
         `[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice in switchAction: ${choice}`
       );
       debug.nextEnemyChoice = undefined;
       return choice;
     }
-    console.debug(
+    logger.debug(
       `[E2E-MOCK-CENTRAL-DEBUG] Bypassed nextEnemyChoice interception in switchAction because P2 is in wait state.`
     );
     return initialP2Choice;
@@ -156,7 +157,7 @@ function resolveMockEnemyChoice(initialP2Choice: string, p2Skip: boolean): strin
   if (debug?.enemyChoicesQueue?.length) {
     const queuedChoice = debug.enemyChoicesQueue.shift();
     if (queuedChoice) {
-      console.debug(
+      logger.debug(
         `[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via queue in switchAction: ${queuedChoice}`
       );
       return queuedChoice;
@@ -228,7 +229,7 @@ async function executeWorkerTurnWithRollback(
 }> {
   try {
     const { executeTurnInWorker } = await import('../showdownWorkerClient.ts');
-    console.debug('[switchAction] calling executeTurnInWorker...', choices);
+    logger.debug('[switchAction] calling executeTurnInWorker...', choices);
     const result = await executeTurnInWorker(
       choices.p1Choice,
       choices.p2Choice,
@@ -242,10 +243,10 @@ async function executeWorkerTurnWithRollback(
       const { ShowdownBattleRunner } = await import('../helpers/showdownBattleRunner.ts');
       ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(globalThis.__VITE_DEBUG__);
     }
-    console.debug(`[E2E-DEBUG-SWITCH-RESULT] logs: ${JSON.stringify(result.logs)}`);
+    logger.debug(`[E2E-DEBUG-SWITCH-RESULT] logs: ${JSON.stringify(result.logs)}`);
     return result;
   } catch (error) {
-    console.error('[switchAction] executeTurnInWorker thrown:', error);
+    logger.error('[switchAction] executeTurnInWorker thrown:', error);
     rollbackOnSwitchFailure(ctx, oldPoke, side);
     ctx.persistBattle();
     throw error;
@@ -364,7 +365,7 @@ export async function processNonForcedSwitchWorkerTurn(
 
   const active = ctx.activeBattle.value;
   if (!active?.enemy || !active?.player) {
-    console.warn('[switchAction] activeBattle or participants are null!');
+    logger.warn('[switchAction] activeBattle or participants are null!');
     await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.WAIT_INPUT);
     return;
   }
@@ -431,7 +432,7 @@ export async function processForcedSwitchWorkerTurn(
       await processFaint(ctx, 'player');
     }
   } catch (forcedErr) {
-    console.error('[switchAction] CRITICAL error in forced executeSwitch:', forcedErr);
+    logger.error('[switchAction] CRITICAL error in forced executeSwitch:', forcedErr);
     throw forcedErr;
   }
 }

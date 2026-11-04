@@ -83,7 +83,7 @@ const emit = defineEmits<{
   margin: 0;
   color: var(--slate-50);
   font-size: var(--font-15);
-  font-weight: 700;
+  font-weight: $font-weight-bold;
 }
 
 .btn-close {

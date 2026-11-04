@@ -1,4 +1,18 @@
 import type { Page } from '@playwright/test';
+
+import type { AbilityId } from '../../../src/data/battle/abilities.ts';
+import type { PokemonMoveId } from '../../../src/data/battle/moves.ts';
+import type { NatureId } from '../../../src/data/battle/natures.ts';
+import type { ItemId } from '../../../src/data/inventory/items.ts';
+import type { NpcSpriteId } from '../../../src/data/pokemon/npcSpriteCatalog.ts';
+import type { PokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
+import type { MapRouteId } from '../../../src/data/world/map-assets.ts';
+import { PokemonLegalityValidator } from '../../../src/logic/battle/engine/pokemonLegalityValidator.ts';
+import type { WeatherId } from '../../../src/logic/weather/weatherRegistry.ts';
+import type { NumericSeed } from '../../../src/types/battle/battle.ts';
+import type { Pokemon, PokemonGenderName } from '../../../src/types/pokemon/pokemon.ts';
+import type { CertifiedTestBatch, WindowWithResolver } from '../e2e_helpers.ts';
+import { createCertifiedBattleInventory } from '../fuzzer/core/certifiedBattleInventory.ts';
 import {
   DEFAULT_SEED_VAL,
   PRIME_MODULO_BASE,
@@ -7,19 +21,6 @@ import {
   SIMULATION_GSAP_TIME_SCALE,
   DEBUG_ITEM_MAX_QUANTITY
 } from '../simulation_config.ts';
-import type { CertifiedTestBatch, WindowWithResolver } from '../e2e_helpers.ts';
-import type { ItemId } from '../../../src/data/inventory/items.ts';
-import type { PokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
-import type { PokemonMoveId } from '../../../src/data/battle/moves.ts';
-import type { AbilityId } from '../../../src/data/battle/abilities.ts';
-import type { MapRouteId } from '../../../src/data/world/map-assets.ts';
-import type { WeatherId } from '../../../src/logic/weather/weatherRegistry.ts';
-import type { NatureId } from '../../../src/data/battle/natures.ts';
-import type { Pokemon, PokemonGenderName } from '../../../src/types/pokemon/pokemon.ts';
-import type { NpcSpriteId } from '../../../src/data/pokemon/npcSpriteCatalog.ts';
-import type { NumericSeed } from '../../../src/types/battle/battle.ts';
-import { createCertifiedBattleInventory } from '../fuzzer/core/certifiedBattleInventory.ts';
-import { PokemonLegalityValidator } from '../../../src/logic/battle/engine/pokemonLegalityValidator.ts';
 
 const DEFAULT_SCENARIO_POKEMON_LEVEL = 50;
 const REPLAY_RANDOM_SCALE = 10000;
@@ -235,7 +236,7 @@ export async function resetSimulationToCleanState(
       };
 
       const debug = win.__VITE_DEBUG__;
-      const testResetShowdownWorker = debug?.testResetShowdownWorker as (() => void) | undefined;
+      const testResetShowdownWorker = debug?.testResetShowdownWorker;
       if (testResetShowdownWorker) {
         testResetShowdownWorker();
       }

@@ -3,6 +3,8 @@
 @use '@/styles/core/tools' as *;
 @use './shop_cards' as *;
 @use './shop_variants' as *;
+@forward './shop_cards';
+@forward './shop_variants';
 
 .shop-modal-header {
   @include shop-header;

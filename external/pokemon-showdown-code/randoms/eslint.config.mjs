@@ -14,7 +14,7 @@ export default [
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/prefer-optional-chain': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
-      'import/order': 'off',
+      'import-x/order': 'off',
       'max-len': 'off',
       'prefer-const': 'off',
       'no-case-declarations': 'off',

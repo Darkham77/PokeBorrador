@@ -16,8 +16,7 @@ import { getDayCycle, getSeason } from '@/logic/utils/timeUtils';
 import * as warEngine from '@/logic/war/warEngine';
 import { WEATHER_REGISTRY, type WeatherId } from '@/logic/weather/weatherRegistry';
 import { getRouteWeather } from '@/logic/weather/weatherUtils';
-import type { MapLocation } from '@/types/pokemon/encounters';
-import type { EncounterState } from '@/types/pokemon/encounters';
+import type { MapLocation, EncounterState } from '@/types/pokemon/encounters';
 
 describe('Encounters & Weather Domain Suite', () => {
   describe('Legendary Tickets Dynamic Spawn Injection', () => {
@@ -95,12 +94,7 @@ describe('Encounters & Weather Domain Suite', () => {
 
       for (const rId of allRoutes) {
         try {
-          const w = getRouteWeather(
-            rId as any,
-            requireWeatherSeasonId(season.id),
-            epochHour,
-            cycle
-          );
+          const w = getRouteWeather(rId, requireWeatherSeasonId(season.id), epochHour, cycle);
           if (w === 'fog') routesWithFog.push(rId);
         } catch {
           // Some maps don't have registered weather tables
@@ -122,7 +116,7 @@ describe('Encounters & Weather Domain Suite', () => {
 
     it('calculates default chances for rival and common trainer', () => {
       const chances = getNpcEncounterChances('route1', dummyState, {}, ['route1', 'route2']);
-      expect(chances.length).toBe(4);
+      expect(chances).toHaveLength(4);
 
       const rival = chances.find((c) => c.type === 'rival');
       expect(rival).toBeDefined();

@@ -1,17 +1,16 @@
-import type { PokemonSet } from '@pkmn/sim';
-import { useItemOnPokemon } from '../../../../src/logic/providers/itemProvider.ts';
+import type { ItemId } from '../../../../src/data/inventory/items.ts';
+import { ACTIVE_SHOWDOWN_FORMAT } from '../../../../src/data/system/constants.ts';
 import { ShowdownBattleEngine } from '../../../../src/logic/battle/engine/showdownBattleEngine.ts';
 import { createShowdownBattle } from '../../../../src/logic/battle/helpers/showdownBattleFactory.ts';
-import { ACTIVE_SHOWDOWN_FORMAT } from '../../../../src/data/system/constants.ts';
+import { useItemOnPokemon } from '../../../../src/logic/providers/itemProvider.ts';
 import type { Pokemon } from '../../../../src/types/pokemon/pokemon.ts';
-import type { ItemId } from '../../../../src/data/inventory/items.ts';
-import { certifyBattleCase } from './certifiedBattleCase.ts';
-import { fuzzerMemoryStore } from './fuzzerMemoryStore.ts';
 import type {
   CertifiedBattleHistoryEntry,
   FuzzerPokemonSet,
   TestBatch
 } from '../generators/fuzzer_team_generator.ts';
+import { certifyBattleCase } from './certifiedBattleCase.ts';
+import { fuzzerMemoryStore } from './fuzzerMemoryStore.ts';
 
 interface MedicineScenario {
   readonly itemId: ItemId;
@@ -20,9 +19,9 @@ interface MedicineScenario {
 }
 
 const MEDICINE_SCENARIOS: readonly MedicineScenario[] = [
-  { itemId: 'potion' as ItemId, enemyTriggerChoice: 'move 2', seed: [101, 102, 103, 104] },
-  { itemId: 'antidote' as ItemId, enemyTriggerChoice: 'move 1', seed: [201, 202, 203, 204] },
-  { itemId: 'revive' as ItemId, enemyTriggerChoice: 'move 2', seed: [301, 302, 303, 304] }
+  { itemId: 'potion', enemyTriggerChoice: 'move 2', seed: [101, 102, 103, 104] },
+  { itemId: 'antidote', enemyTriggerChoice: 'move 1', seed: [201, 202, 203, 204] },
+  { itemId: 'revive', enemyTriggerChoice: 'move 2', seed: [301, 302, 303, 304] }
 ];
 
 function makePlayer(): FuzzerPokemonSet {
@@ -119,8 +118,8 @@ function runScenario(scenario: MedicineScenario): TestBatch {
   const enemy = makeEnemy();
   const battle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, scenario.seed);
   const playerTeam = faintTarget ? [faintTarget, player] : [player];
-  battle.setPlayer('p1', { name: 'P1', team: playerTeam as PokemonSet[] });
-  battle.setPlayer('p2', { name: 'P2', team: [enemy as PokemonSet] });
+  battle.setPlayer('p1', { name: 'P1', team: playerTeam });
+  battle.setPlayer('p2', { name: 'P2', team: [enemy] });
   const playerUid = player.uid;
   const enemyUid = enemy.uid;
   const showdownPlayer = battle.p1.pokemon[0];

@@ -5,6 +5,7 @@ import type { MoveCategory } from '@/data/battle/moves';
 import { requireItemId } from '@/data/inventory/items';
 import {
   CANONICAL_TERRAINS,
+  CANONICAL_TERRAINS_SET,
   type CanonicalTerrain,
   MIN_BATTLE_STAT_STAGE,
   MAX_BATTLE_STAT_STAGE
@@ -15,8 +16,12 @@ import { logger } from '@/logic/utils/logger';
 import { requireDayPhase } from '@/logic/utils/timeUtils.ts';
 import { requireWeatherId } from '@/logic/weather/weatherRegistry';
 import { useAudioStore } from '@/stores/audio';
-import type { BattleStages, BattleSide } from '@/types/battle/battle';
-import { requireBattleConditionKey, type BattleConditionKey } from '@/types/battle/battle';
+import {
+  type BattleStages,
+  type BattleSide,
+  requireBattleConditionKey,
+  type BattleConditionKey
+} from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import {
   BATTLE_UI_EVENTS,
@@ -176,6 +181,7 @@ const SCREEN_OR_HAZARD_EFFECTS = [
   'stealthrock',
   'toxicspikes'
 ] as const;
+const SCREEN_OR_HAZARD_EFFECTS_SET = new Set<ScreenOrHazardEffect>(SCREEN_OR_HAZARD_EFFECTS);
 type ScreenOrHazardEffect = (typeof SCREEN_OR_HAZARD_EFFECTS)[number];
 
 function toggleScreenOrHazardEffect(
@@ -221,7 +227,7 @@ function toggleTerrainOrFieldEffect(ctx: BattleContext, key: string, val: number
     ...active.fieldConditions
   };
   let newTerrain: string | null = active.terrain ?? null;
-  const isTerrain = CANONICAL_TERRAINS.includes(key as CanonicalTerrain);
+  const isTerrain = CANONICAL_TERRAINS_SET.has(key as CanonicalTerrain);
 
   if (updatedConditions[key]) {
     delete updatedConditions[key];
@@ -533,7 +539,7 @@ export function setupBattleDebug(ctx: BattleContext): void {
 
   win.__VITE_DEBUG__.setFieldEffect = (side: string, effect: string, val: number) => {
     const key = requireBattleConditionKey(effect);
-    if (SCREEN_OR_HAZARD_EFFECTS.includes(key as ScreenOrHazardEffect)) {
+    if (SCREEN_OR_HAZARD_EFFECTS_SET.has(key as ScreenOrHazardEffect)) {
       toggleScreenOrHazardEffect(ctx, side, key, val);
     } else {
       toggleTerrainOrFieldEffect(ctx, key, val);
@@ -580,7 +586,7 @@ export function setupBattleDebug(ctx: BattleContext): void {
     });
 
     if (!isReady && subStateVal === 'SWITCH_MENU' && win.__VITE_DEBUG__?.isScriptedReplayMode) {
-      console.debug(
+      logger.debug(
         `[E2E-CERTIFIED-REPLAY] SWITCH_MENU is not actionable. context=${JSON.stringify({
           isActiveBattle: ctx.fsm.currentState.value === ctx.BATTLE_STATES.ACTIVE_BATTLE,
           isProcessing: ctx.isProcessing.value,

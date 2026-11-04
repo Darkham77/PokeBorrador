@@ -1,14 +1,19 @@
-import type { DisplayText } from '@francogp/auditor';
+import fs from 'node:fs';
 /**
  * scripts/auditors/domain_data/validate_spanish_ids.ts
  *
  * SPANISH LOGIC STRINGS & LEAKS AUDITOR (Node.js 26+ Native)
  * Scans code files for potential hardcoded Spanish names used as logic IDs.
  */
-
-import fs from 'node:fs';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, FileScanAuditor, createRuleCapabilities } from '@francogp/auditor';
+
+import type { DisplayText, FileScanRootsOptions } from '@francogp/auditor';
+import {
+  BaseAuditor,
+  FileScanAuditor,
+  createRuleCapabilities,
+  resolveFileScanRoots
+} from '@francogp/auditor';
 
 enableCompileCache();
 
@@ -26,7 +31,7 @@ const itemsJson = JSON.parse(fs.readFileSync('src/data/inventory/items.json', 'u
 
 const spanishNames = new Set<string>();
 
-const addName = (name?: string) => {
+const addName = (name?: string): void => {
   if (name && name.trim()) {
     spanishNames.add(name.trim().toLowerCase());
   }
@@ -74,26 +79,29 @@ export const SPANISH_ID_RULES: readonly SpanishIdRuleId[] = ['spanish-logic-id']
 export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
   private readonly criticalPatterns: readonly RegExp[];
 
-  constructor(
-    roots: readonly string[] = [
+  public constructor(options: FileScanRootsOptions = {}) {
+    const defaultRoots = [
       'src/logic',
       'src/stores',
       'src/composables',
       'src/components',
       'src/views',
       'database'
-    ]
-  ) {
+    ];
+    const { effectiveRoot, targetRoots } = resolveFileScanRoots(options, defaultRoots);
+
     super({
+      projectRoot: effectiveRoot,
+      roots: targetRoots,
       ruleCapabilities: createRuleCapabilities(SPANISH_ID_RULES, {
         speed: 'light',
         phase: 'normal',
-        fix: 'none',
         md: false,
         ast: false,
         changedOnly: false,
         critical: false
       }),
+      ruleFixers: {},
       id: 'validate_spanish_ids',
       configKey: 'domain.spanishIds',
       defaultConfig: {
@@ -116,7 +124,6 @@ export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
           'Use English canonical IDs in code logic, keeping Spanish text strictly for UI display'
       },
       remediationPhase: 'contracts',
-      roots,
       allowedExtensions: new Set(['.ts', '.vue'])
     });
 
@@ -145,26 +152,27 @@ export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
           let match: RegExpExecArray | null;
           while ((match = pattern.exec(lineText)) !== null) {
             const word = match[1]?.trim().toLowerCase();
-            if (word && (spanishNames.has(word) || word === 'move_relearner')) {
-              if (
-                lineText.includes('toThrow') ||
-                lineText.includes('expect(') ||
-                lineText.includes('name:') ||
-                lineText.includes('MOVE_TRANSLATIONS_ES') ||
-                lineText.includes('ABILITY_TRANSLATIONS_ES')
-              ) {
-                continue;
-              }
-
-              this.addViolation({
-                ruleId: 'spanish-logic-id',
-                severity: 'error',
-                file: relPath,
-                line: index + 1,
-                message: `Uso de nombre en español en contexto de lógica: '${match[1]}'`,
-                context: lineText.trim()
-              });
+            if (!word || (!spanishNames.has(word) && word !== 'move_relearner')) {
+              continue;
             }
+            if (
+              lineText.includes('toThrow') ||
+              lineText.includes('expect(') ||
+              lineText.includes('name:') ||
+              lineText.includes('MOVE_TRANSLATIONS_ES') ||
+              lineText.includes('ABILITY_TRANSLATIONS_ES')
+            ) {
+              continue;
+            }
+
+            this.addViolation({
+              ruleId: 'spanish-logic-id',
+              severity: 'error',
+              file: relPath,
+              line: index + 1,
+              message: `Uso de nombre en español en contexto de lógica: '${match[1]}'`,
+              context: lineText.trim()
+            });
           }
         }
       }

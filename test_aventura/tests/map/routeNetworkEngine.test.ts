@@ -105,7 +105,7 @@ describe('routeNetworkEngine & POI systems', () => {
       const pois = placeRegionalPOIs(continent, { targetCount: 18 });
       const docks = pois.filter((p) => p.type === 'port_dock');
 
-      expect(docks.length).toBe(1);
+      expect(docks).toHaveLength(1);
       const dock = docks[0]!;
       expect(dock.id).toBe('vermilion_port');
       expect(dock.buildingFile).toMatch(/^poke_port_vermilion_gate(_(north|west|east))?\.png$/);
@@ -168,11 +168,11 @@ describe('routeNetworkEngine & POI systems', () => {
       const primaryCount = pois.filter((p) =>
         PRIMARY_POI_TYPES.has(p.type as PrimaryPoiType)
       ).length;
-      expect(chain.length).toBe(primaryCount - 1);
+      expect(chain).toHaveLength(primaryCount - 1);
 
       // Every secondary POI must have a stub connection
       const secondaryCount = pois.length - primaryCount;
-      expect(stubs.length).toBe(secondaryCount);
+      expect(stubs).toHaveLength(secondaryCount);
 
       // Loops are optional but capped at 2
       expect(loops.length).toBeLessThanOrEqual(2);

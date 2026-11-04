@@ -127,7 +127,7 @@ describe('Battle Capture and Save Restoration Full Cycle (Integration)', () => {
     const captureResult = await handleItemUsage(
       'masterball',
       team[0]!,
-      restoredBattle.enemy!,
+      restoredBattle.enemy,
       dummyOptions
     );
     expect(captureResult.action).toBe('capture');
@@ -140,7 +140,7 @@ describe('Battle Capture and Save Restoration Full Cycle (Integration)', () => {
     // 6. Add captured Pokemon to gameStore (routes to box because team has 6 Pokemon)
     const addResult = gameStore.addPokemon(capturedPokemon, { notify: false });
     expect(addResult.target).toBe('box');
-    expect(gameStore.state.box.length).toBe(1);
+    expect(gameStore.state.box).toHaveLength(1);
     expect(gameStore.state.box[0]?.id).toBe('rattata');
 
     // 7. Sanitize and validate entire save state payload

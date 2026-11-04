@@ -56,8 +56,9 @@ function animateList(): void {
   }, feedRef.value || undefined);
 }
 
-onMounted(() => {
-  nextTick(animateList);
+onMounted(async () => {
+  await nextTick();
+  animateList();
 });
 
 onUnmounted(() => {
@@ -223,7 +224,7 @@ onUnmounted(() => {
 
   .notif-title {
     color: var(--yellow, #facc15);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
   }
 }
 

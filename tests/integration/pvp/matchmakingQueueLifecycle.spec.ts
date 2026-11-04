@@ -22,7 +22,7 @@ describe('Matchmaking Queue Lifecycle & Ranked Pairing Integration', () => {
     authStore.user = {
       id: 'usr-player-alice',
       email: 'alice@poke.com'
-    } as unknown as typeof authStore.user;
+    };
 
     const gameStore = useGameStore();
     Object.assign(gameStore.state, {
@@ -146,7 +146,7 @@ describe('Matchmaking Queue Lifecycle & Ranked Pairing Integration', () => {
     await livePvP.startSearch();
 
     // Match found: invites created, players removed from queue
-    expect(Object.keys(dbInvites).length).toBe(1);
+    expect(Object.keys(dbInvites)).toHaveLength(1);
     const createdInvite = Object.values(dbInvites)[0]!;
     expect(createdInvite.status).toBe('ranked_match');
     expect(createdInvite.opponent_id).toBe('usr-player-bob');

@@ -552,25 +552,25 @@ onMounted(async () => {
       color: var(--slate-300);
       font-size: var(--font-10);
     }
+  }
 
-    .brush-buttons {
-      display: flex;
-      gap: $spacing-xs;
+  .brush-buttons {
+    display: flex;
+    gap: $spacing-xs;
 
-      .brush-btn {
-        padding: 3px 6px;
-        border: 1px solid var(--slate-700);
-        border-radius: $radius-xs-alt;
-        background: var(--slate-800);
-        color: var(--slate-300);
-        font-size: var(--font-10);
-        cursor: pointer;
+    .brush-btn {
+      padding: 3px 6px;
+      border: 1px solid var(--slate-700);
+      border-radius: $radius-xs-alt;
+      background: var(--slate-800);
+      color: var(--slate-300);
+      font-size: var(--font-10);
+      cursor: pointer;
 
-        &.active {
-          background: var(--sky-dark);
-          color: var(--white);
-          border-color: var(--sky);
-        }
+      &.active {
+        background: var(--sky-dark);
+        color: var(--white);
+        border-color: var(--sky);
       }
     }
   }

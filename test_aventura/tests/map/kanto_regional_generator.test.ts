@@ -51,7 +51,7 @@ describe('KantoRegionalWorldGenerator & OccupancyGrid', () => {
     generator.generate(testNodes, testConnections, 42);
 
     // Verify grid dimensions
-    expect(generator.grid.length).toBe(KANTO_GRID_H);
+    expect(generator.grid).toHaveLength(KANTO_GRID_H);
     expect(generator.grid[0]?.length).toBe(KANTO_GRID_W);
 
     // Verify south ocean has water
@@ -111,7 +111,7 @@ describe('KantoRegionalWorldGenerator & OccupancyGrid', () => {
     generator.generate(proceduralNodes, proceduralConnections, 123);
 
     // Grid size verified
-    expect(generator.grid.length).toBe(KANTO_GRID_H);
+    expect(generator.grid).toHaveLength(KANTO_GRID_H);
     expect(generator.grid[0]?.length).toBe(KANTO_GRID_W);
 
     // Procedural town architectures: Pokecenter, Mart, houses

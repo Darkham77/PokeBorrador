@@ -118,10 +118,7 @@ describe('Cave Entrance Mountain Integration & Plateau Integrity (Seed #777480)'
       }
     }
 
-    expect(
-      violations.length,
-      `Found boulder/rubble bleeding into cave entrance cells! Violations: ${JSON.stringify(violations)}`
-    ).toBe(0);
+    expect(violations).toHaveLength(0);
   });
 
   it('guarantees stairs inside gray mountain massifs use gray stair tiles instead of brown (Seed #777480)', () => {
@@ -135,9 +132,6 @@ describe('Cave Entrance Mountain Integration & Plateau Integrity (Seed #777480)'
     );
 
     const brownStairsBlits = blitsAtStairs.filter((i) => i.filename.includes('brown'));
-    expect(
-      brownStairsBlits.length,
-      `Found brown stairs inside gray massif: ${JSON.stringify(brownStairsBlits)}`
-    ).toBe(0);
+    expect(brownStairsBlits).toHaveLength(0);
   });
 });

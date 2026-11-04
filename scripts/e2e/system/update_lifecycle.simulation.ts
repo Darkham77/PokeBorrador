@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+
 import { BaseE2ESimulation } from '../base_simulation.ts';
 import { waitForStoreReady } from '../e2e_helpers.ts';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';

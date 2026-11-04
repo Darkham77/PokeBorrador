@@ -146,7 +146,7 @@ const overlayShowSpinner = computed(() => !needRefresh.value || isUpdating.value
 const overlayTheme = computed<'warning' | 'default'>(() =>
   needRefresh.value ? 'warning' : 'default'
 );
-const overlayCardClass = computed(() => (loadingInfo.value.global ? 'global-overlay' : ''));
+const overlayCardClass = computed(() => (loadingInfo.value.isGlobal ? 'global-overlay' : ''));
 
 const showGlobalStars = computed(
   () => isReadyToSeeGame.value || isLoginPage.value || isStandaloneDevPage.value

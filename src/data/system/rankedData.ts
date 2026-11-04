@@ -1,7 +1,9 @@
 import type { DisplayText, HexColor, AssetUri } from '@francogp/auditor';
+
+import { toID } from '@/logic/utils/strings.ts';
+
 import { POKEMON_TYPES, type PokemonType } from '../battle/types.ts';
 import type { PokemonSpeciesId } from '../pokemon/pokedex.ts';
-import { toID } from '@/logic/utils/strings.ts';
 
 export const RANKED_TIER_ORDER = [
   'Bronce',
@@ -473,7 +475,10 @@ export function findSeasonalTheme(identifier?: string | null): SeasonalThemeConf
   if (isSeasonalThemeId(identifier)) {
     return SEASONAL_THEMES_BY_ID[identifier];
   }
-  return THEMES_BY_LOOKUP_KEY[identifier as DisplayText] ?? THEMES_BY_LOOKUP_KEY[toID(identifier) as DisplayText];
+  return (
+    THEMES_BY_LOOKUP_KEY[identifier as DisplayText] ??
+    THEMES_BY_LOOKUP_KEY[toID(identifier) as DisplayText]
+  );
 }
 
 export function getSeasonalThemeConfig(id: SeasonalThemeId): SeasonalThemeConfig {

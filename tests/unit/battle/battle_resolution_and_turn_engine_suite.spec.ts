@@ -43,7 +43,7 @@ vi.mock('@/logic/encounters/encounters', () => ({
 
 // Mock day cycle for deterministic results in tests
 vi.mock('@/logic/utils/timeUtils', async () => {
-  const actual = (await vi.importActual('@/logic/utils/timeUtils')) as object;
+  const actual = await vi.importActual('@/logic/utils/timeUtils');
   return {
     ...actual,
     getDayCycle: vi.fn(() => 'day')
@@ -497,7 +497,7 @@ describe('Battle Resolution, Engine & Turn Flow Suite', () => {
 
         await expect(
           dispatchMoveEffect(
-            toMove(moveData!),
+            toMove(moveData),
             dummySrc,
             dummyTgt,
             srcStages,

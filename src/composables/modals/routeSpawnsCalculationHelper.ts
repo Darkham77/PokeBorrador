@@ -260,3 +260,15 @@ export function formatTerrainTags(m: ExtendedMapLocation): string {
   if (tags.length === 0) tags.push('🌲 Exterior');
   return tags.join(', ');
 }
+
+export interface SortableRouteSpawnItem {
+  percentage: number;
+  totalStats: number;
+}
+
+export function sortRouteSpawnItems(a: SortableRouteSpawnItem, b: SortableRouteSpawnItem): number {
+  if (a.percentage > 0 && b.percentage === 0) return -1;
+  if (a.percentage === 0 && b.percentage > 0) return 1;
+  if (a.percentage > 0 && b.percentage > 0) return b.percentage - a.percentage;
+  return b.totalStats - a.totalStats;
+}

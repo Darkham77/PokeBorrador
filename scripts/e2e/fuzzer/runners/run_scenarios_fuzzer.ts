@@ -1,6 +1,7 @@
 import { defineCommand, runMain } from 'citty';
-import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
+
 import { runScenariosFuzzer } from '../core/fuzzer_engine.ts';
+import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
 
 export const command = defineCommand({
   meta: {

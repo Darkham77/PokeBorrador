@@ -101,8 +101,9 @@ describe('Supabase Postgres Best Practices Hardening & Public Profile Parity', (
     assert.ok(row.defeated_gyms.includes('cerulean'), 'defeated_gyms must contain cerulean');
   });
 
-  if (process.env.TEST_POSTGRES_URL) {
-    it('verifies view projection, RLS isolation and constraints on PostgreSQL', async () => {
+  it.runIf(Boolean(process.env.TEST_POSTGRES_URL))(
+    'verifies view projection, RLS isolation and constraints on PostgreSQL',
+    async () => {
       const sql = postgres(process.env.TEST_POSTGRES_URL!, { max: 1, onnotice: () => {} });
 
       try {
@@ -207,6 +208,6 @@ describe('Supabase Postgres Best Practices Hardening & Public Profile Parity', (
       } finally {
         await sql.end();
       }
-    });
-  }
+    }
+  );
 });

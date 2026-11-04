@@ -2,14 +2,18 @@ import { describe, it, expect } from 'vitest';
 
 import { resolveRmxpSubtiles } from '../../logic/map/kantoTileEngine.ts';
 
+export interface SliceCornerFlags {
+  hasN: boolean;
+  hasS: boolean;
+  hasW: boolean;
+  hasE: boolean;
+}
+
 /**
  * 9-slice path resolution logic helper matching the corrected proceduralMapGenerator implementation.
  */
 export function resolve9SliceCorner(
-  hasN: boolean,
-  hasS: boolean,
-  hasW: boolean,
-  hasE: boolean
+  flags: SliceCornerFlags
 ):
   | 'topLeft'
   | 'topRight'
@@ -20,6 +24,7 @@ export function resolve9SliceCorner(
   | 'left'
   | 'right'
   | 'center' {
+  const { hasN, hasS, hasW, hasE } = flags;
   // Corners MUST be evaluated before single cardinal edges
   if (!hasN && !hasW && (hasS || hasE)) return 'topLeft';
   if (!hasN && !hasE && (hasS || hasW)) return 'topRight';
@@ -35,13 +40,16 @@ export function resolve9SliceCorner(
   return 'center';
 }
 
+export interface LedgePieceFlags {
+  hasLedgeLeft: boolean;
+  hasLedgeRight: boolean;
+}
+
 /**
  * 3-piece ledge resolution helper matching the new kantoTileEngine ledge resolver.
  */
-export function resolveLedgePiece(
-  hasLedgeLeft: boolean,
-  hasLedgeRight: boolean
-): 'left' | 'mid' | 'right' | 'single' {
+export function resolveLedgePiece(flags: LedgePieceFlags): 'left' | 'mid' | 'right' | 'single' {
+  const { hasLedgeLeft, hasLedgeRight } = flags;
   if (!hasLedgeLeft && hasLedgeRight) return 'left';
   if (hasLedgeLeft && !hasLedgeRight) return 'right';
   if (hasLedgeLeft && hasLedgeRight) return 'mid';
@@ -52,55 +60,61 @@ describe('Autotile Corners & Ledges Engine', () => {
   describe('9-Slice Corner Priority Resolution', () => {
     it('correctly resolves outer Top-Left corner when path turns south and east', () => {
       // Cell with path going South and East, but open grass to North and West
-      const result = resolve9SliceCorner(false, true, false, true);
+      const result = resolve9SliceCorner({ hasN: false, hasS: true, hasW: false, hasE: true });
       expect(result).toBe('topLeft');
     });
 
     it('correctly resolves outer Top-Right corner when path turns south and west', () => {
       // Cell with path going South and West, but open grass to North and East
-      const result = resolve9SliceCorner(false, true, true, false);
+      const result = resolve9SliceCorner({ hasN: false, hasS: true, hasW: true, hasE: false });
       expect(result).toBe('topRight');
     });
 
     it('correctly resolves outer Bottom-Left corner when path turns north and east', () => {
       // Cell with path going North and East, but open grass to South and West
-      const result = resolve9SliceCorner(true, false, false, true);
+      const result = resolve9SliceCorner({ hasN: true, hasS: false, hasW: false, hasE: true });
       expect(result).toBe('bottomLeft');
     });
 
     it('correctly resolves outer Bottom-Right corner when path turns north and west', () => {
       // Cell with path going North and West, but open grass to South and East
-      const result = resolve9SliceCorner(true, false, true, false);
+      const result = resolve9SliceCorner({ hasN: true, hasS: false, hasW: true, hasE: false });
       expect(result).toBe('bottomRight');
     });
 
     it('correctly resolves straight cardinal edges when only one side is bounded', () => {
-      expect(resolve9SliceCorner(false, true, true, true)).toBe('top');
-      expect(resolve9SliceCorner(true, false, true, true)).toBe('bottom');
-      expect(resolve9SliceCorner(true, true, false, true)).toBe('left');
-      expect(resolve9SliceCorner(true, true, true, false)).toBe('right');
+      expect(resolve9SliceCorner({ hasN: false, hasS: true, hasW: true, hasE: true })).toBe('top');
+      expect(resolve9SliceCorner({ hasN: true, hasS: false, hasW: true, hasE: true })).toBe(
+        'bottom'
+      );
+      expect(resolve9SliceCorner({ hasN: true, hasS: true, hasW: false, hasE: true })).toBe('left');
+      expect(resolve9SliceCorner({ hasN: true, hasS: true, hasW: true, hasE: false })).toBe(
+        'right'
+      );
     });
 
     it('resolves center when surrounded on all 4 sides', () => {
-      expect(resolve9SliceCorner(true, true, true, true)).toBe('center');
+      expect(resolve9SliceCorner({ hasN: true, hasS: true, hasW: true, hasE: true })).toBe(
+        'center'
+      );
     });
   });
 
   describe('3-Piece Ledge Autotiling Resolution', () => {
     it('resolves left cap for start of ledge', () => {
-      expect(resolveLedgePiece(false, true)).toBe('left');
+      expect(resolveLedgePiece({ hasLedgeLeft: false, hasLedgeRight: true })).toBe('left');
     });
 
     it('resolves mid piece for interior of ledge', () => {
-      expect(resolveLedgePiece(true, true)).toBe('mid');
+      expect(resolveLedgePiece({ hasLedgeLeft: true, hasLedgeRight: true })).toBe('mid');
     });
 
     it('resolves right cap for end of ledge', () => {
-      expect(resolveLedgePiece(true, false)).toBe('right');
+      expect(resolveLedgePiece({ hasLedgeLeft: true, hasLedgeRight: false })).toBe('right');
     });
 
     it('resolves single piece for isolated 1-tile ledge', () => {
-      expect(resolveLedgePiece(false, false)).toBe('single');
+      expect(resolveLedgePiece({ hasLedgeLeft: false, hasLedgeRight: false })).toBe('single');
     });
   });
 

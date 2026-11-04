@@ -14,6 +14,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 
 import { cloneReactive } from '@/logic/utils/cloneUtils';
+import { safeStorage } from '@/logic/utils/storage';
 
 import { getAllStructureTemplates, registerStructureTemplate } from '../config/mapStructures.ts';
 import { STUDIO_MAX_HISTORY_STEPS, CONTINENT_DEFAULT_SEED } from '../config/studioConstants.ts';
@@ -606,11 +607,10 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
 
   // --- Storage & Defaults ---
   function saveToStorage(): void {
-    if (typeof localStorage === 'undefined') return;
     syncActiveProject();
     try {
-      localStorage.setItem(STORAGE_PROJECTS_KEY, JSON.stringify(projects.value));
-      localStorage.setItem(STORAGE_ACTIVE_KEY, activeProjectId.value);
+      safeStorage.setItem(STORAGE_PROJECTS_KEY, JSON.stringify(projects.value));
+      safeStorage.setItem(STORAGE_ACTIVE_KEY, activeProjectId.value);
     } catch (err) {
       // catch-ok: QuotaExceededError when local storage is full
       console.warn('[MapAdventureStudio] Failed to save to localStorage:', err);
@@ -618,9 +618,8 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
   }
 
   function loadFromStorage(): boolean {
-    if (typeof localStorage === 'undefined') return false;
-    const rawProjects = localStorage.getItem(STORAGE_PROJECTS_KEY);
-    const rawActive = localStorage.getItem(STORAGE_ACTIVE_KEY);
+    const rawProjects = safeStorage.getItem(STORAGE_PROJECTS_KEY);
+    const rawActive = safeStorage.getItem(STORAGE_ACTIVE_KEY);
     if (!rawProjects) return false;
     try {
       const parsed = JSON.parse(rawProjects);

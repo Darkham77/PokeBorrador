@@ -1,6 +1,7 @@
 import { styleText } from 'node:util';
-import { FuzzerRunnerLogger } from '../../logging/fuzzer_runner_logger.ts';
+
 import { formatExecutionTimestamp } from '../../logging/base_runner_logger.ts';
+import { FuzzerRunnerLogger } from '../../logging/fuzzer_runner_logger.ts';
 
 export interface FuzzerResult {
   label: string;

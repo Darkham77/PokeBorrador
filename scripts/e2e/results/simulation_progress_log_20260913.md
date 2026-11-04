@@ -99,6 +99,6 @@ Clean execution of the full pipeline of 58 E2E simulation suites (515 tests) fro
 
 ## 🧪 Extracted Case Reproduction Tests (Immutable Vitest)
 
-| ID      | Extracted Case / Fixture           | Unit Reproduction Test                                        | Status      | Diagnosed & Repaired Root Cause                                                                                                                    |
-| :------ | :--------------------------------- | :------------------------------------------------------------ | :---------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ID      | Extracted Case / Fixture           | Unit Reproduction Test                                       | Status      | Diagnosed & Repaired Root Cause                                                                                                                    |
+| :------ | :--------------------------------- | :----------------------------------------------------------- | :---------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
 | REP-001 | `clickResilient` timeout budgeting | `tests/.../battle/reproduce_click_resilient_timeout.test.ts` | 🟢 **PASS** | Reproduction confirmed initial click throttling to 500ms and absence of timeout on fallback evaluate. Repaired and verified GREEN in dual engines. |

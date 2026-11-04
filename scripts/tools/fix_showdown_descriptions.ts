@@ -1,6 +1,7 @@
+import fs from 'node:fs';
+
 import type { DisplayText } from '@francogp/auditor';
 import { defineCommand, runMain } from 'citty';
-import fs from 'node:fs';
 
 const DB_PATH = './showdown/sandbox_db/data/showdown_db_es.json';
 
@@ -75,7 +76,7 @@ const CLEAN_DESCRIPTIONS: Record<DisplayText, string> = {
   twineedle: 'Ataca dos veces e inflige daño con probabilidad de envenenar (20%).'
 };
 
-function fixShowdownDescriptions() {
+function fixShowdownDescriptions(): void {
   if (!fs.existsSync(DB_PATH)) {
     console.error('Showdown DB not found at: ' + DB_PATH);
     return;
@@ -117,4 +118,4 @@ export const command = defineCommand({
   }
 });
 
-runMain(command);
+void runMain(command);

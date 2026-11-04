@@ -41,7 +41,7 @@
       margin: 0;
       color: var(--slate-50);
       font-size: var(--font-18);
-      font-weight: 700;
+      font-weight: $font-weight-bold;
     }
   }
 
@@ -90,7 +90,7 @@
     background: transparent;
     color: var(--slate-400);
     font-size: var(--font-14);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     flex: 1;
     cursor: pointer;
 
@@ -130,7 +130,7 @@
   .dropzone-primary-text {
     color: var(--slate-200);
     font-size: var(--font-15);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
   }
 
   .dropzone-sub-text {
@@ -154,7 +154,7 @@
 
   .specs-highlight {
     color: var(--sky);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
   }
 }
 
@@ -167,7 +167,7 @@
   .field-label {
     color: var(--slate-300);
     font-size: var(--font-14);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
   }
 
   .field-input,
@@ -201,7 +201,7 @@
     .stat-badge {
       padding: 0.25rem 0.5rem;
       border-radius: $radius-sm;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
 
       &.stat-total {
         background: var(--slate-700);
@@ -330,7 +330,7 @@
         justify-content: center;
         align-items: center;
         font-size: var(--font-14);
-        font-weight: 700;
+        font-weight: $font-weight-bold;
         inset: 0;
 
         &.badge-solid {
@@ -368,7 +368,7 @@
     background: var(--slate-700);
     color: var(--slate-200);
     font-size: var(--font-14);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     cursor: pointer;
 
     &:hover {
@@ -386,7 +386,7 @@
     background: var(--blue-600, #2563eb);
     color: var(--white);
     font-size: var(--font-14);
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     cursor: pointer;
 
     &:hover:not(:disabled) {

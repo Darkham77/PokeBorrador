@@ -1,5 +1,5 @@
-import type { DisplayText } from '@francogp/auditor';
-import { defineCommand, runMain } from 'citty';
+import { writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 /**
  * scripts/tools/fetch_ev_yields.ts
  *
@@ -8,9 +8,10 @@ import { defineCommand, runMain } from 'citty';
  * and writes the canonical src/data/pokemon/evYields.json database.
  */
 
-import { writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import type { DisplayText } from '@francogp/auditor';
 import { toID } from '@pkmn/sim';
+import { defineCommand, runMain } from 'citty';
+
 import metadataJson from '../../src/data/pokemon/speciesMetadata.json' with { type: 'json' };
 
 type StatKey = 'hp' | 'atk' | 'def' | 'spa' | 'spd' | 'spe'; // lib-duplicate-ok: Canonical stat keys matching Pokemon Showdown StatID
@@ -104,8 +105,6 @@ function parsePokemonDb(html: string): Map<string, EvYield> {
   return map;
 }
 
-const BULBAPEDIA_STATS = STAT_COLUMNS_POKEMONDB;
-
 function parseBulbapediaRow(match: RegExpExecArray): {
   baseId: string;
   fullId: string;
@@ -118,10 +117,10 @@ function parseBulbapediaRow(match: RegExpExecArray): {
   const baseId = toID(cleanString(name));
 
   const evs: EvYield = {};
-  for (let i = 0; i < BULBAPEDIA_STATS.length; i++) {
+  for (let i = 0; i < STAT_COLUMNS_POKEMONDB.length; i++) {
     const val = parseInt(match[3 + i]?.trim() || '0', 10);
     if (val > 0) {
-      const stat = BULBAPEDIA_STATS[i];
+      const stat = STAT_COLUMNS_POKEMONDB[i];
       if (stat) evs[stat] = val;
     }
   }
@@ -216,7 +215,7 @@ function resolveSpeciesEvYield(
   return { ev: undefined, isFallback: false };
 }
 
-export async function generateEvYields() {
+export async function generateEvYields(): Promise<void> {
   const { pdbData, bulbaData } = await loadScrapedEvDatasets();
   const allSpeciesKeys = Object.keys(metadataJson);
   const result: Record<DisplayText, EvYield> = {};
@@ -260,4 +259,4 @@ export const command = defineCommand({
   }
 });
 
-runMain(command);
+void runMain(command);

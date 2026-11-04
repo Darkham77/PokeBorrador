@@ -7,6 +7,8 @@
 
 import fs from 'node:fs';
 
+import type { Plugin } from 'vite-plus';
+
 const SASS_TRAPS = [
   // no-domain: Non-domain utility collection or data structure
   'scale',
@@ -28,9 +30,10 @@ const SASS_TRAPS = [
   'rgba',
   'rgb'
 ];
+const SASS_TRAPS_SET = new Set<string>(SASS_TRAPS);
 
-export function sassTrapsFixer() {
-  const fixContent = (code: string) => {
+export function sassTrapsFixer(): Plugin {
+  const fixContent = (code: string): string => {
     // Regex that captures optional prefix (. or $)
     return code.replace(
       /([.$])?\b([a-zA-Z0-9-]+)\(/g,
@@ -39,7 +42,7 @@ export function sassTrapsFixer() {
         if (prefix) return match;
 
         const lowerFunc = func.toLowerCase(); // string-ok: Internal string formatting or DOM token identifier
-        if (SASS_TRAPS.includes(lowerFunc)) {
+        if (SASS_TRAPS_SET.has(lowerFunc)) {
           // 2. Capitalize traps
           if (lowerFunc.includes('-')) {
             return (
@@ -82,7 +85,7 @@ export function sassTrapsFixer() {
     handleHotUpdate({ file, read }: { file: string; read: () => string | Promise<string> }): void {
       if (!file.endsWith('.scss') && !file.endsWith('.vue')) return;
 
-      Promise.resolve(read()).then((content: string) => {
+      void Promise.resolve(read()).then((content: string) => {
         let fixed: string;
         if (file.endsWith('.vue')) {
           const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;

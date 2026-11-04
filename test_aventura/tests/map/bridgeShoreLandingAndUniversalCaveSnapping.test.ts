@@ -73,7 +73,7 @@ describe('Bridge Shore Landing and Universal Cave Snapping Engine', () => {
     }
   });
 
-  it.skip('guarantees universal cliff-snapping embeds cave entrance into backing cliff wall even if gridY is offset', () => {
+  it('guarantees universal cliff-snapping embeds cave entrance into backing cliff wall even if gridY is offset', () => {
     const continent = generateContinentMap({
       width: 64,
       height: 64,

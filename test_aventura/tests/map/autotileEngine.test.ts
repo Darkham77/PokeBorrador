@@ -82,7 +82,7 @@ describe('autotileEngine', () => {
     expect(grid[4]![4]).toBe('grass');
 
     // Result should track all modified cells for undo/redo
-    expect(result.modifiedCells.length).toBe(9); // 1 ocean + 8 beaches
+    expect(result.modifiedCells).toHaveLength(9); // 1 ocean + 8 beaches
   });
 
   it('preserves existing water and only converts grass to beach', () => {

@@ -7,11 +7,12 @@ import { setActivePinia, createPinia } from 'pinia';
  * tests/unit/world/world_assets_and_map_card_suite.spec.ts
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vite-plus/test';
 import { computed, ref } from 'vue';
 
 import MapCard from '@/components/map/MapCard.vue';
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { MapRouteId } from '@/data/world/map-assets';
 import { getMapBiomeAndTags } from '@/logic/battle/biomeHelper';
 import { restoreFossil } from '@/logic/items/fossilEngine';
 import {
@@ -275,7 +276,7 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
   describe('MapCard Discovery Logic', () => {
     let uiStore: ReturnType<typeof useUIStore>;
     let gameStore: ReturnType<typeof useGameStore>;
-    let pokeDataSpy: ReturnType<typeof vi.spyOn> | null = null;
+    let pokeDataSpy: MockInstance | null = null;
 
     beforeEach(() => {
       setActivePinia(createPinia());
@@ -397,9 +398,7 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
   describe('World Helpers & Subsystems', () => {
     describe('biomeHelper - getMapBiomeAndTags', () => {
       it('should return default biome and empty tags if location does not exist', () => {
-        const res = getMapBiomeAndTags(
-          'non-existent-location' as unknown as import('@/data/world/map-assets').MapRouteId
-        );
+        const res = getMapBiomeAndTags('non-existent-location' as unknown as MapRouteId);
         expect(res.activeBiome).toBe('isPlains');
         expect(res.mapTags).toEqual([]);
       });
@@ -415,7 +414,7 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
       beforeEach(() => {
         const storage: Record<string, string> = {};
         vi.stubGlobal('localStorage', {
-          getItem: vi.fn((key: string) => (storage[key] as string | undefined) || null),
+          getItem: vi.fn((key: string) => storage[key] || null),
           setItem: vi.fn((key: string, val: string | number) => {
             storage[key] = val.toString();
           }),
@@ -442,7 +441,7 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
         expect(result.pokemon.id).toBe('omanyte');
         expect(result.pokemon.level).toBe(1);
         expect(result.sentTo).toBe('team');
-        expect(state.team.length).toBe(1);
+        expect(state.team).toHaveLength(1);
         expect(state.pokedex).toContain('omanyte');
       });
 
@@ -460,8 +459,8 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
         );
 
         expect(result.sentTo).toBe('box');
-        expect(state.box.length).toBe(1);
-        expect(state.team.length).toBe(6);
+        expect(state.box).toHaveLength(1);
+        expect(state.team).toHaveLength(6);
       });
     });
 
@@ -533,10 +532,10 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
         );
         const source = fs.readFileSync(componentPath, 'utf-8');
 
-        expect(source.includes('noise_texture_1.png')).toBe(false);
-        expect(source.includes('noise_texture_2.png')).toBe(false);
-        expect(source.includes('pattern-noise-1')).toBe(true);
-        expect(source.includes('pattern-noise-2')).toBe(true);
+        expect(source).not.toContain('noise_texture_1.png');
+        expect(source).not.toContain('noise_texture_2.png');
+        expect(source).toContain('pattern-noise-1');
+        expect(source).toContain('pattern-noise-2');
       });
     });
 
@@ -548,12 +547,7 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
           playerClass: 'entrenador' as const,
           classLevel: 10
         };
-        const chances = getNpcEncounterChances(
-          'route1',
-          state as unknown as Parameters<typeof getNpcEncounterChances>[1],
-          {},
-          []
-        );
+        const chances = getNpcEncounterChances('route1', state, {}, []);
         const trainerInfo = chances.find((c) => c.type === 'trainer');
         expect(trainerInfo).toBeDefined();
         expect(trainerInfo?.chance).toBe(8);
@@ -567,12 +561,7 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
           classLevel: 50,
           classData: { criminality: 120 }
         };
-        const chances = getNpcEncounterChances(
-          'route1',
-          state as unknown as Parameters<typeof getNpcEncounterChances>[1],
-          {},
-          []
-        );
+        const chances = getNpcEncounterChances('route1', state, {}, []);
         const policeInfo = chances.find((c) => c.type === 'police');
         expect(policeInfo).toBeDefined();
         expect(policeInfo?.chance).toBe(12);

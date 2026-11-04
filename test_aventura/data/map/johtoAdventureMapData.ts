@@ -1,6 +1,7 @@
 // Canonical Johto Adventure Map Data & Routes (Gen 2 / HGSS)
 
 import type { DisplayText } from '@francogp/auditor';
+
 import type { AdventureProjectNode } from '../../types/map/adventureWorldTypes.ts';
 
 export const rawJohtoNodes: Record<DisplayText, AdventureProjectNode> = {
