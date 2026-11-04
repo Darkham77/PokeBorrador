@@ -121,7 +121,9 @@ export async function readAndParseEnv(): Promise<Record<string, ServerConfig>> {
       }
     }
   } catch (err) {
-    console.warn('[Handled controlled exception]:', err);
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+      console.warn('[readAndParseEnv] Error inesperado al leer .env:', err);
+    }
   }
 
   // 2. Parse / overlay from process.env (CI/CD environments, GitHub Actions secrets)
