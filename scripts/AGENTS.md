@@ -30,6 +30,7 @@ DevOps / Tooling Engineers.
 - **Vite Dev HTTPS & Web Cryptography Secure Contexts**:
   - The local development server (`npm run dev`) enforces HTTPS via `@vitejs/plugin-basic-ssl`. Web Cryptography APIs (`crypto.randomUUID()`) are strictly restricted by W3C specification to Secure Contexts (`https://` or `localhost`), ensuring LAN and mobile devices (`https://192.168.x.x:5173/`) access native crypto functions without requiring defensive polyfills or runtime fallbacks.
   - `@vitejs/plugin-vue` compiler configuration in `vite.config.ts` MUST explicitly pass `compiler` from `vue/compiler-sfc` to prevent null pointer exceptions during early Hot Module Replacement (HMR) type cache invalidation.
+- **Headless CI Diagnostics & Fallow Binary Permissions**: Automated CI/CD deployment workflows (such as `.github/workflows/deploy.yml`) execute `npm run build:deploy` under headless CI conditions where `@francogp/auditor` outputs direct Top 10 Blocking Error reports upon failure. Shared Linux CI environments must ensure Fallow binary execution permissions (`chmod -R +x node_modules/@fallow-cli/ node_modules/fallow/bin/`) and set `FALLOW_SKIP_BINARY_VERIFY: "1"` to prevent Ed25519 remote signature verification stalls in headless runners.
 
 ### Reference Manuals
 
