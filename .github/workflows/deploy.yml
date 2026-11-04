@@ -53,7 +53,8 @@ jobs:
         run: npm run servers:configure
 
       - name: Build project
-        run: npm run build:deploy
+        run: |
+          npm run build:deploy || (npm run auditor:findings -- phase=setup && npm run auditor:findings && exit 1)
 
       - name: Create SPA 404 fallback for GitHub Pages
         run: cp ./dist/index.html ./dist/404.html
