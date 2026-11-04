@@ -3,7 +3,6 @@
   "ignorePatterns": [
     ".agents/**",
     ".auditor/**",
-    "scratch/**",
     "scripts/e2e/fuzzer/**",
     "scripts/e2e/battle/**",
     "external/**",
