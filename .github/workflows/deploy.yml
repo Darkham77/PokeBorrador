@@ -43,6 +43,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Ensure tool binary permissions
+        run: chmod -R +x node_modules/@fallow-cli/ node_modules/fallow/bin/ || true
+
       - name: Configure official servers
         run: npm run servers:configure
 
