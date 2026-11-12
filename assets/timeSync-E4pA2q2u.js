@@ -1,0 +1,1 @@
+export{t as syncServerTime}from"./timeSync-Dk_KDT-e.js";

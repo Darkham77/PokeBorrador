@@ -1,0 +1,1 @@
+import{l as e}from"./game-data-pokemon-CspjOnRR.js";import{_ as t,y as n}from"./game-data-feet-C1P64kSw.js";function r(r){let i=[r],a=r;for(;t(a);){let t=e(n(a));if(!t||i.includes(t))break;i.unshift(t),a=t}return i}function i(e){return r(e)[0]||e}export{r as n,i as t};

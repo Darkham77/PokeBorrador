@@ -1,1 +1,0 @@
-export{t as default}from"./FishingModal-Dr_Z2tV6.js";
