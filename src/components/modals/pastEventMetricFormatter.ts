@@ -39,19 +39,25 @@ function formatIvsMetric(w: PastCompetitionWinner): string {
   return `${score} / ${MAX_TOTAL_IVS_STAT_SUM} IVs (${tierLabel})`;
 }
 
-function formatWeightMetric(w: PastCompetitionWinner): string {
+function formatPhysicalDimensionMetric(
+  w: PastCompetitionWinner,
+  dimension: 'weight' | 'height',
+  unit: 'kg' | 'm'
+): string {
   const data = w.entry_data;
-  let score = Number(w.score ?? data?.weight ?? DEFAULT_FALLBACK_SCORE);
+  let score = Number(
+    w.score ?? (dimension === 'weight' ? data?.weight : data?.height) ?? DEFAULT_FALLBACK_SCORE
+  );
   const speciesId = getWinnerSpeciesId(w);
   const spec = speciesId ? pokemonDataProvider.getPokemonData(speciesId, true) : null;
-  const baseWeight = spec?.weight || null;
-  if (score <= DEFAULT_FALLBACK_SCORE && baseWeight) {
-    score = baseWeight;
+  const baseVal = (dimension === 'weight' ? spec?.weight : spec?.height) || null;
+  if (score <= DEFAULT_FALLBACK_SCORE && baseVal) {
+    score = baseVal;
   }
-  const tier = baseWeight ? getPhysicalDimensionTier(score, baseWeight) : null;
+  const tier = baseVal ? getPhysicalDimensionTier(score, baseVal) : null;
 
-  const maxTarget = baseWeight ? (baseWeight * MAX_TARGET_MULTIPLIER).toFixed(1) : null;
-  const minTarget = baseWeight ? (baseWeight * MIN_TARGET_MULTIPLIER).toFixed(1) : null;
+  const maxTarget = baseVal ? (baseVal * MAX_TARGET_MULTIPLIER).toFixed(1) : null;
+  const minTarget = baseVal ? (baseVal * MIN_TARGET_MULTIPLIER).toFixed(1) : null;
   const isMinCategory =
     (w.category_name || '').toLowerCase().includes('miniatura') ||
     (w.category_id || '').toLowerCase().includes('min');
@@ -62,35 +68,16 @@ function formatWeightMetric(w: PastCompetitionWinner): string {
     : data?.tier_label
       ? ` (${data.tier_label})`
       : '';
-  const targetStr = targetRef ? ` / ${targetRef} kg` : '';
-  return `${score.toFixed(1)} kg${targetStr}${tierStr}`;
+  const targetStr = targetRef ? ` / ${targetRef} ${unit}` : '';
+  return `${score.toFixed(1)} ${unit}${targetStr}${tierStr}`;
+}
+
+function formatWeightMetric(w: PastCompetitionWinner): string {
+  return formatPhysicalDimensionMetric(w, 'weight', 'kg');
 }
 
 function formatHeightMetric(w: PastCompetitionWinner): string {
-  const data = w.entry_data;
-  let score = Number(w.score ?? data?.height ?? DEFAULT_FALLBACK_SCORE);
-  const speciesId = getWinnerSpeciesId(w);
-  const spec = speciesId ? pokemonDataProvider.getPokemonData(speciesId, true) : null;
-  const baseHeight = spec?.height || null;
-  if (score <= DEFAULT_FALLBACK_SCORE && baseHeight) {
-    score = baseHeight;
-  }
-  const tier = baseHeight ? getPhysicalDimensionTier(score, baseHeight) : null;
-
-  const maxTarget = baseHeight ? (baseHeight * MAX_TARGET_MULTIPLIER).toFixed(1) : null;
-  const minTarget = baseHeight ? (baseHeight * MIN_TARGET_MULTIPLIER).toFixed(1) : null;
-  const isMinCategory =
-    (w.category_name || '').toLowerCase().includes('miniatura') ||
-    (w.category_id || '').toLowerCase().includes('min');
-  const targetRef = isMinCategory ? minTarget : maxTarget;
-
-  const tierStr = tier
-    ? ` (${tier.label} · ${tier.name})`
-    : data?.tier_label
-      ? ` (${data.tier_label})`
-      : '';
-  const targetStr = targetRef ? ` / ${targetRef} m` : '';
-  return `${score.toFixed(1)} m${targetStr}${tierStr}`;
+  return formatPhysicalDimensionMetric(w, 'height', 'm');
 }
 
 function formatLevelMetric(w: PastCompetitionWinner): string {

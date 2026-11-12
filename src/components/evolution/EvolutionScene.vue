@@ -1,8 +1,19 @@
 <script setup lang="ts">
+import { resolveModalCssVars, type ModalStackEntry } from '@francogp/auditor/modals';
 import { gsap } from 'gsap';
-import { ref, onMounted, nextTick, computed, watch, onUnmounted } from 'vue';
+import {
+  ref,
+  onMounted,
+  nextTick,
+  computed,
+  watch,
+  onUnmounted,
+  inject,
+  type ComputedRef
+} from 'vue';
 
 import { gameBus } from '@/logic/events/gameBus';
+import type { PokeVicioModalMeta } from '@/logic/modals/modalEngine';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { logger } from '@/logic/utils/logger';
@@ -21,6 +32,12 @@ defineEmits<{
 }>();
 
 const evolutionStore = useEvolutionStore();
+const injectedModalEntry = inject<ComputedRef<
+  ModalStackEntry<string, PokeVicioModalMeta> | undefined
+> | null>('modalEntry', null);
+const modalCssVars = computed(() =>
+  injectedModalEntry?.value ? resolveModalCssVars(injectedModalEntry.value) : undefined
+);
 const step = ref<EvolutionStep>('intro');
 const oldName = ref('');
 const newName = ref('');
@@ -312,7 +329,12 @@ const close = (): void => {
 
 <template>
   <Teleport to="body">
-    <div v-if="evolutionStore.isEvolving" id="evolution-modal" class="evolution-overlay">
+    <div
+      v-if="evolutionStore.isEvolving"
+      id="evolution-modal"
+      class="evolution-overlay"
+      :style="modalCssVars"
+    >
       <div ref="containerRef" class="evolution-container" :style="auraStyles">
         <!-- Auras de destellos de fondo combinados detrás del Pokémon (flare 1 y 2) -->
         <div v-if="step === 'transformed' || step === 'final'" class="auras-field">

@@ -1,7 +1,8 @@
-import { ref, type Ref } from 'vue';
+import type { DisplayText } from '@francogp/auditor';
+import { createModalSequenceQueue, type ModalSequenceQueue } from '@francogp/auditor/modals';
+import { ref, watch } from 'vue';
 
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { gsapSleep } from '@/logic/utils/gsapHelpers';
 import { logger } from '@/logic/utils/logger';
 import { useEventStore } from '@/stores/events';
 import { useEvolutionStore } from '@/stores/evolution';
@@ -10,10 +11,17 @@ import { useUIStore } from '@/stores/ui';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
-export type PostBattleTaskType = 'move_learning' | 'evolution' | 'event_auto_enroll' | 'custom';
+const POST_BATTLE_TASK_TYPES = [
+  'move_learning',
+  'evolution',
+  'event_auto_enroll',
+  'custom'
+] as const;
+
+export type PostBattleTaskType = (typeof POST_BATTLE_TASK_TYPES)[number];
 
 export interface PostBattleSequenceTask {
-  readonly id: string;
+  readonly id: DisplayText;
   readonly type: PostBattleTaskType;
   readonly priority: number;
   execute: (ctx: BattleContext) => Promise<void>;
@@ -26,37 +34,68 @@ export const POST_BATTLE_PRIORITIES = {
   CUSTOM: 40
 } as const;
 
-const MODAL_AWAIT_POLL_INTERVAL_MS = 50;
-
 export class PostBattleSequenceCoordinator {
-  private tasks: PostBattleSequenceTask[] = [];
-  private _isRunning: Ref<boolean> = ref(false);
+  private readonly queue: ModalSequenceQueue<PostBattleTaskType, BattleContext>;
+  private readonly stateVersion = ref(0);
+  private readonly activeStopHandles = new Set<() => void>();
+
+  public constructor() {
+    this.queue = createModalSequenceQueue<PostBattleTaskType, BattleContext>({
+      onTaskError: (err, task) => {
+        logger.error('PostBattleCoordinator', `Error in post-battle task ${task.taskUid}:`, err);
+      }
+    });
+  }
 
   public isRunning(): boolean {
-    return this._isRunning.value;
+    void this.stateVersion.value;
+    return this.queue.isRunning();
   }
 
   public isBusy(): boolean {
-    return this._isRunning.value || this.tasks.length > 0;
+    void this.stateVersion.value;
+    return this.queue.isBusy();
   }
 
   public async waitUntilIdle(): Promise<void> {
-    while (this.isBusy()) {
-      await gsapSleep(MODAL_AWAIT_POLL_INTERVAL_MS);
-    }
+    await this.queue.waitUntilIdle();
   }
 
   public getPendingTasks(): readonly PostBattleSequenceTask[] {
-    return this.tasks;
+    void this.stateVersion.value;
+    return this.queue.getPendingTasks().map((entry) => ({
+      id: entry.taskUid,
+      type: entry.kind,
+      priority: entry.priority,
+      execute: async (ctx: BattleContext): Promise<void> => {
+        await entry.execute(ctx);
+      }
+    }));
   }
 
   public clear(): void {
-    this.tasks = [];
-    this._isRunning.value = false;
+    this.queue.clear();
+    for (const stop of this.activeStopHandles) {
+      stop();
+    }
+    this.activeStopHandles.clear();
+    this.stateVersion.value++;
   }
 
   public enqueueTask(task: PostBattleSequenceTask): void {
-    this.tasks.push(task);
+    this.queue.enqueue({
+      taskUid: task.id,
+      kind: task.type,
+      priority: task.priority,
+      execute: async (ctx: BattleContext): Promise<void> => {
+        logger.info(
+          'PostBattleCoordinator',
+          `Executing post-battle task [${task.type}]: ${task.id}`
+        );
+        await task.execute(ctx);
+      }
+    });
+    this.stateVersion.value++;
   }
 
   public enqueueMoveLearning(items: { pokemon: Pokemon; move: Move }[]): void {
@@ -68,21 +107,20 @@ export class PostBattleSequenceCoordinator {
       priority: POST_BATTLE_PRIORITIES.MOVE_LEARNING,
       execute: async (_ctx: BattleContext) => {
         const uiStore = useUIStore();
-        const modalStore = useModalStore();
         uiStore.addToLearnQueue(items);
-
-        while (
-          modalStore.isOpen('MoveLearning') ||
-          uiStore.learnQueue.length > 0 ||
-          uiStore.currentMoveToLearn !== null
-        ) {
-          await gsapSleep(MODAL_AWAIT_POLL_INTERVAL_MS);
-        }
+        await this.awaitAllModalsOfKindClosed('MoveLearning');
+        await this.waitUntilReactiveFalse(
+          () => uiStore.learnQueue.length > 0 || uiStore.currentMoveToLearn !== null
+        );
       }
     });
   }
 
-  public enqueueEvolution(pokemon: Pokemon, targetId: PokemonSpeciesId, itemName = ''): void {
+  public enqueueEvolution(
+    pokemon: Pokemon,
+    targetId: PokemonSpeciesId,
+    itemName: DisplayText = ''
+  ): void {
     const taskId = `evo_${pokemon.uid}_to_${targetId}`;
     this.enqueueTask({
       id: taskId,
@@ -90,13 +128,10 @@ export class PostBattleSequenceCoordinator {
       priority: POST_BATTLE_PRIORITIES.EVOLUTION,
       execute: async (_ctx: BattleContext) => {
         const uiStore = useUIStore();
-        const modalStore = useModalStore();
         const evoStore = useEvolutionStore();
         uiStore.startEvolution(pokemon, targetId, itemName);
-
-        while (modalStore.isOpen('Evolution') || evoStore.isEvolving) {
-          await gsapSleep(MODAL_AWAIT_POLL_INTERVAL_MS);
-        }
+        await this.awaitAllModalsOfKindClosed('Evolution');
+        await this.waitUntilReactiveFalse(() => evoStore.isEvolving);
       }
     });
   }
@@ -109,41 +144,59 @@ export class PostBattleSequenceCoordinator {
       priority: POST_BATTLE_PRIORITIES.EVENT_AUTO_ENROLL,
       execute: async (_ctx: BattleContext) => {
         const eventStore = useEventStore();
-        const modalStore = useModalStore();
         await eventStore.checkCaptureAndPrompt(pokemon);
-
-        while (modalStore.isOpen('EventAutoEnroll')) {
-          await gsapSleep(MODAL_AWAIT_POLL_INTERVAL_MS);
-        }
+        await this.awaitAllModalsOfKindClosed('EventAutoEnroll');
       }
     });
   }
 
   public async runSequence(ctx: BattleContext): Promise<void> {
-    if (this._isRunning.value) return;
-    this._isRunning.value = true;
-
+    this.stateVersion.value++;
     try {
-      // Sort tasks by priority descending (higher numbers first)
-      this.tasks.sort((a, b) => b.priority - a.priority);
-
-      while (this.tasks.length > 0) {
-        const nextTask = this.tasks.shift();
-        if (!nextTask) break;
-
-        try {
-          logger.info(
-            'PostBattleCoordinator',
-            `Executing post-battle task [${nextTask.type}]: ${nextTask.id}`
-          );
-          await nextTask.execute(ctx);
-        } catch (err) {
-          logger.error('PostBattleCoordinator', `Error in post-battle task ${nextTask.id}:`, err);
-        }
-      }
+      await this.queue.runSequence(ctx);
     } finally {
-      this._isRunning.value = false;
+      this.stateVersion.value++;
     }
+  }
+
+  private async awaitAllModalsOfKindClosed(kind: DisplayText): Promise<void> {
+    const modalStore = useModalStore();
+    while (true) {
+      const entry = modalStore.stackManager.getLatestByKind(kind, { includeClosing: true });
+      if (!entry) break;
+      await modalStore.waitForClose(entry.modalUid);
+    }
+  }
+
+  private waitUntilReactiveFalse(getter: () => boolean): Promise<void> {
+    if (!getter()) return Promise.resolve();
+    return new Promise<void>((resolve) => {
+      let settled = false;
+      let stopHandle: (() => void) | null = null;
+      const finish = (): void => {
+        if (settled) return;
+        settled = true;
+        if (stopHandle) {
+          this.activeStopHandles.delete(stopHandle);
+          stopHandle();
+        }
+        resolve();
+      };
+      const stopWatch = watch(
+        getter,
+        (active) => {
+          if (!active) finish();
+        },
+        { flush: 'sync' }
+      );
+      stopHandle = (): void => {
+        stopWatch();
+        settled = true;
+        resolve();
+      };
+      this.activeStopHandles.add(stopHandle);
+      if (!getter()) finish();
+    });
   }
 }
 

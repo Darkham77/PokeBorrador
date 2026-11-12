@@ -3,6 +3,8 @@
  * Centralized constant definitions for rendering, textures, canvas dimensions, and shadow math.
  */
 
+import { resolveModalZLayers } from '@francogp/auditor/modals';
+
 /** Milliseconds in one second (1000 ms). */
 export const MILLISECONDS_PER_SECOND = 1000;
 
@@ -182,21 +184,10 @@ export const WEATHER_EFFECT_PRESETS = {
 } as const;
 
 /** Z-Index layout layers map for visual component ordering. */
-export const Z_LAYERS = {
-  BASE: 0,
+export const Z_LAYERS = resolveModalZLayers({
   MAP_FLOOR: 10,
-  LOW: 50,
-  MAP_SPAWNS: 50,
-  HUD: 1000,
-  NAVIGATION: 5000,
-  OVERLAY: 10000,
-  MODAL: 11000,
-  MODAL_STEP: 10,
-  TOOLTIP: 15000,
-  TOAST: 20000,
-  MAX: 100000,
-  CRITICAL: 999999
-} as const;
+  MAP_SPAWNS: 50
+});
 
 /** Standard feedback display duration in milliseconds when copying text to clipboard (2000 ms). */
 export const CLIPBOARD_COPIED_DUR_MS = 2000;

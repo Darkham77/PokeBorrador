@@ -2,7 +2,7 @@ import { defineAuditConfig } from '@francogp/auditor';
 
 export default defineAuditConfig({
   name: 'Poké Vicio',
-  auditorVersion: '10.7.13-build.20261104-001838',
+  auditorVersion: '10.11.2-build.20261111-171842',
   paths: {
     srcRoots: ['src', 'test_aventura'],
     testRoots: ['tests', 'test_aventura/tests'],
@@ -594,9 +594,17 @@ export default defineAuditConfig({
   vitePlusConfig: {
     enabled: true,
     lint: {
+      overrides: [
+        {
+          files: ['src/logic/db/proxyQuery.ts', 'src/logic/db/sqliteQueryBuilder.ts'],
+          rules: {
+            'unicorn/no-thenable': 'off'
+          }
+        }
+      ],
       rules: {
         'unicorn/prefer-node-protocol': 'error',
-        '@typescript-eslint/consistent-type-imports': [
+        'typescript/consistent-type-imports': [
           'error',
           {
             prefer: 'type-imports',

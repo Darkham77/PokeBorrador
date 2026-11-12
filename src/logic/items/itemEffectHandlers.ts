@@ -95,14 +95,18 @@ import { FRIENDSHIP_BOUNDS } from '@/types/pokemon/friendship.ts';
 const BERRY_FRIENDSHIP_INCREASE = 10;
 const VITAMIN_FRIENDSHIP_INCREASE = 5;
 
-export function handleVitamin(
+function applyEvConsumable(
   p: Pokemon,
   stat: PokemonStatKey,
-  statNameEs: string
+  statNameEs: string,
+  applyFn: (
+    evs: Pokemon['evs'],
+    stat: PokemonStatKey
+  ) => { success: boolean; updatedEvs: Pokemon['evs']; gained: number }
 ): ItemEffectResult {
   if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
 
-  const res = applyVitamin(p.evs, stat);
+  const res = applyFn(p.evs, stat);
   if (!res.success) {
     return { success: false, message: 'No tendrá ningún efecto.' };
   }
@@ -123,31 +127,20 @@ export function handleVitamin(
   return { success: true, message: `aumentó los EVs de ${statNameEs} (+${res.gained})` };
 }
 
+export function handleVitamin(
+  p: Pokemon,
+  stat: PokemonStatKey,
+  statNameEs: string
+): ItemEffectResult {
+  return applyEvConsumable(p, stat, statNameEs, applyVitamin);
+}
+
 export function handleMochi(
   p: Pokemon,
   stat: PokemonStatKey,
   statNameEs: string
 ): ItemEffectResult {
-  if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
-
-  const res = applyMochi(p.evs, stat);
-  if (!res.success) {
-    return { success: false, message: 'No tendrá ningún efecto.' };
-  }
-
-  p.evs = res.updatedEvs;
-  recalcPokemonStats(p);
-
-  const curF = p.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE;
-  if (curF < FRIENDSHIP_BOUNDS.MAX) {
-    const boost =
-      p.heldItem === 'soothebell'
-        ? Math.floor(VITAMIN_FRIENDSHIP_INCREASE * 1.5)
-        : VITAMIN_FRIENDSHIP_INCREASE;
-    p.friendship = Math.min(FRIENDSHIP_BOUNDS.MAX, curF + boost);
-  }
-
-  return { success: true, message: `aumentó los EVs de ${statNameEs} (+${res.gained})` };
+  return applyEvConsumable(p, stat, statNameEs, applyMochi);
 }
 
 export function handleFreshStartMochi(p: Pokemon): ItemEffectResult {

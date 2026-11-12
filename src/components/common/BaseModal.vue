@@ -1,31 +1,20 @@
 <script setup lang="ts">
-import { gsap } from 'gsap';
-import { ref, watch, computed, inject, onUnmounted, useSlots, useId, type Ref } from 'vue';
+import { computed, ref, useSlots } from 'vue';
 
 import { useBodyClass } from '@/composables/ui/useBodyClass';
-import { Z_LAYERS } from '@/logic/constants/visuals';
-import { ANIM_TIMINGS, ANIM_EASES } from '@/logic/utils/animationRegistry';
-import { useModalStore } from '@/stores/modals';
 import { useUIStore } from '@/stores/ui';
 
 import BaseModalFooter from './BaseModalFooter.vue';
 import BaseModalHeader from './BaseModalHeader.vue';
 import {
-  resolveModalPositionMode,
-  resolveModalCorners,
   resolveModalCardStyles,
-  getModalTweenPosition
+  resolveModalCorners,
+  resolveModalPositionMode
 } from './baseModalHelper';
 import BaseModalOverlay from './BaseModalOverlay.vue';
-
-const MODAL_UNREGISTER_DELAY_SEC = 0.6;
+import { BaseModalSlotOutlet, useBaseModalStackBridge } from './useBaseModalStackBridge';
 
 const uiStore = useUIStore();
-const modalStore = useModalStore();
-const isSimplified =
-  inject<Ref<boolean> | null>('isModalFastMode', null) ??
-  inject<Ref<boolean>>('isModalPerformanceMode', ref(false));
-const injectedModalId = inject<string | null>('modalId', null);
 
 defineOptions({
   inheritAttrs: false
@@ -105,108 +94,36 @@ const emit = defineEmits<{
   close: [];
 }>();
 
-const handleClose = (): void => {
-  if (props.preventClose) return;
-  emit('close');
-};
-const handleOverlayClick = (): void => {
-  if (props.closeOnClickOutside && !props.preventClose) handleClose();
-};
+const rootRef = ref<HTMLElement | null>(null);
+const overlayRef = ref<InstanceType<typeof BaseModalOverlay> | null>(null);
+const panelRef = ref<HTMLElement | null>(null);
 
-// Stacking Logic
-const modalInstanceId = `modal-${useId()}`;
-const localShow = ref(props.show);
+const backdropEl = computed<HTMLElement | null>(() => overlayRef.value?.backdropEl ?? null);
 
-const computedZIndex = computed(() => {
-  if (props.zIndex !== null) return props.zIndex;
-  const depth = uiStore.getModalDepth(modalInstanceId);
-  return Z_LAYERS.MODAL + Math.max(0, depth) * Z_LAYERS.MODAL_STEP;
-});
-
-watch(
-  () => props.show,
-  (val) => {
-    if (val) {
-      localShow.value = true;
-      uiStore.registerModal(modalInstanceId);
-    } else {
-      // We don't unregister immediately to allow closing animations to finish at the correct depth
-      gsap.delayedCall(MODAL_UNREGISTER_DELAY_SEC, () => {
-        if (!props.show) uiStore.unregisterModal(modalInstanceId);
-      });
-    }
+const {
+  isSurfaceRendered,
+  isClosing,
+  isSimplified,
+  modalCssVars,
+  resolvedDomId,
+  resolvedCloseBtnId,
+  resolvedFloatingCloseBtnId,
+  backdropGuard,
+  requestCloseFromButton
+} = useBaseModalStackBridge(
+  props,
+  {
+    rootEl: rootRef,
+    backdropEl,
+    panelEl: panelRef
   },
-  { immediate: true }
+  () => emit('close')
 );
 
-onUnmounted(() => {
-  uiStore.unregisterModal(modalInstanceId);
-});
-
-// Manage scroll locking reactively
 useBodyClass(
   'modal-open',
-  computed(() => props.show && props.lockScroll)
+  computed(() => isSurfaceRendered.value && !isClosing.value && props.lockScroll)
 );
-
-// GSAP Animation Hooks
-const onContentEnter = (el: Element, done: () => void): void => {
-  const duration = ANIM_TIMINGS.MODAL_OPEN || 0.4;
-  const ease = ANIM_EASES.OUT_SOFT || 'power2.out';
-
-  const fromVars: gsap.TweenVars = { opacity: 0, x: 0, y: 0, scale: 1 };
-  const toVars: gsap.TweenVars = {
-    opacity: 1,
-    x: 0,
-    y: 0,
-    scale: 1,
-    duration,
-    ease,
-    onComplete: done
-  };
-
-  const pos = getModalTweenPosition(props.type, true);
-  if (pos.x !== undefined) fromVars.x = pos.x;
-  if (pos.y !== undefined) fromVars.y = pos.y;
-  if (pos.scale !== undefined) fromVars.scale = pos.scale;
-
-  const resolvedId = props.id || injectedModalId || '';
-
-  gsap.fromTo(el, fromVars, {
-    ...toVars,
-    onComplete: () => {
-      done();
-      modalStore.finishOpening(resolvedId);
-    }
-  });
-};
-
-const onContentLeave = (el: Element, done: () => void): void => {
-  const toVars: gsap.TweenVars = {
-    opacity: 0,
-    x: 0,
-    y: 0,
-    scale: 1,
-    duration: ANIM_TIMINGS.MODAL_CLOSE,
-    ease: 'power2.in'
-  };
-
-  const pos = getModalTweenPosition(props.type, false);
-  if (pos.x !== undefined) toVars.x = pos.x;
-  if (pos.y !== undefined) toVars.y = pos.y;
-  if (pos.scale !== undefined) toVars.scale = pos.scale;
-
-  const resolvedId = props.id || injectedModalId || '';
-
-  gsap.to(el, {
-    ...toVars,
-    onComplete: () => {
-      done();
-      modalStore.finalizeClose(resolvedId);
-      if (!props.show) localShow.value = false;
-    }
-  });
-};
 
 const computedPositionMode = computed(() =>
   resolveModalPositionMode(props.positionMode, props.type)
@@ -245,7 +162,10 @@ const overlayClasses = computed(() => ({
 }));
 
 const teleportWrapperClasses = computed(() => [
-  { 'no-pointer-events': isOverlayNoPointerEvents.value },
+  {
+    'no-pointer-events': isOverlayNoPointerEvents.value,
+    'is-closing': isClosing.value
+  },
   `type-${props.type}`,
   `position-${computedPositionMode.value}`
 ]);
@@ -280,79 +200,72 @@ const closeBtnClass = computed(() => ({
   'is-yellow-solid': props.closeButtonVariant === 'yellow-solid'
 }));
 
-const resolvedCloseBtnId = computed(
-  () => props.closeBtnId || (props.id ? `${props.id}-close-btn` : undefined)
-);
-const resolvedFloatingCloseBtnId = computed(() => (props.id ? `${props.id}-close-btn` : undefined));
-const resolvedDomId = computed(() => props.id || undefined);
-
 const slots = useSlots();
 const hasHeaderSlot = computed(() => Boolean(slots.header));
 const hasHeaderIconSlot = computed(() => Boolean(slots['header-icon']));
 const hasFooterSlot = computed(() => Boolean(slots.footer));
 
 const modalRootStyle = computed(() => ({
-  zIndex: computedZIndex.value,
+  ...modalCssVars.value,
   '--modal-zoom': props.disableZoom ? 1 : uiStore.appZoom || 1
 }));
 </script>
 
 <template>
   <Teleport to="body">
-    <div v-if="localShow" class="base-modal-root" :style="modalRootStyle">
-      <!-- Background Overlay -->
+    <div v-if="isSurfaceRendered" ref="rootRef" class="base-modal-root" :style="modalRootStyle">
       <BaseModalOverlay
         id="base-modal-basemodaloverlay-overlayclick"
-        :show="show"
+        ref="overlayRef"
+        :show="isSurfaceRendered"
+        :is-closing="isClosing"
         :overlay-classes="overlayClasses"
-        @click="handleOverlayClick"
+        @pointerdown="backdropGuard.onPointerDown"
+        @pointerup="backdropGuard.onPointerUp"
+        @pointercancel="backdropGuard.onPointerCancel"
       />
 
-      <!-- Content Wrapper -->
       <div class="base-modal-teleport-wrapper" :class="teleportWrapperClasses">
-        <Transition appear :css="false" @enter="onContentEnter" @leave="onContentLeave">
-          <div
-            v-if="show"
-            :id="resolvedDomId"
-            tabindex="-1"
-            class="modal-content-premium base-modal-card"
-            :class="modalCardClasses"
-            :style="cardStyles"
-            @click.stop
+        <div
+          :id="resolvedDomId"
+          ref="panelRef"
+          tabindex="-1"
+          class="modal-content-premium base-modal-card"
+          :class="modalCardClasses"
+          :style="cardStyles"
+          @click.stop
+        >
+          <BaseModalHeader
+            :hide-header="hideHeader"
+            :title="title"
+            :header-icon-emoji="headerIconEmoji"
+            :header-styles="headerStyles"
+            :title-styles="titleStyles"
+            :show-close-button="showCloseButton"
+            :close-btn-id="resolvedCloseBtnId"
+            :floating-close-btn-id="resolvedFloatingCloseBtnId"
+            :close-btn-class="closeBtnClass"
+            :prevent-close="preventClose"
+            @close="requestCloseFromButton"
           >
-            <!-- Header & Floating Close Button -->
-            <BaseModalHeader
-              :hide-header="hideHeader"
-              :title="title"
-              :header-icon-emoji="headerIconEmoji"
-              :header-styles="headerStyles"
-              :title-styles="titleStyles"
-              :show-close-button="showCloseButton"
-              :close-btn-id="resolvedCloseBtnId"
-              :floating-close-btn-id="resolvedFloatingCloseBtnId"
-              :close-btn-class="closeBtnClass"
-              :prevent-close="preventClose"
-              @close="handleClose"
-            >
-              <template v-if="hasHeaderSlot" #header>
-                <slot name="header" />
-              </template>
-              <template v-if="hasHeaderIconSlot" #header-icon>
-                <slot name="header-icon" />
-              </template>
-            </BaseModalHeader>
+            <template v-if="hasHeaderSlot" #header>
+              <slot name="header" />
+            </template>
+            <template v-if="hasHeaderIconSlot" #header-icon>
+              <slot name="header-icon" />
+            </template>
+          </BaseModalHeader>
 
-            <!-- Content -->
-            <div class="modal-scrollable-content" :class="scrollableContentClasses">
+          <div class="modal-scrollable-content" :class="scrollableContentClasses">
+            <BaseModalSlotOutlet>
               <slot />
-            </div>
-
-            <!-- Footer -->
-            <BaseModalFooter v-if="hasFooterSlot">
-              <slot name="footer" />
-            </BaseModalFooter>
+            </BaseModalSlotOutlet>
           </div>
-        </Transition>
+
+          <BaseModalFooter v-if="hasFooterSlot">
+            <slot name="footer" />
+          </BaseModalFooter>
+        </div>
       </div>
     </div>
   </Teleport>

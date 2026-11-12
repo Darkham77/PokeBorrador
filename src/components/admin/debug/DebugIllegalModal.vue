@@ -1,4 +1,13 @@
 <script setup lang="ts">
+import {
+  createBackdropPointerGuard,
+  resolveModalCssVars,
+  type ModalCloseReason
+} from '@francogp/auditor/modals';
+import { computed, onBeforeUnmount } from 'vue';
+
+import { useModalStore } from '@/stores/modals';
+
 defineProps<{
   title: string;
   description: string;
@@ -9,15 +18,58 @@ defineProps<{
 const emit = defineEmits<{
   close: [];
 }>();
+
+const USER_DISMISS_REASONS: readonly ModalCloseReason[] = [
+  'escape',
+  'backdrop',
+  'close-button',
+  'back-navigation'
+] as const;
+const USER_DISMISS_REASON_SET: ReadonlySet<ModalCloseReason> = new Set(USER_DISMISS_REASONS);
+
+const modalStore = useModalStore();
+
+const standaloneEntry = modalStore.openStandalone({
+  kind: 'DebugIllegalPokemon',
+  dismissMode: 'any',
+  obscuresBackground: false,
+  canClose: ({ reason }) => {
+    if (USER_DISMISS_REASON_SET.has(reason)) {
+      emit('close');
+      return false;
+    }
+    return true;
+  }
+});
+
+const modalCssVars = computed(() => {
+  const current = modalStore.getEntryByUid(standaloneEntry.modalUid) ?? standaloneEntry;
+  return resolveModalCssVars(current);
+});
+
+const backdropGuard = createBackdropPointerGuard({
+  stack: modalStore.stackManager,
+  getModalUid: () => standaloneEntry.modalUid
+});
+
+onBeforeUnmount(() => {
+  if (modalStore.stackManager.hasUid(standaloneEntry.modalUid, { includeClosing: true })) {
+    modalStore.stackManager.forceClose(standaloneEntry.modalUid, 'programmatic');
+  }
+});
 </script>
 
 <template>
   <div
     id="debug-illegal-pokemon-modal"
     class="creator-illegal-modal-overlay"
-    role="button"
+    role="dialog"
+    aria-modal="true"
     tabindex="-1"
-    @click.self="emit('close')"
+    :style="modalCssVars"
+    @pointerdown="backdropGuard.onPointerDown"
+    @pointerup="backdropGuard.onPointerUp"
+    @pointercancel="backdropGuard.onPointerCancel"
   >
     <div class="creator-illegal-modal">
       <div class="modal-header">
@@ -51,7 +103,7 @@ const emit = defineEmits<{
 
 .creator-illegal-modal-overlay {
   position: fixed;
-  z-index: calc(var(--z-max) - 1);
+  z-index: var(--modal-z, var(--z-modal));
   display: flex;
   justify-content: center;
   align-items: center;

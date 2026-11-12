@@ -1,119 +1,202 @@
-import gsap from 'gsap';
+import type {
+  ModalCloseReason,
+  ModalCloseResult,
+  ModalDomController,
+  ModalOpenOptions,
+  ModalStackEntry,
+  ModalStackSnapshot
+} from '@francogp/auditor/modals';
 import { defineStore } from 'pinia';
-import { ref, markRaw } from 'vue';
-import type { Component } from 'vue';
+import { computed, markRaw, shallowRef, type Component } from 'vue';
 
+import { getModalMetadata, resolveModalDismissMode } from '@/logic/modals/metadata';
 import {
-  MODAL_OPENING_FALLBACK_DURATION_SEC,
-  MODAL_CLOSING_FALLBACK_DURATION_SEC
-} from '@/logic/constants/gameplay.ts';
+  createPokeVicioModalDomController,
+  createPokeVicioModalRuntime,
+  resolveBaseModalMotion,
+  type PokeVicioModalMeta
+} from '@/logic/modals/modalEngine';
 import { logger } from '@/logic/utils/logger';
 
 export interface Modal {
-  id: string;
-  name: string;
-  component?: Component;
-  props: Record<string, unknown>;
-  opening: boolean;
-  closing: boolean;
+  readonly id: string;
+  readonly name: string;
+  readonly component?: Component;
+  readonly props: Record<string, unknown>;
+  readonly opening: boolean;
+  readonly closing: boolean;
+  readonly zIndex: number;
+  readonly backdropZIndex: number;
+  readonly contentZIndex: number;
+  readonly isActiveTop: boolean;
+  readonly isSimplified: boolean;
+}
+
+function toModalView(entry: ModalStackEntry<string, PokeVicioModalMeta>): Modal {
+  return {
+    id: entry.modalUid,
+    name: entry.kind,
+    component: entry.meta.component,
+    props: entry.meta.props,
+    opening: entry.phase === 'opening',
+    closing: entry.phase === 'closing',
+    zIndex: entry.zIndex,
+    backdropZIndex: entry.backdropZIndex,
+    contentZIndex: entry.contentZIndex,
+    isActiveTop: entry.isActiveTop,
+    isSimplified: entry.isSimplified
+  };
 }
 
 export const useModalStore = defineStore('modals', () => {
-  const stack = ref<Modal[]>([]);
+  const runtime = createPokeVicioModalRuntime();
+  const stackManager = markRaw(runtime.stack);
+  const animations = markRaw(runtime.animations);
+
+  const snapshot = shallowRef<ModalStackSnapshot<string, PokeVicioModalMeta>>(
+    stackManager.getSnapshot()
+  );
+
+  stackManager.subscribe((nextSnapshot) => {
+    snapshot.value = nextSnapshot;
+  });
+
+  const stack = computed<Modal[]>(() =>
+    snapshot.value.entries.filter((entry) => entry.meta.isHosted).map(toModalView)
+  );
+
+  const obscuresBackground = computed<boolean>(() => snapshot.value.obscuresBackground);
 
   const open = (
     name: string,
     props: Record<string, unknown> = {},
     customComponent?: Component
   ): string | null => {
-    if ((name === 'Confirm' || name === 'Prompt') && isOpen(name)) {
+    const metadata = getModalMetadata(name);
+    const propPreventClose = props.preventClose === true;
+    const propCloseOutside = props.closeOnClickOutside !== false;
+    const modalType = typeof props.type === 'string' ? props.type : 'center';
+
+    const dismissMode =
+      metadata?.dismissMode ??
+      resolveModalDismissMode({
+        preventClose: propPreventClose,
+        closeOnClickOutside: propCloseOutside
+      });
+    const shouldObscure = props.overlay === 'none' ? false : (metadata?.obscuresBackground ?? true);
+
+    const result = stackManager.tryOpen({
+      kind: name,
+      singletonPolicy: metadata?.singletonPolicy ?? 'allow-multiple',
+      dismissMode,
+      obscuresBackground: shouldObscure,
+      motion: resolveBaseModalMotion(modalType, propPreventClose),
+      meta: {
+        props,
+        component: customComponent ? markRaw(customComponent) : undefined,
+        isHosted: true
+      }
+    });
+
+    if (!result.created) {
       logger.warn('ModalStore', `Modal "${name}" is already open. Ignoring duplicate request.`);
       return null;
     }
 
-    const id: string = crypto.randomUUID();
-    const modal: Modal = {
-      id,
-      name,
-      component: customComponent ? markRaw(customComponent) : undefined,
-      props,
-      opening: true, // Initial state for animations
-      closing: false
-    };
-
-    stack.value.push(modal);
-
-    // GSAP fallback to ensure the "opening" state doesn't hang
-    // This also allows unit tests to pass by simulating visual completion
-    gsap.delayedCall(MODAL_OPENING_FALLBACK_DURATION_SEC, () => finishOpening(id));
-
-    return id;
+    return result.entry.modalUid;
   };
 
-  /**
-   * Called by the component when the opening animation finishes.
-   */
+  const openStandalone = (
+    options: Omit<ModalOpenOptions<string, PokeVicioModalMeta>, 'meta'> & {
+      readonly props?: Record<string, unknown>;
+    }
+  ): ModalStackEntry<string, PokeVicioModalMeta> => {
+    const { props = {}, ...rest } = options;
+    return stackManager.open({
+      ...rest,
+      obscuresBackground: rest.obscuresBackground ?? false,
+      meta: {
+        props,
+        isHosted: false
+      }
+    });
+  };
+
   const finishOpening = (id: string): void => {
-    const target = stack.value.find((m) => m.id === id);
-    if (target) {
-      target.opening = false;
-    }
+    if (!id) return;
+    stackManager.completeOpen(id);
   };
 
-  /**
-   * Closes a specific modal by ID or Name.
-   */
-  const close = (identifier: string): void => {
-    const index = stack.value.findLastIndex(
-      (m) => (m.id === identifier || m.name === identifier) && !m.closing
-    );
-    if (index !== -1) {
-      const modal = stack.value[index];
-      if (!modal || modal.closing) return;
-      modal.closing = true;
-
-      // GSAP fallback to ensure the modal is eventually removed from the stack
-      // even if the component fails to call finalizeClose
-      gsap.delayedCall(MODAL_CLOSING_FALLBACK_DURATION_SEC, () => finalizeClose(modal.id));
+  const close = (identifier: string, reason: ModalCloseReason = 'programmatic'): void => {
+    if (!identifier) return;
+    if (stackManager.hasUid(identifier)) {
+      stackManager.requestClose(identifier, reason);
+      return;
     }
+    stackManager.closeLatestByKind(identifier, reason);
   };
 
-  /**
-   * Called by the component when the closing animation finishes.
-   */
   const finalizeClose = (id: string): void => {
-    const index = stack.value.findIndex((m) => m.id === id);
-    if (index !== -1) {
-      stack.value.splice(index, 1);
-    }
+    if (!id) return;
+    stackManager.finalizeClose(id);
   };
 
-  /**
-   * Closes the top-most modal in the stack (LIFO).
-   */
-  const closeTop = (): void => {
-    if (stack.value.length > 0) {
-      const topModal = stack.value[stack.value.length - 1];
-      if (topModal) close(topModal.id);
-    }
+  const closeTop = (reason: ModalCloseReason = 'programmatic'): void => {
+    stackManager.closeTop(reason);
   };
 
   const closeAll = (): void => {
-    stack.value = [];
+    stackManager.clearAll({ immediate: true, reason: 'clear-all' });
   };
 
   const isOpen = (name: string): boolean => {
-    return stack.value.some((m) => m.name === name && !m.closing);
+    void snapshot.value;
+    return stackManager.hasKind(name);
+  };
+
+  const getEntryByUid = (
+    modalUid: string
+  ): ModalStackEntry<string, PokeVicioModalMeta> | undefined => {
+    void snapshot.value;
+    return stackManager.getByUid(modalUid);
+  };
+
+  const getLatestByKind = (
+    kind: string
+  ): ModalStackEntry<string, PokeVicioModalMeta> | undefined => {
+    void snapshot.value;
+    return stackManager.getLatestByKind(kind);
+  };
+
+  const waitForClose = (
+    modalUid: string
+  ): Promise<ModalCloseResult<string, PokeVicioModalMeta>> => {
+    return stackManager.waitForClose(modalUid);
+  };
+
+  const mountDomController = (
+    onUnhandledPopState: () => boolean | void
+  ): ModalDomController<string, PokeVicioModalMeta> => {
+    return createPokeVicioModalDomController(stackManager, onUnhandledPopState);
   };
 
   return {
     stack,
+    snapshot,
+    stackManager,
+    animations,
+    obscuresBackground,
     open,
+    openStandalone,
     close,
     closeTop,
     closeAll,
     isOpen,
     finishOpening,
-    finalizeClose
+    finalizeClose,
+    getEntryByUid,
+    getLatestByKind,
+    waitForClose,
+    mountDomController
   };
 });

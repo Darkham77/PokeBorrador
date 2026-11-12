@@ -88,9 +88,7 @@ const handlePanelClick = (event: Event): void => {
         {{ displayName }}
       </div>
       <div class="trainer-info">
-        <div class="trainer-lv">
-          Nivel <span>{{ gs.trainerLevel }}</span>
-        </div>
+        <div class="trainer-lv">Nivel <span>{{ gs.trainerLevel }}</span></div>
       </div>
       <div class="exp-bar-container">
         <div id="trainer-exp-bar" class="exp-bar-fill" :style="{ width: trainerExpPct + '%' }" />

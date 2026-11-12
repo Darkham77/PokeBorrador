@@ -209,7 +209,6 @@ export class ProxyQuery {
   }
 
   // compatibility with 'await q'
-  // eslint-disable-next-line unicorn/no-thenable
   public async then<T = DBResponse>(
     onFulfilled?: (value: DBResponse) => T | Promise<T>,
     onRejected?: (reason: unknown) => T | Promise<T>

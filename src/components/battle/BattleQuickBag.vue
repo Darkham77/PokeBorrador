@@ -198,10 +198,7 @@ const getTierColor = (t?: string): string => {
   position: relative;
   display: grid;
   gap: $spacing-sm;
-  grid-template-columns: repeat(
-    auto-fill,
-    76px
-  ); // Rellena con más columnas de 76px si el espacio lo permite
+  grid-template-columns: repeat(auto-fill, 76px); // Rellena con más columnas de 76px si el espacio lo permite
   width: 100%;
   min-height: 100%;
   padding: 12px 10px 10px;

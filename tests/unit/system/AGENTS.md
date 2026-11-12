@@ -20,7 +20,7 @@ Poké Vicio Development Team.
 - [system_events_ui_suite.spec.ts](./system_events_ui_suite.spec.ts): Event UI components including BuffsOverlay badges, EventCard participating slots, and EventDetailModal sub-competitions.
 - [system_infrastructure_and_schemas_suite.spec.ts](./system_infrastructure_and_schemas_suite.spec.ts): Database isolation, server infrastructure, friendly error mappings, daycare missions integrity, and validation schemas.
 - [system_market_and_gts_suite.spec.ts](./system_market_and_gts_suite.spec.ts): Team Rocket Black Market sales logic and GTS marketplace store operations, listings, and claim queues.
-- [system_navigation_and_modals_suite.spec.ts](./system_navigation_and_modals_suite.spec.ts): Modal stacking (LIFO), hierarchical performance modes, HUD navigation, and useBackNavigation history trap.
+- [system_navigation_and_modals_suite.spec.ts](./system_navigation_and_modals_suite.spec.ts): Modal stacking (LIFO), hierarchical performance modes, HUD navigation, and `ModalDomController` back-navigation history trap.
 - [system_past_events_history_suite.spec.ts](./system_past_events_history_suite.spec.ts): Past events history listing, winners podium, and reward claiming workflows.
 - [system_save_and_persistence_suite.spec.ts](./system_save_and_persistence_suite.spec.ts): Game state serialization, OPFS persistence, backup saves, and local user database isolation.
 

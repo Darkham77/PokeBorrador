@@ -9,6 +9,7 @@ Frontend Developers.
 ## Local Contracts
 
 - Keep directives pure and focused on DOM manipulation.
+- **Global Vue Directive Registration & SFC Import Prohibition Mandate**: Custom Vue directives (`v-gsap-loop`, `v-gsap-hover`, `v-gsap-nick`) are registered globally in the application runtime (`main.ts`). Explicitly importing these directives inside Vue SFC `<script setup>` blocks is strictly prohibited, as it breaks Rolldown / Vite bundler builds with `[UNLOADABLE_DEPENDENCY]` errors. Directives must be consumed directly in templates without script imports.
 
 ## Key Files
 

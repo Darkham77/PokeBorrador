@@ -23,10 +23,7 @@ defineEmits<{
 
 <template>
   <div class="reveal-info-wrapper">
-    <div class="splash-text">
-      ¡Ha nacido un <span class="highlight">{{ pokemon?.name }}</span
-      >!
-    </div>
+    <div class="splash-text">¡Ha nacido un <span class="highlight">{{ pokemon?.name }}</span>!</div>
 
     <!-- Tarjeta Premium de Stats -->
     <HatchStatsCard v-if="pokemon" :pokemon="pokemon" />

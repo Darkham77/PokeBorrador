@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { provide, toRef } from 'vue';
+import { computed, provide, toRef } from 'vue';
+
+import { useModalStore } from '@/stores/modals';
 
 interface Props {
   id?: string;
@@ -13,8 +15,11 @@ const props = withDefaults(defineProps<Props>(), {
   isSimplified: false
 });
 
-// Provide the performance and modal identity state to all children (BaseModal, PokemonDisplayCard, etc.)
+const modalStore = useModalStore();
+const modalEntry = computed(() => (props.id ? modalStore.getEntryByUid(props.id) : undefined));
+
 provide('modalId', props.id);
+provide('modalEntry', modalEntry);
 provide('isModalFastMode', toRef(props, 'isSimplified'));
 provide('isModalPerformanceMode', toRef(props, 'isSimplified'));
 provide('isModalTop', toRef(props, 'isTop'));

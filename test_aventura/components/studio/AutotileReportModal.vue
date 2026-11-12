@@ -140,9 +140,7 @@ async function copyToClipboard(): Promise<void> {
               </button>
             </div>
             <div class="item-details">
-              <div>
-                Tile: <code>{{ rep.currentTile }}</code>
-              </div>
+              <div>Tile: <code>{{ rep.currentTile }}</code></div>
               <div class="layers-preview">
                 Capas: <code>{{ rep.layerStack.join(' -> ') }}</code>
               </div>

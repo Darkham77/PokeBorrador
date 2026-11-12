@@ -41,9 +41,7 @@ const emit = defineEmits<{
         width="96"
         height="96"
       />
-      <span v-else class="tab-global-icon"
-        ><span class="emoji">{{ tab.icon || '🧬' }}</span></span
-      >
+      <span v-else class="tab-global-icon"><span class="emoji">{{ tab.icon || '🧬' }}</span></span>
 
       <span class="tab-label">{{ tab.name }}</span>
 

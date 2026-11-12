@@ -52,9 +52,7 @@ const emit = defineEmits<{
           </div>
         </div>
         <div v-if="nextTier" class="tier-progress-info">
-          <span class="progress-label"
-            >Siguiente Rango: <strong>{{ nextTier.name }}</strong></span
-          >
+          <span class="progress-label">Siguiente Rango: <strong>{{ nextTier.name }}</strong></span>
           <span class="progress-sub">Faltan {{ pointsToNextTier }} LP para ascender</span>
         </div>
         <div v-else class="tier-progress-info">

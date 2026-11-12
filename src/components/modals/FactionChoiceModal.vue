@@ -55,7 +55,6 @@ const getAssetUrlLocal = getAssetUrl;
     title-color="var(--yellow)"
     header-background="#161a2e"
     max-width="420px"
-    :z-index="13000"
     variant="modern"
     :prevent-close="isProcessing"
     custom-class="faction-choice-modal"

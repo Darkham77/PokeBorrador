@@ -166,9 +166,7 @@ const handleBtnLeave = (e: MouseEvent): void => {
             <span class="gym-tag" :style="{ color: gym.typeColor }">{{ gym.name }}</span>
           </div>
           <div class="location"><span class="emoji">📍</span> {{ gym.city }}</div>
-          <div class="leader-title">
-            Líder: <span>{{ gym.leader }}</span>
-          </div>
+          <div class="leader-title">Líder: <span>{{ gym.leader }}</span></div>
           <div class="badges-row">
             <PokemonTypeTag :type="toPokemonType(gym.type)" size="md" />
           </div>

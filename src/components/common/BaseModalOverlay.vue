@@ -1,49 +1,47 @@
 <script setup lang="ts">
 import type { DisplayText } from '@francogp/auditor';
-import { gsap } from 'gsap';
-
-import { ANIM_TIMINGS } from '@/logic/utils/animationRegistry';
+import { ref } from 'vue';
 
 withDefaults(
   defineProps<{
     show?: boolean;
-    overlayClasses?: Record<DisplayText, boolean> | string[]; // open-record: Dynamic CSS class boolean flags
+    isClosing?: boolean;
+    overlayClasses?: Record<DisplayText, boolean> | string[];
   }>(),
   {
     show: false,
+    isClosing: false,
     overlayClasses: () => ({})
   }
 );
 
 const emit = defineEmits<{
-  (e: 'click'): void;
+  pointerdown: [event: PointerEvent];
+  pointerup: [event: PointerEvent];
+  pointercancel: [];
 }>();
 
-const onOverlayEnter = (el: Element, done: () => void): void => {
-  gsap.fromTo(
-    el,
-    { opacity: 0 },
-    { opacity: 1, duration: ANIM_TIMINGS.MODAL_OPEN, ease: 'none', onComplete: done }
-  );
-};
+const backdropEl = ref<HTMLElement | null>(null);
 
-const onOverlayLeave = (el: Element, done: () => void): void => {
-  gsap.to(el, { opacity: 0, duration: ANIM_TIMINGS.MODAL_CLOSE, ease: 'none', onComplete: done });
-};
+defineExpose({
+  backdropEl
+});
 </script>
 
 <template>
-  <Transition appear :css="false" @enter="onOverlayEnter" @leave="onOverlayLeave">
-    <div
-      v-if="show"
-      id="base-modal-overlay-div-1"
-      tabindex="-1"
-      aria-hidden="true"
-      class="modal-overlay"
-      :class="overlayClasses"
-      @click.stop="emit('click')"
-    />
-  </Transition>
+  <div
+    v-if="show"
+    id="base-modal-overlay-div-1"
+    ref="backdropEl"
+    tabindex="-1"
+    aria-hidden="true"
+    class="modal-overlay"
+    :class="[overlayClasses, { 'is-closing': isClosing }]"
+    @click.stop
+    @pointerdown="emit('pointerdown', $event)"
+    @pointerup="emit('pointerup', $event)"
+    @pointercancel="emit('pointercancel')"
+  />
 </template>
 
 <style lang="scss">

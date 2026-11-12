@@ -112,6 +112,7 @@ Frontend Developers / Systems Engineers.
 - `ClassMissionsModal.vue`: Module implementation.
 - `ClassSelectionModal.vue`: Module implementation.
 - `ConfirmModal.vue`: Module implementation.
+- `CosmeticsCardMeta.vue`: Reusable card metadata and lock badge for cosmetics styles and frames.
 - `DaycareModal.vue`: Module implementation.
 - `DebugStackTestModal.vue`: Module implementation.
 - `DebugWeatherRouteSection.vue`: Module implementation.

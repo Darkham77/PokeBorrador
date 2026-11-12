@@ -2,14 +2,15 @@ import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test';
-import { defineComponent, ref } from 'vue';
+import { defineComponent, onMounted, onUnmounted, ref } from 'vue';
 
+import BaseModal from '@/components/common/BaseModal.vue';
 import ModalHost from '@/components/common/ModalHost.vue';
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
 import InventoryPills from '@/components/inventory/InventoryPills.vue';
 import TrainerPanel from '@/components/profile/TrainerPanel.vue';
 import HUD_Navigation from '@/components/ui/HUD_Navigation.vue';
-import { useBackNavigation } from '@/composables/system/useBackNavigation';
+import { dismissUnhandledSecondaryUi } from '@/composables/system/appSessionHelper';
 import { useGameStore } from '@/stores/game';
 import { useModalStore } from '@/stores/modals';
 import { useUIStore } from '@/stores/ui';
@@ -39,7 +40,16 @@ vi.mock('@/logic/modals/registry', () => ({
 
 const BackNavTestComponent = defineComponent({
   setup() {
-    useBackNavigation();
+    const modalStore = useModalStore();
+    const uiStore = useUIStore();
+    let domController: ReturnType<typeof modalStore.mountDomController> | null = null;
+    onMounted(() => {
+      domController = modalStore.mountDomController(() => dismissUnhandledSecondaryUi(uiStore));
+    });
+    onUnmounted(() => {
+      domController?.dispose();
+      domController = null;
+    });
     return {};
   },
   template: '<div><input id="test-input" type="text" /><div id="test-div">Game</div></div>'
@@ -172,20 +182,24 @@ describe('System Navigation & Modals Suite', () => {
 
         // 3. Finish B's opening animation
         vi.advanceTimersByTime(500);
-        modalStore.stack[1]!.opening = false;
+        modalStore.finishOpening(modalStore.stack[1]!.id);
         await wrapper.vm.$nextTick();
 
         providers = wrapper.findAll('.hierarchy-provider');
         expect(providers[0]!.attributes('data-simplified')).toBe('true');
 
         // 4. Start closing B (A should restore effects immediately)
+        const unbindDefer = modalStore.stackManager.on('close-start', (event) => {
+          event.deferClose();
+        });
         const modalB = modalStore.stack[1]!;
         modalStore.close(modalB.id);
-        modalB.closing = true;
         await wrapper.vm.$nextTick();
 
         providers = wrapper.findAll('.hierarchy-provider');
+        expect(modalStore.stack[1]!.closing).toBe(true);
         expect(providers[0]!.attributes('data-simplified')).toBe('false');
+        unbindDefer();
       });
     });
 
@@ -437,6 +451,50 @@ describe('System Navigation & Modals Suite', () => {
       expect(modalStore.isOpen('Settings')).toBe(true);
       window.dispatchEvent(new PopStateEvent('popstate'));
       expect(modalStore.isOpen('Settings')).toBe(false);
+
+      wrapper.unmount();
+    });
+
+    it('debe actualizar reactivamente las clases de elementos en el slot por defecto de BaseModal tras click inmediato', async () => {
+      const SlotWrapper = defineComponent({
+        components: { BaseModal },
+        setup() {
+          const mode = ref<'ranked' | 'casual'>('ranked');
+          return { mode };
+        },
+        template: `
+          <BaseModal :show="true" title="TEST SLOT">
+            <button
+              id="btn-mode-ranked"
+              class="option-pill"
+              :class="{ active: mode === 'ranked' }"
+              @click="mode = 'ranked'"
+            >Ranked</button>
+            <button
+              id="btn-mode-casual"
+              class="option-pill"
+              :class="{ active: mode === 'casual' }"
+              @click="mode = 'casual'"
+            >Casual</button>
+          </BaseModal>
+        `
+      });
+
+      const wrapper = mount(SlotWrapper, {
+        global: {
+          stubs: { Teleport: true }
+        }
+      });
+
+      const rankedBtn = wrapper.find('#btn-mode-ranked');
+      const casualBtn = wrapper.find('#btn-mode-casual');
+
+      expect(rankedBtn.classes()).toContain('active');
+      expect(casualBtn.classes()).not.toContain('active');
+
+      await casualBtn.trigger('click');
+      expect(casualBtn.classes()).toContain('active');
+      expect(rankedBtn.classes()).not.toContain('active');
 
       wrapper.unmount();
     });

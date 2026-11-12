@@ -115,8 +115,7 @@ const getPokemonName = (id: string): string => {
   >
     <div class="stone-picker-content">
       <p class="stone-help">
-        ¿Qué piedra usás en <span class="accent-text">{{ pokemon?.name }}</span
-        >?
+        ¿Qué piedra usás en <span class="accent-text">{{ pokemon?.name }}</span>?
       </p>
 
       <div class="options-list">

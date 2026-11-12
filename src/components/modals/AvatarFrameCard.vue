@@ -3,6 +3,7 @@ import { computed } from 'vue';
 
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 
+import CosmeticsCardMeta from './CosmeticsCardMeta.vue';
 import { formatCosmeticRequirement, type LockableCosmeticStyle } from './cosmeticsFilterHelper';
 
 const props = withDefaults(
@@ -60,30 +61,13 @@ const requirementLabel = computed(() => {
         :gender="gender"
       />
     </div>
-    <div class="style-meta">
-      <span class="style-name">{{ styleData.name }}</span>
-      <span
-        v-if="isLocked"
-        class="lock-tag locked"
-        :class="[styleData.requiredClass, styleData.requiredFaction]"
-      >
-        <span class="emoji">🔒</span> {{ requirementLabel }}
-      </span>
-      <span
-        v-else-if="hasRequirements"
-        v-gsap-loop="{
-          effect: 'pulse-shadow',
-          color: 'rgba(74, 222, 128, 0.4)',
-          boxShadow: '0 0 8px rgba(74, 222, 128, 0.5)',
-          duration: 2
-        }"
-        class="lock-tag unlocked"
-        :class="[styleData.requiredClass, styleData.requiredFaction]"
-      >
-        <span class="emoji">🔓</span> {{ requirementLabel }}
-      </span>
-      <span v-if="isActive" class="status-tag">EQUIPADO</span>
-    </div>
+    <CosmeticsCardMeta
+      :style-data="styleData"
+      :is-locked="isLocked"
+      :has-requirements="hasRequirements"
+      :requirement-label="requirementLabel"
+      :is-active="isActive"
+    />
   </div>
 </template>
 

@@ -140,8 +140,8 @@ export function usePokemonDetail(
   const getProp = <T>(key: string): T | undefined => toValue(propsRefs[key]) as T | undefined;
 
   const uiData = computed(() => {
-    const modal = modalStore.stack.find((m) => m.name === 'PokemonDetail');
-    return modal?.props || {};
+    const entry = modalStore.getLatestByKind('PokemonDetail');
+    return entry?.meta.props ?? {};
   });
 
   const finalIndex = computed<number>(() => {

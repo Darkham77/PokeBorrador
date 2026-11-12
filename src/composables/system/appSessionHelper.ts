@@ -209,3 +209,19 @@ export function handleGlobalBlockEvent(e: Event, options: GlobalBlockOptions): v
     e.stopImmediatePropagation();
   }
 }
+
+export function dismissUnhandledSecondaryUi(uiStore: ReturnType<typeof useUIStore>): boolean {
+  if (uiStore.isChatOpen) {
+    uiStore.isChatOpen = false;
+    return true;
+  }
+  if (uiStore.isHistoryOpen) {
+    uiStore.isHistoryOpen = false;
+    return true;
+  }
+  if (uiStore.openHudGroup !== null) {
+    uiStore.openHudGroup = null;
+    return true;
+  }
+  return false;
+}

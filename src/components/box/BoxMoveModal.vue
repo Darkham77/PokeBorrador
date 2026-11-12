@@ -77,8 +77,7 @@ const handleMove = (targetBoxIndex: number): void => {
   >
     <div class="box-move-container">
       <p class="move-message">
-        ¿A qué caja querés mover a <span class="p-name">{{ pokemon.name }}</span
-        >?
+        ¿A qué caja querés mover a <span class="p-name">{{ pokemon.name }}</span>?
       </p>
 
       <div class="boxes-grid">

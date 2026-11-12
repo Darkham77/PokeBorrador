@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, computed, watch } from 'vue';
+import { onMounted, onUnmounted, ref, computed, watch } from 'vue';
 
 import { initGlobalErrorHandlers } from '@/logic/utils/errorHandler';
 import { defineResilientAsyncComponent } from '@/logic/utils/resilientComponent';
@@ -32,12 +32,12 @@ import {
 } from '@/composables/system/appLoadingHelper.ts';
 import {
   checkClientPwaVersion,
+  dismissUnhandledSecondaryUi,
   handleGlobalBlockEvent,
   shouldInitSession,
   runSessionInitialization
 } from '@/composables/system/appSessionHelper.ts';
 import { useAppRouteGate } from '@/composables/system/useAppRouteGate.ts';
-import { useBackNavigation } from '@/composables/system/useBackNavigation';
 import { usePWA } from '@/composables/system/usePWA';
 import { useRetroGamepad } from '@/composables/system/useRetroGamepad';
 import { useBodyClass } from '@/composables/ui/useBodyClass';
@@ -46,6 +46,7 @@ import { logger } from '@/logic/utils/logger';
 import { useAudioStore } from '@/stores/audio';
 import { useBattleStore } from '@/stores/battle/battle';
 import { useLoadingStore } from '@/stores/loading';
+import { useModalStore } from '@/stores/modals';
 import { useProfileStore } from '@/stores/player/profile';
 import { useSocialStore } from '@/stores/social/social';
 import { useUIStore } from '@/stores/ui';
@@ -54,6 +55,7 @@ import { useUpdateStore } from '@/stores/update';
 const authStore = useAuthStore();
 const gameStore = useGameStore();
 const uiStore = useUIStore();
+const modalStore = useModalStore();
 const profileStore = useProfileStore();
 const socialStore = useSocialStore();
 const battleStore = useBattleStore();
@@ -65,8 +67,16 @@ const { isLoginPage, isStandaloneDevPage } = useAppRouteGate();
 
 const { needRefresh, isUpdating, handleUpdate } = usePWA();
 
-// Initialize back navigation gesture handler for mobile/hardware back button
-useBackNavigation();
+// Initialize modal Escape router & hardware/browser back-navigation controller
+let modalDomController: ReturnType<typeof modalStore.mountDomController> | null = null;
+onMounted(() => {
+  modalDomController = modalStore.mountDomController(() => dismissUnhandledSecondaryUi(uiStore));
+});
+onUnmounted(() => {
+  modalDomController?.dispose();
+  modalDomController = null;
+});
+
 // Initialize retro controller and gamepad support
 useRetroGamepad();
 

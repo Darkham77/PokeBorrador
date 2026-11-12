@@ -447,7 +447,7 @@
 /* ─── Event Modal ─── */
 .adv-event-modal-backdrop {
   position: fixed;
-  z-index: var(--z-modal-blocking);
+  z-index: var(--modal-backdrop-z, var(--z-modal));
   display: flex;
   justify-content: center;
   align-items: center;

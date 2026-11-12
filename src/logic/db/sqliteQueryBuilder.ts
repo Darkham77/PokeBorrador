@@ -202,7 +202,6 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     return whereParts.length ? ' WHERE ' + whereParts.join(' AND ') : '';
   }
 
-  // eslint-disable-next-line unicorn/no-thenable
   public async then(
     resolve?: (val: Record<string, unknown>[]) => void
   ): Promise<Record<string, unknown>[]> {

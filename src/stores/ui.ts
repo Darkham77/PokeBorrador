@@ -10,7 +10,7 @@ import {
   DEFAULT_WINDOW_WIDTH_PX
 } from '@/logic/constants/gameplay.ts';
 import { gameBus } from '@/logic/events/gameBus.ts';
-import { MODAL_METADATA } from '@/logic/modals/metadata.ts';
+import { getModalMetadata } from '@/logic/modals/metadata.ts';
 import { safeStorage } from '@/logic/utils/storage';
 import { useLoadingStore } from '@/stores/loading';
 import { useModalStore } from '@/stores/modals.ts';
@@ -69,11 +69,8 @@ export const useUIStore = defineStore('ui', () => {
   const isLowPowerActive = computed(() => {
     if (lowPowerMode.value === 'enabled') return true;
 
-    // Force low power mode during custom modals that obscure the background (e.g. HatchAnimation, Evolution)
-    const modalStore = useModalStore();
-    if (modalStore.stack.some((m) => MODAL_METADATA[m.name]?.obscuresBackground)) return true;
-
-    if (isAnyBlockingModalOpen.value) return true; // Force low power mode when a modal is open to pause background renders
+    // Force low power mode when any obscuring modal is active in the stack
+    if (isAnyBlockingModalOpen.value) return true;
     if (lowPowerMode.value === 'disabled') return false;
     return windowWidth.value < MOBILE_SCREEN_BREAKPOINT_PX;
   });
@@ -173,18 +170,7 @@ export const useUIStore = defineStore('ui', () => {
     isHistoryOpen.value = false;
     isChatOpen.value = false;
     openHudGroup.value = null;
-    activeModalStack.value = [];
   }
-
-  // ── MODAL STACKING SYSTEM (Z-INDEX) ────────────────────────────────────────
-  const activeModalStack = ref<string[]>([]);
-  function registerModal(modalId: string): void {
-    if (!activeModalStack.value.includes(modalId)) activeModalStack.value.push(modalId);
-  }
-  const unregisterModal = (modalId: string): void => {
-    activeModalStack.value = activeModalStack.value.filter((id) => id !== modalId);
-  };
-  const getModalDepth = (modalId: string): number => activeModalStack.value.indexOf(modalId);
 
   function toggleHudGroup(name: string | null): void {
     openHudGroup.value = openHudGroup.value === name ? null : name;
@@ -216,8 +202,10 @@ export const useUIStore = defineStore('ui', () => {
     const isBattleFullscreen = isBattleActive.value && isSmallScreen.value;
     const isStackFullscreen = modalStore.stack.some(
       (m) =>
-        MODAL_METADATA[m.name]?.isFullscreen ||
-        ((m.props.type === 'fullscreen' || m.props.maxHeight === '100dvh') && !m.closing)
+        !m.closing &&
+        (Boolean(getModalMetadata(m.name)?.isFullscreen) ||
+          m.props.type === 'fullscreen' ||
+          m.props.maxHeight === '100dvh')
     );
 
     return isBattleFullscreen || isStackFullscreen;
@@ -290,16 +278,7 @@ export const useUIStore = defineStore('ui', () => {
    * Fast mode activates IMMEDIATELY upon opening any obscuring modal
    * and deactivates only when closing begins.
    */
-  const isAnyBlockingModalOpen = computed(() => {
-    const modalStore = useModalStore();
-    const obscuringModals = modalStore.stack.filter((m) => {
-      if (m.name === 'Profile') return false;
-      if (m.props?.overlay === 'none') return false;
-      return true;
-    });
-
-    return obscuringModals.some((m) => !m.closing);
-  });
+  const isAnyBlockingModalOpen = computed(() => useModalStore().obscuresBackground);
 
   // ── DYNAMIC FLAGS FOR BACKWARD COMPATIBILITY (WRITABLE) ───────────────────
   const createModalRef = (name: string): WritableComputedRef<boolean> =>
@@ -403,11 +382,6 @@ export const useUIStore = defineStore('ui', () => {
     isBattleActive,
     setBattleActive,
     hasDismissedSessionLock,
-
-    // Stacking
-    registerModal,
-    unregisterModal,
-    getModalDepth,
 
     // Confirmation
     openConfirm: (options: Record<string, unknown>) => useModalStore().open('Confirm', options),

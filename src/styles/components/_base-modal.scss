@@ -3,6 +3,7 @@
 
 .base-modal-root {
   position: fixed;
+  z-index: var(--modal-z, var(--z-modal));
   display: block;
   inset: 0;
   pointer-events: none; // Ensure the root doesn't block clicks/scrolls
@@ -14,11 +15,15 @@
   @include will-animate(opacity);
 
   position: fixed;
-  z-index: var(--z-base);
+  z-index: var(--modal-backdrop-z, var(--z-modal));
   background: Rgb(0 0 0 / 85%);
   inset: 0;
   pointer-events: auto;
   will-change: opacity;
+
+  &.is-closing {
+    pointer-events: none;
+  }
 
   &.transparent {
     background: transparent !important;
@@ -33,7 +38,7 @@
 
 .base-modal-teleport-wrapper {
   position: fixed;
-  z-index: calc(var(--z-base) + 1);
+  z-index: var(--modal-content-z, calc(var(--z-modal) + 1));
   display: flex;
   justify-content: center;
   align-items: center;
@@ -42,6 +47,14 @@
 
   > * {
     pointer-events: auto;
+  }
+
+  &.is-closing {
+    pointer-events: none;
+
+    > * {
+      pointer-events: none;
+    }
   }
 
   &.type-side,

@@ -7,6 +7,7 @@ import { gsap } from 'gsap';
 import { ref, computed, watch, nextTick } from 'vue';
 
 import BaseModal from '@/components/common/BaseModal.vue';
+import ShopEmptyState from '@/components/common/ShopEmptyState.vue';
 import ShopSearchControls from '@/components/common/ShopSearchControls.vue';
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue';
 import { compareShopItems } from '@/composables/inventory/useShopLogic';
@@ -285,13 +286,7 @@ const close = (): void => {
           </div>
 
           <!-- Empty State -->
-          <div v-else class="shop-empty-state">
-            <span class="emoji empty-icon">🔍</span>
-            <div class="empty-text">
-              <h3>Sin resultados</h3>
-              <p>Prueba con otros términos de búsqueda en esta sección</p>
-            </div>
-          </div>
+          <ShopEmptyState v-else />
         </div>
       </div>
     </div>

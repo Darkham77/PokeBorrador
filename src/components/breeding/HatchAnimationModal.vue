@@ -29,8 +29,19 @@ const HATCH_RARE_AURA_MIN_OPACITY = 0.3;
 const HATCH_RARE_AURA_MAX_OPACITY = 0.95;
 const HATCH_STATS_CARD_INITIAL_Y_OFFSET = 15;
 const GLOW_RING_EXPAND_SCALE = 1.4;
+import { resolveModalCssVars, type ModalStackEntry } from '@francogp/auditor/modals';
 import { gsap } from 'gsap';
-import { ref, onMounted, onUnmounted, nextTick, watch, provide, computed } from 'vue';
+import {
+  ref,
+  onMounted,
+  onUnmounted,
+  nextTick,
+  watch,
+  provide,
+  inject,
+  computed,
+  type ComputedRef
+} from 'vue';
 
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
 import { getAuraStyles } from '@/logic/breeding/hatchAuras';
@@ -45,6 +56,7 @@ import {
   MAP_FACTION_PODER_MAX_SCALE
 } from '@/logic/constants/animations';
 import { OPACITY_ZERO } from '@/logic/constants/visuals';
+import type { PokeVicioModalMeta } from '@/logic/modals/modalEngine';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { useGameStore } from '@/stores/game';
 import type { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon';
@@ -72,6 +84,13 @@ const emit = defineEmits<{
 
 // Force high fidelity mode for all injected components (such as PVSpriteFX)
 provide('forceHighFidelity', true);
+
+const injectedModalEntry = inject<ComputedRef<
+  ModalStackEntry<string, PokeVicioModalMeta> | undefined
+> | null>('modalEntry', null);
+const modalCssVars = computed(() =>
+  injectedModalEntry?.value ? resolveModalCssVars(injectedModalEntry.value) : undefined
+);
 
 const gameStore = useGameStore();
 const stage = ref<'egg' | 'shake' | 'reveal' | 'final'>('egg');
@@ -502,7 +521,7 @@ onUnmounted(() => {
 
 <template>
   <Teleport to="body">
-    <div v-if="show" :id="id" ref="modalRef" class="hatch-overlay">
+    <div v-if="show" :id="id" ref="modalRef" class="hatch-overlay" :style="modalCssVars">
       <!-- Fondo Oscuro Inmersivo con soporte para Flash de Luz -->
       <div class="hatch-backdrop" />
 

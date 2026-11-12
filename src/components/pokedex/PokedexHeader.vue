@@ -31,9 +31,7 @@ defineProps<Props>();
 
           <div class="stat-group highlight">
             <span class="badge-label">CAPTURADOS:</span>
-            <span class="badge-value"
-              >{{ stats.caught }} <small>/ {{ stats.total }}</small></span
-            >
+            <span class="badge-value">{{ stats.caught }} <small>/ {{ stats.total }}</small></span>
           </div>
         </div>
       </div>

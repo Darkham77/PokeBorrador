@@ -37,10 +37,7 @@ const isProgressing = computed(() => props.step === 'intro' || props.step === 'f
     </div>
 
     <div v-if="step === 'final'" class="result-text">
-      <p>
-        ¡{{ oldName }} evolucionó a <span class="highlight">{{ newName }}</span
-        >!
-      </p>
+      <p>¡{{ oldName }} evolucionó a <span class="highlight">{{ newName }}</span>!</p>
       <button id="btn-evolution-confirm" class="btn-confirm" @click.stop="emit('close')">
         CONTINUAR
       </button>

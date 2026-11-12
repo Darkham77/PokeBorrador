@@ -32,7 +32,7 @@ Frontend Developers / Systems Engineers.
   - **Modular Layering Mode (`layer`)**: Supports `'ambient'` (sky tint, fog/sand canvas), `'particles'` (precipitation, lightning, leaves with `.is-particles-layer` transparent background), and `'all'` (default backward-compatible combined mode).
   - **Camera-Level Heat Shimmer Canvas Activation (`isHeatWeather`)**: Weather heat distortion and atmospheric mirage noise (`sun`, `intense_sun`, `heatwave`) operate at the camera/viewport level. In combat, the camera overlay is mounted with `layer="particles"`, while overworld map cards use `layer="all"`. Canvas worker activation and rendering for heat weathers MUST activate when `layer !== 'ambient'` (rendering on both `particles` and `all`), ensuring heat shimmer is never suppressed at camera level while keeping background ambient layers clear.
   - **Seamless Modulo Tile Periods**: Continuous texture drifts use mathematical constants (`WEATHER_TILE_SNOW_L1_PX = 256px`, `WEATHER_TILE_SNOW_L2_PX = 128px`, `WEATHER_TILE_HAIL_L1_PX = 128px`, `WEATHER_TILE_SANDSTORM_PX = 512px`) and seed-based initial progress (`.progress(seed % 1)`) to eliminate texture cuts or edge empty space.
-- **Base Modal Decomposition (`BaseModal.vue`, `BaseModalHeader.vue`, `BaseModalFooter.vue`, `BaseModalOverlay.vue`)**: Encapsulates the modal title stack, emoji/icon slots, header styles, and close button variants into `BaseModalHeader.vue`, the footer action bar into `BaseModalFooter.vue`, and the GSAP-animated backdrop transition into `BaseModalOverlay.vue`, maintaining clean slot forwarding and zero-complexity render functions.
+- **Base Modal Decomposition & Canonical Stack Bridge (`BaseModal.vue`, `BaseModalHeader.vue`, `BaseModalFooter.vue`, `BaseModalOverlay.vue`, `useBaseModalStackBridge.ts`)**: Encapsulates the modal title stack, emoji/icon slots, header styles, and close button variants into `BaseModalHeader.vue`, the footer action bar into `BaseModalFooter.vue`, the backdrop surface into `BaseModalOverlay.vue`, and `@francogp/auditor/modals` lifecycle binding (`ModalAnimationController.bindSurface`, `createBackdropPointerGuard`, `resolveModalCssVars`, `resolveModalDomIds`) into `useBaseModalStackBridge.ts` for both `ModalHost` and standalone `<BaseModal>` instances.
 - **Status Condition Particle System & Overlay Layer (`statusParticleHelpers.ts`, `PVStatusOverlayLayer.vue`, `PVStatusFX.vue`)**: Centralizes GSAP particle timeline building, wobble transitions, and multi-category overlay rendering (primary, secondary, tactical, and field) into modular helpers and dedicated overlay SFCs to eliminate cognitive/cyclomatic complexity.
 - **Tooltip Line Decomposition (`PVTooltip.vue`, `PVTooltipDescriptionLine.vue`)**: Encapsulates single-line description formatting, quote styles, emoji bullets, boost/debuff indicators, and divider lines into `PVTooltipDescriptionLine.vue`, reducing parent tooltip template complexity below thresholds.
 - **Tooltip Viewport Overflow & Dynamic Ellipsis Truncation (`PVTooltip.vue`)**: Large tooltips rendering extensive lists or descriptions (such as inventory breakdowns, moves, or logs) MUST NEVER exceed the visible viewport bounds or slice text lines in half horizontally. The component dynamically calculates available vertical space based on trigger position, safe padding (`PADDING_PX = 15`), gap (`GAP_PX = 12`), wrapper chrome (`TOOLTIP_CHROME_VERTICAL_PX = 24`), and UI zoom (`--app-zoom`). If content overflows, `PVTooltip` measures line heights in the DOM, renders exclusively the complete lines that fit (`displayedLines`), and appends a `.pv-tooltip-ellipsis` indicator (`...`) at the bottom. Measurement and line reduction occur during the initial transition frame before GSAP opacity fade-in to prevent visual flicker. Window resize events automatically dismiss open tooltips to prevent orphaned overlays.
@@ -51,6 +51,7 @@ Frontend Developers / Systems Engineers.
 - `PVLoadingOverlay.vue`: Module implementation.
 - `PWAManager.vue`: Module implementation.
 - `SVGFilters.vue`: Module implementation.
+- `ShopEmptyState.vue`: Generic empty search results state card for shop and modal catalogs.
 - `ShopSearchControls.vue`: Module implementation.
 - `SortControls.vue`: Module implementation.
 - `UnifiedSidebar.vue`: Module implementation.
@@ -76,6 +77,7 @@ Frontend Developers / Systems Engineers.
 - [`useAtmosphereLeafAnim.ts`](./useAtmosphereLeafAnim.ts): Module implementation.
 - [`useAtmosphereSandstormAnim.ts`](./useAtmosphereSandstormAnim.ts): Module implementation.
 - [`useAtmosphereSnowAnim.ts`](./useAtmosphereSnowAnim.ts): Module implementation.
+- [`useBaseModalStackBridge.ts`](./useBaseModalStackBridge.ts): Module implementation.
 
 ## Work Guidance
 

@@ -307,9 +307,7 @@ const handleCloseModal = (): void => {
     <template #header-icon> <span class="emoji">⛏️</span>&nbsp; </template>
     <div class="archaeology-container" :class="{ fail: isFailed }">
       <div class="archaeology-header">
-        <p>
-          Encontrá el fósil de <span>{{ totalFossilParts }} piezas</span> oculto en las rocas.
-        </p>
+        <p>Encontrá el fósil de <span>{{ totalFossilParts }} piezas</span> oculto en las rocas.</p>
       </div>
 
       <div class="stats-row">

@@ -64,8 +64,7 @@ const handleForget = (): void => {
         <h2>APRENDIENDO TÉCNICA</h2>
         <p>
           <strong>{{ pokemon?.name }}</strong> quiere aprender
-          <span class="highlight">{{ newMove?.name }}</span
-          >.
+          <span class="highlight">{{ newMove?.name }}</span>.
         </p>
       </header>
 

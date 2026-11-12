@@ -7,7 +7,7 @@
   @include gpu-layer;
 
   position: fixed;
-  z-index: calc(var(--z-modal) + 2000);
+  z-index: var(--modal-z, var(--z-modal));
   display: flex;
   justify-content: center;
   align-items: center;

@@ -193,9 +193,7 @@ const isShinyBoosted = computed(() => activeTravelModifiers.value.shinyChanceMod
                   font-size: var(--font-8);
                 "
               >
-                <span
-                  ><span class="emoji">{{ item.icon }}</span> {{ item.name }}</span
-                >
+                <span><span class="emoji">{{ item.icon }}</span> {{ item.name }}</span>
                 <span style="color: var(--gold)">x{{ inventory?.[item.id] || 0 }}</span>
               </div>
             </div>

@@ -109,9 +109,7 @@ const close = (): void => {
     @close="close"
   >
     <div class="ability-modal-inner">
-      <p class="target-info">
-        Cambia la habilidad de <strong>{{ abilityPokemon?.name }}</strong>
-      </p>
+      <p class="target-info">Cambia la habilidad de <strong>{{ abilityPokemon?.name }}</strong></p>
 
       <div class="ability-list">
         <button

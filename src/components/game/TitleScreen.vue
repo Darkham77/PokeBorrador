@@ -177,15 +177,9 @@ const handleMouseLeave = (event: MouseEvent): void => {
         </div>
         <span class="starter-type" :class="`type-${starter.type}`">{{ starter.typeLabel }}</span>
         <div class="starter-stats">
-          <div class="stat-mini">
-            <span>HP</span><span>{{ starter.stats.hp }}</span>
-          </div>
-          <div class="stat-mini">
-            <span>Ataque</span><span>{{ starter.stats.attack }}</span>
-          </div>
-          <div class="stat-mini">
-            <span>Defensa</span><span>{{ starter.stats.defense }}</span>
-          </div>
+          <div class="stat-mini"><span>HP</span><span>{{ starter.stats.hp }}</span></div>
+          <div class="stat-mini"><span>Ataque</span><span>{{ starter.stats.attack }}</span></div>
+          <div class="stat-mini"><span>Defensa</span><span>{{ starter.stats.defense }}</span></div>
         </div>
       </div>
     </div>

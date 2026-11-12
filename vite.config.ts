@@ -89,6 +89,7 @@ function resolveManualChunk(id: string): string | undefined {
 const LOCKED_SKILLS_IGNORE_PATTERNS = [
   '.agents/skills/algorithmic-art/**',
   '.agents/skills/canvas-design/**',
+  '.agents/skills/awesome-design-md/**',
   '.agents/skills/ci-cd-and-automation/**',
   '.agents/skills/code-review/**',
   '.agents/skills/code-simplification/**',
@@ -96,6 +97,7 @@ const LOCKED_SKILLS_IGNORE_PATTERNS = [
   '.agents/skills/context-engineering/**',
   '.agents/skills/create-adaptable-composable/**',
   '.agents/skills/design-motion-principles/**',
+  '.agents/skills/design-taste-frontend/**',
   '.agents/skills/docker-patterns/**',
   '.agents/skills/domain-modeling/**',
   '.agents/skills/fallow/**',
@@ -393,13 +395,13 @@ export default defineConfig({
     rules: {
       '@francogp/domain-type/no-legacy-date': 'error',
       '@francogp/domain-type/no-double-cast-unknown': 'error',
-      '@typescript-eslint/consistent-type-assertions': [
+      'typescript/consistent-type-assertions': [
         'error',
         { assertionStyle: 'as', objectLiteralTypeAssertions: 'never' }
       ],
-      '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/ban-ts-comment': 'error',
-      '@typescript-eslint/no-floating-promises': 'error',
+      'typescript/no-explicit-any': 'error',
+      'typescript/ban-ts-comment': 'error',
+      'typescript/no-floating-promises': 'error',
       'unicorn/prefer-node-protocol': 'error',
       'no-debugger': 'error',
       'no-else-return': 'error',
@@ -436,15 +438,14 @@ export default defineConfig({
       'unicorn/prefer-string-starts-ends-with': 'error',
       'unicorn/throw-new-error': 'error',
       'unicorn/no-useless-spread': 'error',
-      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
-      '@typescript-eslint/consistent-indexed-object-style': 'error',
-      '@typescript-eslint/no-empty-object-type': 'error',
-      '@typescript-eslint/no-unnecessary-template-expression': 'error',
-      '@typescript-eslint/no-unnecessary-type-arguments': 'error',
-      '@typescript-eslint/no-unnecessary-type-constraint': 'error',
-      '@typescript-eslint/prefer-function-type': 'error',
-      '@typescript-eslint/prefer-return-this-type': 'error',
-      '@typescript-eslint/ban-tslint-comment': 'error',
+      'typescript/consistent-indexed-object-style': 'error',
+      'typescript/no-empty-object-type': 'error',
+      'typescript/no-unnecessary-template-expression': 'error',
+      'typescript/no-unnecessary-type-arguments': 'error',
+      'typescript/no-unnecessary-type-constraint': 'error',
+      'typescript/prefer-function-type': 'error',
+      'typescript/prefer-return-this-type': 'error',
+      'typescript/ban-tslint-comment': 'error',
       'import/no-mutable-exports': 'error',
       'no-extend-native': 'error',
       'no-proto': 'error',
@@ -525,13 +526,13 @@ export default defineConfig({
       'vue/prop-name-casing': 'error',
       'vue/require-direct-export': 'error',
       'vue/require-typed-ref': 'error',
-      '@typescript-eslint/explicit-member-accessibility': [
+      'typescript/explicit-member-accessibility': [
         'error',
         {
           accessibility: 'explicit'
         }
       ],
-      '@typescript-eslint/explicit-function-return-type': [
+      'typescript/explicit-function-return-type': [
         'error',
         {
           allowExpressions: true,
@@ -540,7 +541,7 @@ export default defineConfig({
           allowDirectConstAssertionInArrowFunctions: true
         }
       ],
-      '@typescript-eslint/no-unused-vars': 'error',
+      'no-unused-vars': 'error',
       'vue/no-required-prop-with-default': 'error',
       'vue/no-deprecated-model-definition': 'error',
       'no-useless-assignment': 'error',
@@ -635,7 +636,7 @@ export default defineConfig({
       '@francogp/domain-type/auditor-class-inheritance': 'error',
       '@francogp/domain-type/no-homebrew-file-walker': 'error',
       '@francogp/domain-type/auditor-rule-description-limit': 'error',
-      '@typescript-eslint/consistent-type-imports': [
+      'typescript/consistent-type-imports': [
         'error',
         {
           prefer: 'type-imports',
@@ -672,6 +673,12 @@ export default defineConfig({
     plugins: ['vitest', 'node', 'promise', 'unicorn', 'typescript', 'vue', 'import', 'jsx-a11y'],
     overrides: [
       {
+        files: ['src/logic/db/proxyQuery.ts', 'src/logic/db/sqliteQueryBuilder.ts'],
+        rules: {
+          'unicorn/no-thenable': 'off'
+        }
+      },
+      {
         files: [
           '**/tests/**',
           '**/test_aventura/tests/**',
@@ -680,7 +687,6 @@ export default defineConfig({
         ],
         rules: {
           'typescript/explicit-function-return-type': 'off',
-          '@typescript-eslint/explicit-function-return-type': 'off',
           'vitest/prefer-to-be-truthy': 'off',
           'vitest/prefer-to-be-falsy': 'off',
           'vitest/prefer-strict-equal': 'off',
@@ -689,7 +695,6 @@ export default defineConfig({
           'vitest/prefer-mock-return-shorthand': 'off',
           'vitest/expect-expect': 'off',
           'typescript/no-floating-promises': 'off',
-          '@typescript-eslint/no-floating-promises': 'off',
           'no-console': 'off',
           'unicorn/prefer-global-this': 'off',
           'vue/require-typed-ref': 'off',
@@ -740,9 +745,7 @@ export default defineConfig({
           'no-console': 'off',
           'unicorn/prefer-global-this': 'off',
           'typescript/no-floating-promises': 'off',
-          '@typescript-eslint/no-floating-promises': 'off',
           'typescript/explicit-function-return-type': 'off',
-          '@typescript-eslint/explicit-function-return-type': 'off',
           '@francogp/domain-type/no-insecure-random': 'off',
           '@francogp/domain-type/no-broad-string-array': 'off',
           '@francogp/domain-type/no-raw-local-storage': 'off',
@@ -768,7 +771,6 @@ export default defineConfig({
           'no-console': 'off',
           'unicorn/prefer-global-this': 'off',
           'typescript/explicit-function-return-type': 'off',
-          '@typescript-eslint/explicit-function-return-type': 'off',
           '@francogp/domain-type/no-insecure-random': 'off',
           '@francogp/domain-type/no-broad-string-array': 'off',
           '@francogp/domain-type/no-gsap-layout-properties': 'off',
@@ -780,8 +782,7 @@ export default defineConfig({
         rules: {
           'no-console': 'off',
           'unicorn/prefer-global-this': 'off',
-          'typescript/no-floating-promises': 'off',
-          '@typescript-eslint/no-floating-promises': 'off'
+          'typescript/no-floating-promises': 'off'
         }
       },
       {

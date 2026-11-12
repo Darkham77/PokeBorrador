@@ -422,22 +422,36 @@ function devDbImportPlugin(): Plugin {
   };
 }
 
+interface NamedVitePlugin {
+  readonly name: string;
+}
+
+function asPluginOption(plugin: NamedVitePlugin): PluginOption {
+  return plugin;
+}
+
+function asPluginOptionList(pluginList: readonly NamedVitePlugin[]): PluginOption[] {
+  return pluginList.map((entry): NamedVitePlugin => entry);
+}
+
 const isGithubActions = Boolean(process.env.GITHUB_ACTIONS);
 const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1];
 const base = process.env.VITE_BASE_URL || (isGithubActions && repoName ? `/${repoName}/` : '/');
 
 const basePlugins: PluginOption[] = [
   fixPkmnSimPlugin(),
-  vue({
-    compiler,
-    template: {
-      compilerOptions: {
-        hoistStatic: true,
-        cacheHandlers: true,
-        comments: false
+  asPluginOption(
+    vue({
+      compiler,
+      template: {
+        compilerOptions: {
+          hoistStatic: true,
+          cacheHandlers: true,
+          comments: false
+        }
       }
-    }
-  })
+    })
+  )
 ];
 
 if (!isVitest) {
@@ -449,110 +463,112 @@ if (!isVitest) {
     devShadowEditorPlugin(),
     sassTrapsFixer(),
     versionPlugin(),
-    VitePWA({
-      registerType: 'prompt',
-      includeAssets: ['sql-wasm.wasm', 'assets/fondo/logo%203.webp'],
-      manifest: {
-        name: 'Poké Vicio',
-        short_name: 'PokéVicio',
-        description: 'El juego definitivo de Pokémon para navegador',
-        theme_color: '#161a2e',
-        background_color: '#0a0c14',
-        display: 'standalone',
-        orientation: 'any',
-        start_url: base,
-        scope: base,
-        icons: [
-          {
-            src: 'assets/fondo/logo%203.webp',
-            sizes: '512x512',
-            type: 'image/webp',
-            purpose: 'any'
-          },
-          {
-            src: 'assets/fondo/logo%203.webp',
-            sizes: '512x512',
-            type: 'image/webp',
-            purpose: 'maskable'
-          }
-        ]
-      },
-      workbox: {
-        cleanupOutdatedCaches: true,
-        skipWaiting: true,
-        clientsClaim: true,
-        globPatterns: [
-          '**/*.{html,ico,woff2}',
-          '**/index-*.{js,css}',
-          '**/vendor-vue-*.js',
-          '**/vendor-gsap-*.js'
-        ],
-        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
-        runtimeCaching: [
-          {
-            urlPattern: /\/assets\/.*\.(js|css|wasm)(\?.*)?$/i,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'app-dynamic-chunks-v1',
-              expiration: {
-                maxEntries: 150,
-                maxAgeSeconds: 60 * 60 * 24 * 30
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
+    ...asPluginOptionList(
+      VitePWA({
+        registerType: 'prompt',
+        includeAssets: ['sql-wasm.wasm', 'assets/fondo/logo%203.webp'],
+        manifest: {
+          name: 'Poké Vicio',
+          short_name: 'PokéVicio',
+          description: 'El juego definitivo de Pokémon para navegador',
+          theme_color: '#161a2e',
+          background_color: '#0a0c14',
+          display: 'standalone',
+          orientation: 'any',
+          start_url: base,
+          scope: base,
+          icons: [
+            {
+              src: 'assets/fondo/logo%203.webp',
+              sizes: '512x512',
+              type: 'image/webp',
+              purpose: 'any'
+            },
+            {
+              src: 'assets/fondo/logo%203.webp',
+              sizes: '512x512',
+              type: 'image/webp',
+              purpose: 'maskable'
+            }
+          ]
+        },
+        workbox: {
+          cleanupOutdatedCaches: true,
+          skipWaiting: true,
+          clientsClaim: true,
+          globPatterns: [
+            '**/*.{html,ico,woff2}',
+            '**/index-*.{js,css}',
+            '**/vendor-vue-*.js',
+            '**/vendor-gsap-*.js'
+          ],
+          maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
+          runtimeCaching: [
+            {
+              urlPattern: /\/assets\/.*\.(js|css|wasm)(\?.*)?$/i,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'app-dynamic-chunks-v1',
+                expiration: {
+                  maxEntries: 150,
+                  maxAgeSeconds: 60 * 60 * 24 * 30
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
+            },
+            {
+              urlPattern:
+                /\/assets\/ui\/(events|pokecenter)\/.*\.(png|webp|svg|gif|jpg|jpeg)(\?.*)?$/i,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'game-event-banners-v1',
+                expiration: {
+                  maxEntries: 100,
+                  maxAgeSeconds: 60 * 60 * 24 * 30
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
+            },
+            {
+              urlPattern: /\/assets\/sprites\/.*\.(png|webp|svg|gif)(\?.*)?$/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'game-images-v1',
+                expiration: {
+                  maxEntries: 25000,
+                  maxAgeSeconds: 60 * 60 * 24 * 90
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
+            },
+            {
+              urlPattern: /\/assets\/.*\.(mp3|ogg|wav|mid|midi|m4a|flac|aac)(\?.*)?$/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'game-audio-v1',
+                expiration: {
+                  maxEntries: 500,
+                  maxAgeSeconds: 60 * 60 * 24 * 90
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
               }
             }
-          },
-          {
-            urlPattern:
-              /\/assets\/ui\/(events|pokecenter)\/.*\.(png|webp|svg|gif|jpg|jpeg)(\?.*)?$/i,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'game-event-banners-v1',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 30
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /\/assets\/sprites\/.*\.(png|webp|svg|gif)(\?.*)?$/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'game-images-v1',
-              expiration: {
-                maxEntries: 25000,
-                maxAgeSeconds: 60 * 60 * 24 * 90
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /\/assets\/.*\.(mp3|ogg|wav|mid|midi|m4a|flac|aac)(\?.*)?$/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'game-audio-v1',
-              expiration: {
-                maxEntries: 500,
-                maxAgeSeconds: 60 * 60 * 24 * 90
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          }
-        ]
-      },
-      devOptions: {
-        enabled: false,
-        type: 'module'
-      }
-    }),
+          ]
+        },
+        devOptions: {
+          enabled: false,
+          type: 'module'
+        }
+      })
+    ),
     vitePrecompressPlugin(),
     {
       name: 'worker-reload-plugin',
