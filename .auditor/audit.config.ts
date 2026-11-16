@@ -2,7 +2,7 @@ import { defineAuditConfig } from '@francogp/auditor';
 
 export default defineAuditConfig({
   name: 'Poké Vicio',
-  auditorVersion: '10.11.2-build.20261111-171842',
+  auditorVersion: '10.12.6-build.20261114-164434',
   paths: {
     srcRoots: ['src', 'test_aventura'],
     testRoots: ['tests', 'test_aventura/tests'],
@@ -411,8 +411,7 @@ export default defineAuditConfig({
       '@rolldown/binding-wasm32-wasi',
       'ws',
       'sql.js',
-      'html-validate-vue',
-      'vue-tsc'
+      'html-validate-vue'
     ],
     security: {
       enabled: true

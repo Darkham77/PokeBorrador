@@ -325,12 +325,7 @@ export default defineConfig({
     vmMemoryLimit: '1GB',
     coverage: {
       provider: 'v8',
-      include: [
-        'test_aventura/tests/**/*.{test,spec}.ts',
-        'tests/**/*.{test,spec}.ts',
-        'src/**/*.{ts,js}',
-        'scripts/**/*.{ts,js}'
-      ],
+      include: ['src/**/*.{ts,vue,js,jsx,tsx,mjs,cjs}'],
       exclude: ['src/**/*.vue', '**/*.d.ts', 'dist/**', 'scratch/**', 'node_modules/**'],
       reporter: ['text', 'json', 'html'],
       reportsDirectory: 'scratch/coverage'
