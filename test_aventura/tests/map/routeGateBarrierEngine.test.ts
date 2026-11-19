@@ -83,8 +83,8 @@ describe('routeGateBarrierEngine', () => {
         const treeOnRoad = world.wilderness.trees.find((t) => {
           const footLeft = t.x + Math.floor((t.width - 1) / 2);
           const footRight = footLeft + 1;
-          const footTop = t.y + t.height - 2;
-          const footBottom = t.y + t.height;
+          const footTop = t.y;
+          const footBottom = t.y + 2;
           return (
             cell.x >= footLeft && cell.x <= footRight && cell.y >= footTop && cell.y < footBottom
           );
@@ -147,11 +147,12 @@ describe('routeGateBarrierEngine', () => {
           gate,
           trees: world.wilderness.trees,
           props: world.wilderness.props,
-          pathGrid: world.pathGrid
+          pathGrid: world.pathGrid,
+          pois: world.pois
         });
         expect(
           isHermetic,
-          `Seed ${seed} Gate ${gate.id} has an open unsealed bypass around its flanks`
+          `Seed ${seed} Gate ${gate.id} (${gate.gridX},${gate.gridY}) has an open unsealed bypass around its flanks`
         ).toBe(true);
       }
     }

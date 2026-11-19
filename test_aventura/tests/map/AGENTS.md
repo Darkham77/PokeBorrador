@@ -27,6 +27,7 @@ Testing / QA Engineers.
 - Validate coastal sand autotiling and bridge shore landing outer corner integrity (`coastBridgeCornerIntegrity.test.ts`).
 - Validate alpha transparency blending for paths on macro biomes and ground terrain under mountain outer corners (`macroBiomePathAndMountainCorners.test.ts`).
 - Validate highland vegetation and decorative rock props consistency (`mintHighlandVegetationAndProps.test.ts`).
+- Validate creative Continent Map brush targets, open-field `manualPathGrid` visibility, bridge masking, Bresenham lines, flood-fill caps, eyedropper priority, delta Undo/Redo, and sparse JSON persistence (`continentPaintEngine.test.ts`).
 
 ## Verification
 

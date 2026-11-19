@@ -39,7 +39,7 @@ export const KANTO_TERRAIN_CONFIG = {
   EAST_COASTAL_MAX_Y: 195,
   EAST_COASTAL_SPAN_Y: 70,
   EAST_COASTAL_TAPER: 14,
-  EAST_FUCHSIA_BASE_X: 192,
+  EAST_FUCHSIA_BASE_X: 198,
 
   // Coastal displacement noise
   COAST_NOISE_AMPLITUDE: 6,
@@ -197,14 +197,14 @@ export const KANTO_TERRAIN_CONFIG = {
 
   // Mountain noise modulation
   MOUNTAIN_NOISE_SCALE: 0.065,
-  MOUNTAIN_NOISE_WEIGHT: 3.2,
-  NORTH_RIDGE_MAX_DIST: 8.0,
-  WEST_RIDGE_MAX_DIST: 8.5,
-  MASSIF_NOISE_WEIGHT: 0.15,
+  MOUNTAIN_NOISE_WEIGHT: 4.0,
+  NORTH_RIDGE_MAX_DIST: 6.2,
+  WEST_RIDGE_MAX_DIST: 6.6,
+  MASSIF_NOISE_WEIGHT: 0.18,
 
   INDIGO_MASSIF: { cx: 42, rx: 18, cy: 38, ry: 16 },
   MT_MOON_MASSIF: { cx: 118, rx: 18, cy: 40, ry: 14 },
-  ROCK_TUNNEL_MASSIF: { cx: 208, rx: 15, cy: 74, ry: 15 },
+  ROCK_TUNNEL_MASSIF: { cx: 204, rx: 14, cy: 74, ry: 14 },
 
   // Cave niches
   MT_MOON_WEST_CLIFF: { minY: 42, maxY: 44, minX: 97, maxX: 103 },
@@ -268,14 +268,16 @@ export const ROUTE_WAYPOINTS_CONFIG = {
 
   CYCLING_ROAD_POINTS: [
     { x: 94, y: 124 },
-    { x: 94, y: 178 },
+    { x: 86, y: 142 },
+    { x: 86, y: 162 },
+    { x: 96, y: 178 },
     { x: 124, y: 188 },
     { x: 154, y: 196 }
   ],
 
   ROUTE11_15_POINTS: [
-    { x: 196, y: 160 },
-    { x: 202, y: 184 }
+    { x: 190, y: 158 },
+    { x: 192, y: 184 }
   ],
 
   ROUTE3_POINTS: [

@@ -87,8 +87,8 @@ describe('canonicalRegionPresets', () => {
     const r21 = edges.find((e) => e.id === 'kanto_r21');
     expect(r21?.isWaterCrossing).toBe(true);
 
-    // Terrain checks: South sea (water) and Cinnabar Island (grass)
-    expect(result.continent.terrainMatrix[250]![50]).toBe('water');
+    // Terrain checks: South sea (water or water_deep) and Cinnabar Island (grass)
+    expect(['water', 'water_deep']).toContain(result.continent.terrainMatrix[250]![50]);
     expect(result.continent.terrainMatrix[220]![55]).toBe('grass');
 
     // Preview buffer exists and is valid (256 x 256 x 4 bytes)

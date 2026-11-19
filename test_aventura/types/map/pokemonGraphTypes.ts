@@ -51,6 +51,15 @@ export const GRAPH_EDGE_KINDS = [
 ] as const;
 export type GraphEdgeKind = (typeof GRAPH_EDGE_KINDS)[number];
 
+/** Macro-regional geography archetypes shaping topology and landform silhouettes. */
+export const REGION_MACRO_ARCHETYPES = [
+  'classic_bay',
+  'oceanic_archipelago',
+  'divided_valley',
+  'volcanic_horseshoe'
+] as const;
+export type RegionMacroArchetype = (typeof REGION_MACRO_ARCHETYPES)[number];
+
 // ---------------------------------------------------------------------------
 // 3. Progression Barriers
 // ---------------------------------------------------------------------------
@@ -77,6 +86,8 @@ export interface TopologyGraphNode {
   readonly gymNumber?: number;
   /** Whether this node has a coastal port dock. */
   readonly hasPort: boolean;
+  /** Whether this node resides on an offshore navigable island (oceanic_archipelago). */
+  readonly isIsland?: boolean;
   /** Progression order assigned during barrier placement (1 = first visited). */
   progressionOrder?: number;
 }
@@ -111,6 +122,8 @@ export interface PokemonTopologyGraph {
   readonly edges: readonly TopologyGraphEdge[];
   /** Ordered list of node IDs forming the main progression chain (Starter → League). */
   readonly mainChainOrder: readonly DisplayText[];
+  /** Macro-regional geography archetype governing this graph. */
+  readonly macroArchetype?: RegionMacroArchetype;
   /** The seed used to generate this topology. */
   readonly seed: number;
 }
@@ -163,6 +176,7 @@ export interface EmbeddedTopologyGraph {
   readonly nodes: readonly EmbeddedTopologyNode[];
   readonly corridors: readonly EmbeddedCorridor[];
   readonly mainChainOrder: readonly DisplayText[];
+  readonly macroArchetype?: RegionMacroArchetype;
   readonly gridCols: number;
   readonly gridRows: number;
   readonly seed: number;
@@ -175,6 +189,16 @@ export interface EmbeddedTopologyGraph {
 export const TERRAIN_INFLUENCES = ['plains', 'mountain', 'coastal', 'forest'] as const;
 export type TerrainInfluence = (typeof TERRAIN_INFLUENCES)[number];
 
+const _ROUTE_DESIGN_SIGNATURES = [
+  'pastoral_ledge_corridor',
+  'highland_river_gorge',
+  'wetland_puddle_marsh',
+  'desert_cliff_basin',
+  'coastal_beach_surf',
+  'alpine_terrace_pass'
+] as const;
+export type RouteDesignSignature = (typeof _ROUTE_DESIGN_SIGNATURES)[number];
+
 export interface EnrichedCorridorProperties {
   readonly corridorId: DisplayText;
   readonly fromId: DisplayText;
@@ -185,6 +209,8 @@ export interface EnrichedCorridorProperties {
   readonly difficulty: number;
   /** Primary biome terrain influencing this corridor. */
   readonly terrainInfluence: TerrainInfluence;
+  /** Distinct structural design signature inspired by canonical regional routes. */
+  readonly designSignature: RouteDesignSignature;
   /** Density of tall grass encounter patches (0.0 to 1.0). */
   readonly tallGrassDensity: number;
   /** Whether one-way directional jumpable ledges are present. */

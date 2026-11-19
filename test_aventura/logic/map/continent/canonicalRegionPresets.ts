@@ -30,24 +30,31 @@ import type { ContinentMapResult, ContinentCellDetails } from '../continentGener
 import { clusterMountainMassifs } from '../geologicalClusterEngine.ts';
 import { resolveMacroBiomeAutotile } from '../macroBiomeAutotileEngine.ts';
 import { synthesizeMacroBiomes } from '../macroBiomeSynthesizer.ts';
+import {
+  applyDeepWaterCellsToContinent,
+  sealCoastalSeaWithMaritimeRocks
+} from '../maritimeBarrierEngine.ts';
 import { resolveMountainMapGrid, type MountainStairLocation } from '../mountainAutotileEngine.ts';
 import { SimplexNoise, fbm2D } from '../noise/simplexNoise.ts';
 import { stampPortDockPier } from '../portDockPierEngine.ts';
-import type { ResolvedRouteNetworkResult } from '../routeNetworkEngine.ts';
-import { findPathAStar, computeOceanGrid } from '../routePathfinding.ts';
-import { computeTransitableGrid } from '../transitableGridEngine.ts';
+import type { MaritimeRockObstacle, ResolvedRouteNetworkResult } from '../routeNetworkEngine.ts';
+import { findPathAStar, computeOceanGrid, getBestGateway } from '../routePathfinding.ts';
+import {
+  anchorUrbanPropsToStreetsAndYards,
+  sanitizeContinentalUrbanFences
+} from '../urbanPavingEngine.ts';
 import {
   resolveWaterCoastGrid,
   type WaterTerrainKind,
   type WaterTerrainMatrix
 } from '../waterAutotileEngine.ts';
-import { generateWildernessLayer } from '../wildernessVegetationEngine.ts';
 import {
   sculptOrganicIsland,
   sculptArchipelagoChain,
   applyNaturalBeaches,
   sampleCoastalDisplacement
 } from './coastalFractalEngine.ts';
+import { compileWildernessAndFramingLayer } from './continentalEngine.ts';
 import {
   carveOrganicLake,
   carveRiverSystem,
@@ -66,9 +73,163 @@ const KANTO_PRESET_SEED = 151 as const;
 const JOHTO_PRESET_SEED = 251 as const;
 const DEFAULT_FALLBACK_ROUTE_DISTANCE = 10 as const;
 
+const KANTO_COAST_BLEND = {
+  SOUTH_WAVE_AMP: 5,
+  SOUTH_WAVE_SCALE: 0.055,
+  SOUTH_WAVE_FACTOR: 0.6,
+  ROUTE21_WAVE_AMP: 5,
+  ROUTE21_WAVE_SCALE: 0.06,
+  ROUTE21_WAVE_FACTOR: 0.7,
+  CINNABAR_ELLIPSE_LIMIT: 1.05
+} as const;
+
+const JOHTO_ORGANIC_SHAPES = {
+  CIANWOOD_CX: 18,
+  CIANWOOD_CY: 89,
+  CIANWOOD_RX: 10,
+  CIANWOOD_RY: 11,
+  CIANWOOD_ROUGHNESS: 0.34,
+  CIANWOOD_ANGLE: 0.2,
+  CIANWOOD_SEED_OFFSET: 11,
+  WHIRL_ISLE_A_X: 26,
+  WHIRL_ISLE_A_Y: 84,
+  WHIRL_ISLE_A_R: 4.5,
+  WHIRL_ISLE_B_X: 25,
+  WHIRL_ISLE_B_Y: 90,
+  WHIRL_ISLE_B_R: 4.0,
+  WHIRL_SEED_OFFSET: 29,
+  RAGE_LAKE_CX: 87,
+  RAGE_LAKE_CY: 26,
+  RAGE_LAKE_R: 8.5,
+  RAGE_LAKE_ROUGHNESS: 0.36,
+  RAGE_LAKE_SEED_OFFSET: 77,
+  RAGE_ISLET_CX: 88,
+  RAGE_ISLET_CY: 27.5,
+  RAGE_ISLET_RX: 3.4,
+  RAGE_ISLET_RY: 2.6,
+  RAGE_ISLET_ROUGHNESS: 0.2,
+  RAGE_ISLET_SEED_OFFSET: 99,
+  RAGE_NORTH_RIM_MIN_X: 76,
+  RAGE_NORTH_RIM_MAX_X: 98,
+  RAGE_NORTH_RIM_MIN_Y: 14,
+  RAGE_NORTH_RIM_MAX_Y: 17,
+  SW_BAY_MIN_Y: 60,
+  SW_BAY_GOLD_X: 35,
+  SW_BAY_SPAN_Y: 36,
+  SW_BAY_INDENT_AMP: 8,
+  SOUTH_COVE_MIN_Y: 98,
+  SOUTH_COVE_WEST_X: 68,
+  MORTAR_SUMMIT_CX: 72,
+  MORTAR_SUMMIT_CY: 43,
+  MORTAR_SUMMIT_RX: 3.5,
+  MORTAR_SUMMIT_RY: 3.0,
+  SILVER_CLAMP_MAX_X: 120,
+  SILVER_EDGE_PAD: 7,
+  SILVER_NOISE_SCALE: 0.14,
+  SILVER_NOISE_AMP: 0.18,
+  SILVER_RX: 11,
+  SILVER_RY: 13,
+  SILVER_CORE_MIN_X: 104,
+  SILVER_CORE_MAX_X: 122,
+  SILVER_CORE_MIN_Y: 58,
+  SILVER_CORE_MAX_Y: 77,
+  SILVER_PASS_MIN_Y: 78,
+  SILVER_PASS_MAX_Y: 84,
+  SILVER_PASS_MIN_X: 112,
+  SILVER_PASS_MAX_X: 116,
+  MORTAR_NOISE_SCALE: 0.18,
+  MORTAR_NOISE_AMP: 0.15,
+  MORTAR_CX: 72,
+  MORTAR_CY: 43,
+  MORTAR_RX: 6.5,
+  MORTAR_RY: 5.5
+} as const;
+
 // ---------------------------------------------------------------------------
 // 1. Vector Geometry Helpers
 // ---------------------------------------------------------------------------
+
+const SUMMIT_CREST_PADDING = 2 as const;
+const SUMMIT_ELEVATION_TIER = 2 as const;
+
+interface SummitCrestSpec {
+  readonly cx: number;
+  readonly cy: number;
+  readonly rx: number;
+  readonly ry: number;
+}
+
+const KANTO_SUMMIT_CRESTS: readonly SummitCrestSpec[] = [
+  { cx: 34, cy: 24, rx: 9, ry: 6 },
+  { cx: 118, cy: 36, rx: 9, ry: 5 },
+  { cx: 206, cy: 74, rx: 7, ry: 7 }
+] as const;
+
+const JOHTO_SUMMIT_CRESTS: readonly SummitCrestSpec[] = [
+  {
+    cx: JOHTO_ORGANIC_SHAPES.MORTAR_SUMMIT_CX,
+    cy: JOHTO_ORGANIC_SHAPES.MORTAR_SUMMIT_CY,
+    rx: JOHTO_ORGANIC_SHAPES.MORTAR_SUMMIT_RX,
+    ry: JOHTO_ORGANIC_SHAPES.MORTAR_SUMMIT_RY
+  }
+] as const;
+
+interface ReservedRect {
+  readonly x1: number;
+  readonly y1: number;
+  readonly x2: number;
+  readonly y2: number;
+}
+
+function promoteSummitCrest(
+  terrain: readonly (readonly WaterTerrainKind[])[],
+  heightmap: number[][],
+  W: number,
+  H: number,
+  crest: SummitCrestSpec,
+  reserves: readonly ReservedRect[]
+): void {
+  const minY = Math.max(SUMMIT_CREST_PADDING, Math.floor(crest.cy - crest.ry));
+  const maxY = Math.min(H - 1 - SUMMIT_CREST_PADDING, Math.ceil(crest.cy + crest.ry));
+  const minX = Math.max(SUMMIT_CREST_PADDING, Math.floor(crest.cx - crest.rx));
+  const maxX = Math.min(W - 1 - SUMMIT_CREST_PADDING, Math.ceil(crest.cx + crest.rx));
+  for (let y = minY; y <= maxY; y++) {
+    for (let x = minX; x <= maxX; x++) {
+      if (terrain[y]?.[x] !== 'grass' || heightmap[y]?.[x] !== 1) continue;
+      if (
+        reserves.some(
+          (r) =>
+            x >= r.x1 - SUMMIT_CREST_PADDING &&
+            x <= r.x2 + SUMMIT_CREST_PADDING &&
+            y >= r.y1 - SUMMIT_CREST_PADDING &&
+            y <= r.y2 + SUMMIT_CREST_PADDING
+        )
+      ) {
+        continue;
+      }
+      const d = Math.hypot((x - crest.cx) / crest.rx, (y - crest.cy) / crest.ry);
+      if (d <= 1.0 && hasUniformElevatedSupport(heightmap, x, y, SUMMIT_CREST_PADDING)) {
+        heightmap[y]![x] = SUMMIT_ELEVATION_TIER;
+      }
+    }
+  }
+}
+
+function hasUniformElevatedSupport(
+  heightmap: readonly (readonly number[])[],
+  x: number,
+  y: number,
+  radius: number
+): boolean {
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      if ((heightmap[y + dy]?.[x + dx] ?? 0) < 1) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
 
 function distToSegment(
   px: number,
@@ -258,17 +419,34 @@ function sculptKantoTerrain(
           continue;
       }
 
-      // 6. South Sea Channel
+      // 6. South Sea Channel (organic coastal contour)
+      const southCoastWave = sampleCoastalDisplacement(noise, x, y, {
+        amplitude: KANTO_COAST_BLEND.SOUTH_WAVE_AMP,
+        scale: KANTO_COAST_BLEND.SOUTH_WAVE_SCALE
+      });
       if (
-        y >= KANTO_TERRAIN_CONFIG.SOUTH_SEA_MIN_Y &&
-        x >= KANTO_TERRAIN_CONFIG.SOUTH_SEA_MIN_X &&
-        x <= KANTO_TERRAIN_CONFIG.SOUTH_SEA_MAX_X
+        y >= KANTO_TERRAIN_CONFIG.SOUTH_SEA_MIN_Y + southCoastWave &&
+        x >=
+          KANTO_TERRAIN_CONFIG.SOUTH_SEA_MIN_X +
+            Math.round(southCoastWave * KANTO_COAST_BLEND.SOUTH_WAVE_FACTOR) &&
+        x <=
+          KANTO_TERRAIN_CONFIG.SOUTH_SEA_MAX_X -
+            Math.round(southCoastWave * KANTO_COAST_BLEND.SOUTH_WAVE_FACTOR)
       ) {
         continue;
       }
 
-      // 7. Route 21 Open Ocean
-      if (y > KANTO_TERRAIN_CONFIG.ROUTE21_MIN_Y && x <= KANTO_TERRAIN_CONFIG.ROUTE21_MAX_X) {
+      // 7. Route 21 Open Ocean (curved bay contour around Pallet south coast)
+      const route21BayWave = sampleCoastalDisplacement(noise, x, y, {
+        amplitude: KANTO_COAST_BLEND.ROUTE21_WAVE_AMP,
+        scale: KANTO_COAST_BLEND.ROUTE21_WAVE_SCALE
+      });
+      if (
+        y > KANTO_TERRAIN_CONFIG.ROUTE21_MIN_Y + route21BayWave &&
+        x <=
+          KANTO_TERRAIN_CONFIG.ROUTE21_MAX_X +
+            Math.round(route21BayWave * KANTO_COAST_BLEND.ROUTE21_WAVE_FACTOR)
+      ) {
         continue;
       }
 
@@ -313,6 +491,15 @@ function sculptKantoTerrain(
     KANTO_PRESET_SEED
   );
 
+  // Organic oval Cinnabar town footing without square land corners protruding into ocean
+  const cinCx =
+    (KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MIN_X + KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MAX_X) / 2;
+  const cinCy =
+    (KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MIN_Y + KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MAX_Y) / 2;
+  const cinRx =
+    (KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MAX_X - KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MIN_X) / 2 + 1;
+  const cinRy =
+    (KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MAX_Y - KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MIN_Y) / 2 + 1;
   for (
     let y = KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MIN_Y;
     y <= KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MAX_Y;
@@ -323,7 +510,12 @@ function sculptKantoTerrain(
       x <= KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MAX_X;
       x++
     ) {
-      terrain[y]![x] = 'grass';
+      if (
+        Math.hypot((x - cinCx) / cinRx, (y - cinCy) / cinRy) <=
+        KANTO_COAST_BLEND.CINNABAR_ELLIPSE_LIMIT
+      ) {
+        terrain[y]![x] = 'grass';
+      }
     }
   }
 
@@ -571,6 +763,10 @@ function sculptKantoTerrain(
     }
   }
 
+  for (const crest of KANTO_SUMMIT_CRESTS) {
+    promoteSummitCrest(terrain, heightmap, W, H, crest, KANTO_TERRAIN_CONFIG.FLAT_RESERVES);
+  }
+
   return { terrainMatrix: terrain, heightmap };
 }
 
@@ -584,62 +780,145 @@ function sculptJohtoTerrain(
 ): { readonly terrainMatrix: WaterTerrainMatrix; readonly heightmap: number[][] } {
   const terrain: WaterTerrainKind[][] = Array.from({ length: H }, () => Array(W).fill('water'));
   const heightmap: number[][] = Array.from({ length: H }, () => Array(W).fill(0));
+  const noise = new SimplexNoise(JOHTO_PRESET_SEED);
 
+  // 1. Organic continental Johto mainland with Whirl Islands SW ocean bay & Southern Tohjo Cove
   for (let y = JOHTO_TERRAIN_CONFIG.MAINLAND_MIN_Y; y <= JOHTO_TERRAIN_CONFIG.MAINLAND_MAX_Y; y++) {
-    for (
-      let x = JOHTO_TERRAIN_CONFIG.MAINLAND_MIN_X;
-      x <= JOHTO_TERRAIN_CONFIG.MAINLAND_MAX_X;
-      x++
-    ) {
-      terrain[y]![x] = 'grass';
+    const westWave = sampleCoastalDisplacement(noise, JOHTO_TERRAIN_CONFIG.MAINLAND_MIN_X, y, {
+      amplitude: 4.5,
+      scale: 0.065
+    });
+    const eastWave = sampleCoastalDisplacement(noise, JOHTO_TERRAIN_CONFIG.MAINLAND_MAX_X, y, {
+      amplitude: 4.5,
+      scale: 0.065
+    });
+    // Curve southwest coast inward past Olivine toward Goldenrod to open the Whirl Islands sea bay
+    const isSwBayBand = y >= JOHTO_ORGANIC_SHAPES.SW_BAY_MIN_Y && y <= 96;
+    const swBayBlend = isSwBayBand
+      ? Math.sin(((y - JOHTO_ORGANIC_SHAPES.SW_BAY_MIN_Y) / 36) * Math.PI) * 8
+      : 0;
+    const baseWestX = Math.max(
+      JOHTO_TERRAIN_CONFIG.MAINLAND_MIN_X,
+      Math.round(JOHTO_TERRAIN_CONFIG.MAINLAND_MIN_X + swBayBlend)
+    );
+    const silverBulge = y >= 54 && y <= 84 ? 4 : 0;
+    const westX = Math.max(
+      24,
+      Math.min(JOHTO_ORGANIC_SHAPES.SW_BAY_GOLD_X, Math.round(baseWestX + westWave))
+    );
+    const eastX = Math.min(
+      W - 6,
+      Math.round(JOHTO_TERRAIN_CONFIG.MAINLAND_MAX_X + silverBulge + eastWave)
+    );
+
+    for (let x = westX; x <= eastX; x++) {
+      const northWave = sampleCoastalDisplacement(noise, x, JOHTO_TERRAIN_CONFIG.MAINLAND_MIN_Y, {
+        amplitude: 4.5,
+        scale: 0.065
+      });
+      const southWave = sampleCoastalDisplacement(noise, x, JOHTO_TERRAIN_CONFIG.MAINLAND_MAX_Y, {
+        amplitude: 4.0,
+        scale: 0.065
+      });
+      // Carve Southern Tohjo Cove east of Azalea (Cherrygrove & New Bark sit naturally along the southern shore)
+      const localSouthMax =
+        x >= JOHTO_ORGANIC_SHAPES.SOUTH_COVE_WEST_X
+          ? JOHTO_ORGANIC_SHAPES.SOUTH_COVE_MIN_Y
+          : JOHTO_TERRAIN_CONFIG.MAINLAND_MAX_Y;
+      if (y >= JOHTO_TERRAIN_CONFIG.MAINLAND_MIN_Y + northWave && y <= localSouthMax + southWave) {
+        terrain[y]![x] = 'grass';
+      }
     }
   }
 
-  for (let y = JOHTO_TERRAIN_CONFIG.CIANWOOD_MIN_Y; y <= JOHTO_TERRAIN_CONFIG.CIANWOOD_MAX_Y; y++) {
-    for (
-      let x = JOHTO_TERRAIN_CONFIG.CIANWOOD_MIN_X;
-      x <= JOHTO_TERRAIN_CONFIG.CIANWOOD_MAX_X;
-      x++
-    ) {
-      terrain[y]![x] = 'grass';
-    }
-  }
-
-  for (let y = JOHTO_TERRAIN_CONFIG.WHIRL_MIN_Y; y <= JOHTO_TERRAIN_CONFIG.WHIRL_MAX_Y; y++) {
-    for (let x = JOHTO_TERRAIN_CONFIG.WHIRL_MIN_X; x <= JOHTO_TERRAIN_CONFIG.WHIRL_MAX_X; x++) {
-      terrain[y]![x] = 'grass';
-    }
-  }
-
-  for (
-    let y = JOHTO_TERRAIN_CONFIG.LAKE_RAGE_MIN_Y;
-    y <= JOHTO_TERRAIN_CONFIG.LAKE_RAGE_MAX_Y;
-    y++
-  ) {
-    for (
-      let x = JOHTO_TERRAIN_CONFIG.LAKE_RAGE_MIN_X;
-      x <= JOHTO_TERRAIN_CONFIG.LAKE_RAGE_MAX_X;
-      x++
-    ) {
-      terrain[y]![x] = 'water';
-    }
-  }
-
-  for (let y = 1; y < H - 1; y++) {
-    for (let x = 1; x < W - 1; x++) {
-      if (terrain[y]![x] === 'grass') {
-        const touchesWater =
-          terrain[y - 1]![x] === 'water' ||
-          terrain[y + 1]![x] === 'water' ||
-          terrain[y]![x - 1] === 'water' ||
-          terrain[y]![x + 1] === 'water';
-        if (touchesWater) {
-          terrain[y]![x] = 'sand';
+  // Ensure every urban Johto mainland node rests safely on dry ground before coastal sand buffering
+  for (const bp of JOHTO_BLUEPRINTS) {
+    if (bp.id === 'cianwood' || bp.id === 'lakeofrage') continue;
+    for (let dy = -1; dy <= bp.height; dy++) {
+      for (let dx = -1; dx <= bp.width; dx++) {
+        const gy = bp.gridY + dy;
+        const gx = bp.gridX + dx;
+        if (gx >= 5 && gx < W - 5 && gy >= 5 && gy < H - 5) {
+          terrain[gy]![gx] = 'grass';
         }
       }
     }
   }
 
+  // 2. Organic Cianwood Island & Whirl Islands Archipelago
+  sculptOrganicIsland(
+    terrain,
+    JOHTO_ORGANIC_SHAPES.CIANWOOD_CX,
+    JOHTO_ORGANIC_SHAPES.CIANWOOD_CY,
+    {
+      radiusX: JOHTO_ORGANIC_SHAPES.CIANWOOD_RX,
+      radiusY: JOHTO_ORGANIC_SHAPES.CIANWOOD_RY,
+      roughness: JOHTO_ORGANIC_SHAPES.CIANWOOD_ROUGHNESS,
+      angleRad: JOHTO_ORGANIC_SHAPES.CIANWOOD_ANGLE
+    },
+    JOHTO_PRESET_SEED + JOHTO_ORGANIC_SHAPES.CIANWOOD_SEED_OFFSET
+  );
+  sculptArchipelagoChain(
+    terrain,
+    [
+      {
+        cx: JOHTO_ORGANIC_SHAPES.WHIRL_ISLE_A_X,
+        cy: JOHTO_ORGANIC_SHAPES.WHIRL_ISLE_A_Y,
+        radius: JOHTO_ORGANIC_SHAPES.WHIRL_ISLE_A_R
+      },
+      {
+        cx: JOHTO_ORGANIC_SHAPES.WHIRL_ISLE_B_X,
+        cy: JOHTO_ORGANIC_SHAPES.WHIRL_ISLE_B_Y,
+        radius: JOHTO_ORGANIC_SHAPES.WHIRL_ISLE_B_R
+      }
+    ],
+    JOHTO_PRESET_SEED + JOHTO_ORGANIC_SHAPES.WHIRL_SEED_OFFSET
+  );
+
+  // 3. Enclosed Organic Lake of Rage Basin (sealed from northern ocean) with sanctuary shrine islet
+  for (
+    let y = JOHTO_ORGANIC_SHAPES.RAGE_NORTH_RIM_MIN_Y;
+    y <= JOHTO_ORGANIC_SHAPES.RAGE_NORTH_RIM_MAX_Y;
+    y++
+  ) {
+    for (
+      let x = JOHTO_ORGANIC_SHAPES.RAGE_NORTH_RIM_MIN_X;
+      x <= JOHTO_ORGANIC_SHAPES.RAGE_NORTH_RIM_MAX_X;
+      x++
+    ) {
+      terrain[y]![x] = 'grass';
+    }
+  }
+  carveOrganicLake(
+    terrain,
+    JOHTO_ORGANIC_SHAPES.RAGE_LAKE_CX,
+    JOHTO_ORGANIC_SHAPES.RAGE_LAKE_CY,
+    JOHTO_ORGANIC_SHAPES.RAGE_LAKE_R,
+    JOHTO_ORGANIC_SHAPES.RAGE_LAKE_ROUGHNESS,
+    JOHTO_PRESET_SEED + JOHTO_ORGANIC_SHAPES.RAGE_LAKE_SEED_OFFSET
+  );
+  sculptOrganicIsland(
+    terrain,
+    JOHTO_ORGANIC_SHAPES.RAGE_ISLET_CX,
+    JOHTO_ORGANIC_SHAPES.RAGE_ISLET_CY,
+    {
+      radiusX: JOHTO_ORGANIC_SHAPES.RAGE_ISLET_RX,
+      radiusY: JOHTO_ORGANIC_SHAPES.RAGE_ISLET_RY,
+      roughness: JOHTO_ORGANIC_SHAPES.RAGE_ISLET_ROUGHNESS,
+      angleRad: 0
+    },
+    JOHTO_PRESET_SEED + JOHTO_ORGANIC_SHAPES.RAGE_ISLET_SEED_OFFSET
+  );
+
+  applyNaturalBeaches(terrain);
+
+  // 4. Organic Mt. Silver & Mt. Mortar massifs clamped strictly to dry grassland
+  const silverCx =
+    (JOHTO_TERRAIN_CONFIG.MT_SILVER_MIN_X +
+      Math.min(JOHTO_ORGANIC_SHAPES.SILVER_CLAMP_MAX_X, JOHTO_TERRAIN_CONFIG.MT_SILVER_MAX_X)) /
+    2;
+  const silverCy =
+    (JOHTO_TERRAIN_CONFIG.MT_SILVER_MIN_Y + JOHTO_TERRAIN_CONFIG.MT_SILVER_MAX_Y) / 2;
   for (
     let y = JOHTO_TERRAIN_CONFIG.MT_SILVER_MIN_Y;
     y <= JOHTO_TERRAIN_CONFIG.MT_SILVER_MAX_Y;
@@ -647,11 +926,42 @@ function sculptJohtoTerrain(
   ) {
     for (
       let x = JOHTO_TERRAIN_CONFIG.MT_SILVER_MIN_X;
-      x <= JOHTO_TERRAIN_CONFIG.MT_SILVER_MAX_X;
+      x <= Math.min(W - JOHTO_ORGANIC_SHAPES.SILVER_EDGE_PAD, JOHTO_TERRAIN_CONFIG.MT_SILVER_MAX_X);
       x++
     ) {
-      heightmap[y]![x] = 1;
-      terrain[y]![x] = 'grass';
+      if (terrain[y]?.[x] !== 'grass') continue;
+      const eNoise =
+        noise.noise2D(
+          x * JOHTO_ORGANIC_SHAPES.SILVER_NOISE_SCALE,
+          y * JOHTO_ORGANIC_SHAPES.SILVER_NOISE_SCALE
+        ) * JOHTO_ORGANIC_SHAPES.SILVER_NOISE_AMP;
+      const ellDist =
+        Math.hypot(
+          (x - silverCx) / JOHTO_ORGANIC_SHAPES.SILVER_RX,
+          (y - silverCy) / JOHTO_ORGANIC_SHAPES.SILVER_RY
+        ) + eNoise;
+      const inPlateauCore =
+        x >= JOHTO_ORGANIC_SHAPES.SILVER_CORE_MIN_X &&
+        x <= JOHTO_ORGANIC_SHAPES.SILVER_CORE_MAX_X &&
+        y >= JOHTO_ORGANIC_SHAPES.SILVER_CORE_MIN_Y &&
+        y <= JOHTO_ORGANIC_SHAPES.SILVER_CORE_MAX_Y;
+      if (inPlateauCore || ellDist <= 1.0) {
+        heightmap[y]![x] = 1;
+      }
+    }
+  }
+  // Open southern pass for Mt. Silver Route 27 / stair entry
+  for (
+    let y = JOHTO_ORGANIC_SHAPES.SILVER_PASS_MIN_Y;
+    y <= JOHTO_ORGANIC_SHAPES.SILVER_PASS_MAX_Y;
+    y++
+  ) {
+    for (
+      let x = JOHTO_ORGANIC_SHAPES.SILVER_PASS_MIN_X;
+      x <= JOHTO_ORGANIC_SHAPES.SILVER_PASS_MAX_X;
+      x++
+    ) {
+      if (terrain[y]?.[x] === 'grass') heightmap[y]![x] = 0;
     }
   }
 
@@ -665,9 +975,25 @@ function sculptJohtoTerrain(
       x <= JOHTO_TERRAIN_CONFIG.MT_MORTAR_MAX_X;
       x++
     ) {
-      heightmap[y]![x] = 1;
-      terrain[y]![x] = 'grass';
+      if (terrain[y]?.[x] !== 'grass') continue;
+      const mortarNoise =
+        noise.noise2D(
+          x * JOHTO_ORGANIC_SHAPES.MORTAR_NOISE_SCALE,
+          y * JOHTO_ORGANIC_SHAPES.MORTAR_NOISE_SCALE
+        ) * JOHTO_ORGANIC_SHAPES.MORTAR_NOISE_AMP;
+      const ellDist =
+        Math.hypot(
+          (x - JOHTO_ORGANIC_SHAPES.MORTAR_CX) / JOHTO_ORGANIC_SHAPES.MORTAR_RX,
+          (y - JOHTO_ORGANIC_SHAPES.MORTAR_CY) / JOHTO_ORGANIC_SHAPES.MORTAR_RY
+        ) + mortarNoise;
+      if (ellDist <= 1.0) {
+        heightmap[y]![x] = 1;
+      }
     }
+  }
+
+  for (const crest of JOHTO_SUMMIT_CRESTS) {
+    promoteSummitCrest(terrain, heightmap, W, H, crest, []);
   }
 
   return { terrainMatrix: terrain, heightmap };
@@ -736,14 +1062,44 @@ export function buildCanonicalRegionMap(
 
   // 2. Autotile water and mountains
   const resolvedWater = resolveWaterCoastGrid(terrainMatrix);
-  const macroBiomes = synthesizeMacroBiomes({ width: W, height: H, seed, terrainMatrix });
+  const rawMacroBiomes = synthesizeMacroBiomes({ width: W, height: H, seed, terrainMatrix });
+  const KANTO_NORTH_LUSH_MAX_Y = 148;
+  const macroBiomes =
+    presetId === 'kanto'
+      ? {
+          ...rawMacroBiomes,
+          biomeGrid: rawMacroBiomes.biomeGrid.map((row, y) =>
+            y < KANTO_NORTH_LUSH_MAX_Y
+              ? row.map((b) => (b === 'arid_desert' ? 'temperate_meadow' : b))
+              : row
+          )
+        }
+      : rawMacroBiomes;
   const geologicalClusters = clusterMountainMassifs({
     elevationMatrix: heightmap,
     macroBiomeGrid: macroBiomes.biomeGrid,
     seed,
     defaultPalette: 'brown'
   });
-  const placedStairs: MountainStairLocation[] = presetId === 'kanto' ? [{ x: 53, y: 221 }] : [];
+  const findJohtoSouthCliffStair = (): MountainStairLocation[] => {
+    const preliminary = resolveMountainMapGrid(heightmap, {
+      palette: 'brown',
+      paletteMatrix: geologicalClusters.paletteMatrix
+    });
+    for (let y = 74; y <= 82; y++) {
+      for (let x = 110; x <= 118; x++) {
+        const left = preliminary.cellDetails[y]?.[x];
+        const right = preliminary.cellDetails[y]?.[x + 1];
+        if (left?.role === 'edge_south_top' && right?.role === 'edge_south_top') {
+          return [{ x, y }];
+        }
+      }
+    }
+    return [];
+  };
+
+  const placedStairs: MountainStairLocation[] =
+    presetId === 'kanto' ? [{ x: 53, y: 221 }] : findJohtoSouthCliffStair();
   const mountainResult = resolveMountainMapGrid(heightmap, {
     palette: 'brown',
     paletteMatrix: geologicalClusters.paletteMatrix,
@@ -870,13 +1226,29 @@ export function buildCanonicalRegionMap(
   // 5. Construct Authentic Routes with A* Pathfinding and Bridges
   const pathGrid: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
   const bridgeGrid: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
+  for (const poi of pois) {
+    if (poi.type !== 'dungeon_forest' && poi.urbanLayout?.internalStreets) {
+      for (const st of poi.urbanLayout.internalStreets) {
+        if (st.y >= 0 && st.y < H && st.x >= 0 && st.x < W) {
+          pathGrid[st.y]![st.x] = true;
+        }
+      }
+    }
+  }
   const nodeMap = new Map<string, POINode>(pois.map((p) => [p.id, p]));
 
   const excludedNodeZones = pois.map((p) => ({
-    x1: p.gridX,
-    y1: p.gridY,
-    x2: p.gridX + p.footprint.width - 1,
-    y2: p.gridY + p.footprint.height - 1
+    id: p.id,
+    x1: p.type === 'dungeon_forest' ? p.gridX : p.gridX + 1,
+    y1: p.type === 'dungeon_forest' ? p.gridY : p.gridY + 1,
+    x2:
+      p.type === 'dungeon_forest'
+        ? p.gridX + p.footprint.width - 1
+        : p.gridX + p.footprint.width - 2,
+    y2:
+      p.type === 'dungeon_forest'
+        ? p.gridY + p.footprint.height - 1
+        : p.gridY + p.footprint.height - 2
   }));
 
   const isOceanGrid = computeOceanGrid(continent);
@@ -896,10 +1268,22 @@ export function buildCanonicalRegionMap(
       };
     }
 
-    const startX = fromNode.gridX + Math.floor(fromNode.footprint.width / 2);
-    const startY = fromNode.gridY + Math.floor(fromNode.footprint.height / 2);
-    const endX = toNode.gridX + Math.floor(toNode.footprint.width / 2);
-    const endY = toNode.gridY + Math.floor(toNode.footprint.height / 2);
+    const fromCenterX = fromNode.gridX + Math.floor(fromNode.footprint.width / 2);
+    const fromCenterY = fromNode.gridY + Math.floor(fromNode.footprint.height / 2);
+    const toCenterX = toNode.gridX + Math.floor(toNode.footprint.width / 2);
+    const toCenterY = toNode.gridY + Math.floor(toNode.footprint.height / 2);
+    const startPt =
+      !rb.isWaterCrossing && rb.id !== 'kanto_victory_road' && fromNode.type !== 'dungeon_forest'
+        ? getBestGateway(fromNode, toCenterX, toCenterY)
+        : { x: fromCenterX, y: fromCenterY };
+    const endPt =
+      !rb.isWaterCrossing && rb.id !== 'kanto_victory_road' && toNode.type !== 'dungeon_forest'
+        ? getBestGateway(toNode, fromCenterX, fromCenterY)
+        : { x: toCenterX, y: toCenterY };
+    const startX = startPt.x;
+    const startY = startPt.y;
+    const endX = endPt.x;
+    const endY = endPt.y;
 
     let waypoints: RouteWaypoint[];
 
@@ -997,6 +1381,9 @@ export function buildCanonicalRegionMap(
     } else if (rb.id === 'kanto_indigo_avenue') {
       waypoints = [...ROUTE_WAYPOINTS_CONFIG.INDIGO_AVENUE_POINTS];
     } else {
+      const activeExclusions = excludedNodeZones.filter(
+        (z) => z.id !== fromNode.id && z.id !== toNode.id
+      );
       const astar = findPathAStar(
         continent,
         startX,
@@ -1005,7 +1392,7 @@ export function buildCanonicalRegionMap(
         endY,
         pathGrid,
         true,
-        excludedNodeZones,
+        activeExclusions,
         isOceanGrid
       );
 
@@ -1024,6 +1411,12 @@ export function buildCanonicalRegionMap(
 
     if (!rb.isWaterCrossing && rb.id !== 'kanto_victory_road') {
       stampWaypointsPath(waypoints, W, H, pathGrid);
+      if (rb.id === 'johto_r43' && toNode.id === 'lakeofrage') {
+        const lakeDoorX = toNode.gridX + Math.floor(toNode.footprint.width / 2) - 1;
+        const lakeDoorY = toNode.gridY + toNode.footprint.height - 2;
+        stampPathGrid2x2(lakeDoorX, lakeDoorY, W, H, pathGrid);
+        stampPathGrid2x2(lakeDoorX, lakeDoorY + 1, W, H, pathGrid);
+      }
     }
 
     const dist = waypoints.length > 1 ? waypoints.length : Math.hypot(endX - startX, endY - startY);
@@ -1085,31 +1478,99 @@ export function buildCanonicalRegionMap(
     }
   }
 
+  // Seal open ocean waters with deep trenches & FireRed maritime rock barriers (matching procedural regions)
+  const surfWaypoints: RouteWaypoint[] = [];
+  for (const edge of edges) {
+    if (!edge.isWaterCrossing) continue;
+    for (let i = 0; i < edge.waypoints.length; i++) {
+      const wp = edge.waypoints[i]!;
+      const next = i + 1 < edge.waypoints.length ? edge.waypoints[i + 1]! : wp;
+      let cx = wp.x;
+      let cy = wp.y;
+      const sx = next.x >= cx ? 1 : -1;
+      const sy = next.y >= cy ? 1 : -1;
+      while (cx !== next.x) {
+        if (terrainMatrix[cy]?.[cx] === 'water' && !bridgeGrid[cy]?.[cx]) {
+          surfWaypoints.push({ x: cx, y: cy });
+        }
+        cx += sx;
+      }
+      while (cy !== next.y) {
+        if (terrainMatrix[cy]?.[cx] === 'water' && !bridgeGrid[cy]?.[cx]) {
+          surfWaypoints.push({ x: cx, y: cy });
+        }
+        cy += sy;
+      }
+      if (terrainMatrix[wp.y]?.[wp.x] === 'water' && !bridgeGrid[wp.y]?.[wp.x]) {
+        surfWaypoints.push({ x: wp.x, y: wp.y });
+      }
+    }
+  }
+  const maritimeRockObstacles: MaritimeRockObstacle[] = [];
+  const portZones = pois
+    .filter((p) => p.type === 'port_dock')
+    .map((p) => ({
+      x: p.gridX,
+      y: p.gridY,
+      width: p.footprint.width,
+      height: p.footprint.height
+    }));
+  const maritimeResult = sealCoastalSeaWithMaritimeRocks({
+    terrainMatrix: continent.terrainMatrix,
+    bridgeGrid,
+    surfWaypoints,
+    portZones,
+    maritimeRockObstacles,
+    seed,
+    width: W,
+    height: H
+  });
+  applyDeepWaterCellsToContinent(continent, maritimeResult.deepWaterCells, bridgeGrid);
+
   const routeNetwork: ResolvedRouteNetworkResult = {
     nodes: pois,
     edges,
     pathGrid,
     bridgeGrid,
     bridgeShoreLandings,
-    portDockBridgeKeys
+    portDockBridgeKeys,
+    maritimeRockObstacles
   };
 
-  const transitableGrid = computeTransitableGrid(continent, pathGrid, bridgeGrid, pois);
-  (continent as { transitableGrid?: readonly (readonly boolean[])[] }).transitableGrid =
-    transitableGrid;
-
-  const wilderness = generateWildernessLayer(continent, pois, pathGrid, {
+  const framing = compileWildernessAndFramingLayer({
+    continent,
+    pois,
+    pathGrid,
+    bridgeGrid,
     seed,
-    transitableGrid
+    corridorRadius: 2
   });
+
+  const { pois: fenceSanitizedPois, wildernessProps: finalProps } = sanitizeContinentalUrbanFences(
+    pois,
+    continent,
+    framing.wilderness.props
+  );
+  const finalPois = anchorUrbanPropsToStreetsAndYards(fenceSanitizedPois);
+  const finalRouteNetwork: ResolvedRouteNetworkResult = {
+    ...routeNetwork,
+    nodes: finalPois
+  };
+  const finalWilderness = {
+    ...framing.wilderness,
+    props: finalProps
+  };
 
   const rawBuffer = buildZeroCopyPreviewBuffer(continent, pathGrid);
 
   return {
     continent,
-    pois,
-    routeNetwork,
-    wilderness,
+    pois: finalPois,
+    routeNetwork: finalRouteNetwork,
+    wilderness: finalWilderness,
+    ledges: framing.ledges,
+    progressionObstacles: framing.progressionObstacles,
+    microVignettes: framing.microVignettes,
     rawBuffer
   };
 }

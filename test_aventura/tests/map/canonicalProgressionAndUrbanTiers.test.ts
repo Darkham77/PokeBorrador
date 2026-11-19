@@ -81,7 +81,7 @@ describe('Canonical Progression and Urban Tiers', () => {
     expect(league!.elevation).toBeGreaterThanOrEqual(1);
   });
 
-  it('generates Tier 0 rural town with 0 Gyms, 0 Marts, 1 Center, and 2..4 houses', () => {
+  it('generates Tier 0 rural town with 0 Gyms, 0 Marts, 0 Pokecenters, and 2..4 houses', () => {
     const node: POINode = {
       id: 'town_procedural_tier0',
       name: 'Pueblo Silvestre',
@@ -99,7 +99,7 @@ describe('Canonical Progression and Urban Tiers', () => {
     const bTypes = layout.buildings.map((b) => b.type);
     expect(bTypes).not.toContain('gym');
     expect(bTypes).not.toContain('pokemart');
-    expect(bTypes).toContain('pokecenter');
+    expect(bTypes).not.toContain('pokecenter');
 
     const houseCount = layout.buildings.filter(
       (b) => b.type === 'house' || b.type === 'lab'
@@ -129,9 +129,11 @@ describe('Canonical Progression and Urban Tiers', () => {
     expect(bTypes).toContain('pokecenter');
     expect(bTypes).toContain('pokemart');
 
-    const houseCount = layout.buildings.filter((b) => b.type === 'house').length;
-    expect(houseCount).toBeGreaterThanOrEqual(4);
-    expect(houseCount).toBeLessThanOrEqual(6);
+    const residentialCount = layout.buildings.filter(
+      (b) => b.type === 'house' || b.type === 'condo'
+    ).length;
+    expect(residentialCount).toBeGreaterThanOrEqual(2);
+    expect(residentialCount).toBeLessThanOrEqual(6);
 
     const gym = layout.buildings.find((b) => b.type === 'gym')!;
     const center = layout.buildings.find((b) => b.type === 'pokecenter')!;

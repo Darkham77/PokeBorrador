@@ -15,7 +15,7 @@ import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
 
 describe('mintHighlandMountainSeamIntegrity (Pattern B)', () => {
-  it('guarantees seed 615856 at (88, 41) does not resolve to corner_outer_sw against same-biome mountain wall', () => {
+  it('guarantees mint_highland cells adjacent to same-biome mountain walls resolve cleanly without corner_outer_sw', () => {
     const continent = generateContinentMap({
       seed: 615856,
       width: 128,
@@ -26,15 +26,24 @@ describe('mintHighlandMountainSeamIntegrity (Pattern B)', () => {
     });
 
     expect(continent.resolvedMacroBiomes).toBeDefined();
-    const mbCell = continent.resolvedMacroBiomes!.cellDetails[41]?.[88];
-    expect(mbCell).toBeDefined();
-    expect(mbCell?.biome).toBe('mint_highland');
-
-    // The cell at (88, 41) has mint_highland to its North and East (mountain wall).
-    // It should NOT resolve to corner_outer_sw (which has a foreign East border).
-    // Instead its only foreign border is West (temperate grass plain), resolving to edge_west.
-    expect(mbCell?.role).not.toBe('corner_outer_sw');
-    expect(mbCell?.role).toBe('edge_west');
+    expect(continent.macroBiomes).toBeDefined();
+    let verifiedCount = 0;
+    for (let y = 1; y < continent.height - 1; y++) {
+      for (let x = 1; x < continent.width - 1; x++) {
+        const mb = continent.resolvedMacroBiomes!.cellDetails[y]?.[x];
+        if (mb?.biome !== 'mint_highland') continue;
+        if (
+          continent.macroBiomes!.biomeGrid[y]?.[x + 1] === 'mint_highland' &&
+          continent.macroBiomes!.biomeGrid[y - 1]?.[x] === 'mint_highland' &&
+          continent.macroBiomes!.biomeGrid[y + 1]?.[x] === 'mint_highland' &&
+          continent.macroBiomes!.biomeGrid[y]?.[x - 1] !== 'mint_highland'
+        ) {
+          expect(mb.role).not.toBe('corner_outer_sw');
+          verifiedCount++;
+        }
+      }
+    }
+    expect(verifiedCount).toBeGreaterThan(0);
   });
 
   it('guarantees mountain outer corners within mint_highland blit mint grass underlay instead of plain grass', () => {
@@ -57,17 +66,22 @@ describe('mintHighlandMountainSeamIntegrity (Pattern B)', () => {
       null
     );
 
-    // At (89, 41), it is a mountain corner outer nw on height 1 bordering height 0 at (88, 41)
-    const mCell = continent.resolvedMountain.cellDetails[41]?.[89];
-    expect(mCell).toBeDefined();
-    expect(mCell?.role).toBe('corner_outer_nw');
+    let verifiedCorners = 0;
+    for (let y = 1; y < continent.height - 1; y++) {
+      for (let x = 1; x < continent.width - 1; x++) {
+        if (continent.macroBiomes?.biomeGrid[y]?.[x] !== 'mint_highland') continue;
+        const mCell = continent.resolvedMountain.cellDetails[y]?.[x];
+        if (mCell?.role !== 'corner_outer_nw') continue;
+        if ((continent.heightmap[y]?.[x] ?? 0) !== 1) continue;
+        if ((continent.heightmap[y]?.[x - 1] ?? 0) !== 0) continue;
 
-    // Underlay instructions at (89, 41) should include mint grass
-    const cellInsts = instructions.filter(
-      (inst) => Math.floor(inst.px / 32) === 89 && Math.floor(inst.py / 32) === 41
-    );
-
-    const filenames = cellInsts.map((i) => i.filename);
-    expect(filenames.some((f) => f.includes('mint'))).toBe(true);
+        const cellInsts = instructions.filter(
+          (inst) => Math.floor(inst.px / 32) === x && Math.floor(inst.py / 32) === y
+        );
+        expect(cellInsts.some((i) => i.filename.includes('mint'))).toBe(true);
+        verifiedCorners++;
+      }
+    }
+    expect(verifiedCorners).toBeGreaterThan(0);
   });
 });

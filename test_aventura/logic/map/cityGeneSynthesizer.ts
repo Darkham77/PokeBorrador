@@ -32,7 +32,9 @@ export type ElevationPolicy = (typeof _ELEVATION_POLICIES)[number];
 
 const _STREET_PATTERNS = [
   'linear_boulevard',
+  'boulevard_ew',
   'radial_plaza',
+  'ring_garden',
   'coastal_wharf',
   'l_enclave',
   'axial_boulevard',
@@ -41,6 +43,14 @@ const _STREET_PATTERNS = [
   'dispersed_cluster'
 ] as const;
 export type StreetPattern = (typeof _STREET_PATTERNS)[number];
+
+const CITY_ARCHETYPE_PATTERNS = [
+  'ring_garden',
+  'boulevard_ew',
+  'linear_boulevard',
+  'radial_plaza',
+  'l_enclave'
+] as const;
 
 export interface CityProceduralGenes {
   /** 0.0 = clear-cut / clean ground, 1.0 = deep woods with trees around houses */
@@ -67,6 +77,8 @@ const PRNG_CONSTANTS = {
 } as const;
 
 const SEED_PRIME_MULTIPLIER = 31 as const;
+const SPATIAL_SEED_PRIME_X = 97 as const;
+const SPATIAL_SEED_PRIME_Y = 53 as const;
 
 const VIGNETTE_AREA_LIMITS = {
   METROPOLIS_MIN_AREA: 500,
@@ -163,8 +175,9 @@ export function synthesizeCityGenes(
   rngSeed: number,
   context?: SettlementTerrainContext
 ): CityProceduralGenes {
-  // Combine rngSeed with node id for deterministic per-settlement PRNG
-  let combinedSeed = rngSeed;
+  // Combine rngSeed, node id, and spatial coordinates so sibling cities never clone identical genes
+  let combinedSeed =
+    rngSeed + Math.trunc(node.gridX * SPATIAL_SEED_PRIME_X + node.gridY * SPATIAL_SEED_PRIME_Y);
   for (let i = 0; i < node.id.length; i++) {
     combinedSeed = Math.trunc(combinedSeed * SEED_PRIME_MULTIPLIER + node.id.charCodeAt(i));
   }
@@ -274,9 +287,10 @@ export function synthesizeCityGenes(
     streetPattern =
       patternRoll < GENE_PROBABILITIES.PATTERN_TOWN_L ? 'l_enclave' : 'linear_boulevard';
   } else if (scale === 'city') {
-    if (patternRoll < GENE_PROBABILITIES.PATTERN_CITY_LINEAR) streetPattern = 'linear_boulevard';
-    else if (patternRoll < GENE_PROBABILITIES.PATTERN_CITY_RADIAL) streetPattern = 'radial_plaza';
-    else streetPattern = 'l_enclave';
+    const cityIdx =
+      Math.abs(combinedSeed + Math.floor(patternRoll * CITY_ARCHETYPE_PATTERNS.length)) %
+      CITY_ARCHETYPE_PATTERNS.length;
+    streetPattern = CITY_ARCHETYPE_PATTERNS[cityIdx]!;
   } else {
     streetPattern =
       patternRoll < GENE_PROBABILITIES.PATTERN_METRO_RADIAL ? 'radial_plaza' : 'linear_boulevard';

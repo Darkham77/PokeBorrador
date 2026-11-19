@@ -144,6 +144,9 @@ export function compileGeologicalAutotiling(
       let mtnRole: MountainRole | undefined;
 
       if (waterCell?.primaryTile) layerStack.push(waterCell.primaryTile);
+      if (waterCell?.overlayTiles && waterCell.overlayTiles.length > 0) {
+        layerStack.push(...waterCell.overlayTiles);
+      }
       if (mtnCell) {
         mtnRole = mtnCell.role;
         const mtnStatus = applyMountainCellLayers(mtnCell, elev, layerStack);

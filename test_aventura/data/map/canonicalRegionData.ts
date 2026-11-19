@@ -233,8 +233,9 @@ export const KANTO_BLUEPRINTS: readonly CanonicalNodeBlueprint[] = [
     id: 'celadon',
     name: 'Ciudad Azulona',
     type: 'metropolis',
-    gridX: 104,
-    gridY: 102,
+    gridX: 102,
+    gridY: 98,
+    roadMaterial: 'stone',
     ...URBAN_NODE_ARCHETYPES.METROPOLIS
   },
   {
@@ -242,7 +243,8 @@ export const KANTO_BLUEPRINTS: readonly CanonicalNodeBlueprint[] = [
     name: 'Ciudad Azafrán',
     type: 'metropolis',
     gridX: 152,
-    gridY: 102,
+    gridY: 106,
+    roadMaterial: 'asphalt',
     ...URBAN_NODE_ARCHETYPES.METROPOLIS
   },
   {

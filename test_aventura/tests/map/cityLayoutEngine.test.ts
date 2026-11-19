@@ -451,25 +451,12 @@ describe('cityLayoutEngine', () => {
     const gateSeparation = southGate.y - (northGate.y + northGate.height);
     expect(gateSeparation).toBeGreaterThanOrEqual(15);
 
-    // Flanks of both gates must be sealed by fences
-    const fences = layout.props.filter((p) => p.type === 'fence_h');
-    expect(fences.length).toBeGreaterThanOrEqual(10);
-
-    // Left and right flank fence coverage for North Gate
-    const nFlankLeft = fences.some((f) => f.x < northGate.x && Math.abs(f.y - northGate.y) <= 4);
-    const nFlankRight = fences.some(
-      (f) => f.x >= northGate.x + northGate.width && Math.abs(f.y - northGate.y) <= 4
-    );
-    expect(nFlankLeft).toBe(true);
-    expect(nFlankRight).toBe(true);
-
-    // Left and right flank fence coverage for South Gate
-    const sFlankLeft = fences.some((f) => f.x < southGate.x && Math.abs(f.y - southGate.y) <= 4);
-    const sFlankRight = fences.some(
-      (f) => f.x >= southGate.x + southGate.width && Math.abs(f.y - southGate.y) <= 4
-    );
-    expect(sFlankLeft).toBe(true);
-    expect(sFlankRight).toBe(true);
+    // Block B organic dungeon_forest: zero long rectangular corral fences around gates;
+    // instead connects North and South gates via an organic winding internal path + woodland props
+    const fences = layout.props.filter((p) => p.type === 'fence_h' || p.type === 'fence_v');
+    expect(fences.length).toBeLessThanOrEqual(4);
+    expect(layout.internalStreets.length).toBeGreaterThanOrEqual(gateSeparation);
+    expect(layout.props.some((p) => p.type === 'signpost')).toBe(true);
   });
 
   it('generates urban layout results for all settlements in batch via generateAllSettlementLayouts', () => {

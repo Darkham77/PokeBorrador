@@ -154,15 +154,25 @@ describe('Topological Barrier Encauzamiento & Route Obligation', () => {
       return false;
     };
 
-    // Center of Pallet and Pewter
-    const palletCenter = {
-      x: pallet.gridX + Math.floor(pallet.footprint.width / 2),
-      y: pallet.gridY + Math.floor(pallet.footprint.height / 2)
+    // Resolve walkable street/plaza anchor inside Pallet and Pewter
+    const findWalkableAnchorInPoi = (
+      poi: (typeof pois)[number]
+    ): { readonly x: number; readonly y: number } => {
+      for (const st of poi.urbanLayout?.internalStreets ?? []) {
+        if (!blockedGrid[st.y]?.[st.x]) return { x: st.x, y: st.y };
+      }
+      const cx = poi.gridX + Math.floor(poi.footprint.width / 2);
+      const cy = poi.gridY + Math.floor(poi.footprint.height / 2);
+      if (!blockedGrid[cy]?.[cx]) return { x: cx, y: cy };
+      for (let y = poi.gridY; y < poi.gridY + poi.footprint.height; y++) {
+        for (let x = poi.gridX; x < poi.gridX + poi.footprint.width; x++) {
+          if (!blockedGrid[y]?.[x]) return { x, y };
+        }
+      }
+      return { x: cx, y: cy };
     };
-    const pewterCenter = {
-      x: pewter.gridX + Math.floor(pewter.footprint.width / 2),
-      y: pewter.gridY + Math.floor(pewter.footprint.height / 2)
-    };
+    const palletCenter = findWalkableAnchorInPoi(pallet);
+    const pewterCenter = findWalkableAnchorInPoi(pewter);
 
     // Baseline: With everything open, Pallet can reach Pewter via Viridian
     const baselineReachable = canReach(

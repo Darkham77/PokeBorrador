@@ -20,6 +20,7 @@ Frontend Engineers / Tooling Developers.
 - [`MasterSheetCanvas.vue`](./MasterSheetCanvas.vue): Module implementation.
 - [`POIDetailDrawer.vue`](./POIDetailDrawer.vue): Module implementation.
 - [`ProceduralMapViewer.vue`](./ProceduralMapViewer.vue): Module implementation.
+- [`RegionalBrushDock.vue`](./RegionalBrushDock.vue): Contextual floating dock and mobile bottom drawer hosting Continent Map heal/creative brush tools, parameter pills, and the Defect Inspector.
 - [`RegionalLocalMapModal.vue`](./RegionalLocalMapModal.vue): Module implementation.
 - [`RegionalNetworkSvgOverlay.vue`](./RegionalNetworkSvgOverlay.vue): Module implementation.
 - [`RegionalStudioToolbar.vue`](./RegionalStudioToolbar.vue): Module implementation.

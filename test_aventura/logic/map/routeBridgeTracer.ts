@@ -11,14 +11,26 @@
  */
 
 import type { RouteWaypoint } from '../../types/map/poiTypes.ts';
+import { wouldExceedStraightCardinalRun } from '../utils/gridBfsUtils.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
 import type { MaritimeRockObstacle } from './routeNetworkEngine.ts';
 import type { WaterTerrainKind } from './waterAutotileEngine.ts';
 
 const CANONICAL_WATER_ROCK_OBSTACLE = 'poke_water_rocks_calm.png' as const;
+const CANONICAL_WATER_ROCK_FOAM = 'poke_water_rock_foam.png' as const;
 const MIN_FISHING_BALCONY_WATER_SPAN = 6 as const;
 const SURF_ROCK_STEP_INTERVAL = 3 as const;
-const SURF_ROCK_FLANK_OFFSET = 2 as const;
+const SURF_ROCK_FLANK_OFFSET = 3 as const;
+const SURF_ROCK_FLANK_SPREAD = 4 as const;
+const SURF_CHANNEL_SAFE_RADIUS = 2 as const;
+const SURF_FOAM_ALTERNATE_PERIOD = 3 as const;
+const SURF_MAX_STRAIGHT_ROCK_RUN = 2 as const;
+const SURF_ROCK_DENSITY_MOD = 10 as const;
+const SURF_ROCK_KEEP_THRESHOLD = 4 as const;
+const SURF_ROCK_HASH_PRIME_X = 73856093 as const;
+const SURF_ROCK_HASH_PRIME_Y = 19349663 as const;
+const SURF_ROCK_HASH_MOD = 100 as const;
+const SURF_ROCK_DOUBLE_LINE_SKIP_MOD = 3 as const;
 
 export interface BridgeWaterSpanContext {
   readonly path: readonly RouteWaypoint[];
@@ -49,24 +61,31 @@ function computeHorizontalCompanionY(
   continentMap: ContinentMapResult,
   bridgeGrid: boolean[][],
   H: number,
-  W: number
+  W: number,
+  preferredCompY?: number
 ): number {
   const fixedY = pts[0]!.y;
   let countMinus = 0;
   let countPlus = 0;
-  for (const p of pts) {
-    if (fixedY - 1 >= 0 && bridgeGrid[fixedY - 1]![p.x]) countMinus++;
-    if (fixedY + 1 < H && bridgeGrid[fixedY + 1]![p.x]) countPlus++;
+  const minRunX = Math.min(...pts.map((p) => p.x));
+  const maxRunX = Math.max(...pts.map((p) => p.x));
+  for (let x = Math.max(0, minRunX - 3); x <= Math.min(W - 1, maxRunX + 3); x++) {
+    if (fixedY - 1 >= 0 && bridgeGrid[fixedY - 1]![x]) countMinus++;
+    if (fixedY + 1 < H && bridgeGrid[fixedY + 1]![x]) countPlus++;
   }
   if (countMinus > countPlus && fixedY - 1 >= 0) return fixedY - 1;
   if (countPlus > countMinus && fixedY + 1 < H) return fixedY + 1;
 
-  const minX = Math.min(...pts.map((p) => p.x));
-  const maxX = Math.max(...pts.map((p) => p.x));
   const minusValidWater =
     fixedY - 1 >= 0 && pts.every((p) => continentMap.cells[fixedY - 1]?.[p.x]?.terrain === 'water');
   const plusValidWater =
     fixedY + 1 < H && pts.every((p) => continentMap.cells[fixedY + 1]?.[p.x]?.terrain === 'water');
+
+  if (preferredCompY === fixedY - 1 && minusValidWater) return fixedY - 1;
+  if (preferredCompY === fixedY + 1 && plusValidWater) return fixedY + 1;
+
+  const minX = Math.min(...pts.map((p) => p.x));
+  const maxX = Math.max(...pts.map((p) => p.x));
 
   let minusLandScore = 0;
   if (minusValidWater) {
@@ -104,10 +123,18 @@ function traceHorizontalBridgeSegment(
   bridgeGrid: boolean[][],
   mutableTerrainMatrix: WaterTerrainKind[][],
   W: number,
-  H: number
+  H: number,
+  preferredCompY?: number
 ): SegmentCompanion {
   const fixedY = seg.pts[0]!.y;
-  const compY = computeHorizontalCompanionY(seg.pts, continentMap, bridgeGrid, H, W);
+  const compY = computeHorizontalCompanionY(
+    seg.pts,
+    continentMap,
+    bridgeGrid,
+    H,
+    W,
+    preferredCompY
+  );
   const minX = Math.min(...seg.pts.map((p) => p.x));
   const maxX = Math.max(...seg.pts.map((p) => p.x));
 
@@ -146,24 +173,31 @@ function computeVerticalCompanionX(
   continentMap: ContinentMapResult,
   bridgeGrid: boolean[][],
   H: number,
-  W: number
+  W: number,
+  preferredCompX?: number
 ): number {
   const fixedX = pts[0]!.x;
   let countMinus = 0;
   let countPlus = 0;
-  for (const p of pts) {
-    if (fixedX - 1 >= 0 && bridgeGrid[p.y]![fixedX - 1]) countMinus++;
-    if (fixedX + 1 < W && bridgeGrid[p.y]![fixedX + 1]) countPlus++;
+  const minRunY = Math.min(...pts.map((p) => p.y));
+  const maxRunY = Math.max(...pts.map((p) => p.y));
+  for (let y = Math.max(0, minRunY - 3); y <= Math.min(H - 1, maxRunY + 3); y++) {
+    if (fixedX - 1 >= 0 && bridgeGrid[y]![fixedX - 1]) countMinus++;
+    if (fixedX + 1 < W && bridgeGrid[y]![fixedX + 1]) countPlus++;
   }
   if (countMinus > countPlus && fixedX - 1 >= 0) return fixedX - 1;
   if (countPlus > countMinus && fixedX + 1 < W) return fixedX + 1;
 
-  const minY = Math.min(...pts.map((p) => p.y));
-  const maxY = Math.max(...pts.map((p) => p.y));
   const minusValidWater =
     fixedX - 1 >= 0 && pts.every((p) => continentMap.cells[p.y]?.[fixedX - 1]?.terrain === 'water');
   const plusValidWater =
     fixedX + 1 < W && pts.every((p) => continentMap.cells[p.y]?.[fixedX + 1]?.terrain === 'water');
+
+  if (preferredCompX === fixedX - 1 && minusValidWater) return fixedX - 1;
+  if (preferredCompX === fixedX + 1 && plusValidWater) return fixedX + 1;
+
+  const minY = Math.min(...pts.map((p) => p.y));
+  const maxY = Math.max(...pts.map((p) => p.y));
 
   let minusLandScore = 0;
   if (minusValidWater) {
@@ -201,10 +235,11 @@ function traceVerticalBridgeSegment(
   bridgeGrid: boolean[][],
   mutableTerrainMatrix: WaterTerrainKind[][],
   W: number,
-  H: number
+  H: number,
+  preferredCompX?: number
 ): SegmentCompanion {
   const fixedX = seg.pts[0]!.x;
-  const compX = computeVerticalCompanionX(seg.pts, continentMap, bridgeGrid, H, W);
+  const compX = computeVerticalCompanionX(seg.pts, continentMap, bridgeGrid, H, W, preferredCompX);
   const minY = Math.min(...seg.pts.map((p) => p.y));
   const maxY = Math.max(...seg.pts.map((p) => p.y));
 
@@ -319,6 +354,121 @@ function connectBridgeShoreEnds(
   }
 }
 
+export interface SurfChannelBoundaryOptions {
+  readonly terrainMatrix: readonly (readonly WaterTerrainKind[])[];
+  readonly bridgeGrid: readonly (readonly boolean[])[];
+  readonly isOceanGrid?: readonly (readonly boolean[])[];
+  readonly maritimeRockObstacles: MaritimeRockObstacle[];
+  readonly occupiedKeys: Set<string>;
+  readonly width: number;
+  readonly height: number;
+}
+
+function isWaterCellForRock(
+  terrainMatrix: readonly (readonly WaterTerrainKind[])[],
+  bridgeGrid: readonly (readonly boolean[])[],
+  rx: number,
+  ry: number,
+  W: number,
+  H: number
+): boolean {
+  if (rx < 1 || rx >= W - 1 || ry < 1 || ry >= H - 1) return false;
+  if (bridgeGrid[ry]?.[rx]) return false;
+  const t = terrainMatrix[ry]?.[rx];
+  if (t !== 'water' && t !== 'water_deep') return false;
+
+  // Avoid hugging beach shorelines so Surf entry/exit coasts remain clear
+  return (
+    (terrainMatrix[ry - 1]?.[rx] === 'water' || terrainMatrix[ry - 1]?.[rx] === 'water_deep') &&
+    (terrainMatrix[ry + 1]?.[rx] === 'water' || terrainMatrix[ry + 1]?.[rx] === 'water_deep') &&
+    (terrainMatrix[ry]?.[rx - 1] === 'water' || terrainMatrix[ry]?.[rx - 1] === 'water_deep') &&
+    (terrainMatrix[ry]?.[rx + 1] === 'water' || terrainMatrix[ry]?.[rx + 1] === 'water_deep')
+  );
+}
+
+function tryStampChannelRock(
+  rx: number,
+  ry: number,
+  opts: SurfChannelBoundaryOptions,
+  protectedChannel: ReadonlySet<string>
+): void {
+  const {
+    terrainMatrix,
+    bridgeGrid,
+    maritimeRockObstacles,
+    occupiedKeys,
+    width: W,
+    height: H
+  } = opts;
+  const cellKey = `${rx}_${ry}`;
+  if (protectedChannel.has(cellKey) || occupiedKeys.has(cellKey)) return;
+  if (opts.isOceanGrid && !opts.isOceanGrid[ry]?.[rx]) return;
+  if (!isWaterCellForRock(terrainMatrix, bridgeGrid, rx, ry, W, H)) return;
+
+  const rockHash =
+    Math.abs(rx * SURF_ROCK_HASH_PRIME_X + ry * SURF_ROCK_HASH_PRIME_Y) % SURF_ROCK_HASH_MOD;
+  const useCalm =
+    maritimeRockObstacles.length === 0 ||
+    rockHash % SURF_ROCK_DOUBLE_LINE_SKIP_MOD === 0 ||
+    maritimeRockObstacles.length % SURF_FOAM_ALTERNATE_PERIOD === 0;
+  occupiedKeys.add(cellKey);
+  maritimeRockObstacles.push({
+    x: rx,
+    y: ry,
+    prefabFile: useCalm ? CANONICAL_WATER_ROCK_OBSTACLE : CANONICAL_WATER_ROCK_FOAM
+  });
+}
+
+/**
+ * Stamps organic staggered maritime boulder shoals framing Surf channels while relying
+ * on deep ocean tiles as the primary route boundary (avoiding artificial parallel walls).
+ */
+export function appendSurfChannelRockBoundaries(
+  waterPts: readonly RouteWaypoint[],
+  opts: SurfChannelBoundaryOptions
+): void {
+  if (waterPts.length === 0) return;
+
+  const protectedChannel = new Set<string>();
+  for (const pt of waterPts) {
+    for (let dy = -SURF_CHANNEL_SAFE_RADIUS; dy <= SURF_CHANNEL_SAFE_RADIUS; dy++) {
+      for (let dx = -SURF_CHANNEL_SAFE_RADIUS; dx <= SURF_CHANNEL_SAFE_RADIUS; dx++) {
+        protectedChannel.add(`${pt.x + dx}_${pt.y + dy}`);
+      }
+    }
+  }
+
+  for (let idx = 0; idx < waterPts.length; idx += SURF_ROCK_STEP_INTERVAL) {
+    const pt: RouteWaypoint = waterPts[idx]!;
+    const prev: RouteWaypoint = idx > 0 ? waterPts[idx - 1]! : pt;
+    const next: RouteWaypoint = idx + 1 < waterPts.length ? waterPts[idx + 1]! : pt;
+    const isH: boolean = Math.abs(next.x - prev.x) >= Math.abs(next.y - prev.y);
+
+    for (let sideIdx = 0; sideIdx < 2; sideIdx++) {
+      const sideHash =
+        Math.abs(
+          (pt.x + sideIdx) * SURF_ROCK_HASH_PRIME_X + (pt.y - sideIdx) * SURF_ROCK_HASH_PRIME_Y
+        ) % SURF_ROCK_HASH_MOD;
+      if (
+        opts.maritimeRockObstacles.length > 0 &&
+        sideHash % SURF_ROCK_DENSITY_MOD >= SURF_ROCK_KEEP_THRESHOLD
+      ) {
+        continue;
+      }
+
+      const flankDist = SURF_ROCK_FLANK_OFFSET + (sideHash % SURF_ROCK_FLANK_SPREAD);
+      const signedDist = sideIdx === 0 ? -flankDist : flankDist;
+      const rx: number = pt.x + (isH ? 0 : signedDist);
+      const ry: number = pt.y + (isH ? signedDist : 0);
+
+      if (wouldExceedStraightCardinalRun(opts.occupiedKeys, rx, ry, SURF_MAX_STRAIGHT_ROCK_RUN)) {
+        continue;
+      }
+      tryStampChannelRock(rx, ry, opts, protectedChannel);
+    }
+  }
+}
+
 function placeSurfRockObstacles(
   waterPts: readonly RouteWaypoint[],
   continentMap: ContinentMapResult,
@@ -327,43 +477,15 @@ function placeSurfRockObstacles(
   W: number,
   H: number
 ): void {
-  for (let idx = 0; idx < waterPts.length; idx += SURF_ROCK_STEP_INTERVAL) {
-    const pt: RouteWaypoint = waterPts[idx]!;
-    const prev: RouteWaypoint = idx > 0 ? waterPts[idx - 1]! : pt;
-    const next: RouteWaypoint = idx + 1 < waterPts.length ? waterPts[idx + 1]! : pt;
-    const dx: number = next.x - prev.x;
-    const dy: number = next.y - prev.y;
-    const isH: boolean = Math.abs(dx) >= Math.abs(dy);
-
-    const offsets = isH
-      ? [
-          { ox: 0, oy: -SURF_ROCK_FLANK_OFFSET },
-          { ox: 0, oy: SURF_ROCK_FLANK_OFFSET }
-        ]
-      : [
-          { ox: -SURF_ROCK_FLANK_OFFSET, oy: 0 },
-          { ox: SURF_ROCK_FLANK_OFFSET, oy: 0 }
-        ];
-
-    for (const off of offsets) {
-      const rx: number = pt.x + off.ox;
-      const ry: number = pt.y + off.oy;
-      if (
-        rx >= 0 &&
-        rx < W &&
-        ry >= 0 &&
-        ry < H &&
-        continentMap.cells[ry]?.[rx]?.terrain === 'water' &&
-        !bridgeGrid[ry]?.[rx]
-      ) {
-        maritimeRockObstacles.push({
-          x: rx,
-          y: ry,
-          prefabFile: CANONICAL_WATER_ROCK_OBSTACLE
-        });
-      }
-    }
-  }
+  const occupiedKeys = new Set<string>(maritimeRockObstacles.map((o) => `${o.x}_${o.y}`));
+  appendSurfChannelRockBoundaries(waterPts, {
+    terrainMatrix: continentMap.terrainMatrix,
+    bridgeGrid,
+    maritimeRockObstacles,
+    occupiedKeys,
+    width: W,
+    height: H
+  });
 }
 
 function stampFishingBalconies(
@@ -455,6 +577,45 @@ function partitionOrthoSegments(
   return segments;
 }
 
+function resolveBridgeSegmentCompanion(
+  seg: OrthoSegment,
+  ctx: BridgeWaterSpanContext,
+  preferredCompYByRow: Map<number, number>,
+  preferredCompXByCol: Map<number, number>
+): SegmentCompanion {
+  const { continentMap, bridgeGrid, mutableTerrainMatrix, W, H } = ctx;
+  if (seg.isHorizontal) {
+    const fixedY = seg.pts[0]!.y;
+    const comp = traceHorizontalBridgeSegment(
+      seg,
+      continentMap,
+      bridgeGrid,
+      mutableTerrainMatrix,
+      W,
+      H,
+      preferredCompYByRow.get(fixedY)
+    );
+    if (comp.compY !== undefined && !preferredCompYByRow.has(fixedY)) {
+      preferredCompYByRow.set(fixedY, comp.compY);
+    }
+    return comp;
+  }
+  const fixedX = seg.pts[0]!.x;
+  const comp = traceVerticalBridgeSegment(
+    seg,
+    continentMap,
+    bridgeGrid,
+    mutableTerrainMatrix,
+    W,
+    H,
+    preferredCompXByCol.get(fixedX)
+  );
+  if (comp.compX !== undefined && !preferredCompXByCol.has(fixedX)) {
+    preferredCompXByCol.set(fixedX, comp.compX);
+  }
+  return comp;
+}
+
 /**
  * Traces boardwalk bridges, bridgehead landings, and maritime obstacles along water spans.
  */
@@ -464,7 +625,6 @@ export function traceWaterSpansAndBridges(ctx: BridgeWaterSpanContext): void {
     continentMap,
     bridgeGrid,
     pathGrid,
-    mutableTerrainMatrix,
     maritimeRockObstacles,
     isSurfRoute,
     maxBridgeSpan,
@@ -473,50 +633,43 @@ export function traceWaterSpansAndBridges(ctx: BridgeWaterSpanContext): void {
     H
   } = ctx;
 
+  const preferredCompYByRow = new Map<number, number>();
+  const preferredCompXByCol = new Map<number, number>();
   let waterRunStart = -1;
   for (let i = 0; i <= path.length; i++) {
     const isWater =
       i < path.length && continentMap.cells[path[i]!.y]![path[i]!.x]!.terrain === 'water';
     if (isWater && waterRunStart === -1) {
       waterRunStart = i;
-    } else if (!isWater && waterRunStart !== -1) {
-      const waterRunEnd = i - 1;
-      const runLen = waterRunEnd - waterRunStart + 1;
-      const waterPts = path.slice(waterRunStart, waterRunEnd + 1);
-      const segments = partitionOrthoSegments(waterPts, waterRunStart, waterRunEnd, path);
-      const isViableBridge = !isSurfRoute && runLen <= maxBridgeSpan && segments.length === 1;
-
-      if (isViableBridge) {
-        const companions: SegmentCompanion[] = [];
-        for (const seg of segments) {
-          const comp = seg.isHorizontal
-            ? traceHorizontalBridgeSegment(
-                seg,
-                continentMap,
-                bridgeGrid,
-                mutableTerrainMatrix,
-                W,
-                H
-              )
-            : traceVerticalBridgeSegment(seg, continentMap, bridgeGrid, mutableTerrainMatrix, W, H);
-          companions.push(comp);
-        }
-        fillBridgeCornerJunctions(segments, companions, continentMap, bridgeGrid, W, H);
-        connectBridgeShoreEnds(
-          path,
-          waterRunStart,
-          waterRunEnd,
-          companions,
-          continentMap,
-          pathGrid,
-          W,
-          H
-        );
-      } else {
-        placeSurfRockObstacles(waterPts, continentMap, bridgeGrid, maritimeRockObstacles, W, H);
-      }
-      waterRunStart = -1;
+      continue;
     }
+    if (isWater || waterRunStart === -1) continue;
+
+    const waterRunEnd = i - 1;
+    const runLen = waterRunEnd - waterRunStart + 1;
+    const waterPts = path.slice(waterRunStart, waterRunEnd + 1);
+    const segments = partitionOrthoSegments(waterPts, waterRunStart, waterRunEnd, path);
+    const isViableBridge = !isSurfRoute && runLen <= maxBridgeSpan && segments.length === 1;
+
+    if (isViableBridge) {
+      const companions = segments.map((seg) =>
+        resolveBridgeSegmentCompanion(seg, ctx, preferredCompYByRow, preferredCompXByCol)
+      );
+      fillBridgeCornerJunctions(segments, companions, continentMap, bridgeGrid, W, H);
+      connectBridgeShoreEnds(
+        path,
+        waterRunStart,
+        waterRunEnd,
+        companions,
+        continentMap,
+        pathGrid,
+        W,
+        H
+      );
+    } else {
+      placeSurfRockObstacles(waterPts, continentMap, bridgeGrid, maritimeRockObstacles, W, H);
+    }
+    waterRunStart = -1;
   }
 
   if (!isSurfRoute && !connectsMaritimePOI) {

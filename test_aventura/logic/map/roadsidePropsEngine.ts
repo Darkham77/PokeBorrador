@@ -23,18 +23,15 @@ import {
   DESERT_BOULDER_THRESHOLD,
   VOLCANIC_BOULDER_THRESHOLD,
   MINT_BUSH_THRESHOLD,
-  MINT_BOULDER_MIN,
-  MINT_BOULDER_MAX,
   VIRIDIAN_BUSH_THRESHOLD,
   VIRIDIAN_LOG_THRESHOLD,
-  MEADOW_ROUND_BUSH_THRESHOLD,
-  MEADOW_FERN_BUSH_THRESHOLD,
   MEADOW_FLOWER_MIN,
   MEADOW_FLOWER_MAX
 } from '../../config/wildernessConfig.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
 import { isCellAdjacentToMountainStairs } from './continentMountainEngine.ts';
+import type { MacroBiome } from './macroBiomeSynthesizer.ts';
 import { type SimplexNoise } from './noise/simplexNoise.ts';
 import type { WildernessPropPlacement } from './wildernessVegetationEngine.ts';
 
@@ -88,6 +85,7 @@ function blockGateClearanceRadius(
 function tryPlaceStairSignpost(
   sx: number,
   sy: number,
+  biomeGrid: readonly (readonly MacroBiome[])[] | undefined,
   isCandidatePropCell: (x: number, y: number) => boolean,
   addRoadsideProp: (prop: WildernessPropPlacement, clearance: number) => void
 ): boolean {
@@ -100,6 +98,8 @@ function tryPlaceStairSignpost(
   for (const off of candidateOffsets) {
     const px = sx + off.dx;
     const py = sy + off.dy;
+    const biome = biomeGrid?.[py]?.[px];
+    if (biome === 'arid_desert' || biome === 'volcanic_plateau') continue;
     if (isCandidatePropCell(px, py)) {
       addRoadsideProp(
         {
@@ -118,21 +118,87 @@ function tryPlaceStairSignpost(
 
 const BOULDER_HASH_PRIME_X = 17 as const;
 const BOULDER_HASH_PRIME_Y = 31 as const;
-const BOULDER_VARIETIES_COUNT = 3 as const;
+const BOULDER_VARIETIES_COUNT = 2 as const;
+const ROADSIDE_PROP_JITTER_SKIP_THRESHOLD = -0.25 as const;
+const ROADSIDE_PROP_JITTER_SCALE = 0.48 as const;
+const ROADSIDE_PROP_JITTER_OFFSET_X = 13.1 as const;
+const ROADSIDE_PROP_JITTER_OFFSET_Y = 7.4 as const;
 
-function resolveBoulderPrefabForBiome(biome: string, x = 0, y = 0): string {
+const MEADOW_FLOWER_CLUSTER_OFFSETS = [
+  [1, 0],
+  [0, 1],
+  [1, 1]
+] as const;
+
+function placeMeadowFlowerCluster(
+  x: number,
+  y: number,
+  isCandidatePropCell: (cx: number, cy: number) => boolean,
+  addRoadsideProp: (prop: WildernessPropPlacement, clearanceRadius: number) => void
+): void {
+  addRoadsideProp(
+    {
+      type: 'flower',
+      x,
+      y,
+      prefabFile: 'poke_flowers_red.png'
+    },
+    ROADSIDE_BOULDER_CLEARANCE
+  );
+  const canCluster =
+    isCandidatePropCell(x + 1, y) &&
+    isCandidatePropCell(x, y + 1) &&
+    isCandidatePropCell(x + 1, y + 1);
+  if (canCluster) {
+    for (const [dx, dy] of MEADOW_FLOWER_CLUSTER_OFFSETS) {
+      addRoadsideProp(
+        { type: 'flower', x: x + dx, y: y + dy, prefabFile: 'poke_flowers_red.png' },
+        0
+      );
+    }
+    return;
+  }
+  if (isCandidatePropCell(x + 1, y)) {
+    addRoadsideProp({ type: 'flower', x: x + 1, y, prefabFile: 'poke_flowers_red.png' }, 0);
+  }
+}
+
+function placeMintHighlandBushPair(
+  x: number,
+  y: number,
+  isCandidatePropCell: (cx: number, cy: number) => boolean,
+  addRoadsideProp: (prop: WildernessPropPlacement, clearanceRadius: number) => void
+): void {
+  addRoadsideProp(
+    { type: 'bush', x, y, prefabFile: 'poke_bush_round.png' },
+    ROADSIDE_BOULDER_CLEARANCE
+  );
+  if (isCandidatePropCell(x + 1, y)) {
+    addRoadsideProp({ type: 'bush', x: x + 1, y, prefabFile: 'poke_bush_round.png' }, 0);
+  }
+}
+
+function isInteriorAlpinePlateauCell(x: number, y: number, continent: ContinentMapResult): boolean {
+  const elev = continent.heightmap[y]?.[x] ?? 0;
+  if (elev < 1 || continent.terrainMatrix[y]?.[x] !== 'grass') return false;
+  const detail = continent.resolvedMountain.cellDetails[y]?.[x];
+  if (detail?.role !== 'floor_center') return false;
+  return !isCellAdjacentToMountainStairs(
+    x,
+    y,
+    continent.resolvedMountain.cellDetails,
+    continent.width,
+    continent.height
+  );
+}
+
+function resolveBoulderPrefabForBiome(biome: MacroBiome, x = 0, y = 0): string {
   if (biome === 'arid_desert') {
     return 'poke_rock_boulder_brown_large.png';
   }
-  if (biome === 'volcanic_plateau') {
-    return 'poke_boulder_gray.png';
-  }
-  // Natural variety between mossy boulders and natural stones
   const hash =
     Math.abs(x * BOULDER_HASH_PRIME_X + y * BOULDER_HASH_PRIME_Y) % BOULDER_VARIETIES_COUNT;
-  if (hash === 1) return 'poke_rock_boulder_mossy_2.png';
-  if (hash === 2) return 'poke_rock_small.png';
-  return 'poke_rock_boulder_mossy_1.png';
+  return hash === 1 ? 'poke_rock_boulder_mossy_2.png' : 'poke_rock_boulder_mossy_1.png';
 }
 
 /**
@@ -246,7 +312,15 @@ export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
         // Look for cells bordering the path exit just outside settlement footprint
         if (!pathGrid[sy]?.[sx]) continue;
 
-        if (tryPlaceStairSignpost(sx, sy, isCandidatePropCell, addRoadsideProp)) {
+        if (
+          tryPlaceStairSignpost(
+            sx,
+            sy,
+            continent.macroBiomes?.biomeGrid,
+            isCandidatePropCell,
+            addRoadsideProp
+          )
+        ) {
           placedSign = true;
           break;
         }
@@ -254,12 +328,33 @@ export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
     }
   }
 
-  // 3.3 Cliff-Anchored Boulders (Hugging Mountain Cliff Bases on Flat Ground)
+  // 3.3 Cliff-Anchored Boulders (Restricted strictly to arid deserts, volcanic plateaus & elevated alpine plateaus elev >= 1)
   for (let y = 3; y < H - 3; y++) {
     for (let x = 3; x < W - 3; x++) {
-      if (!isCandidatePropCell(x, y, true)) continue;
+      const mBiome = continent.macroBiomes?.biomeGrid[y]?.[x] ?? 'temperate_meadow';
+      if (
+        mBiome === 'mint_highland' &&
+        !pathGrid[y]?.[x] &&
+        !urbanBlocked[y]?.[x] &&
+        !stairBlocked[y]?.[x] &&
+        !roadsidePropBlocked[y]?.[x] &&
+        isInteriorAlpinePlateauCell(x, y, continent)
+      ) {
+        const n = prng.noise2D(x * CLIFF_BOULDER_NOISE_SCALE, y * CLIFF_BOULDER_NOISE_SCALE);
+        if (n > CLIFF_BASE_BOULDER_NOISE_THRESHOLD) {
+          addRoadsideProp(
+            { type: 'boulder', x, y, prefabFile: 'poke_rock_boulder_mossy_1.png' },
+            CLIFF_BASE_BOULDER_CLEARANCE
+          );
+        }
+        continue;
+      }
 
-      // Check if directly at the southern or eastern base of a mountain cliff
+      if (!isCandidatePropCell(x, y, true)) continue;
+      const isRockyBiome = mBiome === 'arid_desert' || mBiome === 'volcanic_plateau';
+      if (!isRockyBiome) continue;
+
+      // Check if directly at the southern base of a mountain cliff
       const isSouthCliffBase =
         continent.resolvedMountain.cellDetails[y - 1]?.[x]?.role.startsWith('edge_south') ||
         continent.resolvedMountain.occupiedFootCells[y - 1]?.[x] === true;
@@ -267,7 +362,6 @@ export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
       if (isSouthCliffBase) {
         const n = prng.noise2D(x * CLIFF_BOULDER_NOISE_SCALE, y * CLIFF_BOULDER_NOISE_SCALE);
         if (n > CLIFF_BASE_BOULDER_NOISE_THRESHOLD) {
-          const mBiome = continent.macroBiomes?.biomeGrid[y]?.[x] ?? 'temperate_meadow';
           const boulderFile = resolveBoulderPrefabForBiome(mBiome, x, y);
 
           addRoadsideProp(
@@ -284,7 +378,7 @@ export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
     }
   }
 
-  // 3.4 Dispersed Roadside Bushes, Flowers & Logs along Path Borders
+  // 3.4 Intentional Roadside Composition (Desert outcrops, Mint highlands, Viridian logs, and cohesive 2x2 flower clusters)
   for (let y = 2; y < H - 2; y++) {
     for (let x = 2; x < W - 2; x++) {
       if (!isCandidatePropCell(x, y)) continue;
@@ -299,65 +393,32 @@ export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
 
       const n = prng.noise2D(x * ROADSIDE_PROP_NOISE_SCALE, y * ROADSIDE_PROP_NOISE_SCALE);
       const mBiome = continent.macroBiomes?.biomeGrid[y]?.[x] ?? 'temperate_meadow';
+      const jitterSkip = prng.noise2D(
+        x * ROADSIDE_PROP_JITTER_SCALE + ROADSIDE_PROP_JITTER_OFFSET_X,
+        y * ROADSIDE_PROP_JITTER_SCALE - ROADSIDE_PROP_JITTER_OFFSET_Y
+      );
+      if (mBiome !== 'mint_highland' && jitterSkip < ROADSIDE_PROP_JITTER_SKIP_THRESHOLD) continue;
 
-      if (mBiome === 'arid_desert') {
-        if (n > DESERT_BOULDER_THRESHOLD) {
+      if (mBiome === 'arid_desert' || mBiome === 'volcanic_plateau') {
+        const boulderThreshold =
+          mBiome === 'arid_desert' ? DESERT_BOULDER_THRESHOLD : VOLCANIC_BOULDER_THRESHOLD;
+        if (n > boulderThreshold) {
           addRoadsideProp(
             {
               type: 'boulder',
               x,
               y,
-              prefabFile: 'poke_boulder_large.png'
-            },
-            ROADSIDE_BOULDER_CLEARANCE
-          );
-        }
-      } else if (mBiome === 'volcanic_plateau') {
-        if (n > VOLCANIC_BOULDER_THRESHOLD) {
-          addRoadsideProp(
-            {
-              type: 'boulder',
-              x,
-              y,
-              prefabFile: 'poke_boulder_gray.png'
+              prefabFile: resolveBoulderPrefabForBiome(mBiome, x, y)
             },
             ROADSIDE_BOULDER_CLEARANCE
           );
         }
       } else if (mBiome === 'mint_highland') {
         if (n > MINT_BUSH_THRESHOLD) {
-          addRoadsideProp(
-            {
-              type: 'bush',
-              x,
-              y,
-              prefabFile: 'poke_bush_round.png'
-            },
-            ROADSIDE_BOULDER_CLEARANCE
-          );
-        } else if (n > MINT_BOULDER_MIN && n <= MINT_BOULDER_MAX) {
-          addRoadsideProp(
-            {
-              type: 'boulder',
-              x,
-              y,
-              prefabFile: 'poke_rock_boulder_mossy_1.png'
-            },
-            ROADSIDE_BOULDER_CLEARANCE
-          );
+          placeMintHighlandBushPair(x, y, isCandidatePropCell, addRoadsideProp);
         }
       } else if (mBiome === 'viridian_forest') {
-        if (n > VIRIDIAN_BUSH_THRESHOLD) {
-          addRoadsideProp(
-            {
-              type: 'bush',
-              x,
-              y,
-              prefabFile: 'poke_bush_round.png'
-            },
-            ROADSIDE_BOULDER_CLEARANCE
-          );
-        } else if (
+        if (
           n < VIRIDIAN_LOG_THRESHOLD &&
           isCandidatePropCell(x + 1, y) &&
           isCandidatePropCell(x + 2, y)
@@ -371,30 +432,7 @@ export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
             },
             ROADSIDE_BOULDER_CLEARANCE
           );
-        }
-      } else {
-        // Temperate Meadow: round bushes, cuttable trees, and flower clusters
-        if (n > MEADOW_ROUND_BUSH_THRESHOLD) {
-          addRoadsideProp(
-            {
-              type: 'bush',
-              x,
-              y,
-              prefabFile: 'poke_bush_round.png'
-            },
-            ROADSIDE_BOULDER_CLEARANCE
-          );
-        } else if (n < MEADOW_FERN_BUSH_THRESHOLD) {
-          addRoadsideProp(
-            {
-              type: 'bush',
-              x,
-              y,
-              prefabFile: 'poke_fern_wild_bush.png'
-            },
-            ROADSIDE_BOULDER_CLEARANCE
-          );
-        } else if (n > MEADOW_FLOWER_MIN && n <= MEADOW_FLOWER_MAX) {
+        } else if (n > VIRIDIAN_BUSH_THRESHOLD && isCandidatePropCell(x + 1, y)) {
           addRoadsideProp(
             {
               type: 'flower',
@@ -405,6 +443,8 @@ export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
             ROADSIDE_BOULDER_CLEARANCE
           );
         }
+      } else if (n > MEADOW_FLOWER_MIN && n <= MEADOW_FLOWER_MAX) {
+        placeMeadowFlowerCluster(x, y, isCandidatePropCell, addRoadsideProp);
       }
     }
   }

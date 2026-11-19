@@ -59,7 +59,7 @@ describe('routeGateFenceElevationIntegrity', () => {
     }
   });
 
-  it('guarantees seed 615856 gate_north_pass has zero fences climbing onto elevation 1 mountain plateau', () => {
+  it('guarantees seed 615856 placed route gates have zero fences climbing onto elevation 1 mountain plateau', () => {
     const continent = generateContinentMap({
       seed: 615856,
       width: 128,
@@ -70,17 +70,19 @@ describe('routeGateFenceElevationIntegrity', () => {
     });
 
     const pois = placeRegionalPOIs(continent, { targetCount: 18, seed: 615856 });
-    const gateNorthPass = pois.find((p) => p.id === 'gate_north_pass');
-    expect(gateNorthPass).toBeDefined();
+    const placedGates = pois.filter((p) => p.type === 'route_gate');
+    expect(placedGates.length).toBeGreaterThan(0);
 
-    const fences = gateNorthPass!.urbanLayout?.props.filter((p) => p.type === 'fence_h') ?? [];
-    expect(fences.length).toBeGreaterThan(0);
+    for (const gate of placedGates) {
+      const fences = gate.urbanLayout?.props.filter((p) => p.type === 'fence_h') ?? [];
+      expect(fences.length).toBeGreaterThan(0);
 
-    for (const f of fences) {
-      const elev = continent.heightmap[f.y]?.[f.x] ?? 0;
-      const isFoot = continent.resolvedMountain.occupiedFootCells[f.y]?.[f.x] ?? false;
-      expect(elev).toBe(gateNorthPass!.elevation);
-      expect(isFoot).toBe(false);
+      for (const f of fences) {
+        const elev = continent.heightmap[f.y]?.[f.x] ?? 0;
+        const isFoot = continent.resolvedMountain.occupiedFootCells[f.y]?.[f.x] ?? false;
+        expect(elev).toBe(gate.elevation);
+        expect(isFoot).toBe(false);
+      }
     }
   });
 });

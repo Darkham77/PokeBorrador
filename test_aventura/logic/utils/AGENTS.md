@@ -14,6 +14,7 @@ Game Prototyping / Adventure Suite.
 ## Key Files
 
 - [`gridBfsUtils.ts`](./gridBfsUtils.ts): Multi-source 2D grid BFS distance field calculation helper.
+- [`gridGeometryUtils.ts`](./gridGeometryUtils.ts): Brush kernel offsets (`square`/`circle`), Bresenham line rasterization, dirty bounds clamping/expansion/merging, sparse-row grid width resolution, and size-to-radius helpers.
 - [`svgCoordinateUtils.ts`](./svgCoordinateUtils.ts): Coordinate transformations, bounding calculations, and viewport wheel zoom math for SVG viewports.
 
 ## Work Guidance

@@ -15,7 +15,7 @@ const STAIR_ENDPOINT_PRESERVE_NORTH = 2 as const;
 const STAIR_ENDPOINT_PRESERVE_LATERAL = 2 as const;
 const STAIR_ENDPOINT_PRESERVE_SOUTH = 3 as const;
 const BRIDGE_ENDPOINT_PRESERVE_RADIUS = 2 as const;
-const MAX_PRUNE_PASSES = 5 as const;
+const MAX_PRUNE_PASSES = 200 as const;
 
 function isCellNearPoiFootprint(x: number, y: number, nodes: readonly POINode[]): boolean {
   for (const poi of nodes) {
@@ -184,7 +184,7 @@ export function pruneDeadEndStubs(
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) {
         if (!pathGrid[y]![x]) continue;
-        if (preservedEndpoints.has(`${x}_${y}`)) continue;
+        if (preservedEndpoints.has(`${x}_${y}`) || isCellNearPoiFootprint(x, y, nodes)) continue;
 
         const neighborCount = countTransitableNeighbors(x, y, W, H, pathGrid, bridgeGrid);
         if (neighborCount <= 1) {

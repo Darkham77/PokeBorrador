@@ -18,6 +18,7 @@ import type { POINode } from '../../types/map/poiTypes.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
 import { isCellAdjacentToMountainStairs } from './continentMountainEngine.ts';
 import { createLcgRng } from './noise/lcgRng.ts';
+import { resolveNaturalBushPrefab } from './wildernessBoundarySealing.ts';
 
 export interface ProgressionObstacleFlank {
   readonly x: number;
@@ -51,10 +52,13 @@ const DEFAULT_MAX_STRENGTH_BOULDERS = 2;
 const MIN_OBSTACLE_SEPARATION = 45;
 const OBSTACLE_POI_CLEARANCE_MARGIN = 4;
 const MAX_BARRIER_RAYCAST_DISTANCE = 7 as const;
-const MAX_CHOKE_CORRIDOR_SPAN = 8 as const;
+const MAX_CHOKE_CORRIDOR_SPAN = 6 as const;
+const MAX_CUT_FLANKING_PROPS = 3 as const;
+const MAX_STRENGTH_FLANKING_PROPS = 4 as const;
+const OBSTACLE_WATER_CLEARANCE_RADIUS = 2 as const;
 
 const CUT_TREE_ASSET = 'tree_cuttable.png' as const;
-const STRENGTH_BOULDER_ASSET = 'poke_boulder_large.png' as const;
+const STRENGTH_BOULDER_ASSET = 'poke_rock_boulder_brown_large.png' as const;
 const CANDIDATE_PATH_PROXIMITY_RADIUS = 3 as const;
 const CANDIDATE_MOUNTAIN_PROXIMITY_RADIUS = 3 as const;
 const CANDIDATE_SEARCH_MARGIN = 6 as const;
@@ -139,9 +143,9 @@ export function generateProgressionObstacles(
       }
     }
 
-    // Must not be adjacent to water or deep water
-    for (let dy = -1; dy <= 1; dy++) {
-      for (let dx = -1; dx <= 1; dx++) {
+    // Must stay clear of coastal water so Auto-Sanar beach widening never turns ground under obstacles into sand
+    for (let dy = -OBSTACLE_WATER_CLEARANCE_RADIUS; dy <= OBSTACLE_WATER_CLEARANCE_RADIUS; dy++) {
+      for (let dx = -OBSTACLE_WATER_CLEARANCE_RADIUS; dx <= OBSTACLE_WATER_CLEARANCE_RADIUS; dx++) {
         const terr = continent.terrainMatrix[y + dy]?.[x + dx];
         if (terr === 'water' || terr === 'water_deep') return false;
       }
@@ -271,11 +275,15 @@ export function generateProgressionObstacles(
     });
     if (tooClose) continue;
 
-    const prop = cand.nearMountain
-      ? continent.mountainPalette === 'brown'
-        ? 'poke_boulder_brown.png'
-        : 'poke_boulder_gray.png'
-      : 'poke_fence_wood_h.png';
+    const fenceProp = isHorizontalChoke ? 'poke_fence_wood_h.png' : 'poke_fence_wood_v.png';
+    const resolveFlankPrefab = (fx: number, fy: number): string => {
+      const mBiome = continent.macroBiomes?.biomeGrid[fy]?.[fx];
+      const terr = continent.terrainMatrix[fy]?.[fx];
+      if (cand.nearMountain || terr === 'sand') {
+        return resolveNaturalBushPrefab(mBiome, fx, fy);
+      }
+      return fenceProp;
+    };
     const flanking: ProgressionObstacleFlank[] = [];
 
     if (isHorizontalChoke) {
@@ -284,7 +292,7 @@ export function generateProgressionObstacles(
         const fx = cand.x + dx;
         const fy = cand.y;
         if (isImpassableBarrier(fx, fy)) continue;
-        flanking.push({ x: fx, y: fy, prefabFile: prop });
+        flanking.push({ x: fx, y: fy, prefabFile: resolveFlankPrefab(fx, fy) });
       }
     } else if (isVerticalChoke) {
       for (let dy = -(vUp - 1); dy <= vDown - 1; dy++) {
@@ -292,18 +300,21 @@ export function generateProgressionObstacles(
         const fx = cand.x;
         const fy = cand.y + dy;
         if (isImpassableBarrier(fx, fy)) continue;
-        flanking.push({ x: fx, y: fy, prefabFile: prop });
+        flanking.push({ x: fx, y: fy, prefabFile: resolveFlankPrefab(fx, fy) });
       }
     }
 
-    // Cut trees must block genuine narrow chokepoints with at most 3 flanking props
-    if (isCut && flanking.length > 3) {
-      if (strengthCount < maxStrengthBoulders) {
+    // Cut trees must block genuine narrow chokepoints with at most MAX_CUT_FLANKING_PROPS flanking props
+    if (isCut && flanking.length > MAX_CUT_FLANKING_PROPS) {
+      if (strengthCount < maxStrengthBoulders && flanking.length <= MAX_STRENGTH_FLANKING_PROPS) {
         isCut = false;
         isStrength = true;
       } else {
         continue;
       }
+    }
+    if (isStrength && flanking.length > MAX_STRENGTH_FLANKING_PROPS) {
+      continue;
     }
 
     // Mathematical Anti-Bypass BFS: ensure player cannot walk around the obstacle

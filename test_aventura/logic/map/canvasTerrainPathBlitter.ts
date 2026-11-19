@@ -13,7 +13,9 @@
 
 import { CANVAS_RENDERER } from '../../config/canvasRendererConfig.ts';
 import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+import type { DirtyTileBounds } from '../../types/map/autotileHealingTypes.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
+import { clampDirtyBounds, expandDirtyBounds } from '../utils/gridGeometryUtils.ts';
 import { CARDINAL_DELTAS, hasDropped2DInnerCorner } from './autotileDefectScanner.ts';
 import { resolveCanonicalBridges } from './canonicalBridgeEngine.ts';
 import type { BuildMapBlitOptions } from './canvasTileRenderer.ts';
@@ -59,6 +61,11 @@ function blitTileWithOverlays(
 
 const MAX_CLIP_POLISH_ITERS = 16;
 const MIN_CLIPPED_SNIPPET_CELLS = 12;
+const PATH_POLISH_MARGIN_TILES = 24;
+
+function isCoordInsideBounds(x: number, y: number, b: DirtyTileBounds): boolean {
+  return x >= b.minX && x <= b.maxX && y >= b.minY && y <= b.maxY;
+}
 
 interface ClippedPathPolishContext {
   readonly pathGrid: boolean[][];
@@ -69,6 +76,9 @@ interface ClippedPathPolishContext {
   readonly urbanRoadSet: ReadonlySet<string>;
   readonly plazaGrid: readonly (readonly boolean[])[];
   readonly isPavedSector: (r: number, c: number) => boolean;
+  readonly subBounds: DirtyTileBounds;
+  readonly isBoundedMode: boolean;
+  readonly manualPathGrid?: readonly (readonly boolean[])[];
 }
 
 function hasClippedEffectivePath(ctx: ClippedPathPolishContext, x: number, y: number): boolean {
@@ -133,20 +143,23 @@ function collectCellClippedElbows(
 
 function fillClippedPathElbowsOnce(ctx: ClippedPathPolishContext): void {
   const additions: { x: number; y: number }[] = [];
-  for (let y = 0; y < ctx.continent.height; y++) {
-    for (let x = 0; x < ctx.continent.width; x++) {
+  for (let y = ctx.subBounds.minY; y <= ctx.subBounds.maxY; y++) {
+    for (let x = ctx.subBounds.minX; x <= ctx.subBounds.maxX; x++) {
       if (ctx.pathGrid[y]?.[x]) {
         collectCellClippedElbows(ctx, x, y, additions);
       }
     }
   }
   for (const pt of additions) {
-    ctx.pathGrid[pt.y]![pt.x] = true;
+    const row = ctx.pathGrid[pt.y];
+    if (row) row[pt.x] = true;
   }
 }
 
 function isInvalidClippedPathCell(ctx: ClippedPathPolishContext, x: number, y: number): boolean {
-  if (!ctx.pathGrid[y]?.[x] || ctx.bridgeGrid?.[y]?.[x]) return false;
+  if (!ctx.pathGrid[y]?.[x] || ctx.bridgeGrid?.[y]?.[x] || ctx.manualPathGrid?.[y]?.[x]) {
+    return false;
+  }
   const pN = hasClippedEffectivePath(ctx, x, y - 1);
   const pS = hasClippedEffectivePath(ctx, x, y + 1);
   const pW = hasClippedEffectivePath(ctx, x - 1, y);
@@ -173,12 +186,12 @@ function clearClippedPair(
 ): boolean {
   let cleared = false;
   const row1 = ctx.pathGrid[y1];
-  if (row1?.[x1] && !ctx.bridgeGrid?.[y1]?.[x1]) {
+  if (row1?.[x1] && !ctx.bridgeGrid?.[y1]?.[x1] && !ctx.manualPathGrid?.[y1]?.[x1]) {
     row1[x1] = false;
     cleared = true;
   }
   const row2 = ctx.pathGrid[y2];
-  if (row2?.[x2] && !ctx.bridgeGrid?.[y2]?.[x2]) {
+  if (row2?.[x2] && !ctx.bridgeGrid?.[y2]?.[x2] && !ctx.manualPathGrid?.[y2]?.[x2]) {
     row2[x2] = false;
     cleared = true;
   }
@@ -187,8 +200,10 @@ function clearClippedPair(
 
 function pruneClippedQuadPinchesPass(ctx: ClippedPathPolishContext): boolean {
   let changed = false;
-  for (let y = 0; y < ctx.continent.height - 1; y++) {
-    for (let x = 0; x < ctx.continent.width - 1; x++) {
+  const maxY = Math.min(ctx.continent.height - 2, ctx.subBounds.maxY);
+  const maxX = Math.min(ctx.continent.width - 2, ctx.subBounds.maxX);
+  for (let y = ctx.subBounds.minY; y <= maxY; y++) {
+    for (let x = ctx.subBounds.minX; x <= maxX; x++) {
       const tl = hasClippedEffectivePath(ctx, x, y);
       const tr = hasClippedEffectivePath(ctx, x + 1, y);
       const bl = hasClippedEffectivePath(ctx, x, y + 1);
@@ -205,8 +220,8 @@ function pruneClippedQuadPinchesPass(ctx: ClippedPathPolishContext): boolean {
 
 function pruneClippedSliversPass(ctx: ClippedPathPolishContext): boolean {
   const removals: { x: number; y: number }[] = [];
-  for (let y = 0; y < ctx.continent.height; y++) {
-    for (let x = 0; x < ctx.continent.width; x++) {
+  for (let y = ctx.subBounds.minY; y <= ctx.subBounds.maxY; y++) {
+    for (let x = ctx.subBounds.minX; x <= ctx.subBounds.maxX; x++) {
       if (isInvalidClippedPathCell(ctx, x, y)) {
         removals.push({ x, y });
       }
@@ -285,6 +300,16 @@ function isClippedCellAnchored(
   x: number,
   y: number
 ): boolean {
+  if (ctx.manualPathGrid?.[y]?.[x]) return true;
+  if (
+    ctx.isBoundedMode &&
+    ((x === ctx.subBounds.minX && x > 0) ||
+      (x === ctx.subBounds.maxX && x < ctx.continent.width - 1) ||
+      (y === ctx.subBounds.minY && y > 0) ||
+      (y === ctx.subBounds.maxY && y < ctx.continent.height - 1))
+  ) {
+    return true;
+  }
   const { continent } = ctx;
   if ((continent.heightmap[y]?.[x] ?? 0) >= 1) return true;
   const biome = continent.macroBiomes?.biomeGrid[y]?.[x];
@@ -316,6 +341,7 @@ function collectClippedComponent(
     for (const d of CARDINAL_DELTAS) {
       const nx = cur.x + d.dx;
       const ny = cur.y + d.dy;
+      if (!isCoordInsideBounds(nx, ny, ctx.subBounds)) continue;
       const key = `${nx}_${ny}`;
       if (ctx.pathGrid[ny]?.[nx] && !visited.has(key)) {
         visited.add(key);
@@ -330,8 +356,8 @@ function collectClippedComponent(
 function pruneUnanchoredClippedSnippets(ctx: ClippedPathPolishContext): void {
   const anchorKeys = buildClippedPathAnchorSet(ctx);
   const visited = new Set<string>();
-  for (let y = 0; y < ctx.continent.height; y++) {
-    for (let x = 0; x < ctx.continent.width; x++) {
+  for (let y = ctx.subBounds.minY; y <= ctx.subBounds.maxY; y++) {
+    for (let x = ctx.subBounds.minX; x <= ctx.subBounds.maxX; x++) {
       if (!ctx.pathGrid[y]?.[x] || visited.has(`${x}_${y}`)) continue;
       const comp = collectClippedComponent(ctx, x, y, visited, anchorKeys);
       if (!comp.anchored && comp.cells.length < MIN_CLIPPED_SNIPPET_CELLS) {
@@ -352,11 +378,42 @@ function polishClippedPathGrid(ctx: ClippedPathPolishContext): void {
 /**
  * Renders base terrain, water, urban avenues, plazas, paths, bridges, and mountain cliffs.
  */
+function markMetropolisCapitalPlazaRect(
+  poi: POINode,
+  allocBounds: DirtyTileBounds,
+  plazaGrid: boolean[][],
+  urbanRoadSet: Set<string>
+): void {
+  const minX = Math.max(allocBounds.minX, poi.gridX);
+  const maxX = Math.min(allocBounds.maxX + 1, poi.gridX + poi.footprint.width);
+  const minY = Math.max(allocBounds.minY, poi.gridY);
+  const maxY = Math.min(allocBounds.maxY + 1, poi.gridY + poi.footprint.height);
+  for (let y = minY; y < maxY; y++) {
+    const plazaRow = plazaGrid[y];
+    for (let x = minX; x < maxX; x++) {
+      if (plazaRow) plazaRow[x] = true;
+      urbanRoadSet.add(`${x}_${y}`);
+    }
+  }
+}
+
 export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
   const { continent, pois, pathGrid, bridgeGrid, buildingFootprintMask, addBlit, options } = ctx;
 
   const H = continent.height;
   const W = continent.width;
+  if (H === 0 || W === 0) return;
+
+  const isBoundedMode = options?.bounds !== undefined;
+  const renderBounds = options?.bounds
+    ? clampDirtyBounds(options.bounds, W, H)
+    : { minX: 0, minY: 0, maxX: W - 1, maxY: H - 1 };
+  if (renderBounds.minX > renderBounds.maxX || renderBounds.minY > renderBounds.maxY) return;
+
+  const subBounds = isBoundedMode
+    ? expandDirtyBounds(renderBounds, PATH_POLISH_MARGIN_TILES, W, H)
+    : renderBounds;
+  const allocBounds = isBoundedMode ? expandDirtyBounds(subBounds, 1, W, H) : renderBounds;
 
   // 1. Base Terrain & Water & Coast & Foam
   const macroBiomesResult =
@@ -427,6 +484,19 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
             ? 'poke_cliff_gray_plateau_rock.png'
             : 'poke_cliff_brown_plateau_rock.png';
         addBlit(plateauBase, px, py);
+
+        // Side cliff edges immediately adjacent to protruding higher south cliff faces need face underlay beneath the wall
+        if (r > 0 && c > 0 && mCell?.role === 'edge_west') {
+          const westNorthMtn = continent.resolvedMountain.cellDetails[r - 1]?.[c - 1];
+          if (westNorthMtn?.projectedFoot && !westNorthMtn.projectedFoot.tile.includes('corner')) {
+            addBlit(westNorthMtn.projectedFoot.tile, px, py);
+          }
+        } else if (r > 0 && c < W - 1 && mCell?.role === 'edge_east') {
+          const eastNorthMtn = continent.resolvedMountain.cellDetails[r - 1]?.[c + 1];
+          if (eastNorthMtn?.projectedFoot && !eastNorthMtn.projectedFoot.tile.includes('corner')) {
+            addBlit(eastNorthMtn.projectedFoot.tile, px, py);
+          }
+        }
       }
       return;
     }
@@ -467,18 +537,26 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
     }
   };
 
-  for (let r = 0; r < H; r++) {
-    for (let c = 0; c < W; c++) {
+  for (let r = renderBounds.minY; r <= renderBounds.maxY; r++) {
+    for (let c = renderBounds.minX; c <= renderBounds.maxX; c++) {
       renderCellBaseTerrain(r, c);
     }
   }
 
   // 2. Urban Streets & Paved Sidewalks/Plazas in Settlements
   const urbanRoadSet = new Set<string>();
-  const unifiedPathGrid: boolean[][] = Array.from({ length: H }, (_, r) =>
-    Array.from({ length: W }, (_, c) => Boolean(pathGrid[r]?.[c]) && !buildingFootprintMask[r]?.[c])
-  );
-  const plazaGrid: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
+  const unifiedPathGrid: boolean[][] = Array.from({ length: H }, (): boolean[] => []);
+  const plazaGrid: boolean[][] = Array.from({ length: H }, (): boolean[] => []);
+  for (let r = allocBounds.minY; r <= allocBounds.maxY; r++) {
+    const pRow = pathGrid[r];
+    const bRow = buildingFootprintMask[r];
+    const uRow = Array<boolean>(W).fill(false);
+    for (let c = allocBounds.minX; c <= allocBounds.maxX; c++) {
+      uRow[c] = Boolean(pRow?.[c]) && !bRow?.[c];
+    }
+    unifiedPathGrid[r] = uRow;
+    plazaGrid[r] = Array<boolean>(W).fill(false);
+  }
 
   for (const poi of pois) {
     const isDirtSettlement =
@@ -489,14 +567,14 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
 
     if ((poi.type !== 'city' || isDirtSettlement) && poi.type !== 'metropolis') continue;
 
-    const minX = Math.max(0, poi.gridX);
-    const maxX = Math.min(W, poi.gridX + poi.footprint.width);
-    const minY = Math.max(0, poi.gridY);
-    const maxY = Math.min(H, poi.gridY + poi.footprint.height);
+    const minX = Math.max(allocBounds.minX, poi.gridX);
+    const maxX = Math.min(allocBounds.maxX + 1, poi.gridX + poi.footprint.width);
+    const minY = Math.max(allocBounds.minY, poi.gridY);
+    const maxY = Math.min(allocBounds.maxY + 1, poi.gridY + poi.footprint.height);
     for (let y = minY; y < maxY; y++) {
       for (let x = minX; x < maxX; x++) {
         const isGateway = poi.gateways?.some((gw) => gw.x === x && gw.y === y);
-        if (!isGateway) {
+        if (!isGateway && unifiedPathGrid[y]) {
           unifiedPathGrid[y]![x] = false;
         }
       }
@@ -515,6 +593,7 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
     ];
 
     for (const cell of internalStreets) {
+      if (!isCoordInsideBounds(cell.x, cell.y, renderBounds)) continue;
       if (buildingFootprintMask[cell.y]?.[cell.x]) continue;
       const px = cell.x * CANVAS_TILE_SIZE;
       const py = cell.y * CANVAS_TILE_SIZE;
@@ -548,47 +627,49 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
 
     if (isDirtSettlement) {
       for (const cell of poi.urbanLayout.internalStreets) {
+        if (!isCoordInsideBounds(cell.x, cell.y, allocBounds)) continue;
         if (buildingFootprintMask[cell.y]?.[cell.x]) continue;
-        unifiedPathGrid[cell.y]![cell.x] = true;
+        if (unifiedPathGrid[cell.y]) unifiedPathGrid[cell.y]![cell.x] = true;
       }
     } else if (poi.type === 'metropolis') {
       for (const cell of poi.urbanLayout.internalStreets) {
-        plazaGrid[cell.y]![cell.x] = true;
+        if (!isCoordInsideBounds(cell.x, cell.y, allocBounds)) continue;
+        if (plazaGrid[cell.y]) plazaGrid[cell.y]![cell.x] = true;
         urbanRoadSet.add(`${cell.x}_${cell.y}`);
       }
     } else {
       const roadTile = getCanonicalUrbanRoadTile(poi.type);
       for (const cell of poi.urbanLayout.internalStreets) {
+        if (!isCoordInsideBounds(cell.x, cell.y, allocBounds)) continue;
         if (buildingFootprintMask[cell.y]?.[cell.x]) continue;
         urbanRoadSet.add(`${cell.x}_${cell.y}`);
-        addBlit(roadTile, cell.x * CANVAS_TILE_SIZE, cell.y * CANVAS_TILE_SIZE);
+        if (isCoordInsideBounds(cell.x, cell.y, renderBounds)) {
+          addBlit(roadTile, cell.x * CANVAS_TILE_SIZE, cell.y * CANVAS_TILE_SIZE);
+        }
       }
       renderUrbanCurbs(poi);
     }
 
     for (const cell of poi.urbanLayout.pavedPlazaCells) {
-      plazaGrid[cell.y]![cell.x] = true;
+      if (!isCoordInsideBounds(cell.x, cell.y, allocBounds)) continue;
+      if (plazaGrid[cell.y]) plazaGrid[cell.y]![cell.x] = true;
       urbanRoadSet.add(`${cell.x}_${cell.y}`);
     }
 
     if (poi.type === 'metropolis' && poi.id === 'celadon_capital') {
-      const minX = Math.max(0, poi.gridX);
-      const maxX = Math.min(W, poi.gridX + poi.footprint.width);
-      const minY = Math.max(0, poi.gridY);
-      const maxY = Math.min(H, poi.gridY + poi.footprint.height);
-      for (let y = minY; y < maxY; y++) {
-        for (let x = minX; x < maxX; x++) {
-          plazaGrid[y]![x] = true;
-          urbanRoadSet.add(`${x}_${y}`);
-        }
-      }
+      markMetropolisCapitalPlazaRect(poi, allocBounds, plazaGrid, urbanRoadSet);
     }
   }
 
   // 2b. Autotile Cobblestone Plazas using CANONICAL_STONE_PLAZA_BRUSH
-  const plazaAutotile = resolvePathGrid(plazaGrid, undefined, CANONICAL_STONE_PLAZA_BRUSH);
-  for (let r = 0; r < H; r++) {
-    for (let c = 0; c < W; c++) {
+  const plazaAutotile = resolvePathGrid(
+    plazaGrid,
+    undefined,
+    CANONICAL_STONE_PLAZA_BRUSH,
+    renderBounds
+  );
+  for (let r = renderBounds.minY; r <= renderBounds.maxY; r++) {
+    for (let c = renderBounds.minX; c <= renderBounds.maxX; c++) {
       const plCell = plazaAutotile.pathDetails[r]?.[c];
       if (plCell) {
         blitTileWithOverlays(
@@ -606,46 +687,82 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
   for (const poi of pois) {
     if (poi.type !== 'metropolis' && poi.type !== 'pokemon_league' && poi.urbanLayout?.curbs) {
       for (const curb of poi.urbanLayout.curbs) {
+        if (!isCoordInsideBounds(curb.x, curb.y, renderBounds)) continue;
         if (buildingFootprintMask[curb.y]?.[curb.x]) continue;
         addBlit(curb.curbTile, curb.x * CANVAS_TILE_SIZE, curb.y * CANVAS_TILE_SIZE);
       }
     }
   }
 
-  // 3. Dirt Paths & Road Network
-  const isPavedSector = (r: number, c: number): boolean => {
-    if (urbanRoadSet.has(`${c}_${r}`)) return true;
-    const elev = continent.heightmap[r]?.[c] ?? 0;
-    if (elev >= 1) return true;
-    const mBiome = continent.macroBiomes?.biomeGrid[r]?.[c];
-    if (mBiome === 'arid_desert' || mBiome === 'volcanic_plateau') return true;
-
-    for (const poi of pois) {
-      if (
-        c >= poi.gridX - 4 &&
-        c <= poi.gridX + poi.footprint.width + 4 &&
-        r >= poi.gridY - 4 &&
-        r <= poi.gridY + poi.footprint.height + 4
-      ) {
-        return true;
+  // 3. Dirt Paths & Road Network (preserve POI-connected interurban trails & manual paths; prune detached/severed stubs)
+  const poiReachablePathKeys = new Set<string>();
+  const pathSeedQueue: { readonly x: number; readonly y: number }[] = [];
+  for (const poi of pois) {
+    const minPx = Math.max(allocBounds.minX, poi.gridX - 1);
+    const maxPx = Math.min(allocBounds.maxX, poi.gridX + poi.footprint.width);
+    const minPy = Math.max(allocBounds.minY, poi.gridY - 1);
+    const maxPy = Math.min(allocBounds.maxY, poi.gridY + poi.footprint.height);
+    for (let pr = minPy; pr <= maxPy; pr++) {
+      for (let pc = minPx; pc <= maxPx; pc++) {
+        if (!unifiedPathGrid[pr]?.[pc] && !bridgeGrid?.[pr]?.[pc]) continue;
+        const key = `${pc}_${pr}`;
+        if (poiReachablePathKeys.has(key)) continue;
+        poiReachablePathKeys.add(key);
+        pathSeedQueue.push({ x: pc, y: pr });
       }
     }
-    return false;
+  }
+  for (let qi = 0; qi < pathSeedQueue.length; qi++) {
+    const cur = pathSeedQueue[qi]!;
+    for (const [dx, dy] of [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1]
+    ] as const) {
+      const nx = cur.x + dx;
+      const ny = cur.y + dy;
+      if (
+        nx < allocBounds.minX ||
+        nx > allocBounds.maxX ||
+        ny < allocBounds.minY ||
+        ny > allocBounds.maxY
+      ) {
+        continue;
+      }
+      if (!unifiedPathGrid[ny]?.[nx] && !bridgeGrid?.[ny]?.[nx]) continue;
+      const key = `${nx}_${ny}`;
+      if (poiReachablePathKeys.has(key)) continue;
+      poiReachablePathKeys.add(key);
+      pathSeedQueue.push({ x: nx, y: ny });
+    }
+  }
+
+  const isPavedSector = (r: number, c: number): boolean => {
+    if (urbanRoadSet.has(`${c}_${r}`)) return true;
+    if (options?.manualPathGrid?.[r]?.[c]) return true;
+    return poiReachablePathKeys.has(`${c}_${r}`);
   };
 
-  for (let r = 0; r < H; r++) {
-    for (let c = 0; c < W; c++) {
+  for (let r = allocBounds.minY; r <= allocBounds.maxY; r++) {
+    for (let c = allocBounds.minX; c <= allocBounds.maxX; c++) {
       if (
-        continent.terrainMatrix[r]?.[c] === 'sand' ||
+        (continent.terrainMatrix[r]?.[c] !== 'grass' &&
+          continent.terrainMatrix[r]?.[c] !== 'sand') ||
         buildingFootprintMask[r]?.[c] ||
         continent.resolvedMountain.occupiedFootCells[r]?.[c] ||
         !isPavedSector(r, c)
       ) {
-        unifiedPathGrid[r]![c] = false;
+        if (unifiedPathGrid[r]) unifiedPathGrid[r]![c] = false;
       }
     }
   }
-  const sanitizedPathGrid = sanitizePathGridWidth(unifiedPathGrid, continent.terrainMatrix);
+  const sanitizedPathGrid = sanitizePathGridWidth(
+    unifiedPathGrid,
+    continent.terrainMatrix,
+    options?.manualPathGrid,
+    subBounds
+  );
   polishClippedPathGrid({
     pathGrid: sanitizedPathGrid,
     continent,
@@ -654,14 +771,19 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
     buildingFootprintMask,
     urbanRoadSet,
     plazaGrid,
-    isPavedSector
+    isPavedSector,
+    subBounds,
+    isBoundedMode,
+    manualPathGrid: options?.manualPathGrid
   });
-  const pathAutotile = resolvePathGrid(sanitizedPathGrid, bridgeGrid);
-  for (let r = 0; r < H; r++) {
-    for (let c = 0; c < W; c++) {
+  const pathAutotile = resolvePathGrid(sanitizedPathGrid, bridgeGrid, undefined, renderBounds);
+  for (let r = renderBounds.minY; r <= renderBounds.maxY; r++) {
+    for (let c = renderBounds.minX; c <= renderBounds.maxX; c++) {
       const pCell = pathAutotile.pathDetails[r]?.[c];
       if (!pCell || pCell.isBridge) continue;
-      if (continent.terrainMatrix[r]?.[c] === 'sand') continue;
+      if (continent.terrainMatrix[r]?.[c] !== 'grass') continue;
+      // Sand deserts use CANONICAL_SAND_BEACH_BRUSH directly; blitting dirt-path borders over sand leaves artificial outline rings inside sand.
+      if (continent.macroBiomes?.biomeGrid[r]?.[c] === 'arid_desert') continue;
 
       const px = c * CANVAS_TILE_SIZE;
       const py = r * CANVAS_TILE_SIZE;
@@ -763,7 +885,8 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
     const isPortDockCell = (cx: number, cy: number): boolean =>
       portDockBridgeKeys.has(`${cx}_${cy}`);
     const bridgeBlits = resolveCanonicalBridges(bridgeGrid, continent.cells, {
-      isPortDockCell
+      isPortDockCell,
+      bounds: renderBounds
     });
     for (const b of bridgeBlits) {
       addBlit(b.file, b.x * CANVAS_TILE_SIZE, b.y * CANVAS_TILE_SIZE);
@@ -817,8 +940,8 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
     }
   };
 
-  for (let r = 0; r < H; r++) {
-    for (let c = 0; c < W; c++) {
+  for (let r = renderBounds.minY; r <= renderBounds.maxY; r++) {
+    for (let c = renderBounds.minX; c <= renderBounds.maxX; c++) {
       renderCellCliffs(r, c);
     }
   }
@@ -827,7 +950,7 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
   if (options?.ledges) {
     for (const run of options.ledges) {
       for (const t of run.tiles) {
-        if (!buildingFootprintMask[t.y]?.[t.x]) {
+        if (isCoordInsideBounds(t.x, t.y, renderBounds) && !buildingFootprintMask[t.y]?.[t.x]) {
           addBlit(t.tileFile, t.x * CANVAS_TILE_SIZE, t.y * CANVAS_TILE_SIZE);
         }
       }

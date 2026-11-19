@@ -8,6 +8,8 @@
 import type { DisplayText, IsoDateString } from '@francogp/auditor';
 
 import type { WaterTerrainKind } from '../../logic/map/waterAutotileEngine.ts';
+import type { WildernessLayerResult } from '../../logic/map/wildernessVegetationEngine.ts';
+import type { BrushShape, MountainHealPolicy } from './continentBrushTypes.ts';
 import type { POINode } from './poiTypes.ts';
 
 export const HEALING_DOMAINS = ['auto', 'path', 'mountain', 'water', 'macro_biome'] as const;
@@ -27,6 +29,7 @@ export const AUTOTILE_DEFECT_KINDS = [
   'sand_dual_boundary_pinch',
   'ocean_grass_direct_contact',
   'path_sliver_or_orphan',
+  'bridge_invalid_span',
   'macro_biome_sliver',
   'macro_biome_diagonal_pinch'
 ] as const;
@@ -59,8 +62,13 @@ export interface ContinentDefectScanReport {
 export interface AutotileHealingOptions {
   readonly domain?: HealingDomain;
   readonly radius?: number;
+  readonly shape?: BrushShape;
+  readonly mountainPolicy?: MountainHealPolicy;
   readonly pois?: readonly POINode[];
   readonly bridgeGrid?: readonly (readonly boolean[])[];
+  readonly manualPathGrid?: readonly (readonly boolean[])[];
+  readonly wilderness?: WildernessLayerResult | null;
+  readonly preserveRouteBridges?: boolean;
 }
 
 export interface ContinentHealingSummary {
@@ -72,5 +80,8 @@ export interface ContinentHealingSummary {
   readonly defectsBefore: number;
   readonly defectsAfter: number;
   readonly repairedCount: number;
+  readonly changedCellCount?: number;
+  readonly prunedTreeCount?: number;
+  readonly prunedPropCount?: number;
   readonly timestamp: IsoDateString;
 }

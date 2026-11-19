@@ -17,7 +17,7 @@ import type { POINode } from '../../types/map/poiTypes.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
 import type { WildernessOptions } from './wildernessVegetationEngine.ts';
 
-const CLIFF_SAFETY_VERTICAL_RADIUS = 2 as const;
+const CLIFF_SAFETY_VERTICAL_RADIUS = 1 as const;
 const STAIR_CORRIDOR_NORTH_BUFFER = 2 as const;
 
 export interface WildernessOccupancyMasks {
@@ -73,9 +73,6 @@ function blockPoiLayoutElements(
   }
   if (poi.urbanLayout?.props) {
     for (const p of poi.urbanLayout.props) {
-      if (poi.type === 'route_gate' && (p.type === 'fence_h' || p.type === 'fence_v')) {
-        continue;
-      }
       if (p.y >= 0 && p.y < height && p.x >= 0 && p.x < width) {
         targets.treeBlocked[p.y]![p.x] = true;
         targets.urbanBlocked[p.y]![p.x] = true;
@@ -163,14 +160,11 @@ export function buildWildernessOccupancyMasks(
     }
   }
 
-  // 1.2 Mountain cliffs & safety buffer
+  // 1.2 Mountain cliff feet safety buffer (only protect south cliff feet on ground floor)
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      const mCell = continent.resolvedMountain.cellDetails[y]?.[x];
       const isFoot = continent.resolvedMountain.occupiedFootCells[y]?.[x];
-      const isCliffEdge = mCell && mCell.role !== 'floor_center';
-
-      if (isFoot || isCliffEdge) {
+      if (isFoot) {
         markCliffSafetyBuffer(x, y, W, H, treeBlocked);
       }
     }

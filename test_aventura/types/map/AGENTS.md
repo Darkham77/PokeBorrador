@@ -22,6 +22,7 @@ Frontend Engineers / Map Systems Architects.
 - [`adventureWorldTypes.ts`](./adventureWorldTypes.ts): Module implementation.
 - [`autotileHealingTypes.ts`](./autotileHealingTypes.ts): Strict domain contracts and data models for autotile healing brush engine.
 - [`autotileStudioTypes.ts`](./autotileStudioTypes.ts): Module implementation.
+- [`continentBrushTypes.ts`](./continentBrushTypes.ts): Strict domain contracts for creative brush modes/targets, `DirtyRectHistoryDelta` snapshots, eyedropper samples, and sparse manual edit patches.
 - [`continentTypes.ts`](./continentTypes.ts): Module implementation.
 - [`kantoGridModel.ts`](./kantoGridModel.ts): Grid coordinates and spatial model contracts for Kanto regional map.
 - [`kantoTileEngineTypes.ts`](./kantoTileEngineTypes.ts): Canonical type contracts and interfaces for Kanto tile rendering, autotile layouts, and prefabs.

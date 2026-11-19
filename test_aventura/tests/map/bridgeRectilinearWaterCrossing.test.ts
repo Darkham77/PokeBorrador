@@ -105,35 +105,52 @@ describe('bridgeRectilinearWaterCrossing', () => {
       (b) => b.x >= minWaterX && b.x <= maxWaterX && b.y >= minWaterY && b.y <= maxWaterY
     );
 
-    // Group by row (if vertical) or col (if horizontal)
+    // Group contiguous water segments (a route may cross two distinct water bodies separated by land)
+    const groupContiguous = (sortedCoords: readonly number[]): number[][] => {
+      const spans: number[][] = [];
+      for (const coord of sortedCoords) {
+        const lastSpan = spans[spans.length - 1];
+        if (!lastSpan || coord - lastSpan[lastSpan.length - 1]! > 1) {
+          spans.push([coord]);
+        } else {
+          lastSpan.push(coord);
+        }
+      }
+      return spans;
+    };
+
     const isVertical = maxWaterY - minWaterY >= maxWaterX - minWaterX;
 
-    let commonCols: number[] | null = null;
     if (isVertical) {
       const sortedWaterYs = [...waterYs].sort((a, b) => a - b);
-      const interiorWaterYs = sortedWaterYs.length > 2 ? sortedWaterYs.slice(1, -1) : sortedWaterYs;
-      for (const y of interiorWaterYs) {
-        const rowBlits = faroWaterBlits.filter((b) => b.y === y);
-        const cols = rowBlits.map((b) => b.x).sort((a, b) => a - b);
-        expect(cols).toHaveLength(2);
-        if (!commonCols) {
-          commonCols = cols;
-        } else {
-          expect(cols).toEqual(commonCols);
+      for (const span of groupContiguous(sortedWaterYs)) {
+        const interiorYs = span.length > 2 ? span.slice(1, -1) : span;
+        let commonCols: number[] | null = null;
+        for (const y of interiorYs) {
+          const rowBlits = faroWaterBlits.filter((b) => b.y === y);
+          const cols = rowBlits.map((b) => b.x).sort((a, b) => a - b);
+          expect(cols).toHaveLength(2);
+          if (!commonCols) {
+            commonCols = cols;
+          } else {
+            expect(cols, `Mismatch at y=${y}; span=${span.join(',')}`).toEqual(commonCols);
+          }
         }
       }
     } else {
-      let commonRows: number[] | null = null;
       const sortedWaterXs = [...waterXs].sort((a, b) => a - b);
-      const interiorWaterXs = sortedWaterXs.length > 2 ? sortedWaterXs.slice(1, -1) : sortedWaterXs;
-      for (const x of interiorWaterXs) {
-        const colBlits = faroWaterBlits.filter((b) => b.x === x);
-        const rows = colBlits.map((b) => b.y).sort((a, b) => a - b);
-        expect(rows).toHaveLength(2);
-        if (!commonRows) {
-          commonRows = rows;
-        } else {
-          expect(rows).toEqual(commonRows);
+      for (const span of groupContiguous(sortedWaterXs)) {
+        const interiorXs = span.length > 2 ? span.slice(1, -1) : span;
+        let commonRows: number[] | null = null;
+        for (const x of interiorXs) {
+          const colBlits = faroWaterBlits.filter((b) => b.x === x);
+          const rows = colBlits.map((b) => b.y).sort((a, b) => a - b);
+          expect(rows).toHaveLength(2);
+          if (!commonRows) {
+            commonRows = rows;
+          } else {
+            expect(rows).toEqual(commonRows);
+          }
         }
       }
     }
@@ -149,7 +166,7 @@ describe('bridgeRectilinearWaterCrossing', () => {
     const sandBlits = faroWaterBlits.filter((b) => continent.cells[b.y]![b.x]!.terrain === 'sand');
     expect(sandBlits).toHaveLength(0);
 
-    // Guarantee the start and end of the bridge corridor land on solid sand
+    // Guarantee the start and end of the bridge corridor land on dry shore terrain (sand on coast, grass on inland lakes)
     const firstWaterIdx = faroEdge!.waypoints.findIndex(
       (pt) => continent.cells[pt.y]?.[pt.x]?.terrain === 'water'
     );
@@ -159,12 +176,12 @@ describe('bridgeRectilinearWaterCrossing', () => {
     const landing1 = faroEdge!.waypoints[firstWaterIdx - 1];
     const landing2 = faroEdge!.waypoints[lastWaterIdx + 1];
     if (landing1) {
-      expect(continent.cells[landing1.y]![landing1.x]!.terrain).toBe('sand');
-      expect(continent.terrainMatrix[landing1.y]![landing1.x]).toBe('sand');
+      expect(['sand', 'grass']).toContain(continent.cells[landing1.y]![landing1.x]!.terrain);
+      expect(['sand', 'grass']).toContain(continent.terrainMatrix[landing1.y]![landing1.x]);
     }
     if (landing2) {
-      expect(continent.cells[landing2.y]![landing2.x]!.terrain).toBe('sand');
-      expect(continent.terrainMatrix[landing2.y]![landing2.x]).toBe('sand');
+      expect(['sand', 'grass']).toContain(continent.cells[landing2.y]![landing2.x]!.terrain);
+      expect(['sand', 'grass']).toContain(continent.terrainMatrix[landing2.y]![landing2.x]);
     }
   });
 

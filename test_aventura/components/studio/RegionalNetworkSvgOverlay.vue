@@ -17,10 +17,12 @@ import { ref, computed } from 'vue';
 import { CANVAS_TILE_SIZE, STUDIO_TILE_SIZE } from '../../config/studioConstants.ts';
 import { screenToSvgCoords as transformScreenToSvg } from '../../logic/utils/svgCoordinateUtils.ts';
 import { useRegionalContinentStudioStore } from '../../stores/continentStudioStore.ts';
+import type { AutotileDefectRecord } from '../../types/map/autotileHealingTypes.ts';
 import type { POINode, RouteEdge } from '../../types/map/poiTypes.ts';
 
 const SCHEMATIC_CURVE_BOW_FACTOR = 0.08;
 const DEFAULT_CONTINENT_GRID_DIMENSION = 128;
+const MAX_VISIBLE_DEFECT_MARKERS = 150 as const;
 
 const store = useRegionalContinentStudioStore();
 const svgRef = ref<SVGSVGElement | null>(null);
@@ -191,6 +193,45 @@ function handlePointerUp(poi: POINode, e: PointerEvent): void {
 }
 
 const viewBoxAttr = computed(() => `0 0 ${store.widthPx} ${store.heightPx}`);
+
+const showDefectMarkers = computed<boolean>(
+  () =>
+    store.isHealingBrushActive ||
+    store.defectFilterDomain !== 'auto' ||
+    store.activeDefectIndex >= 0
+);
+
+interface VisibleDefectMarker {
+  readonly record: AutotileDefectRecord;
+  readonly filterIndex: number;
+}
+
+const visibleDefectMarkers = computed<readonly VisibleDefectMarker[]>(() => {
+  const list = store.filteredDefectRecords;
+  if (list.length === 0) return [];
+  const items: VisibleDefectMarker[] = [];
+  const cap = Math.min(list.length, MAX_VISIBLE_DEFECT_MARKERS);
+  for (let i = 0; i < cap; i++) {
+    items.push({ record: list[i]!, filterIndex: i });
+  }
+  const activeIdx = store.activeDefectIndex;
+  if (activeIdx >= cap && activeIdx < list.length) {
+    items.push({ record: list[activeIdx]!, filterIndex: activeIdx });
+  }
+  return items;
+});
+
+function handleDefectMarkerPointerDown(e: PointerEvent): void {
+  if (!store.isHealingBrushActive) {
+    e.stopPropagation();
+  }
+}
+
+function handleDefectMarkerClick(filterIndex: number, e: Event): void {
+  if (store.isHealingBrushActive) return;
+  e.stopPropagation();
+  store.selectDefectByIndex(filterIndex, true);
+}
 </script>
 
 <template>
@@ -344,6 +385,35 @@ const viewBoxAttr = computed(() => `0 0 ${store.widthPx} ${store.heightPx}`);
         </g>
       </g>
     </g>
+
+    <!-- Autotile Defect Inspector Markers Layer -->
+    <g
+      v-if="showDefectMarkers"
+      class="autotile-defect-markers"
+      :class="{ 'is-brush-passthrough': store.isHealingBrushActive }"
+    >
+      <g
+        v-for="item in visibleDefectMarkers"
+        :id="`btn-defect-marker-${item.record.x}-${item.record.y}-${item.record.kind}`"
+        :key="`${item.record.x}_${item.record.y}_${item.record.kind}`"
+        class="defect-marker-item"
+        :class="[
+          `domain-${item.record.domain}`,
+          { 'is-active': item.filterIndex === store.activeDefectIndex }
+        ]"
+        :transform="`translate(${item.record.x * CANVAS_TILE_SIZE + STUDIO_TILE_SIZE}, ${item.record.y * CANVAS_TILE_SIZE + STUDIO_TILE_SIZE})`"
+        role="button"
+        :tabindex="store.isHealingBrushActive ? -1 : 0"
+        :aria-label="`Defecto en (${item.record.x}, ${item.record.y})`"
+        @pointerdown="handleDefectMarkerPointerDown($event)"
+        @click="handleDefectMarkerClick(item.filterIndex, $event)"
+        @keydown.enter="handleDefectMarkerClick(item.filterIndex, $event)"
+      >
+        <circle class="defect-marker-ring" r="14" />
+        <circle class="defect-marker-dot" r="7" />
+        <text class="defect-marker-glyph" text-anchor="middle" dominant-baseline="central">!</text>
+      </g>
+    </g>
   </svg>
 </template>
 
@@ -434,6 +504,84 @@ const viewBoxAttr = computed(() => `0 0 ${store.widthPx} ${store.heightPx}`);
     letter-spacing: 0.5px;
     text-shadow: 0 1px 2px Rgb(0 0 0 / 80%);
     pointer-events: none !important;
+  }
+}
+
+.autotile-defect-markers.is-brush-passthrough {
+  pointer-events: none;
+
+  .defect-marker-item {
+    pointer-events: none;
+    cursor: inherit;
+  }
+}
+
+.defect-marker-item {
+  pointer-events: auto;
+  cursor: pointer;
+
+  .defect-marker-ring {
+    fill: Rgb(239 68 68 / 18%);
+    stroke: var(--red);
+    stroke-width: 2;
+  }
+
+  .defect-marker-dot {
+    fill: var(--red);
+    stroke: var(--white);
+    stroke-width: 1.5;
+  }
+
+  .defect-marker-glyph {
+    font-size: var(--font-11);
+    font-weight: $font-weight-bold;
+    fill: var(--white);
+    pointer-events: none;
+  }
+
+  &.domain-mountain {
+    .defect-marker-ring {
+      stroke: var(--amber);
+    }
+
+    .defect-marker-dot {
+      fill: var(--amber);
+      stroke: var(--amber);
+    }
+  }
+
+  &.domain-water {
+    .defect-marker-ring {
+      stroke: var(--sky);
+    }
+
+    .defect-marker-dot {
+      fill: var(--sky);
+      stroke: var(--sky);
+    }
+  }
+
+  &.domain-macro_biome {
+    .defect-marker-ring {
+      stroke: var(--emerald);
+    }
+
+    .defect-marker-dot {
+      fill: var(--emerald);
+      stroke: var(--emerald);
+    }
+  }
+
+  &.is-active {
+    .defect-marker-ring {
+      fill: Rgb(250 204 21 / 32%);
+      stroke: var(--gold);
+      stroke-width: 3;
+    }
+
+    .defect-marker-dot {
+      fill: var(--gold);
+    }
   }
 }
 </style>

@@ -11,7 +11,8 @@
  *   4. Transfers raw RGBA preview buffers and Int32Array tile blit buffers via zero-copy Transferable.
  */
 
-import type { HealingDomain } from '../../types/map/autotileHealingTypes.ts';
+import type { AutotileDefectRecord, HealingDomain } from '../../types/map/autotileHealingTypes.ts';
+import type { MountainHealPolicy } from '../../types/map/continentBrushTypes.ts';
 import type {
   ContinentGenerationPhase,
   PackedMapBlitPayload
@@ -34,7 +35,10 @@ import {
   type ContinentGeneratorOptions,
   type ContinentMapResult
 } from './continentGenerator.ts';
+import type { MicroVignette } from './microVignetteEngine.ts';
 import { placeRegionalPOIs, type POIPlacementOptions } from './poiPlacementEngine.ts';
+import type { ProgressionObstacle } from './progressionObstacleEngine.ts';
+import type { LedgeRun } from './routeLedgeEngine.ts';
 import {
   generateRouteNetwork,
   type ResolvedRouteNetworkResult,
@@ -54,22 +58,32 @@ export interface RegionalGenerationOptions
 export interface FullWorkerGenerationOutput {
   readonly result: RegionalGenerationPipelineResult;
   readonly detectedDefectCount: number;
+  readonly defectRecords?: readonly AutotileDefectRecord[];
   readonly packedBlit: PackedMapBlitPayload;
 }
 
 export interface HealAllWorkerJobInput {
   readonly continent: ContinentMapResult;
   readonly pathGrid: readonly (readonly boolean[])[];
+  readonly manualPathGrid?: readonly (readonly boolean[])[];
   readonly bridgeGrid?: readonly (readonly boolean[])[];
   readonly pois?: readonly POINode[];
   readonly wilderness?: WildernessLayerResult | null;
+  readonly ledges?: readonly LedgeRun[];
+  readonly progressionObstacles?: readonly ProgressionObstacle[];
+  readonly microVignettes?: readonly MicroVignette[];
   readonly domain?: HealingDomain;
+  readonly mountainPolicy?: MountainHealPolicy;
 }
 
 export interface HealAllWorkerJobOutput {
   readonly continent: ContinentMapResult;
   readonly pathGrid: readonly (readonly boolean[])[];
+  readonly manualPathGrid?: readonly (readonly boolean[])[];
+  readonly bridgeGrid?: readonly (readonly boolean[])[];
+  readonly wilderness?: WildernessLayerResult | null;
   readonly detectedDefectCount: number;
+  readonly defectRecords?: readonly AutotileDefectRecord[];
   readonly repairedCount: number;
   readonly rawBuffer: ArrayBuffer;
   readonly packedBlit: PackedMapBlitPayload;
@@ -125,6 +139,7 @@ export interface GenerationSuccessResponse {
   readonly result: RegionalGenerationPipelineResult;
   readonly rawBuffer?: ArrayBuffer;
   readonly detectedDefectCount: number;
+  readonly defectRecords?: readonly AutotileDefectRecord[];
   readonly packedBlit: PackedMapBlitPayload;
 }
 
@@ -155,7 +170,7 @@ export type WorkerOutboundResponse =
   | RerouteSuccessResponse
   | WorkerErrorResponse;
 
-const MIN_CONTINENTAL_WORLD_WIDTH = 400;
+const MIN_CONTINENTAL_WORLD_WIDTH = 128;
 const PROGRESS_PERCENT_SCULPTING = 15;
 const PROGRESS_PERCENT_SCANNING = 70;
 const PROGRESS_PERCENT_COMPILING_TILES = 88;
@@ -186,7 +201,8 @@ export function executeRegionalGenerationJob(
       nodes: worldResult.pois,
       edges,
       pathGrid: worldResult.pathGrid,
-      bridgeGrid: worldResult.bridgeGrid
+      bridgeGrid: worldResult.bridgeGrid,
+      maritimeRockObstacles: worldResult.maritimeRockObstacles
     };
 
     const rawBuffer = buildZeroCopyPreviewBuffer(worldResult.continent, worldResult.pathGrid);
@@ -196,6 +212,9 @@ export function executeRegionalGenerationJob(
       pois: worldResult.pois,
       routeNetwork,
       wilderness: worldResult.wilderness,
+      ledges: worldResult.ledges,
+      progressionObstacles: worldResult.progressionObstacles,
+      microVignettes: worldResult.microVignettes,
       rawBuffer
     };
   }
@@ -231,25 +250,68 @@ function finalizeWorkerPipelineOutput(
   onProgress?: WorkerProgressCallback
 ): FullWorkerGenerationOutput {
   onProgress?.('scanning', PROGRESS_PERCENT_SCANNING);
-  const defectReport = scanContinentAutotileDefects({
+  const initialDefectReport = scanContinentAutotileDefects({
     continent: result.continent,
     pathGrid: result.routeNetwork.pathGrid,
     bridgeGrid: result.routeNetwork.bridgeGrid,
     pois: result.pois
   });
 
+  let finalResult = result;
+  let defectRecords = initialDefectReport.defects;
+
+  if (initialDefectReport.totalDefects > 0) {
+    const healed = healAllContinentDefects(result.continent, result.routeNetwork.pathGrid, {
+      domain: 'auto',
+      mountainPolicy: 'erode',
+      pois: result.pois,
+      bridgeGrid: result.routeNetwork.bridgeGrid,
+      wilderness: result.wilderness
+    });
+    const nextPathGrid = healed.pathGrid;
+    const nextBridgeGrid = healed.bridgeGrid ?? result.routeNetwork.bridgeGrid;
+    const nextWilderness = healed.wilderness ?? result.wilderness;
+    finalResult = {
+      ...result,
+      continent: healed.continent,
+      routeNetwork: {
+        ...result.routeNetwork,
+        pathGrid: nextPathGrid,
+        bridgeGrid: nextBridgeGrid
+      },
+      wilderness: nextWilderness,
+      rawBuffer: buildZeroCopyPreviewBuffer(healed.continent, nextPathGrid)
+    };
+    defectRecords =
+      healed.summary.defectsAfter === 0
+        ? []
+        : scanContinentAutotileDefects({
+            continent: finalResult.continent,
+            pathGrid: finalResult.routeNetwork.pathGrid,
+            bridgeGrid: finalResult.routeNetwork.bridgeGrid,
+            pois: finalResult.pois
+          }).defects;
+  }
+
   onProgress?.('compiling_tiles', PROGRESS_PERCENT_COMPILING_TILES);
   const packedBlit = compilePackedMapBlitBuffer(
-    result.continent,
-    result.pois,
-    result.routeNetwork.pathGrid,
-    result.routeNetwork.bridgeGrid,
-    result.wilderness
+    finalResult.continent,
+    finalResult.pois,
+    finalResult.routeNetwork.pathGrid,
+    finalResult.routeNetwork.bridgeGrid,
+    finalResult.wilderness,
+    {
+      ledges: finalResult.ledges,
+      progressionObstacles: finalResult.progressionObstacles,
+      microVignettes: finalResult.microVignettes,
+      routeNetwork: finalResult.routeNetwork
+    }
   );
 
   return {
-    result,
-    detectedDefectCount: defectReport.totalDefects,
+    result: finalResult,
+    detectedDefectCount: defectRecords.length,
+    defectRecords,
     packedBlit
   };
 }
@@ -285,22 +347,48 @@ export function executePresetWorkerJob(
 export function executeHealAllWorkerJob(input: HealAllWorkerJobInput): HealAllWorkerJobOutput {
   const mutation = healAllContinentDefects(input.continent, input.pathGrid, {
     domain: input.domain ?? 'auto',
+    mountainPolicy: input.mountainPolicy,
     pois: input.pois,
-    bridgeGrid: input.bridgeGrid
+    bridgeGrid: input.bridgeGrid,
+    manualPathGrid: input.manualPathGrid,
+    wilderness: input.wilderness
   });
+  const nextWilderness = mutation.wilderness ?? input.wilderness ?? null;
+  const nextManualPathGrid = mutation.manualPathGrid ?? input.manualPathGrid;
+  const nextBridgeGrid = mutation.bridgeGrid ?? input.bridgeGrid;
   const rawBuffer = buildZeroCopyPreviewBuffer(mutation.continent, mutation.pathGrid);
   const packedBlit = compilePackedMapBlitBuffer(
     mutation.continent,
     input.pois ?? [],
     mutation.pathGrid,
-    input.bridgeGrid,
-    input.wilderness
+    nextBridgeGrid,
+    nextWilderness,
+    {
+      manualPathGrid: nextManualPathGrid,
+      ledges: input.ledges,
+      progressionObstacles: input.progressionObstacles,
+      microVignettes: input.microVignettes
+    }
   );
+  const defectRecords =
+    mutation.summary.defectsAfter === 0
+      ? []
+      : scanContinentAutotileDefects({
+          continent: mutation.continent,
+          pathGrid: mutation.pathGrid,
+          manualPathGrid: nextManualPathGrid,
+          bridgeGrid: nextBridgeGrid,
+          pois: input.pois
+        }).defects;
 
   return {
     continent: mutation.continent,
     pathGrid: mutation.pathGrid,
-    detectedDefectCount: mutation.summary.defectsAfter,
+    manualPathGrid: nextManualPathGrid,
+    bridgeGrid: nextBridgeGrid,
+    wilderness: nextWilderness,
+    detectedDefectCount: defectRecords.length,
+    defectRecords,
     repairedCount: mutation.summary.repairedCount,
     rawBuffer,
     packedBlit
@@ -343,6 +431,7 @@ function postGenerationOutput(
     result: genOut.result,
     rawBuffer,
     detectedDefectCount: genOut.detectedDefectCount,
+    defectRecords: genOut.defectRecords,
     packedBlit: genOut.packedBlit
   };
   const transfers: Transferable[] = [genOut.packedBlit.coordsBuffer];

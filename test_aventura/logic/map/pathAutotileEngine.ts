@@ -9,6 +9,8 @@
  *   3. Non-destructive layer stack integration (Grass -> Path -> Bridge -> Mountain/POI structures).
  */
 
+import type { DirtyTileBounds } from '../../types/map/autotileHealingTypes.ts';
+import { clampDirtyBounds, resolveSparseGridWidth } from '../utils/gridGeometryUtils.ts';
 import {
   compute2DNeighborMask,
   classify2DAutotileRole,
@@ -72,30 +74,42 @@ export const CANONICAL_STONE_PLAZA_BRUSH: Readonly<WaterCoastBrushSet> = {
  */
 export function sanitizePathGridWidth(
   pathGrid: readonly (readonly boolean[])[],
-  terrainMatrix?: readonly (readonly string[])[]
+  terrainMatrix?: readonly (readonly string[])[],
+  manualPathGrid?: readonly (readonly boolean[])[],
+  bounds?: DirtyTileBounds
 ): boolean[][] {
   const H = pathGrid.length;
   if (H === 0) return [];
-  const W = pathGrid[0]?.length ?? 0;
+  const W = resolveSparseGridWidth(pathGrid, bounds?.minY);
   if (W === 0) return [];
+
+  const scanBounds = bounds
+    ? clampDirtyBounds(bounds, W, H)
+    : { minX: 0, minY: 0, maxX: W - 1, maxY: H - 1 };
 
   const isValidLand = (x: number, y: number): boolean => {
     if (x < 0 || x >= W || y < 0 || y >= H) return false;
     if (!terrainMatrix) return true;
     const t = terrainMatrix[y]?.[x];
-    return t !== 'water' && t !== 'sand';
+    return t !== 'water' && t !== 'water_deep' && t !== 'sand';
   };
 
-  const sanitized: boolean[][] = pathGrid.map((row) => [...row]);
+  const sanitized: boolean[][] = Array.from({ length: H }, (_, ry) =>
+    ry >= Math.max(0, scanBounds.minY - 1) &&
+    ry <= Math.min(H - 1, scanBounds.maxY + 1) &&
+    pathGrid[ry]
+      ? [...pathGrid[ry]]
+      : (pathGrid[ry] as boolean[])
+  );
 
-  for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) {
-      if (!pathGrid[y]![x]) continue;
+  for (let y = scanBounds.minY; y <= scanBounds.maxY; y++) {
+    for (let x = scanBounds.minX; x <= scanBounds.maxX; x++) {
+      if (!pathGrid[y]?.[x] || manualPathGrid?.[y]?.[x]) continue;
 
-      const leftIsPath = x > 0 && Boolean(pathGrid[y]![x - 1]);
-      const rightIsPath = x < W - 1 && Boolean(pathGrid[y]![x + 1]);
-      const topIsPath = y > 0 && Boolean(pathGrid[y - 1]![x]);
-      const bottomIsPath = y < H - 1 && Boolean(pathGrid[y + 1]![x]);
+      const leftIsPath = x > 0 && Boolean(pathGrid[y]?.[x - 1]);
+      const rightIsPath = x < W - 1 && Boolean(pathGrid[y]?.[x + 1]);
+      const topIsPath = y > 0 && Boolean(pathGrid[y - 1]?.[x]);
+      const bottomIsPath = y < H - 1 && Boolean(pathGrid[y + 1]?.[x]);
 
       // If vertical run but missing horizontal companion:
       if ((topIsPath || bottomIsPath) && !leftIsPath && !rightIsPath) {
@@ -113,8 +127,8 @@ export function sanitizePathGridWidth(
 
       // If horizontal run but missing vertical companion:
       if ((leftIsPath || rightIsPath) && !topIsPath && !bottomIsPath) {
-        const canBottom = isValidLand(x, y + 1);
-        const canTop = isValidLand(x, y - 1);
+        const canBottom = isValidLand(x, y + 1) && (sanitized[y + 1]?.length ?? 0) > x;
+        const canTop = isValidLand(x, y - 1) && (sanitized[y - 1]?.length ?? 0) > x;
         if (canBottom) {
           sanitized[y + 1]![x] = true;
         } else if (canTop) {
@@ -141,19 +155,29 @@ export function sanitizePathGridWidth(
 export function resolvePathGrid(
   pathGrid: readonly (readonly boolean[])[],
   bridgeGrid?: readonly (readonly boolean[])[],
-  brush: WaterCoastBrushSet = CANONICAL_DIRT_PATH_BRUSH
+  brush: WaterCoastBrushSet = CANONICAL_DIRT_PATH_BRUSH,
+  bounds?: DirtyTileBounds
 ): ResolvedPathMapResult {
   const H = pathGrid.length;
   if (H === 0) return { width: 0, height: 0, pathDetails: [] };
-  const W = pathGrid[0]?.length ?? 0;
+  const W = resolveSparseGridWidth(pathGrid, bounds?.minY);
+  if (W === 0) return { width: 0, height: 0, pathDetails: [] };
 
-  const pathDetails: (ResolvedPathCell | null)[][] = Array.from({ length: H }, () =>
-    Array(W).fill(null)
+  const scanBounds = bounds
+    ? clampDirtyBounds(bounds, W, H)
+    : { minX: 0, minY: 0, maxX: W - 1, maxY: H - 1 };
+
+  const pathDetails: (ResolvedPathCell | null)[][] = Array.from(
+    { length: H },
+    (): (ResolvedPathCell | null)[] => []
   );
+  for (let y = scanBounds.minY; y <= scanBounds.maxY; y++) {
+    pathDetails[y] = Array<ResolvedPathCell | null>(W).fill(null);
+  }
 
-  for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) {
-      const isPath = pathGrid[y]![x] ?? false;
+  for (let y = scanBounds.minY; y <= scanBounds.maxY; y++) {
+    for (let x = scanBounds.minX; x <= scanBounds.maxX; x++) {
+      const isPath = pathGrid[y]?.[x] ?? false;
       const isBridge = bridgeGrid?.[y]?.[x] ?? false;
 
       if (!isPath && !isBridge) continue;

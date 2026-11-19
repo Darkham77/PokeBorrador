@@ -10,7 +10,8 @@ export const RGBA_CHANNEL_COUNT = 4 as const;
 
 // --- Surface Terrain Feature RGBA ---
 export const PATH_PREVIEW_RGBA = [212, 163, 115, 255] as const;
-export const WATER_PREVIEW_RGBA = [58, 134, 200, 255] as const;
+export const WATER_PREVIEW_RGBA = [72, 128, 216, 255] as const;
+export const DEEP_WATER_PREVIEW_RGBA = [42, 86, 168, 255] as const;
 export const SAND_PREVIEW_RGBA = [233, 216, 166, 255] as const;
 
 // --- Elevation & Mountain Massifs ---

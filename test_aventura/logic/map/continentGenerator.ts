@@ -93,8 +93,10 @@ export interface ContinentGeneratorOptions {
   readonly settlementExclusionZones?: readonly SettlementExclusionZone[];
   readonly leaguePlateauZone?: SettlementExclusionZone;
   readonly caveLocations?: readonly { readonly x: number; readonly y: number }[];
+  readonly macroArchetype?: RegionMacroArchetype;
 }
 
+import type { RegionMacroArchetype } from '../../types/map/pokemonGraphTypes.ts';
 import type { ContinentCellDetails } from './geologicalAutotilingEngine.ts';
 export type {
   ContinentCellDetails,
@@ -382,7 +384,8 @@ export function generateContinentMap(options?: ContinentGeneratorOptions): Conti
     width: W,
     height: H,
     seed,
-    terrainMatrix: sanitizedWaterMatrix
+    terrainMatrix: sanitizedWaterMatrix,
+    macroArchetype: options?.macroArchetype
   });
 
   // 8. Continental Mountains & Stairs (Phase 2 Geological Clusterer)

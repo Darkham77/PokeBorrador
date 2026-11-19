@@ -27,7 +27,7 @@ Poké Vicio Development Team.
 - [`KantoAdventureView.vue`](./KantoAdventureView.vue): Module implementation.
 - [`LocalTileStudioView.vue`](./LocalTileStudioView.vue): Module implementation.
 - [`MapStudioView.vue`](./MapStudioView.vue): Module implementation.
-- [`RegionalContinentStudioView.vue`](./RegionalContinentStudioView.vue): Module implementation.
+- [`RegionalContinentStudioView.vue`](./RegionalContinentStudioView.vue): Top-level Continent Studio workspace orchestrating controls sidebar, pan/zoom/pinch rAF dirty-rect viewport, creative/heal pointer interactions, brush reticle, and `RegionalBrushDock`.
 
 ## Work Guidance
 

@@ -162,7 +162,7 @@ import {
 } from './canonicalAssetsRegistry.ts';
 import { synthesizeCityGenes } from './cityGeneSynthesizer.ts';
 import type { SettlementTerrainContext } from './cityLayoutEngine.ts';
-import { computeUrbanCurbs } from './urbanPavingEngine.ts';
+import { computeUrbanCurbs, filterIsolatedUrbanFences } from './urbanPavingEngine.ts';
 
 export type { BuildingPrefabMeta, SettlementCurbPlacement };
 
@@ -382,6 +382,14 @@ function paveWaterfrontBoardwalk(
 /**
  * Connects all building entrances to the street network via orthogonal paths strictly on land.
  */
+function hashNodeIdentifier(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) {
+    h = Math.trunc(h * CITY_RNG_PRIME + id.charCodeAt(i));
+  }
+  return Math.abs(h);
+}
+
 function connectDoorsToStreets(
   buildings: readonly UrbanBuildingPlacement[],
   internalStreets: { x: number; y: number }[],
@@ -416,25 +424,94 @@ function connectDoorsToStreets(
   }
 }
 
+function expandStreetComponentBfs(
+  seedCell: { x: number; y: number },
+  allValidKeys: ReadonlySet<string>,
+  componentKeys: Set<string>
+): void {
+  const seedKey = `${seedCell.x}_${seedCell.y}`;
+  if (!allValidKeys.has(seedKey) || componentKeys.has(seedKey)) return;
+  const queue: { x: number; y: number }[] = [seedCell];
+  componentKeys.add(seedKey);
+  let head = 0;
+  while (head < queue.length) {
+    const cur = queue[head++]!;
+    for (const [dx, dy] of BFS_CARDINAL_DIRS) {
+      const key = `${cur.x + dx}_${cur.y + dy}`;
+      if (!componentKeys.has(key) && allValidKeys.has(key)) {
+        componentKeys.add(key);
+        queue.push({ x: cur.x + dx, y: cur.y + dy });
+      }
+    }
+  }
+}
+
+function unifyStreetComponents(
+  internalStreets: { x: number; y: number }[],
+  bMask: ReadonlySet<string>,
+  isCellLand: (x: number, y: number) => boolean
+): void {
+  const validCells = internalStreets.filter(
+    (s) => !bMask.has(`${s.x}_${s.y}`) && isCellLand(s.x, s.y)
+  );
+  if (validCells.length <= 1) return;
+
+  const validKeys = new Set(validCells.map((s) => `${s.x}_${s.y}`));
+  const mainComponent = new Set<string>();
+  expandStreetComponentBfs(validCells[0]!, validKeys, mainComponent);
+
+  for (const pt of validCells) {
+    const ptKey = `${pt.x}_${pt.y}`;
+    if (mainComponent.has(ptKey)) continue;
+    const prevLen = internalStreets.length;
+    connectDoorTargetToStreetNetwork(pt, mainComponent, bMask, isCellLand, internalStreets);
+    if (internalStreets.length > prevLen) {
+      for (let i = prevLen; i < internalStreets.length; i++) {
+        const added = internalStreets[i]!;
+        const ak = `${added.x}_${added.y}`;
+        if (!bMask.has(ak) && isCellLand(added.x, added.y)) {
+          validKeys.add(ak);
+          mainComponent.add(ak);
+        }
+      }
+      expandStreetComponentBfs(pt, validKeys, mainComponent);
+    }
+  }
+}
+
 function finalizeSettlementStreets(
   buildings: readonly UrbanBuildingPlacement[],
   internalStreets: { x: number; y: number }[],
   bounds: { bx: number; by: number; W: number; H: number },
   isCellLand: (x: number, y: number) => boolean
 ): { cleanStreets: { x: number; y: number }[]; streetSet: Set<string>; bMask: Set<string> } {
-  connectDoorsToStreets(buildings, internalStreets, bounds, isCellLand);
   const bMask = new Set<string>();
   for (const b of buildings) {
     for (let dy = 0; dy < b.height; dy++) {
       for (let dx = 0; dx < b.width; dx++) bMask.add(`${b.x + dx}_${b.y + dy}`);
     }
   }
-
-  const cleanStreets = internalStreets.filter(
+  // Purge building-buried or non-land cells FIRST so door routing never terminates on buried streets
+  const liveStreets = internalStreets.filter(
     (s) => !bMask.has(`${s.x}_${s.y}`) && isCellLand(s.x, s.y)
   );
-  const streetSet = new Set(cleanStreets.map((s) => `${s.x}_${s.y}`));
-  return { cleanStreets, streetSet, bMask };
+  internalStreets.length = 0;
+  internalStreets.push(...liveStreets);
+
+  unifyStreetComponents(internalStreets, bMask, isCellLand);
+  connectDoorsToStreets(buildings, internalStreets, bounds, isCellLand);
+  unifyStreetComponents(internalStreets, bMask, isCellLand);
+
+  const seen = new Set<string>();
+  const cleanStreets: { x: number; y: number }[] = [];
+  for (const s of internalStreets) {
+    const key = `${s.x}_${s.y}`;
+    if (!seen.has(key) && !bMask.has(key) && isCellLand(s.x, s.y)) {
+      seen.add(key);
+      cleanStreets.push(s);
+    }
+  }
+  return { cleanStreets, streetSet: seen, bMask };
 }
 
 const NON_LAND_TERRAIN_LIST = ['water', 'water_deep', 'sand'] as const;
@@ -443,9 +520,9 @@ const NON_LAND_TERRAINS: ReadonlySet<NonLandTerrain> = new Set<NonLandTerrain>(
   NON_LAND_TERRAIN_LIST
 );
 
-const PERIMETER_BOULEVARD_THRESHOLD = 0.75 as const;
+const PERIMETER_BOULEVARD_THRESHOLD = 0.55 as const;
 const PERIMETER_RUSTIC_FENCE_THRESHOLD = 0.25 as const;
-const PERIMETER_HEDGE_THRESHOLD = 0.5 as const;
+const PERIMETER_CORNER_ARM_TILES = 4 as const;
 
 function placeSettlementPerimeterBarriers(
   node: POINode,
@@ -457,7 +534,7 @@ function placeSettlementPerimeterBarriers(
   isCellLand: (x: number, y: number) => boolean,
   addProp: (type: UrbanPropType, x: number, y: number, prefab: string) => void
 ): void {
-  // Only inland metropolis and large cities generate formal outer perimeter boundaries
+  // Only inland metropolis and large cities place subtle corner/avenue fence accents (never full cages)
   if (node.type !== 'metropolis' && node.type !== 'city') return;
   const isPureIsland =
     /island|canela|cinnabar|isla/i.test(node.id) ||
@@ -468,21 +545,12 @@ function placeSettlementPerimeterBarriers(
   const { bx, by, W, H } = bounds;
   const seedHash = Math.abs(Math.sin((bx * 47 + by * 89) * 0.1));
 
-  // Style 3 (seedHash >= PERIMETER_BOULEVARD_THRESHOLD): Open boulevard with curbs only (no artificial fence)
+  // Style >= PERIMETER_BOULEVARD_THRESHOLD: Open natural perimeter with zero boxy fences
   if (seedHash >= PERIMETER_BOULEVARD_THRESHOLD) return;
 
-  let hPrefab = 'poke_fence_white_h_mid.png';
-  let vPrefab = 'poke_fence_white_v_left.png';
-
-  if (seedHash < PERIMETER_RUSTIC_FENCE_THRESHOLD) {
-    // Rustic wooden fence
-    hPrefab = 'poke_fence_wood_h.png';
-    vPrefab = 'poke_fence_wood_v.png';
-  } else if (seedHash < PERIMETER_HEDGE_THRESHOLD) {
-    // Trimmed green hedge bushes
-    hPrefab = 'poke_bush_round.png';
-    vPrefab = 'poke_bush_round.png';
-  }
+  const isRusticWood = seedHash < PERIMETER_RUSTIC_FENCE_THRESHOLD;
+  const hPrefab = isRusticWood ? 'poke_fence_wood_h.png' : 'poke_fence_white_h_mid.png';
+  const vPrefab = isRusticWood ? 'poke_fence_wood_v.png' : 'poke_fence_white_v_left.png';
 
   // Gateway clearance: keep 4-tile wide opening at every avenue/gateway exit
   const isNearGateway = (x: number, y: number): boolean => {
@@ -493,6 +561,10 @@ function placeSettlementPerimeterBarriers(
     return false;
   };
 
+  // Restrict fences strictly to short corner L-brackets so settlements breathe organically
+  const isWithinCornerArm = (offset: number, span: number): boolean =>
+    offset < PERIMETER_CORNER_ARM_TILES || offset >= span - PERIMETER_CORNER_ARM_TILES;
+
   const canPlacePerimeter = (x: number, y: number): boolean => {
     const key = `${x}_${y}`;
     if (bMask.has(key) || streetSet.has(key) || plazaSet.has(key) || doorstepSet.has(key)) {
@@ -502,29 +574,36 @@ function placeSettlementPerimeterBarriers(
     return isCellLand(x, y);
   };
 
-  // North perimeter (y = by)
+  const candidates: { type: UrbanPropType; x: number; y: number; prefabFile: string }[] = [];
+
   for (let x = bx; x < bx + W; x++) {
+    if (!isWithinCornerArm(x - bx, W)) continue;
     if (canPlacePerimeter(x, by)) {
-      addProp('fence_h', x, by, hPrefab);
+      candidates.push({ type: 'fence_h', x, y: by, prefabFile: hPrefab });
     }
-  }
-  // South perimeter (y = by + H - 1)
-  for (let x = bx; x < bx + W; x++) {
     if (canPlacePerimeter(x, by + H - 1)) {
-      addProp('fence_h', x, by + H - 1, hPrefab);
+      candidates.push({ type: 'fence_h', x, y: by + H - 1, prefabFile: hPrefab });
     }
   }
-  // West perimeter (x = bx)
   for (let y = by + 1; y < by + H - 1; y++) {
+    if (!isWithinCornerArm(y - by, H)) continue;
     if (canPlacePerimeter(bx, y)) {
-      addProp('fence_v', bx, y, vPrefab);
+      candidates.push({ type: 'fence_v', x: bx, y, prefabFile: vPrefab });
+    }
+    if (canPlacePerimeter(bx + W - 1, y)) {
+      candidates.push({ type: 'fence_v', x: bx + W - 1, y, prefabFile: vPrefab });
     }
   }
-  // East perimeter (x = bx + W - 1)
-  for (let y = by + 1; y < by + H - 1; y++) {
-    if (canPlacePerimeter(bx + W - 1, y)) {
-      addProp('fence_v', bx + W - 1, y, vPrefab);
-    }
+
+  const candidateKeys = new Set<string>(candidates.map((c) => `${c.x}_${c.y}`));
+  for (const c of candidates) {
+    const hasCardinalNeighbor =
+      candidateKeys.has(`${c.x - 1}_${c.y}`) ||
+      candidateKeys.has(`${c.x + 1}_${c.y}`) ||
+      candidateKeys.has(`${c.x}_${c.y - 1}`) ||
+      candidateKeys.has(`${c.x}_${c.y + 1}`);
+    if (!hasCardinalNeighbor) continue;
+    addProp(c.type, c.x, c.y, c.prefabFile);
   }
 }
 
@@ -768,8 +847,8 @@ export function generateOrganicCityLayout(
         : bx + W - meta.width;
     const minY = sectorBounds?.minY ?? by;
     const maxY = Math.min(
-      sectorBounds?.maxY !== undefined ? sectorBounds.maxY : by + H - meta.height,
-      by + H - meta.height,
+      sectorBounds?.maxY !== undefined ? sectorBounds.maxY : by + H - meta.height - 1,
+      by + H - meta.height - 1,
       by + H - CITY_FRONT_CLEARANCE
     );
 
@@ -1485,32 +1564,65 @@ export function generateOrganicCityLayout(
     node.terrainPreference === 'coast_water';
 
   // Morphological Street Network: derived from procedural genes & topography
-  const aveX = midX;
-  const aveY = midY;
+  const nodeHash = hashNodeIdentifier(node.id);
+  const cityVariantSeed = Math.abs(seed + nodeHash + bx * 131 + by * 313);
+  const aveShiftX = W <= 16 ? 0 : (cityVariantSeed % 3) - 1;
+  const aveShiftY = H <= 14 ? 0 : ((cityVariantSeed >> 2) % 3) - 1;
+  const aveX = Math.max(3, Math.min(W - 4, midX + aveShiftX));
+  const aveY = Math.max(3, Math.min(H - 4, midY + aveShiftY));
   const pattern = genes.streetPattern;
 
-  // 1. Trace Primary Street Skeleton based on design gene
+  // 1. Trace Heterogeneous Street Skeleton based on design gene (zero clones)
   if (pattern === 'coastal_wharf') {
-    // Coastal Wharf: Seaside promenade + central access avenue
     const coastalY = Math.max(COASTAL_WHARF_MIN_MARGIN, H - COASTAL_WHARF_MARGIN_BOTTOM);
     for (let x = 0; x < W; x++) {
       addStreetCell(bx + x, by + coastalY);
       if (coastalY + 1 < H) addStreetCell(bx + x, by + coastalY + 1);
     }
-    // Perpendicular access avenue connecting north to the waterfront promenade
     for (let y = 0; y <= coastalY; y++) {
       addStreetCell(bx + aveX - 1, by + y);
       addStreetCell(bx + aveX, by + y);
     }
-    // If settlement is tall enough, trace a northern access street for the northern parcels
     if (coastalY >= COASTAL_WHARF_NORTH_CROSS_MIN_Y) {
       const crossY = Math.floor(coastalY / 2);
       for (let x = 0; x < W; x++) {
         addStreetCell(bx + x, by + crossY);
       }
     }
+  } else if (pattern === 'ring_garden') {
+    // Perimeter Ring Avenue circling a green central park/fountain (no cross bisecting park)
+    const ringLeft = Math.max(2, Math.floor(W * 0.25));
+    const ringRight = Math.min(W - 3, Math.ceil(W * 0.75) - 1);
+    const ringTop = Math.max(2, Math.floor(H * 0.25));
+    const ringBottom = Math.min(H - 3, Math.ceil(H * 0.75) - 1);
+
+    for (let x = ringLeft; x <= ringRight; x++) {
+      addStreetCell(bx + x, by + ringTop);
+      addStreetCell(bx + x, by + ringBottom);
+      addPlazaCell(bx + x, by + ringTop + 1);
+      addPlazaCell(bx + x, by + ringBottom - 1);
+    }
+    for (let y = ringTop; y <= ringBottom; y++) {
+      addStreetCell(bx + ringLeft, by + y);
+      addStreetCell(bx + ringRight, by + y);
+    }
+    // Short cardinal entrance spurs connecting perimeter edges to the ring without cutting through central park
+    for (let y = 0; y <= ringTop; y++) addStreetCell(bx + midX, by + y);
+    for (let y = ringBottom; y < H; y++) addStreetCell(bx + midX, by + y);
+    for (let x = 0; x <= ringLeft; x++) addStreetCell(bx + x, by + midY);
+    for (let x = ringRight; x < W; x++) addStreetCell(bx + x, by + midY);
+  } else if (pattern === 'boulevard_ew') {
+    // Horizontal Grand Boulevard with offset single north-south cross spur
+    for (let x = 0; x < W; x++) {
+      addStreetCell(bx + x, by + aveY - 1);
+      addStreetCell(bx + x, by + aveY);
+    }
+    const spurX = aveShiftX >= 0 ? Math.max(2, midX - 3) : Math.min(W - 3, midX + 3);
+    for (let y = 0; y < H; y++) {
+      addStreetCell(bx + spurX, by + y);
+    }
   } else if (pattern === 'radial_plaza') {
-    // Radial Plaza: Open central plaza + cardinal streets
+    // Asymmetric Civic Plaza + staggered axes
     const pMinX = Math.max(1, aveX - RADIAL_PLAZA_HALF_SPAN_X);
     const pMaxX = Math.min(W - 2, aveX + RADIAL_PLAZA_HALF_SPAN_X);
     const pMinY = Math.max(1, aveY - RADIAL_PLAZA_HALF_SPAN_Y);
@@ -1532,36 +1644,49 @@ export function generateOrganicCityLayout(
       addStreetCell(bx + x, by + aveY);
     }
   } else if (pattern === 'l_enclave') {
-    // L-Enclave: L-shaped primary thoroughfare
-    const turnY = Math.max(2, aveY);
-    const turnX = Math.max(2, aveX);
-    for (let y = 0; y <= turnY; y++) {
+    // L-Enclave: Rotated L-shaped primary avenue according to seed
+    const lCorner = cityVariantSeed % 4;
+    const turnY = Math.max(
+      3,
+      Math.min(H - 4, lCorner < 2 ? Math.floor(H * 0.35) : Math.floor(H * 0.65))
+    );
+    const turnX = Math.max(
+      3,
+      Math.min(W - 4, lCorner % 2 === 0 ? Math.floor(W * 0.35) : Math.floor(W * 0.65))
+    );
+    const startY = lCorner < 2 ? 0 : turnY;
+    const endY = lCorner < 2 ? turnY : H - 1;
+    const startX = lCorner % 2 === 0 ? 0 : turnX;
+    const endX = lCorner % 2 === 0 ? turnX : W - 1;
+    for (let y = startY; y <= endY; y++) {
       addStreetCell(bx + turnX - 1, by + y);
       addStreetCell(bx + turnX, by + y);
     }
-    for (let x = turnX; x < W; x++) {
+    for (let x = startX; x <= endX; x++) {
       addStreetCell(bx + x, by + turnY - 1);
       addStreetCell(bx + x, by + turnY);
     }
-    for (let x = 0; x < turnX; x++) {
-      addStreetCell(bx + x, by + turnY);
+    // Single narrow connected transit lane spanning midY and linked to turnX
+    for (let x = 0; x < W; x++) addStreetCell(bx + x, by + midY);
+    for (let y = Math.min(turnY, midY); y <= Math.max(turnY, midY); y++) {
+      addStreetCell(bx + turnX, by + y);
     }
   } else {
-    // Linear Boulevard: Single prominent 2-cell avenue + cross street
+    // Linear Boulevard: Prominent N-S thoroughfare with staggered E/W T-junctions (not +)
     for (let y = 0; y < H; y++) {
       addStreetCell(bx + aveX - 1, by + y);
       addStreetCell(bx + aveX, by + y);
     }
-    for (let y = aveY - 1; y <= aveY; y++) {
-      for (let x = 0; x < W; x++) addStreetCell(bx + x, by + y);
-    }
+    const westArmY = Math.max(2, aveY - 2);
+    const eastArmY = Math.min(H - 3, aveY + 2);
+    for (let x = 0; x <= aveX; x++) addStreetCell(bx + x, by + westArmY);
+    for (let x = aveX; x < W; x++) addStreetCell(bx + x, by + eastArmY);
   }
 
-  // Anchor Services & Gym Placement
+  // Anchor Services & Gym Placement with deterministic slot permutation (fin de clones en 4 esquinas)
   const isTier1 = node.tier === 1;
   const shouldPlaceGym = node.hasGym || node.id.includes('vermilion');
 
-  // Select procedural landmark from canonical catalog
   const archetypes = CITY_LANDMARK_ARCHETYPES;
   const maxSouthHeight = Math.max(SECTOR_MIN_DIMENSION, H - aveY - 2);
   const maxSectorWidth = Math.max(SECTOR_MIN_DIMENSION, W - aveX - 2);
@@ -1573,41 +1698,144 @@ export function generateOrganicCityLayout(
   const lkIndex = Math.abs(seed + node.id.length) % candidatesList.length;
   const lkDef = candidatesList[lkIndex]!;
 
-  // 2. Street-oriented placement for core services across sectors:
+  // 2. Street-oriented rotated sector slots (eliminates identical NW/NE/SW/SE corner cloning)
   const northY = by + 1;
   const southY = by + Math.max(1, Math.min(aveY + SECTOR_SOUTH_EXTRA_Y, H - SECTOR_SOUTH_MARGIN));
   const westX = bx + 0;
   const eastX = bx + Math.max(aveX + SECTOR_EAST_EXTRA_X, W - SECTOR_EAST_MARGIN);
 
-  // Sector boundaries to protect the central avenue corridor (aveX - 2 .. aveX + 1)
   const westSectorMaxX = bx + Math.max(0, aveX - AVENUE_BUFFER_WEST);
   const eastSectorMinX = bx + Math.min(W - 1, aveX + AVENUE_BUFFER_EAST);
 
-  // Center: NW sector
-  findStreetFacingLot(`${node.id}_pokecenter`, 'pokecenter', 'pokecenter', westX, northY, {
-    maxX: westSectorMaxX
-  });
+  const sectorSlots = [
+    { x: westX, y: northY, bounds: { maxX: westSectorMaxX } },
+    { x: eastX, y: northY, bounds: { minX: eastSectorMinX } },
+    { x: westX, y: southY, bounds: { maxX: westSectorMaxX } },
+    { x: eastX, y: southY, bounds: { minX: eastSectorMinX } }
+  ] as const;
 
-  // Mart: NE sector
-  findStreetFacingLot(`${node.id}_pokemart`, 'pokemart', 'pokemart', eastX, northY, {
-    minX: eastSectorMinX
-  });
+  const SLOT_PERMUTATIONS: readonly (readonly [number, number, number, number])[] = [
+    [0, 1, 2, 3],
+    [1, 2, 3, 0],
+    [2, 3, 0, 1],
+    [3, 0, 1, 2],
+    [1, 0, 3, 2],
+    [2, 1, 0, 3],
+    [3, 2, 1, 0],
+    [0, 3, 2, 1]
+  ];
+  const TIER1_SLOT_PERMUTATIONS: readonly (readonly [number, number, number, number])[] = [
+    [2, 3, 0, 1],
+    [3, 2, 1, 0],
+    [2, 3, 1, 0],
+    [3, 2, 0, 1]
+  ];
+  const permPool = isTier1 ? TIER1_SLOT_PERMUTATIONS : SLOT_PERMUTATIONS;
+  const permSeed = Math.abs(Math.floor(cityVariantSeed / 3) + bx * 7 + by * 13);
+  const perm = permPool[permSeed % permPool.length]!;
+  const orderedSlots = [
+    sectorSlots[perm[0]]!,
+    sectorSlots[perm[1]]!,
+    sectorSlots[perm[2]]!,
+    sectorSlots[perm[3]]!
+  ] as const;
 
-  // Gym / Residence 2: SW sector
-  if (shouldPlaceGym) {
-    findStreetFacingLot(`${node.id}_gym`, 'gym', 'gym_gold', westX, southY, {
-      maxX: westSectorMaxX
-    });
-  } else {
-    findStreetFacingLot(`${node.id}_residence_lot2`, 'house', 'house_gray_small', westX, southY, {
-      maxX: westSectorMaxX
-    });
+  const tier1MidY = by + Math.floor(H / 2);
+  const tier1FrontMinY = tier1MidY - 2;
+  const tier1GymMaxY = tier1MidY - 1;
+
+  if (isTier1) {
+    // Ensure Tier 1 cities always have a walkable southern frontage street for front services
+    const frontStreetY = by + Math.min(H - 2, aveY + 2);
+    for (let x = 2; x < W - 2; x++) {
+      addStreetCell(bx + x, frontStreetY);
+    }
+    addStreetCell(bx + aveX, Math.min(by + H - 1, frontStreetY + 1));
   }
 
-  // Landmark: SE sector
-  findStreetFacingLot(`${node.id}_landmark`, lkDef.type, lkDef.key, eastX, southY, {
-    minX: eastSectorMinX
-  });
+  const prioritizeGym =
+    shouldPlaceGym && (node.id.includes('cinnabar') || node.terrainPreference === 'coast_water');
+
+  if (prioritizeGym) {
+    const placedGymFirst = findStreetFacingLot(
+      `${node.id}_gym`,
+      'gym',
+      'gym_gold',
+      orderedSlots[2].x,
+      orderedSlots[2].y,
+      isTier1 ? { ...orderedSlots[2].bounds, maxY: tier1GymMaxY } : orderedSlots[2].bounds
+    );
+    if (!placedGymFirst) {
+      placeBuildingWithSearch(
+        `${node.id}_gym`,
+        'gym',
+        bx + Math.floor(W / 2) - 2,
+        by + 1,
+        'gym_gold'
+      );
+    }
+  }
+
+  findStreetFacingLot(
+    `${node.id}_pokecenter`,
+    'pokecenter',
+    'pokecenter',
+    orderedSlots[0].x,
+    orderedSlots[0].y,
+    isTier1 ? { ...orderedSlots[0].bounds, minY: tier1FrontMinY } : orderedSlots[0].bounds
+  );
+  findStreetFacingLot(
+    `${node.id}_pokemart`,
+    'pokemart',
+    'pokemart',
+    orderedSlots[1].x,
+    orderedSlots[1].y,
+    isTier1 ? { ...orderedSlots[1].bounds, minY: tier1FrontMinY } : orderedSlots[1].bounds
+  );
+  if (shouldPlaceGym && !prioritizeGym) {
+    const placedGym = findStreetFacingLot(
+      `${node.id}_gym`,
+      'gym',
+      'gym_gold',
+      orderedSlots[2].x,
+      orderedSlots[2].y,
+      isTier1 ? { ...orderedSlots[2].bounds, maxY: tier1GymMaxY } : orderedSlots[2].bounds
+    );
+    if (!placedGym) {
+      placeBuildingWithSearch(
+        `${node.id}_gym`,
+        'gym',
+        bx + Math.floor(W / 2) - 2,
+        by + 1,
+        'gym_gold'
+      );
+    }
+  } else if (!shouldPlaceGym) {
+    findStreetFacingLot(
+      `${node.id}_residence_lot2`,
+      'house',
+      'house_gray_small',
+      orderedSlots[2].x,
+      orderedSlots[2].y,
+      orderedSlots[2].bounds
+    );
+  }
+  findStreetFacingLot(
+    `${node.id}_landmark`,
+    lkDef.type,
+    lkDef.key,
+    orderedSlots[3].x,
+    orderedSlots[3].y,
+    orderedSlots[3].bounds
+  );
+
+  // Add park center feature for ring_garden only when footprint is spacious enough around central courtyard
+  const ringFountainMinW = 18;
+  const ringFountainMinH = 16;
+  if (pattern === 'ring_garden' && W >= ringFountainMinW && H >= ringFountainMinH) {
+    const fMeta = getAssetFilename('poke_fountain');
+    addProp('fountain', bx + midX - 1, by + midY - 1, fMeta);
+  }
 
   // Residential houses: along remaining street frontages & secondary sidewalks
   if (isTier1) {
@@ -1835,8 +2063,16 @@ export function generateOrganicCityLayout(
 
   let roadMaterial: UrbanRoadMaterial = 'asphalt';
   if (isIslandOrCoastal && !settlementHasWater) roadMaterial = 'dirt';
-  else if (settlementHasWater || genes.waterFeatureType === 'harbor_dock') roadMaterial = 'wood';
-  else if (genes.urbanDensity < URBAN_DENSITY_STONE_THRESHOLD) roadMaterial = 'stone';
+  else if (
+    settlementHasWater ||
+    pattern === 'coastal_wharf' ||
+    genes.waterFeatureType === 'harbor_dock'
+  )
+    roadMaterial = 'wood';
+  else if (pattern === 'ring_garden') roadMaterial = 'brick';
+  else if (pattern === 'radial_plaza') roadMaterial = 'paved';
+  else if (pattern === 'l_enclave' || genes.urbanDensity < URBAN_DENSITY_STONE_THRESHOLD)
+    roadMaterial = 'stone';
 
   const isPureIsland =
     /island|canela|cinnabar|isla/i.test(node.id) ||
@@ -1846,7 +2082,7 @@ export function generateOrganicCityLayout(
   return {
     nodeId: node.id,
     buildings,
-    props: props.filter((p) => !bMask.has(`${p.x}_${p.y}`)),
+    props: filterIsolatedUrbanFences(props.filter((p) => !bMask.has(`${p.x}_${p.y}`))),
     internalStreets: cleanStreets,
     pavedPlazaCells: isPureIsland ? [] : cleanPlazas,
     curbs: isPureIsland ? [] : curbs,

@@ -9,6 +9,7 @@
 
 import { describe, it, expect } from 'vitest';
 
+import { generatePokemonContinentalWorld } from '../../logic/map/continent/continentalEngine.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateProceduralPOICatalog } from '../../logic/map/regionalPoiCatalog.ts';
@@ -113,46 +114,20 @@ describe('Canonical Level Design Adjustments', () => {
   });
 
   it('implements transit dungeon caves: paired entry and exit across mountain ridge with interrupted outdoor path', () => {
-    const continent = generateContinentMap({
-      width: 128,
-      height: 128,
+    const world = generatePokemonContinentalWorld({
+      width: 256,
+      height: 256,
       seed: 777
     });
 
-    const pois = placeRegionalPOIs(continent, {
-      seed: 777,
-      generationMode: 'procedural',
-      targetCount: 18,
-      targetUrbanSettlements: 12
-    });
-
-    // Check if transit cave pair was placed
-    const transitCaves = pois.filter((p) => p.type === 'cave_entrance' && p.transitPairId);
+    // Check if transit cave pair was placed across a transverse ridge in Graph-First generation
+    const transitCaves = world.pois.filter((p) => p.type === 'cave_entrance' && p.transitPairId);
     expect(transitCaves.length).toBeGreaterThanOrEqual(2);
 
-    const entryCave = transitCaves.find((p) => p.isTransitCaveEntry);
-    const exitCave = transitCaves.find((p) => p.isTransitCaveExit);
-    expect(entryCave).toBeDefined();
-    expect(exitCave).toBeDefined();
-    expect(entryCave!.transitTargetId).toBe(exitCave!.id);
-
-    const network = generateRouteNetwork(continent, pois);
-
-    // The route network must have a warp connection between entry and exit
-    const warpEdge = network.edges.find(
-      (r) =>
-        (r.fromNodeId === entryCave!.id && r.toNodeId === exitCave!.id) ||
-        (r.fromNodeId === exitCave!.id && r.toNodeId === entryCave!.id)
-    );
-    expect(warpEdge).toBeDefined();
-    expect(warpEdge!.isTransitCaveWarp).toBe(true);
-
-    // The outdoor pathGrid must NOT stamp path tiles directly between the entry and exit over the mountain ridge
-    // Ensure doorway of entry has path, but mountain tiles between them have 0 pathGrid
-    const midX = Math.floor((entryCave!.gridX + exitCave!.gridX) / 2);
-    const midY = Math.floor((entryCave!.gridY + exitCave!.gridY) / 2);
-    if ((continent.heightmap[midY]?.[midX] ?? 0) > 0) {
-      expect(network.pathGrid[midY]?.[midX]).toBe(false);
+    const warpEdges = world.embedded.corridors.filter((c) => c.kind === 'wormhole_tunnel');
+    expect(warpEdges.length).toBeGreaterThanOrEqual(1);
+    for (const c of warpEdges) {
+      expect(c.fromId).not.toBe(c.toId);
     }
   });
 

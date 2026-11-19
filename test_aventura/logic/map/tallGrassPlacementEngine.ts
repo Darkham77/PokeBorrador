@@ -34,7 +34,9 @@ import {
 } from '../../config/wildernessConfig.ts';
 import type { POINode, RouteWaypoint } from '../../types/map/poiTypes.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
+import type { MacroBiome } from './macroBiomeSynthesizer.ts';
 import { type SimplexNoise } from './noise/simplexNoise.ts';
+import type { WaterTerrainKind } from './waterAutotileEngine.ts';
 import type { TallGrassPatch } from './wildernessVegetationEngine.ts';
 
 export interface TallGrassPlacementContext {
@@ -57,19 +59,68 @@ export interface TallGrassPlacementContext {
 /**
  * Places procedural tall grass encounter fields.
  */
-const EXCLUDED_TALL_GRASS_BIOME_LIST = [
-  'arid_desert',
-  'volcanic_plateau',
-  'mint_highland'
-] as const;
-type ExcludedTallGrassBiome = (typeof EXCLUDED_TALL_GRASS_BIOME_LIST)[number];
-const EXCLUDED_TALL_GRASS_BIOMES: ReadonlySet<ExcludedTallGrassBiome> =
-  new Set<ExcludedTallGrassBiome>(EXCLUDED_TALL_GRASS_BIOME_LIST);
+function isExcludedTallGrassBiome(biome: MacroBiome): boolean {
+  return biome === 'arid_desert' || biome === 'volcanic_plateau' || biome === 'mint_highland';
+}
 
-const EXCLUDED_TALL_GRASS_NEIGHBOR_TERRAIN_LIST = ['water', 'water_deep', 'sand'] as const;
-type ExcludedTallGrassNeighborTerrain = (typeof EXCLUDED_TALL_GRASS_NEIGHBOR_TERRAIN_LIST)[number];
-const EXCLUDED_TALL_GRASS_NEIGHBOR_TERRAINS: ReadonlySet<ExcludedTallGrassNeighborTerrain> =
-  new Set<ExcludedTallGrassNeighborTerrain>(EXCLUDED_TALL_GRASS_NEIGHBOR_TERRAIN_LIST);
+function isExcludedTallGrassNeighborTerrain(terrain: WaterTerrainKind): boolean {
+  return terrain === 'water' || terrain === 'water_deep' || terrain === 'sand';
+}
+
+const MIN_TALL_GRASS_COMPONENT_CELLS = 6 as const;
+const TALL_GRASS_CARDINAL_DIRS = [
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1]
+] as const;
+
+function collectTallGrassComponent(
+  startX: number,
+  startY: number,
+  tallGrassGrid: readonly (readonly boolean[])[],
+  visited: boolean[][]
+): readonly { readonly x: number; readonly y: number }[] {
+  const H = tallGrassGrid.length;
+  const W = tallGrassGrid[0]?.length ?? 0;
+  const component: { readonly x: number; readonly y: number }[] = [];
+  const queue: { readonly x: number; readonly y: number }[] = [{ x: startX, y: startY }];
+  visited[startY]![startX] = true;
+
+  while (queue.length > 0) {
+    const cur = queue.pop()!;
+    component.push(cur);
+    for (const [dx, dy] of TALL_GRASS_CARDINAL_DIRS) {
+      const nx = cur.x + dx;
+      const ny = cur.y + dy;
+      if (nx <= 0 || nx >= W - 1 || ny <= 0 || ny >= H - 1) continue;
+      if (!tallGrassGrid[ny]![nx] || visited[ny]![nx]) continue;
+      visited[ny]![nx] = true;
+      queue.push({ x: nx, y: ny });
+    }
+  }
+  return component;
+}
+
+function pruneSmallTallGrassComponents(
+  tallGrassGrid: boolean[][],
+  treeBlocked: boolean[][],
+  W: number,
+  H: number
+): void {
+  const visited: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
+  for (let y = 1; y < H - 1; y++) {
+    for (let x = 1; x < W - 1; x++) {
+      if (!tallGrassGrid[y]![x] || visited[y]![x]) continue;
+      const component = collectTallGrassComponent(x, y, tallGrassGrid, visited);
+      if (component.length >= MIN_TALL_GRASS_COMPONENT_CELLS) continue;
+      for (const pt of component) {
+        tallGrassGrid[pt.y]![pt.x] = false;
+        treeBlocked[pt.y]![pt.x] = false;
+      }
+    }
+  }
+}
 
 function computeMinDistToPath(
   x: number,
@@ -106,17 +157,32 @@ interface ForestDungeonDimensions {
   readonly H: number;
 }
 
+const TALL_GRASS_OVAL_CUTOFF = 1.05 as const;
+const TALL_GRASS_OVAL_WARP_SCALE = 0.35 as const;
+const TALL_GRASS_OVAL_WARP_AMP = 0.24 as const;
+
 function applyTallGrassPatch(
   bounds: TallGrassPatchBounds,
   grids: TallGrassGridBuffers,
-  isEligible: (x: number, y: number) => boolean
+  isEligible: (x: number, y: number) => boolean,
+  prng: { noise2D: (x: number, y: number) => number }
 ): void {
   const { cx0, cy0, pw, ph } = bounds;
   const { tallGrassGrid, treeBlocked } = grids;
+  const rx = Math.max(1.2, pw * 0.5);
+  const ry = Math.max(1.2, ph * 0.5);
+  const midX = pw * 0.5;
+  const midY = ph * 0.5;
+
   for (let dy = 0; dy < ph; dy++) {
     for (let dx = 0; dx < pw; dx++) {
       const cx = cx0 + dx;
       const cy = cy0 + dy;
+      const normDist = Math.hypot((dx + 0.5 - midX) / rx, (dy + 0.5 - midY) / ry);
+      const warp =
+        prng.noise2D(cx * TALL_GRASS_OVAL_WARP_SCALE, cy * TALL_GRASS_OVAL_WARP_SCALE) *
+        TALL_GRASS_OVAL_WARP_AMP;
+      if (normDist + warp > TALL_GRASS_OVAL_CUTOFF) continue;
       if (isEligible(cx, cy)) {
         tallGrassGrid[cy]![cx] = true;
         treeBlocked[cy]![cx] = true;
@@ -256,6 +322,104 @@ function placeForestDungeonTallGrass(
   }
 }
 
+const ROUTE_BELT_MARGIN_CELLS = 4 as const;
+const ROUTE_BELT_STEP = 2 as const;
+const ROUTE_BELT_MAX_PATH_CELLS = 26 as const;
+const ROUTE_BELT_MIN_SPACING = 8 as const;
+const ROUTE_BELT_MIN_VALID_CELLS = 6 as const;
+const ROUTE_BELT_POI_CLEARANCE = 3 as const;
+
+function isCellEligibleForTallGrassNeighbors(
+  x: number,
+  y: number,
+  continent: ContinentMapResult
+): boolean {
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      const ny = y + dy;
+      const nx = x + dx;
+      if ((continent.heightmap[ny]?.[nx] ?? 0) > 0) return false;
+      if (continent.resolvedMountain.occupiedFootCells[ny]?.[nx]) return false;
+      const nTerr = continent.terrainMatrix[ny]?.[nx];
+      if (nTerr && isExcludedTallGrassNeighborTerrain(nTerr)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function isPointInsidePoiMargin(x: number, y: number, pois: readonly POINode[]): boolean {
+  return pois.some(
+    (poi) =>
+      x >= poi.gridX - ROUTE_BELT_POI_CLEARANCE &&
+      x <= poi.gridX + poi.footprint.width + ROUTE_BELT_POI_CLEARANCE - 1 &&
+      y >= poi.gridY - ROUTE_BELT_POI_CLEARANCE &&
+      y <= poi.gridY + poi.footprint.height + ROUTE_BELT_POI_CLEARANCE - 1
+  );
+}
+
+function tryStampSingleBelt(
+  x: number,
+  y: number,
+  pathGrid: readonly (readonly boolean[])[],
+  tallGrassGrid: boolean[][],
+  treeBlocked: boolean[][],
+  isValid: (cx: number, cy: number) => boolean
+): number {
+  let validCount = 0;
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      if (isValid(x + dx, y + dy)) validCount++;
+    }
+  }
+  if (validCount < ROUTE_BELT_MIN_VALID_CELLS) return 0;
+
+  let pathCells = 0;
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      const bx = x + dx;
+      const by = y + dy;
+      if (!isValid(bx, by)) continue;
+      tallGrassGrid[by]![bx] = true;
+      treeBlocked[by]![bx] = true;
+      if (pathGrid[by]?.[bx]) pathCells++;
+    }
+  }
+  return pathCells;
+}
+
+function stampAllRouteBelts(
+  pathGrid: readonly (readonly boolean[])[],
+  tallGrassGrid: boolean[][],
+  treeBlocked: boolean[][],
+  W: number,
+  H: number,
+  isValid: (cx: number, cy: number) => boolean
+): void {
+  let routeBeltCellsPlaced = 0;
+  const placedBelts: { readonly x: number; readonly y: number }[] = [];
+  for (
+    let y = ROUTE_BELT_MARGIN_CELLS;
+    y < H - ROUTE_BELT_MARGIN_CELLS && routeBeltCellsPlaced < ROUTE_BELT_MAX_PATH_CELLS;
+    y += ROUTE_BELT_STEP
+  ) {
+    for (
+      let x = ROUTE_BELT_MARGIN_CELLS;
+      x < W - ROUTE_BELT_MARGIN_CELLS && routeBeltCellsPlaced < ROUTE_BELT_MAX_PATH_CELLS;
+      x += ROUTE_BELT_STEP
+    ) {
+      if (!pathGrid[y]?.[x] || !isValid(x, y)) continue;
+      if (placedBelts.some((b) => Math.hypot(b.x - x, b.y - y) < ROUTE_BELT_MIN_SPACING)) continue;
+      const stamped = tryStampSingleBelt(x, y, pathGrid, tallGrassGrid, treeBlocked, isValid);
+      if (stamped > 0) {
+        placedBelts.push({ x, y });
+        routeBeltCellsPlaced += stamped;
+      }
+    }
+  }
+}
+
 export function placeTallGrassPatches(ctx: TallGrassPlacementContext): void {
   const {
     H,
@@ -287,7 +451,7 @@ export function placeTallGrassPatches(ctx: TallGrassPlacementContext): void {
       return false;
 
     const mBiome = continent.macroBiomes?.biomeGrid[cy]?.[cx];
-    if (mBiome && EXCLUDED_TALL_GRASS_BIOMES.has(mBiome as ExcludedTallGrassBiome)) return false;
+    if (mBiome && isExcludedTallGrassBiome(mBiome)) return false;
 
     for (let dy = -1; dy <= 1; dy++) {
       for (let dx = -1; dx <= 1; dx++) {
@@ -297,11 +461,7 @@ export function placeTallGrassPatches(ctx: TallGrassPlacementContext): void {
           if ((continent.heightmap[ny]?.[nx] ?? 0) > 0) return false;
           if (continent.resolvedMountain.occupiedFootCells[ny]?.[nx]) return false;
           const terr = continent.terrainMatrix[ny]?.[nx];
-          if (
-            terr &&
-            EXCLUDED_TALL_GRASS_NEIGHBOR_TERRAINS.has(terr as ExcludedTallGrassNeighborTerrain)
-          )
-            return false;
+          if (terr && isExcludedTallGrassNeighborTerrain(terr)) return false;
         }
       }
     }
@@ -391,7 +551,8 @@ export function placeTallGrassPatches(ctx: TallGrassPlacementContext): void {
       applyTallGrassPatch(
         { cx0: cand.x, cy0: cand.y, pw, ph },
         { tallGrassGrid, treeBlocked },
-        isCellEligibleForTallGrass
+        isCellEligibleForTallGrass,
+        prng
       );
       placedPatchCount++;
     }
@@ -407,7 +568,23 @@ export function placeTallGrassPatches(ctx: TallGrassPlacementContext): void {
     );
   }
 
-  // Prune any isolated 1-cell or 2-cell tall grass fragments to guarantee contiguous groups >= 3x3
+  // Stamp periodic Pokémon-style tall-grass encounter belts across long wilderness route stretches
+  const isRouteBeltCellValid = (x: number, y: number): boolean => {
+    if (x < 3 || x >= W - 3 || y < 3 || y >= H - 3) return false;
+    if (continent.terrainMatrix[y]?.[x] !== 'grass') return false;
+    if ((continent.heightmap[y]?.[x] ?? 0) !== 0) return false;
+    if (continent.resolvedMountain.occupiedFootCells[y]?.[x]) return false;
+    if (urbanBlocked[y]?.[x] || tallGrassBlocked[y]?.[x] || stairBlocked[y]?.[x]) return false;
+    const mBiome = continent.macroBiomes?.biomeGrid[y]?.[x];
+    if (mBiome && isExcludedTallGrassBiome(mBiome)) return false;
+    return (
+      isCellEligibleForTallGrassNeighbors(x, y, continent) && !isPointInsidePoiMargin(x, y, pois)
+    );
+  };
+
+  stampAllRouteBelts(pathGrid, tallGrassGrid, treeBlocked, W, H, isRouteBeltCellValid);
+
+  // Prune any isolated 1-cell or 2-cell tips and any connected tall-grass sliver < 6 cells
   for (let iter = 0; iter < TALL_GRASS_PRUNE_ITERATIONS; iter++) {
     for (let y = 1; y < H - 1; y++) {
       for (let x = 1; x < W - 1; x++) {
@@ -423,4 +600,5 @@ export function placeTallGrassPatches(ctx: TallGrassPlacementContext): void {
       }
     }
   }
+  pruneSmallTallGrassComponents(tallGrassGrid, treeBlocked, W, H);
 }

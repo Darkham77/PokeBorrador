@@ -227,22 +227,41 @@ function placeArchipelagoSecondaryLandmark(
   }
 }
 
-function flattenIslandArea(
+function flattenOrganicIslandArea(
   posX: number,
   posY: number,
   width: number,
   height: number,
   W: number,
   H: number,
-  continentMap: ContinentMapResult
+  continentMap: ContinentMapResult,
+  seed: number
 ): void {
-  for (let dy = 0; dy < height; dy++) {
-    for (let dx = 0; dx < width; dx++) {
-      const cy = posY + dy;
-      const cx = posX + dx;
-      if (cy >= 0 && cy < H && cx >= 0 && cx < W) {
-        (continentMap.terrainMatrix as WaterTerrainKind[][])[cy]![cx] = 'grass';
-        (continentMap.heightmap as number[][])[cy]![cx] = 0;
+  const ISLAND_LAND_ELLIPSE_LIMIT = 0.96;
+  const ISLAND_SAND_ELLIPSE_LIMIT = 1.24;
+  const cx = posX + width / 2;
+  const cy = posY + height / 2;
+  const rx = Math.max(4, width * 0.68);
+  const ry = Math.max(4, height * 0.68);
+  const minY = Math.max(4, posY - 4);
+  const maxY = Math.min(H - 5, posY + height + 3);
+  const minX = Math.max(4, posX - 4);
+  const maxX = Math.min(W - 5, posX + width + 3);
+
+  for (let gy = minY; gy <= maxY; gy++) {
+    for (let gx = minX; gx <= maxX; gx++) {
+      const wiggle =
+        0.13 * Math.sin(gx * 0.34 + seed * 0.17) + 0.09 * Math.cos(gy * 0.29 - seed * 0.23);
+      const normDist = Math.hypot((gx - cx) / rx, (gy - cy) / ry) + wiggle;
+      if (normDist <= ISLAND_LAND_ELLIPSE_LIMIT) {
+        (continentMap.terrainMatrix as WaterTerrainKind[][])[gy]![gx] = 'grass';
+        (continentMap.heightmap as number[][])[gy]![gx] = 0;
+      } else if (normDist <= ISLAND_SAND_ELLIPSE_LIMIT) {
+        const current = continentMap.terrainMatrix[gy]?.[gx];
+        if (current === 'water' || current === 'water_deep') {
+          (continentMap.terrainMatrix as WaterTerrainKind[][])[gy]![gx] = 'sand';
+          (continentMap.heightmap as number[][])[gy]![gx] = 0;
+        }
       }
     }
   }
@@ -286,7 +305,7 @@ export function placePlainSettlements(ctx: PlainSettlementsContext): void {
       const posX = island.cx - Math.floor(iW / 2);
       const posY = island.cy - Math.floor(iH / 2);
 
-      flattenIslandArea(posX, posY, iW, iH, W, H, continentMap);
+      flattenOrganicIslandArea(posX, posY, iW, iH, W, H, continentMap, continentMap.seed);
 
       const gateways = computeNodeGateways(posX, posY, iW, iH, tmpl.type);
       const node: POINode = {
@@ -414,7 +433,17 @@ export function placePlainSettlements(ctx: PlainSettlementsContext): void {
 
     if (plainCandidates.length > 0) {
       let chosen: PlainCand;
-      if (tmpl.type === 'metropolis') {
+      if (tmpl.progressionIndex === 0) {
+        // Place L_0 starter town preferentially in the Southwest quadrant
+        const swAnchorX = W * 0.25;
+        const swAnchorY = H * 0.72;
+        plainCandidates.sort(
+          (a, b) =>
+            Math.hypot(a.x - swAnchorX, a.y - swAnchorY) -
+            Math.hypot(b.x - swAnchorX, b.y - swAnchorY)
+        );
+        chosen = plainCandidates[0]!;
+      } else if (tmpl.type === 'metropolis') {
         plainCandidates.sort((a, b) => a.distToCenter - b.distToCenter);
         chosen = plainCandidates[0]!;
       } else {
@@ -440,6 +469,20 @@ export function placePlainSettlements(ctx: PlainSettlementsContext): void {
         }
       }
 
+      const URBAN_THEME_ROTATION = [
+        'garden_plaza',
+        'historic_brick',
+        'geology_quarry',
+        'condo_district',
+        'harbor_market',
+        'pastoral_hamlet',
+        'neon_center'
+      ] as const;
+      const urbanTheme =
+        URBAN_THEME_ROTATION[
+          Math.abs(continentMap.seed + placedNodes.length) % URBAN_THEME_ROTATION.length
+        ];
+
       const gateways = computeNodeGateways(
         chosen.x,
         chosen.y,
@@ -451,6 +494,9 @@ export function placePlainSettlements(ctx: PlainSettlementsContext): void {
         id: tmpl.id,
         name: tmpl.name,
         type: tmpl.type,
+        tier: tmpl.tier,
+        progressionIndex: tmpl.progressionIndex,
+        urbanTheme,
         footprint: { width: currentWidth, height: currentHeight },
         terrainPreference: tmpl.preference,
         gridX: chosen.x,
@@ -478,46 +524,69 @@ function tryPlaceFallbackGate(
   continentMap: ContinentMapResult,
   ctx: PlainSettlementsContext
 ): boolean {
-  const isCompact = Math.min(W, H) <= COMPACT_MAP_THRESHOLD;
-  const minGateDist = isCompact ? 4 : GATE_MIN_DISTANCE_TO_SETTLEMENT;
-  const minYRatio = isCompact ? 0.12 : CHOKE_SEARCH_MIN_Y_RATIO;
-  const maxYRatio = isCompact ? 0.88 : CHOKE_SEARCH_MAX_Y_RATIO;
-  const minXRatio = isCompact ? 0.12 : CHOKE_SEARCH_MIN_X_RATIO;
-  const maxXRatio = isCompact ? 0.88 : CHOKE_SEARCH_MAX_X_RATIO;
-  const step = isCompact ? 2 : CHOKE_SEARCH_STEP;
+  const isSmallRegion = Math.min(W, H) <= 128;
+  const allowTinyFallback = Math.min(W, H) >= 96;
+  const searchAttempts: readonly {
+    readonly w: number;
+    readonly h: number;
+    readonly minDist: number;
+    readonly pad: number;
+  }[] = allowTinyFallback
+    ? [
+        { w: gW, h: gH, minDist: isSmallRegion ? 4 : GATE_MIN_DISTANCE_TO_SETTLEMENT, pad: 1 },
+        { w: Math.min(gW, 8), h: Math.min(gH, 8), minDist: 2, pad: 1 },
+        { w: Math.min(gW, 6), h: Math.min(gH, 6), minDist: 0, pad: 0 }
+      ]
+    : [{ w: gW, h: gH, minDist: isSmallRegion ? 4 : GATE_MIN_DISTANCE_TO_SETTLEMENT, pad: 1 }];
 
-  for (let y = Math.floor(H * minYRatio); y < Math.floor(H * maxYRatio); y += step) {
-    for (let x = Math.floor(W * minXRatio); x < Math.floor(W * maxXRatio); x += step) {
-      if (!ctx.isAreaFree(x, y, gW, gH, 1)) continue;
-      if (!isAreaFlatGrass(continentMap, x, y, gW, gH)) continue;
-      if (
-        ctx.getMinDistanceToPlaced(x + Math.floor(gW / 2), y + Math.floor(gH / 2)) < minGateDist
-      ) {
-        continue;
+  const minYRatio = isSmallRegion ? 0.08 : CHOKE_SEARCH_MIN_Y_RATIO;
+  const maxYRatio = isSmallRegion ? 0.92 : CHOKE_SEARCH_MAX_Y_RATIO;
+  const minXRatio = isSmallRegion ? 0.08 : CHOKE_SEARCH_MIN_X_RATIO;
+  const maxXRatio = isSmallRegion ? 0.92 : CHOKE_SEARCH_MAX_X_RATIO;
+  const step = isSmallRegion ? 2 : CHOKE_SEARCH_STEP;
+
+  for (const attempt of searchAttempts) {
+    const curW = attempt.w;
+    const curH = attempt.h;
+    for (let y = Math.floor(H * minYRatio); y < Math.floor(H * maxYRatio) - curH; y += step) {
+      for (let x = Math.floor(W * minXRatio); x < Math.floor(W * maxXRatio) - curW; x += step) {
+        if (!ctx.isAreaFree(x, y, curW, curH, attempt.pad)) continue;
+        if (!isAreaFlatGrass(continentMap, x, y, curW, curH)) continue;
+        if (
+          ctx.getMinDistanceToPlaced(x + Math.floor(curW / 2), y + Math.floor(curH / 2)) <
+          attempt.minDist
+        ) {
+          continue;
+        }
+        const minInterGateDist = isSmallRegion ? 14 : 48;
+        const tooCloseToExistingGate = ctx.placedNodes.some(
+          (n) => n.type === 'route_gate' && Math.hypot(x - n.gridX, y - n.gridY) < minInterGateDist
+        );
+        if (tooCloseToExistingGate) continue;
+
+        const midX = x + Math.floor(curW / 2);
+        const gateways: POIGateway[] = [
+          { x: midX, y, direction: 'north' },
+          { x: midX, y: y + curH - 1, direction: 'south' }
+        ];
+        const node: POINode = {
+          id: gateTmpl.id,
+          name: gateTmpl.name,
+          type: gateTmpl.type,
+          footprint: { width: curW, height: curH },
+          terrainPreference: gateTmpl.preference,
+          gridX: x,
+          gridY: y,
+          elevation: 0,
+          facing: 'south',
+          gateways
+        };
+        const layout = generateSettlementLayout(node, ctx.getSettlementContext());
+        (node as { urbanLayout?: typeof layout }).urbanLayout = layout;
+        ctx.placedNodes.push(node);
+        ctx.markAreaOccupied(x, y, curW, curH);
+        return true;
       }
-
-      const midX = x + Math.floor(gW / 2);
-      const gateways: POIGateway[] = [
-        { x: midX, y, direction: 'north' },
-        { x: midX, y: y + gH - 1, direction: 'south' }
-      ];
-      const node: POINode = {
-        id: gateTmpl.id,
-        name: gateTmpl.name,
-        type: gateTmpl.type,
-        footprint: { width: gW, height: gH },
-        terrainPreference: gateTmpl.preference,
-        gridX: x,
-        gridY: y,
-        elevation: 0,
-        facing: 'south',
-        gateways
-      };
-      const layout = generateSettlementLayout(node, ctx.getSettlementContext());
-      (node as { urbanLayout?: typeof layout }).urbanLayout = layout;
-      ctx.placedNodes.push(node);
-      ctx.markAreaOccupied(x, y, gW, gH);
-      return true;
     }
   }
   return false;

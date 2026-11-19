@@ -236,6 +236,13 @@ export function placeWaterLandmarks(ctx: WaterLandmarkPlacementContext): void {
         const minLandmarkDist =
           W <= COMPACT_MAP_THRESHOLD ? COMPACT_MIN_LANDMARK_DIST : STANDARD_MIN_LANDMARK_DIST;
 
+        const tooCloseToMaritime = placedNodes.some(
+          (n) =>
+            (n.type === 'port_dock' || n.type === 'water_landmark') &&
+            Math.hypot(x - n.gridX, y - n.gridY) < 28
+        );
+        if (tooCloseToMaritime) continue;
+
         if (
           edgeDistToShore < minShoreDist ||
           edgeDistToShore > maxShoreDist ||

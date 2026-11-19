@@ -552,10 +552,406 @@ function isStairNearLeaguePlateauWall(s: MountainCoordPoint, lz: MountainRegionB
   return Math.abs(s.y - wallY) <= 1 && s.x >= lz.x - 4 && s.x <= lz.x + lz.width + 4;
 }
 
+function getSafeHeight(matrix: readonly (readonly number[])[], x: number, y: number): number {
+  if (y < 0 || y >= matrix.length) return 0;
+  const row = matrix[y];
+  if (!row || x < 0 || x >= row.length) return 0;
+  return row[x] ?? 0;
+}
+
+const MIN_ELONGATED_SLIVER_LEN = 3;
+const MAX_SLIVER_THICKNESS = 2;
+
+function readElevAlongAxis(
+  heightmap: readonly (readonly number[])[],
+  primaryCoord: number,
+  crossCoord: number,
+  isRowScan: boolean
+): number {
+  return isRowScan
+    ? (heightmap[primaryCoord]?.[crossCoord] ?? 0)
+    : (heightmap[crossCoord]?.[primaryCoord] ?? 0);
+}
+
+function measureCrossAxisSpan(
+  heightmap: readonly (readonly number[])[],
+  fixedCoord: number,
+  anchorCross: number,
+  elev: number,
+  crossLimit: number,
+  isRowScan: boolean
+): { min: number; max: number } | null {
+  if (readElevAlongAxis(heightmap, fixedCoord, anchorCross, isRowScan) < elev) return null;
+  let min = anchorCross;
+  let max = anchorCross;
+  while (
+    min > 0 &&
+    max - min < MAX_SLIVER_THICKNESS &&
+    readElevAlongAxis(heightmap, fixedCoord, min - 1, isRowScan) >= elev
+  ) {
+    min--;
+  }
+  while (
+    max < crossLimit - 1 &&
+    max - min < MAX_SLIVER_THICKNESS &&
+    readElevAlongAxis(heightmap, fixedCoord, max + 1, isRowScan) >= elev
+  ) {
+    max++;
+  }
+  return { min, max };
+}
+
+function isElongatedThinSliver(
+  heightmap: readonly (readonly number[])[],
+  x: number,
+  y: number,
+  elev: number,
+  width: number,
+  height: number,
+  isRowScan: boolean
+): boolean {
+  const primaryCoord = isRowScan ? y : x;
+  const crossCoord = isRowScan ? x : y;
+  const primaryLimit = isRowScan ? height : width;
+  const crossLimit = isRowScan ? width : height;
+
+  const centerSpan = measureCrossAxisSpan(
+    heightmap,
+    primaryCoord,
+    crossCoord,
+    elev,
+    crossLimit,
+    isRowScan
+  );
+  if (!centerSpan || centerSpan.max - centerSpan.min + 1 > MAX_SLIVER_THICKNESS) return false;
+
+  let runLength = 1;
+  for (const dir of [-1, 1] as const) {
+    let curMin = centerSpan.min;
+    let curMax = centerSpan.max;
+    for (let step = 1; step < primaryLimit; step++) {
+      const nextPrimary = primaryCoord + dir * step;
+      if (nextPrimary < 0 || nextPrimary >= primaryLimit) break;
+      let anchor = -1;
+      for (let c = curMin; c <= curMax; c++) {
+        if (readElevAlongAxis(heightmap, nextPrimary, c, isRowScan) >= elev) {
+          anchor = c;
+          break;
+        }
+      }
+      if (anchor < 0) break;
+      const nextSpan = measureCrossAxisSpan(
+        heightmap,
+        nextPrimary,
+        anchor,
+        elev,
+        crossLimit,
+        isRowScan
+      );
+      if (!nextSpan || nextSpan.max - nextSpan.min + 1 > MAX_SLIVER_THICKNESS) break;
+      runLength++;
+      if (runLength >= MIN_ELONGATED_SLIVER_LEN) return true;
+      curMin = nextSpan.min;
+      curMax = nextSpan.max;
+    }
+  }
+  return false;
+}
+
+function pruneSingleSlicedMountainCell(
+  heightmap: number[][],
+  terrainMatrix: readonly (readonly WaterTerrainKind[])[],
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): boolean {
+  const elev = heightmap[y]![x]!;
+  if (elev <= 0) return false;
+  if (terrainMatrix[y]?.[x] !== 'grass') {
+    heightmap[y]![x] = 0;
+    return true;
+  }
+  if (y + 1 < height) {
+    const southT = terrainMatrix[y + 1]?.[x];
+    const southElev = heightmap[y + 1]![x]!;
+    if ((southT === 'water' || southT === 'water_deep') && southElev < elev) {
+      heightmap[y]![x] = southElev;
+      return true;
+    }
+  }
+  const minCard = Math.min(
+    y > 0 ? heightmap[y - 1]![x]! : 0,
+    y + 1 < height ? heightmap[y + 1]![x]! : 0,
+    x > 0 ? heightmap[y]![x - 1]! : 0,
+    x + 1 < width ? heightmap[y]![x + 1]! : 0
+  );
+  if (elev > minCard + 1) {
+    heightmap[y]![x] = minCard + 1;
+    return true;
+  }
+
+  const hasN = getSafeHeight(heightmap, x, y - 1) >= elev;
+  const hasS = getSafeHeight(heightmap, x, y + 1) >= elev;
+  const hasW = getSafeHeight(heightmap, x - 1, y) >= elev;
+  const hasE = getSafeHeight(heightmap, x + 1, y) >= elev;
+  const hasNW = getSafeHeight(heightmap, x - 1, y - 1) >= elev;
+  const hasNE = getSafeHeight(heightmap, x + 1, y - 1) >= elev;
+  const hasSE = getSafeHeight(heightmap, x + 1, y + 1) >= elev;
+  const hasSW = getSafeHeight(heightmap, x - 1, y + 1) >= elev;
+
+  const isRidgeOrPeak = (!hasN && !hasS) || (!hasW && !hasE);
+  const isColJag = (!hasW && !hasS && hasE && hasSE) || (!hasE && !hasS && hasW && hasSW);
+  const isRowJag = (!hasW && !hasS && hasN && hasNW) || (!hasE && !hasS && hasN && hasNE);
+  const isSliver =
+    isElongatedThinSliver(heightmap, x, y, elev, width, height, true) ||
+    isElongatedThinSliver(heightmap, x, y, elev, width, height, false);
+  if (isRidgeOrPeak || isColJag || isRowJag || isSliver) {
+    heightmap[y]![x] = elev - 1;
+    return true;
+  }
+  return false;
+}
+
+function resolvePostZoneDiagonalPinches(
+  heightmap: number[][],
+  width: number,
+  height: number
+): boolean {
+  let changed = false;
+  for (let y = 0; y < height - 1; y++) {
+    for (let x = 0; x < width - 1; x++) {
+      const tl = heightmap[y]![x]!;
+      const tr = heightmap[y]![x + 1]!;
+      const bl = heightmap[y + 1]![x]!;
+      const br = heightmap[y + 1]![x + 1]!;
+      const m1 = Math.max(tr, bl);
+      if (tl > m1 && br > m1) {
+        heightmap[y]![x] = m1;
+        heightmap[y + 1]![x + 1] = m1;
+        changed = true;
+        continue;
+      }
+      const m2 = Math.max(tl, br);
+      if (tr > m2 && bl > m2) {
+        heightmap[y]![x + 1] = m2;
+        heightmap[y + 1]![x] = m2;
+        changed = true;
+      }
+    }
+  }
+  return changed;
+}
+
+export function pruneSlicedMountainArtifactsAfterZones(
+  heightmap: number[][],
+  terrainMatrix: readonly (readonly WaterTerrainKind[])[],
+  width: number,
+  height: number
+): void {
+  const maxPasses = 24;
+  for (let pass = 0; pass < maxPasses; pass++) {
+    let changed = resolvePostZoneDiagonalPinches(heightmap, width, height);
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (pruneSingleSlicedMountainCell(heightmap, terrainMatrix, x, y, width, height)) {
+          changed = true;
+        }
+      }
+    }
+
+    if (!changed) break;
+  }
+}
+
+const SETTLEMENT_HARD_MARGIN = 1 as const;
+const SETTLEMENT_NOISE_PAD = 5 as const;
+const SETTLEMENT_EDGE_NOISE_SCALE = 0.085 as const;
+const SETTLEMENT_EDGE_NOISE_AMP = 3.2 as const;
+
+interface ExclusionMaskContext {
+  readonly width: number;
+  readonly height: number;
+  readonly validZone: boolean[][];
+  readonly noise: SimplexNoise;
+}
+
+function applyOrganicSettlementExclusion(zone: ZoneRectangleArea, ctx: ExclusionMaskContext): void {
+  const { width: W, height: H, validZone, noise } = ctx;
+  const margin = zone.margin ?? 3;
+  const outerMargin = margin + SETTLEMENT_NOISE_PAD;
+  const minX = Math.max(0, zone.x - outerMargin);
+  const maxX = Math.min(W - 1, zone.x + zone.width - 1 + outerMargin);
+  const minY = Math.max(0, zone.y - outerMargin);
+  const maxY = Math.min(H - 1, zone.y + zone.height - 1 + outerMargin);
+
+  for (let y = minY; y <= maxY; y++) {
+    for (let x = minX; x <= maxX; x++) {
+      const dx =
+        x < zone.x ? zone.x - x : x >= zone.x + zone.width ? x - (zone.x + zone.width - 1) : 0;
+      const dy =
+        y < zone.y ? zone.y - y : y >= zone.y + zone.height ? y - (zone.y + zone.height - 1) : 0;
+      const dist = Math.hypot(dx, dy);
+      if (dist <= SETTLEMENT_HARD_MARGIN) {
+        validZone[y]![x] = false;
+        continue;
+      }
+      const n = noise.noise2D(x * SETTLEMENT_EDGE_NOISE_SCALE, y * SETTLEMENT_EDGE_NOISE_SCALE);
+      if (dist <= margin + n * SETTLEMENT_EDGE_NOISE_AMP) {
+        validZone[y]![x] = false;
+      }
+    }
+  }
+}
+
 /**
  * Generates multi-tiered mountain massifs strictly located on continental grass,
  * maintaining clearance from beaches and inland lakes.
  */
+function applySquareElevationClamp(
+  heightmap: number[][],
+  cx: number,
+  cy: number,
+  span: number,
+  elevation: number,
+  predicate?: (nx: number, ny: number) => boolean
+): void {
+  for (let dy = -span; dy <= span; dy++) {
+    for (let dx = -span; dx <= span; dx++) {
+      const ny = cy + dy;
+      const nx = cx + dx;
+      if (predicate && !predicate(nx, ny)) continue;
+      heightmap[ny]![nx] = Math.max(heightmap[ny]![nx]!, elevation);
+    }
+  }
+}
+
+function measureValidCordilleraAnchorScore(
+  cx: number,
+  cy: number,
+  W: number,
+  H: number,
+  heightmap: readonly (readonly number[])[],
+  terrainMatrix: WaterTerrainMatrix,
+  mountainScores: readonly (readonly number[])[]
+): number | null {
+  const ANCHOR_EDGE_PAD = 4;
+  const ANCHOR_HALF_SPAN = 3;
+  const NON_LAND_DIST_WEIGHT = 10;
+  const INITIAL_MIN_DIST = 99;
+  if (
+    cx < ANCHOR_EDGE_PAD ||
+    cx >= W - ANCHOR_EDGE_PAD ||
+    cy < ANCHOR_EDGE_PAD ||
+    cy >= H - ANCHOR_EDGE_PAD
+  ) {
+    return null;
+  }
+  let minNonLandDist = INITIAL_MIN_DIST;
+  for (let dy = -ANCHOR_HALF_SPAN; dy <= ANCHOR_HALF_SPAN; dy++) {
+    for (let dx = -ANCHOR_HALF_SPAN; dx <= ANCHOR_HALF_SPAN; dx++) {
+      const nx = cx + dx;
+      const ny = cy + dy;
+      const t = terrainMatrix[ny]?.[nx];
+      if (t === 'water' || t === 'water_deep' || t === 'sand') return null;
+      if (heightmap[ny]?.[nx] === 0) {
+        minNonLandDist = Math.min(minNonLandDist, Math.max(Math.abs(dx), Math.abs(dy)));
+      }
+    }
+  }
+  return minNonLandDist * NON_LAND_DIST_WEIGHT + (mountainScores[cy]?.[cx] ?? 0);
+}
+
+function enforcePostSliceMassifTiers(
+  sanitizedHeightmap: number[][],
+  terrainMatrix: WaterTerrainMatrix,
+  mountainScores: readonly (readonly number[])[],
+  isWaterCell: (x: number, y: number) => boolean,
+  maxAllowedGlobal: number,
+  W: number,
+  H: number
+): void {
+  const MIN_LARGE_CORDILLERA_CELLS = 60;
+  const MAX_SMALL_HILL_TIER = 2;
+  const TIER_3_TARGET = 3;
+  const TIER_1_SPAN = 3;
+  const TIER_2_SPAN = 2;
+  const postSliceVisited: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
+  let postSliceMaxElev = 0;
+  let largestEligibleMassif: { readonly x: number; readonly y: number }[] = [];
+
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      if (sanitizedHeightmap[y]![x] === 0 || postSliceVisited[y]![x]) continue;
+      const cells = floodFillMassifCells(x, y, W, H, sanitizedHeightmap, postSliceVisited);
+      if (cells.length < MIN_LARGE_CORDILLERA_CELLS) {
+        for (const c of cells) {
+          sanitizedHeightmap[c.y]![c.x] = Math.min(
+            sanitizedHeightmap[c.y]![c.x]!,
+            MAX_SMALL_HILL_TIER
+          );
+        }
+      } else if (cells.length > largestEligibleMassif.length) {
+        largestEligibleMassif = cells;
+      }
+      for (const c of cells) {
+        if (sanitizedHeightmap[c.y]![c.x]! > postSliceMaxElev) {
+          postSliceMaxElev = sanitizedHeightmap[c.y]![c.x]!;
+        }
+      }
+    }
+  }
+
+  if (
+    maxAllowedGlobal < TIER_3_TARGET ||
+    postSliceMaxElev >= TIER_3_TARGET ||
+    largestEligibleMassif.length < MIN_LARGE_CORDILLERA_CELLS
+  ) {
+    return;
+  }
+
+  let bestAnchor: { readonly x: number; readonly y: number; readonly score: number } | null = null;
+  for (const c of largestEligibleMassif) {
+    const score = measureValidCordilleraAnchorScore(
+      c.x,
+      c.y,
+      W,
+      H,
+      sanitizedHeightmap,
+      terrainMatrix,
+      mountainScores
+    );
+    if (score !== null && (!bestAnchor || score > bestAnchor.score)) {
+      bestAnchor = { x: c.x, y: c.y, score };
+    }
+  }
+  if (!bestAnchor) return;
+
+  applySquareElevationClamp(
+    sanitizedHeightmap,
+    bestAnchor.x,
+    bestAnchor.y,
+    TIER_1_SPAN,
+    1,
+    (nx, ny) => !isWaterCell(nx, ny)
+  );
+  applySquareElevationClamp(
+    sanitizedHeightmap,
+    bestAnchor.x,
+    bestAnchor.y,
+    TIER_2_SPAN,
+    MAX_SMALL_HILL_TIER
+  );
+  applySquareElevationClamp(sanitizedHeightmap, bestAnchor.x, bestAnchor.y, 1, TIER_3_TARGET);
+  const normTier3 = normalizeHeightmapDiagonals(sanitizedHeightmap);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      if (!isWaterCell(x, y)) sanitizedHeightmap[y]![x] = normTier3[y]![x]!;
+    }
+  }
+}
+
 export function generateContinentalMountains(
   terrainMatrix: WaterTerrainMatrix,
   options: ContinentGeneratorOptions
@@ -613,19 +1009,16 @@ export function generateContinentalMountains(
     }
   }
 
-  // Exclude settlement footprints and margins from mountain validZone
+  // Exclude settlement footprints and margins from mountain validZone with organic edge noise
   if (options.settlementExclusionZones) {
+    const exclusionCtx: ExclusionMaskContext = {
+      width: W,
+      height: H,
+      validZone,
+      noise: new SimplexNoise(seed + MOUNTAIN_NOISE_SECONDARY_SEED_OFFSET)
+    };
     for (const zone of options.settlementExclusionZones) {
-      const margin = zone.margin ?? 3;
-      const minX = Math.max(0, zone.x - margin);
-      const maxX = Math.min(W - 1, zone.x + zone.width + margin);
-      const minY = Math.max(0, zone.y - margin);
-      const maxY = Math.min(H - 1, zone.y + zone.height + margin);
-      for (let y = minY; y <= maxY; y++) {
-        for (let x = minX; x <= maxX; x++) {
-          validZone[y]![x] = false;
-        }
-      }
+      applyOrganicSettlementExclusion(zone, exclusionCtx);
     }
   }
 
@@ -705,14 +1098,14 @@ export function generateContinentalMountains(
     }
   }
 
-  // Regional Invariant: Guarantee dedicated northern mountain massif for the Pokémon League (Meseta Añil)
+  // Fallback northern mountain massif only when an explicit leaguePlateauZone is not provided
   const MASSIVE_MAP_DIMENSION = 200 as const;
   const NORTH_MASSIF_MIN_Y_RATIO = 0.12 as const;
   const NORTH_MASSIF_MAX_Y_RATIO = 0.32 as const;
   const NORTH_MASSIF_MIN_X_RATIO = 0.18 as const;
   const NORTH_MASSIF_MAX_X_RATIO = 0.82 as const;
 
-  if (Math.min(W, H) >= MASSIVE_MAP_DIMENSION) {
+  if (!options.leaguePlateauZone && Math.min(W, H) >= MASSIVE_MAP_DIMENSION) {
     const pW = 24;
     const pH = LEAGUE_MASSIF_HEIGHT;
     const LEAGUE_MASSIF_MARGIN = 2 as const;
@@ -852,6 +1245,8 @@ export function generateContinentalMountains(
     }
   }
 
+  const compactScaleTier3Min = Math.min(W, H) <= 160 ? 60 : MASSIF_TIER_3_MIN_CELLS;
+
   for (const massif of rawMassifs) {
     const count = massif.length;
     const c0 = massif[0]!;
@@ -860,7 +1255,7 @@ export function generateContinentalMountains(
     let maxMassifTier: number;
     if (count >= CORDILLERA_TIER_4_MIN_CELLS - seedOffset)
       maxMassifTier = Math.min(maxAllowedGlobal, 4);
-    else if (count >= MASSIF_TIER_3_MIN_CELLS - seedOffset)
+    else if (count >= Math.max(60, compactScaleTier3Min))
       maxMassifTier = Math.min(maxAllowedGlobal, 3);
     else if (count >= MASSIF_TIER_2_MIN_CELLS) maxMassifTier = Math.min(maxAllowedGlobal, 2);
     else maxMassifTier = 1;
@@ -915,21 +1310,69 @@ export function generateContinentalMountains(
 
     // Large massifs (Tier 3)
     if (maxMassifTier === 3) {
-      const bestPeak = findBestMassifPeak(massif, mtnClearance, mountainScores, 2);
+      const hasSquareValidZone = (cx: number, cy: number, halfSpan: number): boolean => {
+        for (let dy = -halfSpan; dy <= halfSpan; dy++) {
+          for (let dx = -halfSpan; dx <= halfSpan; dx++) {
+            const nx = cx + dx;
+            const ny = cy + dy;
+            if (nx <= 0 || nx >= W - 1 || ny <= 0 || ny >= H - 1 || !validZone[ny]?.[nx]) {
+              return false;
+            }
+          }
+        }
+        return true;
+      };
+
+      let bestPeak: { readonly x: number; readonly y: number } | null = null;
+      let bestPeakScore = -1;
+      for (const c of massif) {
+        if (!hasSquareValidZone(c.x, c.y, 3)) continue;
+        const s = (mtnClearance[c.y]?.[c.x] ?? 0) * 100 + (mountainScores[c.y]?.[c.x] ?? 0);
+        if (s > bestPeakScore) {
+          bestPeakScore = s;
+          bestPeak = c;
+        }
+      }
+      bestPeak =
+        bestPeak ??
+        findBestMassifPeak(massif, mtnClearance, mountainScores, 2) ??
+        findBestMassifPeak(massif, mtnClearance, mountainScores, 1) ??
+        findHighestScoreMassifCell(massif, mountainScores);
 
       if (bestPeak) {
         const px = bestPeak.x;
         const py = bestPeak.y;
-        expandMassifTierRing(rawHeightmap, mtnClearance, {
+        const TIER_3_VALUE = 3;
+        // Guarantee complete 7x7 Tier 1 -> 5x5 Tier 2 -> 3x3 Tier 3 terraces within validZone
+        applySquareElevationClamp(
+          rawHeightmap,
           px,
           py,
-          radius: 5,
-          width: W,
-          height: H,
-          minClearance: 1,
-          targetElevation: 2
-        });
-        applySolidSummitElevation(rawHeightmap, px, py, 2, W, H, 3);
+          TIER_3_VALUE,
+          1,
+          (nx, ny) => ny > 0 && ny < H - 1 && nx > 0 && nx < W - 1 && Boolean(validZone[ny]?.[nx])
+        );
+        applySquareElevationClamp(
+          rawHeightmap,
+          px,
+          py,
+          2,
+          2,
+          (nx, ny) => ny > 1 && ny < H - 2 && nx > 1 && nx < W - 2 && Boolean(validZone[ny]?.[nx])
+        );
+        applySquareElevationClamp(
+          rawHeightmap,
+          px,
+          py,
+          1,
+          TIER_3_VALUE,
+          (nx, ny) =>
+            ny > 2 &&
+            ny < H - TIER_3_VALUE &&
+            nx > 2 &&
+            nx < W - TIER_3_VALUE &&
+            (rawHeightmap[ny]?.[nx] ?? 0) >= 2
+        );
       }
     }
 
@@ -977,7 +1420,7 @@ export function generateContinentalMountains(
   const sanitizedHeightmap = sanitizeHeightmapMatrix(preNormalized, {
     isWaterCell,
     minTerraceBuffer: 0,
-    minFootprintDimension: 2,
+    minFootprintDimension: 3,
     minWalkableCoreDimension: 0
   });
 
@@ -1023,6 +1466,29 @@ export function generateContinentalMountains(
     const bounds = computeClampedZoneBounds(lz, W, H, plateauH);
     applyPlateauGrassElevation(sanitizedHeightmap, terrainMatrix, bounds, 1);
 
+    // Organic stepped spurs around League east/west/north edges so Indigo Plateau feels like Victory Road
+    const spurPad = 3;
+    const noiseSpur = new SimplexNoise(seed + VALLEY_NOISE_SEED_OFFSET);
+    for (let y = Math.max(1, bounds.minY - spurPad); y <= Math.min(H - 2, bounds.maxY); y++) {
+      for (
+        let x = Math.max(1, bounds.minX - spurPad);
+        x <= Math.min(W - 2, bounds.maxX + spurPad);
+        x++
+      ) {
+        if (x >= bounds.minX && x <= bounds.maxX && y >= bounds.minY && y <= bounds.maxY) {
+          continue;
+        }
+        const t = terrainMatrix[y]?.[x];
+        if (t === 'water' || t === 'water_deep' || t === 'sand') continue;
+        const spurFreq = 0.16;
+        const spurThreshold = 0.08;
+        const n = noiseSpur.noise2D(x * spurFreq, y * spurFreq);
+        if (n > spurThreshold && (sanitizedHeightmap[y]?.[x] ?? 0) === 0) {
+          sanitizedHeightmap[y]![x] = 1;
+        }
+      }
+    }
+
     // Lower plaza, checkpoint gate, and southern concourse remain flat at elevation 0
     const lowerMaxY = Math.min(H - 1, lz.y + lz.height + m);
     for (let y = bounds.maxY; y <= lowerMaxY; y++) {
@@ -1030,7 +1496,29 @@ export function generateContinentalMountains(
         sanitizedHeightmap[y]![x] = 0;
       }
     }
+
+    const normalizedLeague = normalizeHeightmapDiagonals(sanitizedHeightmap);
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        if (!isWaterCell(x, y)) {
+          sanitizedHeightmap[y]![x] = normalizedLeague[y]![x]!;
+        }
+      }
+    }
   }
+
+  // Post-zone mountain cleanup: remove any 1x1 isolated peaks, 1-tile slivers, or diagonal
+  // pinches created when settlementExclusionZones or leaguePlateauZone sliced cliff borders.
+  pruneSlicedMountainArtifactsAfterZones(sanitizedHeightmap, terrainMatrix, W, H);
+  enforcePostSliceMassifTiers(
+    sanitizedHeightmap,
+    terrainMatrix,
+    mountainScores,
+    isWaterCell,
+    options?.maxMountainTiers ?? 4,
+    W,
+    H
+  );
 
   // Phase 2: Geological Clusterer enforces single palette per massif
   const geologicalClusters = clusterMountainMassifs({

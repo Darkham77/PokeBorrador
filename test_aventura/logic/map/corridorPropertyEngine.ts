@@ -15,7 +15,8 @@ import type {
   EmbeddedTopologyGraph,
   EmbeddedCorridor,
   EnrichedCorridorProperties,
-  TerrainInfluence
+  TerrainInfluence,
+  RouteDesignSignature
 } from '../../types/map/pokemonGraphTypes.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
 
@@ -125,6 +126,46 @@ function computeGatehouseLocations(corridor: EmbeddedCorridor): { x: number; y: 
 // Public API: Enrich Corridor Properties (T4.1 - T4.3)
 // ---------------------------------------------------------------------------
 
+function resolveCorridorDesignSignature(
+  corridor: EmbeddedCorridor,
+  continent: ContinentMapResult,
+  influence: TerrainInfluence,
+  nearWater: boolean,
+  prevMainSignature: RouteDesignSignature | undefined,
+  corridorIndex: number
+): RouteDesignSignature {
+  if (corridor.kind === 'surf_route' || influence === 'coastal') {
+    return 'coastal_beach_surf';
+  }
+  const midPt = corridor.pathCells[Math.floor(corridor.pathCells.length / 2)];
+  const midBiome = midPt
+    ? (continent.macroBiomes?.biomeGrid[midPt.y]?.[midPt.x] ?? 'temperate_meadow')
+    : 'temperate_meadow';
+  if (midBiome === 'arid_desert' || midBiome === 'volcanic_plateau') {
+    return 'desert_cliff_basin';
+  }
+  if (influence === 'mountain' || midBiome === 'mint_highland') {
+    return nearWater && prevMainSignature !== 'highland_river_gorge'
+      ? 'highland_river_gorge'
+      : 'alpine_terrace_pass';
+  }
+  if (nearWater) {
+    return prevMainSignature === 'wetland_puddle_marsh'
+      ? 'highland_river_gorge'
+      : 'wetland_puddle_marsh';
+  }
+  if (
+    influence === 'forest' &&
+    (prevMainSignature === 'pastoral_ledge_corridor' || corridorIndex % 3 === 1)
+  ) {
+    return 'wetland_puddle_marsh';
+  }
+  if (corridorIndex % 4 === 2 && prevMainSignature !== 'highland_river_gorge') {
+    return 'highland_river_gorge';
+  }
+  return 'pastoral_ledge_corridor';
+}
+
 export function enrichCorridorProperties(
   embedded: EmbeddedTopologyGraph,
   continent: ContinentMapResult
@@ -134,6 +175,7 @@ export function enrichCorridorProperties(
 
   let prevMainInfluence: TerrainInfluence | undefined;
   let prevMainWidth: number | undefined;
+  let prevMainSignature: RouteDesignSignature | undefined;
 
   for (let cIdx = 0; cIdx < embedded.corridors.length; cIdx++) {
     const corridor = embedded.corridors[cIdx]!;
@@ -173,6 +215,15 @@ export function enrichCorridorProperties(
       width = SURF_ROUTE_CHANNEL_WIDTH;
     }
 
+    const designSignature = resolveCorridorDesignSignature(
+      corridor,
+      continent,
+      influence,
+      nearWater,
+      prevMainSignature,
+      cIdx
+    );
+
     // 4. No-Repeat Variety Constraint for consecutive main-path corridors (T4.2)
     if (isMainChain) {
       if (prevMainInfluence === influence && prevMainWidth === width) {
@@ -181,6 +232,7 @@ export function enrichCorridorProperties(
       }
       prevMainInfluence = influence;
       prevMainWidth = width;
+      prevMainSignature = designSignature;
     }
 
     // 5. Emerging Props
@@ -200,6 +252,7 @@ export function enrichCorridorProperties(
       width,
       difficulty,
       terrainInfluence: influence,
+      designSignature,
       tallGrassDensity,
       hasOneWayLedges,
       waterSideAccess: nearWater,

@@ -47,18 +47,22 @@ function resolveMassifPalette(
   cells: readonly { x: number; y: number }[],
   count: number,
   centroidX: number,
-  worldWidth: number
+  centroidY: number,
+  worldWidth: number,
+  worldHeight: number
 ): MountainPalette {
   if (options.defaultPalette) {
     return options.defaultPalette;
   }
   let volcanicCellCount = 0;
   let desertCellCount = 0;
+  let highlandCellCount = 0;
   if (options.macroBiomeGrid) {
     for (const cell of cells) {
       const mb = options.macroBiomeGrid[cell.y]?.[cell.x];
       if (mb === 'volcanic_plateau') volcanicCellCount++;
       else if (mb === 'arid_desert') desertCellCount++;
+      else if (mb === 'mint_highland') highlandCellCount++;
     }
   }
 
@@ -66,10 +70,28 @@ function resolveMassifPalette(
   if (volcanicCellCount > count * DOMINANT_BIOME_PALETTE_THRESHOLD_RATIO) {
     return 'volcanic';
   }
+  if (highlandCellCount > count * DOMINANT_BIOME_PALETTE_THRESHOLD_RATIO) {
+    return 'gray';
+  }
   if (desertCellCount > count * DOMINANT_BIOME_PALETTE_THRESHOLD_RATIO) {
     return 'brown';
   }
-  return centroidX < worldWidth * 0.5 ? 'brown' : 'gray';
+  // Without macroBiomeGrid (isolated cluster test compatibility), fall back cleanly by East/West half
+  if (!options.macroBiomeGrid) {
+    return centroidX < worldWidth * 0.5 ? 'brown' : 'gray';
+  }
+  // With macroBiomeGrid in temperate/forest zones, use organic northern highland gradient + massif hash
+  const NORTHERN_BIAS_WEIGHT = 0.65 as const;
+  const MASSIF_SIGNAL_WEIGHT = 0.35 as const;
+  const GRAY_PALETTE_THRESHOLD = 0.55 as const;
+  const northernBias = worldHeight > 0 ? 1 - centroidY / worldHeight : 0.5;
+  const massifSignal = Math.abs(
+    Math.sin(centroidX * 0.09 + centroidY * 0.13 + (options.seed ?? 0) * 0.017)
+  );
+  return northernBias * NORTHERN_BIAS_WEIGHT + massifSignal * MASSIF_SIGNAL_WEIGHT >=
+    GRAY_PALETTE_THRESHOLD
+    ? 'gray'
+    : 'brown';
 }
 
 const EIGHT_WAY_NEIGHBOR_OFFSETS: readonly (readonly [number, number])[] = [
@@ -174,7 +196,7 @@ export function clusterMountainMassifs(options: GeologicalClusterOptions): Geolo
         floodFillMassifComponent(x, y, W, H, matrix, visited);
 
       // Determine single geological palette for the entire massif
-      const palette = resolveMassifPalette(options, cells, count, centroidX, W);
+      const palette = resolveMassifPalette(options, cells, count, centroidX, centroidY, W, H);
 
       const id = `massif_${massifIndex}`;
       const massif: MountainMassif = {

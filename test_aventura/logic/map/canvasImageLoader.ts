@@ -9,6 +9,7 @@ import { logger } from '@/logic/utils/logger';
  * Dedicated image loading, caching, and URL resolution for the Canvas Tile Renderer.
  */
 
+import { resolveAssetWebPath } from './assetWebPathResolver.ts';
 import { CANONICAL_ASSETS_BY_ID } from './canonicalAssetsRegistry.ts';
 
 const imageCache = new Map<string, HTMLImageElement>();
@@ -78,7 +79,7 @@ export function resolveTileUrl(filename: string): string {
   if (isVegetationImageFilename(filename)) {
     return `/test_aventura/assets/prefabs/vegetation/${filename}`;
   }
-  return `/test_aventura/assets/prefabs/${filename}`;
+  return resolveAssetWebPath(filename) ?? `/test_aventura/assets/prefabs/${filename}`;
 }
 
 /**

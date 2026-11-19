@@ -43,22 +43,40 @@ export interface GenerateLedgesOptions {
   readonly pois: readonly POINode[];
   readonly seed?: number;
   readonly maxLedgeRuns?: number;
+  readonly transitableGrid?: readonly (readonly boolean[])[];
 }
 
 const LEDGE_SEARCH_MARGIN = 6 as const;
 
-const MIN_LEDGE_RUN_LENGTH = 2;
-const MAX_LEDGE_RUN_LENGTH = 5;
-const DEFAULT_MAX_LEDGE_RUNS = 12;
+const MIN_LEDGE_RUN_LENGTH = 4;
+const MAX_LEDGE_RUN_LENGTH = 6;
+const DEFAULT_MAX_LEDGE_RUNS = 10;
+const MAX_SCALED_LEDGE_RUNS = 28;
+const LEDGE_MAP_AREA_DIVISOR = 2200;
 const LEDGE_POI_CLEARANCE_MARGIN = 4;
+const LEDGE_ROUTE_GATE_CLEARANCE_MARGIN = 14;
+const LEDGE_ANCHOR_STEP = 2;
+
+function resolveScaledMaxLedgeRuns(width: number, height: number, explicitMax?: number): number {
+  if (explicitMax !== undefined) return explicitMax;
+  const scaled = Math.round((width * height) / LEDGE_MAP_AREA_DIVISOR);
+  return Math.max(DEFAULT_MAX_LEDGE_RUNS, Math.min(MAX_SCALED_LEDGE_RUNS, scaled));
+}
+
+function resolveLedgeTileFile(index: number, runLength: number): string {
+  if (index === 0) return 'poke_ledge_left.png';
+  if (index === runLength - 1) return 'poke_ledge_right.png';
+  return 'poke_ledge_jump.png';
+}
 
 /**
  * Procedurally generates 1-way jumpable ledges on route corridors with anti-softlock guarantees.
  */
 export function generateRouteLedges(options: GenerateLedgesOptions): readonly LedgeRun[] {
-  const { continent, pathGrid, pois, maxLedgeRuns = DEFAULT_MAX_LEDGE_RUNS } = options;
+  const { continent, pathGrid, pois, transitableGrid } = options;
   const W = continent.width;
   const H = continent.height;
+  const maxLedgeRuns = resolveScaledMaxLedgeRuns(W, H, options.maxLedgeRuns);
 
   const nextRng = createLcgRng(options.seed ?? DECORATION_DEFAULT_SEED);
 
@@ -66,10 +84,12 @@ export function generateRouteLedges(options: GenerateLedgesOptions): readonly Le
   const excluded = Array.from({ length: H }, () => Array(W).fill(false));
 
   for (const poi of pois) {
-    const minX = Math.max(0, poi.gridX - LEDGE_POI_CLEARANCE_MARGIN);
-    const maxX = Math.min(W - 1, poi.gridX + poi.footprint.width + LEDGE_POI_CLEARANCE_MARGIN);
-    const minY = Math.max(0, poi.gridY - LEDGE_POI_CLEARANCE_MARGIN);
-    const maxY = Math.min(H - 1, poi.gridY + poi.footprint.height + LEDGE_POI_CLEARANCE_MARGIN);
+    const margin =
+      poi.type === 'route_gate' ? LEDGE_ROUTE_GATE_CLEARANCE_MARGIN : LEDGE_POI_CLEARANCE_MARGIN;
+    const minX = Math.max(0, poi.gridX - margin);
+    const maxX = Math.min(W - 1, poi.gridX + poi.footprint.width + margin);
+    const minY = Math.max(0, poi.gridY - margin);
+    const maxY = Math.min(H - 1, poi.gridY + poi.footprint.height + margin);
 
     for (let y = minY; y <= maxY; y++) {
       for (let x = minX; x <= maxX; x++) {
@@ -103,7 +123,9 @@ export function generateRouteLedges(options: GenerateLedgesOptions): readonly Le
     if (x < 0 || x >= W || y < 0 || y >= H) return false;
     if ((continent.heightmap[y]?.[x] ?? 0) !== 0) return false;
     const t = continent.terrainMatrix[y]?.[x];
-    return t !== 'water' && t !== 'water_deep';
+    if (t === 'water' || t === 'water_deep') return false;
+    if (transitableGrid && !transitableGrid[y]?.[x]) return false;
+    return true;
   };
 
   const placedRuns: LedgeRun[] = [];
@@ -127,66 +149,97 @@ export function generateRouteLedges(options: GenerateLedgesOptions): readonly Le
     candidateAnchorCells[j] = temp;
   }
 
+  const isWallAnchorCell = (x: number, y: number): boolean => {
+    if (x < 0 || x >= W || y < 0 || y >= H) return false;
+    const t = continent.terrainMatrix[y]?.[x];
+    if (t === 'water' || t === 'water_deep') return false;
+    if ((continent.heightmap[y]?.[x] ?? 0) > 0) return true;
+    if (continent.resolvedMountain.occupiedFootCells[y]?.[x]) return true;
+    return !isPassableCorridor(x, y);
+  };
+
+  const MAX_CORRIDOR_WALL_SCAN_TILES = 8 as const;
+
+  const isCandidateSpanClear = (
+    sx: number,
+    y: number,
+    runLength: number,
+    allowRoad: boolean
+  ): boolean => {
+    if (sx < 2 || sx + runLength >= W - 2) return false;
+    for (let dx = 0; dx < runLength; dx++) {
+      const cx = sx + dx;
+      if (!isCellValidLedgeGround(cx, y) || occupiedCells.has(`${cx}_${y}`)) return false;
+      if (transitableGrid && !transitableGrid[y]?.[cx]) return false;
+      if (!allowRoad && pathGrid[y]?.[cx]) return false;
+      if (!isPassableCorridor(cx, y - 1) || !isPassableCorridor(cx, y + 1)) return false;
+    }
+    const leftFlankOpen = isPassableCorridor(sx - 1, y) && isPassableCorridor(sx - 2, y);
+    const rightFlankOpen =
+      isPassableCorridor(sx + runLength, y) && isPassableCorridor(sx + runLength + 1, y);
+    if (!leftFlankOpen && !rightFlankOpen) return false;
+
+    if (transitableGrid) {
+      const leftAnchored = isWallAnchorCell(sx - 1, y);
+      const rightAnchored = isWallAnchorCell(sx + runLength, y);
+      return (leftAnchored && rightFlankOpen) || (rightAnchored && leftFlankOpen);
+    }
+    return true;
+  };
+
   for (const anchor of candidateAnchorCells) {
     if (placedRuns.length >= maxLedgeRuns) break;
 
-    // Desired ledge run length (2 to 4 cells)
     const runLength =
       MIN_LEDGE_RUN_LENGTH +
       Math.floor(nextRng() * (MAX_LEDGE_RUN_LENGTH - MIN_LEDGE_RUN_LENGTH + 1));
-    const startX = anchor.x - Math.floor(runLength / 2);
     const y = anchor.y;
 
-    if (startX < 2 || startX + runLength >= W - 2) continue;
-
-    // Verify all cells of the proposed ledge run are valid and free
-    let canPlace = true;
-    for (let dx = 0; dx < runLength; dx++) {
-      const cx = startX + dx;
-      if (!isCellValidLedgeGround(cx, y) || occupiedCells.has(`${cx}_${y}`)) {
-        canPlace = false;
-        break;
-      }
-      // Check approach (y - 1) and landing (y + 1) cells are open
-      if (!isPassableCorridor(cx, y - 1) || !isPassableCorridor(cx, y + 1)) {
-        canPlace = false;
+    let wallLeftAnchorStart: number | null = null;
+    for (let step = 1; step <= MAX_CORRIDOR_WALL_SCAN_TILES; step++) {
+      const probeX = anchor.x - step;
+      if (isWallAnchorCell(probeX, y)) {
+        wallLeftAnchorStart = probeX + 1;
         break;
       }
     }
 
-    if (!canPlace) continue;
+    let wallRightAnchorStart: number | null = null;
+    for (let step = 1; step <= MAX_CORRIDOR_WALL_SCAN_TILES; step++) {
+      const probeX = anchor.x + step;
+      if (isWallAnchorCell(probeX, y)) {
+        wallRightAnchorStart = probeX - runLength;
+        break;
+      }
+    }
 
-    // ------------------------------------------------------------------------
-    // NATURAL ANCHOR & ANTI-SOFTLOCK VERIFICATION:
-    // A canonical ledge MUST anchor into a solid barrier (mountain cliff, rock foot,
-    // or water shore) on at least ONE end, while the opposite end provides an open
-    // 2-cell bypass corridor. Floating ledges with both ends in open grass are rejected.
-    // ------------------------------------------------------------------------
-    const leftFlankOpen = isPassableCorridor(startX - 1, y) && isPassableCorridor(startX - 2, y);
-    const rightFlankOpen =
-      isPassableCorridor(startX + runLength, y) && isPassableCorridor(startX + runLength + 1, y);
+    const centeredStartX = anchor.x - Math.floor(runLength / 2);
+    const candidateStarts: number[] = [];
+    if (wallLeftAnchorStart !== null) candidateStarts.push(wallLeftAnchorStart);
+    if (wallRightAnchorStart !== null) candidateStarts.push(wallRightAnchorStart);
+    if (!transitableGrid) {
+      candidateStarts.push(anchor.x + LEDGE_ANCHOR_STEP, anchor.x - runLength - 1, centeredStartX);
+    }
 
-    // Strict Anti-Softlock Guarantee:
-    // Every ledge MUST preserve an unobstructed lateral bypass corridor (>= 2 cells)
-    // on at least one flank so players can traverse the route bidirectionally.
-    if (!leftFlankOpen && !rightFlankOpen) continue;
+    const chosenStartX =
+      candidateStarts.find((sx) =>
+        isCandidateSpanClear(sx, y, runLength, !transitableGrid && sx === centeredStartX)
+      ) ?? null;
+    if (chosenStartX === null) continue;
 
     // Build the autotiled pieces
     const cells: { x: number; y: number }[] = [];
     const tiles: LedgeTilePlacement[] = [];
 
     for (let dx = 0; dx < runLength; dx++) {
-      const cx = startX + dx;
+      const cx = chosenStartX + dx;
       cells.push({ x: cx, y });
-
-      let tileFile = 'poke_ledge_jump.png';
-      if (dx === 0) {
-        tileFile = 'poke_ledge_left.png';
-      } else if (dx === runLength - 1) {
-        tileFile = 'poke_ledge_right.png';
-      }
-
-      tiles.push({ x: cx, y, tileFile, facing: 'south' });
+      tiles.push({
+        x: cx,
+        y,
+        tileFile: resolveLedgeTileFile(dx, runLength),
+        facing: 'south'
+      });
       occupiedCells.add(`${cx}_${y}`);
     }
 
@@ -194,7 +247,7 @@ export function generateRouteLedges(options: GenerateLedgesOptions): readonly Le
     const LEDGE_PARALLEL_VERTICAL_MARGIN = 2 as const;
     for (let dx = -1; dx <= runLength; dx++) {
       for (let dy = -LEDGE_PARALLEL_VERTICAL_MARGIN; dy <= LEDGE_PARALLEL_VERTICAL_MARGIN; dy++) {
-        occupiedCells.add(`${startX + dx}_${y + dy}`);
+        occupiedCells.add(`${chosenStartX + dx}_${y + dy}`);
       }
     }
 

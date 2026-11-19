@@ -22,9 +22,16 @@ import {
   TREE_TRUNK_HEIGHT,
   TREE_SPECIES_ISOLATION_DISTANCE,
   AUTUMN_MACRO_NOISE_SCALE,
+  AUTUMN_DETAIL_NOISE_SCALE,
+  AUTUMN_DETAIL_WARP_AMP,
   AUTUMN_MACRO_THRESHOLD,
   AUTUMN_BUFFER_THRESHOLD,
   AUTUMN_DENSE_TREE_THRESHOLD,
+  GROVE_CLEARING_NOISE_SCALE,
+  GROVE_PRIMARY_WEIGHT,
+  GROVE_CLEARING_WEIGHT,
+  FOREST_LATTICE_BREAK_SCALE,
+  FOREST_LATTICE_BREAK_THRESHOLD,
   SUBTRACTIVE_WILDERNESS_BASE_THRESHOLD,
   SUBTRACTIVE_WILDERNESS_PATH_THRESHOLD
 } from '../../config/wildernessConfig.ts';
@@ -32,7 +39,31 @@ import type { ContinentMapResult } from './continentGenerator.ts';
 import { type SimplexNoise } from './noise/simplexNoise.ts';
 import type { TreePlacement } from './wildernessVegetationEngine.ts';
 
-const ROUTE_FRAME_RADIUS = 3 as const;
+const ROUTE_FRAME_RADIUS = 4 as const;
+const DEEP_FOREST_CLEARANCE_RADIUS = 5 as const;
+const PINE_GLADE_BREAK_NOISE_SCALE = 0.21 as const;
+const PINE_GLADE_BREAK_THRESHOLD = 0.72 as const;
+const BIOME_SEAM_TRANSITION_BUFFER = 1 as const;
+
+function hasForeignBiomeWithinRadius(
+  continent: ContinentMapResult,
+  cx: number,
+  cy: number,
+  localBiome: string,
+  radius: number
+): boolean {
+  const biomeGrid = continent.macroBiomes?.biomeGrid;
+  if (!biomeGrid) return false;
+  for (let dy = -radius; dy <= radius; dy++) {
+    const row = biomeGrid[cy + dy];
+    if (!row) continue;
+    for (let dx = -radius; dx <= radius; dx++) {
+      const nbBiome = row[cx + dx];
+      if (nbBiome && nbBiome !== localBiome) return true;
+    }
+  }
+  return false;
+}
 
 export interface TreeMassPlacementContext {
   readonly H: number;
@@ -183,7 +214,8 @@ function hasCanopyOverheadClearance(
   H: number,
   urbanBlocked: readonly (readonly boolean[])[],
   stairBlocked: readonly (readonly boolean[])[],
-  continent: ContinentMapResult
+  continent: ContinentMapResult,
+  allowMountainShadow = false
 ): boolean {
   for (let dy = -canopyOverhang; dy < 0; dy++) {
     for (let dx = 0; dx < treeWidth; dx++) {
@@ -195,9 +227,14 @@ function hasCanopyOverheadClearance(
         cx < 0 ||
         cx >= W ||
         urbanBlocked[cy]?.[cx] ||
-        stairBlocked[cy]?.[cx] ||
-        (continent.heightmap[cy]?.[cx] ?? 0) !== 0 ||
-        continent.resolvedMountain.occupiedFootCells[cy]?.[cx]
+        stairBlocked[cy]?.[cx]
+      ) {
+        return false;
+      }
+      if (
+        !allowMountainShadow &&
+        ((continent.heightmap[cy]?.[cx] ?? 0) !== 0 ||
+          continent.resolvedMountain.occupiedFootCells[cy]?.[cx])
       ) {
         return false;
       }
@@ -297,7 +334,10 @@ export function placeTreeMasses(ctx: TreeMassPlacementContext): void {
   const treeSpeciesGrid: (string | null)[][] = Array.from({ length: H }, () => Array(W).fill(null));
 
   for (let y = 3; y < H - 4; y += 1) {
-    for (let x = 2; x < W - 4; x += 1) {
+    // Brick-stagger alternating trunk bands so conifers interlock naturally instead of forming vertical lanes
+    const bandParity = (Math.floor(y / TREE_TRUNK_HEIGHT) + Math.abs(continent.seed)) % 2;
+    const xStart = 2 + bandParity;
+    for (let x = xStart; x < W - 4; x += 1) {
       let forceDenseTree = false;
       if (
         transitableGrid &&
@@ -311,11 +351,31 @@ export function placeTreeMasses(ctx: TreeMassPlacementContext): void {
       if (!forceDenseTree && !forestMask[y]![x]) continue;
 
       const mBiome = continent.macroBiomes?.biomeGrid[y]?.[x] ?? 'temperate_meadow';
+      if (
+        !forceDenseTree &&
+        mBiome === 'mint_highland' &&
+        hasForeignBiomeWithinRadius(continent, x, y, mBiome, BIOME_SEAM_TRANSITION_BUFFER)
+      ) {
+        continue;
+      }
       let prefabFile: string;
       let treeWidth: number;
       let treeHeight: number;
 
       if (mBiome === 'mint_highland') {
+        const nearBorderWall = isCellNearRouteCorridor(
+          x,
+          y,
+          DEEP_FOREST_CLEARANCE_RADIUS,
+          pathGrid
+        );
+        const pineGladeBreak = prng.noise2D(
+          x * PINE_GLADE_BREAK_NOISE_SCALE,
+          y * PINE_GLADE_BREAK_NOISE_SCALE
+        );
+        if (!forceDenseTree && !nearBorderWall && pineGladeBreak > PINE_GLADE_BREAK_THRESHOLD) {
+          continue;
+        }
         prefabFile = 'poke_tree_pine_small.png';
         treeWidth = PINE_WIDTH;
         treeHeight = PINE_HEIGHT;
@@ -324,10 +384,15 @@ export function placeTreeMasses(ctx: TreeMassPlacementContext): void {
         treeWidth = OAK_WIDTH;
         treeHeight = OAK_HEIGHT;
       } else {
-        const autumnNoise = prng.noise2D(
+        const autumnMacroNoise = prng.noise2D(
           x * AUTUMN_MACRO_NOISE_SCALE,
           y * AUTUMN_MACRO_NOISE_SCALE
         );
+        const autumnDetailNoise = prng.noise2D(
+          x * AUTUMN_DETAIL_NOISE_SCALE,
+          y * AUTUMN_DETAIL_NOISE_SCALE
+        );
+        const autumnNoise = autumnMacroNoise + autumnDetailNoise * AUTUMN_DETAIL_WARP_AMP;
         if (forceDenseTree) {
           prefabFile =
             autumnNoise > AUTUMN_DENSE_TREE_THRESHOLD
@@ -353,62 +418,68 @@ export function placeTreeMasses(ctx: TreeMassPlacementContext): void {
       const baseThreshold = SUBTRACTIVE_WILDERNESS_BASE_THRESHOLD;
       const threshold = nearPath ? SUBTRACTIVE_WILDERNESS_PATH_THRESHOLD : baseThreshold;
       const groveNoise = prng.noise2D(x * GROVE_NOISE_SCALE, y * GROVE_NOISE_SCALE);
+      const clearingNoise = prng.noise2D(
+        x * GROVE_CLEARING_NOISE_SCALE,
+        y * GROVE_CLEARING_NOISE_SCALE
+      );
+      const organicGroveScore =
+        groveNoise * GROVE_PRIMARY_WEIGHT + clearingNoise * GROVE_CLEARING_WEIGHT;
 
-      if (!forceDenseTree && groveNoise < threshold) continue;
-
-      const canopyOverhang = treeHeight - TREE_TRUNK_HEIGHT;
-
-      // 1. Water clearance
-      if (!hasWaterClearanceForTree(x, y, treeWidth, canopyOverhang, W, H, continent)) continue;
-
-      // 2. Ground footprint clearance
+      if (!forceDenseTree && organicGroveScore < threshold) continue;
       if (
-        !hasGroundFootprintClearance(
-          x,
-          y,
-          treeWidth,
-          TREE_TRUNK_HEIGHT,
-          treeBlocked,
-          treeOccupied,
-          continent
-        )
+        !forceDenseTree &&
+        !nearPath &&
+        !isNearPathFrame(x, y, DEEP_FOREST_CLEARANCE_RADIUS, pathGrid)
       ) {
-        continue;
+        const latticeBreakNoise = prng.noise2D(
+          x * FOREST_LATTICE_BREAK_SCALE,
+          y * FOREST_LATTICE_BREAK_SCALE
+        );
+        if (latticeBreakNoise > FOREST_LATTICE_BREAK_THRESHOLD) continue;
       }
 
-      // 2b. Strict Tall Grass Canopy & Footprint Clearance
-      if (!hasTallGrassCanopyClearance(x, y, treeWidth, canopyOverhang, tallGrassGrid)) continue;
-
-      // Enforce strict root clearance
-      let overlapsRoots = false;
-      for (let i = rawTrees.length - 1; i >= 0; i--) {
-        const other = rawTrees[i]!;
-        if (y - other.y >= TREE_TRUNK_HEIGHT) break;
-        const reqDx = forceDenseTree
-          ? Math.min(treeWidth, other.width)
-          : Math.max(treeWidth, other.width);
-        if (Math.abs(x - other.x) < reqDx) {
-          overlapsRoots = true;
-          break;
+      const canTryTreeCandidate = (w: number, h: number): boolean => {
+        const oh = h - TREE_TRUNK_HEIGHT;
+        if (!hasWaterClearanceForTree(x, y, w, oh, W, H, continent)) return false;
+        if (
+          !hasGroundFootprintClearance(
+            x,
+            y,
+            w,
+            TREE_TRUNK_HEIGHT,
+            treeBlocked,
+            treeOccupied,
+            continent
+          )
+        ) {
+          return false;
         }
-      }
-      if (overlapsRoots) continue;
+        if (!hasTallGrassCanopyClearance(x, y, w, oh, tallGrassGrid)) return false;
 
-      // 3. Canopy overhead clearance
-      if (
-        !hasCanopyOverheadClearance(
-          x,
-          y,
-          treeWidth,
-          canopyOverhang,
-          W,
-          H,
-          urbanBlocked,
-          stairBlocked,
-          continent
-        )
-      ) {
-        continue;
+        for (let i = rawTrees.length - 1; i >= 0; i--) {
+          const other = rawTrees[i]!;
+          if (y - other.y >= TREE_TRUNK_HEIGHT) break;
+          const reqDx = forceDenseTree ? Math.min(w, other.width) : Math.max(w, other.width);
+          if (Math.abs(x - other.x) < reqDx) return false;
+        }
+
+        return hasCanopyOverheadClearance(x, y, w, oh, W, H, urbanBlocked, stairBlocked, continent);
+      };
+
+      if (!canTryTreeCandidate(treeWidth, treeHeight)) {
+        // Fill 2-tile-wide dense corridor gaps in temperate meadows with compact green forest trees
+        if (
+          forceDenseTree &&
+          mBiome === 'temperate_meadow' &&
+          prefabFile === 'poke_tree_oak_clean.png' &&
+          canTryTreeCandidate(PINE_WIDTH, PINE_HEIGHT)
+        ) {
+          prefabFile = 'tree_viridian_forest.png';
+          treeWidth = PINE_WIDTH;
+          treeHeight = PINE_HEIGHT;
+        } else {
+          continue;
+        }
       }
 
       // Check species isolation

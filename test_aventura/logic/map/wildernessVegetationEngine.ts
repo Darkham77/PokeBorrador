@@ -18,6 +18,10 @@ import { placeRoadsideProps } from './roadsidePropsEngine.ts';
 import { sealRouteGateFlankBarriers } from './routeGateBarrierEngine.ts';
 import { placeTallGrassPatches } from './tallGrassPlacementEngine.ts';
 import { placeTreeMasses } from './treeMassPlacementEngine.ts';
+import {
+  IMPASSABLE_WILDERNESS_PROP_TYPES,
+  sealNonTransitableWildernessBoundary
+} from './wildernessBoundarySealing.ts';
 import { buildWildernessOccupancyMasks } from './wildernessOccupancyMaskEngine.ts';
 
 export interface TallGrassPatch {
@@ -198,6 +202,36 @@ export function generateWildernessLayer(
     }
   }
 
+  // 5b. Hermetic boundary sealing around transitableGrid (beaches, deserts, cliffs, city flanks)
+  if (transitableGrid) {
+    sealNonTransitableWildernessBoundary({
+      continent,
+      pois,
+      pathGrid,
+      transitableGrid,
+      tallGrassGrid,
+      trees: rawTrees,
+      props,
+      reservedEntityCells: options?.reservedEntityCells
+    });
+  }
+
+  // Guarantee no blocking wilderness prop (e.g. flank fence wing or coastal boulder) obstructs pathGrid or settlement streets
+  const settlementStreetKeys = new Set<string>();
+  for (const poi of pois) {
+    for (const st of poi.urbanLayout?.internalStreets ?? []) {
+      settlementStreetKeys.add(`${st.x}_${st.y}`);
+    }
+  }
+  const safeProps = props.filter((prop) => {
+    const onPathOrStreet =
+      Boolean(pathGrid[prop.y]?.[prop.x]) || settlementStreetKeys.has(`${prop.x}_${prop.y}`);
+    if (!onPathOrStreet) return true;
+    const isBlocking =
+      IMPASSABLE_WILDERNESS_PROP_TYPES.has(prop.type) || prop.prefabFile.includes('fence');
+    return !isBlocking;
+  });
+
   // 6. Strict Y-Sorting Guarantee:
   // Sort trees by Y ascending so that north trees blit first, and south tree canopies overlap their bases!
   const trees = [...rawTrees].sort((a, b) => a.y - b.y || a.x - b.x);
@@ -206,6 +240,6 @@ export function generateWildernessLayer(
     tallGrassGrid,
     tallGrassPatches,
     trees,
-    props
+    props: safeProps
   };
 }

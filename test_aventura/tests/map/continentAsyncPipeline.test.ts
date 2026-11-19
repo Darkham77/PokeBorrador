@@ -80,12 +80,32 @@ describe('Non-Blocking Multi-Threaded Continent Pipeline', () => {
 
     expect(phasesSeen).toContain('sculpting');
     expect(phasesSeen).toContain('compiling_tiles');
-    expect(genOut.detectedDefectCount).toBeGreaterThan(0);
+    expect(genOut.detectedDefectCount).toBe(0);
     expect(genOut.packedBlit.count).toBeGreaterThan(64 * 64);
 
-    // Off-main-thread Auto-Sanar job converges to 0 defects and recompiles packedBlit
+    // Inject raw coastal water defect on clean generated land and verify off-main-thread Auto-Sanar converges back to 0
+    const nextTerrain = genOut.result.continent.terrainMatrix.map((row) => [...row]);
+    let injectedSpot = false;
+    for (let y = 10; y < genOut.result.continent.height - 10 && !injectedSpot; y++) {
+      for (let x = 10; x < genOut.result.continent.width - 10 && !injectedSpot; x++) {
+        if (
+          nextTerrain[y]?.[x] === 'grass' &&
+          nextTerrain[y - 1]?.[x] === 'grass' &&
+          nextTerrain[y + 1]?.[x] === 'grass' &&
+          nextTerrain[y]?.[x - 1] === 'grass' &&
+          nextTerrain[y]?.[x + 1] === 'grass' &&
+          genOut.result.continent.heightmap[y]?.[x] === 0 &&
+          !genOut.result.routeNetwork.pathGrid[y]?.[x]
+        ) {
+          nextTerrain[y]![x] = 'water';
+          injectedSpot = true;
+        }
+      }
+    }
+    expect(injectedSpot).toBe(true);
+
     const healedOut = executeHealAllWorkerJob({
-      continent: genOut.result.continent,
+      continent: { ...genOut.result.continent, terrainMatrix: nextTerrain },
       pathGrid: genOut.result.routeNetwork.pathGrid,
       bridgeGrid: genOut.result.routeNetwork.bridgeGrid,
       pois: genOut.result.pois,
@@ -100,7 +120,7 @@ describe('Non-Blocking Multi-Threaded Continent Pipeline', () => {
     const presetOut = executePresetWorkerJob('johto', 251);
     expect(presetOut.result.continent.width).toBe(128);
     expect(presetOut.packedBlit.count).toBeGreaterThan(128 * 128);
-    expect(presetOut.detectedDefectCount).toBeGreaterThanOrEqual(0);
+    expect(presetOut.detectedDefectCount).toBe(0);
   });
 
   it('aborts progressive frame-sliced canvas blitting cleanly when AbortController signals mid-flight', async () => {

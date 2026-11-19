@@ -29,7 +29,7 @@ import {
   type BuildingPrefabMeta
 } from './canonicalAssetsRegistry.ts';
 import { generateProceduralCityLayout } from './proceduralCityEngine.ts';
-import { computeUrbanCurbs } from './urbanPavingEngine.ts';
+import { computeUrbanCurbs, filterIsolatedUrbanFences } from './urbanPavingEngine.ts';
 
 export type { BuildingPrefabMeta, SettlementCurbPlacement };
 
@@ -124,18 +124,6 @@ export function generateSettlementLayout(
     reservedDoorsteps.add(`${x}_${y}`);
   };
 
-  const isPassableFenceCell = (x: number, y: number): boolean => {
-    if (!context) return true;
-    if (context.width !== undefined && (x < 0 || x >= context.width)) return false;
-    if (context.height !== undefined && (y < 0 || y >= context.height)) return false;
-    if (context.heightmap && (context.heightmap[y]?.[x] ?? node.elevation) !== node.elevation)
-      return false;
-    if (context.terrainMatrix && (context.terrainMatrix[y]?.[x] ?? 'grass') !== 'grass')
-      return false;
-    if (context.occupiedFootCells && (context.occupiedFootCells[y]?.[x] ?? false)) return false;
-    return true;
-  };
-
   const placeBuilding = (
     bId: string,
     type: UrbanBuildingType,
@@ -206,13 +194,6 @@ export function generateSettlementLayout(
     }
     if (!reservedDoorsteps.has(`${x}_${y}`)) {
       props.push({ type, x, y, prefabFile });
-    }
-  };
-
-  const addContinuousFenceRun = (y: number, startX: number, endX: number): void => {
-    if (startX > endX) return;
-    for (let x = startX; x <= endX; x++) {
-      addProp('fence_h', x, y, 'poke_fence_white_h_mid.png');
     }
   };
 
@@ -342,7 +323,8 @@ export function generateSettlementLayout(
     const fenceAsset = getAssetFilename(
       isMountain ? 'poke_fence_wood_h' : 'poke_fence_white_h_mid'
     );
-    const lateralReach = 8;
+    // Wing fences stay compact (<= 3 tiles) adjacent to gatehouse; barrier engine blends beyond with trees/boulders.
+    const lateralReach = 3;
     const isPassableFenceCell = (x: number, y: number): boolean => {
       const Wmax = context?.width ?? 9999;
       const Hmax = context?.height ?? 9999;
@@ -388,13 +370,11 @@ export function generateSettlementLayout(
       const fenceMinX = bx - lateralReach;
       const fenceMaxX = bx + W + lateralReach;
       for (let x = gx - 1; x >= fenceMinX; x--) {
-        if (!isPassableFenceCell(x, gy + 2) || !isPassableFenceCell(x, gy + 3)) break;
-        addProp('fence_h', x, gy + 2, fenceAsset);
+        if (!isPassableFenceCell(x, gy + 3)) break;
         addProp('fence_h', x, gy + 3, fenceAsset);
       }
       for (let x = gx + gateMeta.width; x < fenceMaxX; x++) {
-        if (!isPassableFenceCell(x, gy + 2) || !isPassableFenceCell(x, gy + 3)) break;
-        addProp('fence_h', x, gy + 2, fenceAsset);
+        if (!isPassableFenceCell(x, gy + 3)) break;
         addProp('fence_h', x, gy + 3, fenceAsset);
       }
     }
@@ -451,57 +431,72 @@ export function generateSettlementLayout(
   } else if (node.type === 'dungeon_forest') {
     // ------------------------------------------------------------------------
     // DUNGEON FOREST (Viridian Forest Labyrinth):
-    // South and North Checkpoint Gates, 2-cell winding trail
+    // Seed-varied winding labyrinth between North & South gates framed naturally
+    // by organic woodland groves (no rectangular corral fences).
     // ------------------------------------------------------------------------
     if (W >= DUNGEON_FOREST_MIN_GATES_DIMENSION && H >= DUNGEON_FOREST_MIN_GATES_DIMENSION) {
       const gateMeta = getBuildingPrefabMeta('poke_league_checkpoint_gate');
       const midX = Math.floor(W / 2);
+      const midY = Math.floor(H / 2);
+      const variant = Math.abs(seed + node.id.length) % 3;
 
-      // North Gate at northern perimeter centered
       const northGateX = bx + midX - Math.floor(gateMeta.width / 2);
       const northGateY = by + 0;
       placeBuilding(`${node.id}_north_gate`, 'checkpoint_gate', northGateX, northGateY, gateMeta);
 
-      // South Gate at southern perimeter centered
       const southGateX = bx + midX - Math.floor(gateMeta.width / 2);
       const southGateY = by + H - gateMeta.height;
       placeBuilding(`${node.id}_south_gate`, 'checkpoint_gate', southGateX, southGateY, gateMeta);
 
-      // Sinuous trail connecting south and north gates across expanded dungeon height
       const trailPts: { x: number; y: number }[] = [];
-      const midY = Math.floor(H / 2);
+      const addSegX = (xA: number, xB: number, y: number): void => {
+        const minX = Math.min(xA, xB);
+        const maxX = Math.max(xA, xB);
+        for (let x = minX; x <= maxX; x++) {
+          trailPts.push({ x, y }, { x, y: y + 1 });
+        }
+      };
+      const addSegY = (yA: number, yB: number, x: number): void => {
+        const minY = Math.min(yA, yB);
+        const maxY = Math.max(yA, yB);
+        for (let y = minY; y <= maxY; y++) {
+          trailPts.push({ x, y }, { x: x + 1, y });
+        }
+      };
 
-      // Segment 1: Exit South Gate going north
-      for (let y = H - gateMeta.height; y >= Math.max(midY + 2, H - gateMeta.height - 4); y--) {
-        trailPts.push({ x: midX - 1, y }, { x: midX, y });
-      }
-      // Segment 2: Loop East
-      const eastX = Math.min(W - 4, midX + 6);
-      const southTurnY = Math.max(midY + 2, H - gateMeta.height - 4);
-      for (let x = midX - 1; x <= eastX; x++) {
-        trailPts.push({ x, y: southTurnY }, { x, y: southTurnY + 1 });
-      }
-      // Segment 3: North along East clearing
-      for (let y = southTurnY; y >= midY; y--) {
-        trailPts.push({ x: eastX - 1, y }, { x: eastX, y });
-      }
-      // Segment 4: Loop West across center
-      const westX = Math.max(3, midX - 7);
-      for (let x = eastX; x >= westX; x--) {
-        trailPts.push({ x, y: midY }, { x, y: midY + 1 });
-      }
-      // Segment 5: North along West clearing
-      const northTurnY = Math.min(midY, gateMeta.height + 3);
-      for (let y = midY; y >= northTurnY; y--) {
-        trailPts.push({ x: westX, y }, { x: westX + 1, y });
-      }
-      // Segment 6: Loop East to center
-      for (let x = westX; x <= midX; x++) {
-        trailPts.push({ x, y: northTurnY }, { x, y: northTurnY + 1 });
-      }
-      // Segment 7: North directly into North Gate
-      for (let y = northTurnY; y >= gateMeta.height; y--) {
-        trailPts.push({ x: midX - 1, y }, { x: midX, y });
+      const southExitY = H - gateMeta.height;
+      const northEntryY = gateMeta.height;
+      const southTurnY = Math.max(midY + 2, southExitY - 3);
+      const northTurnY = Math.min(midY - 1, northEntryY + 2);
+      const eastX = Math.min(W - 4, midX + 5);
+      const westX = Math.max(3, midX - 6);
+
+      if (variant === 0) {
+        // S-curve East-then-West labyrinth
+        addSegY(southTurnY, southExitY, midX - 1);
+        addSegX(midX - 1, eastX, southTurnY);
+        addSegY(midY, southTurnY, eastX - 1);
+        addSegX(westX, eastX - 1, midY);
+        addSegY(northTurnY, midY, westX);
+        addSegX(westX, midX, northTurnY);
+        addSegY(northEntryY, northTurnY, midX - 1);
+      } else if (variant === 1) {
+        // Mirrored West-then-East labyrinth + northern secret glade spur
+        addSegY(southTurnY, southExitY, midX - 1);
+        addSegX(westX, midX - 1, southTurnY);
+        addSegY(midY, southTurnY, westX);
+        addSegX(westX, eastX - 1, midY);
+        addSegY(northTurnY, midY, eastX - 1);
+        addSegX(midX - 1, eastX - 1, northTurnY);
+        addSegY(northEntryY, northTurnY, midX - 1);
+      } else {
+        // Twin-branch central clearing loop joining back to North Gate
+        addSegY(southTurnY, southExitY, midX - 1);
+        addSegX(westX, eastX - 1, southTurnY);
+        addSegY(northTurnY, southTurnY, westX);
+        addSegY(northTurnY, southTurnY, eastX - 1);
+        addSegX(westX, eastX - 1, northTurnY);
+        addSegY(northEntryY, northTurnY, midX - 1);
       }
 
       for (const pt of trailPts) {
@@ -510,43 +505,7 @@ export function generateSettlementLayout(
         }
       }
 
-      // Flanking barrier fences sealing off both sides of North Gate
-      const nGateRelX = northGateX - bx;
-      let actualNLeft = bx + nGateRelX - 1;
-      for (let x = nGateRelX - 1; x >= 0; x--) {
-        const absX = bx + x;
-        if (!isPassableFenceCell(absX, northGateY + 2)) break;
-        actualNLeft = absX;
-      }
-      addContinuousFenceRun(northGateY + 2, actualNLeft, northGateX - 1);
-
-      let actualNRight = northGateX + gateMeta.width;
-      for (let x = nGateRelX + gateMeta.width; x < W; x++) {
-        const absX = bx + x;
-        if (!isPassableFenceCell(absX, northGateY + 2)) break;
-        actualNRight = absX;
-      }
-      addContinuousFenceRun(northGateY + 2, northGateX + gateMeta.width, actualNRight);
-
-      // Flanking barrier fences sealing off both sides of South Gate
-      const sGateRelX = southGateX - bx;
-      let actualSLeft = bx + sGateRelX - 1;
-      for (let x = sGateRelX - 1; x >= 0; x--) {
-        const absX = bx + x;
-        if (!isPassableFenceCell(absX, southGateY + 2)) break;
-        actualSLeft = absX;
-      }
-      addContinuousFenceRun(southGateY + 2, actualSLeft, southGateX - 1);
-
-      let actualSRight = southGateX + gateMeta.width;
-      for (let x = sGateRelX + gateMeta.width; x < W; x++) {
-        const absX = bx + x;
-        if (!isPassableFenceCell(absX, southGateY + 2)) break;
-        actualSRight = absX;
-      }
-      addContinuousFenceRun(southGateY + 2, southGateX + gateMeta.width, actualSRight);
-
-      // Forest Props: Trainer tips sign outside south and north gates
+      // Forest Props: Trainer tips sign outside south and north gates + mossy clearing details
       addProp(
         'signpost',
         bx + midX + 2,
@@ -560,18 +519,30 @@ export function generateSettlementLayout(
         getAssetFilename('poke_signpost')
       );
 
-      // Natural mossy boulders in the trail elbows justifying directional turns
       addProp(
         'flower',
-        bx + midX + 2,
+        bx + (variant === 1 ? westX + 2 : eastX - 3),
         by + southTurnY - 2,
         getAssetFilename('poke_rock_boulder_mossy_1')
       );
       addProp(
         'flower',
-        bx + westX + 2,
+        bx + (variant === 1 ? eastX - 3 : westX + 2),
         by + northTurnY + 2,
-        getAssetFilename('poke_rock_boulder_mossy_2')
+        getAssetFilename('poke_flowers_red')
+      );
+    } else {
+      // Compact (<16x16) natural wooded glade trail connecting N-S
+      const midX = bx + Math.floor(W / 2);
+      for (let y = 0; y < H; y++) {
+        internalStreets.push({ x: midX, y: by + y });
+        if (midX + 1 < bx + W) internalStreets.push({ x: midX + 1, y: by + y });
+      }
+      addProp(
+        'flower',
+        midX - 2,
+        by + Math.floor(H / 2),
+        getAssetFilename('poke_rock_boulder_mossy_1')
       );
     }
   }
@@ -605,7 +576,9 @@ export function generateSettlementLayout(
       ? internalStreets
       : internalStreets.filter((s) => !buildingMask.has(`${s.x}_${s.y}`));
   const safePavedPlazaCells = pavedPlazaCells.filter((p) => !buildingMask.has(`${p.x}_${p.y}`));
-  const safeProps = props.filter((p) => !buildingMask.has(`${p.x}_${p.y}`));
+  const safeProps = filterIsolatedUrbanFences(
+    props.filter((p) => !buildingMask.has(`${p.x}_${p.y}`))
+  );
 
   const curbs = computeUrbanCurbs({
     pavedPlazaCells: safePavedPlazaCells,

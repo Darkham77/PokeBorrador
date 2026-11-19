@@ -1,5 +1,5 @@
 /**
- * src/logic/map/waterAutotileEngine.ts
+ * test_aventura/logic/map/waterAutotileEngine.ts
  *
  * CANONICAL 2D WATER, COAST & BEACH AUTOTILING ENGINE (FIRE RED GBA SPEC)
  *
@@ -10,6 +10,9 @@
  *   4. Strict Render Stacking: Grass (Base) -> Sand -> Water -> Foam/Shore Overlays.
  *   5. Minimum thickness sanitizer ensuring water bodies and beaches have width/thickness >= 2 cells.
  */
+
+import type { DirtyTileBounds } from '../../types/map/autotileHealingTypes.ts';
+import { clampDirtyBounds, resolveSparseGridWidth } from '../utils/gridGeometryUtils.ts';
 
 export const BITMASK_2D_DIRECTIONS = {
   NW: 1,
@@ -110,8 +113,60 @@ export const CANONICAL_SAND_BEACH_BRUSH: Readonly<WaterCoastBrushSet> = {
 
 export const BASE_GRASS_TILE = 'poke_grass_plain.png';
 const CANONICAL_OCEAN_CENTER_TILE = 'poke_water_ocean_center.png' as const;
+const CANONICAL_DEEP_WATER_TILE = 'poke_water_deep.png' as const;
 const MIN_ABYSSAL_LAKE_DISTANCE = 2.4;
 const ABYSSAL_SEARCH_RADIUS = 3;
+
+const DEEP_WATER_OVERLAYS = {
+  edgeN: 'poke_water_deep_edge_n.png',
+  edgeS: 'poke_water_deep_edge_s.png',
+  edgeW: 'poke_water_deep_edge_w.png',
+  edgeE: 'poke_water_deep_edge_e.png',
+  cornerTL: 'poke_water_deep_corner_tl.png',
+  cornerTR: 'poke_water_deep_corner_tr.png',
+  cornerBL: 'poke_water_deep_corner_bl.png',
+  cornerBR: 'poke_water_deep_corner_br.png',
+  innerTL: 'poke_water_deep_inner_tl.png',
+  innerTR: 'poke_water_deep_inner_tr.png',
+  innerBL: 'poke_water_deep_inner_bl.png',
+  innerBR: 'poke_water_deep_inner_br.png'
+} as const;
+
+function appendDeepWaterTransitionOverlays(
+  matrix: WaterTerrainMatrix,
+  W: number,
+  H: number,
+  x: number,
+  y: number,
+  layerStack: string[]
+): readonly string[] {
+  const overlays: string[] = [];
+  const isDeepAt = (nx: number, ny: number): boolean =>
+    nx < 0 || nx >= W || ny < 0 || ny >= H ? true : matrix[ny]![nx] === 'water_deep';
+
+  const nDeep = isDeepAt(x, y - 1);
+  const sDeep = isDeepAt(x, y + 1);
+  const wDeep = isDeepAt(x - 1, y);
+  const eDeep = isDeepAt(x + 1, y);
+
+  if (!nDeep) overlays.push(DEEP_WATER_OVERLAYS.edgeN);
+  if (!sDeep) overlays.push(DEEP_WATER_OVERLAYS.edgeS);
+  if (!wDeep) overlays.push(DEEP_WATER_OVERLAYS.edgeW);
+  if (!eDeep) overlays.push(DEEP_WATER_OVERLAYS.edgeE);
+
+  if (!nDeep && !wDeep) overlays.push(DEEP_WATER_OVERLAYS.cornerTL);
+  if (!nDeep && !eDeep) overlays.push(DEEP_WATER_OVERLAYS.cornerTR);
+  if (!sDeep && !wDeep) overlays.push(DEEP_WATER_OVERLAYS.cornerBL);
+  if (!sDeep && !eDeep) overlays.push(DEEP_WATER_OVERLAYS.cornerBR);
+
+  if (nDeep && wDeep && !isDeepAt(x - 1, y - 1)) overlays.push(DEEP_WATER_OVERLAYS.innerTL);
+  if (nDeep && eDeep && !isDeepAt(x + 1, y - 1)) overlays.push(DEEP_WATER_OVERLAYS.innerTR);
+  if (sDeep && wDeep && !isDeepAt(x - 1, y + 1)) overlays.push(DEEP_WATER_OVERLAYS.innerBL);
+  if (sDeep && eDeep && !isDeepAt(x + 1, y + 1)) overlays.push(DEEP_WATER_OVERLAYS.innerBR);
+
+  layerStack.push(...overlays);
+  return overlays;
+}
 
 export interface ResolvedWaterCell {
   readonly x: number;
@@ -141,7 +196,7 @@ export function compute2DNeighborMask<T>(
   outOfBoundsMatches = false
 ): number {
   const H = grid.length;
-  const W = grid[0]?.length ?? 0;
+  const W = resolveSparseGridWidth(grid, gy);
   let mask = 0;
 
   const offsets = [
@@ -159,9 +214,11 @@ export function compute2DNeighborMask<T>(
     const nx = gx + dx;
     const ny = gy + dy;
     if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
-      const cell = grid[ny]![nx]!;
-      if (isMatch(cell, nx, ny)) {
-        mask |= bit;
+      const row = grid[ny];
+      if (row && nx < row.length) {
+        if (isMatch(row[nx]!, nx, ny)) {
+          mask |= bit;
+        }
       }
     } else if (outOfBoundsMatches) {
       mask |= bit;
@@ -311,25 +368,100 @@ function getBridgeShoreCornerTile(
   return null;
 }
 
-function processOceanNeighbor(
-  nx: number,
-  ny: number,
+function hasAdjacentTerrainKind(
+  matrix: WaterTerrainMatrix,
   W: number,
   H: number,
-  matrix: readonly (readonly WaterTerrainKind[])[],
-  visited: boolean[][],
-  isOceanGrid: boolean[][],
-  oceanQueue: { x: number; y: number }[],
-  cellTouchesGrass: (x: number, y: number) => boolean
-): void {
-  if (nx < 0 || nx >= W || ny < 0 || ny >= H) return;
-  const nType = matrix[ny]![nx]!;
-  if ((nType !== 'water' && nType !== 'water_deep') || visited[ny]![nx]) return;
-  visited[ny]![nx] = true;
-  if (!cellTouchesGrass(nx, ny)) {
-    isOceanGrid[ny]![nx] = true;
-    oceanQueue.push({ x: nx, y: ny });
+  cx: number,
+  cy: number,
+  target: WaterTerrainKind
+): boolean {
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      if (dx === 0 && dy === 0) continue;
+      const nx = cx + dx;
+      const ny = cy + dy;
+      if (nx >= 0 && nx < W && ny >= 0 && ny < H && matrix[ny]![nx] === target) {
+        return true;
+      }
+    }
   }
+  return false;
+}
+
+function computeOceanMask(matrix: WaterTerrainMatrix, W: number, H: number): Uint8Array {
+  const isOcean = new Uint8Array(W * H);
+  const visited = new Uint8Array(W * H);
+  const queue = new Int32Array(W * H);
+  let qTail = 0;
+
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const t = matrix[y]![x]!;
+      if (t !== 'water' && t !== 'water_deep') continue;
+      if (hasAdjacentTerrainKind(matrix, W, H, x, y, 'grass')) continue;
+      if (hasAdjacentTerrainKind(matrix, W, H, x, y, 'sand')) {
+        const idx = y * W + x;
+        isOcean[idx] = 1;
+        visited[idx] = 1;
+        queue[qTail++] = idx;
+      }
+    }
+  }
+
+  let qHead = 0;
+  while (qHead < qTail) {
+    const flatIdx = queue[qHead++]!;
+    const cx = flatIdx % W;
+    const cy = Math.floor(flatIdx / W);
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if (dx === 0 && dy === 0) continue;
+        const nx = cx + dx;
+        const ny = cy + dy;
+        if (nx < 0 || nx >= W || ny < 0 || ny >= H) continue;
+        const nIdx = ny * W + nx;
+        if (visited[nIdx]) continue;
+        const nType = matrix[ny]![nx]!;
+        if (nType !== 'water' && nType !== 'water_deep') continue;
+        visited[nIdx] = 1;
+        if (!hasAdjacentTerrainKind(matrix, W, H, nx, ny, 'grass')) {
+          isOcean[nIdx] = 1;
+          queue[qTail++] = nIdx;
+        }
+      }
+    }
+  }
+
+  return isOcean;
+}
+
+function computeAbyssalMinDistance(
+  matrix: WaterTerrainMatrix,
+  W: number,
+  H: number,
+  cx: number,
+  cy: number
+): number {
+  let minDist = Number.POSITIVE_INFINITY;
+  for (let dy = -ABYSSAL_SEARCH_RADIUS; dy <= ABYSSAL_SEARCH_RADIUS; dy++) {
+    for (let dx = -ABYSSAL_SEARCH_RADIUS; dx <= ABYSSAL_SEARCH_RADIUS; dx++) {
+      const ny = cy + dy;
+      const nx = cx + dx;
+      const isLandOrOOB =
+        nx < 0 ||
+        nx >= W ||
+        ny < 0 ||
+        ny >= H ||
+        matrix[ny]![nx]! === 'grass' ||
+        matrix[ny]![nx]! === 'sand';
+      if (isLandOrOOB) {
+        const d = Math.hypot(dx, dy);
+        if (d < minDist) minDist = d;
+      }
+    }
+  }
+  return minDist;
 }
 
 function buildShoreLayerStack(
@@ -364,6 +496,168 @@ function getProjectedWaterShadowTile(role: string, oneRowSouthOfNorthBank: boole
   return null;
 }
 
+function resolveSandCellDetail(
+  matrix: WaterTerrainMatrix,
+  bridgeGrid: readonly (readonly boolean[])[] | undefined,
+  x: number,
+  y: number
+): ResolvedWaterCell {
+  const waterMask = compute2DNeighborMask(
+    matrix,
+    x,
+    y,
+    (neighbor, nx, ny) =>
+      (neighbor === 'water' || neighbor === 'water_deep') && !(bridgeGrid && bridgeGrid[ny]?.[nx])
+  );
+
+  if (waterMask !== 0) {
+    const { role, innerOverlays } = classify2DAutotileRole(waterMask);
+    const primaryTile = getTileForRole(CANONICAL_SAND_OCEAN_SHORE_BRUSH, role);
+    const overlayTiles = innerOverlays.map((r) =>
+      getTileForRole(CANONICAL_SAND_OCEAN_SHORE_BRUSH, r)
+    );
+    const layerStack = buildShoreLayerStack(
+      [BASE_GRASS_TILE, CANONICAL_OCEAN_CENTER_TILE],
+      CANONICAL_SAND_OCEAN_SHORE_BRUSH.center,
+      role,
+      primaryTile,
+      overlayTiles
+    );
+    return {
+      x,
+      y,
+      terrain: 'sand',
+      role,
+      primaryTile,
+      overlayTiles: overlayTiles.length > 0 ? overlayTiles : undefined,
+      layerStack
+    };
+  }
+
+  const grassMask = compute2DNeighborMask(matrix, x, y, (neighbor) => neighbor === 'grass');
+  const { role, innerOverlays } = classify2DAutotileRole(grassMask);
+  const primaryTile = getTileForRole(CANONICAL_SAND_BEACH_BRUSH, role);
+  const overlayTiles = innerOverlays.map((r) => getTileForRole(CANONICAL_SAND_BEACH_BRUSH, r));
+  const layerStack = buildShoreLayerStack(
+    [BASE_GRASS_TILE],
+    CANONICAL_SAND_BEACH_BRUSH.center,
+    role,
+    primaryTile,
+    overlayTiles
+  );
+  return {
+    x,
+    y,
+    terrain: 'sand',
+    role,
+    primaryTile,
+    overlayTiles: overlayTiles.length > 0 ? overlayTiles : undefined,
+    layerStack
+  };
+}
+
+function resolveWaterCellDetail(
+  matrix: WaterTerrainMatrix,
+  bridgeGrid: readonly (readonly boolean[])[] | undefined,
+  isOceanMask: Uint8Array,
+  W: number,
+  H: number,
+  x: number,
+  y: number,
+  terrain: 'water' | 'water_deep'
+): ResolvedWaterCell {
+  const foreignMask = compute2DNeighborMask(matrix, x, y, (neighbor) => neighbor === 'grass');
+  if (foreignMask !== 0) {
+    const { role, innerOverlays } = classify2DAutotileRole(foreignMask);
+    const primaryTile = getTileForRole(CANONICAL_LAKE_SHORE_BRUSH, role);
+    const overlayTiles = innerOverlays.map((r) => getTileForRole(CANONICAL_LAKE_SHORE_BRUSH, r));
+    const oneRowSouthOfNorthBank = y > 1 && matrix[y - 2]![x]! === 'grass';
+    const shadowTile = getProjectedWaterShadowTile(role, oneRowSouthOfNorthBank);
+    const layerStack = buildShoreLayerStack(
+      [BASE_GRASS_TILE],
+      CANONICAL_LAKE_SHORE_BRUSH.center,
+      role,
+      primaryTile,
+      overlayTiles,
+      shadowTile
+    );
+    return {
+      x,
+      y,
+      terrain,
+      role,
+      primaryTile,
+      overlayTiles: overlayTiles.length > 0 ? overlayTiles : undefined,
+      layerStack
+    };
+  }
+
+  if (isOceanMask[y * W + x] === 1) {
+    const primaryTile =
+      terrain === 'water_deep' ? CANONICAL_DEEP_WATER_TILE : CANONICAL_OCEAN_CENTER_TILE;
+    const layerStack = [BASE_GRASS_TILE, primaryTile];
+    const deepOverlays =
+      terrain === 'water_deep'
+        ? appendDeepWaterTransitionOverlays(matrix, W, H, x, y, layerStack)
+        : [];
+    const bridgeShoreCorner = getBridgeShoreCornerTile(matrix, bridgeGrid, x, y);
+    if (bridgeShoreCorner) {
+      layerStack.push(bridgeShoreCorner);
+    }
+    return {
+      x,
+      y,
+      terrain,
+      role: 'center',
+      primaryTile,
+      overlayTiles: deepOverlays.length > 0 ? deepOverlays : undefined,
+      layerStack
+    };
+  }
+
+  const minDist = computeAbyssalMinDistance(matrix, W, H, x, y);
+  const isDeepWater = minDist >= MIN_ABYSSAL_LAKE_DISTANCE || terrain === 'water_deep';
+  const primaryTile = isDeepWater ? 'poke_water_deep.png' : CANONICAL_LAKE_SHORE_BRUSH.center;
+  const layerStack = [BASE_GRASS_TILE, primaryTile];
+
+  if (y > 1 && matrix[y - 2]![x]! === 'grass') {
+    layerStack.push('poke_water_shadow_full.png');
+  }
+  const bridgeShoreCorner = getBridgeShoreCornerTile(matrix, bridgeGrid, x, y);
+  if (bridgeShoreCorner) {
+    layerStack.push(bridgeShoreCorner);
+  }
+
+  return { x, y, terrain, role: 'center', primaryTile, layerStack };
+}
+
+function resolveSingleWaterCoastCell(
+  matrix: WaterTerrainMatrix,
+  bridgeGrid: readonly (readonly boolean[])[] | undefined,
+  isOceanMask: Uint8Array,
+  W: number,
+  H: number,
+  x: number,
+  y: number
+): ResolvedWaterCell | null {
+  const terrain = matrix[y]?.[x];
+  if (!terrain) return null;
+  if (terrain === 'grass') {
+    return {
+      x,
+      y,
+      terrain: 'grass',
+      role: 'center',
+      primaryTile: BASE_GRASS_TILE,
+      layerStack: [BASE_GRASS_TILE]
+    };
+  }
+  if (terrain === 'sand') {
+    return resolveSandCellDetail(matrix, bridgeGrid, x, y);
+  }
+  return resolveWaterCellDetail(matrix, bridgeGrid, isOceanMask, W, H, x, y, terrain);
+}
+
 /**
  * Resolves a full terrain matrix into a complete autotiled water & coast result,
  * adhering strictly to the Layer Stacking hierarchy: Grass -> Sand -> Water -> Foam.
@@ -377,100 +671,7 @@ export function resolveWaterCoastGrid(
   const W = matrix[0]?.length ?? 0;
   if (W === 0) return { width: 0, height: 0, primaryTiles: [], cellDetails: [] };
 
-  // Step 1: Detect open ocean water
-  // Open ocean is water connected to sand beaches that does not flow into inland grass-bordered river channels.
-  // Rivers and inland lakes border grass and are strictly classified as freshwater bodies.
-  const isOceanGrid: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
-  const visited: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
-
-  const cellTouchesGrass = (cx: number, cy: number): boolean => {
-    for (let dy = -1; dy <= 1; dy++) {
-      for (let dx = -1; dx <= 1; dx++) {
-        if (dx === 0 && dy === 0) continue;
-        const nx = cx + dx;
-        const ny = cy + dy;
-        if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
-          if (matrix[ny]![nx] === 'grass') return true;
-        }
-      }
-    }
-    return false;
-  };
-
-  const cellTouchesSand = (cx: number, cy: number): boolean => {
-    for (let dy = -1; dy <= 1; dy++) {
-      for (let dx = -1; dx <= 1; dx++) {
-        if (dx === 0 && dy === 0) continue;
-        const nx = cx + dx;
-        const ny = cy + dy;
-        if (nx < 0 || nx >= W || ny < 0 || ny >= H) continue;
-        if (matrix[ny]![nx] === 'sand') return true;
-      }
-    }
-    return false;
-  };
-
-  // Find all water cells that directly touch sand (ocean coastline seeds) but do not touch grass
-  const oceanQueue: { x: number; y: number }[] = [];
-  for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) {
-      const t = matrix[y]![x]!;
-      if (t !== 'water' && t !== 'water_deep') continue;
-      if (cellTouchesGrass(x, y)) continue;
-
-      if (cellTouchesSand(x, y)) {
-        isOceanGrid[y]![x] = true;
-        visited[y]![x] = true;
-        oceanQueue.push({ x, y });
-      }
-    }
-  }
-
-  // Flood fill the ocean from coastline seeds across open water
-  // Stops whenever it encounters cells touching grass, preventing entry into rivers or lakes
-  let oqHead = 0;
-  while (oqHead < oceanQueue.length) {
-    const cur = oceanQueue[oqHead++]!;
-    for (let dy = -1; dy <= 1; dy++) {
-      for (let dx = -1; dx <= 1; dx++) {
-        if (dx === 0 && dy === 0) continue;
-        processOceanNeighbor(
-          cur.x + dx,
-          cur.y + dy,
-          W,
-          H,
-          matrix,
-          visited,
-          isOceanGrid,
-          oceanQueue,
-          cellTouchesGrass
-        );
-      }
-    }
-  }
-
-  const computeAbyssalMinDistance = (cx: number, cy: number): number => {
-    let minDist = Number.POSITIVE_INFINITY;
-    for (let dy = -ABYSSAL_SEARCH_RADIUS; dy <= ABYSSAL_SEARCH_RADIUS; dy++) {
-      for (let dx = -ABYSSAL_SEARCH_RADIUS; dx <= ABYSSAL_SEARCH_RADIUS; dx++) {
-        const ny = cy + dy;
-        const nx = cx + dx;
-        const isLandOrOOB =
-          nx < 0 ||
-          nx >= W ||
-          ny < 0 ||
-          ny >= H ||
-          matrix[ny]![nx]! === 'grass' ||
-          matrix[ny]![nx]! === 'sand';
-        if (isLandOrOOB) {
-          const d = Math.hypot(dx, dy);
-          if (d < minDist) minDist = d;
-        }
-      }
-    }
-    return minDist;
-  };
-
+  const isOceanMask = computeOceanMask(matrix, W, H);
   const cellDetails: (ResolvedWaterCell | null)[][] = Array.from({ length: H }, () =>
     Array(W).fill(null)
   );
@@ -478,184 +679,10 @@ export function resolveWaterCoastGrid(
 
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      const terrain = matrix[y]![x]!;
-
-      if (terrain === 'grass') {
-        const cell: ResolvedWaterCell = {
-          x,
-          y,
-          terrain: 'grass',
-          role: 'center',
-          primaryTile: BASE_GRASS_TILE,
-          layerStack: [BASE_GRASS_TILE]
-        };
-        cellDetails[y]![x] = cell;
-        primaryTiles[y]![x] = BASE_GRASS_TILE;
-        continue;
-      }
-
-      if (terrain === 'sand') {
-        // Priority 1: Sand bordering Water (Ocean Foam)
-        // Water cells covered by boardwalk bridges are excluded so shore landings use solid dry sand without foam gaps
-        const waterMask = compute2DNeighborMask(
-          matrix,
-          x,
-          y,
-          (neighbor, nx, ny) =>
-            (neighbor === 'water' || neighbor === 'water_deep') &&
-            !(bridgeGrid && bridgeGrid[ny]?.[nx])
-        );
-
-        if (waterMask !== 0) {
-          const { role, innerOverlays } = classify2DAutotileRole(waterMask);
-          const primaryTile = getTileForRole(CANONICAL_SAND_OCEAN_SHORE_BRUSH, role);
-          const overlayTiles = innerOverlays.map((r) =>
-            getTileForRole(CANONICAL_SAND_OCEAN_SHORE_BRUSH, r)
-          );
-
-          const layerStack = buildShoreLayerStack(
-            [BASE_GRASS_TILE, CANONICAL_OCEAN_CENTER_TILE],
-            CANONICAL_SAND_OCEAN_SHORE_BRUSH.center,
-            role,
-            primaryTile,
-            overlayTiles
-          );
-
-          const cell: ResolvedWaterCell = {
-            x,
-            y,
-            terrain: 'sand',
-            role,
-            primaryTile,
-            overlayTiles: overlayTiles.length > 0 ? overlayTiles : undefined,
-            layerStack
-          };
-          cellDetails[y]![x] = cell;
-          primaryTiles[y]![x] = primaryTile;
-          continue;
-        }
-
-        // Priority 2: Sand bordering Grass
-        const grassMask = compute2DNeighborMask(matrix, x, y, (neighbor) => neighbor === 'grass');
-
-        const { role, innerOverlays } = classify2DAutotileRole(grassMask);
-        const primaryTile = getTileForRole(CANONICAL_SAND_BEACH_BRUSH, role);
-        const overlayTiles = innerOverlays.map((r) =>
-          getTileForRole(CANONICAL_SAND_BEACH_BRUSH, r)
-        );
-
-        const layerStack = buildShoreLayerStack(
-          [BASE_GRASS_TILE],
-          CANONICAL_SAND_BEACH_BRUSH.center,
-          role,
-          primaryTile,
-          overlayTiles
-        );
-
-        const cell: ResolvedWaterCell = {
-          x,
-          y,
-          terrain: 'sand',
-          role,
-          primaryTile,
-          overlayTiles: overlayTiles.length > 0 ? overlayTiles : undefined,
-          layerStack
-        };
-        cellDetails[y]![x] = cell;
-        primaryTiles[y]![x] = primaryTile;
-        continue;
-      }
-
-      if (terrain === 'water' || terrain === 'water_deep') {
-        // Priority 1: Water bordering Grass (Inland Lakes, Rivers, and freshwater shores)
-        // Whenever water meets grass, it autotiles using the canonical stone/earth lake & river shore brush.
-        const foreignMask = compute2DNeighborMask(matrix, x, y, (neighbor) => neighbor === 'grass');
-
-        if (foreignMask !== 0) {
-          const { role, innerOverlays } = classify2DAutotileRole(foreignMask);
-          const primaryTile = getTileForRole(CANONICAL_LAKE_SHORE_BRUSH, role);
-          const overlayTiles = innerOverlays.map((r) =>
-            getTileForRole(CANONICAL_LAKE_SHORE_BRUSH, r)
-          );
-
-          const oneRowSouthOfNorthBank = y > 1 && matrix[y - 2]![x]! === 'grass';
-          const shadowTile = getProjectedWaterShadowTile(role, oneRowSouthOfNorthBank);
-          const layerStack = buildShoreLayerStack(
-            [BASE_GRASS_TILE],
-            CANONICAL_LAKE_SHORE_BRUSH.center,
-            role,
-            primaryTile,
-            overlayTiles,
-            shadowTile
-          );
-
-          const cell: ResolvedWaterCell = {
-            x,
-            y,
-            terrain,
-            role,
-            primaryTile,
-            overlayTiles: overlayTiles.length > 0 ? overlayTiles : undefined,
-            layerStack
-          };
-          cellDetails[y]![x] = cell;
-          primaryTiles[y]![x] = primaryTile;
-          continue;
-        }
-
-        const isOcean = isOceanGrid[y]![x]!;
-
-        if (isOcean) {
-          // Ocean water is a continuous layer of waves; sand provides the foam border on top
-          const primaryTile =
-            terrain === 'water_deep' ? 'poke_water_deep.png' : 'poke_water_ocean_center.png';
-          const bridgeShoreCorner = getBridgeShoreCornerTile(matrix, bridgeGrid, x, y);
-          const layerStack = bridgeShoreCorner
-            ? [BASE_GRASS_TILE, primaryTile, bridgeShoreCorner]
-            : [BASE_GRASS_TILE, primaryTile];
-
-          const cell: ResolvedWaterCell = {
-            x,
-            y,
-            terrain,
-            role: 'center',
-            primaryTile,
-            layerStack
-          };
-          cellDetails[y]![x] = cell;
-          primaryTiles[y]![x] = primaryTile;
-          continue;
-        }
-
-        // Priority 2: Interior of Inland Freshwater Lake / River (surrounded by water, not grass)
-        // Abyssal Depth (Option 4): Center cells with distance to land >= MIN_ABYSSAL_LAKE_DISTANCE resolve to deep water
-        const minDist = computeAbyssalMinDistance(x, y);
-        const isAbyssalCenter = minDist >= MIN_ABYSSAL_LAKE_DISTANCE;
-
-        const isDeepWater = isAbyssalCenter || terrain === 'water_deep';
-        const primaryTile = isDeepWater ? 'poke_water_deep.png' : CANONICAL_LAKE_SHORE_BRUSH.center;
-        const layerStack = [BASE_GRASS_TILE, primaryTile];
-
-        const oneRowSouthOfNorthBank = y > 1 && matrix[y - 2]![x]! === 'grass';
-        if (oneRowSouthOfNorthBank) {
-          layerStack.push('poke_water_shadow_full.png');
-        }
-
-        const bridgeShoreCorner = getBridgeShoreCornerTile(matrix, bridgeGrid, x, y);
-        if (bridgeShoreCorner) {
-          layerStack.push(bridgeShoreCorner);
-        }
-
-        const cell: ResolvedWaterCell = {
-          x,
-          y,
-          terrain,
-          role: 'center',
-          primaryTile,
-          layerStack
-        };
-        cellDetails[y]![x] = cell;
-        primaryTiles[y]![x] = primaryTile;
+      const cell = resolveSingleWaterCoastCell(matrix, bridgeGrid, isOceanMask, W, H, x, y);
+      cellDetails[y]![x] = cell;
+      if (cell) {
+        primaryTiles[y]![x] = cell.primaryTile;
       }
     }
   }
@@ -665,6 +692,48 @@ export function resolveWaterCoastGrid(
     height: H,
     primaryTiles,
     cellDetails
+  };
+}
+
+/**
+ * Incrementally resolves water & coast autotiling inside `bounds` via row Copy-on-Write.
+ */
+export function resolveWaterCoastInBounds(
+  base: ResolvedWaterMapResult,
+  matrix: WaterTerrainMatrix,
+  bounds: DirtyTileBounds,
+  bridgeGrid?: readonly (readonly boolean[])[]
+): ResolvedWaterMapResult {
+  const H = matrix.length;
+  const W = matrix[0]?.length ?? 0;
+  if (H === 0 || W === 0) return base;
+
+  const clamped = clampDirtyBounds(bounds, W, H);
+  const isOceanMask = computeOceanMask(matrix, W, H);
+  const nextPrimaryTiles: string[][] = base.primaryTiles.map((row) => row as string[]);
+  const nextCellDetails: (ResolvedWaterCell | null)[][] = base.cellDetails.map(
+    (row) => row as (ResolvedWaterCell | null)[]
+  );
+
+  for (let y = clamped.minY; y <= clamped.maxY; y++) {
+    const primaryRow = [...(nextPrimaryTiles[y] ?? [])];
+    const detailRow = [...(nextCellDetails[y] ?? [])];
+    for (let x = clamped.minX; x <= clamped.maxX; x++) {
+      const cell = resolveSingleWaterCoastCell(matrix, bridgeGrid, isOceanMask, W, H, x, y);
+      detailRow[x] = cell;
+      if (cell) {
+        primaryRow[x] = cell.primaryTile;
+      }
+    }
+    nextPrimaryTiles[y] = primaryRow;
+    nextCellDetails[y] = detailRow;
+  }
+
+  return {
+    width: W,
+    height: H,
+    primaryTiles: nextPrimaryTiles,
+    cellDetails: nextCellDetails
   };
 }
 

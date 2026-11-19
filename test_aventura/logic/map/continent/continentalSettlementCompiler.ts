@@ -47,34 +47,39 @@ function snapCaveEntranceToSouthCliffWall(
   continent: ContinentMapResult,
   searchRadius: number
 ): { bestX: number; bestY: number } {
-  let bestX = originX;
-  let bestY = originY;
-  let minDst = Infinity;
+  const radii = [searchRadius, Math.max(width, height)];
+  for (const radius of radii) {
+    let bestX = originX;
+    let bestY = originY;
+    let minDst = Infinity;
 
-  for (let dy = -searchRadius; dy <= searchRadius; dy++) {
-    for (let dx = -searchRadius; dx <= searchRadius; dx++) {
-      const cx = originX + dx;
-      const cy = originY + dy;
-      if (cx < 1 || cx >= width - 1 || cy < 1 || cy >= height - 2) continue;
+    const minY = Math.max(1, originY - radius);
+    const maxY = Math.min(height - 3, originY + radius);
+    const minX = Math.max(1, originX - radius);
+    const maxX = Math.min(width - 2, originX + radius);
 
-      const mCell = continent.resolvedMountain.cellDetails[cy]?.[cx];
-      const isSouthWall =
-        mCell && (mCell.role.includes('edge_south') || mCell.role.includes('cliff'));
-      const frontElev = continent.heightmap[cy + 1]?.[cx] ?? 0;
-      const frontTerrain = continent.terrainMatrix[cy + 1]?.[cx];
-      const frontIsGround =
-        frontElev === 0 && frontTerrain !== 'water' && frontTerrain !== 'water_deep';
-      if (!isSouthWall || !frontIsGround) continue;
+    for (let cy = minY; cy <= maxY; cy++) {
+      for (let cx = minX; cx <= maxX; cx++) {
+        const mCell = continent.resolvedMountain.cellDetails[cy]?.[cx];
+        const isSouthWall =
+          mCell && (mCell.role.includes('edge_south') || mCell.role.includes('cliff'));
+        const frontElev = continent.heightmap[cy + 1]?.[cx] ?? 0;
+        const frontTerrain = continent.terrainMatrix[cy + 1]?.[cx];
+        const frontIsGround =
+          frontElev === 0 && frontTerrain !== 'water' && frontTerrain !== 'water_deep';
+        if (!isSouthWall || !frontIsGround) continue;
 
-      const dst = Math.hypot(dx, dy);
-      if (dst < minDst) {
-        minDst = dst;
-        bestX = cx;
-        bestY = cy;
+        const dst = Math.hypot(cx - originX, cy - originY);
+        if (dst < minDst) {
+          minDst = dst;
+          bestX = cx;
+          bestY = cy;
+        }
       }
     }
+    if (minDst < Infinity) return { bestX, bestY };
   }
-  return { bestX, bestY };
+  return { bestX: originX, bestY: originY };
 }
 
 function pavePortTerminalFootprint(
@@ -352,13 +357,28 @@ export function compileContinentalSettlementPois(
   // Pre-initialize bridge grid for pier fingers and maritime connections
   const bridgeGrid: boolean[][] = Array.from({ length: height }, () => Array(width).fill(false));
 
-  // Phase 7b: Populate Archipelago Island Settlements (e.g. Isla Canela)
+  // Phase 7b: Populate Archipelago Island Settlements ONLY when linked by a maritime corridor
   if (continent.archipelagoIslands) {
     for (const island of continent.archipelagoIslands) {
       // Calculate contiguous land tile count of this island
       const landArea = countIslandLandArea(island.bounds, continent.terrainMatrix);
+      const hasSeaRouteToIsland = embedded.corridors.some(
+        (c) =>
+          c.kind === 'surf_route' &&
+          c.pathCells.some(
+            (cell) =>
+              cell.x >= island.bounds.minX - 2 &&
+              cell.x <= island.bounds.maxX + 2 &&
+              cell.y >= island.bounds.minY - 2 &&
+              cell.y <= island.bounds.maxY + 2
+          )
+      );
 
-      if (landArea >= MIN_ISLAND_SETTLEMENT_AREA && island.role === 'port_city') {
+      if (
+        hasSeaRouteToIsland &&
+        landArea >= MIN_ISLAND_SETTLEMENT_AREA &&
+        island.role === 'port_city'
+      ) {
         const islandNode: POINode = {
           id: island.id,
           name: island.name,
@@ -381,20 +401,26 @@ export function compileContinentalSettlementPois(
           const archetypeIdx =
             Math.abs(island.cx * ARCHETYPE_PRIME_X + island.cy * ARCHETYPE_PRIME_Y + seed) % 3;
           if (archetypeIdx === 0) {
-            // 1. Santuario / Mazmorra: rocky elevation h=1 with cave entrance / ancient ruin
-            for (let dy = -1; dy <= 1; dy++) {
-              for (let dx = -1; dx <= 1; dx++) {
-                const rx = island.cx + dx;
-                const ry = island.cy + dy;
+            // 1. Santuario / Mazmorra: rocky elevation h=1 only on cells forming >=2x2 grass blocks
+            const isValidGrass = (gx: number, gy: number): boolean =>
+              gx >= 0 &&
+              gx < width &&
+              gy >= 0 &&
+              gy < height &&
+              continent.terrainMatrix[gy]?.[gx] === 'grass';
+            for (const qx of [island.cx - 1, island.cx]) {
+              for (const qy of [island.cy - 1, island.cy]) {
                 if (
-                  rx < 0 ||
-                  rx >= width ||
-                  ry < 0 ||
-                  ry >= height ||
-                  continent.terrainMatrix[ry]?.[rx] !== 'grass'
-                )
-                  continue;
-                (continent.heightmap as number[][])[ry]![rx] = 1;
+                  isValidGrass(qx, qy) &&
+                  isValidGrass(qx + 1, qy) &&
+                  isValidGrass(qx, qy + 1) &&
+                  isValidGrass(qx + 1, qy + 1)
+                ) {
+                  (continent.heightmap as number[][])[qy]![qx] = 1;
+                  (continent.heightmap as number[][])[qy]![qx + 1] = 1;
+                  (continent.heightmap as number[][])[qy + 1]![qx] = 1;
+                  (continent.heightmap as number[][])[qy + 1]![qx + 1] = 1;
+                }
               }
             }
             pois.push({
@@ -412,18 +438,7 @@ export function compileContinentalSettlementPois(
           }
 
           if (archetypeIdx === 1) {
-            // 2. Atolón Desierto: perimeter beach with trees, tall grass and collectible item ball
-            pois.push({
-              id: `islet_atoll_${island.id}`,
-              name: island.name,
-              type: 'water_landmark',
-              footprint: { width: 2, height: 2 },
-              terrainPreference: 'flat_grass',
-              gridX: island.cx - 1,
-              gridY: island.cy - 1,
-              elevation: 0,
-              buildingFile: 'poke_signpost.png'
-            });
+            // 2. Deserted sandy atoll: keep clean without orphan signposts or buildings
             return;
           }
 

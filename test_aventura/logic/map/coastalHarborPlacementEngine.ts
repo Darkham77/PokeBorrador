@@ -284,13 +284,22 @@ function findBestPortLocation(
   W: number,
   H: number,
   isAreaFree: (x: number, y: number, w: number, h: number, margin?: number) => boolean,
-  getMinDistanceToPlaced: (x: number, y: number) => number
+  getMinDistanceToPlaced: (x: number, y: number) => number,
+  placedNodes: readonly POINode[]
 ): { readonly x: number; readonly y: number; readonly facing: CardinalDirection } | null {
   let bestPort: { x: number; y: number; facing: CardinalDirection } | null = null;
   let bestScore = -Infinity;
 
+  const isTooCloseToMaritimeNode = (x: number, y: number): boolean =>
+    placedNodes.some(
+      (n) =>
+        (n.type === 'water_landmark' || n.type === 'port_dock') &&
+        Math.hypot(x - n.gridX, y - n.gridY) < 28
+    );
+
   for (let y = 3; y < H - 10; y += 1) {
     for (let x = 3; x < W - 10; x += 1) {
+      if (isTooCloseToMaritimeNode(x, y)) continue;
       for (const dir of GEO_CARDINAL_DIRECTIONS) {
         const candW = dir === 'west' || dir === 'east' ? 6 : 7;
         const candH = dir === 'west' || dir === 'east' ? 7 : 6;
@@ -335,7 +344,14 @@ export function placeCoastalHarborDocks(ctx: HarborPlacementContext): void {
     const portId = 'vermilion_port';
     const portName = 'Puerto Carmín';
 
-    const bestPort = findBestPortLocation(continentMap, W, H, isAreaFree, getMinDistanceToPlaced);
+    const bestPort = findBestPortLocation(
+      continentMap,
+      W,
+      H,
+      isAreaFree,
+      getMinDistanceToPlaced,
+      placedNodes
+    );
 
     if (bestPort) {
       const portWidth = bestPort.facing === 'west' || bestPort.facing === 'east' ? 6 : 7;

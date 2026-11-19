@@ -17,6 +17,9 @@
  *      without mountain/water barriers receive a 2-cell transitional dirt buffer.
  */
 
+import type { DirtyTileBounds } from '../../types/map/autotileHealingTypes.ts';
+import type { RegionMacroArchetype } from '../../types/map/pokemonGraphTypes.ts';
+import { clampDirtyBounds } from '../utils/gridGeometryUtils.ts';
 import { SimplexNoise, fbm2DNormalized } from './noise/simplexNoise.ts';
 import type { WaterTerrainKind } from './waterAutotileEngine.ts';
 
@@ -38,6 +41,7 @@ export interface MacroBiomeSynthesizerOptions {
   readonly heightmap?: readonly (readonly number[])[];
   readonly temperatureScale?: number;
   readonly moistureScale?: number;
+  readonly macroArchetype?: RegionMacroArchetype;
 }
 
 export interface MacroBiomeResult {
@@ -51,6 +55,12 @@ export interface MacroBiomeResult {
 const DEFAULT_TEMP_SCALE = 0.018;
 const DEFAULT_MOIST_SCALE = 0.018;
 const MIN_CLUSTER_SIZE = 16;
+const BIOME_MIN_CLUSTER_AREA_RATIO = 0.0012;
+const VOLCANIC_CENTER_TEMP_BOOST = 0.22;
+const VOLCANIC_CORE_RADIUS = 0.45;
+const VOLCANIC_RADIAL_GAIN = 2.2;
+const ARCHIPELAGO_MOISTURE_BOOST = 0.08;
+const VALLEY_EAST_WEST_CONTRAST = 0.14;
 
 const BIOME_THRESHOLDS = {
   DESERT_TEMP_MIN: 0.62,
@@ -168,7 +178,8 @@ function absorbSmallClusters(
   grid: MacroBiome[][],
   width: number,
   height: number,
-  isLand: (x: number, y: number) => boolean
+  isLand: (x: number, y: number) => boolean,
+  minClusterSize: number = MIN_CLUSTER_SIZE
 ): void {
   const visited: boolean[][] = Array.from({ length: height }, () => Array(width).fill(false));
 
@@ -237,8 +248,8 @@ function absorbSmallClusters(
         );
       }
 
-      // If cluster is smaller than MIN_CLUSTER_SIZE, absorb into dominant neighbor
-      if (component.length < MIN_CLUSTER_SIZE && neighborBiomeCounts.size > 0) {
+      // If cluster is smaller than minClusterSize, absorb into dominant neighbor
+      if (component.length < minClusterSize && neighborBiomeCounts.size > 0) {
         const dominantBiome = findDominantNeighborBiome(neighborBiomeCounts, currentBiome);
         for (const cell of component) {
           grid[cell.y]![cell.x] = dominantBiome;
@@ -281,12 +292,61 @@ function computeContainmentBuffer(
 }
 
 /**
+ * Recomputes `transitionBufferGrid` exclusively inside `bounds` via row Copy-on-Write.
+ */
+export function updateContainmentBufferInBounds(
+  baseBuffer: readonly (readonly boolean[])[],
+  grid: readonly (readonly MacroBiome[])[],
+  terrainMatrix: readonly (readonly WaterTerrainKind[])[],
+  bounds: DirtyTileBounds,
+  heightmap?: readonly (readonly number[])[]
+): boolean[][] {
+  const height = grid.length;
+  const width = grid[0]?.length ?? 0;
+  if (height === 0 || width === 0) return [];
+
+  const clamped = clampDirtyBounds(bounds, width, height);
+  const nextBuffer: boolean[][] = Array.from({ length: height }, (_, y) =>
+    baseBuffer[y] ? (baseBuffer[y] as boolean[]) : Array<boolean>(width).fill(false)
+  );
+
+  const isLand = (x: number, y: number): boolean => {
+    const t = terrainMatrix[y]?.[x];
+    return t !== 'water' && t !== 'water_deep';
+  };
+  const isBarrier = (x: number, y: number): boolean => {
+    const t = terrainMatrix[y]?.[x];
+    if (t === 'water' || t === 'water_deep') return true;
+    return (heightmap?.[y]?.[x] ?? 0) >= 1;
+  };
+  const radius = BIOME_THRESHOLDS.CONTAINMENT_BUFFER_RADIUS;
+
+  for (let y = clamped.minY; y <= clamped.maxY; y++) {
+    const row = [...(nextBuffer[y] ?? Array<boolean>(width).fill(false))];
+    for (let x = clamped.minX; x <= clamped.maxX; x++) {
+      const current = grid[y]?.[x];
+      const isExtreme = current === 'arid_desert' || current === 'volcanic_plateau';
+      row[x] =
+        Boolean(isExtreme && isLand(x, y)) &&
+        checkExtremeTouchesPlain(x, y, radius, width, height, grid, isBarrier, isLand);
+    }
+    nextBuffer[y] = row;
+  }
+
+  return nextBuffer;
+}
+
+/**
  * Master synthesizer generating macro-region biomes across continental terrain.
  */
 export function synthesizeMacroBiomes(options: MacroBiomeSynthesizerOptions): MacroBiomeResult {
-  const { width, height, seed, terrainMatrix, heightmap } = options;
+  const { width, height, seed, terrainMatrix, heightmap, macroArchetype } = options;
   const tempScale = options.temperatureScale ?? DEFAULT_TEMP_SCALE;
   const moistScale = options.moistureScale ?? DEFAULT_MOIST_SCALE;
+  const minClusterSize = Math.max(
+    MIN_CLUSTER_SIZE,
+    Math.floor(width * height * BIOME_MIN_CLUSTER_AREA_RATIO)
+  );
 
   const tempNoise = new SimplexNoise(seed + 512);
   const moistNoise = new SimplexNoise(seed + 1024);
@@ -332,9 +392,27 @@ export function synthesizeMacroBiomes(options: MacroBiomeSynthesizerOptions): Ma
         persistence: 0.5
       });
 
-      // Composite temperature: 65% noise + 35% global latitude
-      const effectiveTemp = Math.max(0.0, Math.min(1.0, tFbm * 0.65 + latitudeGrad * 0.35));
-      const effectiveMoist = Math.max(0.0, Math.min(1.0, mFbm));
+      // Composite temperature & moisture with macro-archetype climatic coherence
+      const normX = x / Math.max(1, width - 1);
+      const centerDist = Math.hypot(normX - 0.5, latitudeGrad - 0.5);
+      let tempBias = 0;
+      let moistBias = 0;
+      if (macroArchetype === 'volcanic_horseshoe') {
+        tempBias =
+          Math.max(0, VOLCANIC_CORE_RADIUS - centerDist) *
+          VOLCANIC_CENTER_TEMP_BOOST *
+          VOLCANIC_RADIAL_GAIN;
+      } else if (macroArchetype === 'divided_valley') {
+        tempBias = (normX - 0.5) * VALLEY_EAST_WEST_CONTRAST;
+      } else if (macroArchetype === 'oceanic_archipelago') {
+        moistBias = ARCHIPELAGO_MOISTURE_BOOST;
+      }
+
+      const effectiveTemp = Math.max(
+        0.0,
+        Math.min(1.0, tFbm * 0.65 + latitudeGrad * 0.35 + tempBias)
+      );
+      const effectiveMoist = Math.max(0.0, Math.min(1.0, mFbm + moistBias));
 
       temperatureMap[idx] = effectiveTemp;
       moistureMap[idx] = effectiveMoist;
@@ -343,8 +421,8 @@ export function synthesizeMacroBiomes(options: MacroBiomeSynthesizerOptions): Ma
     }
   }
 
-  // 2. Eradicate small patchwork clusters (< 16 cells)
-  absorbSmallClusters(rawBiomeGrid, width, height, isLand);
+  // 2. Eradicate small patchwork clusters scaled to world size
+  absorbSmallClusters(rawBiomeGrid, width, height, isLand, minClusterSize);
 
   // 3. Compute 2-cell containment buffers for desert/volcanic borders touching plains
   const transitionBufferGrid = computeContainmentBuffer(

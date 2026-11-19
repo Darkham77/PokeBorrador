@@ -10,15 +10,21 @@
 
 import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay.ts';
 
+import { DIRTY_BLIT_OVERSCAN_TILES } from '../../config/brushConfig.ts';
 import { CANVAS_RENDERER } from '../../config/canvasRendererConfig.ts';
 import { RGBA_CHANNEL_COUNT } from '../../config/continentWorkerConfig.ts';
 import { CANVAS_TILE_SIZE, STUDIO_MOBILE_BREAKPOINT_PX } from '../../config/studioConstants.ts';
 import type { DirtyTileBounds } from '../../types/map/autotileHealingTypes.ts';
 import { PACKED_BLIT_STRIDE, type PackedMapBlitPayload } from '../../types/map/continentTypes.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
+import { expandDirtyBounds } from '../utils/gridGeometryUtils.ts';
 import { getImageCache, preloadTileImages } from './canvasImageLoader.ts';
 import { buildMapBlitInstructions } from './canvasTileRenderer.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
+import type { MicroVignette } from './microVignetteEngine.ts';
+import type { ProgressionObstacle } from './progressionObstacleEngine.ts';
+import type { LedgeRun } from './routeLedgeEngine.ts';
+import type { ResolvedRouteNetworkResult } from './routeNetworkEngine.ts';
 import type { WildernessLayerResult } from './wildernessVegetationEngine.ts';
 
 const OCEAN_VOID_FILL_HEX = '#0a1428';
@@ -188,8 +194,13 @@ export async function renderPackedContinentTilemap(
 export interface DirtyRectRenderLayers {
   readonly pois: readonly POINode[];
   readonly pathGrid: readonly (readonly boolean[])[];
+  readonly manualPathGrid?: readonly (readonly boolean[])[];
   readonly bridgeGrid?: readonly (readonly boolean[])[];
   readonly wilderness?: WildernessLayerResult | null;
+  readonly ledges?: readonly LedgeRun[];
+  readonly progressionObstacles?: readonly ProgressionObstacle[];
+  readonly microVignettes?: readonly MicroVignette[];
+  readonly routeNetwork?: ResolvedRouteNetworkResult;
 }
 
 /**
@@ -221,12 +232,27 @@ export async function renderRegionalContinentDirtyRect(
   const clipW = (maxX - minX + 1) * CANVAS_TILE_SIZE;
   const clipH = (maxY - minY + 1) * CANVAS_TILE_SIZE;
 
+  const compileBounds = expandDirtyBounds(
+    { minX, minY, maxX, maxY },
+    DIRTY_BLIT_OVERSCAN_TILES,
+    continent.width,
+    continent.height
+  );
+
   const { instructions, uniqueFilenames } = buildMapBlitInstructions(
     continent,
     layers.pois,
     layers.pathGrid,
     layers.bridgeGrid,
-    layers.wilderness
+    layers.wilderness,
+    {
+      bounds: compileBounds,
+      manualPathGrid: layers.manualPathGrid,
+      ledges: layers.ledges,
+      progressionObstacles: layers.progressionObstacles,
+      microVignettes: layers.microVignettes,
+      routeNetwork: layers.routeNetwork
+    }
   );
 
   await preloadTileImages(uniqueFilenames);

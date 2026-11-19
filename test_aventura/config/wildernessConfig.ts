@@ -11,10 +11,10 @@ export const WILDERNESS_DEFAULT_SEED = 42 as const;
 export const WILDERNESS_PRNG_OFFSET = 555 as const;
 
 // --- Tall Grass Patch Distribution ---
-export const MIN_TALL_GRASS_PATCH_SEPARATION = 4 as const;
+export const MIN_TALL_GRASS_PATCH_SEPARATION = 7 as const;
 export const TALL_GRASS_MIN_PATCHES = 16 as const;
-export const TALL_GRASS_MAX_PATCHES = 220 as const;
-export const TALL_GRASS_DENSITY_DIVISOR = 450 as const;
+export const TALL_GRASS_MAX_PATCHES = 150 as const;
+export const TALL_GRASS_DENSITY_DIVISOR = 620 as const;
 
 export const TALL_GRASS_WIDTH_MIN = 4 as const;
 export const TALL_GRASS_WIDTH_VARIANCE = 5 as const;
@@ -63,15 +63,11 @@ export const ROADSIDE_PROP_NOISE_SCALE = 0.35 as const;
 export const DESERT_BOULDER_THRESHOLD = 0.55 as const;
 export const VOLCANIC_BOULDER_THRESHOLD = 0.55 as const;
 
-export const MINT_BUSH_THRESHOLD = 0.58 as const;
-export const MINT_BOULDER_MIN = 0.36 as const;
-export const MINT_BOULDER_MAX = 0.58 as const;
+export const MINT_BUSH_THRESHOLD = 0.42 as const;
 
 export const VIRIDIAN_BUSH_THRESHOLD = 0.5 as const;
 export const VIRIDIAN_LOG_THRESHOLD = -0.52 as const;
 
-export const MEADOW_ROUND_BUSH_THRESHOLD = 0.65 as const;
-export const MEADOW_FERN_BUSH_THRESHOLD = -0.68 as const;
 export const MEADOW_FLOWER_MIN = 0.46 as const;
 export const MEADOW_FLOWER_MAX = 0.6 as const;
 
@@ -93,9 +89,16 @@ export const TREE_SPECIES_ISOLATION_DISTANCE = 8 as const;
 
 // Autumn Noise & Biome Transition Thresholds
 export const AUTUMN_MACRO_NOISE_SCALE = 0.015 as const;
+export const AUTUMN_DETAIL_NOISE_SCALE = 0.095 as const;
+export const AUTUMN_DETAIL_WARP_AMP = 0.22 as const;
 export const AUTUMN_MACRO_THRESHOLD = 0.28 as const;
 export const AUTUMN_BUFFER_THRESHOLD = 0.2 as const;
 export const AUTUMN_DENSE_TREE_THRESHOLD = 0.24 as const;
 
-export const SUBTRACTIVE_WILDERNESS_BASE_THRESHOLD = -0.98 as const;
-export const SUBTRACTIVE_WILDERNESS_PATH_THRESHOLD = -1.0 as const;
+export const GROVE_CLEARING_NOISE_SCALE = 0.21 as const;
+export const GROVE_PRIMARY_WEIGHT = 0.65 as const;
+export const GROVE_CLEARING_WEIGHT = 0.35 as const;
+export const FOREST_LATTICE_BREAK_SCALE = 0.55 as const;
+export const FOREST_LATTICE_BREAK_THRESHOLD = 0.65 as const;
+export const SUBTRACTIVE_WILDERNESS_BASE_THRESHOLD = -0.52 as const;
+export const SUBTRACTIVE_WILDERNESS_PATH_THRESHOLD = -0.82 as const;

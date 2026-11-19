@@ -11,6 +11,9 @@
  *   4. O(1) canonical tile dictionary mapping for Brown and Gray palettes.
  */
 
+import type { DirtyTileBounds } from '../../types/map/autotileHealingTypes.ts';
+import { clampDirtyBounds } from '../utils/gridGeometryUtils.ts';
+
 const _MOUNTAIN_PALETTES = ['brown', 'gray', 'volcanic'] as const;
 export type MountainPalette = (typeof _MOUNTAIN_PALETTES)[number];
 
@@ -615,14 +618,20 @@ export function stampMountainStairs(
     pal === 'gray' ? CANONICAL_MOUNTAIN_BRUSH_GRAY_ROCK : CANONICAL_MOUNTAIN_BRUSH_BROWN_ROCK;
   const b = isRockTier ? rockBrush : grassBrush;
 
-  const newPrimaryTiles = result.primaryTiles.map((r) => [...r]);
-  const newCellDetails: (ResolvedMountainCell | null)[][] = result.cellDetails.map((r) => [...r]);
-  const newOccupiedFootCells: boolean[][] = result.occupiedFootCells.map((r) => [...r]);
+  const newPrimaryTiles = result.primaryTiles.map((r) => r as string[]);
+  const newCellDetails: (ResolvedMountainCell | null)[][] = result.cellDetails.map(
+    (r) => r as (ResolvedMountainCell | null)[]
+  );
+  const newOccupiedFootCells: boolean[][] = result.occupiedFootCells.map((r) => r as boolean[]);
 
-  newPrimaryTiles[startY]![startX] = b.floor;
-  newPrimaryTiles[startY]![startX + 1] = b.floor;
+  newPrimaryTiles[startY] = [...(result.primaryTiles[startY] ?? [])];
+  newCellDetails[startY] = [...(result.cellDetails[startY] ?? [])];
+  newOccupiedFootCells[startY + 1] = [...(result.occupiedFootCells[startY + 1] ?? [])];
 
-  newCellDetails[startY]![startX] = {
+  newPrimaryTiles[startY][startX] = b.floor;
+  newPrimaryTiles[startY][startX + 1] = b.floor;
+
+  newCellDetails[startY][startX] = {
     x: startX,
     y: startY,
     elevation: cellL.elevation,
@@ -638,7 +647,7 @@ export function stampMountainStairs(
     }
   };
 
-  newCellDetails[startY]![startX + 1] = {
+  newCellDetails[startY][startX + 1] = {
     x: startX + 1,
     y: startY,
     elevation: cellR.elevation,
@@ -736,6 +745,44 @@ export function normalizeHeightmapDiagonals(matrix: number[][]): number[][] {
   return normalized;
 }
 
+interface MountainCellRangeContext {
+  readonly matrix: ElevationMatrix;
+  readonly bounds: DirtyTileBounds;
+  readonly options?: MountainAutotileGridOptions;
+  readonly width: number;
+  readonly height: number;
+  readonly newCellDetails: (ResolvedMountainCell | null)[][];
+  readonly newPrimaryTiles: string[][];
+  readonly newOverlays: CliffFootOverlay[];
+  readonly newOccupiedFootCells: boolean[][];
+}
+
+function resolveMountainCellRange(ctx: MountainCellRangeContext): void {
+  const pal = ctx.options?.palette ?? 'brown';
+  const style = ctx.options?.style ?? 'rock';
+  for (let y = ctx.bounds.minY; y <= ctx.bounds.maxY; y++) {
+    for (let x = ctx.bounds.minX; x <= ctx.bounds.maxX; x++) {
+      const elev = ctx.matrix[y]?.[x] ?? 0;
+      if (elev > 0) {
+        const cellPal = ctx.options?.paletteMatrix?.[y]?.[x] ?? pal;
+        const resolved = resolveMountainAutotileCell(ctx.matrix, x, y, cellPal, style);
+        ctx.newCellDetails[y]![x] = resolved;
+        ctx.newPrimaryTiles[y]![x] = resolved.primaryTile;
+        registerProjectedCliffFoot(
+          resolved.projectedFoot,
+          ctx.newOverlays,
+          ctx.newOccupiedFootCells,
+          ctx.width,
+          ctx.height
+        );
+      } else {
+        ctx.newCellDetails[y]![x] = null;
+        ctx.newPrimaryTiles[y]![x] = '';
+      }
+    }
+  }
+}
+
 /**
  * Reactively recalculates the mountain autotiling bitmask and cell details
  * within a local radius around (centerX, centerY) after terrain or height modifications.
@@ -751,8 +798,6 @@ export function recalculateNeighborhoodBitmask(
 ): ResolvedMountainMapResult {
   const W = result.width;
   const H = result.height;
-  const pal = options?.palette ?? 'brown';
-  const style = options?.style ?? 'rock';
 
   const minX = Math.max(0, centerX - radius);
   const maxX = Math.min(W - 1, centerX + radius);
@@ -768,22 +813,17 @@ export function recalculateNeighborhoodBitmask(
     return !(f.targetX >= minX && f.targetX <= maxX && f.targetY >= minY && f.targetY <= maxY + 1);
   });
 
-  for (let y = minY; y <= maxY; y++) {
-    for (let x = minX; x <= maxX; x++) {
-      const elev = matrix[y]?.[x] ?? 0;
-      if (elev > 0) {
-        const cellPal = options?.paletteMatrix?.[y]?.[x] ?? pal;
-        const resolved = resolveMountainAutotileCell(matrix, x, y, cellPal, style);
-        newCellDetails[y]![x] = resolved;
-        newPrimaryTiles[y]![x] = resolved.primaryTile;
-
-        registerProjectedCliffFoot(resolved.projectedFoot, newOverlays, newOccupiedFootCells, W, H);
-      } else {
-        newCellDetails[y]![x] = null;
-        newPrimaryTiles[y]![x] = '';
-      }
-    }
-  }
+  resolveMountainCellRange({
+    matrix,
+    bounds: { minX, minY, maxX, maxY },
+    options,
+    width: W,
+    height: H,
+    newCellDetails,
+    newPrimaryTiles,
+    newOverlays,
+    newOccupiedFootCells
+  });
 
   return {
     width: W,
@@ -793,6 +833,119 @@ export function recalculateNeighborhoodBitmask(
     cliffFootOverlays: newOverlays,
     occupiedFootCells: newOccupiedFootCells
   };
+}
+
+function widenBoundsForStraddlingStairs(
+  clamped: DirtyTileBounds,
+  stairs: readonly MountainStairLocation[] | undefined,
+  W: number
+): DirtyTileBounds {
+  if (!stairs || stairs.length === 0) return clamped;
+  let { minX, maxX } = clamped;
+  for (const st of stairs) {
+    if (st.y < clamped.minY || st.y > clamped.maxY) continue;
+    if (st.x + 1 >= minX && st.x <= maxX) {
+      minX = Math.max(0, Math.min(minX, st.x));
+      maxX = Math.min(W - 1, Math.max(maxX, st.x + 1));
+    }
+  }
+  return { minX, minY: clamped.minY, maxX, maxY: clamped.maxY };
+}
+
+/**
+ * Incrementally resolves mountain autotile cells, projected south cliff feet,
+ * and stairs inside `bounds` via row Copy-on-Write without cloning the entire map.
+ */
+export function resolveMountainMapInBounds(
+  base: ResolvedMountainMapResult,
+  matrix: ElevationMatrix,
+  bounds: DirtyTileBounds,
+  options?: MountainAutotileGridOptions
+): ResolvedMountainMapResult {
+  const H = matrix.length;
+  const W = matrix[0]?.length ?? 0;
+  if (H === 0 || W === 0) return base;
+
+  const pal = options?.palette ?? 'brown';
+  const style = options?.style ?? 'rock';
+  const clamped = widenBoundsForStraddlingStairs(
+    clampDirtyBounds(bounds, W, H),
+    options?.stairs,
+    W
+  );
+  const maxFootY = Math.min(H - 1, clamped.maxY + 1);
+
+  const newPrimaryTiles: string[][] = base.primaryTiles.map((row) => row as string[]);
+  const newCellDetails: (ResolvedMountainCell | null)[][] = base.cellDetails.map(
+    (row) => row as (ResolvedMountainCell | null)[]
+  );
+  const newOccupiedFootCells: boolean[][] = base.occupiedFootCells.map((row) => row as boolean[]);
+
+  for (let y = clamped.minY; y <= clamped.maxY; y++) {
+    newPrimaryTiles[y] = [...(base.primaryTiles[y] ?? [])];
+    newCellDetails[y] = [...(base.cellDetails[y] ?? [])];
+  }
+  for (let y = clamped.minY; y <= maxFootY; y++) {
+    newOccupiedFootCells[y] = [...(base.occupiedFootCells[y] ?? [])];
+  }
+
+  for (let targetY = clamped.minY + 1; targetY <= maxFootY; targetY++) {
+    for (let x = clamped.minX; x <= clamped.maxX; x++) {
+      newOccupiedFootCells[targetY]![x] = false;
+    }
+  }
+
+  const newOverlays = base.cliffFootOverlays.filter(
+    (ov) =>
+      !(
+        ov.targetX >= clamped.minX &&
+        ov.targetX <= clamped.maxX &&
+        ov.targetY >= clamped.minY + 1 &&
+        ov.targetY <= maxFootY
+      )
+  );
+
+  resolveMountainCellRange({
+    matrix,
+    bounds: clamped,
+    options,
+    width: W,
+    height: H,
+    newCellDetails,
+    newPrimaryTiles,
+    newOverlays,
+    newOccupiedFootCells
+  });
+
+  let updated: ResolvedMountainMapResult = {
+    width: W,
+    height: H,
+    primaryTiles: newPrimaryTiles,
+    cellDetails: newCellDetails,
+    cliffFootOverlays: newOverlays,
+    occupiedFootCells: newOccupiedFootCells
+  };
+
+  if (options?.stairs && options.stairs.length > 0) {
+    for (const stair of options.stairs) {
+      if (
+        stair.x < clamped.minX ||
+        stair.x + 1 > clamped.maxX ||
+        stair.y < clamped.minY ||
+        stair.y > clamped.maxY
+      ) {
+        continue;
+      }
+      const stairPal = options.paletteMatrix?.[stair.y]?.[stair.x] ?? pal;
+      const left = updated.cellDetails[stair.y]?.[stair.x];
+      const right = updated.cellDetails[stair.y]?.[stair.x + 1];
+      if (left?.role === 'edge_south_top' && right?.role === 'edge_south_top') {
+        updated = stampMountainStairs(updated, stair.x, stair.y, stairPal, style);
+      }
+    }
+  }
+
+  return updated;
 }
 
 /**

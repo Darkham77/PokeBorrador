@@ -83,3 +83,36 @@ export function floodFillGrid(
     }
   }
 }
+
+/**
+ * Checks whether placing a point at `(x, y)` extends an unbroken horizontal or vertical
+ * cardinal run strictly beyond `maxRun` cells inside `occupiedKeys` (`"${x}_${y}"` format).
+ */
+export function wouldExceedStraightCardinalRun(
+  occupiedKeys: ReadonlySet<string>,
+  x: number,
+  y: number,
+  maxRun: number
+): boolean {
+  let horizRun = 1;
+  for (let d = 1; d <= maxRun; d++) {
+    if (occupiedKeys.has(`${x - d}_${y}`)) horizRun++;
+    else break;
+  }
+  for (let d = 1; d <= maxRun; d++) {
+    if (occupiedKeys.has(`${x + d}_${y}`)) horizRun++;
+    else break;
+  }
+  if (horizRun > maxRun) return true;
+
+  let vertRun = 1;
+  for (let d = 1; d <= maxRun; d++) {
+    if (occupiedKeys.has(`${x}_${y - d}`)) vertRun++;
+    else break;
+  }
+  for (let d = 1; d <= maxRun; d++) {
+    if (occupiedKeys.has(`${x}_${y + d}`)) vertRun++;
+    else break;
+  }
+  return vertRun > maxRun;
+}

@@ -58,13 +58,35 @@ const DEFAULT_MAX_VIGNETTES = 10;
 const VIGNETTE_POI_CLEARANCE_MARGIN = 2;
 const CLEARING_SEARCH_MARGIN_TOP_LEFT = 6 as const;
 const CLEARING_SEARCH_MARGIN_BOTTOM_RIGHT = 8 as const;
+const URBAN_VIGNETTE_MAX_SETTLEMENT_DISTANCE = 14 as const;
 
-const VIGNETTE_KINDS: readonly MicroVignetteKind[] = [
-  'berry_orchard',
+const URBAN_VIGNETTE_KINDS: readonly MicroVignetteKind[] = [
   'civic_fountain',
-  'explorer_camp',
-  'botanical_garden'
+  'botanical_garden',
+  'berry_orchard',
+  'explorer_camp'
 ] as const;
+
+const RURAL_VIGNETTE_KINDS: readonly MicroVignetteKind[] = [
+  'berry_orchard',
+  'explorer_camp'
+] as const;
+
+function resolveDistanceToNearestSettlement(
+  pois: readonly POINode[],
+  cx: number,
+  cy: number
+): number {
+  let minDistance = Infinity;
+  for (const poi of pois) {
+    if (poi.type !== 'town' && poi.type !== 'city' && poi.type !== 'metropolis') continue;
+    const dx = Math.max(poi.gridX - cx, 0, cx - (poi.gridX + poi.footprint.width));
+    const dy = Math.max(poi.gridY - cy, 0, cy - (poi.gridY + poi.footprint.height));
+    const dist = Math.hypot(dx, dy);
+    if (dist < minDistance) minDistance = dist;
+  }
+  return minDistance;
+}
 
 /**
  * Sweeps and removes orphan 1-cell path tiles having zero orthogonal path neighbors.
@@ -166,10 +188,10 @@ export function generateMicroVignettes(
       }
     }
 
-    // 2. Strict clearance check: all tiles in clearing + a 2-tile perimeter must be flat grass
+    // 2. Strict clearance check: all tiles in clearing + a 1-tile perimeter must be flat grass
     // Never allow water, deep water, sand beaches, mountain cliffs, or stairs
-    for (let dy = -2; dy <= height + 1; dy++) {
-      for (let dx = -2; dx <= width + 1; dx++) {
+    for (let dy = -1; dy <= height; dy++) {
+      for (let dx = -1; dx <= width; dx++) {
         const cy = by + dy;
         const cx = bx + dx;
         if (cy < 0 || cy >= H || cx < 0 || cx >= W) return false;
@@ -227,49 +249,57 @@ export function generateMicroVignettes(
   for (const cand of candidateClearings) {
     if (vignettes.length >= maxVignettes) break;
 
-    const kind = VIGNETTE_KINDS[vignettes.length % VIGNETTE_KINDS.length]!;
     const cx = cand.x;
     const cy = cand.y;
-
     const vw = 5;
+    const settlementDist = resolveDistanceToNearestSettlement(pois, cx + 2.5, cy + 2);
+    const allowedKinds =
+      settlementDist <= URBAN_VIGNETTE_MAX_SETTLEMENT_DISTANCE
+        ? URBAN_VIGNETTE_KINDS
+        : RURAL_VIGNETTE_KINDS;
+    const kind = allowedKinds[vignettes.length % allowedKinds.length]!;
     const vh = kind === 'civic_fountain' ? 5 : 4;
 
     if (!isAreaFree(cx, cy, vw, vh)) continue;
 
     const props: VignetteProp[] = [];
+    const variantIdx = (vignettes.length + cx + cy) % 2;
 
     if (kind === 'berry_orchard') {
-      // 5x4 Berry Orchard: wooden fence boundary, rows of round berry bushes, flowers & sign
-      props.push({ type: 'fence', x: cx, y: cy, prefabFile: 'poke_fence_wood_h.png' });
-      props.push({ type: 'fence', x: cx + 1, y: cy, prefabFile: 'poke_fence_wood_h.png' });
-      props.push({ type: 'fence', x: cx + 3, y: cy, prefabFile: 'poke_fence_wood_h.png' });
-      props.push({ type: 'fence', x: cx + 4, y: cy, prefabFile: 'poke_fence_wood_h.png' });
-
-      // Row 1 berry bushes
-      props.push({ type: 'bush', x: cx + 1, y: cy + 1, prefabFile: 'poke_bush_round.png' });
-      props.push({ type: 'bush', x: cx + 2, y: cy + 1, prefabFile: 'poke_bush_round.png' });
-      props.push({ type: 'bush', x: cx + 3, y: cy + 1, prefabFile: 'poke_bush_round.png' });
-
-      // Row 2 berry bushes
-      props.push({ type: 'bush', x: cx + 1, y: cy + 2, prefabFile: 'poke_bush_round.png' });
-      props.push({ type: 'bush', x: cx + 2, y: cy + 2, prefabFile: 'poke_bush_round.png' });
-      props.push({ type: 'bush', x: cx + 3, y: cy + 2, prefabFile: 'poke_bush_round.png' });
-
-      // Flanking flowers
-      props.push({ type: 'flower', x: cx, y: cy + 1, prefabFile: 'poke_flowers_red.png' });
-      props.push({ type: 'flower', x: cx + 4, y: cy + 1, prefabFile: 'poke_flowers_red.png' });
-
-      // Lower fence posts & entrance sign
-      props.push({ type: 'fence', x: cx, y: cy + 3, prefabFile: 'poke_fence_wood_h.png' });
-      props.push({
-        type: 'signpost',
-        x: cx + 2,
-        y: cy + 3,
-        prefabFile: 'poke_trainer_tips_sign.png'
-      });
-      props.push({ type: 'fence', x: cx + 4, y: cy + 3, prefabFile: 'poke_fence_wood_h.png' });
+      if (variantIdx === 0) {
+        // Open rustic Berry Grove without closed fence box
+        props.push({ type: 'bush', x: cx + 1, y: cy + 1, prefabFile: 'poke_bush_round.png' });
+        props.push({ type: 'bush', x: cx + 2, y: cy + 1, prefabFile: 'poke_bush_round.png' });
+        props.push({ type: 'bush', x: cx + 1, y: cy + 2, prefabFile: 'poke_bush_round.png' });
+        props.push({ type: 'bush', x: cx + 3, y: cy + 2, prefabFile: 'poke_bush_round.png' });
+        props.push({ type: 'flower', x: cx, y: cy + 1, prefabFile: 'poke_flowers_red.png' });
+        props.push({ type: 'flower', x: cx + 4, y: cy + 2, prefabFile: 'poke_flowers_red.png' });
+        props.push({
+          type: 'signpost',
+          x: cx + 3,
+          y: cy + 1,
+          prefabFile: 'poke_bulletin_board_wood.png'
+        });
+      } else {
+        // Wood-rail Berry Garden plot with wooden trail tips sign
+        props.push({ type: 'fence', x: cx, y: cy, prefabFile: 'poke_fence_wood_h.png' });
+        props.push({ type: 'fence', x: cx + 1, y: cy, prefabFile: 'poke_fence_wood_h.png' });
+        props.push({ type: 'fence', x: cx + 3, y: cy, prefabFile: 'poke_fence_wood_h.png' });
+        props.push({ type: 'fence', x: cx + 4, y: cy, prefabFile: 'poke_fence_wood_h.png' });
+        props.push({ type: 'bush', x: cx + 1, y: cy + 1, prefabFile: 'poke_bush_round.png' });
+        props.push({ type: 'bush', x: cx + 2, y: cy + 1, prefabFile: 'poke_bush_round.png' });
+        props.push({ type: 'bush', x: cx + 3, y: cy + 1, prefabFile: 'poke_bush_round.png' });
+        props.push({ type: 'flower', x: cx, y: cy + 2, prefabFile: 'poke_flowers_red.png' });
+        props.push({ type: 'flower', x: cx + 4, y: cy + 2, prefabFile: 'poke_flowers_red.png' });
+        props.push({
+          type: 'signpost',
+          x: cx + 2,
+          y: cy + 3,
+          prefabFile: 'poke_signpost_wood.png'
+        });
+      }
     } else if (kind === 'civic_fountain') {
-      // 5x5 Civic Fountain Plaza: 3x3 stone fountain, streetlamps, park bench & flowers
+      // 5x5 Civic Fountain Plaza (urban outskirts only): fountain, streetlamps, park bench & flowers
       props.push({ type: 'fountain', x: cx + 1, y: cy + 1, prefabFile: 'poke_fountain.png' });
       props.push({ type: 'street_lamp', x: cx, y: cy, prefabFile: 'poke_street_lamp.png' });
       props.push({ type: 'street_lamp', x: cx + 4, y: cy, prefabFile: 'poke_street_lamp.png' });
@@ -277,28 +307,41 @@ export function generateMicroVignettes(
       props.push({ type: 'flower', x: cx, y: cy + 3, prefabFile: 'poke_flowers_red.png' });
       props.push({ type: 'flower', x: cx + 4, y: cy + 3, prefabFile: 'poke_flowers_red.png' });
     } else if (kind === 'explorer_camp') {
-      // 5x4 Explorer Camp: cargo crate stacks, rest bench, trail tips sign & wildflowers
-      props.push({
-        type: 'crate_stack',
-        x: cx + 1,
-        y: cy,
-        prefabFile: 'poke_port_cargo_crates_stack.png'
-      });
-      props.push({
-        type: 'crate_double',
-        x: cx + 1,
-        y: cy + 2,
-        prefabFile: 'poke_port_cargo_crates_double.png'
-      });
-      props.push({ type: 'bench', x: cx + 1, y: cy + 3, prefabFile: 'poke_bench.png' });
-      props.push({
-        type: 'signpost',
-        x: cx + 3,
-        y: cy + 2,
-        prefabFile: 'poke_trainer_tips_sign.png'
-      });
-      props.push({ type: 'flower', x: cx, y: cy + 1, prefabFile: 'poke_flowers_red.png' });
-      props.push({ type: 'flower', x: cx + 4, y: cy + 1, prefabFile: 'poke_flowers_red.png' });
+      if (variantIdx === 0) {
+        // Woodland Ranger Clearing: fallen timber, rest bench & wooden trail post
+        props.push({ type: 'log', x: cx + 1, y: cy + 1, prefabFile: 'poke_log_fallen_trio.png' });
+        props.push({ type: 'bench', x: cx + 1, y: cy + 3, prefabFile: 'poke_bench.png' });
+        props.push({
+          type: 'signpost',
+          x: cx + 3,
+          y: cy + 2,
+          prefabFile: 'poke_signpost_wood.png'
+        });
+        props.push({ type: 'flower', x: cx, y: cy + 2, prefabFile: 'poke_flowers_red.png' });
+      } else {
+        // Field Supply Rest Camp: cargo crates, rest bench, trail tips sign & wildflowers
+        props.push({
+          type: 'crate_stack',
+          x: cx + 1,
+          y: cy,
+          prefabFile: 'poke_port_cargo_crates_stack.png'
+        });
+        props.push({
+          type: 'crate_double',
+          x: cx + 1,
+          y: cy + 2,
+          prefabFile: 'poke_port_cargo_crates_double.png'
+        });
+        props.push({ type: 'bench', x: cx + 1, y: cy + 3, prefabFile: 'poke_bench.png' });
+        props.push({
+          type: 'signpost',
+          x: cx + 3,
+          y: cy + 2,
+          prefabFile: 'poke_trainer_tips_sign.png'
+        });
+        props.push({ type: 'flower', x: cx, y: cy + 1, prefabFile: 'poke_flowers_red.png' });
+        props.push({ type: 'flower', x: cx + 4, y: cy + 1, prefabFile: 'poke_flowers_red.png' });
+      }
     } else if (kind === 'botanical_garden') {
       // 5x4 Botanical Garden: white picket fencing, ornamental bushes, flower beds & rest bench
       props.push({ type: 'fence', x: cx, y: cy, prefabFile: 'poke_fence_picket.png' });

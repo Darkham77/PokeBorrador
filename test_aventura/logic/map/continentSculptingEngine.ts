@@ -25,8 +25,10 @@ import {
 } from '../utils/gridBfsUtils.ts';
 import {
   generateArchipelagoIslands,
-  applyArchipelagoBeachBuffers
+  applyArchipelagoBeachBuffers,
+  stampArchipelagoRockyOutcrops
 } from './archipelagoGenerator.ts';
+import { resolveRegionalScaleProfile } from './continent/regionalScaleProfile.ts';
 import {
   generateProceduralRiverDrainage,
   type ProceduralRiverDrainageResult
@@ -36,7 +38,10 @@ import type {
   ContinentMapResult,
   SettlementExclusionZone
 } from './continentGenerator.ts';
-import { generateContinentalMountains } from './continentMountainEngine.ts';
+import {
+  generateContinentalMountains,
+  pruneSlicedMountainArtifactsAfterZones
+} from './continentMountainEngine.ts';
 import { compileGeologicalAutotiling } from './geologicalAutotilingEngine.ts';
 import { synthesizeMacroBiomes } from './macroBiomeSynthesizer.ts';
 import { resolveMountainMapGrid } from './mountainAutotileEngine.ts';
@@ -74,7 +79,7 @@ export function distributePerimeterBeach(
       if (!isVariable || !prng) return beachWidth;
       const n = prng.noise2D(x * 0.08, y * 0.08);
       const varOffset = Math.round(n * 1.5);
-      return Math.max(1, Math.min(beachWidth + 1, beachWidth + varOffset));
+      return Math.max(2, Math.min(beachWidth + 1, beachWidth + varOffset));
     })
   );
 
@@ -215,10 +220,76 @@ function computeGrassCellClearance(
  * Carves organic inland freshwater lakes into the continental grass plain.
  * Strictly guarantees lakes have >= 4 cells clearance from the beach.
  */
+export interface LakeCarveExclusions {
+  readonly nodes: readonly {
+    readonly gridX: number;
+    readonly gridY: number;
+    readonly width: number;
+    readonly height: number;
+  }[];
+  readonly corridors: readonly {
+    readonly kind?: string;
+    readonly pathCells: readonly { readonly x: number; readonly y: number }[];
+  }[];
+}
+
+function minChebyshevDistToRect(
+  px: number,
+  py: number,
+  rx: number,
+  ry: number,
+  rw: number,
+  rh: number
+): number {
+  const dx = px < rx ? rx - px : px >= rx + rw ? px - (rx + rw - 1) : 0;
+  const dy = py < ry ? ry - py : py >= ry + rh ? py - (ry + rh - 1) : 0;
+  return Math.max(dx, dy);
+}
+
+function isNearExclusions(
+  px: number,
+  py: number,
+  exclusions: LakeCarveExclusions | undefined,
+  margin: number
+): boolean {
+  if (!exclusions) return false;
+  for (const n of exclusions.nodes) {
+    if (minChebyshevDistToRect(px, py, n.gridX, n.gridY, n.width, n.height) <= margin) {
+      return true;
+    }
+  }
+  const marginSq = margin * margin;
+  for (const c of exclusions.corridors) {
+    if (c.kind === 'surf_route' || c.kind === 'wormhole_tunnel') continue;
+    for (const cell of c.pathCells) {
+      const dx = px - cell.x;
+      const dy = py - cell.y;
+      if (dx * dx + dy * dy <= marginSq) return true;
+    }
+  }
+  return false;
+}
+
+const LAKE_RADIUS_LARGE = 7.5 as const;
+const LAKE_RADIUS_SMALL = 3.5 as const;
+const LAKE_NOISE_SCALE_LARGE = 1.65 as const;
+const LAKE_NOISE_SCALE_SMALL = 0.95 as const;
+const LAKE_MIN_ECCENTRICITY = 0.72 as const;
+const LAKE_ECCENTRICITY_SPAN = 0.62 as const;
+const LAKE_SCALE_MIN = 0.82 as const;
+const LAKE_SCALE_SPAN = 0.42 as const;
+const LAKE_SECONDARY_NOISE_WEIGHT = 0.65 as const;
+const LAKE_MIN_AREA_LARGE = 18 as const;
+const LAKE_MIN_AREA_SMALL = 6 as const;
+const NODE_CAPE_OUTER_PAD = 5 as const;
+const NODE_CAPE_NOISE_SCALE = 0.14 as const;
+const NODE_CAPE_PRNG_OFFSET = 433 as const;
+
 export function carveInlandLakes(
   matrix: WaterTerrainKind[][],
   lakeCount = DEFAULT_LAKE_COUNT,
-  seed = CONTINENT_DEFAULT_SEED
+  seed = CONTINENT_DEFAULT_SEED,
+  exclusions?: LakeCarveExclusions
 ): void {
   const H = matrix.length;
   const W = matrix[0]?.length ?? 0;
@@ -229,10 +300,13 @@ export function carveInlandLakes(
   const isLargeMap = Math.min(W, H) >= 96;
   const maxClearanceSearch = isLargeMap ? 14 : 6;
   const minClearanceReq = isLargeMap ? 9.5 : 5.0;
-  const radius = isLargeMap ? 7.5 : 3.5;
-  const searchExtent = Math.ceil(radius) + 2;
+  const baseRadius = isLargeMap ? LAKE_RADIUS_LARGE : LAKE_RADIUS_SMALL;
+  const searchExtent = Math.ceil(baseRadius * (LAKE_SCALE_MIN + LAKE_SCALE_SPAN)) + 3;
+  const centroidExclusionMargin = Math.ceil(baseRadius) + 6;
+  const cellExclusionMargin = 3;
   const minLakeDist = isLargeMap ? 24 : 16;
-  const noiseScale = isLargeMap ? 1.2 : 0.8;
+  const noiseScale = isLargeMap ? LAKE_NOISE_SCALE_LARGE : LAKE_NOISE_SCALE_SMALL;
+  const minLakeArea = isLargeMap ? LAKE_MIN_AREA_LARGE : LAKE_MIN_AREA_SMALL;
 
   // Compute clearance from sand / ocean
   const clearance: number[][] = Array.from({ length: H }, () => Array(W).fill(0));
@@ -256,6 +330,7 @@ export function carveInlandLakes(
       x++
     ) {
       if (clearance[y]![x]! >= minClearanceReq) {
+        if (isNearExclusions(x, y, exclusions, centroidExclusionMargin)) continue;
         const n = noise.noise2D(x * 0.1, y * 0.1);
         candidates.push({ x, y, score: clearance[y]![x]! + n * 2.0 });
       }
@@ -272,21 +347,39 @@ export function carveInlandLakes(
     const tooClose = placedLakes.some((l) => Math.hypot(l.x - cand.x, l.y - cand.y) < minLakeDist);
     if (tooClose) continue;
 
-    placedLakes.push(cand);
+    const lakeIdx = placedLakes.length;
+    const hVal = Math.abs(Math.sin(seed * 0.13 + (lakeIdx + 1) * 7.91));
+    const hVal2 = Math.abs(Math.cos(seed * 0.19 + (lakeIdx + 1) * 11.37));
+    const theta = hVal * Math.PI;
+    const cosT = Math.cos(theta);
+    const sinT = Math.sin(theta);
+    const aspectX = LAKE_MIN_ECCENTRICITY + (hVal2 % 1) * LAKE_ECCENTRICITY_SPAN;
+    const aspectY = 1.0 / aspectX;
+    const lakeRadius = baseRadius * (LAKE_SCALE_MIN + ((hVal * 3.7) % 1) * LAKE_SCALE_SPAN);
 
-    // Carve organic lake blob
+    const carvedCells: GridPoint[] = [];
     for (let dy = -searchExtent; dy <= searchExtent; dy++) {
       for (let dx = -searchExtent; dx <= searchExtent; dx++) {
         const lx = cand.x + dx;
         const ly = cand.y + dy;
         if (lx < 0 || lx >= W || ly < 0 || ly >= H) continue;
+        if (isNearExclusions(lx, ly, exclusions, cellExclusionMargin)) continue;
 
-        const d = Math.hypot(dx, dy);
-        const perturbation = noise.noise2D(lx * 0.25, ly * 0.25) * noiseScale;
-        if (d + perturbation <= radius && matrix[ly]![lx] === 'grass') {
-          matrix[ly]![lx] = 'water';
+        const rotX = (dx * cosT - dy * sinT) / aspectX;
+        const rotY = (dx * sinT + dy * cosT) / aspectY;
+        const d = Math.hypot(rotX, rotY);
+        const lowPerturb = noise.noise2D(lx * 0.12, ly * 0.12) * noiseScale;
+        const highPerturb = noise.noise2D(lx * 0.29, ly * 0.29) * LAKE_SECONDARY_NOISE_WEIGHT;
+        if (d + lowPerturb + highPerturb <= lakeRadius && matrix[ly]![lx] === 'grass') {
+          carvedCells.push({ x: lx, y: ly });
         }
       }
+    }
+
+    if (carvedCells.length < minLakeArea) continue;
+    placedLakes.push(cand);
+    for (const cell of carvedCells) {
+      matrix[cell.y]![cell.x] = 'water';
     }
   }
 }
@@ -296,35 +389,121 @@ export interface GridCoord {
   y: number;
 }
 
+const SURF_NODE_MARGIN_MULT = 1.05 as const;
+const SURF_NODE_RADIAL_WARP_CAP = 1.75 as const;
+const NODE_CAPE_LOBE_COS_AMP = 0.16 as const;
+const NODE_CAPE_LOBE_SIN_AMP = 0.12 as const;
+const NODE_CAPE_SURF_WARP_AMP = 0.2 as const;
+const MAX_INWARD_NODE_WARP = 0.05 as const;
+const LARGE_SURF_MEANDER_MIN_DIM = 320 as const;
+const OUTER_BAY_SCALLOP_BAND = 18 as const;
+const OUTER_BAY_SCALLOP_AMP_COMPACT = 3.0 as const;
+const OUTER_BAY_SCALLOP_SCALE = 0.042 as const;
+const OUTER_BAY_MIN_CORRIDOR_DIST = 20 as const;
+const MIN_FRACTAL_ENVELOPE_THRESHOLD = 6 as const;
+
+function isProtectedByOrganicNodeEnvelope(
+  wx: number,
+  wy: number,
+  nodes: readonly {
+    id?: string;
+    role?: string;
+    gridX: number;
+    gridY: number;
+    width: number;
+    height: number;
+  }[],
+  noise: SimplexNoise
+): boolean {
+  const margin = CONTINENT_SCULPT.SURF_NODE_MARGIN;
+  for (const node of nodes) {
+    // Guarantee 100% of ALL embedded node footprints + 1-tile gateway apron stay protected from surf carving
+    if (
+      wx >= node.gridX - 1 &&
+      wx <= node.gridX + node.width &&
+      wy >= node.gridY - 1 &&
+      wy <= node.gridY + node.height
+    ) {
+      return true;
+    }
+    if (node.role === 'secondary_cave') continue;
+
+    const cx = node.gridX + node.width * 0.5;
+    const cy = node.gridY + node.height * 0.5;
+    const rx = Math.max(2, node.width * 0.5 + margin * SURF_NODE_MARGIN_MULT);
+    const ry = Math.max(2, node.height * 0.5 + margin * SURF_NODE_MARGIN_MULT);
+    const normDx = (wx + 0.5 - cx) / rx;
+    const normDy = (wy + 0.5 - cy) / ry;
+    const radialDist = Math.hypot(normDx, normDy);
+    if (radialDist > SURF_NODE_RADIAL_WARP_CAP) continue;
+
+    const theta = Math.atan2(normDy, normDx);
+    const phase = (node.gridX * 0.37 + node.gridY * 0.71) % (Math.PI * 2);
+    const rawWarp =
+      NODE_CAPE_LOBE_COS_AMP * Math.cos(2 * theta + phase) +
+      NODE_CAPE_LOBE_SIN_AMP * Math.sin(3 * theta - phase) +
+      noise.noise2D(wx * 0.085, wy * 0.085) * NODE_CAPE_SURF_WARP_AMP;
+    // Clamp inward erosion so gateways/coasts never get carved under, while preserving organic outward headlands
+    const clampedWarp = Math.min(MAX_INWARD_NODE_WARP, rawWarp);
+    if (radialDist + clampedWarp <= 1.0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function carveSurfRoutePointCorridor(
   pt: GridCoord,
   rad: number,
   W: number,
   H: number,
-  nodes: readonly { gridX: number; gridY: number; width: number; height: number }[],
-  surfWaterMask: boolean[][]
+  nodes: readonly {
+    id?: string;
+    role?: string;
+    gridX: number;
+    gridY: number;
+    width: number;
+    height: number;
+  }[],
+  surfWaterMask: boolean[][],
+  noise: SimplexNoise
 ): void {
   for (let dy = -rad; dy <= rad; dy++) {
+    const wy = pt.y + dy;
+    if (wy < 0 || wy >= H) continue;
     for (let dx = -rad; dx <= rad; dx++) {
       if (dx * dx + dy * dy > rad * rad) continue;
       const wx = pt.x + dx;
-      const wy = pt.y + dy;
-      if (wx < 0 || wx >= W || wy < 0 || wy >= H) continue;
-
-      const nearNode = nodes.some((node) => {
-        const nodeMargin = CONTINENT_SCULPT.SURF_NODE_MARGIN;
-        return (
-          wx >= node.gridX - nodeMargin &&
-          wx < node.gridX + node.width + nodeMargin &&
-          wy >= node.gridY - nodeMargin &&
-          wy < node.gridY + node.height + nodeMargin
-        );
-      });
-      if (!nearNode) {
+      if (wx < 0 || wx >= W) continue;
+      if (!isProtectedByOrganicNodeEnvelope(wx, wy, nodes, noise)) {
         surfWaterMask[wy]![wx] = true;
       }
     }
   }
+}
+
+interface DirectionalGulfConfig {
+  readonly gulfQx: number;
+  readonly gulfQy: number;
+  readonly gulfRx: number;
+  readonly gulfRy: number;
+  readonly maxIndent: number;
+  readonly isDividedValley: boolean;
+  readonly halfH: number;
+  readonly valleyFjordCx: number;
+  readonly valleyFjordRx: number;
+  readonly valleyFjordRy: number;
+}
+
+function computeDirectionalGulfIndent(x: number, y: number, cfg: DirectionalGulfConfig): number {
+  let indent = 0;
+  const gNorm = Math.hypot((x - cfg.gulfQx) / cfg.gulfRx, (y - cfg.gulfQy) / cfg.gulfRy);
+  if (gNorm < 1.0) {
+    indent = (1.0 - gNorm) * cfg.maxIndent;
+  }
+  if (!cfg.isDividedValley || y >= cfg.halfH) return indent;
+  const fNorm = Math.hypot((x - cfg.valleyFjordCx) / cfg.valleyFjordRx, y / cfg.valleyFjordRy);
+  return fNorm < 1.0 ? Math.max(indent, (1.0 - fNorm) * cfg.maxIndent) : indent;
 }
 
 /**
@@ -344,17 +523,72 @@ function generateGraphEnvelopeLandmass(
     Array<WaterTerrainKind>(W).fill('water')
   );
 
-  // 1. Identify designated coastal port gym city (or southernmost gym city)
-  const MIN_SOUTHERN_PORT_GRID_Y = 180;
-  const gymCandidates = embedded.nodes.filter(
+  // 1. Identify designated coastal port city strictly facing exterior open ocean south without inland blocking nodes or cross corridors
+  const isClearSouthernCoastCandidate = (cand: (typeof embedded.nodes)[number]): boolean => {
+    const portSouthY = cand.gridY + cand.height;
+    const blockedByOtherNode = embedded.nodes.some(
+      (other) =>
+        other.id !== cand.id &&
+        other.gridY >= portSouthY &&
+        other.gridX < cand.gridX + cand.width + 6 &&
+        other.gridX + other.width > cand.gridX - 6
+    );
+    if (blockedByOtherNode) return false;
+
+    const portCenterX = Math.floor(cand.gridX + cand.width / 2);
+    const channelHalfWidth = 3;
+    const minOceanMargin = 6;
+    const oceanMarginRatio = 0.03;
+    const oceanMarginEst = Math.max(minOceanMargin, Math.round(H * oceanMarginRatio));
+    const blockedByCrossCorridor = embedded.corridors.some(
+      (c) =>
+        c.kind !== 'surf_route' &&
+        c.kind !== 'wormhole_tunnel' &&
+        c.pathCells.some(
+          (cell) =>
+            cell.y >= portSouthY &&
+            cell.y < H - oceanMarginEst &&
+            Math.abs(cell.x - portCenterX) <= channelHalfWidth
+        )
+    );
+    return !blockedByCrossCorridor;
+  };
+
+  const allGymCities = embedded.nodes.filter(
     (n) => n.role === 'gym_city' || n.role === 'port_city'
   );
-  let designatedPortNode = gymCandidates.find((n) => n.hasPort || n.role === 'port_city');
-  if (!designatedPortNode || designatedPortNode.gridY < MIN_SOUTHERN_PORT_GRID_Y) {
-    let maxGridY = -1;
-    for (const cand of gymCandidates) {
-      if (cand.gridY > maxGridY) {
-        maxGridY = cand.gridY;
+  const clearMainlandGyms = allGymCities.filter(
+    (n) => !n.isIsland && isClearSouthernCoastCandidate(n)
+  );
+  const clearAllGyms = allGymCities.filter(isClearSouthernCoastCandidate);
+  const clearMainlandNodes = embedded.nodes.filter(
+    (n) =>
+      !n.isIsland &&
+      n.role !== 'league' &&
+      n.role !== 'secondary_cave' &&
+      isClearSouthernCoastCandidate(n)
+  );
+  const clearAllNodes = embedded.nodes.filter(
+    (n) => n.role !== 'league' && n.role !== 'secondary_cave' && isClearSouthernCoastCandidate(n)
+  );
+  const pool =
+    clearMainlandGyms.length > 0
+      ? clearMainlandGyms
+      : clearAllGyms.length > 0
+        ? clearAllGyms
+        : clearMainlandNodes.length > 0
+          ? clearMainlandNodes
+          : clearAllNodes.length > 0
+            ? clearAllNodes
+            : allGymCities;
+
+  let designatedPortNode = pool.find((n) => n.hasPort || n.role === 'port_city');
+  if (!designatedPortNode) {
+    let maxSouthEdge = -1;
+    for (const cand of pool) {
+      const southEdge = cand.gridY + cand.height;
+      if (southEdge > maxSouthEdge) {
+        maxSouthEdge = southEdge;
         designatedPortNode = cand;
       }
     }
@@ -367,32 +601,76 @@ function generateGraphEnvelopeLandmass(
     }
   }
 
-  // Mark surf route marine corridors where terrestrial land envelope BFS cannot expand
+  // Mark organic surf route marine corridors (gentle S-curve meander on 320+ continents)
   const surfWaterMask: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
+  const capeNoise = new SimplexNoise(seed + NODE_CAPE_PRNG_OFFSET);
+  const allowLargeMeander = Math.min(W, H) >= LARGE_SURF_MEANDER_MIN_DIM;
+
   for (const corridor of embedded.corridors) {
     if (corridor.kind !== 'surf_route') continue;
-    for (const pt of corridor.pathCells) {
-      // Perturb radius with simplex noise for natural organic coastal straits
+    const pts = corridor.pathCells;
+    const total = pts.length;
+    for (let idx = 0; idx < total; idx++) {
+      const pt = pts[idx]!;
+      let targetPt = pt;
+      if (allowLargeMeander && total > 2) {
+        const prev = pts[Math.max(0, idx - CONTINENT_SCULPT.SURF_MEANDER_TANGENT_WINDOW)]!;
+        const next = pts[Math.min(total - 1, idx + CONTINENT_SCULPT.SURF_MEANDER_TANGENT_WINDOW)]!;
+        const tanX = next.x - prev.x;
+        const tanY = next.y - prev.y;
+        const tanLen = Math.hypot(tanX, tanY) || 1;
+        const t = idx / (total - 1);
+        const offset =
+          Math.sin(t * Math.PI * CONTINENT_SCULPT.SURF_MEANDER_WAVES) *
+          CONTINENT_SCULPT.SURF_MEANDER_MAX_AMP *
+          Math.sin(t * Math.PI);
+        targetPt = {
+          x: Math.max(0, Math.min(W - 1, Math.round(pt.x + (-tanY / tanLen) * offset))),
+          y: Math.max(0, Math.min(H - 1, Math.round(pt.y + (tanX / tanLen) * offset)))
+        };
+      }
       const n = prng.noise2D(
-        pt.x * CONTINENT_SCULPT.SURF_NOISE_SCALE,
-        pt.y * CONTINENT_SCULPT.SURF_NOISE_SCALE
+        targetPt.x * CONTINENT_SCULPT.SURF_NOISE_SCALE,
+        targetPt.y * CONTINENT_SCULPT.SURF_NOISE_SCALE
       );
       const rad = Math.max(
         CONTINENT_SCULPT.SURF_MIN_RADIUS,
         Math.round(CONTINENT_SCULPT.SURF_BASE_RADIUS + n * CONTINENT_SCULPT.SURF_NOISE_AMP)
       );
-      carveSurfRoutePointCorridor(pt, rad, W, H, embedded.nodes, surfWaterMask);
+      carveSurfRoutePointCorridor(targetPt, rad, W, H, embedded.nodes, surfWaterMask, capeNoise);
     }
   }
 
-  // Carve marine harbor channel south of designated coastal port city directly into open ocean
+  // Carve organic funnel harbor channel south of designated coastal port city into open ocean
   if (designatedPortNode) {
-    const harborMinX = Math.max(1, designatedPortNode.gridX - 2);
-    const harborMaxX = Math.min(W - 2, designatedPortNode.gridX + designatedPortNode.width + 2);
+    const harborBaseMinX = Math.max(2, designatedPortNode.gridX - 1);
+    const harborBaseMaxX = Math.min(W - 3, designatedPortNode.gridX + designatedPortNode.width);
     const harborMinY = designatedPortNode.gridY + designatedPortNode.height;
     for (let y = harborMinY; y < H; y++) {
-      for (let x = harborMinX; x <= harborMaxX; x++) {
-        surfWaterMask[y]![x] = true;
+      const dy = y - harborMinY;
+      // Smooth progressive curve flare from row 0 avoids rigid right-angle harbor notches
+      const flare = Math.min(9, Math.round(Math.sqrt(dy + 1) * 1.15));
+      const wobble = Math.round(prng.noise2D(designatedPortNode.centerX * 0.08, y * 0.09) * 2.4);
+      const minX = Math.max(2, harborBaseMinX - flare + wobble);
+      const maxX = Math.min(W - 3, harborBaseMaxX + flare + wobble);
+      for (let x = minX; x <= maxX; x++) {
+        const hitsOtherNode = embedded.nodes.some(
+          (other) =>
+            other.id !== designatedPortNode.id &&
+            x >= other.gridX - 3 &&
+            x < other.gridX + other.width + 3 &&
+            y >= other.gridY - 3 &&
+            y < other.gridY + other.height + 3
+        );
+        const hitsCorridor = embedded.corridors.some(
+          (c) =>
+            c.kind !== 'surf_route' &&
+            c.kind !== 'wormhole_tunnel' &&
+            c.pathCells.some((cell) => Math.abs(cell.x - x) <= 2 && Math.abs(cell.y - y) <= 2)
+        );
+        if (!hitsOtherNode && !hitsCorridor) {
+          surfWaterMask[y]![x] = true;
+        }
       }
     }
   }
@@ -401,8 +679,17 @@ function generateGraphEnvelopeLandmass(
   const dist: number[][] = Array.from({ length: H }, () => Array(W).fill(Infinity));
   const queue: GridBfsQueueItem[] = [];
 
-  // Seed terrestrial nodes with full footprint (excluding surfWaterMask harbor bay)
+  // Seed terrestrial nodes (secondary_cave snaps later to nearest cliff and only seeds its center tile)
   for (const node of embedded.nodes) {
+    if (node.role === 'secondary_cave') {
+      const cx = Math.max(0, Math.min(W - 1, node.centerX));
+      const cy = Math.max(0, Math.min(H - 1, node.centerY));
+      if (!surfWaterMask[cy]![cx] && dist[cy]![cx] === Infinity) {
+        dist[cy]![cx] = 0;
+        queue.push({ x: cx, y: cy, d: 0 });
+      }
+      continue;
+    }
     for (let y = Math.max(0, node.gridY); y < Math.min(H, node.gridY + node.height); y++) {
       for (let x = Math.max(0, node.gridX); x < Math.min(W, node.gridX + node.width); x++) {
         if (!surfWaterMask[y]![x] && dist[y]![x] === Infinity) {
@@ -426,36 +713,124 @@ function generateGraphEnvelopeLandmass(
     }
   }
 
+  const scaleProfile = resolveRegionalScaleProfile(W, H);
+  const scaleRatio = Math.min(1, Math.min(W, H) / 400);
+
   // Multi-source BFS outwards to compute continuous network proximity
-  const maxBuffer = 55;
+  const maxBuffer = scaleProfile.maxLandBuffer;
   computeGridDistanceField(queue, dist, W, H, maxBuffer, (nx, ny) => !!surfWaterMask[ny]![nx]);
 
-  // Base continental radius buffer: 28 tiles around network (bridges 50-60 tile inter-city gaps cleanly)
-  const baseBuffer = 28;
+  const baseBuffer = scaleProfile.baseLandBuffer;
+  const oceanMargin = scaleProfile.oceanPerimeterMargin;
+
+  // Localized inland sea-void smoothing only inside tight central hubs so outer bays/gulfs remain deeply sculpted
+  const mainlandNodes = embedded.nodes.filter((n) => !n.isIsland && n.role !== 'secondary_cave');
+  let minMainX = W;
+  let maxMainX = 0;
+  let minMainY = H;
+  let maxMainY = 0;
+  for (const n of mainlandNodes) {
+    if (n.gridX < minMainX) minMainX = n.gridX;
+    if (n.gridX + n.width > maxMainX) maxMainX = n.gridX + n.width;
+    if (n.gridY < minMainY) minMainY = n.gridY;
+    if (n.gridY + n.height > maxMainY) maxMainY = n.gridY + n.height;
+  }
+  const hasMainlandCore =
+    embedded.macroArchetype !== 'oceanic_archipelago' &&
+    mainlandNodes.length >= 3 &&
+    maxMainX > minMainX &&
+    maxMainY > minMainY;
+  const coreCx = (minMainX + maxMainX) / 2;
+  const coreCy = (minMainY + maxMainY) / 2;
+  const coreRx = Math.max(16, (maxMainX - minMainX) * 0.44);
+  const coreRy = Math.max(16, (maxMainY - minMainY) * 0.44);
+  const LARGE_SCULPT_MIN_DIM = 200 as const;
+  const isRegionalLargeContinent = Math.min(W, H) >= LARGE_SCULPT_MIN_DIM;
+  const n1Gain = isRegionalLargeContinent ? 10.5 : 9.5;
+  const n2Gain = isRegionalLargeContinent ? 4.8 : 4.5;
+  const bayAmpRatio = isRegionalLargeContinent ? 1.15 : 0.85;
+
+  // Identify the sparsest outer quadrant to carve an asymmetric directional sea gulf without touching corridors
+  const quadCounts: [number, number, number, number] = [0, 0, 0, 0];
+  const halfW = W * 0.5;
+  const halfH = H * 0.5;
+  for (const n of mainlandNodes) {
+    const cx = n.gridX + n.width * 0.5;
+    const cy = n.gridY + n.height * 0.5;
+    const qIdx = (cy >= halfH ? 2 : 0) + (cx >= halfW ? 1 : 0);
+    quadCounts[qIdx] = (quadCounts[qIdx] ?? 0) + 1;
+  }
+  let sparsestQuad = 0;
+  for (let qi = 1; qi < 4; qi++) {
+    if (quadCounts[qi]! < quadCounts[sparsestQuad]!) {
+      sparsestQuad = qi;
+    }
+  }
+  const gulfConfig: DirectionalGulfConfig = {
+    gulfQx: sparsestQuad % 2 === 0 ? W * 0.2 : W * 0.8,
+    gulfQy: sparsestQuad < 2 ? H * 0.2 : H * 0.8,
+    gulfRx: W * 0.24,
+    gulfRy: H * 0.24,
+    maxIndent: isRegionalLargeContinent ? 12 : 6,
+    isDividedValley: embedded.macroArchetype === 'divided_valley',
+    halfH,
+    valleyFjordCx: halfW + ((seed & 1) === 0 ? 0.14 : -0.14) * W,
+    valleyFjordRx: W * 0.22,
+    valleyFjordRy: H * 0.3
+  };
 
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      // Guaranteed perimeter ocean margin or protected surf water corridor
+      const borderWaveAmp = isRegionalLargeContinent ? 3.0 : 4.2;
+      const borderWave = Math.round(prng.noise2D(x * 0.055, y * 0.055) * borderWaveAmp);
+      const dynMargin = Math.max(4, oceanMargin + borderWave);
+      // Guaranteed organic perimeter ocean margin or protected surf water corridor
       if (
-        x < CONTINENT_SCULPT.OCEAN_PERIMETER_MARGIN ||
-        x >= W - CONTINENT_SCULPT.OCEAN_PERIMETER_MARGIN ||
-        y < CONTINENT_SCULPT.OCEAN_PERIMETER_MARGIN ||
-        y >= H - CONTINENT_SCULPT.OCEAN_PERIMETER_MARGIN ||
+        x < dynMargin ||
+        x >= W - dynMargin ||
+        y < dynMargin ||
+        y >= H - dynMargin ||
         surfWaterMask[y]![x]
       ) {
         matrix[y]![x] = 'water';
         continue;
       }
 
+      // Multi-octave Simplex noise for organic fractal coastlines + outer bay scallops away from core nodes
+      const n1 = prng.noise2D(x * 0.025, y * 0.025) * n1Gain * scaleRatio;
+      const n2 = prng.noise2D(x * 0.07, y * 0.07) * n2Gain * scaleRatio;
       const d = dist[y]![x]!;
-      if (d === Infinity) continue;
+      const edgeProximity =
+        d > OUTER_BAY_MIN_CORRIDOR_DIST &&
+        Math.min(x, W - 1 - x, y, H - 1 - y) <
+          OUTER_BAY_SCALLOP_BAND * (isRegionalLargeContinent ? 2 : 1);
+      const bayScallop = edgeProximity
+        ? Math.max(
+            0,
+            prng.noise2D(x * OUTER_BAY_SCALLOP_SCALE + 41.7, y * OUTER_BAY_SCALLOP_SCALE - 19.3) *
+              OUTER_BAY_SCALLOP_AMP_COMPACT *
+              Math.max(1, scaleRatio * bayAmpRatio)
+          )
+        : 0;
 
-      // Multi-octave Simplex noise for organic fractal coastlines
-      const n1 = prng.noise2D(x * 0.025, y * 0.025) * 8.5;
-      const n2 = prng.noise2D(x * 0.07, y * 0.07) * 4.0;
-      const threshold = baseBuffer + n1 + n2;
+      const directionalGulfIndent =
+        d > OUTER_BAY_MIN_CORRIDOR_DIST ? computeDirectionalGulfIndent(x, y, gulfConfig) : 0;
 
-      if (d <= threshold) {
+      const threshold = Math.max(
+        MIN_FRACTAL_ENVELOPE_THRESHOLD,
+        baseBuffer + n1 + n2 - bayScallop - directionalGulfIndent
+      );
+      const insideNetworkEnvelope = d !== Infinity && d <= threshold;
+
+      let insideContinentalCore = false;
+      if (hasMainlandCore && directionalGulfIndent < 2) {
+        const coreRadiusThreshold = 0.82;
+        const normR2 = ((x - coreCx) / coreRx) ** 2 + ((y - coreCy) / coreRy) ** 2;
+        const coreWarp = prng.noise2D(x * 0.02 + 11.3, y * 0.02 - 7.7) * 0.22;
+        insideContinentalCore = normR2 <= coreRadiusThreshold + coreWarp;
+      }
+
+      if (insideNetworkEnvelope || insideContinentalCore) {
         matrix[y]![x] = 'grass';
       }
     }
@@ -490,19 +865,60 @@ function generateGraphEnvelopeLandmass(
   return matrix;
 }
 
-function stampSolidLandAroundCell(
-  cell: GridCoord,
-  radius: number,
+const NODE_CAPE_MARGIN_BOOST = 2.5 as const;
+const NODE_CAPE_COS_AMP = 0.18 as const;
+const NODE_CAPE_SIN_AMP = 0.14 as const;
+const NODE_CAPE_MIN_AXIS = 3 as const;
+
+function sculptSingleNodeOrganicCape(
+  node: EmbeddedTopologyGraph['nodes'][number],
+  rawMatrix: WaterTerrainKind[][],
+  capeNoise: SimplexNoise,
   W: number,
-  H: number,
-  rawMatrix: WaterTerrainKind[][]
+  H: number
 ): void {
-  for (let dy = -radius; dy <= radius; dy++) {
-    for (let dx = -radius; dx <= radius; dx++) {
-      const cy = cell.y + dy;
-      const cx = cell.x + dx;
-      if (cx >= 2 && cx < W - 2 && cy >= 2 && cy < H - 2) {
-        rawMatrix[cy]![cx] = 'grass';
+  if (node.role === 'secondary_cave') return;
+  const isPort = node.hasPort || node.role === 'port_city';
+  const extraCapeReach = NODE_CAPE_OUTER_PAD;
+  const padSouth = isPort ? 0 : extraCapeReach;
+  const minY = Math.max(2, node.gridY - extraCapeReach);
+  const maxY = Math.min(H - 2, node.gridY + node.height + padSouth);
+  const minX = Math.max(2, node.gridX - extraCapeReach);
+  const maxX = Math.min(W - 2, node.gridX + node.width + extraCapeReach);
+  const cx = node.gridX + node.width * 0.5;
+  const cy = node.gridY + node.height * 0.5;
+  const rx = Math.max(
+    NODE_CAPE_MIN_AXIS,
+    node.width * 0.5 + NODE_CAPE_OUTER_PAD + NODE_CAPE_MARGIN_BOOST
+  );
+  const ry = Math.max(
+    NODE_CAPE_MIN_AXIS,
+    node.height * 0.5 + NODE_CAPE_OUTER_PAD + NODE_CAPE_MARGIN_BOOST
+  );
+  const phase = (node.gridX * 0.43 + node.gridY * 0.61) % (Math.PI * 2);
+
+  for (let y = minY; y < maxY; y++) {
+    if (isPort && y >= node.gridY + node.height) continue;
+    for (let x = minX; x < maxX; x++) {
+      const insideCore =
+        x >= node.gridX &&
+        x < node.gridX + node.width &&
+        y >= node.gridY &&
+        y < node.gridY + node.height;
+      if (insideCore) {
+        rawMatrix[y]![x] = 'grass';
+        continue;
+      }
+      const normDx = (x + 0.5 - cx) / rx;
+      const normDy = (y + 0.5 - cy) / ry;
+      const theta = Math.atan2(normDy, normDx);
+      const lobeMod =
+        NODE_CAPE_COS_AMP * Math.cos(2 * theta + phase) +
+        NODE_CAPE_SIN_AMP * Math.sin(3 * theta - phase);
+      const n = capeNoise.noise2D(x * NODE_CAPE_NOISE_SCALE, y * NODE_CAPE_NOISE_SCALE);
+      const clampedMod = Math.min(MAX_INWARD_NODE_WARP, lobeMod + n * NODE_CAPE_SURF_WARP_AMP);
+      if (Math.hypot(normDx, normDy) + clampedMod <= 1.0) {
+        rawMatrix[y]![x] = 'grass';
       }
     }
   }
@@ -522,50 +938,19 @@ export function sculptContinentFromGraph(
   const oceanRatio = options?.oceanWaterPercentage ?? 0.32;
   const rawMatrix = generateGraphEnvelopeLandmass(embedded, W, H, seed, oceanRatio);
 
-  // Guarantee all nodes remain on solid land with comfortable buffer
+  // Sculpt organic lobed headland/island envelopes around settlements (never rounded boxes)
+  // Skip secondary_cave (snapped later to mountain cliff walls) so deserted square sand islands never spawn
+  const capeNoise = new SimplexNoise(seed + NODE_CAPE_PRNG_OFFSET);
   for (const node of embedded.nodes) {
-    const pad = 4;
-    const isPort = node.hasPort || node.role === 'port_city';
-    const padSouth = isPort ? 0 : pad;
-    for (
-      let y = Math.max(2, node.gridY - pad);
-      y < Math.min(H - 2, node.gridY + node.height + padSouth);
-      y++
-    ) {
-      for (
-        let x = Math.max(2, node.gridX - pad);
-        x < Math.min(W - 2, node.gridX + node.width + pad);
-        x++
-      ) {
-        rawMatrix[y]![x] = 'grass';
-      }
-    }
+    sculptSingleNodeOrganicCape(node, rawMatrix, capeNoise, W, H);
   }
 
-  // Guarantee all terrestrial (non-surf) corridor pathCells remain on solid land
-  const CORRIDOR_SOLID_LAND_RADIUS = 2 as const;
-  for (const corridor of embedded.corridors) {
-    if (corridor.kind === 'surf_route' || corridor.kind === 'wormhole_tunnel') continue;
-    for (const cell of corridor.pathCells) {
-      stampSolidLandAroundCell(cell, CORRIDOR_SOLID_LAND_RADIUS, W, H, rawMatrix);
-    }
-  }
-
-  // Guarantee all nodes remain on solid land
+  // Guarantee core interior footprints of habitable nodes remain solid dry grass
   for (const node of embedded.nodes) {
+    if (node.role === 'secondary_cave') continue;
     for (let y = Math.max(1, node.gridY); y < Math.min(H - 1, node.gridY + node.height); y++) {
       for (let x = Math.max(1, node.gridX); x < Math.min(W - 1, node.gridX + node.width); x++) {
         rawMatrix[y]![x] = 'grass';
-      }
-    }
-  }
-
-  // Guarantee all non-surf corridor pathCells remain on solid land
-  for (const corridor of embedded.corridors) {
-    if (corridor.kind === 'surf_route' || corridor.kind === 'wormhole_tunnel') continue;
-    for (const cell of corridor.pathCells) {
-      if (cell.x >= 1 && cell.x < W - 1 && cell.y >= 1 && cell.y < H - 1) {
-        rawMatrix[cell.y]![cell.x] = 'grass';
       }
     }
   }
@@ -574,22 +959,28 @@ export function sculptContinentFromGraph(
   const variableBeach = options?.variableBeach ?? Math.min(W, H) >= 80;
   distributePerimeterBeach(rawMatrix, beachWidth, { variableBeach, seed });
 
-  // 4. Remove orphan tiles < 4 cells, allow multi-island/bay geography
-  removeOrphanTiles(rawMatrix, 4, false);
+  // 4. Remove severed coastal slivers < 24 cells before archipelago islands are generated
+  const ORPHAN_PRE_ARCHIPELAGO_MIN_TILES = 24 as const;
+  removeOrphanTiles(rawMatrix, ORPHAN_PRE_ARCHIPELAGO_MIN_TILES, false);
 
-  // 4b. Generate Maritime Archipelago (Pillar 1)
-  const withArchipelago = options?.withArchipelago ?? Math.min(W, H) >= 200;
+  // 4b. Optional Maritime Archipelago: enabled for oceanic_archipelago archetype (or explicit override); 0 islands on pure continental archetypes
+  const isOceanicArchetype = embedded.macroArchetype === 'oceanic_archipelago';
+  const withArchipelago = options?.withArchipelago ?? isOceanicArchetype;
+  const ARCHIPELAGO_DEFAULT_ISLAND_COUNT = 3 as const;
   const archipelagoIslands = withArchipelago
     ? generateArchipelagoIslands(rawMatrix, {
         width: W,
         height: H,
         seed,
-        count: options?.islandCount ?? 4
+        count: options?.islandCount ?? ARCHIPELAGO_DEFAULT_ISLAND_COUNT
       })
     : [];
 
-  // 5. Inland Freshwater Lakes in open spaces
-  carveInlandLakes(rawMatrix, lakeCount, seed);
+  // 5. Inland Freshwater Lakes in open spaces, protecting settlement nodes & corridors
+  carveInlandLakes(rawMatrix, lakeCount, seed, {
+    nodes: embedded.nodes,
+    corridors: embedded.corridors
+  });
 
   // 6. Sanitize Water Matrix
   const sanitizedWaterMatrix = sanitizeWaterTerrainMatrix(rawMatrix);
@@ -609,35 +1000,20 @@ export function sculptContinentFromGraph(
     sanitizedWaterMatrix[y]![W - 1] = 'water';
   }
 
-  // Re-ensure non-surf corridors and nodes are transitable grass (coastal ports preserve beaches)
+  // Preserve habitable interior footprint grass (only when buffered by sand/land, preserving curved beaches outside)
   for (const node of embedded.nodes) {
-    if (node.role === 'port_city' || node.hasPort) continue;
-    for (
-      let y = Math.max(1, node.gridY - 2);
-      y < Math.min(H - 1, node.gridY + node.height + 2);
-      y++
-    ) {
-      for (
-        let x = Math.max(1, node.gridX - 2);
-        x < Math.min(W - 1, node.gridX + node.width + 2);
-        x++
-      ) {
-        if (sanitizedWaterMatrix[y]![x] !== 'water_deep') {
+    if (node.role === 'port_city' || node.hasPort || node.role === 'secondary_cave') continue;
+    for (let y = Math.max(1, node.gridY); y < Math.min(H - 1, node.gridY + node.height); y++) {
+      for (let x = Math.max(1, node.gridX); x < Math.min(W - 1, node.gridX + node.width); x++) {
+        const current = sanitizedWaterMatrix[y]![x];
+        if (current === 'water_deep' || current === 'water') continue;
+        const touchesOcean =
+          sanitizedWaterMatrix[y - 1]?.[x] === 'water' ||
+          sanitizedWaterMatrix[y + 1]?.[x] === 'water' ||
+          sanitizedWaterMatrix[y]?.[x - 1] === 'water' ||
+          sanitizedWaterMatrix[y]?.[x + 1] === 'water';
+        if (!touchesOcean) {
           sanitizedWaterMatrix[y]![x] = 'grass';
-        }
-      }
-    }
-  }
-
-  for (const corridor of embedded.corridors) {
-    if (corridor.kind === 'surf_route' || corridor.kind === 'wormhole_tunnel') continue;
-    for (const cell of corridor.pathCells) {
-      if (cell.x >= 1 && cell.x < W - 1 && cell.y >= 1 && cell.y < H - 1) {
-        if (
-          sanitizedWaterMatrix[cell.y]![cell.x] === 'water' ||
-          sanitizedWaterMatrix[cell.y]![cell.x] === 'water_deep'
-        ) {
-          sanitizedWaterMatrix[cell.y]![cell.x] = 'grass';
         }
       }
     }
@@ -648,7 +1024,8 @@ export function sculptContinentFromGraph(
     width: W,
     height: H,
     seed,
-    terrainMatrix: sanitizedWaterMatrix
+    terrainMatrix: sanitizedWaterMatrix,
+    macroArchetype: embedded.macroArchetype
   });
 
   // 9. Continental Mountains & Stairs
@@ -699,15 +1076,27 @@ export function sculptContinentFromGraph(
   const shouldDrainRiver = options?.withRiver ?? (W >= 128 && H >= 128);
   let riverDrainage: ProceduralRiverDrainageResult | undefined;
   if (shouldDrainRiver) {
+    const riverExclusions = [
+      ...settlementExclusionZones,
+      ...(leaguePlateauZone ? [leaguePlateauZone] : [])
+    ];
+    const compactCorridorProtectionMaxWidth = 256;
+    if (W < compactCorridorProtectionMaxWidth) {
+      for (const corridor of embedded.corridors) {
+        if (corridor.kind === 'surf_route' || corridor.kind === 'wormhole_tunnel') continue;
+        for (let ci = 0; ci < corridor.pathCells.length; ci += 2) {
+          const pt = corridor.pathCells[ci]!;
+          riverExclusions.push({ x: pt.x, y: pt.y, width: 1, height: 1, margin: 1 });
+        }
+      }
+    }
     riverDrainage = generateProceduralRiverDrainage(sanitizedWaterMatrix, sanitizedHeightmap, {
       seed,
       placedStairs,
-      settlementExclusionZones: [
-        ...settlementExclusionZones,
-        ...(leaguePlateauZone ? [leaguePlateauZone] : [])
-      ]
+      settlementExclusionZones: riverExclusions
     });
     if (riverDrainage.riverCarved) {
+      pruneSlicedMountainArtifactsAfterZones(sanitizedHeightmap, sanitizedWaterMatrix, W, H);
       const unStairsResolved = resolveMountainMapGrid(sanitizedHeightmap, {
         palette: options?.mountainPalette ?? 'brown',
         paletteMatrix: geologicalClusters.paletteMatrix
@@ -719,6 +1108,17 @@ export function sculptContinentFromGraph(
       });
       placedStairs = survivingStairs;
     }
+  }
+
+  // 9c. Stamp rocky emergent outcrops on archipelago sea islands before final geological autotiling
+  if (archipelagoIslands.length > 0) {
+    stampArchipelagoRockyOutcrops(
+      archipelagoIslands,
+      sanitizedWaterMatrix,
+      sanitizedHeightmap,
+      W,
+      H
+    );
   }
 
   // 10. Unified Geological Autotiling Pass

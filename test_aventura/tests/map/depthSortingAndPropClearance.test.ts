@@ -20,6 +20,7 @@ import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
 import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 import { generateSettlementLayout } from '../../logic/map/cityLayoutEngine.ts';
 import type { ContinentMapResult } from '../../logic/map/continentGenerator.ts';
+import type { ResolvedMountainCell } from '../../logic/map/mountainAutotileEngine.ts';
 import type { WaterTerrainKind } from '../../logic/map/waterAutotileEngine.ts';
 import type { WildernessLayerResult } from '../../logic/map/wildernessVegetationEngine.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
@@ -232,6 +233,57 @@ describe('2.5D Depth Sorting (Y = Z) & Prop Clearance', () => {
         if (prop.type === 'bench' && !prop.prefabFile.includes('_v')) {
           expect(fountainCells.has(`${prop.x + 1}_${prop.y}`)).toBe(false);
         }
+      }
+    }
+  });
+
+  it('spaces summit rocks and rubble at least 2 tiles apart (no adjacent touching boulders)', () => {
+    const W = 24;
+    const H = 24;
+    const baseContinent = createMockContinent(W, H);
+    const heightmap = baseContinent.heightmap.map((row, r) =>
+      row.map((val, c) => (r >= 3 && r <= 20 && c >= 3 && c <= 20 ? 1 : val))
+    );
+    const cellDetails: (ResolvedMountainCell | null)[][] =
+      baseContinent.resolvedMountain.cellDetails.map((row, r) =>
+        row.map((cell, c) =>
+          r >= 3 && r <= 20 && c >= 3 && c <= 20
+            ? {
+                x: c,
+                y: r,
+                elevation: 1,
+                role: 'floor_center',
+                primaryTile: 'poke_cliff_brown_floor.png'
+              }
+            : cell
+        )
+      );
+    const continent: ContinentMapResult = {
+      ...baseContinent,
+      heightmap,
+      resolvedMountain: {
+        ...baseContinent.resolvedMountain,
+        cellDetails
+      }
+    };
+
+    const pathGrid = Array.from({ length: H }, () => Array(W).fill(false));
+    const { instructions } = buildMapBlitInstructions(continent, [], pathGrid);
+    const summitRocks = instructions.filter(
+      (i) => i.filename === 'poke_rock_boulder.png' || i.filename === 'poke_rock_rubble.png'
+    );
+    expect(summitRocks.length).toBeGreaterThan(0);
+
+    for (let i = 0; i < summitRocks.length; i++) {
+      const a = summitRocks[i]!;
+      const txA = Math.floor(a.px / CANVAS_TILE_SIZE);
+      const tyA = Math.floor(a.py / CANVAS_TILE_SIZE);
+      for (let j = i + 1; j < summitRocks.length; j++) {
+        const b = summitRocks[j]!;
+        const txB = Math.floor(b.px / CANVAS_TILE_SIZE);
+        const tyB = Math.floor(b.py / CANVAS_TILE_SIZE);
+        const chebyshev = Math.max(Math.abs(txA - txB), Math.abs(tyA - tyB));
+        expect(chebyshev).toBeGreaterThan(1);
       }
     }
   });

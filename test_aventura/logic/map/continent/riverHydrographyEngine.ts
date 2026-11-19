@@ -278,6 +278,46 @@ function stampRiverbed2x2(pt: RiverPoint, ctx: RiverbedCarveContext): number {
   return newlyCarved;
 }
 
+function smoothRiverOrthogonalJags(
+  path: { x: number; y: number }[],
+  W: number,
+  H: number,
+  settlementMask: readonly (readonly boolean[])[]
+): void {
+  const MAX_SMOOTH_PASSES = 2;
+  for (let pass = 0; pass < MAX_SMOOTH_PASSES; pass++) {
+    let changed = false;
+    for (let i = 1; i < path.length - 2; i++) {
+      const a = path[i - 1]!;
+      const b = path[i]!;
+      const c = path[i + 1]!;
+      const d = path[i + 2]!;
+      // Detect 1-tile L-staircase (a->b->c->d where a->b and c->d share the same axis, b->c shifts 1 tile perpendicular)
+      const dx1 = b.x - a.x;
+      const dy1 = b.y - a.y;
+      const dx2 = c.x - b.x;
+      const dy2 = c.y - b.y;
+      const dx3 = d.x - c.x;
+      const dy3 = d.y - c.y;
+      if (dx1 === dx3 && dy1 === dy3 && (dx1 !== 0 || dy1 !== 0) && (dx2 !== 0 || dy2 !== 0)) {
+        const altX = a.x + dx2;
+        const altY = a.y + dy2;
+        if (
+          altX >= 2 &&
+          altX < W - 2 &&
+          altY >= 2 &&
+          altY < H - 2 &&
+          !settlementMask[altY]?.[altX]
+        ) {
+          path[i] = { x: altX, y: altY };
+          changed = true;
+        }
+      }
+    }
+    if (!changed) break;
+  }
+}
+
 export function generateProceduralRiverDrainage(
   terrainMatrix: WaterTerrainKind[][],
   heightmap: number[][],
@@ -618,6 +658,55 @@ export function generateProceduralRiverDrainage(
     return neighbors;
   }
 
+  const RIVER_TURN_INERTIA_PENALTY = 1.8 as const;
+  const MIN_REGIONAL_INERTIA_DIM = 160 as const;
+  const useTurnInertia = Math.min(W, H) >= MIN_REGIONAL_INERTIA_DIM;
+
+  const computeStepCost = (
+    cur: { x: number; y: number },
+    nx: number,
+    ny: number,
+    uphillFactor: number
+  ): number => {
+    const hCur = heightmap[cur.y]?.[cur.x] ?? 0;
+    const hNext = heightmap[ny]?.[nx] ?? 0;
+
+    let stepCost = 1.0;
+    if (useTurnInertia) {
+      const prev = cameFrom.get(`${cur.x}_${cur.y}`);
+      if (prev) {
+        const prevDx = cur.x - prev.x;
+        const prevDy = cur.y - prev.y;
+        if (nx - cur.x !== prevDx || ny - cur.y !== prevDy) {
+          stepCost += RIVER_TURN_INERTIA_PENALTY;
+        }
+      }
+    }
+    if (hNext > hCur) {
+      stepCost += uphillFactor * (hNext - hCur);
+    } else if (hNext < hCur) {
+      stepCost -= RIVER_HYDRO.DOWNHILL_INCENTIVE_FACTOR * (hCur - hNext);
+    }
+
+    if (stairSet.has(`${nx}_${ny}`)) {
+      stepCost += RIVER_HYDRO.STAIR_AVOIDANCE_PENALTY;
+    }
+    if (hNext >= RIVER_HYDRO.HIGH_MASSIF_ELEVATION_THRESHOLD) {
+      stepCost += RIVER_HYDRO.HIGH_MASSIF_PENALTY;
+    }
+
+    const progress = (nx - springPoint.x) * flowUx + (ny - springPoint.y) * flowUy;
+    const lateral = (nx - springPoint.x) * normalUx + (ny - springPoint.y) * normalUy;
+    const sinOffset = Math.sin((progress / wavePeriod) * Math.PI * 2) * waveAmplitude;
+    const noiseOffset =
+      fbm2D(noise, nx * RIVER_HYDRO.NOISE_COORD_SCALE, ny * RIVER_HYDRO.NOISE_COORD_SCALE, {
+        octaves: RIVER_HYDRO.NOISE_OCTAVES
+      }) * RIVER_HYDRO.NOISE_AMPLITUDE;
+    const lateralDev = Math.abs(lateral - (sinOffset + noiseOffset));
+    stepCost += lateralDev * RIVER_HYDRO.LATERAL_DEV_PENALTY_FACTOR;
+    return Math.max(RIVER_HYDRO.MIN_STEP_COST_FLOOR, stepCost);
+  };
+
   while (pq.length > 0) {
     const cur = pq.pop()!;
 
@@ -633,39 +722,8 @@ export function generateProceduralRiverDrainage(
         continue;
       }
 
-      const hCur = heightmap[cur.y]?.[cur.x] ?? 0;
-      const hNext = heightmap[ny]?.[nx] ?? 0;
-
-      let stepCost = 1.0;
-      // Moving uphill is heavily penalized (gravity gradient descent)
-      if (hNext > hCur) {
-        stepCost += RIVER_HYDRO.UPHILL_PENALTY_FACTOR * (hNext - hCur);
-      } else if (hNext < hCur) {
-        stepCost -= RIVER_HYDRO.DOWNHILL_INCENTIVE_FACTOR * (hCur - hNext);
-      }
-
-      // Avoid mountain stairs and high massifs
-      if (stairSet.has(`${nx}_${ny}`)) {
-        stepCost += RIVER_HYDRO.STAIR_AVOIDANCE_PENALTY;
-      }
-      if (hNext >= RIVER_HYDRO.HIGH_MASSIF_ELEVATION_THRESHOLD) {
-        stepCost += RIVER_HYDRO.HIGH_MASSIF_PENALTY;
-      }
-
-      // Lateral meander sine wave + Simplex noise perturbation
-      const progress = (nx - springPoint.x) * flowUx + (ny - springPoint.y) * flowUy;
-      const lateral = (nx - springPoint.x) * normalUx + (ny - springPoint.y) * normalUy;
-      const sinOffset = Math.sin((progress / wavePeriod) * Math.PI * 2) * waveAmplitude;
-      const noiseOffset =
-        fbm2D(noise, nx * RIVER_HYDRO.NOISE_COORD_SCALE, ny * RIVER_HYDRO.NOISE_COORD_SCALE, {
-          octaves: RIVER_HYDRO.NOISE_OCTAVES
-        }) * RIVER_HYDRO.NOISE_AMPLITUDE;
-      const idealLateral = sinOffset + noiseOffset;
-      const lateralDev = Math.abs(lateral - idealLateral);
-      stepCost += lateralDev * RIVER_HYDRO.LATERAL_DEV_PENALTY_FACTOR;
-
-      const newCost =
-        costSoFar[cur.y]![cur.x]! + Math.max(RIVER_HYDRO.MIN_STEP_COST_FLOOR, stepCost);
+      const stepCost = computeStepCost(cur, nx, ny, RIVER_HYDRO.UPHILL_PENALTY_FACTOR);
+      const newCost = costSoFar[cur.y]![cur.x]! + stepCost;
       if (newCost < costSoFar[ny]![nx]!) {
         costSoFar[ny]![nx] = newCost;
         cameFrom.set(`${nx}_${ny}`, { x: cur.x, y: cur.y });
@@ -676,7 +734,7 @@ export function generateProceduralRiverDrainage(
     }
   }
 
-  // Graceful fallback: if distant basin was unreachable, allow any ocean
+  // Graceful fallback: if distant basin was unreachable, allow any ocean with natural meander
   if (!endNode && shouldAvoidImmediate) {
     const fallbackPq = new RiverMinHeap();
     const fallbackCost: number[][] = Array.from({ length: H }, () => Array(W).fill(Infinity));
@@ -696,12 +754,8 @@ export function generateProceduralRiverDrainage(
         break;
       }
       for (const { nx, ny } of getValidRiverNeighbors(cur, W, H, settlementMask)) {
-        const hCur = heightmap[cur.y]?.[cur.x] ?? 0;
-        const hNext = heightmap[ny]?.[nx] ?? 0;
-        let stepCost = 1.0;
-        if (hNext > hCur) stepCost += RIVER_HYDRO.FALLBACK_UPHILL_PENALTY_FACTOR * (hNext - hCur);
-        const newCost =
-          fallbackCost[cur.y]![cur.x]! + Math.max(RIVER_HYDRO.MIN_STEP_COST_FLOOR, stepCost);
+        const stepCost = computeStepCost(cur, nx, ny, RIVER_HYDRO.FALLBACK_UPHILL_PENALTY_FACTOR);
+        const newCost = fallbackCost[cur.y]![cur.x]! + stepCost;
         if (newCost < fallbackCost[ny]![nx]!) {
           fallbackCost[ny]![nx] = newCost;
           cameFrom.set(`${nx}_${ny}`, { x: cur.x, y: cur.y });
@@ -727,6 +781,7 @@ export function generateProceduralRiverDrainage(
     currStep = cameFrom.get(`${currStep.x}_${currStep.y}`);
   }
   riverPath.reverse();
+  smoothRiverOrthogonalJags(riverPath, W, H, settlementMask);
 
   // 6. Carve 2-cell wide water channel with descending riverbed heightmap
   let carvedCellsCount = 0;

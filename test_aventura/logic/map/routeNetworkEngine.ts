@@ -21,6 +21,10 @@ import type { WaterTerrainKind } from './waterAutotileEngine.ts';
 export { computeOceanGrid };
 import { buildRouteChain } from './routeChainTopology.ts';
 export { buildRouteChain };
+import {
+  applyDeepWaterCellsToContinent,
+  sealCoastalSeaWithMaritimeRocks
+} from './maritimeBarrierEngine.ts';
 import { connectMountainPlateauTrails } from './mountainPlateauTrailEngine.ts';
 import { traceWaterSpansAndBridges } from './routeBridgeTracer.ts';
 import { finalizeRouteGrids } from './routeGridFinalizer.ts';
@@ -441,6 +445,36 @@ export function generateRouteNetwork(
     W,
     H
   });
+
+  const surfWaypoints: RouteWaypoint[] = [];
+  for (const edge of resolvedEdges) {
+    if (!edge.isWaterCrossing) continue;
+    for (const pt of edge.waypoints) {
+      const t = continentMap.terrainMatrix[pt.y]?.[pt.x];
+      if ((t === 'water' || t === 'water_deep') && !bridgeGrid[pt.y]?.[pt.x]) {
+        surfWaypoints.push(pt);
+      }
+    }
+  }
+  const portZones = nodes
+    .filter((p) => p.type === 'port_dock')
+    .map((p) => ({
+      x: p.gridX,
+      y: p.gridY,
+      width: p.footprint.width,
+      height: p.footprint.height
+    }));
+  const maritimeResult = sealCoastalSeaWithMaritimeRocks({
+    terrainMatrix: continentMap.terrainMatrix,
+    bridgeGrid,
+    surfWaypoints,
+    portZones,
+    maritimeRockObstacles,
+    seed: continentMap.seed,
+    width: W,
+    height: H
+  });
+  applyDeepWaterCellsToContinent(continentMap, maritimeResult.deepWaterCells, bridgeGrid);
 
   return {
     nodes,

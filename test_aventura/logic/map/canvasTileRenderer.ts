@@ -36,12 +36,15 @@ import {
   RGBA_ALPHA_OPAQUE,
   RGBA_CHANNEL_COUNT,
   SAND_PREVIEW_RGBA,
+  DEEP_WATER_PREVIEW_RGBA,
   WATER_PREVIEW_RGBA
 } from '../../config/continentWorkerConfig.ts';
 import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
+import type { DirtyTileBounds } from '../../types/map/autotileHealingTypes.ts';
 import type { TileBlitInstruction } from '../../types/map/autotileStudioTypes.ts';
 import { PACKED_BLIT_STRIDE, type PackedMapBlitPayload } from '../../types/map/continentTypes.ts';
 import type { POINode, SettlementBuilding } from '../../types/map/poiTypes.ts';
+import { clampDirtyBounds, expandDirtyBounds } from '../utils/gridGeometryUtils.ts';
 import { collectStandingDepthEntities } from './canvasDepthEntityCollector.ts';
 import { renderBaseTerrainAndCliffs } from './canvasTerrainPathBlitter.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
@@ -58,12 +61,16 @@ export interface RegionalGenerationPipelineResult {
   readonly pois: readonly POINode[];
   readonly routeNetwork: ResolvedRouteNetworkResult;
   readonly wilderness: WildernessLayerResult;
+  readonly ledges?: readonly LedgeRun[];
+  readonly progressionObstacles?: readonly ProgressionObstacle[];
+  readonly microVignettes?: readonly MicroVignette[];
   readonly rawBuffer?: ArrayBuffer;
 }
 
 const HIGH_MOUNTAIN_ELEVATION = 2;
 const INITIAL_PACKED_BLIT_CAPACITY = 4096;
 const PACKED_BUFFER_GROWTH_FACTOR = 2;
+const BOUNDED_LAYER_MASK_MARGIN_TILES = 24;
 
 const BIOME_PREVIEW_RGB_BY_ID: Readonly<Record<MacroBiome, readonly [number, number, number]>> = {
   temperate_meadow: BIOME_DEFAULT_PLAIN_PREVIEW_RGB,
@@ -119,7 +126,11 @@ function writeCellPreviewPixel(
     return;
   }
   const terrain = continent.terrainMatrix[y]?.[x];
-  if (terrain === 'water' || terrain === 'water_deep') {
+  if (terrain === 'water_deep') {
+    buffer.set(DEEP_WATER_PREVIEW_RGBA, idx);
+    return;
+  }
+  if (terrain === 'water') {
     buffer.set(WATER_PREVIEW_RGBA, idx);
     return;
   }
@@ -161,12 +172,45 @@ export function buildZeroCopyPreviewBuffer(
   return buffer.buffer;
 }
 
+/**
+ * Updates only cells inside `bounds` of an existing RGBA preview buffer, preserving untouched pixels.
+ */
+export function updatePreviewBufferInBounds(
+  rawBuffer: ArrayBuffer | null | undefined,
+  continent: ContinentMapResult,
+  pathGrid: readonly (readonly boolean[])[],
+  bounds: DirtyTileBounds
+): ArrayBuffer | null {
+  const W = continent.width;
+  const H = continent.height;
+  const expectedByteLength = W * H * RGBA_CHANNEL_COUNT;
+  if (!rawBuffer || rawBuffer.byteLength !== expectedByteLength) {
+    return null;
+  }
+
+  const clamped = clampDirtyBounds(bounds, W, H);
+  const updated = new Uint8ClampedArray(rawBuffer).slice();
+  if (clamped.minX > clamped.maxX || clamped.minY > clamped.maxY) {
+    return updated.buffer;
+  }
+
+  for (let y = clamped.minY; y <= clamped.maxY; y++) {
+    for (let x = clamped.minX; x <= clamped.maxX; x++) {
+      writeCellPreviewPixel(updated, (y * W + x) * RGBA_CHANNEL_COUNT, continent, pathGrid, x, y);
+    }
+  }
+
+  return updated.buffer;
+}
+
 export interface BuildMapBlitOptions {
   readonly portDockBridgeKeys?: ReadonlySet<string>;
   readonly ledges?: readonly LedgeRun[];
   readonly progressionObstacles?: readonly ProgressionObstacle[];
   readonly microVignettes?: readonly MicroVignette[];
   readonly routeNetwork?: ResolvedRouteNetworkResult;
+  readonly bounds?: DirtyTileBounds;
+  readonly manualPathGrid?: readonly (readonly boolean[])[];
 }
 
 type AreaReservationFn = (bx: number, by: number, bw: number, bh: number) => void;
@@ -249,17 +293,27 @@ function buildBuildingReservationMask(
   continent: ContinentMapResult,
   pois: readonly POINode[],
   H: number,
-  W: number
+  W: number,
+  bounds?: DirtyTileBounds
 ): boolean[][] {
-  const buildingFootprintMask: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
+  const rowMinY = bounds ? bounds.minY : 0;
+  const rowMaxY = bounds ? bounds.maxY : H - 1;
+  const colMinX = bounds ? bounds.minX : 0;
+  const colMaxX = bounds ? bounds.maxX : W - 1;
+  const buildingFootprintMask: boolean[][] = Array.from({ length: H }, (): boolean[] => []);
+  for (let r = rowMinY; r <= rowMaxY; r++) {
+    buildingFootprintMask[r] = Array<boolean>(W).fill(false);
+  }
   const reserveArea: AreaReservationFn = (bx: number, by: number, bw: number, bh: number): void => {
-    for (let dy = 0; dy < bh; dy++) {
-      for (let dx = 0; dx < bw; dx++) {
-        const gy = by + dy;
-        const gx = bx + dx;
-        if (gy >= 0 && gy < H && gx >= 0 && gx < W) {
-          buildingFootprintMask[gy]![gx] = true;
-        }
+    const startY = Math.max(rowMinY, by);
+    const endY = Math.min(rowMaxY, by + bh - 1);
+    const startX = Math.max(colMinX, bx);
+    const endX = Math.min(colMaxX, bx + bw - 1);
+    for (let gy = startY; gy <= endY; gy++) {
+      const row = buildingFootprintMask[gy];
+      if (!row) continue;
+      for (let gx = startX; gx <= endX; gx++) {
+        row[gx] = true;
       }
     }
   };
@@ -294,12 +348,11 @@ function renderTallGrassLayer(
   buildingFootprintMask: readonly (readonly boolean[])[],
   wilderness: WildernessLayerResult | null | undefined,
   addBlit: (filename: string, px: number, py: number) => void,
-  H: number,
-  W: number
+  bounds: DirtyTileBounds
 ): void {
   if (!wilderness?.tallGrassGrid) return;
-  for (let r = 0; r < H; r++) {
-    for (let c = 0; c < W; c++) {
+  for (let r = bounds.minY; r <= bounds.maxY; r++) {
+    for (let c = bounds.minX; c <= bounds.maxX; c++) {
       if (buildingFootprintMask[r]?.[c]) continue;
       if (continent.terrainMatrix[r]?.[c] !== 'grass' || (continent.heightmap[r]?.[c] ?? 0) !== 0)
         continue;
@@ -324,9 +377,26 @@ function emitAllMapBlitLayers(ctx: EmitMapLayersContext): void {
   const { continent, pois, pathGrid, bridgeGrid, wilderness, options, addBlit } = ctx;
   const H = continent.height;
   const W = continent.width;
+  if (H === 0 || W === 0) return;
+
+  const isBoundedMode = options?.bounds !== undefined;
+  const emitBounds = options?.bounds
+    ? clampDirtyBounds(options.bounds, W, H)
+    : { minX: 0, minY: 0, maxX: W - 1, maxY: H - 1 };
+  if (emitBounds.minX > emitBounds.maxX || emitBounds.minY > emitBounds.maxY) return;
+
+  const maskBounds = isBoundedMode
+    ? expandDirtyBounds(emitBounds, BOUNDED_LAYER_MASK_MARGIN_TILES, W, H)
+    : emitBounds;
 
   // 0. Build Strict Building Reservation Matrix (buildingFootprintMask)
-  const buildingFootprintMask = buildBuildingReservationMask(continent, pois, H, W);
+  const buildingFootprintMask = buildBuildingReservationMask(
+    continent,
+    pois,
+    H,
+    W,
+    isBoundedMode ? maskBounds : undefined
+  );
 
   // 1-4. Base Terrain, Urban Roads, Plazas, Paths, Bridges, Cliffs & Ledges
   renderBaseTerrainAndCliffs({
@@ -340,12 +410,19 @@ function emitAllMapBlitLayers(ctx: EmitMapLayersContext): void {
   });
 
   // 5. Tall Grass Encounter Fields
-  renderTallGrassLayer(continent, buildingFootprintMask, wilderness, addBlit, H, W);
+  renderTallGrassLayer(continent, buildingFootprintMask, wilderness, addBlit, emitBounds);
 
   // 6. Unified 2.5D Depth (Y = Z) Standing Entities Pass
-  const unifiedPathGrid: boolean[][] = Array.from({ length: H }, (_, r) =>
-    Array.from({ length: W }, (_, c) => Boolean(pathGrid[r]?.[c]) && !buildingFootprintMask[r]?.[c])
-  );
+  const unifiedPathGrid: boolean[][] = Array.from({ length: H }, (): boolean[] => []);
+  for (let r = maskBounds.minY; r <= maskBounds.maxY; r++) {
+    const pRow = pathGrid[r];
+    const bRow = buildingFootprintMask[r];
+    const uRow = Array<boolean>(W).fill(false);
+    for (let c = maskBounds.minX; c <= maskBounds.maxX; c++) {
+      uRow[c] = Boolean(pRow?.[c]) && !bRow?.[c];
+    }
+    unifiedPathGrid[r] = uRow;
+  }
 
   const standingEntities = collectStandingDepthEntities({
     continent,

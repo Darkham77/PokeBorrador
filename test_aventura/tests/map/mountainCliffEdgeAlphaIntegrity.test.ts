@@ -57,7 +57,7 @@ describe('mountainCliffEdgeAlphaIntegrity (Pattern C)', () => {
     }
   });
 
-  it('guarantees seed 615856 at (59, 35) blits adjacent higher cliff face as underlay under vertical edge wall', () => {
+  it('guarantees vertical wall edges adjacent to higher cliff faces blit face underlay beneath wall', () => {
     const continent = generateContinentMap({
       seed: 615856,
       width: 128,
@@ -77,19 +77,26 @@ describe('mountainCliffEdgeAlphaIntegrity (Pattern C)', () => {
       null
     );
 
-    const cellInsts = instructions.filter(
-      (inst) => Math.floor(inst.px / 32) === 59 && Math.floor(inst.py / 32) === 35
-    );
+    // Locate any cell where a projected south cliff face underlays a vertical side wall
+    const byTile = new Map<string, string[]>();
+    for (const inst of instructions) {
+      const key = `${Math.floor(inst.px / 32)}_${Math.floor(inst.py / 32)}`;
+      const list = byTile.get(key) ?? [];
+      list.push(inst.filename);
+      byTile.set(key, list);
+    }
 
-    const filenames = cellInsts.map((i) => i.filename);
-    const hasFace = filenames.some((f) => f.includes('face') && !f.includes('bottom'));
-    const hasRightWall = filenames.some((f) => f.includes('right'));
-    expect(hasFace, 'Must contain face underlay').toBe(true);
-    expect(hasRightWall, 'Must contain vertical edge right wall').toBe(true);
-
-    // Face must be blitted BEFORE the transparent side wall
-    const faceIdx = filenames.findIndex((f) => f.includes('face') && !f.includes('bottom'));
-    const wallIdx = filenames.findIndex((f) => f.includes('right'));
-    expect(faceIdx).toBeLessThan(wallIdx);
+    let verifiedPairs = 0;
+    for (const [, filenames] of byTile) {
+      const faceIdx = filenames.findIndex((f) => f.includes('_face'));
+      const wallIdx = filenames.findIndex(
+        (f) => f.startsWith('poke_cliff_') && (f.endsWith('_right.png') || f.endsWith('_left.png'))
+      );
+      if (faceIdx !== -1 && wallIdx !== -1) {
+        expect(faceIdx).toBeLessThan(wallIdx);
+        verifiedPairs++;
+      }
+    }
+    expect(verifiedPairs).toBeGreaterThan(0);
   });
 });

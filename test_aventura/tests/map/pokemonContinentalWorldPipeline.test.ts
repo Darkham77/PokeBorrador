@@ -17,8 +17,12 @@ import {
   generatePokemonContinentalWorld,
   generateContinent
 } from '../../logic/map/continent/continentalEngine.ts';
+import { resolveRegionalScaleProfile } from '../../logic/map/continent/regionalScaleProfile.ts';
 import { validateEmbeddedGraphInvariants } from '../../logic/map/orthogonalGraphEmbedding.ts';
-import { validateGraphInvariants } from '../../logic/map/pokemonGraphTopology.ts';
+import {
+  generatePokemonTopology,
+  validateGraphInvariants
+} from '../../logic/map/pokemonGraphTopology.ts';
 
 describe('Pokemon Continental World Pipeline (Integration)', () => {
   it('executes full 6-phase pipeline generating terrain, graph, and SVG for seed 42', () => {
@@ -35,10 +39,20 @@ describe('Pokemon Continental World Pipeline (Integration)', () => {
     expect(result.continent.resolvedWater).toBeDefined();
     expect(result.continent.resolvedMountain).toBeDefined();
 
-    // 2. Abstract graph adheres to all 7 Pokémon rules
-    const graphValidation = validateGraphInvariants(result.graph);
+    // 2. Abstract graph adheres to all Pokémon rules (scaled for 128x128 + full 8-gym contract)
+    const scale128 = resolveRegionalScaleProfile(128, 128);
+    const graphValidation = validateGraphInvariants(result.graph, {
+      gymCount: scale128.gymCount,
+      minCycles: scale128.minCycles,
+      maxCycles: scale128.maxCycles
+    });
     expect(graphValidation.isValid).toBe(true);
     expect(graphValidation.errors).toEqual([]);
+
+    const fullScaleGraph = generatePokemonTopology({ seed: 42 });
+    const fullValidation = validateGraphInvariants(fullScaleGraph);
+    expect(fullValidation.isValid).toBe(true);
+    expect(fullValidation.errors).toEqual([]);
 
     // 3. Embedded graph satisfies all spatial orthogonality invariants
     const spatialValidation = validateEmbeddedGraphInvariants(result.embedded);
@@ -65,11 +79,16 @@ describe('Pokemon Continental World Pipeline (Integration)', () => {
   });
 
   it('generates unique, solvable worlds across diverse seeds', () => {
+    const scale128 = resolveRegionalScaleProfile(128, 128);
     for (const seed of [101, 555, 777]) {
       const result = generatePokemonContinentalWorld({ seed, width: 128, height: 128 });
 
-      expect(result.graph.nodes.length).toBeGreaterThanOrEqual(12);
-      expect(result.embedded.corridors.length).toBeGreaterThanOrEqual(13);
+      expect(result.graph.nodes.length).toBeGreaterThanOrEqual(
+        scale128.gymCount + 2 + scale128.minSecondaryNodes
+      );
+      expect(result.embedded.corridors.length).toBeGreaterThanOrEqual(
+        scale128.gymCount + 1 + scale128.minCycles
+      );
       expect(result.progression.isSolvable).toBe(true);
       expect(result.svgMarkup.length).toBeGreaterThan(500);
 

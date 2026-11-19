@@ -123,6 +123,21 @@ export function placeCaveEntrances(ctx: CavePlacementContext): void {
     }
   }
 
+  // Relaxed cliff-mouth scan when compact/high-water maps yield zero strict candidates
+  if (caveTemplates.length > 0 && caveCandidates.length === 0) {
+    for (let y = 3; y < H - CAVE_SEARCH_MARGIN_BOTTOM_RIGHT; y++) {
+      for (let x = 3; x < W - CAVE_SEARCH_MARGIN_BOTTOM_RIGHT; x++) {
+        const cell = continentMap.resolvedMountain.cellDetails[y]?.[x];
+        if (!cell || cell.role !== 'edge_south_top' || cell.elevation < 1) continue;
+        if (!isAreaFree(x, y, 1, 2, 0)) continue;
+        if (continentMap.terrainMatrix[y + 1]?.[x] !== 'grass') continue;
+        if ((continentMap.heightmap[y + 1]?.[x] ?? 0) !== 0) continue;
+        if ((continentMap.heightmap[y - 1]?.[x] ?? 0) !== cell.elevation) continue;
+        caveCandidates.push({ x, y, elev: cell.elevation });
+      }
+    }
+  }
+
   for (const tmpl of caveTemplates) {
     let bestCand: { x: number; y: number; elev: number } | null = null;
     let bestDist = -1;
@@ -135,6 +150,18 @@ export function placeCaveEntrances(ctx: CavePlacementContext): void {
       if (d >= minCaveDist && d > bestDist) {
         bestDist = d;
         bestCand = cand;
+      }
+    }
+
+    // Fallback when compact archipelago map leaves fewer distant cliff slots than nominal threshold
+    if (!bestCand) {
+      for (const cand of caveCandidates) {
+        if (!isAreaFree(cand.x, cand.y, 1, 2, 0)) continue;
+        const d = getMinDistanceToPlaced(cand.x, cand.y);
+        if (d > bestDist) {
+          bestDist = d;
+          bestCand = cand;
+        }
       }
     }
 

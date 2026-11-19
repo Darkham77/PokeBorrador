@@ -11,7 +11,6 @@ export const LARGE_MAP_THRESHOLD_TILES = 256 as const;
 export const LARGE_MAP_MARGIN_RATIO = 0.15 as const;
 export const STANDARD_MAP_MARGIN_RATIO = 0.08 as const;
 export const CLUSTER_SINE_AMPLITUDE = 0.08 as const;
-export const LARGE_GRID_X_THRESHOLD = 200 as const;
 
 // --- Node Footprint Dimensions by Settlement Role ---
 export const LEAGUE_LARGE_WIDTH = 28 as const;

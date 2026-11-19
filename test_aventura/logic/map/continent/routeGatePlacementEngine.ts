@@ -25,6 +25,7 @@ import type {
 import type { SettlementTerrainContext } from '../cityLayoutEngine.ts';
 import { generateSettlementLayout } from '../cityLayoutEngine.ts';
 import type { ContinentMapResult } from '../continentGenerator.ts';
+import { resolveRegionalScaleProfile } from './regionalScaleProfile.ts';
 
 export interface SplicedEmbeddedCorridor extends EmbeddedCorridor {
   readonly customStartGw?: EmbeddedCorridorWaypoint;
@@ -48,15 +49,19 @@ export interface RouteGatePlacementResult {
 }
 
 const MIN_GATE_CORRIDOR_LENGTH = 25;
-const MIN_GATE_PROXIMITY_DISTANCE = 25;
+const MIN_GATE_PROXIMITY_DISTANCE = 22;
 const GATE_SEARCH_START_RATIO = 0.25;
 const GATE_SEARCH_END_RATIO = 0.75;
 const GATE_BORDER_MARGIN = 10;
 const GATE_CLEARANCE_EXTENT = 10;
 const GATE_SEARCH_OFFSET = 5;
 const GATE_DEFAULT_SIZE = 10;
-const MIN_ROUTE_GATES = 2;
-const RANDOM_ROUTE_GATES_RANGE = 4;
+const GATE_PRIMARY_MIN_SCALE_RATIO = 0.55;
+const GATE_FALLBACK_MIN_SCALE_RATIO = 0.6;
+const GATE_MIN_SCALED_CORRIDOR_LENGTH = 14;
+const GATE_MIN_SCALED_PROXIMITY = 12;
+const GATE_MIN_SCALED_SEPARATION = 8;
+const GATE_FALLBACK_MIN_SCALED_SEPARATION = 6;
 const GATE_RNG_XOR_MASK = 0x5a17e089;
 const GATE_PRNG_MULTIPLIER = 1664525;
 const GATE_PRNG_INCREMENT = 1013904223;
@@ -75,12 +80,12 @@ const FALLBACK_CORRIDOR_KINDS = [
 const FALLBACK_CORRIDOR_KINDS_SET: ReadonlySet<GraphEdgeKind> = new Set<GraphEdgeKind>(
   FALLBACK_CORRIDOR_KINDS
 );
-const PRIMARY_GATE_MIN_SEPARATION = 10;
+const PRIMARY_GATE_MIN_SEPARATION = 14;
 const FALLBACK_GATE_CORRIDOR_LENGTH = 16;
 const FALLBACK_GATE_SEARCH_START_RATIO = 0.15;
 const FALLBACK_GATE_SEARCH_END_RATIO = 0.85;
 const FALLBACK_GATE_PROXIMITY_DISTANCE = 18;
-const FALLBACK_GATE_MIN_SEPARATION = 6;
+const FALLBACK_GATE_MIN_SEPARATION = 10;
 const GATE_CLEARANCE_NEGATIVE_OFFSET = -2;
 
 function isGateClearanceValid(
@@ -112,13 +117,31 @@ function isGateClearanceValid(
   return true;
 }
 
+function isStraightCorridorSegmentAt(
+  pathCells: readonly EmbeddedCorridorWaypoint[],
+  idx: number,
+  halfSpan = 3
+): boolean {
+  if (idx - halfSpan < 0 || idx + halfSpan >= pathCells.length) return false;
+  const center = pathCells[idx]!;
+  let sameX = true;
+  let sameY = true;
+  for (let k = idx - halfSpan; k <= idx + halfSpan; k++) {
+    const pt = pathCells[k]!;
+    if (pt.x !== center.x) sameX = false;
+    if (pt.y !== center.y) sameY = false;
+  }
+  return sameX || sameY;
+}
+
 function isGateTooCloseToPoisOrGates(
   gx: number,
   gy: number,
   pois: readonly POINode[],
   placedGates: readonly POINode[],
   minProximity: number,
-  minSep: number
+  minSep: number,
+  interGateMinSep: number
 ): boolean {
   const cx = gx + GATE_SEARCH_OFFSET;
   const cy = gy + GATE_SEARCH_OFFSET;
@@ -145,7 +168,7 @@ function isGateTooCloseToPoisOrGates(
   for (const g of placedGates) {
     const gx2 = g.gridX + GATE_SEARCH_OFFSET;
     const gy2 = g.gridY + GATE_SEARCH_OFFSET;
-    if (Math.hypot(cx - gx2, cy - gy2) < minProximity) {
+    if (Math.hypot(cx - gx2, cy - gy2) < Math.max(minProximity, interGateMinSep)) {
       return true;
     }
   }
@@ -159,6 +182,8 @@ export function placeProceduralRouteGates(
   options: RouteGatePlacementOptions
 ): RouteGatePlacementResult {
   const { continent, pois, poiById, corridors, settlementContext, seed, width, height } = options;
+  const scaleProfile = resolveRegionalScaleProfile(width, height);
+  const scaleRatio = Math.min(1, Math.min(width, height) / 400);
 
   const activeCorridors: SplicedEmbeddedCorridor[] = [...corridors];
   let gateIndex = 1;
@@ -169,7 +194,8 @@ export function placeProceduralRouteGates(
     gateRngState = (Math.imul(gateRngState, GATE_PRNG_MULTIPLIER) + GATE_PRNG_INCREMENT) >>> 0;
     return (gateRngState >>> GATE_PRNG_SHIFT) / GATE_PRNG_MODULO;
   };
-  const targetGateCount = MIN_ROUTE_GATES + Math.floor(nextGateRng() * RANDOM_ROUTE_GATES_RANGE); // 2, 3, 4, or 5
+  const gateRange = Math.max(1, scaleProfile.maxRouteGates - scaleProfile.minRouteGates + 1);
+  const targetGateCount = scaleProfile.minRouteGates + Math.floor(nextGateRng() * gateRange);
 
   const tryPlaceOnCorridors = (
     allowedKinds: ReadonlySet<GraphEdgeKind>,
@@ -194,18 +220,19 @@ export function placeProceduralRouteGates(
       if (len < minLen) continue;
 
       let found: { i: number; pt: { x: number; y: number }; gx: number; gy: number } | null = null;
-      const startIdx = Math.floor(len * startRatio);
-      const endIdx = Math.floor(len * endRatio);
+      const startIdx = Math.max(4, Math.floor(len * startRatio));
+      const endIdx = Math.min(len - 5, Math.floor(len * endRatio));
 
       for (let i = startIdx; i <= endIdx; i++) {
+        if (!isStraightCorridorSegmentAt(corridor.pathCells, i, 3)) continue;
         const pt = corridor.pathCells[i]!;
         const gx = pt.x - GATE_SEARCH_OFFSET;
         const gy = pt.y - GATE_SEARCH_OFFSET;
         if (
           gx < GATE_BORDER_MARGIN ||
-          gx + GATE_BORDER_MARGIN >= width - GATE_BORDER_MARGIN ||
+          gx + GATE_DEFAULT_SIZE >= width - GATE_BORDER_MARGIN ||
           gy < GATE_BORDER_MARGIN ||
-          gy + GATE_BORDER_MARGIN >= height - GATE_BORDER_MARGIN
+          gy + GATE_DEFAULT_SIZE >= height - GATE_BORDER_MARGIN
         ) {
           continue;
         }
@@ -214,7 +241,17 @@ export function placeProceduralRouteGates(
           continue;
         }
 
-        if (!isGateTooCloseToPoisOrGates(gx, gy, pois, placedGates, minProximity, minSep)) {
+        if (
+          !isGateTooCloseToPoisOrGates(
+            gx,
+            gy,
+            pois,
+            placedGates,
+            minProximity,
+            minSep,
+            scaleProfile.minGateSeparation
+          )
+        ) {
           found = { i, pt, gx, gy };
           break;
         }
@@ -317,24 +354,29 @@ export function placeProceduralRouteGates(
   };
 
   // Pass 1: standard placement along primary arterial corridors
+  const primaryRatio = Math.max(GATE_PRIMARY_MIN_SCALE_RATIO, scaleRatio);
+  const fallbackRatio = Math.max(GATE_FALLBACK_MIN_SCALE_RATIO, scaleRatio);
   tryPlaceOnCorridors(
     PRIMARY_CORRIDOR_KINDS_SET,
-    MIN_GATE_CORRIDOR_LENGTH,
+    Math.max(GATE_MIN_SCALED_CORRIDOR_LENGTH, Math.round(MIN_GATE_CORRIDOR_LENGTH * primaryRatio)),
     GATE_SEARCH_START_RATIO,
     GATE_SEARCH_END_RATIO,
-    MIN_GATE_PROXIMITY_DISTANCE,
-    PRIMARY_GATE_MIN_SEPARATION
+    Math.max(GATE_MIN_SCALED_PROXIMITY, Math.round(MIN_GATE_PROXIMITY_DISTANCE * primaryRatio)),
+    Math.max(GATE_MIN_SCALED_SEPARATION, Math.round(PRIMARY_GATE_MIN_SEPARATION * fallbackRatio))
   );
 
   // Pass 2: fallback placement with relaxed length and proximity if under minimum count
-  if (placedGates.length < MIN_ROUTE_GATES) {
+  if (placedGates.length < scaleProfile.minRouteGates) {
     tryPlaceOnCorridors(
       FALLBACK_CORRIDOR_KINDS_SET,
-      FALLBACK_GATE_CORRIDOR_LENGTH,
+      Math.max(GATE_BORDER_MARGIN, Math.round(FALLBACK_GATE_CORRIDOR_LENGTH * fallbackRatio)),
       FALLBACK_GATE_SEARCH_START_RATIO,
       FALLBACK_GATE_SEARCH_END_RATIO,
-      FALLBACK_GATE_PROXIMITY_DISTANCE,
-      FALLBACK_GATE_MIN_SEPARATION
+      Math.max(GATE_CLEARANCE_EXTENT, Math.round(FALLBACK_GATE_PROXIMITY_DISTANCE * fallbackRatio)),
+      Math.max(
+        GATE_FALLBACK_MIN_SCALED_SEPARATION,
+        Math.round(FALLBACK_GATE_MIN_SEPARATION * fallbackRatio)
+      )
     );
   }
 

@@ -11,6 +11,8 @@
  *   5. Coastal sand and water protection (leaves coastal beaches to waterAutotileEngine).
  */
 
+import type { DirtyTileBounds } from '../../types/map/autotileHealingTypes.ts';
+import { clampDirtyBounds } from '../utils/gridGeometryUtils.ts';
 import type { MacroBiome } from './macroBiomeSynthesizer.ts';
 import {
   compute2DNeighborMask,
@@ -95,6 +97,70 @@ function getBrushForMacroBiome(biome: MacroBiome): WaterCoastBrushSet | null {
   }
 }
 
+function resolveSingleMacroBiomeCell(
+  biomeGrid: readonly (readonly MacroBiome[])[],
+  terrainMatrix: readonly (readonly WaterTerrainKind[])[],
+  heightmap: readonly (readonly number[])[] | undefined,
+  x: number,
+  y: number
+): { readonly detail: ResolvedMacroBiomeCell | null; readonly primaryTile: string } {
+  const terrain = terrainMatrix[y]?.[x];
+  if (terrain && EXCLUDED_AQUATIC_TERRAINS.has(terrain as ExcludedAquaticTerrain)) {
+    return { detail: null, primaryTile: CANONICAL_PLAIN_GRASS_TILE };
+  }
+
+  const isElevated = Boolean(heightmap && (heightmap[y]?.[x] ?? 0) > 0);
+  const biome = biomeGrid[y]?.[x];
+  if (!biome) {
+    return { detail: null, primaryTile: CANONICAL_PLAIN_GRASS_TILE };
+  }
+
+  const brush = getBrushForMacroBiome(biome);
+  if (!brush) {
+    return { detail: null, primaryTile: CANONICAL_PLAIN_GRASS_TILE };
+  }
+
+  const foreignMask = compute2DNeighborMask(
+    biomeGrid,
+    x,
+    y,
+    (nBiome, nx, ny) => {
+      const nTerrain = terrainMatrix[ny]?.[nx];
+      // Arid desert uses the same yellow sand brush as coastal sand; join them smoothly without drawing an interior grass-rimmed seam.
+      if (biome === 'arid_desert' && nTerrain === 'sand') return false;
+      if (nTerrain !== 'grass') return true;
+      return nBiome !== biome;
+    },
+    false
+  );
+
+  const { role, innerOverlays } = classify2DAutotileRole(foreignMask);
+  const primaryTile = getTileForRole(brush, role);
+  const overlayTiles = innerOverlays.map((r) => getTileForRole(brush, r));
+
+  const layerStack = [
+    CANONICAL_PLAIN_GRASS_TILE,
+    ...(role.startsWith('corner_inner') ? [brush.center] : []),
+    primaryTile,
+    ...overlayTiles
+  ];
+
+  const detail: ResolvedMacroBiomeCell = {
+    x,
+    y,
+    biome,
+    role,
+    primaryTile,
+    overlayTiles: overlayTiles.length > 0 ? overlayTiles : undefined,
+    layerStack
+  };
+
+  return {
+    detail,
+    primaryTile: isElevated ? CANONICAL_PLAIN_GRASS_TILE : primaryTile
+  };
+}
+
 /**
  * Resolves 8-neighbor autotiling for all macro-biome land cells on the continent.
  */
@@ -120,63 +186,9 @@ export function resolveMacroBiomeAutotile(
 
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      const terrain = terrainMatrix[y]?.[x];
-      // Water and coastal beach sand are handled exclusively by waterAutotileEngine
-      if (terrain && EXCLUDED_AQUATIC_TERRAINS.has(terrain as ExcludedAquaticTerrain)) {
-        continue;
-      }
-
-      const isElevated = Boolean(heightmap && (heightmap[y]?.[x] ?? 0) > 0);
-
-      const biome = biomeGrid[y]?.[x];
-      if (!biome) continue;
-
-      const brush = getBrushForMacroBiome(biome);
-      if (!brush) {
-        // Baseline meadow or woodland: standard plain grass
-        continue;
-      }
-
-      // Foreign mask: neighboring cells that do not share this specific biome or are non-grass
-      const foreignMask = compute2DNeighborMask(
-        biomeGrid,
-        x,
-        y,
-        (nBiome, nx, ny) => {
-          const nTerrain = terrainMatrix[ny]?.[nx];
-          if (nTerrain !== 'grass') return true;
-          // If neighbor shares the same biome, it is never foreign (even if elevated)
-          if (nBiome === biome) return false;
-          return true;
-        },
-        false
-      );
-
-      const { role, innerOverlays } = classify2DAutotileRole(foreignMask);
-      const primaryTile = getTileForRole(brush, role);
-      const overlayTiles = innerOverlays.map((r) => getTileForRole(brush, r));
-
-      const layerStack = [
-        CANONICAL_PLAIN_GRASS_TILE,
-        ...(role.startsWith('corner_inner') ? [brush.center] : []),
-        primaryTile,
-        ...overlayTiles
-      ];
-
-      const cell: ResolvedMacroBiomeCell = {
-        x,
-        y,
-        biome,
-        role,
-        primaryTile,
-        overlayTiles: overlayTiles.length > 0 ? overlayTiles : undefined,
-        layerStack
-      };
-
-      cellDetails[y]![x] = cell;
-      if (!isElevated) {
-        primaryTiles[y]![x] = primaryTile;
-      }
+      const resolved = resolveSingleMacroBiomeCell(biomeGrid, terrainMatrix, heightmap, x, y);
+      cellDetails[y]![x] = resolved.detail;
+      primaryTiles[y]![x] = resolved.primaryTile;
     }
   }
 
@@ -185,5 +197,45 @@ export function resolveMacroBiomeAutotile(
     height: H,
     primaryTiles,
     cellDetails
+  };
+}
+
+/**
+ * Incrementally resolves macro-biome autotile rows inside `bounds` via row Copy-on-Write.
+ */
+export function resolveMacroBiomeAutotileInBounds(
+  base: ResolvedMacroBiomeMapResult,
+  biomeGrid: readonly (readonly MacroBiome[])[],
+  terrainMatrix: readonly (readonly WaterTerrainKind[])[],
+  bounds: DirtyTileBounds,
+  heightmap?: readonly (readonly number[])[]
+): ResolvedMacroBiomeMapResult {
+  const H = biomeGrid.length;
+  const W = biomeGrid[0]?.length ?? 0;
+  if (H === 0 || W === 0) return base;
+
+  const clamped = clampDirtyBounds(bounds, W, H);
+  const nextPrimaryTiles: string[][] = base.primaryTiles.map((row) => row as string[]);
+  const nextCellDetails: (ResolvedMacroBiomeCell | null)[][] = base.cellDetails.map(
+    (row) => row as (ResolvedMacroBiomeCell | null)[]
+  );
+
+  for (let y = clamped.minY; y <= clamped.maxY; y++) {
+    const primaryRow = [...(nextPrimaryTiles[y] ?? [])];
+    const detailRow = [...(nextCellDetails[y] ?? [])];
+    for (let x = clamped.minX; x <= clamped.maxX; x++) {
+      const resolved = resolveSingleMacroBiomeCell(biomeGrid, terrainMatrix, heightmap, x, y);
+      primaryRow[x] = resolved.primaryTile;
+      detailRow[x] = resolved.detail;
+    }
+    nextPrimaryTiles[y] = primaryRow;
+    nextCellDetails[y] = detailRow;
+  }
+
+  return {
+    width: W,
+    height: H,
+    primaryTiles: nextPrimaryTiles,
+    cellDetails: nextCellDetails
   };
 }

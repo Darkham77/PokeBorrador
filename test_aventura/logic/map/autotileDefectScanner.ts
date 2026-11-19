@@ -21,6 +21,7 @@ import {
   type HealingDomain
 } from '../../types/map/autotileHealingTypes.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
+import { isValidFishingBalcony, type BridgeGridLookup } from './canonicalBridgeEngine.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
 import type { MacroBiome } from './macroBiomeSynthesizer.ts';
 import type { WaterTerrainKind } from './waterAutotileEngine.ts';
@@ -28,6 +29,7 @@ import type { WaterTerrainKind } from './waterAutotileEngine.ts';
 export interface DefectScannerInput {
   readonly continent: ContinentMapResult;
   readonly pathGrid: readonly (readonly boolean[])[];
+  readonly manualPathGrid?: readonly (readonly boolean[])[];
   readonly bridgeGrid?: readonly (readonly boolean[])[];
   readonly pois?: readonly POINode[];
   readonly bounds?: DirtyTileBounds;
@@ -40,6 +42,7 @@ const BRUSHED_MACRO_BIOMES: ReadonlySet<MacroBiome> = new Set<MacroBiome>([
 ]);
 
 const MIN_UNANCHORED_PATH_COMPONENT_CELLS = 8 as const;
+const MIN_MANUAL_PATH_COMPONENT_CELLS = 4 as const;
 
 export function buildBuildingProtectionMask(
   width: number,
@@ -114,6 +117,7 @@ function createZeroKindCounts(): Record<AutotileDefectKind, number> {
     sand_dual_boundary_pinch: 0,
     ocean_grass_direct_contact: 0,
     path_sliver_or_orphan: 0,
+    bridge_invalid_span: 0,
     macro_biome_sliver: 0,
     macro_biome_diagonal_pinch: 0
   };
@@ -124,6 +128,7 @@ interface ScanCellContext {
   readonly height: number;
   readonly continent: ContinentMapResult;
   readonly pathGrid: readonly (readonly boolean[])[];
+  readonly manualPathGrid?: readonly (readonly boolean[])[];
   readonly bridgeGrid?: readonly (readonly boolean[])[];
   readonly buildingMask: readonly (readonly boolean[])[];
   readonly poiAnchorMask: readonly (readonly boolean[])[];
@@ -183,20 +188,6 @@ function hasSteepCardinalDrop(
   return false;
 }
 
-function isInvalidIsolatedPeak(
-  heightmap: readonly (readonly number[])[],
-  x: number,
-  y: number,
-  elev: number
-): boolean {
-  if (elev > 1) return true;
-  const nw = getElevAt(heightmap, x - 1, y - 1);
-  const ne = getElevAt(heightmap, x + 1, y - 1);
-  const sw = getElevAt(heightmap, x - 1, y + 1);
-  const se = getElevAt(heightmap, x + 1, y + 1);
-  return nw >= elev || ne >= elev || sw >= elev || se >= elev;
-}
-
 function scanMountainCell(ctx: ScanCellContext, x: number, y: number): void {
   const { continent, width, height, pushDefect } = ctx;
   const heightmap = continent.heightmap;
@@ -249,20 +240,18 @@ function scanMountainCell(ctx: ScanCellContext, x: number, y: number): void {
   const hasSE = getElevAt(heightmap, x + 1, y + 1) >= elev;
   const hasSW = getElevAt(heightmap, x - 1, y + 1) >= elev;
 
-  const isOneTileRidge = (!hasN && !hasS && (hasW || hasE)) || (!hasW && !hasE && (hasN || hasS));
+  const isOneTileRidgeOrPeak = (!hasN && !hasS) || (!hasW && !hasE);
   const isSingleColSouthJag =
     (!hasW && !hasS && hasE && hasSE) || (!hasE && !hasS && hasW && hasSW);
   const isSingleRowSouthJag =
     (!hasW && !hasS && hasN && hasNW) || (!hasE && !hasS && hasN && hasNE);
-  const isBrokenPeak =
-    !hasN && !hasS && !hasW && !hasE && isInvalidIsolatedPeak(heightmap, x, y, elev);
-  if (isOneTileRidge || isSingleColSouthJag || isSingleRowSouthJag || isBrokenPeak) {
+  if (isOneTileRidgeOrPeak || isSingleColSouthJag || isSingleRowSouthJag) {
     pushDefect(
       x,
       y,
       'mountain',
       'mountain_thin_ridge',
-      '1-tile thin mountain ridge or invalid spur'
+      '1-tile thin mountain ridge, isolated 1x1 rock spur, or invalid jag'
     );
   }
 
@@ -396,6 +385,92 @@ function scan2x2CoastalPinches(ctx: ScanCellContext, x: number, y: number): void
   }
 }
 
+function isUnbridgedWaterAt(
+  matrix: readonly (readonly WaterTerrainKind[])[],
+  bridgeGrid: readonly (readonly boolean[])[] | undefined,
+  width: number,
+  height: number,
+  x: number,
+  y: number
+): boolean {
+  if (x < 0 || x >= width || y < 0 || y >= height) return false;
+  return isWaterTerrain(matrix[y]?.[x]) && !bridgeGrid?.[y]?.[x];
+}
+
+function isSandBlock2x2AtCorner(
+  matrix: readonly (readonly WaterTerrainKind[])[],
+  width: number,
+  height: number,
+  ox: number,
+  oy: number
+): boolean {
+  if (ox < 0 || oy < 0 || ox + 1 >= width || oy + 1 >= height) return false;
+  return (
+    matrix[oy]?.[ox] === 'sand' &&
+    matrix[oy]?.[ox + 1] === 'sand' &&
+    matrix[oy + 1]?.[ox] === 'sand' &&
+    matrix[oy + 1]?.[ox + 1] === 'sand'
+  );
+}
+
+function belongsTo2x2SandBlock(
+  matrix: readonly (readonly WaterTerrainKind[])[],
+  width: number,
+  height: number,
+  x: number,
+  y: number
+): boolean {
+  for (let dy = -1; dy <= 0; dy++) {
+    for (let dx = -1; dx <= 0; dx++) {
+      if (isSandBlock2x2AtCorner(matrix, width, height, x + dx, y + dy)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * Returns true when a sand tile forms a true 1-tile pinch touching both unbridged water and grass
+ * simultaneously (opposite cardinal water/grass or lacking any 2x2 solid sand block backing).
+ */
+export function isPinchedDualBoundarySandCell(
+  matrix: readonly (readonly WaterTerrainKind[])[],
+  bridgeGrid: readonly (readonly boolean[])[] | undefined,
+  width: number,
+  height: number,
+  x: number,
+  y: number
+): boolean {
+  if (matrix[y]?.[x] !== 'sand') return false;
+  const touchesWater = hasNeighborMatch(
+    matrix,
+    width,
+    height,
+    x,
+    y,
+    (nt, nx, ny) => isWaterTerrain(nt) && !bridgeGrid?.[ny]?.[nx]
+  );
+  if (!touchesWater) return false;
+  const touchesGrass = hasNeighborMatch(matrix, width, height, x, y, (nt) => nt === 'grass');
+  if (!touchesGrass) return false;
+
+  const wN = isUnbridgedWaterAt(matrix, bridgeGrid, width, height, x, y - 1);
+  const wS = isUnbridgedWaterAt(matrix, bridgeGrid, width, height, x, y + 1);
+  const wW = isUnbridgedWaterAt(matrix, bridgeGrid, width, height, x - 1, y);
+  const wE = isUnbridgedWaterAt(matrix, bridgeGrid, width, height, x + 1, y);
+  const gN = matrix[y - 1]?.[x] === 'grass';
+  const gS = matrix[y + 1]?.[x] === 'grass';
+  const gW = matrix[y]?.[x - 1] === 'grass';
+  const gE = matrix[y]?.[x + 1] === 'grass';
+
+  if ((wN && gS) || (wS && gN) || (wW && gE) || (wE && gW)) {
+    return true;
+  }
+
+  return !belongsTo2x2SandBlock(matrix, width, height, x, y);
+}
+
 function scanWaterAndSandCell(ctx: ScanCellContext, x: number, y: number): void {
   const { continent, width, height, bridgeGrid, pushDefect } = ctx;
   scan2x2CoastalPinches(ctx, x, y);
@@ -425,25 +500,14 @@ function scanWaterAndSandCell(ctx: ScanCellContext, x: number, y: number): void 
     }
   }
 
-  if (terrain === 'sand') {
-    const touchesWater = hasNeighborMatch(
-      matrix,
-      width,
-      height,
+  if (isPinchedDualBoundarySandCell(matrix, bridgeGrid, width, height, x, y)) {
+    pushDefect(
       x,
       y,
-      (nt, nx, ny) => isWaterTerrain(nt) && !bridgeGrid?.[ny]?.[nx]
+      'water',
+      'sand_dual_boundary_pinch',
+      '1-tile pinched sand borders both water and grass simultaneously'
     );
-    const touchesGrass = hasNeighborMatch(matrix, width, height, x, y, (nt) => nt === 'grass');
-    if (touchesWater && touchesGrass) {
-      pushDefect(
-        x,
-        y,
-        'water',
-        'sand_dual_boundary_pinch',
-        '1-tile pinched sand borders both water and grass simultaneously'
-      );
-    }
   }
 
   const group: CoastalTerrainGroup = toCoastalGroup(terrain);
@@ -476,6 +540,7 @@ export function isPathOrBridgeAt(
 
 interface PathComponentQueryInput {
   readonly pathGrid: readonly (readonly boolean[])[];
+  readonly manualPathGrid?: readonly (readonly boolean[])[];
   readonly bridgeGrid?: readonly (readonly boolean[])[];
   readonly buildingMask: readonly (readonly boolean[])[];
   readonly poiAnchorMask: readonly (readonly boolean[])[];
@@ -518,20 +583,25 @@ export function isMiniatureOrphanPathBlotch(
   startX: number,
   startY: number
 ): boolean {
-  const { poiAnchorMask, bridgeGrid, width, height } = input;
+  const { poiAnchorMask, bridgeGrid, manualPathGrid, width, height } = input;
   const queue: { x: number; y: number }[] = [{ x: startX, y: startY }];
   const visited = new Set<string>([`${startX}_${startY}`]);
   let head = 0;
+  let hasManual = false;
 
   while (head < queue.length) {
     const cur = queue[head++]!;
+    if (manualPathGrid?.[cur.y]?.[cur.x]) hasManual = true;
     if (poiAnchorMask[cur.y]?.[cur.x] || bridgeGrid?.[cur.y]?.[cur.x]) return false;
     if (cur.x === 0 || cur.x === width - 1 || cur.y === 0 || cur.y === height - 1) return false;
     if (enqueuePathCardinalNeighbors(input, cur.x, cur.y, visited, queue)) return false;
     if (queue.length >= MIN_UNANCHORED_PATH_COMPONENT_CELLS) return false;
   }
 
-  return true;
+  const minRequired = hasManual
+    ? MIN_MANUAL_PATH_COMPONENT_CELLS
+    : MIN_UNANCHORED_PATH_COMPONENT_CELLS;
+  return queue.length < minRequired;
 }
 
 interface Neighbor2DSameFlags {
@@ -631,7 +701,15 @@ function scanPathCell(ctx: ScanCellContext, x: number, y: number): void {
 
   if (
     isMiniatureOrphanPathBlotch(
-      { pathGrid, bridgeGrid, buildingMask, poiAnchorMask, width, height },
+      {
+        pathGrid,
+        manualPathGrid: ctx.manualPathGrid,
+        bridgeGrid,
+        buildingMask,
+        poiAnchorMask,
+        width,
+        height
+      },
       x,
       y
     )
@@ -643,6 +721,85 @@ function scanPathCell(ctx: ScanCellContext, x: number, y: number): void {
       'path_sliver_or_orphan',
       'Disconnected miniature dirt path blotch (< 8 cells)'
     );
+  }
+}
+
+function createBridgeLookup(ctx: ScanCellContext): BridgeGridLookup {
+  const { bridgeGrid, continent, width, height } = ctx;
+  return {
+    isBridge: (bx, by) =>
+      bx >= 0 && bx < width && by >= 0 && by < height && Boolean(bridgeGrid?.[by]?.[bx]),
+    isWater: (wx, wy) =>
+      wx < 0 ||
+      wx >= width ||
+      wy < 0 ||
+      wy >= height ||
+      isWaterTerrain(continent.terrainMatrix[wy]?.[wx])
+  };
+}
+
+function scanBridgeCell(ctx: ScanCellContext, x: number, y: number): void {
+  const { bridgeGrid, continent, buildingMask, width, height, pushDefect } = ctx;
+  if (!bridgeGrid) return;
+
+  const matrix = continent.terrainMatrix;
+  if (x + 1 < width && y + 1 < height) {
+    const tl = Boolean(bridgeGrid[y]?.[x]);
+    const tr = Boolean(bridgeGrid[y]?.[x + 1]);
+    const bl = Boolean(bridgeGrid[y + 1]?.[x]);
+    const br = Boolean(bridgeGrid[y + 1]?.[x + 1]);
+    const pinchMain =
+      tl &&
+      br &&
+      !tr &&
+      !bl &&
+      (isWaterTerrain(matrix[y]?.[x]) || isWaterTerrain(matrix[y + 1]?.[x + 1]));
+    const pinchAnti =
+      tr &&
+      bl &&
+      !tl &&
+      !br &&
+      (isWaterTerrain(matrix[y]?.[x + 1]) || isWaterTerrain(matrix[y + 1]?.[x]));
+    if (pinchMain || pinchAnti) {
+      pushDefect(x, y, 'water', 'bridge_invalid_span', '2x2 diagonal bridge pinch over water');
+    }
+  }
+
+  if (!bridgeGrid[y]?.[x] || buildingMask[y]?.[x]) return;
+
+  const bN = y > 0 && Boolean(bridgeGrid[y - 1]?.[x]);
+  const bS = y + 1 < height && Boolean(bridgeGrid[y + 1]?.[x]);
+  const bW = x > 0 && Boolean(bridgeGrid[y]?.[x - 1]);
+  const bE = x + 1 < width && Boolean(bridgeGrid[y]?.[x + 1]);
+
+  if (!isWaterTerrain(matrix[y]?.[x])) {
+    const hasWaterBridgeNeighbor =
+      (bN && isWaterTerrain(matrix[y - 1]?.[x])) ||
+      (bS && isWaterTerrain(matrix[y + 1]?.[x])) ||
+      (bW && isWaterTerrain(matrix[y]?.[x - 1])) ||
+      (bE && isWaterTerrain(matrix[y]?.[x + 1]));
+    if (!hasWaterBridgeNeighbor) {
+      pushDefect(
+        x,
+        y,
+        'water',
+        'bridge_invalid_span',
+        'Orphan dry-land bridge tile disconnected from water crossing'
+      );
+    }
+    return;
+  }
+
+  if ((!bN && !bS) || (!bW && !bE)) {
+    if (!isValidFishingBalcony(createBridgeLookup(ctx), x, y)) {
+      pushDefect(
+        x,
+        y,
+        'water',
+        'bridge_invalid_span',
+        '1-cell wide bridge sliver or disconnected stub over water'
+      );
+    }
   }
 }
 
@@ -710,7 +867,7 @@ function scanMacroBiomeCell(ctx: ScanCellContext, x: number, y: number): void {
 }
 
 export function scanContinentAutotileDefects(input: DefectScannerInput): ContinentDefectScanReport {
-  const { continent, pathGrid, bridgeGrid, pois, bounds } = input;
+  const { continent, pathGrid, manualPathGrid, bridgeGrid, pois, bounds } = input;
   const width = continent.width;
   const height = continent.height;
 
@@ -769,6 +926,7 @@ export function scanContinentAutotileDefects(input: DefectScannerInput): Contine
     height,
     continent,
     pathGrid,
+    manualPathGrid,
     bridgeGrid,
     buildingMask,
     poiAnchorMask,
@@ -786,6 +944,7 @@ export function scanContinentAutotileDefects(input: DefectScannerInput): Contine
     for (let x = minX; x <= maxX; x++) {
       scanMountainCell(ctx, x, y);
       scanWaterAndSandCell(ctx, x, y);
+      scanBridgeCell(ctx, x, y);
       scanPathCell(ctx, x, y);
       scanMacroBiomeCell(ctx, x, y);
     }

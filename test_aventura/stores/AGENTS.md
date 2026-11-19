@@ -15,7 +15,7 @@ Game Prototyping / Adventure Suite.
 ## Key Files
 
 - [`continentStudio.ts`](./continentStudio.ts): Reactive state and action handlers for the continental generator.
-- [`continentStudioStore.ts`](./continentStudioStore.ts): Modular store wrapper for continent state orchestration.
+- [`continentStudioStore.ts`](./continentStudioStore.ts): Modular store orchestrating Continent Map generation, heal/creative brush strokes, compact `DirtyRectHistoryDelta` undo/redo stacks, defect inspector camera requests, and sparse manual edit serialization.
 - [`mapAdventureStudio.ts`](./mapAdventureStudio.ts): Macro-regional graph and route editing store.
 - [`mapLens.ts`](./mapLens.ts): Camera viewport zoom, pan, and transform state.
 - [`mapStudio.ts`](./mapStudio.ts): Micro-cell tile editor and canvas tool selection store.

@@ -14,7 +14,6 @@ import { describe, it, expect } from 'vitest';
 import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
 import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
-import { executeRegionalGenerationJob } from '../../logic/map/continentGenerator.worker.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
 import {
@@ -233,20 +232,17 @@ describe('waterLandmarkIsletBridge', () => {
     // The sand perimeter around grass lawn must have CANONICAL_SAND_BEACH_BRUSH tiles:
     // (89, 8..10) must border sand with poke_sand_edge_w.png
     // (85..87, 4) must border sand with poke_sand_edge_s.png or poke_sand_corner_*
-    const res = executeRegionalGenerationJob({
+    const c128 = generateContinentMap({
       width: 128,
       height: 128,
       seed: 42,
       oceanWaterPercentage: 0.35,
       mountainPercentage: 0.22,
       lakeCount: 3,
-      targetCount: 18,
-      allowBridges: true,
       withStairs: true
     });
-    const c = res.continent;
-
-    const faro = res.pois.find((p) => p.id === 'ocean_lighthouse');
+    const pois128 = placeRegionalPOIs(c128, { targetCount: 18, seed: 42 });
+    const faro = pois128.find((p) => p.id === 'ocean_lighthouse');
     expect(faro).toBeDefined();
 
     // Grass at (faro.gridX + 2, faro.gridY - 1) must border sand at (faro.gridX + 2, faro.gridY - 2) which has poke_sand_edge_s.png
@@ -254,8 +250,8 @@ describe('waterLandmarkIsletBridge', () => {
     const grassY = faro!.gridY - 1;
     const sandY = faro!.gridY - 2;
 
-    expect(c.terrainMatrix[grassY]![testX]).toBe('grass');
-    expect(c.terrainMatrix[sandY]![testX]).toBe('sand');
-    expect(c.resolvedWater.cellDetails[sandY]![testX]?.primaryTile).toBe('poke_sand_edge_s.png');
+    expect(c128.terrainMatrix[grassY]![testX]).toBe('grass');
+    expect(c128.terrainMatrix[sandY]![testX]).toBe('sand');
+    expect(c128.resolvedWater.cellDetails[sandY]![testX]?.primaryTile).toBe('poke_sand_edge_s.png');
   });
 });

@@ -21,11 +21,20 @@ import type {
 // Progression Barrier Unlock Rules
 // ---------------------------------------------------------------------------
 
+const MIN_GYM_BADGES = 1 as const;
 const MAX_GYM_BADGES = 8 as const;
-const LEAGUE_CHAIN_ORDER_INDEX = 9 as const;
+const LEAGUE_CHAIN_OFFSET = 2 as const;
 const STRENGTH_MAX_CHAIN_ORDER = 6 as const;
+const CUT_WINDOW_SPAN = 2 as const;
 
-/** The minimum gym badge order required to clear each barrier type. */
+const BARRIER_TYPES: readonly BarrierType[] = [
+  'barrier_cut',
+  'barrier_flash',
+  'barrier_strength',
+  'barrier_surf'
+] as const;
+
+/** The minimum gym badge order required to clear each barrier type in an 8-gym region. */
 const BARRIER_UNLOCK_GYM: Readonly<Record<BarrierType, number>> = {
   barrier_cut: 2, // Cut unlocked after Gym 2
   barrier_flash: 3, // Flash unlocked around Gym 3
@@ -33,23 +42,43 @@ const BARRIER_UNLOCK_GYM: Readonly<Record<BarrierType, number>> = {
   barrier_surf: 5 // Surf unlocked after Gym 5 (Rule 6: late-game)
 };
 
+function resolveGymCount(graph: PokemonTopologyGraph): number {
+  return Math.max(MIN_GYM_BADGES, graph.mainChainOrder.length - LEAGUE_CHAIN_OFFSET);
+}
+
+function resolveScaledUnlockBadge(barrier: BarrierType, gymCount: number): number {
+  const baseReq = BARRIER_UNLOCK_GYM[barrier];
+  if (gymCount >= MAX_GYM_BADGES) {
+    return baseReq;
+  }
+  const scaled = Math.round((baseReq / MAX_GYM_BADGES) * gymCount);
+  return Math.min(Math.max(MIN_GYM_BADGES, scaled), Math.max(MIN_GYM_BADGES, gymCount - 1));
+}
+
 // ---------------------------------------------------------------------------
 // Step 1: Assign Progression Order (T5.1)
 // ---------------------------------------------------------------------------
 
 export function assignProgressionOrder(graph: PokemonTopologyGraph): Map<string, number> {
   const orderMap = new Map<string, number>();
+  const gymCount = resolveGymCount(graph);
 
   // 1. Assign 0 to Starter
   orderMap.set(graph.mainChainOrder[0]!, 0);
 
-  // 2. Assign 1..8 to Gym cities
-  for (let g = 1; g <= MAX_GYM_BADGES; g++) {
-    orderMap.set(graph.mainChainOrder[g]!, g);
+  // 2. Assign 1..gymCount to Gym cities
+  for (let g = 1; g <= gymCount; g++) {
+    const gymNodeId = graph.mainChainOrder[g];
+    if (gymNodeId) {
+      orderMap.set(gymNodeId, g);
+    }
   }
 
-  // 3. Assign 9 to Pokémon League
-  orderMap.set(graph.mainChainOrder[LEAGUE_CHAIN_ORDER_INDEX]!, LEAGUE_CHAIN_ORDER_INDEX);
+  // 3. Assign gymCount + 1 to Pokémon League
+  const leagueNodeId = graph.mainChainOrder[gymCount + 1];
+  if (leagueNodeId) {
+    orderMap.set(leagueNodeId, gymCount + 1);
+  }
 
   // 4. Secondary stubs inherit the progression order of their parent on the main chain
   for (const node of graph.nodes) {
@@ -76,9 +105,23 @@ export function assignProgressionOrder(graph: PokemonTopologyGraph): Map<string,
 
 function distributeBarriers(
   edges: readonly TopologyGraphEdge[],
-  orderMap: Map<string, number>
+  orderMap: Map<string, number>,
+  gymCount: number
 ): TopologyGraphEdge[] {
   const result: TopologyGraphEdge[] = [];
+  const cutMinOrder = resolveScaledUnlockBadge('barrier_cut', gymCount);
+  const cutMaxOrder = Math.min(gymCount, cutMinOrder + CUT_WINDOW_SPAN);
+  const strengthMinOrder = resolveScaledUnlockBadge('barrier_strength', gymCount);
+  const strengthMaxOrder =
+    gymCount >= MAX_GYM_BADGES
+      ? STRENGTH_MAX_CHAIN_ORDER
+      : Math.min(
+          gymCount,
+          Math.max(
+            strengthMinOrder + 1,
+            Math.round((STRENGTH_MAX_CHAIN_ORDER / MAX_GYM_BADGES) * gymCount)
+          )
+        );
 
   let cutPlaced = false;
   let strengthPlaced = false;
@@ -103,8 +146,8 @@ function distributeBarriers(
     const orderTo = orderMap.get(edge.toId) ?? 0;
     const minOrder = Math.min(orderFrom, orderTo);
 
-    // 2. Cut barrier: can be placed on a cycle or branch stub accessible at or after Gym 2
-    if (!cutPlaced && minOrder >= 2 && minOrder <= 4 && edge.kind === 'cycle') {
+    // 2. Cut barrier: can be placed on a cycle or branch stub accessible at or after scaled Cut gym
+    if (!cutPlaced && minOrder >= cutMinOrder && minOrder <= cutMaxOrder && edge.kind === 'cycle') {
       result.push({
         ...edge,
         barrier: 'barrier_cut'
@@ -113,11 +156,11 @@ function distributeBarriers(
       continue;
     }
 
-    // 3. Strength barrier: placed on a cycle or secondary cave accessible at or after Gym 4
+    // 3. Strength barrier: placed on a cycle or secondary cave accessible at or after scaled Strength gym
     if (
       !strengthPlaced &&
-      minOrder >= 4 &&
-      minOrder <= STRENGTH_MAX_CHAIN_ORDER &&
+      minOrder >= strengthMinOrder &&
+      minOrder <= strengthMaxOrder &&
       (edge.kind === 'cycle' || edge.kind === 'branch_stub')
     ) {
       result.push({
@@ -164,13 +207,15 @@ export function validateAntiSoftlock(
     adj.get(e.toId)!.push({ targetId: e.fromId, barrier: e.barrier });
   }
 
-  // Simulate player progression through 0 to 8 badges
-  for (let badges = 0; badges <= MAX_GYM_BADGES; badges++) {
+  const gymCount = resolveGymCount(graph);
+
+  // Simulate player progression through 0 to gymCount badges
+  for (let badges = 0; badges <= gymCount; badges++) {
     // Collect barriers unlocked with `badges` badges
     const unlockedBarriers = new Set<BarrierType>();
-    for (const [barrier, req] of Object.entries(BARRIER_UNLOCK_GYM)) {
-      if (badges >= req) {
-        unlockedBarriers.add(barrier as BarrierType);
+    for (const barrier of BARRIER_TYPES) {
+      if (badges >= resolveScaledUnlockBadge(barrier, gymCount)) {
+        unlockedBarriers.add(barrier);
       }
     }
 
@@ -223,9 +268,10 @@ export interface ProgressionResult {
 
 export function applyProgressionBarriers(graph: PokemonTopologyGraph): ProgressionResult {
   const orderMap = assignProgressionOrder(graph);
+  const gymCount = resolveGymCount(graph);
 
   // Attempt distribution and anti-softlock validation
-  let edges = distributeBarriers(graph.edges, orderMap);
+  let edges = distributeBarriers(graph.edges, orderMap, gymCount);
   let check = validateAntiSoftlock(graph, edges, orderMap);
 
   // If initial assignment softlocks, progressively relax barriers

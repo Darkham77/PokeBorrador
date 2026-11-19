@@ -19,8 +19,10 @@
 import type {
   TopologyGraphNode,
   TopologyGraphEdge,
-  PokemonTopologyGraph
+  PokemonTopologyGraph,
+  RegionMacroArchetype
 } from '../../types/map/pokemonGraphTypes.ts';
+import { REGION_MACRO_ARCHETYPES } from '../../types/map/pokemonGraphTypes.ts';
 
 // ---------------------------------------------------------------------------
 // Configuration Constants
@@ -33,6 +35,11 @@ const MIN_SECONDARY_NODES = 2;
 const MAX_SECONDARY_NODES = 6;
 const WORMHOLE_PROBABILITY = 0.4;
 const MAX_WORMHOLES = 2;
+const ARCHETYPE_SEED_KNUTH_HASH = 2654435761;
+const ARCHIPELAGO_MIN_SURF_ROUTES = 2;
+const ARCHIPELAGO_LATE_SURF_INDEX = 3;
+const ARCHIPELAGO_ISLAND_MIN_GYM = 6;
+const ARCHIPELAGO_MAX_ISLAND_NODES = 3;
 
 const SKIPPED_TOPOLOGY_EDGE_KIND_LIST = ['main_chain', 'branch_stub', 'wormhole_tunnel'] as const;
 type SkippedTopologyEdgeKind = (typeof SKIPPED_TOPOLOGY_EDGE_KIND_LIST)[number];
@@ -162,7 +169,10 @@ function edgeExists(edges: readonly TopologyGraphEdge[], a: string, b: string): 
 // Phase 1A: Generate Main Chain (T1.2)
 // ---------------------------------------------------------------------------
 
-function generateMainChain(_prng: () => number): {
+function generateMainChain(
+  _prng: () => number,
+  gymCount: number
+): {
   nodes: TopologyGraphNode[];
   edges: TopologyGraphEdge[];
   chainOrder: string[];
@@ -177,8 +187,8 @@ function generateMainChain(_prng: () => number): {
   nodes.push({ id: starterId, role: 'starter', hasPort: false });
   chainOrder.push(starterId);
 
-  // 8 Gym cities
-  for (let g = 1; g <= REQUIRED_GYM_COUNT; g++) {
+  // Gym cities
+  for (let g = 1; g <= gymCount; g++) {
     const nodeId = `node_${g}`;
     nodes.push({ id: nodeId, role: 'gym_city', gymNumber: g, hasPort: false });
     chainOrder.push(nodeId);
@@ -193,7 +203,7 @@ function generateMainChain(_prng: () => number): {
   }
 
   // League node (dead-end, degree 1)
-  const leagueId = `node_${REQUIRED_GYM_COUNT + 1}`;
+  const leagueId = `node_${gymCount + 1}`;
   nodes.push({ id: leagueId, role: 'league', hasPort: false });
   chainOrder.push(leagueId);
 
@@ -216,12 +226,21 @@ function injectCycleEdges(
   _nodes: readonly TopologyGraphNode[],
   edges: TopologyGraphEdge[],
   chainOrder: readonly string[],
-  prng: () => number
+  prng: () => number,
+  macroArchetype: RegionMacroArchetype,
+  minCycles: number,
+  maxCycles: number
 ): void {
-  const targetCycles = MIN_CYCLES + Math.floor(prng() * (MAX_CYCLES - MIN_CYCLES + 1));
+  const targetCycles = minCycles + Math.floor(prng() * (maxCycles - minCycles + 1));
   let cyclesAdded = 0;
   const maxAttempts = targetCycles * 15;
   let attempts = 0;
+  const rawSurfIdx = macroArchetype === 'oceanic_archipelago' ? ARCHIPELAGO_LATE_SURF_INDEX : 5;
+  const surfMinChainIdx = Math.min(Math.max(2, chainOrder.length - 3), rawSurfIdx);
+  const requiredSurfCount =
+    macroArchetype === 'oceanic_archipelago' && chainOrder.length >= 8
+      ? ARCHIPELAGO_MIN_SURF_ROUTES
+      : 1;
 
   while (cyclesAdded < targetCycles && attempts < maxAttempts) {
     attempts++;
@@ -240,7 +259,7 @@ function injectCycleEdges(
 
     // Determine if this should be a surf route (late-game cycles)
     const minIdx = Math.min(idxA, idxB);
-    const isSurf = minIdx >= 5 && prng() < 0.5;
+    const isSurf = minIdx >= surfMinChainIdx && prng() < 0.5;
 
     edges.push({
       id: `edge_cycle_${nodeA}_${nodeB}`,
@@ -251,10 +270,9 @@ function injectCycleEdges(
     cyclesAdded++;
   }
 
-  // Guarantee at least 1 surf route exists among cycles
-  const hasSurf = edges.some((e) => e.kind === 'surf_route');
-  if (!hasSurf && cyclesAdded > 0) {
-    // Find the cycle edge with the highest max endpoint index (latest in game progression)
+  // Ensure minimum surf routes according to archetype (1 standard, >= 2 oceanic archipelago)
+  let currentSurfCount = edges.filter((e) => e.kind === 'surf_route').length;
+  while (currentSurfCount < requiredSurfCount) {
     let bestCycleIdx = -1;
     let highestProgression = -1;
     for (let i = 0; i < edges.length; i++) {
@@ -269,9 +287,9 @@ function injectCycleEdges(
         }
       }
     }
-    if (bestCycleIdx >= 0) {
-      edges[bestCycleIdx] = { ...edges[bestCycleIdx]!, kind: 'surf_route' };
-    }
+    if (bestCycleIdx < 0) break;
+    edges[bestCycleIdx] = { ...edges[bestCycleIdx]!, kind: 'surf_route' };
+    currentSurfCount++;
   }
 }
 
@@ -312,12 +330,17 @@ function promoteHubNodes(
 function assignPortCity(
   nodes: TopologyGraphNode[],
   _chainOrder: readonly string[],
-  prng: () => number
+  prng: () => number,
+  gymCount: number
 ): void {
-  // Pick a gym city in the mid-to-late range (progression 3-7) as port
+  const minGym = Math.max(1, Math.floor(gymCount * 0.35));
+  const maxGym = Math.max(minGym, gymCount - 1);
   const candidates = nodes.filter(
     (n) =>
-      n.role === 'gym_city' && n.gymNumber !== undefined && n.gymNumber >= 3 && n.gymNumber <= 7
+      n.role === 'gym_city' &&
+      n.gymNumber !== undefined &&
+      n.gymNumber >= minGym &&
+      n.gymNumber <= maxGym
   );
 
   if (candidates.length === 0) return;
@@ -337,15 +360,16 @@ function injectWormholeEdges(
   nodes: readonly TopologyGraphNode[],
   edges: TopologyGraphEdge[],
   chainOrder: readonly string[],
-  prng: () => number
+  prng: () => number,
+  forceWormhole: boolean
 ): void {
-  if (prng() > WORMHOLE_PROBABILITY) return; // No wormholes for this seed
+  if (!forceWormhole && prng() > WORMHOLE_PROBABILITY) return; // No wormholes for this seed
 
   const wormholeCount = 1 + (prng() < 0.3 ? 1 : 0); // 70% chance of 1, 30% chance of 2
   const nodeIds = nodes.map((n) => n.id);
   let placed = 0;
   let attempts = 0;
-  const maxAttempts = wormholeCount * 20;
+  const maxAttempts = forceWormhole ? wormholeCount * 60 : wormholeCount * 20;
 
   while (placed < Math.min(wormholeCount, MAX_WORMHOLES) && attempts < maxAttempts) {
     attempts++;
@@ -353,7 +377,7 @@ function injectWormholeEdges(
     // Pick two chain nodes (skip starter and league)
     const idxA = 1 + Math.floor(prng() * (chainOrder.length - 2));
     const idxB = 1 + Math.floor(prng() * (chainOrder.length - 2));
-    if (idxA === idxB) continue;
+    if (Math.abs(idxA - idxB) < WORMHOLE_MIN_HOP_DISTANCE) continue;
 
     const nodeA = chainOrder[idxA]!;
     const nodeB = chainOrder[idxB]!;
@@ -362,7 +386,7 @@ function injectWormholeEdges(
 
     // Must be >= WORMHOLE_MIN_HOP_DISTANCE apart on the current graph
     const hopDist = computeHopDistance(edges, nodeA, nodeB, nodeIds);
-    if (hopDist < WORMHOLE_MIN_HOP_DISTANCE) continue;
+    if (hopDist < WORMHOLE_MIN_HOP_DISTANCE && !forceWormhole) continue;
 
     const tunnelId = `tunnel_${placed}`;
     edges.push({
@@ -384,10 +408,12 @@ function addSecondaryNodes(
   nodes: TopologyGraphNode[],
   edges: TopologyGraphEdge[],
   chainOrder: readonly string[],
-  prng: () => number
+  prng: () => number,
+  minSecondary: number,
+  maxSecondary: number
 ): void {
   const secondaryCount =
-    MIN_SECONDARY_NODES + Math.floor(prng() * (MAX_SECONDARY_NODES - MIN_SECONDARY_NODES + 1));
+    minSecondary + Math.floor(prng() * Math.max(1, maxSecondary - minSecondary + 1));
 
   const secondaryRoles = ['secondary_dungeon', 'secondary_cave', 'secondary_landmark'] as const;
   let nextNodeIdx = nodes.length;
@@ -397,7 +423,8 @@ function addSecondaryNodes(
     const parentIdx = 1 + Math.floor(prng() * (chainOrder.length - 2));
     const parentId = chainOrder[parentIdx]!;
 
-    const role = secondaryRoles[Math.floor(prng() * secondaryRoles.length)]!;
+    const role =
+      i === 0 ? 'secondary_dungeon' : secondaryRoles[Math.floor(prng() * secondaryRoles.length)]!;
     const nodeId = `node_${nextNodeIdx++}`;
 
     nodes.push({ id: nodeId, role, hasPort: false });
@@ -419,7 +446,19 @@ export interface GraphValidationResult {
   readonly errors: readonly string[];
 }
 
-export function validateGraphInvariants(graph: PokemonTopologyGraph): GraphValidationResult {
+export interface GraphValidationOptions {
+  readonly gymCount?: number;
+  readonly minCycles?: number;
+  readonly maxCycles?: number;
+}
+
+export function validateGraphInvariants(
+  graph: PokemonTopologyGraph,
+  options?: GraphValidationOptions
+): GraphValidationResult {
+  const expectedGymCount = options?.gymCount ?? REQUIRED_GYM_COUNT;
+  const expectedMinCycles = options?.minCycles ?? MIN_CYCLES;
+  const expectedMaxCycles = options?.maxCycles ?? MAX_CYCLES;
   const errors: string[] = [];
   const { nodes, edges, mainChainOrder } = graph;
 
@@ -439,10 +478,10 @@ export function validateGraphInvariants(graph: PokemonTopologyGraph): GraphValid
     errors.push(`League node must have degree 1, has ${nodeDegree(edges, leagueNode.id)}`);
   }
 
-  // 3. Exactly 8 gyms
+  // 3. Expected gym count
   const gymNodes = nodes.filter((n) => n.role === 'gym_city');
-  if (gymNodes.length !== REQUIRED_GYM_COUNT) {
-    errors.push(`Expected ${REQUIRED_GYM_COUNT} gyms, found ${gymNodes.length}`);
+  if (gymNodes.length !== expectedGymCount) {
+    errors.push(`Expected ${expectedGymCount} gyms, found ${gymNodes.length}`);
   }
 
   // 4. At least 1 port
@@ -478,13 +517,13 @@ export function validateGraphInvariants(graph: PokemonTopologyGraph): GraphValid
     }
   }
 
-  // 6. Cycle count (3-5): count independent cycles via Euler formula: C = E - V + 1 (for connected graph)
+  // 6. Cycle count (scaled or default 3-5): count independent cycles via Euler formula: C = E - V + 1 (for connected graph)
   const cycleEdges = edges.filter((e) => e.kind === 'cycle' || e.kind === 'surf_route');
-  if (cycleEdges.length < MIN_CYCLES) {
-    errors.push(`Expected at least ${MIN_CYCLES} cycles, found ${cycleEdges.length}`);
+  if (cycleEdges.length < expectedMinCycles) {
+    errors.push(`Expected at least ${expectedMinCycles} cycles, found ${cycleEdges.length}`);
   }
-  if (cycleEdges.length > MAX_CYCLES) {
-    errors.push(`Expected at most ${MAX_CYCLES} cycles, found ${cycleEdges.length}`);
+  if (cycleEdges.length > expectedMaxCycles) {
+    errors.push(`Expected at most ${expectedMaxCycles} cycles, found ${cycleEdges.length}`);
   }
 
   // 7. At least 1 surf route
@@ -518,9 +557,9 @@ export function validateGraphInvariants(graph: PokemonTopologyGraph): GraphValid
   }
 
   // 10. Main chain order integrity
-  if (mainChainOrder.length !== REQUIRED_GYM_COUNT + 2) {
+  if (mainChainOrder.length !== expectedGymCount + 2) {
     errors.push(
-      `Main chain should have ${REQUIRED_GYM_COUNT + 2} nodes, has ${mainChainOrder.length}`
+      `Main chain should have ${expectedGymCount + 2} nodes, has ${mainChainOrder.length}`
     );
   }
 
@@ -534,6 +573,57 @@ export function validateGraphInvariants(graph: PokemonTopologyGraph): GraphValid
 export interface PokemonTopologyOptions {
   /** World seed for deterministic generation. */
   readonly seed?: number;
+  /** Optional explicit regional macro-archetype override. */
+  readonly macroArchetype?: RegionMacroArchetype;
+  /** Gym city count (default: 8). */
+  readonly gymCount?: number;
+  /** Minimum cycle count (default: 3). */
+  readonly minCycles?: number;
+  /** Maximum cycle count (default: 5). */
+  readonly maxCycles?: number;
+  /** Minimum secondary branch nodes (default: 2). */
+  readonly minSecondaryNodes?: number;
+  /** Maximum secondary branch nodes (default: 6). */
+  readonly maxSecondaryNodes?: number;
+}
+
+function resolveRegionMacroArchetype(
+  seed: number,
+  override?: RegionMacroArchetype
+): RegionMacroArchetype {
+  if (override) return override;
+  const hashed = Math.imul(seed >>> 0, ARCHETYPE_SEED_KNUTH_HASH) >>> 0;
+  return REGION_MACRO_ARCHETYPES[hashed % REGION_MACRO_ARCHETYPES.length]!;
+}
+
+function markArchipelagoIslandNodes(
+  nodes: TopologyGraphNode[],
+  edges: readonly TopologyGraphEdge[],
+  macroArchetype: RegionMacroArchetype
+): void {
+  if (macroArchetype !== 'oceanic_archipelago') return;
+  const surfEndpointIds = new Set<string>();
+  for (const edge of edges) {
+    if (edge.kind === 'surf_route') {
+      surfEndpointIds.add(edge.fromId);
+      surfEndpointIds.add(edge.toId);
+    }
+  }
+  let marked = 0;
+  for (let i = 0; i < nodes.length && marked < ARCHIPELAGO_MAX_ISLAND_NODES; i++) {
+    const n = nodes[i]!;
+    const isEligibleLateGym =
+      n.role === 'gym_city' &&
+      n.gymNumber !== undefined &&
+      n.gymNumber >= ARCHIPELAGO_MIN_SURF_ROUTES &&
+      n.gymNumber >= ARCHIPELAGO_ISLAND_MIN_GYM &&
+      surfEndpointIds.has(n.id);
+    const isEligibleSecondary = n.role === 'secondary_landmark' && surfEndpointIds.size > 0;
+    if (isEligibleLateGym || isEligibleSecondary) {
+      nodes[i] = { ...n, isIsland: true };
+      marked++;
+    }
+  }
 }
 
 /**
@@ -554,30 +644,40 @@ export interface PokemonTopologyOptions {
  */
 export function generatePokemonTopology(options?: PokemonTopologyOptions): PokemonTopologyGraph {
   const seed = options?.seed ?? 42;
+  const gymCount = options?.gymCount ?? REQUIRED_GYM_COUNT;
+  const minCycles = options?.minCycles ?? MIN_CYCLES;
+  const maxCycles = options?.maxCycles ?? MAX_CYCLES;
+  const minSecondary = options?.minSecondaryNodes ?? MIN_SECONDARY_NODES;
+  const maxSecondary = options?.maxSecondaryNodes ?? MAX_SECONDARY_NODES;
   const prng = createPRNG(seed);
+  const macroArchetype = resolveRegionMacroArchetype(seed, options?.macroArchetype);
 
-  // Phase 1A: Main chain (Starter → 8 Gyms → League)
-  const { nodes, edges, chainOrder } = generateMainChain(prng);
+  // Phase 1A: Main chain (Starter → Gyms → League)
+  const { nodes, edges, chainOrder } = generateMainChain(prng, gymCount);
 
-  // Phase 1B: Inject 3-5 cycle edges (at least 1 surf)
-  injectCycleEdges(nodes, edges, chainOrder, prng);
+  // Phase 1B: Inject cycle edges (at least 1 surf)
+  injectCycleEdges(nodes, edges, chainOrder, prng, macroArchetype, minCycles, maxCycles);
 
   // Phase 1C: Promote hubs (implicit from cycle edges)
   promoteHubNodes(edges, chainOrder, prng);
 
   // Phase 1D: Assign exactly 1 port city
-  assignPortCity(nodes, chainOrder, prng);
+  assignPortCity(nodes, chainOrder, prng, gymCount);
 
-  // Phase 1E: Inject 0-2 wormhole tunnels (probability-based)
-  injectWormholeEdges(nodes, edges, chainOrder, prng);
+  // Phase 1E: Inject 0-2 wormhole tunnels (mandatory >= 1 in divided_valley)
+  injectWormholeEdges(nodes, edges, chainOrder, prng, macroArchetype === 'divided_valley');
 
-  // Phase 1F: Add 2-6 secondary branch nodes
-  addSecondaryNodes(nodes, edges, chainOrder, prng);
+  // Phase 1F: Add secondary branch nodes
+  addSecondaryNodes(nodes, edges, chainOrder, prng, minSecondary, maxSecondary);
+
+  // Phase 1G: Mark island candidates when archetype is oceanic_archipelago
+  markArchipelagoIslandNodes(nodes, edges, macroArchetype);
 
   return {
     nodes,
     edges,
     mainChainOrder: chainOrder,
+    macroArchetype,
     seed
   };
 }

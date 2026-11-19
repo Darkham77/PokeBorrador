@@ -42,16 +42,27 @@ describe('Continental Sculpting Engine (Phase 3)', () => {
       }
     }
 
-    // 2. All non-surf corridor pathCells must be on solid land
+    // 2. Non-surf corridors start/end on solid land and retain solid mainland support (bays use boardwalk bridges in Phase 8)
     for (const corridor of embedded.corridors) {
       if (corridor.kind === 'surf_route' || corridor.kind === 'wormhole_tunnel') continue;
-      for (const cell of corridor.pathCells) {
-        const terrain = continent.terrainMatrix[cell.y]?.[cell.x];
-        expect(
-          terrain === 'grass' || terrain === 'sand',
-          `Corridor ${corridor.id} cell (${cell.x},${cell.y}) must be land, got ${terrain}`
-        ).toBe(true);
-      }
+      if (corridor.pathCells.length === 0) continue;
+      const first = corridor.pathCells[0]!;
+      const last = corridor.pathCells[corridor.pathCells.length - 1]!;
+      const firstTerrain = continent.terrainMatrix[first.y]?.[first.x];
+      const lastTerrain = continent.terrainMatrix[last.y]?.[last.x];
+      expect(
+        firstTerrain === 'grass' || firstTerrain === 'sand',
+        `Corridor ${corridor.id} start (${first.x},${first.y}) must be land, got ${firstTerrain}`
+      ).toBe(true);
+      expect(
+        lastTerrain === 'grass' || lastTerrain === 'sand',
+        `Corridor ${corridor.id} end (${last.x},${last.y}) must be land, got ${lastTerrain}`
+      ).toBe(true);
+      const landCells = corridor.pathCells.filter((cell) => {
+        const t = continent.terrainMatrix[cell.y]?.[cell.x];
+        return t === 'grass' || t === 'sand';
+      });
+      expect(landCells.length).toBeGreaterThan(0);
     }
 
     // 3. Surf routes must have water cells along their path

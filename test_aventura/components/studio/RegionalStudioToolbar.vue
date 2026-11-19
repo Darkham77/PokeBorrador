@@ -15,8 +15,16 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { isValidHealingDomain } from '../../logic/map/autotileHealingEngine.ts';
 import { useRegionalContinentStudioStore } from '../../stores/continentStudioStore.ts';
+import type { BrushMode } from '../../types/map/continentBrushTypes.ts';
+
+const BRUSH_MODE_LABELS: Readonly<Record<BrushMode, string>> = {
+  heal: 'Sanador',
+  paint: 'Pintar',
+  line: 'Línea',
+  fill: 'Rellenar',
+  eyedropper: 'Muestra'
+};
 
 defineProps<{
   isRenderingTiles: boolean;
@@ -55,13 +63,6 @@ function handleProfileChange(e: Event): void {
 function handleCitySelect(e: Event): void {
   const select = e.target as HTMLSelectElement;
   store.selectPOI(select.value || null);
-}
-
-function handleDomainChange(e: Event): void {
-  const select = e.target as HTMLSelectElement;
-  if (isValidHealingDomain(select.value)) {
-    store.setHealingBrushDomain(select.value);
-  }
 }
 
 function handleExportSvg(): void {
@@ -188,7 +189,7 @@ function handleJsonImport(e: Event): void {
       </button>
     </div>
 
-    <!-- Group: Autotile Healing Brush -->
+    <!-- Group: Autotile & Creative Brush Studio -->
     <div class="toolbar-group healing-group">
       <button
         id="btn-regional-healing-brush"
@@ -196,30 +197,17 @@ function handleJsonImport(e: Event): void {
         class="tool-btn"
         :class="{ active: store.isHealingBrushActive }"
         :title="
-          store.isHealingBrushActive
-            ? 'Desactivar Pincel Sanador'
-            : 'Activar Pincel Sanador (Clic o arrastrar en el mapa)'
+          store.isHealingBrushActive ? 'Cerrar Taller de Pincel (B)' : 'Abrir Taller de Pincel (B)'
         "
         @click="store.toggleHealingBrush()"
       >
-        <span class="emoji-inline">🩹</span>
-        {{ store.isHealingBrushActive ? 'Sanador Activo' : 'Pincel Sanador' }}
+        <span class="emoji-inline">🎨</span>
+        {{ store.isHealingBrushActive ? 'Pincel Activo' : 'Taller de Pincel' }}
       </button>
 
-      <select
-        v-if="store.isHealingBrushActive"
-        id="select-healing-domain"
-        class="healing-select"
-        aria-label="Dominio del pincel sanador"
-        :value="store.healingBrushDomain"
-        @change="handleDomainChange"
-      >
-        <option value="auto">🪄 Auto-Detectar</option>
-        <option value="path">🛤️ Caminos</option>
-        <option value="mountain">⛰️ Montañas</option>
-        <option value="water">🌊 Agua / Costas</option>
-        <option value="macro_biome">🌿 Biomas</option>
-      </select>
+      <span v-if="store.isHealingBrushActive" id="badge-toolbar-brush-mode" class="brush-mode-pill">
+        {{ BRUSH_MODE_LABELS[store.brushMode] }} · {{ store.brushSize }}×{{ store.brushSize }}
+      </span>
 
       <button
         id="btn-regional-heal-all"
@@ -234,6 +222,17 @@ function handleJsonImport(e: Event): void {
         @click="store.healEntireMapDefects()"
       >
         <span class="emoji-inline">✨</span> Auto-Sanar ({{ store.detectedDefectCount }})
+      </button>
+
+      <button
+        v-if="store.detectedDefectCount > 0"
+        id="btn-regional-next-defect"
+        type="button"
+        class="tool-btn defect-step-btn"
+        title="Enfocar el siguiente defecto de autotile"
+        @click="store.stepToDefect(1)"
+      >
+        <span class="emoji-inline">🔍</span> Sig. Defecto
       </button>
 
       <span v-if="store.lastHealedReport" class="healing-toast" :title="store.lastHealedReport">
@@ -458,25 +457,32 @@ function handleJsonImport(e: Event): void {
     background: Rgb(16 185 129 / 8%);
   }
 
-  .healing-select {
-    padding: 3px 8px;
-    border: 1px solid Rgb(16 185 129 / 40%);
-    border-radius: $radius-md;
-    background: var(--slate-900);
-    color: var(--slate-50);
-    font-size: var(--font-12);
+  .brush-mode-pill {
+    padding: 2px 7px;
+    border: 1px solid Rgb(56 189 248 / 38%);
+    border-radius: $radius-full;
+    background: Rgb(56 189 248 / 14%);
+    color: var(--sky);
+    font-family: monospace;
+    font-size: var(--font-11);
     font-weight: $font-weight-semibold;
-    outline: none;
-    cursor: pointer;
+    white-space: nowrap;
+  }
 
-    &:focus {
-      border-color: var(--emerald-400);
+  .defect-step-btn {
+    background: Rgb(251 191 36 / 14%);
+    color: var(--amber-300);
+    border-color: Rgb(251 191 36 / 40%);
+
+    &:focus-visible {
+      outline: 2px solid var(--amber);
+      outline-offset: 1px;
     }
   }
 
   .healing-toast {
     max-width: 220px;
-    color: var(--emerald-300);
+    color: var(--emerald-400);
     font-size: var(--font-11);
     font-weight: $font-weight-semibold;
     overflow: hidden;
@@ -553,7 +559,7 @@ function handleJsonImport(e: Event): void {
 
     &.active {
       background: Rgb(16 185 129 / 30%);
-      color: var(--emerald-300);
+      color: var(--emerald-400);
       border-color: var(--emerald-400);
     }
 

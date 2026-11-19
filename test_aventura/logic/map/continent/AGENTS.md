@@ -17,19 +17,23 @@ Poké Vicio Development Team.
 
 ## Key Files
 
-- `continentalEngine.ts`: Core orchestrator for continental terrain synthesis, biome masks, urban clearances, and the master `generatePokemonContinentalWorld` pipeline.
+- `continentalEngine.ts`: Core orchestrator for continental terrain synthesis, flood-filled border `oceanMask` isolation (excluding inland freshwater lakes from `filteredMaritimeRocks`), biome masks, urban clearances, and the master `generatePokemonContinentalWorld` pipeline.
 - [`continentalCorridorCarver.ts`](./continentalCorridorCarver.ts): Terrain-aware route, path, bridge, and harbor pier carving sub-engine for parametric continents.
 - [`continentalSettlementCompiler.ts`](./continentalSettlementCompiler.ts): Procedural POI, urban settlement layout compilation, and route gate placement sub-engine for parametric continents.
+- [`continentTopologyValidator.ts`](./continentTopologyValidator.ts): Pure post-generation topology, maritime sealing, gate doorway alignment, and autotile defect validator.
 - `parametricContinentGenerator.ts`: Parametric continent generator computing Simplex elevation/moisture grids, biome distribution, urban node placement, and Kruskal MST roads.
 - `routeGatePlacementEngine.ts`: Procedural route gatehouse checkpoint locator, clearance validator, and corridor splicing engine for regional highways.
 - `autotileEngine.ts`: Bitmask calculation and tile selection for contiguous terrain boundaries.
 - `continentPersistence.ts`: Browser storage serialization, migration, and export logic for continental projects.
 - `spritePipelineEngine.ts`: Connected component analysis and asset processing pipeline for raw map imports.
 - `svgRouteAdapter.ts`: Adapter translating SVG route path definitions into rasterized map grids and exporting full semantic Pokémon topology SVGs via `exportPokemonTopologyToSvg`.
-- [`canonicalRegionPresets.ts`](./canonicalRegionPresets.ts): Authentic regional geography presets and procedural generation pipeline for Kanto and Johto overworlds.
+- [`canonicalRegionPresets.ts`](./canonicalRegionPresets.ts): Authentic regional geography presets for Kanto and Johto overworlds using organic coastlines, dry-land Mt. Silver clamping with dynamic south stair lookup, shared `sealCoastalSeaWithMaritimeRocks` / `applyDeepWaterCellsToContinent` maritime depth/barrier passes, urban hygiene passes (`sanitizeContinentalUrbanFences`, `anchorUrbanPropsToStreetsAndYards`), and full route/POI generation.
 - [`coastalFractalEngine.ts`](./coastalFractalEngine.ts): Module implementation.
+- [`continentHistoryDelta.ts`](./continentHistoryDelta.ts): Pure row Copy-on-Write Undo/Redo `DirtyRectHistoryDelta` builder/applier and bounded defect inspector synchronization helpers.
+- [`corridorSignatureFeatures.ts`](./corridorSignatureFeatures.ts): Active `RouteDesignSignature` terrain feature stamper carving organic `2x2`/`3x2` shallow rain puddles flanking `wetland_puddle_marsh` and `highland_river_gorge` corridors safely clear of paths, bridges, cliffs, and settlements.
 - [`regionalPersistenceHelper.ts`](./regionalPersistenceHelper.ts): Module implementation.
-- [`riverHydrographyEngine.ts`](./riverHydrographyEngine.ts): Module implementation.
+- [`regionalScaleProfile.ts`](./regionalScaleProfile.ts): Dimension-aware regional scale profiles (`128`, `256`, `400`) governing graph complexity, clearances, and route gate spacing.
+- [`riverHydrographyEngine.ts`](./riverHydrographyEngine.ts): Downhill gradient river drainage with regional turn inertia and orthogonal staircase jag smoothing (`smoothRiverOrthogonalJags`).
 
 ## Work Guidance
 

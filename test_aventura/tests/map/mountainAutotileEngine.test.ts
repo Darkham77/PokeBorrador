@@ -336,42 +336,62 @@ describe('mountainAutotileEngine', () => {
     });
 
     it('Sub-issue 2A: resolves outer corners bordering grass with rounded grass corners, not square rock', () => {
-      // (76, 50): Gray palette, outer NW corner bordering grass north and west
-      const c76_50 = continent.resolvedMountain.cellDetails[50]?.[76];
-      expect(c76_50?.role).toBe('corner_outer_nw');
-      expect(c76_50?.primaryTile).toBe('poke_cliff_gray_corner_tl.png');
+      let brownNwCount = 0;
+      let brownNeCount = 0;
+      let grayNwCount = 0;
+      let grayNeCount = 0;
 
-      // (34, 49): Brown palette, outer NE corner bordering grass north and east
-      const c34_49 = continent.resolvedMountain.cellDetails[49]?.[34];
-      expect(c34_49?.role).toBe('corner_outer_ne');
-      expect(c34_49?.primaryTile).toBe('poke_cliff_brown_corner_tr.png');
+      for (const row of continent.resolvedMountain.cellDetails) {
+        for (const cell of row) {
+          if (!cell) continue;
+          const isBrown = cell.primaryTile.includes('_brown_');
+          if (cell.role === 'corner_outer_nw') {
+            expect(cell.primaryTile).toBe(
+              isBrown ? 'poke_cliff_brown_corner_tl.png' : 'poke_cliff_gray_corner_tl.png'
+            );
+            if (isBrown) brownNwCount++;
+            else grayNwCount++;
+          } else if (cell.role === 'corner_outer_ne') {
+            expect(cell.primaryTile).toBe(
+              isBrown ? 'poke_cliff_brown_corner_tr.png' : 'poke_cliff_gray_corner_tr.png'
+            );
+            if (isBrown) brownNeCount++;
+            else grayNeCount++;
+          }
+        }
+      }
 
-      // (33, 49): Brown palette, outer NW corner bordering grass north and west
-      const c33_49 = continent.resolvedMountain.cellDetails[49]?.[33];
-      expect(c33_49?.role).toBe('corner_outer_nw');
-      expect(c33_49?.primaryTile).toBe('poke_cliff_brown_corner_tl.png');
-
-      // (80, 47): Gray palette, outer NW corner bordering grass
-      const c80_47 = continent.resolvedMountain.cellDetails[47]?.[80];
-      expect(c80_47?.role).toBe('corner_outer_nw');
-      expect(c80_47?.primaryTile).toBe('poke_cliff_gray_corner_tl.png');
-
-      // (84, 44) & (85, 44): Gray palette, outer NW and NE corners
-      const c84_44 = continent.resolvedMountain.cellDetails[44]?.[84];
-      const c85_44 = continent.resolvedMountain.cellDetails[44]?.[85];
-      expect(c84_44?.primaryTile).toBe('poke_cliff_gray_corner_tl.png');
-      expect(c85_44?.primaryTile).toBe('poke_cliff_gray_corner_tr.png');
+      expect(brownNwCount + grayNwCount).toBeGreaterThan(0);
+      expect(brownNeCount + grayNeCount).toBeGreaterThan(0);
     });
 
     it('Sub-issue 2B: resolves south cliff top on plateau as plateau floor without isolated rock face', () => {
-      // (54, 30): Brown palette, south rim of plateau at elevation 1
-      const c54_30 = continent.resolvedMountain.cellDetails[30]?.[54];
-      expect(c54_30?.role).toBe('edge_south_top');
-      expect(c54_30?.primaryTile).toBe('poke_cliff_brown_plateau_rock.png');
-      expect(c54_30?.projectedFoot?.targetX).toBe(54);
-      expect(c54_30?.projectedFoot?.targetY).toBe(31);
-      expect(c54_30?.projectedFoot?.tile).toBe('poke_cliff_brown_face.png');
-      expect(c54_30?.projectedFoot?.occupiesCell).toBe(true);
+      let southTopCount = 0;
+      for (let y = 0; y < continent.height - 1; y++) {
+        for (let x = 0; x < continent.width; x++) {
+          const cell = continent.resolvedMountain.cellDetails[y]?.[x];
+          if (cell?.role !== 'edge_south_top') continue;
+          const isBrown = cell.primaryTile.includes('_brown_');
+          expect(cell.primaryTile).toBe(
+            isBrown ? 'poke_cliff_brown_plateau_rock.png' : 'poke_cliff_gray_plateau_rock.png'
+          );
+          expect(cell.projectedFoot?.targetX).toBe(x);
+          expect(cell.projectedFoot?.targetY).toBe(y + 1);
+          const elev = continent.heightmap[y]?.[x] ?? 1;
+          const expectedFootTile =
+            elev >= 2
+              ? isBrown
+                ? 'poke_cliff_brown_rock_face_bottom.png'
+                : 'poke_cliff_gray_rock_face_bottom.png'
+              : isBrown
+                ? 'poke_cliff_brown_face.png'
+                : 'poke_cliff_gray_face.png';
+          expect(cell.projectedFoot?.tile).toBe(expectedFootTile);
+          expect(cell.projectedFoot?.occupiesCell).toBe(true);
+          southTopCount++;
+        }
+      }
+      expect(southTopCount).toBeGreaterThan(0);
     });
   });
 });

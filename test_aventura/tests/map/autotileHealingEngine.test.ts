@@ -21,15 +21,26 @@ import {
   inferCellHealingDomain,
   isValidHealingDomain
 } from '../../logic/map/autotileHealingEngine.ts';
-import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
+import {
+  buildMapBlitInstructions,
+  buildZeroCopyPreviewBuffer,
+  updatePreviewBufferInBounds
+} from '../../logic/map/canvasTileRenderer.ts';
 import {
   generateContinentMap,
   type ContinentMapResult
 } from '../../logic/map/continentGenerator.ts';
-import { executeRegionalGenerationJob } from '../../logic/map/continentGenerator.worker.ts';
+import {
+  executeHealAllWorkerJob,
+  executeRegionalGenerationJob
+} from '../../logic/map/continentGenerator.worker.ts';
 import { compileGeologicalAutotiling } from '../../logic/map/geologicalAutotilingEngine.ts';
 import type { MacroBiome, MacroBiomeResult } from '../../logic/map/macroBiomeSynthesizer.ts';
+import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
+import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
 import type { WaterTerrainKind } from '../../logic/map/waterAutotileEngine.ts';
+import type { WildernessLayerResult } from '../../logic/map/wildernessVegetationEngine.ts';
+import type { DirtyTileBounds } from '../../types/map/autotileHealingTypes.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
 
 interface SyntheticFixtureSpec {
@@ -237,7 +248,7 @@ describe('Autotile Defect Scanner & Model-First Healing Brush v2', () => {
       expect(scanAfter.totalDefects).toBe(0);
     });
 
-    it('preserves a true standalone 1x1 Tier-1 rock cone (peak_isolated) on flat grass', () => {
+    it('flags isolated 1x1 Tier-1 rock cones (peak_isolated) as mountain_thin_ridge defects and heals them cleanly', () => {
       const spec = createUniformFixture(7, 7);
       spec.heightmap[3]![3] = 1;
 
@@ -245,11 +256,32 @@ describe('Autotile Defect Scanner & Model-First Healing Brush v2', () => {
       const pathGrid = createEmptyBooleanGrid(7, 7);
 
       const scan = scanContinentAutotileDefects({ continent, pathGrid });
-      expect(scan.totalDefects).toBe(0);
+      expect(scan.countsByKind.mountain_thin_ridge).toBeGreaterThan(0);
 
-      const healed = healContinentAt(continent, pathGrid, 3, 3, { domain: 'mountain' });
-      expect(healed.continent.heightmap[3]![3]).toBe(1);
-      expect(healed.continent.resolvedMountain.cellDetails[3]?.[3]?.role).toBe('peak_isolated');
+      const eroded = healContinentAt(continent, pathGrid, 3, 3, {
+        domain: 'mountain',
+        mountainPolicy: 'erode'
+      });
+      expect(eroded.continent.heightmap[3]![3]).toBe(0);
+      expect(
+        scanContinentAutotileDefects({ continent: eroded.continent, pathGrid: eroded.pathGrid })
+          .totalDefects
+      ).toBe(0);
+
+      const expanded = healContinentAt(continent, pathGrid, 3, 3, {
+        domain: 'mountain',
+        mountainPolicy: 'fill'
+      });
+      expect(expanded.continent.heightmap[3]![3]).toBe(1);
+      expect(expanded.continent.resolvedMountain.cellDetails[3]?.[3]?.role).not.toBe(
+        'peak_isolated'
+      );
+      expect(
+        scanContinentAutotileDefects({
+          continent: expanded.continent,
+          pathGrid: expanded.pathGrid
+        }).totalDefects
+      ).toBe(0);
     });
 
     it('detects and smooths 1-column south cliff overhang staircase jags while preserving >=2-wide south L-steps', () => {
@@ -547,17 +579,18 @@ describe('Autotile Defect Scanner & Model-First Healing Brush v2', () => {
     ])(
       'scans and heals full regional job (128x128 seed=$seed lakes=$lakeCount pois=$targetCount) to 0 defects',
       ({ seed, lakeCount, targetCount }) => {
-        const job = executeRegionalGenerationJob({
+        const continent = generateContinentMap({
           seed,
           width: 128,
           height: 128,
           oceanWaterPercentage: 0.35,
           mountainPercentage: 0.22,
           lakeCount,
-          targetCount,
-          allowBridges: true,
           withStairs: true
         });
+        const pois = placeRegionalPOIs(continent, { targetCount, seed });
+        const routeNetwork = generateRouteNetwork(continent, pois, { allowBridges: true });
+        const job = { continent, pois, routeNetwork };
 
         const beforeScan = scanContinentAutotileDefects({
           continent: job.continent,
@@ -575,12 +608,337 @@ describe('Autotile Defect Scanner & Model-First Healing Brush v2', () => {
         const afterScan = scanContinentAutotileDefects({
           continent: healed.continent,
           pathGrid: healed.pathGrid,
-          bridgeGrid: job.routeNetwork.bridgeGrid,
+          bridgeGrid: healed.bridgeGrid ?? job.routeNetwork.bridgeGrid,
           pois: job.pois
         });
 
         expect(afterScan.totalDefects).toBe(0);
       }
     );
+  });
+
+  describe('Block A Structural Repairs: Exact Radius, Mountain Policy, Wilderness Sync & Bounded Blitter', () => {
+    it('honors explicit radius=0 (1x1) and radius=1 (3x3) without forcing radius=2 clamping', () => {
+      const spec = createUniformFixture(12, 12);
+      // Isolated 1-tile water sliver at (2, 2) and another at (4, 2) (Chebyshev distance 2 away)
+      spec.terrainMatrix[2]![2] = 'water';
+      spec.terrainMatrix[2]![4] = 'water';
+
+      const continent = buildSyntheticContinent(spec);
+      const pathGrid = createEmptyBooleanGrid(12, 12);
+
+      // With radius=0 (1x1), healing at (2, 2) must heal (2, 2) without mutating (4, 2)
+      const healed1x1 = healContinentAt(continent, pathGrid, 2, 2, {
+        domain: 'water',
+        radius: 0
+      });
+      expect(healed1x1.continent.terrainMatrix[2]![2]).toBe('grass');
+      expect(healed1x1.continent.terrainMatrix[2]![4]).toBe('water');
+
+      // With radius=1 (3x3), healing at (2, 2) covers x=1..3 -> still must NOT touch (4, 2)
+      const healed3x3 = healContinentAt(continent, pathGrid, 2, 2, {
+        domain: 'water',
+        radius: 1
+      });
+      expect(healed3x3.continent.terrainMatrix[2]![2]).toBe('grass');
+      expect(healed3x3.continent.terrainMatrix[2]![4]).toBe('water');
+    });
+
+    it('supports mountainPolicy="fill" to thicken thin ridges into 3-wide plateaus vs "erode" to demote them completely without leaving 1x1 stubs', () => {
+      const spec = createUniformFixture(12, 12);
+      // Thin horizontal ridge (1 tile high) along y=4, x=4..6
+      spec.heightmap[4]![4] = 1;
+      spec.heightmap[4]![5] = 1;
+      spec.heightmap[4]![6] = 1;
+
+      const continent = buildSyntheticContinent(spec);
+      const pathGrid = createEmptyBooleanGrid(12, 12);
+
+      const eroded = healContinentAt(continent, pathGrid, 5, 4, {
+        domain: 'mountain',
+        radius: 2,
+        mountainPolicy: 'erode'
+      });
+      expect(eroded.continent.heightmap[4]![4]).toBe(0);
+      expect(eroded.continent.heightmap[4]![5]).toBe(0);
+      expect(eroded.continent.heightmap[4]![6]).toBe(0);
+
+      const filled = healContinentAt(continent, pathGrid, 5, 4, {
+        domain: 'mountain',
+        radius: 2,
+        mountainPolicy: 'fill'
+      });
+      expect(filled.continent.heightmap[3]![5]).toBe(1);
+      expect(filled.continent.heightmap[4]![5]).toBe(1);
+      expect(filled.continent.heightmap[5]![5]).toBe(1);
+      const localScan = scanContinentAutotileDefects({
+        continent: filled.continent,
+        pathGrid: filled.pathGrid,
+        bounds: filled.summary.dirtyBounds
+      });
+      expect(localScan.countsByDomain.mountain).toBe(0);
+
+      // Thin vertical ridge (1 tile wide) along x=5, y=3..6
+      const vertSpec = createUniformFixture(12, 12);
+      vertSpec.heightmap[3]![5] = 1;
+      vertSpec.heightmap[4]![5] = 1;
+      vertSpec.heightmap[5]![5] = 1;
+      vertSpec.heightmap[6]![5] = 1;
+      const vertCont = buildSyntheticContinent(vertSpec);
+
+      const vertEroded = healContinentAt(vertCont, pathGrid, 5, 5, {
+        domain: 'mountain',
+        radius: 3,
+        mountainPolicy: 'erode'
+      });
+      expect(vertEroded.continent.heightmap[3]![5]).toBe(0);
+      expect(vertEroded.continent.heightmap[4]![5]).toBe(0);
+      expect(vertEroded.continent.heightmap[5]![5]).toBe(0);
+      expect(vertEroded.continent.heightmap[6]![5]).toBe(0);
+
+      const vertFilled = healContinentAt(vertCont, pathGrid, 5, 5, {
+        domain: 'mountain',
+        radius: 3,
+        mountainPolicy: 'fill'
+      });
+      expect(vertFilled.continent.heightmap[4]![3]).toBe(0);
+      expect(vertFilled.continent.heightmap[4]![4]).toBe(1);
+      expect(vertFilled.continent.heightmap[4]![5]).toBe(1);
+      expect(vertFilled.continent.heightmap[4]![6]).toBe(1);
+      expect(vertFilled.continent.heightmap[4]![7]).toBe(0);
+    });
+
+    it('prunes conflicting wilderness trees, props, and tallGrass inside dirtyBounds in healContinentAt and executeHealAllWorkerJob', () => {
+      const spec = createUniformFixture(14, 14);
+      // Place a water_sliver beside a cliff at (3, 3), or an invalid mountain overhang over tallGrass/trees/props:
+      // Make (2..4, 2..3) Tier-1 mountain with a thin 1-col south overhang at (3, 4) -> wait, place trees/props/tallGrass on water/south foot
+      spec.terrainMatrix[2]![2] = 'water';
+      spec.terrainMatrix[2]![3] = 'water';
+      // Thin mountain ridge touching water at y=4 -> healing creates/extends solid terrain or south cliff foot
+      for (let y = 3; y <= 5; y++) {
+        for (let x = 2; x <= 4; x++) {
+          spec.heightmap[y]![x] = 1;
+        }
+      }
+      // Remove water collision and instead put tallGrass, prop, and tree right under projected south cliff foot (2..3, 6) AND distant valid spots (11, 11)
+      spec.terrainMatrix[2]![2] = 'grass';
+      spec.terrainMatrix[2]![3] = 'grass';
+
+      const continent = buildSyntheticContinent(spec);
+      const pathGrid = createEmptyBooleanGrid(14, 14);
+      const tallGrassGrid = createEmptyBooleanGrid(14, 14);
+      // Tile (3, 6) is occupied by south cliff foot of (3, 5)
+      tallGrassGrid[6]![3] = true;
+      // Tile (10, 12) is clear open grass (away from distant tree at x=10..11, y=9..11)
+      tallGrassGrid[12]![10] = true;
+
+      const wilderness: WildernessLayerResult = {
+        tallGrassGrid,
+        tallGrassPatches: [],
+        trees: [
+          { x: 2, y: 5, width: 2, height: 3, prefabFile: 'tree_oak.png' }, // overlaps mountain / foot at y=5..6
+          { x: 10, y: 10, width: 2, height: 3, prefabFile: 'tree_oak.png' } // safe distant tree
+        ],
+        props: [
+          { type: 'flower', x: 3, y: 6, prefabFile: 'poke_flowers_red.png' }, // sits on occupied cliff foot
+          { type: 'flower', x: 11, y: 12, prefabFile: 'poke_flowers_red.png' } // safe distant flower
+        ]
+      };
+
+      const healed = healContinentAt(continent, pathGrid, 3, 5, {
+        domain: 'mountain',
+        radius: 2,
+        wilderness
+      });
+
+      expect(healed.wilderness).toBeDefined();
+      expect(healed.wilderness!.tallGrassGrid[6]![3]).toBe(false);
+      expect(healed.wilderness!.tallGrassGrid[12]![10]).toBe(true);
+      expect(healed.wilderness!.trees.some((t) => t.x === 2 && t.y === 5)).toBe(false);
+      expect(healed.wilderness!.trees.some((t) => t.x === 10 && t.y === 10)).toBe(true);
+      expect(healed.wilderness!.props.some((p) => p.x === 3 && p.y === 6)).toBe(false);
+      expect(healed.wilderness!.props.some((p) => p.x === 11 && p.y === 12)).toBe(true);
+
+      const workerHealAll = executeHealAllWorkerJob({
+        continent,
+        pathGrid,
+        wilderness
+      });
+      expect(workerHealAll.wilderness).toBeDefined();
+      expect(workerHealAll.wilderness!.tallGrassGrid[6]![3]).toBe(false);
+      expect(workerHealAll.wilderness!.trees.some((t) => t.x === 2 && t.y === 5)).toBe(false);
+      expect(workerHealAll.wilderness!.props.some((p) => p.x === 3 && p.y === 6)).toBe(false);
+    });
+
+    it('synchronizes macroBiomes.transitionBufferGrid when healing arid_desert borders', () => {
+      const spec = createUniformFixture(12, 12);
+      for (let y = 4; y <= 6; y++) {
+        for (let x = 4; x <= 6; x++) {
+          spec.biomeGrid[y]![x] = 'arid_desert';
+        }
+      }
+      // buildSyntheticContinent leaves transitionBufferGrid all false initially
+      const continent = buildSyntheticContinent(spec);
+      const pathGrid = createEmptyBooleanGrid(12, 12);
+      expect(continent.macroBiomes!.transitionBufferGrid[4]![4]).toBe(false);
+
+      const healed = healContinentAt(continent, pathGrid, 5, 5, {
+        domain: 'macro_biome',
+        radius: 2
+      });
+      // Outer desert cell (4, 4) borders temperate_meadow within radius 2 -> transitionBufferGrid must be synced true
+      expect(healed.continent.macroBiomes!.transitionBufferGrid[4]![4]).toBe(true);
+    });
+
+    it('compiles bounded buildMapBlitInstructions with exact parity and honors manualPathGrid in open meadow', () => {
+      const job = executeRegionalGenerationJob({
+        seed: 42,
+        width: 64,
+        height: 64,
+        oceanWaterPercentage: 0.35,
+        mountainPercentage: 0.22,
+        lakeCount: 2,
+        targetCount: 6,
+        allowBridges: true,
+        withStairs: true
+      });
+
+      const bounds: DirtyTileBounds = { minX: 20, minY: 20, maxX: 32, maxY: 32 };
+      const full = buildMapBlitInstructions(
+        job.continent,
+        job.pois,
+        job.routeNetwork.pathGrid,
+        job.routeNetwork.bridgeGrid,
+        job.wilderness
+      );
+      const bounded = buildMapBlitInstructions(
+        job.continent,
+        job.pois,
+        job.routeNetwork.pathGrid,
+        job.routeNetwork.bridgeGrid,
+        job.wilderness,
+        { bounds }
+      );
+
+      // Bounded compilation must avoid full-map 64x64 allocation/compilation
+      expect(bounded.instructions.length).toBeLessThan(full.instructions.length);
+
+      const inBounds = (inst: { px: number; py: number }): boolean =>
+        inst.px >= bounds.minX * 32 &&
+        inst.px <= bounds.maxX * 32 &&
+        inst.py >= bounds.minY * 32 &&
+        inst.py <= bounds.maxY * 32;
+
+      expect(bounded.instructions.filter(inBounds)).toEqual(full.instructions.filter(inBounds));
+
+      // Verify manualPathGrid preserves manually painted paths in open flat temperate meadow without altering normal procedural culling
+      const flatSpec = createUniformFixture(24, 24);
+      const flatCont = buildSyntheticContinent(flatSpec);
+      const meadowPath = createEmptyBooleanGrid(24, 24);
+      const manualPathGrid = createEmptyBooleanGrid(24, 24);
+      for (let y = 10; y <= 11; y++) {
+        for (let x = 10; x <= 11; x++) {
+          meadowPath[y]![x] = true;
+          manualPathGrid[y]![x] = true;
+        }
+      }
+
+      const culledOpenMeadow = buildMapBlitInstructions(flatCont, [], meadowPath);
+      const hasDirtWithoutManual = culledOpenMeadow.instructions.some((i) =>
+        i.filename.startsWith('poke_path_dirt')
+      );
+      expect(hasDirtWithoutManual).toBe(false);
+
+      const withManualOverlay = buildMapBlitInstructions(
+        flatCont,
+        [],
+        meadowPath,
+        undefined,
+        null,
+        {
+          manualPathGrid
+        }
+      );
+      const manualDirtAt10_10 = withManualOverlay.instructions.some(
+        (i) => i.px === 10 * 32 && i.py === 10 * 32 && i.filename.startsWith('poke_path_dirt')
+      );
+      expect(manualDirtAt10_10).toBe(true);
+    });
+
+    it('updates rawPreviewBuffer incrementally inside dirtyBounds matching full buildZeroCopyPreviewBuffer', () => {
+      const spec = createUniformFixture(12, 12);
+      const continent = buildSyntheticContinent(spec);
+      const pathGrid = createEmptyBooleanGrid(12, 12);
+      const beforeBuf = buildZeroCopyPreviewBuffer(continent, pathGrid);
+
+      // Convert a 3x3 pocket into water at (4..6, 4..6)
+      const nextSpec = createUniformFixture(12, 12);
+      for (let y = 4; y <= 6; y++) {
+        for (let x = 4; x <= 6; x++) {
+          nextSpec.terrainMatrix[y]![x] = 'water';
+        }
+      }
+      const nextCont = buildSyntheticContinent(nextSpec);
+      const dirtyBounds: DirtyTileBounds = { minX: 3, minY: 3, maxX: 7, maxY: 7 };
+
+      const updatedBuf = updatePreviewBufferInBounds(beforeBuf, nextCont, pathGrid, dirtyBounds);
+      const expectedFullBuf = buildZeroCopyPreviewBuffer(nextCont, pathGrid);
+
+      expect(updatedBuf).not.toBeNull();
+      expect(new Uint8ClampedArray(updatedBuf!)).toEqual(new Uint8ClampedArray(expectedFullBuf));
+    });
+
+    it('detects and heals malformed bridge_invalid_span segments while preserving valid shore landings', () => {
+      const spec = createUniformFixture(16, 16);
+      for (let y = 3; y <= 11; y++) {
+        for (let x = 2; x <= 7; x++) {
+          spec.terrainMatrix[y]![x] = 'water';
+        }
+      }
+      // Also create a second pond for a valid 2-wide vertical bridge with Kanto shore landings
+      for (let y = 3; y <= 11; y++) {
+        for (let x = 10; x <= 14; x++) {
+          spec.terrainMatrix[y]![x] = 'water';
+        }
+      }
+
+      const continent = buildSyntheticContinent(spec);
+      const pathGrid = createEmptyBooleanGrid(16, 16);
+      const bridgeGrid = createEmptyBooleanGrid(16, 16);
+
+      // Defect A: 1-wide vertical column across west pond (x=4, y=4..9)
+      for (let y = 4; y <= 9; y++) {
+        bridgeGrid[y]![4] = true;
+      }
+      // Defect B: Isolated 1x1 dry-land orphan bridge tile at (1, 14)
+      bridgeGrid[14]![1] = true;
+
+      // Valid control: 2-wide vertical bridge in east pond (x=11..12, y=3..11) + dry shore landings at y=2 and y=12
+      for (let y = 2; y <= 12; y++) {
+        bridgeGrid[y]![11] = true;
+        bridgeGrid[y]![12] = true;
+      }
+
+      const beforeScan = scanContinentAutotileDefects({
+        continent,
+        pathGrid,
+        bridgeGrid
+      });
+      expect(beforeScan.countsByKind.bridge_invalid_span).toBeGreaterThan(0);
+
+      const healed = healAllContinentDefects(continent, pathGrid, { bridgeGrid });
+      expect(healed.bridgeGrid).toBeDefined();
+      expect(healed.bridgeGrid![14]![1]).toBe(false);
+      expect(healed.bridgeGrid![6]![11]).toBe(true);
+      expect(healed.bridgeGrid![2]![11]).toBe(true);
+
+      const afterScan = scanContinentAutotileDefects({
+        continent: healed.continent,
+        pathGrid: healed.pathGrid,
+        bridgeGrid: healed.bridgeGrid
+      });
+      expect(afterScan.countsByKind.bridge_invalid_span).toBe(0);
+      expect(afterScan.totalDefects).toBe(0);
+    });
   });
 });

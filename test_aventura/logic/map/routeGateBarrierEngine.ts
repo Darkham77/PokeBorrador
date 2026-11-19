@@ -10,6 +10,7 @@
 import type { POINode } from '../../types/map/poiTypes.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
 import { isCellAdjacentToMountainStairs } from './continentMountainEngine.ts';
+import { resolveNaturalBushPrefab } from './wildernessBoundarySealing.ts';
 import type { TreePlacement, WildernessPropPlacement } from './wildernessVegetationEngine.ts';
 
 export interface RouteGateBarrierParams {
@@ -39,8 +40,26 @@ interface SacredAvenueBounds {
 }
 
 const YELLOW_OAK_MIN_DISTANCE = 8 as const;
-const MAX_BFS_SEAL_ITERATIONS = 50 as const;
-const MAX_FLANK_BARRIER_REACH = 15 as const;
+const MIN_PROP_SPACING_DISTANCE = 2.0 as const;
+const MAX_BFS_SEAL_ITERATIONS = 160 as const;
+const MAX_FLANK_BARRIER_REACH = 26 as const;
+const GATE_COMPACT_FENCE_WING_LEN = 3 as const;
+
+function doesTreeOverlapCell(x: number, y: number, tr: TreePlacement, trunkOnly = false): boolean {
+  const canopyOverhang = trunkOnly ? 0 : Math.max(0, tr.height - 2);
+  return x >= tr.x && x < tr.x + tr.width && y >= tr.y - canopyOverhang && y <= tr.y + 1;
+}
+
+function hasBlockingPropAt(
+  x: number,
+  y: number,
+  props?: readonly WildernessPropPlacement[],
+  gate?: POINode
+): boolean {
+  if (props?.some((p) => p.x === x && p.y === y)) return true;
+  if (gate?.urbanLayout?.props?.some((p) => p.x === x && p.y === y)) return true;
+  return false;
+}
 
 export interface GateBarrierTheme {
   readonly vFencePrefab: string;
@@ -110,6 +129,281 @@ function getGateBarrierTheme(gate: POINode, continent: ContinentMapResult): Gate
   };
 }
 
+function resolveNaturalSingleBarrierPlug(
+  continent: ContinentMapResult,
+  x: number,
+  y: number
+): { readonly type: WildernessPropPlacement['type']; readonly prefabFile: string } {
+  const mBiome = continent.macroBiomes?.biomeGrid[y]?.[x];
+  const elev = continent.heightmap[y]?.[x] ?? 0;
+  if (elev > 0 && (mBiome === 'arid_desert' || mBiome === 'volcanic_plateau')) {
+    return { type: 'boulder', prefabFile: 'poke_rock_boulder.png' };
+  }
+  return {
+    type: 'bush',
+    prefabFile: resolveNaturalBushPrefab(mBiome, x, y)
+  };
+}
+
+function tryPlugBfsLeakCandidates(
+  candidates: readonly { readonly x: number; readonly y: number; readonly diff: number }[],
+  targetFenceType: WildernessPropPlacement['type'],
+  targetFencePrefab: string,
+  continent: ContinentMapResult,
+  props: WildernessPropPlacement[],
+  blockedMask: boolean[][] | undefined,
+  pois: readonly POINode[] | undefined,
+  gate: POINode,
+  trees: TreePlacement[]
+): boolean {
+  for (const cand of candidates) {
+    if (isCellInsideOtherSettlement(cand.x, cand.y, pois, gate)) continue;
+    // 1. Prefer sealing with a valid tree trunk covering the leak cell without touching fences
+    for (const [tx, ty] of [
+      [cand.x - 1, cand.y],
+      [cand.x, cand.y],
+      [cand.x - 1, cand.y - 1],
+      [cand.x, cand.y - 1]
+    ] as const) {
+      if (tryAddBarrierTree(tx, ty, continent, trees, blockedMask, pois, gate, props)) {
+        return true;
+      }
+    }
+    // 2. Extend or start a contiguous fence line (respects dist >= 2.0 from non-matching props)
+    const noTreeCanopy = !trees.some((tr) => doesTreeOverlapCell(cand.x, cand.y, tr, false));
+    if (
+      noTreeCanopy &&
+      tryAddBarrierProp(
+        targetFenceType,
+        cand.x,
+        cand.y,
+        targetFencePrefab,
+        continent,
+        props,
+        blockedMask,
+        false,
+        pois,
+        gate,
+        false,
+        trees,
+        true
+      )
+    ) {
+      return true;
+    }
+    // 3. Fallback single natural plug (bush/boulder) respecting dist >= 2.0, including near stairs/cliff feet
+    if (trees.some((tr) => doesTreeOverlapCell(cand.x, cand.y, tr, true))) continue;
+    const plug = resolveNaturalSingleBarrierPlug(continent, cand.x, cand.y);
+    if (
+      tryAddBarrierProp(
+        plug.type,
+        cand.x,
+        cand.y,
+        plug.prefabFile,
+        continent,
+        props,
+        blockedMask,
+        false,
+        pois,
+        gate,
+        false,
+        trees,
+        true
+      )
+    ) {
+      return true;
+    }
+  }
+
+  // 4. Bridge 1-tile pinch bottlenecks along fence axis where neighboring blockers are aligned fences, bushes, or boulders
+  for (const cand of candidates) {
+    if (
+      tryBridgePinchWithFence(
+        cand,
+        targetFenceType,
+        targetFencePrefab,
+        continent,
+        props,
+        blockedMask,
+        pois,
+        gate,
+        trees
+      )
+    ) {
+      return true;
+    }
+  }
+
+  // 5. Last-resort canopy overhang resolution: remove a single overhanging wilderness tree trapping a 1-tile pinch
+  for (const cand of candidates) {
+    if (isCellInsideOtherSettlement(cand.x, cand.y, pois, gate)) continue;
+    const canopyBlockers = trees.filter(
+      (tr) =>
+        doesTreeOverlapCell(cand.x, cand.y, tr, false) &&
+        !doesTreeOverlapCell(cand.x, cand.y, tr, true)
+    );
+    if (canopyBlockers.length !== 1) continue;
+    const blockingTree = canopyBlockers[0]!;
+    const treeIdx = trees.indexOf(blockingTree);
+    if (treeIdx === -1) continue;
+    trees.splice(treeIdx, 1);
+
+    const pluggedAfterClear =
+      tryAddBarrierProp(
+        targetFenceType,
+        cand.x,
+        cand.y,
+        targetFencePrefab,
+        continent,
+        props,
+        blockedMask,
+        false,
+        pois,
+        gate,
+        false,
+        trees,
+        true
+      ) ||
+      tryBridgePinchWithFence(
+        cand,
+        targetFenceType,
+        targetFencePrefab,
+        continent,
+        props,
+        blockedMask,
+        pois,
+        gate,
+        trees
+      );
+    if (pluggedAfterClear) {
+      return true;
+    }
+    trees.splice(treeIdx, 0, blockingTree);
+  }
+  return false;
+}
+
+function tryBridgePinchWithFence(
+  cand: { readonly x: number; readonly y: number },
+  targetFenceType: WildernessPropPlacement['type'],
+  targetFencePrefab: string,
+  continent: ContinentMapResult,
+  props: WildernessPropPlacement[],
+  blockedMask: boolean[][] | undefined,
+  pois: readonly POINode[] | undefined,
+  gate: POINode,
+  trees: readonly TreePlacement[]
+): boolean {
+  if (isCellInsideOtherSettlement(cand.x, cand.y, pois, gate)) return false;
+  if (trees.some((tr) => doesTreeOverlapCell(cand.x, cand.y, tr, false))) return false;
+  const blockingProps = props.filter(
+    (p) => Math.hypot(p.x - cand.x, p.y - cand.y) < MIN_PROP_SPACING_DISTANCE
+  );
+  if (blockingProps.length === 0) return false;
+
+  const convertible: WildernessPropPlacement[] = [];
+  for (const blocker of blockingProps) {
+    const isAligned =
+      (targetFenceType === 'fence_h' &&
+        blocker.y === cand.y &&
+        Math.abs(blocker.x - cand.x) === 1) ||
+      (targetFenceType === 'fence_v' && blocker.x === cand.x && Math.abs(blocker.y - cand.y) === 1);
+    if (!isAligned) return false;
+    if (blocker.type === targetFenceType) continue;
+    if (blocker.type !== 'bush' && blocker.type !== 'boulder') return false;
+    if (trees.some((tr) => doesTreeOverlapCell(blocker.x, blocker.y, tr, false))) return false;
+    const hasConflict = props.some(
+      (other) =>
+        other !== blocker &&
+        !(
+          (targetFenceType === 'fence_h' &&
+            other.type === 'fence_h' &&
+            other.y === blocker.y &&
+            Math.abs(other.x - blocker.x) === 1) ||
+          (targetFenceType === 'fence_v' &&
+            other.type === 'fence_v' &&
+            other.x === blocker.x &&
+            Math.abs(other.y - blocker.y) === 1)
+        ) &&
+        Math.hypot(other.x - blocker.x, other.y - blocker.y) < MIN_PROP_SPACING_DISTANCE
+    );
+    if (hasConflict) return false;
+    convertible.push(blocker);
+  }
+
+  const rollback: { idx: number; prev: WildernessPropPlacement }[] = [];
+  for (const blocker of convertible) {
+    const idx = props.indexOf(blocker);
+    rollback.push({ idx, prev: { ...blocker } });
+    props[idx] = {
+      type: targetFenceType,
+      x: blocker.x,
+      y: blocker.y,
+      prefabFile: targetFencePrefab
+    };
+  }
+
+  if (
+    tryAddBarrierProp(
+      targetFenceType,
+      cand.x,
+      cand.y,
+      targetFencePrefab,
+      continent,
+      props,
+      blockedMask,
+      true,
+      pois,
+      gate,
+      false,
+      trees,
+      true
+    )
+  ) {
+    return true;
+  }
+
+  for (const entry of rollback) {
+    props[entry.idx] = entry.prev;
+  }
+  return false;
+}
+
+function normalizeOrphanedBarrierFences(
+  props: WildernessPropPlacement[],
+  continent: ContinentMapResult
+): void {
+  const fenceKeys = new Set<string>();
+  for (const p of props) {
+    if (p.prefabFile.includes('poke_fence_')) {
+      fenceKeys.add(`${p.x}_${p.y}`);
+    }
+  }
+  for (let i = 0; i < props.length; i++) {
+    const p = props[i]!;
+    if (!p.prefabFile.includes('poke_fence_')) continue;
+    const hasCardinalFence =
+      fenceKeys.has(`${p.x - 1}_${p.y}`) ||
+      fenceKeys.has(`${p.x + 1}_${p.y}`) ||
+      fenceKeys.has(`${p.x}_${p.y - 1}`) ||
+      fenceKeys.has(`${p.x}_${p.y + 1}`);
+    if (!hasCardinalFence) {
+      const hasCloseNonFenceProp = props.some(
+        (other) =>
+          other !== p && Math.hypot(other.x - p.x, other.y - p.y) < MIN_PROP_SPACING_DISTANCE
+      );
+      if (hasCloseNonFenceProp) continue;
+      const replacement = resolveNaturalSingleBarrierPlug(continent, p.x, p.y);
+      props[i] = {
+        type: replacement.type,
+        x: p.x,
+        y: p.y,
+        prefabFile: replacement.prefabFile
+      };
+    }
+  }
+}
+
 function isCellInsideOtherSettlement(
   x: number,
   y: number,
@@ -146,8 +440,9 @@ function isCellInsideOtherSettlement(
     if (poi.urbanLayout?.props?.some((p) => Math.abs(p.x - x) <= 1 && Math.abs(p.y - y) <= 1)) {
       return true;
     }
-    // Settlement core and immediate 1-tile perimeter buffer
+    // Settlement core and immediate 1-tile perimeter buffer only when POI has no granular urbanLayout
     if (
+      !poi.urbanLayout &&
       x >= poi.gridX - 1 &&
       x <= poi.gridX + poi.footprint.width &&
       y >= poi.gridY - 1 &&
@@ -172,12 +467,13 @@ function clearSacredTransitConflicts(
   }
   for (let i = trees.length - 1; i >= 0; i--) {
     const tr = trees[i]!;
-    const footLeft = tr.x + Math.floor((tr.width - 1) / 2);
-    const footRight = footLeft + 1;
-    const footTop = tr.y + tr.height - 2;
-    const footBottom = tr.y + tr.height - 1;
-    const overlapsX = footRight >= bounds.minX && footLeft <= bounds.maxX;
-    const overlapsY = footBottom >= bounds.minY && footTop <= bounds.maxY;
+    const left = tr.x;
+    const right = tr.x + tr.width - 1;
+    // Clear only physical 2-row trunk intersections; perimeter tree canopies may frame sacred avenues
+    const top = tr.y;
+    const bottom = tr.y + 1;
+    const overlapsX = right >= bounds.minX && left <= bounds.maxX;
+    const overlapsY = bottom >= bounds.minY && top <= bounds.maxY;
     if (overlapsX && overlapsY) {
       trees.splice(i, 1);
     }
@@ -191,13 +487,14 @@ function tryAddBarrierTree(
   trees: TreePlacement[],
   blockedMask?: boolean[][],
   pois?: readonly POINode[],
-  gate?: POINode
-): void {
-  if (isCellInsideOtherSettlement(treeX, treeY, pois, gate)) return;
+  gate?: POINode,
+  props?: readonly WildernessPropPlacement[]
+): boolean {
+  if (isCellInsideOtherSettlement(treeX, treeY, pois, gate)) return false;
   const W = continent.width;
   const H = continent.height;
   const mBiome = continent.macroBiomes?.biomeGrid[treeY]?.[treeX] ?? 'temperate_meadow';
-  if (mBiome === 'arid_desert' || mBiome === 'volcanic_plateau') return;
+  if (mBiome === 'arid_desert' || mBiome === 'volcanic_plateau') return false;
 
   let prefabFile = 'poke_tree_oak_clean.png';
   let treeWidth = 3;
@@ -208,30 +505,33 @@ function tryAddBarrierTree(
     treeHeight = 3;
   }
 
-  if (treeX < 0 || treeX + treeWidth > W || treeY < 0 || treeY + treeHeight > H) return;
-
   const canopyOverhang = treeHeight - 2;
+  if (treeX < 0 || treeX + treeWidth > W || treeY - canopyOverhang < 0 || treeY + 2 > H) {
+    return false;
+  }
+
   // Water clearance: tree sprite bounds + 1 tile margin must NOT touch water or deep water
   for (let dy = -canopyOverhang - 1; dy <= 2; dy++) {
     for (let dx = -1; dx <= treeWidth; dx++) {
       const cy = treeY + dy;
       const cx = treeX + dx;
-      if (cy < 0 || cy >= H || cx < 0 || cx >= W) return;
+      if (cy < 0 || cy >= H || cx < 0 || cx >= W) return false;
       const t = continent.terrainMatrix[cy]?.[cx];
-      if (t === 'water' || t === 'water_deep') return;
+      if (t === 'water' || t === 'water_deep') return false;
     }
   }
 
-  // Trunk base (2 rows high) must be strictly grass at elevation 0
-  for (let dy = 0; dy < 2; dy++) {
+  // Trunk base (2 rows) must be flat grass, and full trunk+canopy must avoid props/fences/blockedMask
+  for (let dy = -canopyOverhang; dy < 2; dy++) {
     for (let dx = 0; dx < treeWidth; dx++) {
       const cy = treeY + dy;
       const cx = treeX + dx;
-      if (continent.terrainMatrix[cy]?.[cx] !== 'grass') return;
-      if ((continent.heightmap[cy]?.[cx] ?? 0) !== 0) return;
-      if (continent.resolvedMountain.occupiedFootCells[cy]?.[cx]) return;
-      if (blockedMask?.[cy]?.[cx]) return;
-      if (isCellInsideOtherSettlement(cx, cy, pois, gate)) return;
+      if (continent.terrainMatrix[cy]?.[cx] !== 'grass') return false;
+      if ((continent.heightmap[cy]?.[cx] ?? 0) !== 0) return false;
+      if (continent.resolvedMountain.occupiedFootCells[cy]?.[cx]) return false;
+      if (blockedMask?.[cy]?.[cx]) return false;
+      if (hasBlockingPropAt(cx, cy, props, gate)) return false;
+      if (isCellInsideOtherSettlement(cx, cy, pois, gate)) return false;
     }
   }
 
@@ -240,13 +540,13 @@ function tryAddBarrierTree(
     const dx = Math.abs(treeX - other.x);
     const dy = Math.abs(treeY - other.y);
     const minW = Math.max(treeWidth, other.width);
-    if (dy < 2 && dx < minW) return;
-    if (dx < minW && dy < Math.max(treeHeight, other.height)) return;
+    if (dy < 2 && dx < minW) return false;
+    if (dx < minW && dy < Math.max(treeHeight, other.height)) return false;
     if (
       other.prefabFile === 'poke_tree_oak_yellow.png' &&
       Math.hypot(treeX - other.x, treeY - other.y) < YELLOW_OAK_MIN_DISTANCE
     ) {
-      return;
+      return false;
     }
   }
 
@@ -258,6 +558,7 @@ function tryAddBarrierTree(
       }
     }
   }
+  return true;
 }
 
 function isCellAdjacentToWater(x: number, y: number, continent: ContinentMapResult): boolean {
@@ -285,26 +586,39 @@ function tryAddBarrierProp(
   blockedMask?: boolean[][],
   allowWaterEdge = false,
   pois?: readonly POINode[],
-  gate?: POINode
+  gate?: POINode,
+  _reservedUnusedFlag = false,
+  trees?: readonly TreePlacement[],
+  allowNearStairsAndCliffFoot = false
 ): boolean {
   const W = continent.width;
   const H = continent.height;
   if (x < 0 || x >= W || y < 0 || y >= H) return false;
   if (isCellInsideOtherSettlement(x, y, pois, gate)) return false;
+  if (gate?.urbanLayout?.props?.some((p) => p.x === x && p.y === y)) return false;
+  const isFence = type === 'fence_h' || type === 'fence_v';
+  if (trees?.some((tr) => doesTreeOverlapCell(x, y, tr, !isFence))) return false;
   if (!allowWaterEdge && isCellAdjacentToWater(x, y, continent)) return false;
   if ((continent.heightmap[y]?.[x] ?? 0) > 0) return false;
   if (continent.resolvedMountain.occupiedFootCells[y]?.[x]) return false;
-  if (continent.resolvedMountain.cellDetails[y]?.[x]) return false;
   const terr = continent.terrainMatrix[y]?.[x];
   if (terr === 'water' || terr === 'water_deep') return false;
 
-  if (isCellAdjacentToMountainStairs(x, y, continent.resolvedMountain.cellDetails, W, H))
-    return false;
-  if (continent.placedStairs.some((s) => Math.abs(s.x - x) <= 1 && Math.abs(s.y - y) <= 1))
-    return false;
+  if (!allowNearStairsAndCliffFoot) {
+    if (continent.resolvedMountain.cellDetails[y]?.[x]) return false;
+    if (isCellAdjacentToMountainStairs(x, y, continent.resolvedMountain.cellDetails, W, H))
+      return false;
+    if (continent.placedStairs.some((s) => Math.abs(s.x - x) <= 1 && Math.abs(s.y - y) <= 1))
+      return false;
+  } else {
+    // Still never plug an actual stair tile itself
+    const isOnStairTile =
+      continent.placedStairs.some((s) => (s.x === x || s.x + 1 === x) && s.y === y) ||
+      Boolean(continent.resolvedMountain.cellDetails[y]?.[x]?.role.includes('stairs'));
+    if (isOnStairTile) return false;
+  }
 
-  // Spacing check: all props must maintain >= 2.0 distance from other props,
-  // except contiguous segments of the same fence run (same row for fence_h, same col for fence_v)
+  // Raycast & emergency props maintain >= MIN_PROP_SPACING_DISTANCE except contiguous segments of the same fence run.
   for (const p of props) {
     const isContiguousHFence =
       type === 'fence_h' && p.type === 'fence_h' && p.y === y && Math.abs(p.x - x) === 1;
@@ -313,7 +627,7 @@ function tryAddBarrierProp(
     if (isContiguousHFence || isContiguousVFence) {
       continue;
     }
-    if (Math.hypot(p.x - x, p.y - y) < 2.0) return false;
+    if (Math.hypot(p.x - x, p.y - y) < MIN_PROP_SPACING_DISTANCE) return false;
   }
 
   props.push({ type, x, y, prefabFile });
@@ -334,7 +648,20 @@ function placeFlankFenceStep(
   pois?: readonly POINode[]
 ): boolean {
   if (
-    tryAddBarrierProp(fenceType, x, y, prefabFile, continent, props, blockedMask, false, pois, gate)
+    tryAddBarrierProp(
+      fenceType,
+      x,
+      y,
+      prefabFile,
+      continent,
+      props,
+      blockedMask,
+      false,
+      pois,
+      gate,
+      false,
+      trees
+    )
   ) {
     return true;
   }
@@ -377,13 +704,9 @@ function isCellImpassable(
   if (props.some((p) => p.x === x && p.y === y)) return true;
   if (gate.urbanLayout?.props?.some((p) => p.x === x && p.y === y)) return true;
 
-  // 5. Trees (trunk base: bottom 2 rows, center column)
+  // 5. Trees (trunk base: 2 rows starting at tr.y across tree width)
   for (const tr of trees) {
-    const footLeft = tr.x + Math.floor((tr.width - 1) / 2);
-    const footRight = footLeft + 1;
-    const footTop = tr.y + tr.height - 2;
-    const footBottom = tr.y + tr.height;
-    if (x >= footLeft && x <= footRight && y >= footTop && y < footBottom) return true;
+    if (x >= tr.x && x < tr.x + tr.width && y >= tr.y && y <= tr.y + 1) return true;
   }
 
   // 6. Other settlements: impassable obstacle for bypass BFS
@@ -458,9 +781,61 @@ function resolveGatehouseBounds(
   return { W, H, isHorizontal, bx, by, bw, bh };
 }
 
+const GATE_ANTI_BYPASS_LATERAL_MARGIN = 25 as const;
+const GATE_ANTI_BYPASS_DEPTH_MARGIN = 6 as const;
+const GATE_CARDINAL_DX = [0, 0, 1, -1] as const;
+const GATE_CARDINAL_DY = [1, -1, 0, 0] as const;
+
+interface GateWindowBfsConfig {
+  readonly minX: number;
+  readonly maxX: number;
+  readonly minY: number;
+  readonly maxY: number;
+  readonly seeds: readonly { readonly x: number; readonly y: number }[];
+  readonly reachedOppositeSide: (x: number, y: number) => boolean;
+}
+
+function canBypassGateWindow(params: RouteGateBarrierParams, cfg: GateWindowBfsConfig): boolean {
+  const { continent, gate, trees, props, pois } = params;
+  const queue: { x: number; y: number }[] = [];
+  const visited = new Set<string>();
+
+  for (const seed of cfg.seeds) {
+    if (seed.x < cfg.minX || seed.x > cfg.maxX || seed.y < cfg.minY || seed.y > cfg.maxY) {
+      continue;
+    }
+    if (!isCellImpassable(seed.x, seed.y, continent, trees, props, gate, pois)) {
+      queue.push({ x: seed.x, y: seed.y });
+      visited.add(`${seed.x}_${seed.y}`);
+    }
+  }
+
+  while (queue.length > 0) {
+    const cur = queue.shift()!;
+    if (cfg.reachedOppositeSide(cur.x, cur.y)) {
+      return true;
+    }
+
+    for (let d = 0; d < GATE_CARDINAL_DX.length; d++) {
+      const nx = cur.x + GATE_CARDINAL_DX[d]!;
+      const ny = cur.y + GATE_CARDINAL_DY[d]!;
+      if (nx < cfg.minX || nx > cfg.maxX || ny < cfg.minY || ny > cfg.maxY) continue;
+
+      const key = `${nx}_${ny}`;
+      if (visited.has(key)) continue;
+      if (isCellImpassable(nx, ny, continent, trees, props, gate, pois)) continue;
+
+      visited.add(key);
+      queue.push({ x: nx, y: ny });
+    }
+  }
+
+  return false;
+}
+
 /**
- * Runs a local BFS flood-fill to verify if a player can skirt around the gatehouse
- * through open grass from North to South without passing through the gatehouse building.
+ * Runs a local BFS flood-fill from the gatehouse's entrance chamber to verify
+ * no player can skirt around the gate flanks to the opposite side without entering.
  *
  * @returns true if the gate is hermetic (no bypass possible), false if a bypass exists.
  */
@@ -469,98 +844,217 @@ export function verifyRouteGateAntiBypass(params: RouteGateBarrierParams): boole
   const { W, H, isHorizontal, bx, by, bw, bh } = resolveGatehouseBounds(continent, gate);
 
   if (isHorizontal) {
-    // Search window around the horizontal gatehouse (West to East)
-    const lateralMargin = 25;
-    const minY = Math.max(0, by - lateralMargin);
-    const maxY = Math.min(H - 1, by + bh + lateralMargin);
-    const westX = Math.max(0, bx - 6);
-    const eastX = Math.min(W - 1, bx + bw + 6);
+    const minY = Math.max(0, by - GATE_ANTI_BYPASS_LATERAL_MARGIN);
+    const maxY = Math.min(H - 1, by + bh + GATE_ANTI_BYPASS_LATERAL_MARGIN);
+    const westX = Math.max(0, bx - GATE_ANTI_BYPASS_DEPTH_MARGIN);
+    const eastX = Math.min(W - 1, bx + bw + GATE_ANTI_BYPASS_DEPTH_MARGIN);
+    const westDoorX = Math.max(westX, bx - 1);
+    const doorSeeds = [
+      { x: westDoorX, y: by + bh - 2 },
+      { x: westDoorX, y: by + bh - 1 }
+    ].filter((pt) => !isCellImpassable(pt.x, pt.y, continent, trees, props, gate, pois));
 
-    // Multi-source BFS: can ANY walkable cell at west boundary reach east boundary?
-    const queue: { x: number; y: number }[] = [];
-    const visited = new Set<string>();
+    const seeds =
+      doorSeeds.length > 0
+        ? doorSeeds
+        : Array.from({ length: maxY - minY + 1 }, (_, idx) => ({ x: westX, y: minY + idx }));
 
-    for (let y = minY; y <= maxY; y++) {
-      if (!isCellImpassable(westX, y, continent, trees, props, gate, pois)) {
-        queue.push({ x: westX, y });
-        visited.add(`${westX}_${y}`);
-      }
-    }
-
-    const DX = [0, 0, 1, -1] as const;
-    const DY = [1, -1, 0, 0] as const;
-
-    while (queue.length > 0) {
-      const cur = queue.shift()!;
-      if (cur.x >= eastX) {
-        return false;
-      }
-
-      for (let d = 0; d < 4; d++) {
-        const nx = cur.x + DX[d]!;
-        const ny = cur.y + DY[d]!;
-        if (nx < westX || nx > eastX || ny < minY || ny > maxY) continue;
-
-        const key = `${nx}_${ny}`;
-        if (visited.has(key)) continue;
-
-        if (isCellImpassable(nx, ny, continent, trees, props, gate, pois)) {
-          continue;
-        }
-
-        visited.add(key);
-        queue.push({ x: nx, y: ny });
-      }
-    }
-
-    return true;
+    return !canBypassGateWindow(params, {
+      minX: westX,
+      maxX: eastX,
+      minY,
+      maxY,
+      seeds,
+      reachedOppositeSide: (x) => x >= eastX
+    });
   }
 
-  // Search window around the vertical gatehouse (North to South)
-  const lateralMargin = 25;
-  const minX = Math.max(0, bx - lateralMargin);
-  const maxX = Math.min(W - 1, bx + bw + lateralMargin);
-  const northY = Math.max(0, by - 6);
-  const southY = Math.min(H - 1, by + bh + 6);
+  const minX = Math.max(0, bx - GATE_ANTI_BYPASS_LATERAL_MARGIN);
+  const maxX = Math.min(W - 1, bx + bw + GATE_ANTI_BYPASS_LATERAL_MARGIN);
+  const northY = Math.max(0, by - GATE_ANTI_BYPASS_DEPTH_MARGIN);
+  const southY = Math.min(H - 1, by + bh + GATE_ANTI_BYPASS_DEPTH_MARGIN);
+  const northDoorY = Math.max(northY, by - 1);
+  const midX = bx + Math.floor(bw / 2);
+  const doorSeeds = [
+    { x: midX - 1, y: northDoorY },
+    { x: midX, y: northDoorY }
+  ].filter((pt) => !isCellImpassable(pt.x, pt.y, continent, trees, props, gate, pois));
 
-  // Multi-source BFS: can ANY walkable cell at north boundary reach south boundary?
-  const queue: { x: number; y: number }[] = [];
-  const visited = new Set<string>();
+  const seeds =
+    doorSeeds.length > 0
+      ? doorSeeds
+      : Array.from({ length: maxX - minX + 1 }, (_, idx) => ({ x: minX + idx, y: northY }));
 
-  for (let x = minX; x <= maxX; x++) {
-    if (!isCellImpassable(x, northY, continent, trees, props, gate, pois)) {
-      queue.push({ x, y: northY });
-      visited.add(`${x}_${northY}`);
-    }
+  return !canBypassGateWindow(params, {
+    minX,
+    maxX,
+    minY: northY,
+    maxY: southY,
+    seeds,
+    reachedOppositeSide: (_, y) => y >= southY
+  });
+}
+
+interface FlankRaycastConfig {
+  readonly startX: number;
+  readonly startY: number;
+  readonly dx: number;
+  readonly dy: number;
+  readonly fenceType: WildernessPropPlacement['type'];
+  readonly fencePrefab: string;
+}
+
+function tryPlantFlankTree(
+  curX: number,
+  curY: number,
+  dx: number,
+  dy: number,
+  continent: ContinentMapResult,
+  trees: TreePlacement[],
+  blockedMask: boolean[][] | undefined,
+  pois: readonly POINode[] | undefined,
+  gate: POINode,
+  props: readonly WildernessPropPlacement[]
+): TreePlacement | null {
+  const candidates: readonly (readonly [number, number])[] =
+    dx !== 0
+      ? dx < 0
+        ? [
+            [curX - 2, curY - 1],
+            [curX - 1, curY - 1],
+            [curX - 2, curY],
+            [curX - 1, curY]
+          ]
+        : [
+            [curX, curY - 1],
+            [curX, curY]
+          ]
+      : dy < 0
+        ? [
+            [curX - 1, curY - 1],
+            [curX, curY - 1]
+          ]
+        : [
+            [curX - 1, curY],
+            [curX, curY]
+          ];
+
+  for (const [tx, ty] of candidates) {
+    if (!tryAddBarrierTree(tx, ty, continent, trees, blockedMask, pois, gate, props)) continue;
+    const placed = trees[trees.length - 1]!;
+    const coversCur =
+      curX >= placed.x &&
+      curX < placed.x + placed.width &&
+      curY >= placed.y &&
+      curY <= placed.y + 1;
+    if (coversCur) return placed;
   }
+  return null;
+}
 
-  const DX = [0, 0, 1, -1] as const;
-  const DY = [1, -1, 0, 0] as const;
+function raycastFlankBarrier(
+  cfg: FlankRaycastConfig,
+  continent: ContinentMapResult,
+  props: WildernessPropPlacement[],
+  blockedMask: boolean[][] | undefined,
+  trees: TreePlacement[],
+  gate: POINode,
+  pois?: readonly POINode[]
+): void {
+  const W = continent.width;
+  const H = continent.height;
+  let curX = cfg.startX;
+  let curY = cfg.startY;
+  let reachedSteps = 0;
 
-  while (queue.length > 0) {
-    const cur = queue.shift()!;
-    if (cur.y >= southY) {
-      return false;
-    }
+  while (curX >= 0 && curX < W && curY >= 0 && curY < H && reachedSteps < MAX_FLANK_BARRIER_REACH) {
+    if (isCellInsideOtherSettlement(curX, curY, pois, gate)) break;
+    const h = continent.heightmap[curY]?.[curX] ?? 0;
+    const t = continent.terrainMatrix[curY]?.[curX];
+    const isFoot = continent.resolvedMountain.occupiedFootCells[curY]?.[curX];
+    if (h > 0 || isFoot || t === 'water' || t === 'water_deep') break;
+    if (isCellAdjacentToWater(curX, curY, continent)) break;
 
-    for (let d = 0; d < 4; d++) {
-      const nx = cur.x + DX[d]!;
-      const ny = cur.y + DY[d]!;
-      if (nx < minX || nx > maxX || ny < northY || ny > southY) continue;
-
-      const key = `${nx}_${ny}`;
-      if (visited.has(key)) continue;
-
-      if (isCellImpassable(nx, ny, continent, trees, props, gate, pois)) {
-        continue;
+    if (reachedSteps < GATE_COMPACT_FENCE_WING_LEN) {
+      if (
+        !placeFlankFenceStep(
+          cfg.fenceType,
+          curX,
+          curY,
+          cfg.fencePrefab,
+          continent,
+          props,
+          blockedMask,
+          trees,
+          gate,
+          pois
+        )
+      ) {
+        break;
       }
-
-      visited.add(key);
-      queue.push({ x: nx, y: ny });
+      reachedSteps++;
+      curX += cfg.dx;
+      curY += cfg.dy;
+      continue;
     }
-  }
 
-  return true;
+    const placedTree = tryPlantFlankTree(
+      curX,
+      curY,
+      cfg.dx,
+      cfg.dy,
+      continent,
+      trees,
+      blockedMask,
+      pois,
+      gate,
+      props
+    );
+    if (placedTree) {
+      const span = cfg.dx !== 0 ? placedTree.width : 2;
+      reachedSteps += span;
+      curX += cfg.dx * span;
+      curY += cfg.dy * span;
+      continue;
+    }
+
+    if (
+      placeFlankFenceStep(
+        cfg.fenceType,
+        curX,
+        curY,
+        cfg.fencePrefab,
+        continent,
+        props,
+        blockedMask,
+        trees,
+        gate,
+        pois
+      )
+    ) {
+      reachedSteps++;
+      curX += cfg.dx;
+      curY += cfg.dy;
+      continue;
+    }
+
+    const plug = resolveNaturalSingleBarrierPlug(continent, curX, curY);
+    placeFlankFenceStep(
+      plug.type,
+      curX,
+      curY,
+      plug.prefabFile,
+      continent,
+      props,
+      blockedMask,
+      trees,
+      gate,
+      pois
+    );
+    reachedSteps++;
+    curX += cfg.dx;
+    curY += cfg.dy;
+  }
 }
 
 /**
@@ -591,113 +1085,40 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
 
     // Lateral barriers run North and South from building center
     const barrierX = bx + Math.floor(bw / 2);
-    const fenceRunLen = 5;
 
-    // Raycast North Flank
-    let curY = by - 1;
-    let fencesPlacedNorth = 0;
-    while (curY >= 0 && fencesPlacedNorth < MAX_FLANK_BARRIER_REACH) {
-      if (isCellInsideOtherSettlement(barrierX, curY, pois, gate)) break;
-      const h = continent.heightmap[curY]?.[barrierX] ?? 0;
-      const t = continent.terrainMatrix[curY]?.[barrierX];
-      const isFoot = continent.resolvedMountain.occupiedFootCells[curY]?.[barrierX];
-      if (h > 0 || isFoot || t === 'water' || t === 'water_deep') break;
+    raycastFlankBarrier(
+      {
+        startX: barrierX,
+        startY: by - 1,
+        dx: 0,
+        dy: -1,
+        fenceType: theme.vFenceType,
+        fencePrefab: theme.vFencePrefab
+      },
+      continent,
+      props,
+      blockedMask,
+      trees,
+      gate,
+      pois
+    );
 
-      if (fencesPlacedNorth < fenceRunLen) {
-        if (
-          !placeFlankFenceStep(
-            theme.vFenceType,
-            barrierX,
-            curY,
-            theme.vFencePrefab,
-            continent,
-            props,
-            blockedMask,
-            trees,
-            gate,
-            pois
-          )
-        ) {
-          break;
-        }
-        fencesPlacedNorth++;
-      } else {
-        if ((by - 1 - curY) % 3 === 0) {
-          tryAddBarrierTree(barrierX - 1, curY - 3, continent, trees, blockedMask, pois, gate);
-        }
-        if (
-          !placeFlankFenceStep(
-            theme.vFenceType,
-            barrierX,
-            curY,
-            theme.vFencePrefab,
-            continent,
-            props,
-            blockedMask,
-            trees,
-            gate,
-            pois
-          )
-        ) {
-          break;
-        }
-        fencesPlacedNorth++;
-      }
-      curY--;
-    }
-
-    // Raycast South Flank
-    curY = by + bh;
-    let fencesPlacedSouth = 0;
-    while (curY < H && fencesPlacedSouth < MAX_FLANK_BARRIER_REACH) {
-      if (isCellInsideOtherSettlement(barrierX, curY, pois, gate)) break;
-      const h = continent.heightmap[curY]?.[barrierX] ?? 0;
-      const t = continent.terrainMatrix[curY]?.[barrierX];
-      const isFoot = continent.resolvedMountain.occupiedFootCells[curY]?.[barrierX];
-      if (h > 0 || isFoot || t === 'water' || t === 'water_deep') break;
-
-      if (fencesPlacedSouth < fenceRunLen) {
-        if (
-          !placeFlankFenceStep(
-            theme.vFenceType,
-            barrierX,
-            curY,
-            theme.vFencePrefab,
-            continent,
-            props,
-            blockedMask,
-            trees,
-            gate,
-            pois
-          )
-        ) {
-          break;
-        }
-        fencesPlacedSouth++;
-      } else {
-        if ((curY - (by + bh)) % 3 === 0) {
-          tryAddBarrierTree(barrierX - 1, curY, continent, trees, blockedMask, pois, gate);
-        }
-        if (
-          !placeFlankFenceStep(
-            theme.vFenceType,
-            barrierX,
-            curY,
-            theme.vFencePrefab,
-            continent,
-            props,
-            blockedMask,
-            trees,
-            gate,
-            pois
-          )
-        ) {
-          break;
-        }
-        fencesPlacedSouth++;
-      }
-      curY++;
-    }
+    raycastFlankBarrier(
+      {
+        startX: barrierX,
+        startY: by + bh,
+        dx: 0,
+        dy: 1,
+        fenceType: theme.vFenceType,
+        fencePrefab: theme.vFencePrefab
+      },
+      continent,
+      props,
+      blockedMask,
+      trees,
+      gate,
+      pois
+    );
 
     // Iterative Multi-Source BFS Anti-Bypass Sealing (West to East)
     const lateralMargin = 25;
@@ -752,27 +1173,17 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
       }
 
       candidates.sort((a, b) => a.diff - b.diff);
-      let placed = false;
-      for (const cand of candidates) {
-        if (isCellInsideOtherSettlement(cand.x, cand.y, pois, gate)) continue;
-        if (
-          tryAddBarrierProp(
-            theme.vFenceType,
-            cand.x,
-            cand.y,
-            theme.vFencePrefab,
-            continent,
-            props,
-            blockedMask,
-            false,
-            pois,
-            gate
-          )
-        ) {
-          placed = true;
-          break;
-        }
-      }
+      const placed = tryPlugBfsLeakCandidates(
+        candidates,
+        theme.vFenceType,
+        theme.vFencePrefab,
+        continent,
+        props,
+        blockedMask,
+        pois,
+        gate,
+        trees
+      );
       if (!placed) break;
     }
   } else {
@@ -792,113 +1203,40 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
     });
 
     const barrierY = by + 3;
-    const fenceRunLen = 5;
 
-    // Raycast Left Flank (West)
-    let curX = bx - 1;
-    let fencesPlacedLeft = 0;
-    while (curX >= 0 && fencesPlacedLeft < MAX_FLANK_BARRIER_REACH) {
-      if (isCellInsideOtherSettlement(curX, barrierY, pois, gate)) break;
-      const h = continent.heightmap[barrierY]?.[curX] ?? 0;
-      const t = continent.terrainMatrix[barrierY]?.[curX];
-      const isFoot = continent.resolvedMountain.occupiedFootCells[barrierY]?.[curX];
-      if (h > 0 || isFoot || t === 'water' || t === 'water_deep') break;
+    raycastFlankBarrier(
+      {
+        startX: bx - 1,
+        startY: barrierY,
+        dx: -1,
+        dy: 0,
+        fenceType: theme.hFenceType,
+        fencePrefab: theme.hFencePrefab
+      },
+      continent,
+      props,
+      blockedMask,
+      trees,
+      gate,
+      pois
+    );
 
-      if (fencesPlacedLeft < fenceRunLen) {
-        if (
-          !placeFlankFenceStep(
-            theme.hFenceType,
-            curX,
-            barrierY,
-            theme.hFencePrefab,
-            continent,
-            props,
-            blockedMask,
-            trees,
-            gate,
-            pois
-          )
-        ) {
-          break;
-        }
-        fencesPlacedLeft++;
-      } else {
-        if ((bx - 1 - curX) % 3 === 0) {
-          tryAddBarrierTree(curX - 1, barrierY - 3, continent, trees, blockedMask, pois, gate);
-        }
-        if (
-          !placeFlankFenceStep(
-            theme.hFenceType,
-            curX,
-            barrierY,
-            theme.hFencePrefab,
-            continent,
-            props,
-            blockedMask,
-            trees,
-            gate,
-            pois
-          )
-        ) {
-          break;
-        }
-        fencesPlacedLeft++;
-      }
-      curX--;
-    }
-
-    // Raycast Right Flank (East)
-    curX = bx + bw;
-    let fencesPlacedRight = 0;
-    while (curX < W && fencesPlacedRight < MAX_FLANK_BARRIER_REACH) {
-      if (isCellInsideOtherSettlement(curX, barrierY, pois, gate)) break;
-      const h = continent.heightmap[barrierY]?.[curX] ?? 0;
-      const t = continent.terrainMatrix[barrierY]?.[curX];
-      const isFoot = continent.resolvedMountain.occupiedFootCells[barrierY]?.[curX];
-      if (h > 0 || isFoot || t === 'water' || t === 'water_deep') break;
-
-      if (fencesPlacedRight < fenceRunLen) {
-        if (
-          !placeFlankFenceStep(
-            theme.hFenceType,
-            curX,
-            barrierY,
-            theme.hFencePrefab,
-            continent,
-            props,
-            blockedMask,
-            trees,
-            gate,
-            pois
-          )
-        ) {
-          break;
-        }
-        fencesPlacedRight++;
-      } else {
-        if ((curX - (bx + bw)) % 3 === 0) {
-          tryAddBarrierTree(curX, barrierY - 3, continent, trees, blockedMask, pois, gate);
-        }
-        if (
-          !placeFlankFenceStep(
-            theme.hFenceType,
-            curX,
-            barrierY,
-            theme.hFencePrefab,
-            continent,
-            props,
-            blockedMask,
-            trees,
-            gate,
-            pois
-          )
-        ) {
-          break;
-        }
-        fencesPlacedRight++;
-      }
-      curX++;
-    }
+    raycastFlankBarrier(
+      {
+        startX: bx + bw,
+        startY: barrierY,
+        dx: 1,
+        dy: 0,
+        fenceType: theme.hFenceType,
+        fencePrefab: theme.hFencePrefab
+      },
+      continent,
+      props,
+      blockedMask,
+      trees,
+      gate,
+      pois
+    );
 
     // Iterative Multi-Source BFS Anti-Bypass Sealing (North to South)
     const lateralMargin = 25;
@@ -953,30 +1291,22 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
       }
 
       candidates.sort((a, b) => a.diff - b.diff);
-      let placed = false;
-      for (const cand of candidates) {
-        if (isCellInsideOtherSettlement(cand.x, cand.y, pois, gate)) continue;
-        if (
-          tryAddBarrierProp(
-            theme.hFenceType,
-            cand.x,
-            cand.y,
-            theme.hFencePrefab,
-            continent,
-            props,
-            blockedMask,
-            false,
-            pois,
-            gate
-          )
-        ) {
-          placed = true;
-          break;
-        }
-      }
+      const placed = tryPlugBfsLeakCandidates(
+        candidates,
+        theme.hFenceType,
+        theme.hFencePrefab,
+        continent,
+        props,
+        blockedMask,
+        pois,
+        gate,
+        trees
+      );
       if (!placed) break;
     }
   }
+
+  normalizeOrphanedBarrierFences(props, continent);
 
   // Sort trees so newly planted barrier trees maintain Y-sorting North to South
   trees.sort((t1, t2) => t1.y - t2.y || t1.x - t2.x);

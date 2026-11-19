@@ -150,11 +150,26 @@ export function resolvePoiLandmarksAndBuildings(
         });
       }
     } else {
-      const px = poi.gridX * tileSize;
-      const py = poi.gridY * tileSize;
+      const anchorX = poi.gridX;
+      let anchorY = poi.gridY;
+      if (poi.type === 'cave_entrance') {
+        const isAtSouthCliff =
+          (continent.heightmap[anchorY]?.[anchorX] ?? 0) >= 1 &&
+          (continent.heightmap[anchorY + 1]?.[anchorX] ?? 0) === 0;
+        if (
+          !isAtSouthCliff &&
+          anchorY > 0 &&
+          (continent.heightmap[anchorY - 1]?.[anchorX] ?? 0) >= 1 &&
+          (continent.heightmap[anchorY]?.[anchorX] ?? 0) === 0
+        ) {
+          anchorY -= 1;
+        }
+      }
+      const px = anchorX * tileSize;
+      const py = anchorY * tileSize;
       if (poi.type === 'cave_entrance') {
         const mtnPal =
-          continent.geologicalClusters?.paletteMatrix?.[poi.gridY]?.[poi.gridX] ??
+          continent.geologicalClusters?.paletteMatrix?.[anchorY]?.[anchorX] ??
           continent.mountainPalette ??
           'brown';
         const caveFile =
@@ -168,8 +183,8 @@ export function resolvePoiLandmarksAndBuildings(
         });
 
         // Authentic Mountain Scenery Props (flanking boulder, rubble stones & signpost)
-        const gx = poi.gridX;
-        const gy = poi.gridY;
+        const gx = anchorX;
+        const gy = anchorY;
 
         // 1. Canonical Boulder (1x1 tile) on left flank
         const boulderX = gx - 2;

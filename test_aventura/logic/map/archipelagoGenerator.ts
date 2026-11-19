@@ -526,3 +526,65 @@ export function applyArchipelagoBeachBuffers(
     applyIslandBeachBuffer(matrix, island.bounds, W, H, iterations, padding);
   }
 }
+
+const OUTCROP_ELIGIBLE_ROLES: ReadonlySet<ArchipelagoIslandRole> = new Set<ArchipelagoIslandRole>([
+  'sea_cave',
+  'atoll',
+  'shrine'
+]);
+const OUTCROP_RADIUS = 1 as const;
+const OUTCROP_WATER_BUFFER = 2 as const;
+
+/**
+ * Stamps Hoenn-style rocky emergent cliff outcrops (3x3 elevated rock massifs)
+ * strictly inside eligible archipelago island grass cores buffered >= 2 tiles from water.
+ */
+export function stampArchipelagoRockyOutcrops(
+  islands: readonly ArchipelagoIslandSpec[],
+  terrainMatrix: readonly (readonly WaterTerrainKind[])[],
+  heightmap: number[][],
+  W: number,
+  H: number
+): void {
+  for (const island of islands) {
+    if (!OUTCROP_ELIGIBLE_ROLES.has(island.role)) continue;
+    const cx = island.cx;
+    const cy = island.cy;
+    let canStamp = true;
+    for (
+      let dy = -(OUTCROP_RADIUS + OUTCROP_WATER_BUFFER);
+      dy <= OUTCROP_RADIUS + OUTCROP_WATER_BUFFER && canStamp;
+      dy++
+    ) {
+      for (
+        let dx = -(OUTCROP_RADIUS + OUTCROP_WATER_BUFFER);
+        dx <= OUTCROP_RADIUS + OUTCROP_WATER_BUFFER && canStamp;
+        dx++
+      ) {
+        const nx = cx + dx;
+        const ny = cy + dy;
+        if (nx <= 2 || nx >= W - 3 || ny <= 2 || ny >= H - 3) {
+          canStamp = false;
+          break;
+        }
+        const terr = terrainMatrix[ny]?.[nx];
+        const insideCore = Math.abs(dx) <= OUTCROP_RADIUS && Math.abs(dy) <= OUTCROP_RADIUS;
+        if (insideCore && terr !== 'grass') {
+          canStamp = false;
+          break;
+        }
+        if (terr === 'water' || terr === 'water_deep') {
+          canStamp = false;
+          break;
+        }
+      }
+    }
+    if (!canStamp) continue;
+
+    for (let dy = -OUTCROP_RADIUS; dy <= OUTCROP_RADIUS; dy++) {
+      for (let dx = -OUTCROP_RADIUS; dx <= OUTCROP_RADIUS; dx++) {
+        heightmap[cy + dy]![cx + dx] = Math.max(heightmap[cy + dy]![cx + dx] ?? 0, 1);
+      }
+    }
+  }
+}

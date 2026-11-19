@@ -4,6 +4,7 @@
  * STORAGE & JSON SERIALIZATION ENGINE FOR REGIONAL CONTINENT STUDIO
  */
 
+import type { SerializedContinentManualEdits } from '../../../types/map/continentBrushTypes.ts';
 import type { POINode, RouteEdge } from '../../../types/map/poiTypes.ts';
 
 const STORAGE_PROJECT_PREFIX = 'pokevicio_continent_project_';
@@ -28,6 +29,7 @@ export interface ContinentProjectExportPayload {
   readonly allowBridges: boolean;
   readonly pois: readonly POINode[];
   readonly routes: readonly RouteEdge[];
+  readonly manualMapEdits?: SerializedContinentManualEdits;
 }
 
 export function loadProfileListFromStorage(): SavedProfileMeta[] {
@@ -75,11 +77,28 @@ export function serializeProjectJson(payload: ContinentProjectExportPayload): st
   return JSON.stringify(payload, null, 2);
 }
 
+function sanitizeManualEdits(
+  rawEdits: SerializedContinentManualEdits | undefined
+): SerializedContinentManualEdits | undefined {
+  if (!rawEdits || !Array.isArray(rawEdits.cells)) return undefined;
+  const cells = rawEdits.cells.filter(
+    (cell) => Number.isFinite(cell?.x) && Number.isFinite(cell?.y)
+  );
+  return {
+    cells,
+    ...(Array.isArray(rawEdits.stairs) ? { stairs: rawEdits.stairs } : {}),
+    ...(Array.isArray(rawEdits.trees) ? { trees: rawEdits.trees } : {}),
+    ...(Array.isArray(rawEdits.props) ? { props: rawEdits.props } : {})
+  };
+}
+
 export function parseProjectJson(jsonStr: string): ContinentProjectExportPayload | null {
   try {
     const payload = JSON.parse(jsonStr) as ContinentProjectExportPayload;
     if (!payload || !payload.pois || !payload.routes) return null;
-    return payload;
+    const manualMapEdits = sanitizeManualEdits(payload.manualMapEdits);
+    if (!manualMapEdits) return payload;
+    return { ...payload, manualMapEdits };
   } catch {
     // catch-ok: Fallback to null when external json payload is invalid
     return null;
