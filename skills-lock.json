@@ -1,17 +1,19 @@
 {
-  "version": 1,
+  "version": 2,
   "skills": {
     "algorithmic-art": {
       "source": "anthropics/skills",
       "sourceType": "github",
       "skillPath": "skills/algorithmic-art/SKILL.md",
-      "computedHash": "3bc4092c09804853186524c826bc0621b940bb6122c05b84496dff95388e6eef"
+      "computedHash": "4a85abfeaa09f2dd2c4b76c85d57b65f61dc10d55c3cca245989cee8897c2be5",
+      "commit": "e4bb5d960d87126ff3b3a8af1a104b7db67560ba"
     },
     "canvas-design": {
       "source": "anthropics/skills",
       "sourceType": "github",
       "skillPath": "skills/canvas-design/SKILL.md",
-      "computedHash": "a1f288079624402f30682753c1d43920b6664785698d21d3e7aa197450a6448b"
+      "computedHash": "1866477474e694f562261008bb6a817e53f027b6347b062fbd1e2ee2eb83f20d",
+      "commit": "e4bb5d960d87126ff3b3a8af1a104b7db67560ba"
     }
   }
 }

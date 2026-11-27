@@ -166,6 +166,7 @@ describe('Battle Weather & Debug Controls Parity Suite (RED -> GREEN)', () => {
 
       // In combat background (layer="ambient"): heat canvas must be hidden (delegated to camera overlay)
       const ambientWrapper = mount(AtmosphereLayer, {
+        attachTo: document.body,
         props: {
           weather,
           layer: 'ambient',
@@ -179,6 +180,7 @@ describe('Battle Weather & Debug Controls Parity Suite (RED -> GREEN)', () => {
       const ambientCanvas = ambientWrapper.find('.weather-canvas');
       expect(ambientCanvas.exists()).toBe(true);
       expect(ambientCanvas.isVisible()).toBe(false);
+      ambientWrapper.unmount();
     }
   });
 });

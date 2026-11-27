@@ -45071,7 +45071,6 @@
       "conversion",
       "conversion2",
       "curse",
-      "defensecurl",
       "doubleedge",
       "doubleteam",
       "dreameater",
@@ -98209,7 +98208,7 @@
     "spe": 151,
     "catchRate": 45,
     "abilities": [
-      "magicbounce"
+      "sharpness"
     ],
     "gender": 0.5,
     "height": 1.2,
@@ -117006,7 +117005,7 @@
     "spe": 151,
     "catchRate": 45,
     "abilities": [
-      "sandforce"
+      "levitate"
     ],
     "gender": 0.5,
     "height": 1.9,
@@ -118162,7 +118161,7 @@
     "spe": 151,
     "catchRate": 45,
     "abilities": [
-      "adaptability"
+      "auraguard"
     ],
     "gender": 0.875,
     "height": 1.3,
@@ -197611,7 +197610,7 @@
     "spe": 40,
     "catchRate": 45,
     "abilities": [
-      "emergencyexit"
+      "toughclaws"
     ],
     "gender": 0.5,
     "height": 2.3,
@@ -248538,8 +248537,7 @@
     "spe": 87,
     "catchRate": 45,
     "abilities": [
-      "thermalexchange",
-      "icebody"
+      "thermalexchange"
     ],
     "gender": 0.5,
     "height": 2.1,

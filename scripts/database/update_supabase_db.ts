@@ -10,7 +10,7 @@ import fsPromises from 'node:fs/promises';
  *
  * CARACTERÍSTICAS:
  * - Permite elegir actualizar TODOS los servidores o uno en particular (--server=<perfil> o --all).
- * - Cumple con las normativas env-multi-server-parser para extraer credenciales del .env maestro.
+ * - Cumple con las normativas de @francogp/auditor/supabase (/auditor) para extraer credenciales del .env maestro.
  * - Estándares Node.js 26+ (Explicit Resource Management con 'using', prefijos node:).
  */
 import { enableCompileCache } from 'node:module';

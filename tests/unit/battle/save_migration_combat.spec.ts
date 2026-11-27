@@ -99,12 +99,12 @@ describe('Save Migration and Combat Simulation', () => {
         SELECT json_set(
           save_data,
           '$.team',
-          (
+          json((
             SELECT json_group_array(
               json_set(
                 t.value,
                 '$.moves',
-                (
+                json((
                   SELECT json_group_array(
                     json_set(
                       m.value,
@@ -125,11 +125,11 @@ describe('Save Migration and Combat Simulation', () => {
                     )
                   )
                   FROM json_each(json_extract(t.value, '$.moves')) m
-                )
+                ))
               )
             )
             FROM json_each(json_extract(game_saves.save_data, '$.team')) t
-          )
+          ))
         )
       )
       WHERE json_valid(save_data);
@@ -140,12 +140,12 @@ describe('Save Migration and Combat Simulation', () => {
         SELECT json_set(
           save_data,
           '$.box',
-          (
+          json((
             SELECT json_group_array(
               json_set(
                 b.value,
                 '$.moves',
-                (
+                json((
                   SELECT json_group_array(
                     json_set(
                       m.value,
@@ -166,11 +166,11 @@ describe('Save Migration and Combat Simulation', () => {
                     )
                   )
                   FROM json_each(json_extract(b.value, '$.moves')) m
-                )
+                ))
               )
             )
             FROM json_each(json_extract(game_saves.save_data, '$.box')) b
-          )
+          ))
         )
       )
       WHERE json_valid(save_data);

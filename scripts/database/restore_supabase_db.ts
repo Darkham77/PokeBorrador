@@ -11,7 +11,7 @@ import { enableCompileCache } from 'node:module';
  * Realiza una limpieza limpia en orden inverso y restaura transaccionalmente todas las filas.
  *
  * CUMPLE CON:
- * - Regla de Aislamiento y Parseo Multi-Servidor (env-multi-server-parser).
+ * - Regla de Aislamiento y Parseo Multi-Servidor (@francogp/auditor/supabase / /auditor).
  * - Estándares Node.js 26+ (Explicit Resource Management con 'using', prefijos node:).
  * - Arquitectura Zero-Warning y Zero-Any.
  */

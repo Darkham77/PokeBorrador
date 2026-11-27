@@ -10,7 +10,7 @@ import { enableCompileCache } from 'node:module';
  * mantiene su configuración activa sin ensuciar archivos rastreados por Git ni provocar conflictos al hacer pull.
  *
  * CUMPLE CON:
- * - Regla de Aislamiento y Parseo Multi-Servidor (env-multi-server-parser).
+ * - Regla de Aislamiento y Parseo Multi-Servidor (@francogp/auditor/supabase / /auditor).
  * - Estándares Node.js 26+ (styleText, compileCache, formato JSON nativo).
  */
 import path from 'node:path';

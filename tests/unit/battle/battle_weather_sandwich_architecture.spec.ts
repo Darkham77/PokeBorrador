@@ -170,6 +170,7 @@ describe('Atmosphere Sandwich Architecture Contract (RED -> GREEN)', () => {
     ] as const;
     for (const w of allCanvasWeathers) {
       const wrapper = mount(AtmosphereLayer, {
+        attachTo: document.body,
         props: {
           weather: w,
           layer: 'ambient',
@@ -185,6 +186,7 @@ describe('Atmosphere Sandwich Architecture Contract (RED -> GREEN)', () => {
         canvasEl.isVisible(),
         `Canvas must NOT be visible in ambient layer for weather: ${w}`
       ).toBe(false);
+      wrapper.unmount();
     }
   });
 

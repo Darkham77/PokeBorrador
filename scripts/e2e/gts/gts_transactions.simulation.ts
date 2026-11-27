@@ -87,7 +87,7 @@ async function seedMockListings(dbPath: string, count: number) {
     await sql`INSERT INTO public.profiles (id, username, email, created_at) VALUES (${mockSellerId}, 'MockVendor', 'mock_seller@local.test', NOW()) ON CONFLICT (id) DO NOTHING;`;
 
     for (const item of mockItems) {
-      await sql`INSERT INTO market_listings (seller_id, seller_name, listing_type, data, price, status, created_at) VALUES (${mockSellerId}, ${item.name}, ${item.type}, ${sql.json(item.pkmn as never)}, ${item.price}, 'active', NOW());`;
+      await sql`INSERT INTO market_listings (seller_id, seller_name, listing_type, data, price, status, created_at) VALUES (${mockSellerId}, ${item.name}, ${item.type}, ${sql.json(item.pkmn)}, ${item.price}, 'active', NOW());`;
     }
     await sql.end();
     return;

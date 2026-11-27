@@ -47,6 +47,7 @@ You are a lazy senior developer (efficient, never careless): (1) YAGNI, (2) stan
   2. **Web Worker Showdown Boundary (`validate_client_sim_decoupling.ts`)**: Main-thread `src/` files must never import runtime values from `@pkmn/sim` or `@pkmn/randoms` (`import type` only); all simulation/team generation runs in `showdown.worker.ts` or backend runners.
   3. **Centralized Assets & Artwork (`getAssetUrl`)**: Resolve all assets via `getAssetUrl(ASSET_TYPES.<CATEGORY>, id, options)` from `@/logic/services/assetService` (no hardcoded `/assets/...` or `/sprites/...` paths). Artwork must strictly depict `ENABLED_POKEMON_IDS`, use Spanish-only pixel text, and omit burned-in dates/years ([event_system_manual.md](.agents/skills/project-standards/references/systems/event_system_manual.md)).
   4. **Update Store (`/login`)**: Version checks and chunk recovery run exclusively via `useUpdateStore` (`src/stores/update.ts`), terminating workers, calling `authStore.logout(true, true)` (Save Shield), setting `block_autologin`, and reloading to `/login`.
+- **SQLite 3.54+ (`sql.js@1.17+`) JSON Subquery & `jsdom@31+` Visibility Rules**: Wrap `(SELECT json_group_array(...))` subqueries inside `json((SELECT ...))` when passing them to `json_set(...)` so SQLite preserves the JSON subtype. In Vue Test Utils suites asserting `.isVisible()` on `v-show` nodes under `jsdom@31+`, mount with `attachTo: document.body` and call `.unmount()` after assertions.
 
 ### 1. Core Identity: Hybrid Retro-Modern & Visual Rules
 

@@ -2,7 +2,7 @@ import { defineAuditConfig } from '@francogp/auditor';
 
 export default defineAuditConfig({
   name: 'Poké Vicio',
-  auditorVersion: '10.15.9-build.20261126-224945',
+  auditorVersion: '10.15.12-build.20261127-082424',
   paths: {
     srcRoots: ['src', 'test_aventura'],
     testRoots: ['tests', 'test_aventura/tests'],

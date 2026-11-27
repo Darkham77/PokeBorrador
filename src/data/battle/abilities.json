@@ -704,6 +704,11 @@
     "desc": "Invierte los efectos de las auras, por lo que baja la potencia de ciertos movimientos en vez de subirla.",
     "icon": "⚔️"
   },
+  "auraguard": {
+    "name": "Guardaura",
+    "desc": "Reduce a la mitad el daño recibido de movimientos de contacto.",
+    "icon": "🛡️"
+  },
   "baddreams": {
     "name": "Mal Sueño",
     "desc": "Inflige daño a cualquier rival que esté dormido.",
