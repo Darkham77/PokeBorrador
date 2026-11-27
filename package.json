@@ -1,6 +1,6 @@
 {
   "name": "pokemon-online",
-  "version": "0.6.24-build.20261127-090555",
+  "version": "0.6.25-build.20261127-093538",
   "private": true,
   "type": "module",
   "scripts": {
@@ -281,7 +281,7 @@
     "vue-router": "^5.5.3"
   },
   "devDependencies": {
-    "@francogp/auditor": "github:francogp/auditor#v10.15.12",
+    "@francogp/auditor": "github:francogp/auditor#v10.15.13",
     "@pkmn/sim": "0.11.0",
     "@pkmn/types": "5.0.0",
     "@playwright/test": "^1.65.1",

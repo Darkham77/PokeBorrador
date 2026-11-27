@@ -48,13 +48,7 @@ function verifyPhysicalMigrationsRegistered(): void {
 }
 
 async function executeUpgradeBackup(fixturePath: string): Promise<string> {
-  const originalArgv = process.argv;
-  process.argv = ['node', 'scripts/database/upgrade_backup.ts', `file=${fixturePath}`];
-  try {
-    return await upgradeBackup();
-  } finally {
-    process.argv = originalArgv;
-  }
+  return await upgradeBackup({ file: fixturePath });
 }
 
 function parseAndValidateMetadata(generatedUpgradedPath: string): UpgradedBackupObject {
