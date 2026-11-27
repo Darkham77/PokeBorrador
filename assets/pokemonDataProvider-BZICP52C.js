@@ -1,1 +1,0 @@
-export{t as pokemonDataProvider}from"./pokemonDataProvider-BDzUID1h.js";

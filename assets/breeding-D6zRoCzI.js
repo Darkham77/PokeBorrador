@@ -1,0 +1,1 @@
+export{t as useBreedingStore}from"./breeding-B2UmNSRp.js";

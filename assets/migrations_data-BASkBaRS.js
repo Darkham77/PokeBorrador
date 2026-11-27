@@ -1,1 +1,0 @@
-export{t as DATABASE_MIGRATIONS}from"./db-migrations-data-BsND1wR7.js";

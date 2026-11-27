@@ -1,0 +1,1 @@
+export{t as default}from"./ArchaeologyModal-CX-G9O8w.js";
