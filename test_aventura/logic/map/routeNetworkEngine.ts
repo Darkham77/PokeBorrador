@@ -425,6 +425,24 @@ export function generateRouteNetwork(
     H
   });
 
+  const entryCaves = nodes.filter((n) => n.isTransitCaveEntry && n.transitPairId);
+  for (const entryCave of entryCaves) {
+    const exitCave = nodes.find(
+      (n) => n.isTransitCaveExit && n.transitPairId === entryCave.transitPairId
+    );
+    if (exitCave) {
+      resolvedEdges.push({
+        id: `transit_warp_${entryCave.id}_${exitCave.id}`,
+        fromNodeId: entryCave.id,
+        toNodeId: exitCave.id,
+        routeType: 'mountain_pass',
+        distance: 0,
+        waypoints: [],
+        isTransitCaveWarp: true
+      });
+    }
+  }
+
   connectMountainPlateauTrails({
     continentMap,
     pathGrid,

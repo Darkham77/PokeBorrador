@@ -28,8 +28,7 @@ To ensure total cross-platform resilience and clean developer setup:
 1. **Antivirus Exclusions Protocol (Single Source of Truth)**: Developers MUST add the project root directory (`PokeBorrador`) to their antivirus exclusion list (`Windows Security > Virus & threat protection > Manage settings > Exclusions > Add an exclusion > Folder`).
 2. **Zero System Registry Tampering Mandate**: Workspace automation scripts (`setup-windows.ps1`) MUST NEVER attempt intrusive system-wide registry alterations (`VerifiedAndReputablePolicyState`, `AppModelUnlock`, `citool.exe`) to silence security alerts. Scripts must remain lightweight, clean, and portable.
 3. **Automated Setup Unblocking**: `setup-windows.ps1` unblocks downloaded native files (`.node`, `.dll`, `.exe`) in `node_modules` via `Unblock-File` and configures npm security policies (`ignore-scripts true`).
-4. **WASI Fallback Dependency**: Maintain `@rolldown/binding-wasm32-wasi` declared in `devDependencies`. If the OS blocks the native MSVC binding, Rolldown automatically and transparently falls back to WASI execution without halting development.
-5. **Build Tool Validation**: `setup-windows.ps1` and `setup-linux.sh` automatically trigger `npm run auditor` post-install to verify all native tooling and lint standards.
+4. **Build Tool Validation**: `setup-windows.ps1` and `setup-linux.sh` automatically trigger `npm run auditor` post-install to verify all native tooling and lint standards.
 
 ---
 

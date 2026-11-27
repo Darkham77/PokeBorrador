@@ -155,4 +155,26 @@ export function placeCaveEntrances(ctx: CavePlacementContext): void {
       markAreaOccupied(bestCand.x, bestCand.y, 1, 2);
     }
   }
+
+  const placedCaves = placedNodes.filter((n) => n.type === 'cave_entrance');
+  if (placedCaves.length >= 2) {
+    const entryCave = placedCaves[0] as {
+      id: string;
+      transitPairId?: string;
+      isTransitCaveEntry?: boolean;
+      transitTargetId?: string;
+    };
+    const exitCave = placedCaves[1] as {
+      id: string;
+      transitPairId?: string;
+      isTransitCaveExit?: boolean;
+      transitTargetId?: string;
+    };
+    entryCave.transitPairId = 'transit_pair_1';
+    entryCave.isTransitCaveEntry = true;
+    entryCave.transitTargetId = exitCave.id;
+    exitCave.transitPairId = 'transit_pair_1';
+    exitCave.isTransitCaveExit = true;
+    exitCave.transitTargetId = entryCave.id;
+  }
 }

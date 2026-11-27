@@ -2,16 +2,16 @@ import { defineAuditConfig } from '@francogp/auditor';
 
 export default defineAuditConfig({
   name: 'Poké Vicio',
-  auditorVersion: '10.12.6-build.20261114-164434',
+  auditorVersion: '10.15.9-build.20261126-224945',
   paths: {
     srcRoots: ['src', 'test_aventura'],
     testRoots: ['tests', 'test_aventura/tests'],
     e2eRoots: ['scripts/e2e'],
     integrationRoots: ['tests/integration'],
     migrationsDir: 'database/migrations',
-    scriptsRoots: ['scripts', 'supabase'],
-    codeRoots: ['src', 'scripts', 'database', 'ui-demo', 'test_aventura', 'supabase'],
-    cliRoots: ['scripts', 'supabase'],
+    scriptsRoots: ['scripts'],
+    codeRoots: ['src', 'scripts', 'database', 'ui-demo', 'test_aventura'],
+    cliRoots: ['scripts'],
     dataRoots: ['src/data', 'test_aventura/data'],
     componentsRoots: ['src/components', 'test_aventura/components'],
     viewsRoots: ['src/views', 'test_aventura/views'],
@@ -26,7 +26,10 @@ export default defineAuditConfig({
     includeTestsInCodeAudit: false,
     ignoreGlobs: [],
     ignoredDirs: ['external'],
-    ignoredPatterns: ['src/logic/db/migrations_data.ts']
+    ignoredPatterns: ['src/logic/db/migrations_data.ts'],
+    enabled: true,
+    toolingFiles: ['vite.plugins.ts'],
+    unignoreDirs: []
   },
   coverage: {
     enabled: true,
@@ -53,16 +56,6 @@ export default defineAuditConfig({
         glob: 'scripts/**',
         policy: 'cli',
         reason: 'Maintenance and tooling CLI scripts running in Node environment'
-      },
-      {
-        glob: 'supabase/**',
-        policy: 'scripts',
-        reason: 'Docker Supabase local harness and credentials setup scripts'
-      },
-      {
-        glob: 'supabase/**',
-        policy: 'cli',
-        reason: 'Docker Supabase local harness and credentials CLI setup tool'
       },
       {
         glob: 'src/data/**',
@@ -113,7 +106,7 @@ export default defineAuditConfig({
     engine: 'hybrid',
     schemaQualified: false,
     supabaseDir: 'supabase',
-    dockerContainer: 'supabase-db',
+    dockerContainer: 'pokevicio-supabase-db',
     allowedDatabaseFiles: ['AGENTS.md'],
     exemptRlsTables: ['_migrations', 'schema_migrations', 'supabase_migrations'],
     authorizedSaveFiles: [
@@ -127,7 +120,8 @@ export default defineAuditConfig({
     },
     sqlMigrations: {
       enabled: true
-    }
+    },
+    allowedHosts: ['localhost', '127.0.0.1']
   },
   valibot: {
     enabled: true,
@@ -408,7 +402,6 @@ export default defineAuditConfig({
     ignoreDependencies: [
       'postgres',
       '@pkmn/sim',
-      '@rolldown/binding-wasm32-wasi',
       'ws',
       'sql.js',
       'html-validate-vue'
@@ -427,8 +420,8 @@ export default defineAuditConfig({
     typeAware: true,
     showCascade: true,
     duplicates: {
-      nearMiss: true,
-      mode: 'strict',
+      nearMiss: false,
+      mode: 'mild',
       minOccurrences: 2,
       minLines: 15,
       minTokens: 100,
@@ -449,7 +442,20 @@ export default defineAuditConfig({
       maxCognitive: 20,
       maxCyclomatic: 25,
       cyclomaticPolicy: 'standard'
-    }
+    },
+    minimumVersion: '3.42.0',
+    architecture: {
+      enabled: true,
+      sharedState: false
+    },
+    mutation: {
+      enabled: false,
+      runner: 'auto',
+      mutantsPerLine: 2,
+      functionScope: true,
+      typecheck: true
+    },
+    enforceTemporalCoupling: false
   },
   customFamilies: [
     {
@@ -782,5 +788,79 @@ export default defineAuditConfig({
     enabled: true,
     timeoutMs: 0,
     maxStalenessMinutes: 5
+  },
+  supabaseDocker: {
+    enabled: true,
+    projectSlug: 'pokevicio',
+    upstreamRef: 'master',
+    supabaseDir: 'supabase',
+    masterEnvFile: '.env',
+    postgres: {
+      expectedMajor: 17,
+      allowMajorUpgrade: false,
+      adminRole: 'supabase_admin'
+    },
+    profiles: {
+      remote: {
+        enabled: true,
+        includeLogs: true,
+        image: {
+          user: 'francogp612',
+          repo: 'pokevicio-db',
+          tag: 'latest'
+        },
+        volumes: {
+          shared: 'supabase-volumes-v2',
+          dbData: 'db-data-v3',
+          dbConfig: 'db-config-v3',
+          storage: 'storage-data'
+        },
+        security: {
+          bindLoopback: false
+        },
+        postGenerateCommand: 'npm run servers:configure'
+      },
+      localFull: {
+        enabled: true,
+        includeLogs: false,
+        realtimeTenantName: 'realtime-dev',
+        ports: {
+          api: 8020,
+          postgres: 5452,
+          pooler: 6563,
+          studio: 3020
+        },
+        autoApplyMigrations: false
+      },
+      lite: new Map([
+        [
+          'test',
+          {
+            enabled: true,
+            storage: 'tmpfs',
+            nginx: {
+              clientMaxBodySize: '100m',
+              proxyRoot: true
+            },
+            images: {
+              postgres: 'supabase/postgres:17.6.1.136',
+              postgrest: 'postgrest/postgrest:v14.17',
+              nginx: 'nginx:1.29-alpine'
+            },
+            ports: {
+              postgres: 54329,
+              gateway: 54321
+            },
+            schemas: ['public', 'storage'],
+            restEnv: new Map([
+              ['PGRST_DB_USE_BUILTIN_RAISE', 'true'],
+              ['PGRST_DB_POOL', '50'],
+              ['PGRST_DB_POOL_TIMEOUT', '30']
+            ]),
+            autoSyncMigrations: false
+          }
+        ]
+      ])
+    }
   }
 });

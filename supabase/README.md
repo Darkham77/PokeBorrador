@@ -1,6 +1,6 @@
 # Supabase Configurator & Deployment Manager
 
-CLI orchestration and automation tool (`setup_supabase.ts`) designed to manage multi-server Supabase deployments under a **"Zero-Touch"** approach and a purist Git architecture, fully running on **native Node.js (version governed by `package.json` / `.node-version`)**.
+Unified Supabase Docker orchestration powered by `@francogp/auditor/supabase` (`auditor-supabase`), governed declaratively from [`.auditor/audit.config.ts`](../.auditor/audit.config.ts) (`supabaseDocker`) and running on **native Node.js (version governed by `package.json` / `.node-version`)**.
 
 ---
 
@@ -9,7 +9,7 @@ CLI orchestration and automation tool (`setup_supabase.ts`) designed to manage m
 - **100% Dynamic Architecture**: Does not store static Supabase files (`docker-compose.yml`, `Dockerfile`, `init/`) in the repository. Everything is generated on the fly at build time.
 - **Multi-Server Management**: Centralizes configuration for multiple environments (`cloud`, `nas-franco`, `local`, etc.) in a single master `.env` file located at the project root.
 - **Game Metadata & DRY Tenant**: Natively incorporates identifiers for game UI (`ID`, `NAME`, `REGION`) and enforces the DRY principle for tenant management (`TENANT_ID`), propagating it automatically to Supavisor and Storage services.
-- **Zero-Touch Deployments**: Encapsulates all configurations, internal Supabase SQL scripts, and services (Kong, Vector, Supavisor) inside a custom Docker image, eliminating the need to manually create or edit files on remote servers.
+- **Zero-Touch Deployments**: Encapsulates all configurations, internal Supabase SQL scripts, and services (Envoy, Vector, Supavisor) inside a custom Docker image, eliminating the need to manually create or edit files on remote servers.
 - **Intelligent Variable Inheritance**: Automatically merges official Supabase base configurations (`.env.example`) with master and server-specific variables, ensuring Docker Compose starts without specification errors.
 - **Modernized CLI Interface**: Intuitive, friendly commands with rich visual output and ultra-fast native TypeScript compilation (powered by native Node.js).
 
@@ -19,10 +19,11 @@ CLI orchestration and automation tool (`setup_supabase.ts`) designed to manage m
 
 ```text
 Poké Vicio/
-├── .env.example         # Master configuration file template (Root)
+├── .env.example                 # Master configuration file template (Root)
+├── .auditor/audit.config.ts     # Declarative supabaseDocker SSoT configuration
 └── supabase/
-    ├── setup_supabase.ts    # Main CLI orchestrator (Native Node.js)
-    └── README.md            # This documentation
+    ├── AGENTS.md                # Supabase directory governance & DOX index
+    └── README.md                # This documentation
 ```
 
 > [!NOTE]
@@ -34,7 +35,7 @@ Poké Vicio/
 
 ```mermaid
 graph TD
-    A[Master .env File in Root] -->|"Global & Per-Server Settings"| B(setup_supabase.ts)
+    A[Master .env File in Root] -->|"Global & Per-Server Settings"| B("auditor-supabase / audit.config.ts")
     C[Official Supabase GitHub] -->|git sparse-checkout| D[Temporary docker/ Folder]
     B -->|1. clone| D
     D -->|2. generate| E[generated/ Folder with Per-Server .env and docker-compose]
@@ -88,7 +89,10 @@ SERVER_server_franco_POSTGRES_PASSWORD=my_secure_server_password
 
 ## CLI Command Reference
 
-The orchestrator is executed via `npm run supabase:manage [command]`. Running without commands lists configured servers.
+The orchestrator is executed via `npm run supabase:manage [command]` (backed by `auditor-supabase`). Available subcommands:
+
+- `clone`, `generate`, `add-server`, `list`, `build`, `publish`, `release`, `all`, `up`, `down`, `restart`, `status`, `migrate`, `upgrade-pg`.
+- Local full-stack shortcuts: `npm run supabase:local:up`, `npm run supabase:local:down`, `npm run supabase:local:status` (`localFull` on ports `8020`, `5452`, `6563`, `3020`).
 
 ### `list`
 
@@ -98,12 +102,12 @@ Displays a summary table of all servers defined in your master `.env`, their pub
 npm run supabase:manage list
 ```
 
-### `add`
+### `add-server`
 
 Interactive wizard to add or update a server in the master `.env` file. Prompts for game metadata (`ID`, `NAME`, `REGION`), `Tenant ID` configuration, domains, ports, and dashboard credentials.
 
 ```bash
-npm run supabase:manage add
+npm run supabase:manage add-server
 ```
 
 ### `clone`
@@ -124,7 +128,7 @@ npm run supabase:manage generate
 
 ### `build`
 
-Builds the custom Postgres Docker image packaging all internal Supabase SQL scripts and configurations for Kong, Vector, and Supavisor.
+Builds the custom Postgres Docker image packaging all internal Supabase SQL scripts and configurations for Envoy, Vector, and Supavisor.
 
 ```bash
 npm run supabase:manage build
@@ -154,6 +158,54 @@ npm run supabase:manage release
 npm run supabase:manage all
 ```
 
+### `up`
+
+Starts the Supabase Docker stack for the selected profile (use `--profile localFull` for local development).
+
+```bash
+npm run supabase:manage up -- --profile localFull
+```
+
+### `down`
+
+Stops and removes the Supabase Docker stack for the selected profile.
+
+```bash
+npm run supabase:manage down -- --profile localFull
+```
+
+### `restart`
+
+Restarts the running Supabase Docker stack for the selected profile.
+
+```bash
+npm run supabase:manage restart -- --profile localFull
+```
+
+### `status`
+
+Displays container health, exposed ports, Postgres version, and migration status for the selected profile.
+
+```bash
+npm run supabase:manage status -- --profile localFull
+```
+
+### `migrate`
+
+Applies pending SQL migrations to the target Supabase database profile.
+
+```bash
+npm run supabase:manage migrate
+```
+
+### `upgrade-pg`
+
+Performs a controlled PostgreSQL major version upgrade when enabled in `.auditor/audit.config.ts`.
+
+```bash
+npm run supabase:manage upgrade-pg
+```
+
 ---
 
 ## Practical Usage Examples
@@ -171,7 +223,7 @@ npm run supabase:manage all
 1. Run the wizard to add the server and configure its metadata and tenant:
 
 ```bash
-npm run supabase:manage add
+npm run supabase:manage add-server
 ```
 
 _The wizard will ask for the name (e.g. `staging`), game metadata, Tenant ID, and domains._
@@ -213,7 +265,7 @@ To securely expose the database and Supabase API outside your local network usin
    - **Source Port**: `8443`
    - **Target Protocol**: `HTTP`
    - **Target Hostname**: Your NAS private IP (e.g. `192.168.88.200`)
-   - **Target Port**: `8000` (the HTTP port exposed by Kong in your Docker).
+   - **Target Port**: `8000` (the HTTP port exposed by Envoy in your Docker).
 
 ### 3. Configure Port Forwarding (NAT) on Your Router
 

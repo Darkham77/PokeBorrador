@@ -5,7 +5,7 @@ description: >-
   containing multi-server grouped keys (SERVER_<profile>_<VAR>) and global settings (DOCKER_*).
   USE THIS SKILL WHENEVER the user requests server configuration, Supabase credential management,
   generating environment-specific .env files, compiling servers.local.json (npm run servers:configure),
-  modifying docker-compose.yml, or creating/executing deployment automation scripts (e.g., setup_supabase.ts),
+  modifying docker-compose.yml, or creating/executing deployment automation scripts (e.g., `auditor-supabase` via `npm run supabase:manage`),
   even if the .env file is not explicitly mentioned.
 ---
 
@@ -27,6 +27,7 @@ The project utilizes a single master `.env` file as the single source of truth f
   - **Single Source of Truth Tenant ID**: To adhere to DRY principles, every server defines only `SERVER_<profile>_TENANT_ID`. When generating deployment configurations, the parser automatically propagates this value to `POOLER_TENANT_ID` and `STORAGE_TENANT_ID` as required by Supabase services.
   - Cloud Profile Example: `SERVER_cloud_ID=official_prod`, `SERVER_cloud_TENANT_ID=your-tenant-id`.
   - Docker Dedicated Profile Example: `SERVER_server_franco_ID=server_franco`, `SERVER_server_franco_TENANT_ID=your-tenant-id`.
+  - **Local Alias Without Overriding Production Default**: Set `SERVER_<profile>_PREFER_FOR=local` (instead of `IS_DEFAULT=true`) on local Docker profiles so `auditor-supabase generate` emits `supabase/generated/local.env` without displacing `official_prod` as `DEFAULT_SERVER` in `src/data/system/servers.local.json`.
 
 ## 2. Parsing & Extraction Principles
 
@@ -68,7 +69,7 @@ STORAGE_TENANT_ID=your-tenant-id
 
 ### B. Consumption in Automation Scripts (Node.js 26+ ESM / TypeScript)
 
-When developing or modifying scripts (such as `setup_supabase.ts`), implement a parser that dynamically filters keys from the master environment based on the active server argument, utilizing Node.js 26+ native features:
+When developing or modifying scripts (or configuring `auditor-supabase` via `npm run supabase:manage`), implement a parser that dynamically filters keys from the master environment based on the active server argument, utilizing Node.js 26+ native features:
 
 ```typescript
 import fs from 'node:fs/promises';

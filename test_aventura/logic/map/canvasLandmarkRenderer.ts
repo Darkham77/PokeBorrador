@@ -153,8 +153,15 @@ export function resolvePoiLandmarksAndBuildings(
       const px = poi.gridX * tileSize;
       const py = poi.gridY * tileSize;
       if (poi.type === 'cave_entrance') {
+        const gx = poi.gridX;
+        const shouldSnapNorth =
+          poi.gridY > 0 &&
+          (continent.heightmap[poi.gridY]?.[gx] ?? 0) === 0 &&
+          (continent.heightmap[poi.gridY - 1]?.[gx] ?? 0) >= 1;
+        const gy = shouldSnapNorth ? poi.gridY - 1 : poi.gridY;
+        const snappedPy = gy * tileSize;
         const mtnPal =
-          continent.geologicalClusters?.paletteMatrix?.[poi.gridY]?.[poi.gridX] ??
+          continent.geologicalClusters?.paletteMatrix?.[gy]?.[gx] ??
           continent.mountainPalette ??
           'brown';
         const caveFile =
@@ -163,13 +170,11 @@ export function resolvePoiLandmarksAndBuildings(
         buildingsToStamp.push({
           file: caveFile,
           px,
-          py,
-          ySort: py + poi.footprint.height * tileSize
+          py: snappedPy,
+          ySort: snappedPy + poi.footprint.height * tileSize
         });
 
         // Authentic Mountain Scenery Props (flanking boulder, rubble stones & signpost)
-        const gx = poi.gridX;
-        const gy = poi.gridY;
 
         // 1. Canonical Boulder (1x1 tile) on left flank
         const boulderX = gx - 2;

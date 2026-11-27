@@ -53,8 +53,8 @@ for (const [key, prefix] of [
     const dbPath: FeetDatabasePath = `${prefix}${subKey}.webp`;
     const y = requireFeetMetric(tuple, dbPath, 0);
     const x = requireFeetMetric(tuple, dbPath, 1);
-    const isFlying = tuple[2] === 1;
-    const shadowScale = tuple[3];
+    const isFlying = (tuple)[2] === 1;
+    const shadowScale = (tuple)[3];
     POKEMON_FEET_DATABASE[dbPath] = {
       feetY: y,
       feetX: x,

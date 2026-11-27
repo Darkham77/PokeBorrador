@@ -5,7 +5,7 @@ UPDATE game_saves
 SET save_data = json_set(
   save_data,
   '$.team',
-  (
+  json((
     SELECT json_group_array(
       CASE 
         WHEN json_extract(team_item.value, '$.uid') = '3b70c27d-9a1d-4632-becb-d46db26e2398' 
@@ -15,7 +15,7 @@ SET save_data = json_set(
       END
     )
     FROM json_each(json_extract(game_saves.save_data, '$.team')) team_item
-  )
+  ))
 )
 WHERE save_data IS NOT NULL 
   AND json_extract(save_data, '$.team') IS NOT NULL;
@@ -24,7 +24,7 @@ UPDATE game_saves
 SET save_data = json_set(
   save_data,
   '$.box',
-  (
+  json((
     SELECT json_group_array(
       CASE 
         WHEN json_extract(box_item.value, '$.uid') = '3b70c27d-9a1d-4632-becb-d46db26e2398' 
@@ -34,7 +34,7 @@ SET save_data = json_set(
       END
     )
     FROM json_each(json_extract(game_saves.save_data, '$.box')) box_item
-  )
+  ))
 )
 WHERE save_data IS NOT NULL 
   AND json_extract(save_data, '$.box') IS NOT NULL;

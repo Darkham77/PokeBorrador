@@ -5,7 +5,7 @@ UPDATE game_saves
 SET save_data = json_set(
   save_data,
   '$.eggs',
-  (
+  json((
     SELECT json_group_array(
       CASE
         WHEN json_extract(egg_item.value, '$.nature') IS NULL OR json_extract(egg_item.value, '$.nature') = '' THEN
@@ -25,7 +25,7 @@ SET save_data = json_set(
       END
     )
     FROM json_each(json_extract(game_saves.save_data, '$.eggs')) egg_item
-  )
+  ))
 )
 WHERE save_data IS NOT NULL AND json_extract(save_data, '$.eggs') IS NOT NULL;
 

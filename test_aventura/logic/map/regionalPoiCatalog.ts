@@ -258,7 +258,8 @@ export function generateProceduralPOICatalog(
       width: 22,
       height: 20,
       preference: 'mountain_plateau',
-      hasGym: false
+      hasGym: false,
+      tier: 3
     }
   ];
 
@@ -267,22 +268,28 @@ export function generateProceduralPOICatalog(
   const numCities = Math.min(8, Math.floor(targetCount * 0.4));
   const numTowns = Math.ceil(targetCount * 0.15);
   const numForests = Math.floor(targetCount * 0.15);
-  const numCaves = Math.floor(targetCount * 0.1);
+  const numCaves =
+    targetCount >= 12 ? Math.max(2, Math.floor(targetCount * 0.1)) : Math.floor(targetCount * 0.1);
+  let gymCount = 0;
 
   if (numMetropolis > 0) {
     catalog.push({
       id: `metropolis_${idCounter}`,
-      name: `Metropolis Prime`,
+      name: `Metrópolis Prime`,
       type: 'metropolis',
       width: DEFAULT_METROPOLIS_DIMENSIONS.width,
       height: DEFAULT_METROPOLIS_DIMENSIONS.height,
       preference: 'flat_grass',
-      hasGym: true
+      hasGym: true,
+      tier: 2
     });
+    gymCount++;
     idCounter++;
   }
 
   for (let i = 0; i < numCities; i++) {
+    const hasGym = gymCount < 8;
+    if (hasGym) gymCount++;
     catalog.push({
       id: `city_${idCounter}`,
       name: `City ${CITY_DESIGNATIONS[i] ?? i + 1}`,
@@ -290,7 +297,8 @@ export function generateProceduralPOICatalog(
       width: DEFAULT_CITY_DIMENSIONS.width,
       height: DEFAULT_CITY_DIMENSIONS.height,
       preference: 'flat_grass',
-      hasGym: true
+      hasGym,
+      tier: 1
     });
     idCounter++;
   }
@@ -303,7 +311,9 @@ export function generateProceduralPOICatalog(
       width: DEFAULT_TOWN_DIMENSIONS.width,
       height: DEFAULT_TOWN_DIMENSIONS.height,
       preference: 'flat_grass',
-      hasGym: false
+      hasGym: false,
+      tier: 0,
+      ...(i === 0 ? { progressionIndex: 0 } : {})
     });
     idCounter++;
   }
@@ -339,10 +349,11 @@ export function generateProceduralPOICatalog(
   let gateIdx = 1;
   let waterIdx = 1;
   let portIdx = 1;
+  let forestExtraIdx = numForests + 1;
 
   while (remaining > 0) {
     const t = REMAINING_SECONDARY_TYPES[typeIdx % REMAINING_SECONDARY_TYPES.length]!;
-    if (t === 'route_gate') {
+    if (t === 'route_gate' && gateIdx <= 2) {
       catalog.push({
         id: `gate_${idCounter}`,
         name: `Route Gate ${gateIdx++}`,
@@ -351,7 +362,7 @@ export function generateProceduralPOICatalog(
         height: 10,
         preference: 'flat_grass'
       });
-    } else if (t === 'water_landmark') {
+    } else if (t === 'water_landmark' && waterIdx <= 1) {
       catalog.push({
         id: `water_${idCounter}`,
         name: `Water Landmark ${waterIdx++}`,
@@ -360,7 +371,7 @@ export function generateProceduralPOICatalog(
         height: 4,
         preference: 'coast_water'
       });
-    } else if (t === 'port_dock') {
+    } else if (t === 'port_dock' && portIdx <= 1) {
       catalog.push({
         id: `port_${idCounter}`,
         name: `Port Dock ${portIdx++}`,
@@ -368,6 +379,18 @@ export function generateProceduralPOICatalog(
         width: PROCEDURAL_POI_DIMENSIONS.PORT_DOCK_WIDTH,
         height: PROCEDURAL_POI_DIMENSIONS.PORT_DOCK_HEIGHT,
         preference: 'coast_water'
+      });
+    } else if (gateIdx <= 2 || waterIdx <= 1 || portIdx <= 1) {
+      typeIdx++;
+      continue;
+    } else {
+      catalog.push({
+        id: `forest_${idCounter}`,
+        name: `Forest Dungeon ${forestExtraIdx++}`,
+        type: 'dungeon_forest',
+        width: PROCEDURAL_POI_DIMENSIONS.FOREST_WIDTH,
+        height: PROCEDURAL_POI_DIMENSIONS.FOREST_HEIGHT,
+        preference: 'forest_clearing'
       });
     }
     idCounter++;

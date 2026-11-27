@@ -255,7 +255,6 @@ export class PokemonLegalityValidator {
   /**
    * Assert single Pokemon legality, throwing loudly on any illegality.
    */
-  // fallow-ignore-next-line unused-class-member
   public static assertPokemonLegality(
     poke: Pokemon | PokemonSet | Record<string, unknown>,
     label = 'Pokemon'

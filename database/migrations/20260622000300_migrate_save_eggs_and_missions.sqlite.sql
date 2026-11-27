@@ -5,7 +5,7 @@ UPDATE game_saves
 SET save_data = json_set(
   save_data,
   '$.eggs',
-  (
+  json((
     SELECT json_group_array(
       json_set(
         json_set(
@@ -41,7 +41,7 @@ SET save_data = json_set(
       )
     )
     FROM json_each(json_extract(game_saves.save_data, '$.eggs')) egg_item
-  )
+  ))
 )
 WHERE save_data IS NOT NULL AND json_extract(save_data, '$.eggs') IS NOT NULL;
 
@@ -49,7 +49,7 @@ UPDATE game_saves
 SET save_data = json_set(
   save_data,
   '$.daycare_missions',
-  (
+  json((
     SELECT json_group_array(
       json_set(
         mission_item.value,
@@ -64,6 +64,6 @@ SET save_data = json_set(
       )
     )
     FROM json_each(json_extract(game_saves.save_data, '$.daycare_missions')) mission_item
-  )
+  ))
 )
 WHERE save_data IS NOT NULL AND json_extract(save_data, '$.daycare_missions') IS NOT NULL;

@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execSync, spawnSync } from 'node:child_process';
 
 import { describe, it, expect } from 'vite-plus/test';
 
@@ -54,16 +54,13 @@ describe('Admin & Maintenance Scripts CLI Parameters & Help', () => {
     expect(output).toContain('all');
   });
 
-  it('setup_supabase.ts outputs clear usage on --help', () => {
-    const output = execSync(
-      'node --permission --experimental-strip-types --allow-fs-read=. --allow-child-process supabase/setup_supabase.ts --help',
-      {
-        encoding: 'utf-8',
-        stdio: ['ignore', 'pipe', 'pipe']
-      }
-    );
-    expect(output).toContain('USAGE setup-supabase');
-    expect(output).toContain('list');
+  it('auditor-supabase outputs clear usage on --help', () => {
+    const res = spawnSync('./node_modules/.bin/auditor-supabase', ['--help'], {
+      encoding: 'utf-8'
+    });
+    const output = `${res.stdout ?? ''}\n${res.stderr ?? ''}`;
+    expect(output).toContain('USAGE');
+    expect(output).toContain('auditor-supabase');
     expect(output).toContain('generate');
   });
 

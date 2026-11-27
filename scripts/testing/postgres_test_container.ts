@@ -12,17 +12,47 @@ import os from 'node:os';
 import path from 'node:path';
 import { styleText } from 'node:util';
 
+import {
+  applyBootstrapSql,
+  composeDown,
+  composeUp,
+  generateLiteBootstrapSql,
+  generateLiteComposeYaml,
+  generateLiteNginxConf
+} from '@francogp/auditor/supabase';
 import postgres from 'postgres';
 
-export const CONTAINER_NAME = 'pokevicio-test-postgres';
-export const POSTGREST_CONTAINER_NAME = 'pokevicio-test-postgrest';
-export const GATEWAY_CONTAINER_NAME = 'pokevicio-test-gateway';
-export const DOCKER_NETWORK = 'pokevicio-test-net';
-export const POSTGRES_PORT = 54329;
+import auditConfig from '../../.auditor/audit.config.ts';
+
+const SUPABASE_DOCKER_CONFIG = auditConfig.supabaseDocker;
+const LITE_TEST_PROFILE = SUPABASE_DOCKER_CONFIG?.profiles.lite?.get('test');
+const PROJECT_SLUG = SUPABASE_DOCKER_CONFIG?.projectSlug ?? 'pokevicio';
+
+export const CONTAINER_NAME = `${PROJECT_SLUG}-test-db`;
+export const POSTGREST_CONTAINER_NAME = `${PROJECT_SLUG}-test-rest`;
+export const GATEWAY_CONTAINER_NAME = `${PROJECT_SLUG}-test-gateway`;
+export const POSTGRES_PORT = LITE_TEST_PROFILE?.ports.postgres ?? 54329;
 export const POSTGRES_URL = `postgres://postgres:postgres@localhost:${POSTGRES_PORT}/postgres`;
-export const POSTGREST_PORT = 54321;
+export const POSTGREST_PORT = LITE_TEST_PROFILE?.ports.gateway ?? 54321;
 export const POSTGREST_URL = `http://127.0.0.1:${POSTGREST_PORT}`;
 export const JWT_SECRET = 'super-secret-jwt-token-with-at-least-32-characters-long';
+
+const LEGACY_TEST_CONTAINERS = [
+  'pokevicio-test-postgres',
+  'pokevicio-test-postgrest',
+  'pokevicio-test-gateway'
+] as const;
+
+type LiteComposePaths = {
+  outDir: string;
+  composePath: string;
+  nginxPath: string;
+  envFilePath: string;
+};
+
+function formatErrorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
 
 export function createSignedJwt(payload: Record<string, unknown>, secret = JWT_SECRET): string {
   const header = { alg: 'HS256', typ: 'JWT' };
@@ -497,20 +527,76 @@ export async function waitForPostgrest(maxRetries = POSTGRES_READY_MAX_RETRIES):
   return false;
 }
 
+function resolveLitePathsSync(): LiteComposePaths {
+  const supabaseDir = SUPABASE_DOCKER_CONFIG?.supabaseDir ?? 'supabase';
+  const outDir = path.resolve(process.cwd(), supabaseDir, 'generated', 'lite', 'test');
+  return {
+    outDir,
+    composePath: path.join(outDir, 'docker-compose.yml'),
+    nginxPath: path.join(outDir, 'nginx.conf'),
+    envFilePath: path.join(outDir, '.env')
+  };
+}
+
 /**
  * Stops and removes the ephemeral PostgreSQL, PostgREST & Gateway test containers.
  */
-export function stopPostgresTestContainer(dockerBin?: string | null): void {
-  const bin = dockerBin || findDockerBinary();
-  if (bin) {
+export function stopPostgresTestContainer(): void {
+  const { composePath, envFilePath } = resolveLitePathsSync();
+  if (fs.existsSync(composePath)) {
     try {
-      spawnSync(bin, ['rm', '-f', GATEWAY_CONTAINER_NAME], { stdio: 'ignore' });
-      spawnSync(bin, ['rm', '-f', POSTGREST_CONTAINER_NAME], { stdio: 'ignore' });
-      spawnSync(bin, ['rm', '-f', CONTAINER_NAME], { stdio: 'ignore' });
+      composeDown(composePath, {
+        removeVolumes: true,
+        envFilePath: fs.existsSync(envFilePath) ? envFilePath : undefined
+      });
     } catch (err) {
       console.warn('[Handled controlled exception]:', err);
     }
   }
+}
+
+async function materializeLiteTestArtifacts(): Promise<{
+  paths: LiteComposePaths;
+  bootstrapSql: string;
+  adminRole: string | undefined;
+} | null> {
+  if (!SUPABASE_DOCKER_CONFIG?.enabled || !LITE_TEST_PROFILE?.enabled) {
+    console.log(
+      styleText(
+        'yellow',
+        '⚠️  supabaseDocker.profiles.lite.test no está habilitado en .auditor/audit.config.ts.'
+      )
+    );
+    return null;
+  }
+
+  const paths = resolveLitePathsSync();
+  await fsPromises.mkdir(paths.outDir, { recursive: true });
+
+  const composeYaml = generateLiteComposeYaml(
+    {
+      projectSlug: SUPABASE_DOCKER_CONFIG.projectSlug,
+      profileName: 'test',
+      profile: LITE_TEST_PROFILE
+    },
+    { postgresPassword: 'postgres', jwtSecret: JWT_SECRET }
+  );
+  const nginxConf = generateLiteNginxConf(POSTGREST_CONTAINER_NAME, LITE_TEST_PROFILE.nginx);
+  const bootstrapSql = [
+    'ALTER ROLE postgres WITH SUPERUSER;',
+    'GRANT ALL ON SCHEMA auth TO postgres;',
+    generateLiteBootstrapSql(JWT_SECRET, 'postgres')
+  ].join('\n');
+
+  await fsPromises.writeFile(paths.composePath, composeYaml, 'utf-8');
+  await fsPromises.writeFile(paths.nginxPath, nginxConf, 'utf-8');
+  await fsPromises.writeFile(
+    paths.envFilePath,
+    `# Auto-generated deterministic credentials for lite.test\nPOSTGRES_PASSWORD=postgres\nJWT_SECRET=${JWT_SECRET}\n`,
+    'utf-8'
+  );
+
+  return { paths, bootstrapSql, adminRole: SUPABASE_DOCKER_CONFIG.postgres.adminRole };
 }
 
 /**
@@ -526,8 +612,15 @@ export async function ensurePostgresTestContainerReady(forceRecreate = false): P
   const dockerInfo = await inspectDocker();
   const dockerBin = dockerInfo.dockerBin;
 
+  const failResult = {
+    isReady: false,
+    postgresUrl: POSTGRES_URL,
+    postgrestUrl: POSTGREST_URL,
+    dockerBin
+  };
+
   if (!dockerInfo.isRunning || !dockerBin) {
-    return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
+    return failResult;
   }
 
   // 0. Quick check: if already running and healthy, reuse without container/network recreation churn
@@ -547,7 +640,7 @@ export async function ensurePostgresTestContainerReady(forceRecreate = false): P
         console.error(
           styleText(
             'red',
-            `❌ Error al aplicar migraciones incrementales en PostgreSQL: ${(migErr as Error).message}`
+            `❌ Error al aplicar migraciones incrementales en PostgreSQL: ${formatErrorMessage(migErr)}`
           )
         );
       }
@@ -558,176 +651,89 @@ export async function ensurePostgresTestContainerReady(forceRecreate = false): P
   console.log(
     styleText(
       'cyan',
-      `🐳 Docker activo detectado (${dockerBin}). Preparando pila Supabase (PostgreSQL + PostgREST + Gateway)...`
+      `🐳 Docker activo detectado (${dockerBin}). Preparando pila Supabase lite.test (@francogp/auditor/supabase)...`
     )
   );
 
-  // 1. Ensure docker network exists
-  spawnSync(dockerBin, ['network', 'create', DOCKER_NETWORK], { stdio: 'ignore' });
+  // 1. Clean up any lingering legacy standalone test containers before first lite.test startup
+  for (const legacyName of LEGACY_TEST_CONTAINERS) {
+    spawnSync(dockerBin, ['rm', '-f', legacyName], { stdio: 'ignore' });
+  }
 
-  // 2. Remove lingering containers
-  spawnSync(dockerBin, ['rm', '-f', GATEWAY_CONTAINER_NAME], { stdio: 'ignore' });
-  spawnSync(dockerBin, ['rm', '-f', POSTGREST_CONTAINER_NAME], { stdio: 'ignore' });
-  spawnSync(dockerBin, ['rm', '-f', CONTAINER_NAME], { stdio: 'ignore' });
+  // 2. Read SSoT supabaseDocker config and materialize lite.test artifacts
+  const artifacts = await materializeLiteTestArtifacts();
+  if (!artifacts) {
+    return failResult;
+  }
+  const {
+    paths: { composePath, envFilePath },
+    bootstrapSql,
+    adminRole
+  } = artifacts;
 
-  // 3. Run PostgreSQL container with tmpfs on RAM for maximum speed
-  const runPgRes = spawnSync(
-    dockerBin,
-    [
-      'run',
-      '-d',
-      '--name',
-      CONTAINER_NAME,
-      '--network',
-      DOCKER_NETWORK,
-      '-p',
-      `${POSTGRES_PORT}:5432`,
-      '-e',
-      'POSTGRES_PASSWORD=postgres',
-      '-e',
-      'POSTGRES_USER=postgres',
-      '-e',
-      'POSTGRES_DB=postgres',
-      '--tmpfs',
-      '/var/lib/postgresql/data:rw',
-      'postgres:17-alpine',
-      '-c',
-      'synchronous_commit=off',
-      '-c',
-      'fsync=off',
-      '-c',
-      'full_page_writes=off',
-      '-c',
-      'max_connections=200'
-    ],
-    { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] }
-  );
+  if (forceRecreate) {
+    try {
+      composeDown(composePath, { removeVolumes: true, envFilePath });
+    } catch (err: unknown) {
+      console.warn(
+        `[Handled controlled exception] composeDown before recreate: ${formatErrorMessage(err)}`
+      );
+    }
+  }
 
-  if (runPgRes.status !== 0) {
+  // 3. Phase 1: Boot DB container and wait for pg_isready
+  try {
+    composeUp(composePath, envFilePath, [CONTAINER_NAME]);
+  } catch (err: unknown) {
     console.log(
       styleText(
         'yellow',
-        `⚠️  No se pudo iniciar el contenedor PostgreSQL: ${runPgRes.stderr?.trim() || 'Error desconocido'}`
+        `⚠️  No se pudo iniciar el contenedor PostgreSQL: ${formatErrorMessage(err)}`
       )
     );
-    return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
+    return failResult;
   }
 
   const isPgReady = await waitForPostgres(POSTGRES_URL);
   if (!isPgReady) {
     console.log(styleText('yellow', '⚠️  PostgreSQL no respondió a tiempo.'));
-    return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
+    return failResult;
   }
 
+  // 4. Bootstrap roles/JWT GUC and apply schema migrations
   try {
+    applyBootstrapSql(CONTAINER_NAME, bootstrapSql, adminRole);
     await applyMigrationsToPostgres(POSTGRES_URL);
     console.log(styleText('green', '✅ PostgreSQL listo y migraciones aplicadas.'));
   } catch (migErr) {
     console.error(
       styleText(
         'red',
-        `❌ Error al aplicar migraciones en PostgreSQL: ${(migErr as Error).message}`
+        `❌ Error al aplicar migraciones en PostgreSQL: ${formatErrorMessage(migErr)}`
       )
     );
-    return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
+    return failResult;
   }
 
-  // 4. Run PostgREST container connected to PostgreSQL via Docker network
-  const runPostgrestRes = spawnSync(
-    dockerBin,
-    [
-      'run',
-      '-d',
-      '--name',
-      POSTGREST_CONTAINER_NAME,
-      '--network',
-      DOCKER_NETWORK,
-      '-e',
-      `PGRST_DB_URI=postgres://authenticator:postgres@${CONTAINER_NAME}:5432/postgres`,
-      '-e',
-      'PGRST_DB_SCHEMAS=public,storage',
-      '-e',
-      'PGRST_DB_ANON_ROLE=anon',
-      '-e',
-      `PGRST_JWT_SECRET=${JWT_SECRET}`,
-      '-e',
-      'PGRST_DB_USE_BUILTIN_RAISE=true',
-      '-e',
-      'PGRST_DB_POOL=50',
-      '-e',
-      'PGRST_DB_POOL_TIMEOUT=30',
-      'postgrest/postgrest:v14.17'
-    ],
-    { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] }
-  );
-
-  if (runPostgrestRes.status !== 0) {
+  // 5. Phase 2: Boot PostgREST and Nginx Gateway
+  try {
+    composeUp(composePath, envFilePath);
+  } catch (err: unknown) {
     console.log(
-      styleText(
-        'yellow',
-        `⚠️  No se pudo iniciar el contenedor PostgREST: ${runPostgrestRes.stderr?.trim() || 'Error desconocido'}`
-      )
+      styleText('yellow', `⚠️  No se pudo iniciar PostgREST / Gateway: ${formatErrorMessage(err)}`)
     );
-    return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
-  }
-
-  // 5. Run Nginx Gateway container (exposing standard Supabase port 54321)
-  const confDir = path.resolve(process.cwd(), 'scratch');
-  await fsPromises.mkdir(confDir, { recursive: true });
-  const confPath = path.resolve(confDir, 'test_gateway.conf');
-  const nginxConf = `events {}
-http {
-  server {
-    listen 54321;
-    location /rest/v1/ {
-      proxy_pass http://${POSTGREST_CONTAINER_NAME}:3000/;
-      proxy_set_header Host $host;
-      proxy_pass_request_headers on;
-    }
-    location / {
-      proxy_pass http://${POSTGREST_CONTAINER_NAME}:3000/;
-      proxy_set_header Host $host;
-      proxy_pass_request_headers on;
-    }
-  }
-}
-`;
-  await fsPromises.writeFile(confPath, nginxConf, 'utf-8');
-
-  const runGatewayRes = spawnSync(
-    dockerBin,
-    [
-      'run',
-      '-d',
-      '--name',
-      GATEWAY_CONTAINER_NAME,
-      '--network',
-      DOCKER_NETWORK,
-      '-p',
-      `${POSTGREST_PORT}:54321`,
-      '-v',
-      `${confPath}:/etc/nginx/nginx.conf:ro`,
-      'nginx:alpine'
-    ],
-    { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] }
-  );
-
-  if (runGatewayRes.status !== 0) {
-    console.log(
-      styleText(
-        'yellow',
-        `⚠️  No se pudo iniciar el contenedor Gateway: ${runGatewayRes.stderr?.trim() || 'Error desconocido'}`
-      )
-    );
-    return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
+    return failResult;
   }
 
   const isPostgrestReady = await waitForPostgrest();
   if (!isPostgrestReady) {
     console.log(
-      styleText('yellow', '⚠️  PostgREST Gateway no respondió a tiempo en el puerto 54321.')
+      styleText(
+        'yellow',
+        `⚠️  PostgREST Gateway no respondió a tiempo en el puerto ${POSTGREST_PORT}.`
+      )
     );
-    return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
+    return failResult;
   }
 
   console.log(

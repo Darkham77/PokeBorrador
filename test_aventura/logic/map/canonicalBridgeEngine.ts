@@ -37,6 +37,13 @@ function resolvePortDockPierTile(
   adjacencies: PierNeighborAdjacencies
 ): string {
   const { hasN, hasS, hasW, hasE } = adjacencies;
+  if (hSpan === vSpan) {
+    if (!hasN) return 'poke_port_pier_h_top.png';
+    if (!hasS) return 'poke_port_pier_h_bot.png';
+    if (!hasW) return 'poke_port_pier_v_left.png';
+    if (!hasE) return 'poke_port_pier_v_right.png';
+    return 'poke_port_pier_h_mid.png';
+  }
   if (hSpan > vSpan) {
     if (!hasN) return 'poke_port_pier_h_top.png';
     if (!hasS) return 'poke_port_pier_h_bot.png';
@@ -45,6 +52,58 @@ function resolvePortDockPierTile(
   if (!hasW) return 'poke_port_pier_v_left.png';
   if (!hasE) return 'poke_port_pier_v_right.png';
   return 'poke_port_pier_v_mid.png';
+}
+
+function resolveSilenceWoodTile(
+  c: number,
+  r: number,
+  isBridge: (cx: number, cy: number) => boolean,
+  adjacencies: PierNeighborAdjacencies
+): string {
+  const pureHSpan = (cx: number, cy: number): number => {
+    if (!isBridge(cx, cy)) return 0;
+    let span = 1;
+    let lx = cx - 1;
+    while (isBridge(lx, cy)) {
+      span++;
+      lx--;
+    }
+    let rx = cx + 1;
+    while (isBridge(rx, cy)) {
+      span++;
+      rx++;
+    }
+    return span;
+  };
+
+  if (pureHSpan(c, r) >= 3) {
+    const northIsH = pureHSpan(c, r - 1) >= 3;
+    const southIsH = pureHSpan(c, r + 1) >= 3;
+    if (!northIsH) return 'poke_bridge_silence_h_top.png';
+    if (!southIsH) {
+      return adjacencies.hasS
+        ? 'poke_bridge_silence_h_bot_open.png'
+        : 'poke_bridge_silence_h_bot.png';
+    }
+    return 'poke_bridge_silence_h_mid.png';
+  }
+  if (!adjacencies.hasW) return 'poke_bridge_silence_v_left.png';
+  if (!adjacencies.hasE) return 'poke_bridge_silence_v_right.png';
+  return 'poke_bridge_silence_v_mid.png';
+}
+
+function applyBridgeStylePrefix(tileFile: string, style: BridgeStyle | undefined): string {
+  if (!style) return tileFile;
+  if (style === 'silence_wood') {
+    return tileFile.replace(/^poke_bridge_/, 'poke_bridge_silence_');
+  }
+  if (style === 'golden_wood') {
+    if (tileFile.startsWith('poke_bridge_h_') || tileFile.startsWith('poke_bridge_corner_turn_')) {
+      return tileFile.replace(/^poke_bridge_/, 'poke_bridge_golden_');
+    }
+    return tileFile;
+  }
+  return tileFile;
 }
 
 /**
@@ -129,10 +188,20 @@ export function resolveCanonicalBridges(
       }
       if (!isWater(c, curY)) vSpan++; // connects to South shore
 
+      const style = options?.getBridgeStyle
+        ? options.getBridgeStyle(c, r)
+        : options?.defaultBridgeStyle;
+
       // Canonical Vermilion Port Stone Pier (Authentic 3-cell wide corridor)
-      if (options?.isPortDockCell && options.isPortDockCell(c, r)) {
+      if (style === 'stone_pier' || (options?.isPortDockCell && options.isPortDockCell(c, r))) {
         const pierFile = resolvePortDockPierTile(hSpan, vSpan, { hasN, hasS, hasW, hasE });
-        blits.push({ file: pierFile, x: c, y: r, layerIndex: 3 });
+        blits.push({ file: pierFile, x: c, y: r, layerIndex: 3, ...(style ? { style } : {}) });
+        continue;
+      }
+
+      if (style === 'silence_wood') {
+        const tileFile = resolveSilenceWoodTile(c, r, isBridge, { hasN, hasS, hasW, hasE });
+        blits.push({ file: tileFile, x: c, y: r, layerIndex: 3, style });
         continue;
       }
 
@@ -206,10 +275,11 @@ export function resolveCanonicalBridges(
       }
 
       blits.push({
-        file: tileFile,
+        file: applyBridgeStylePrefix(tileFile, style),
         x: c,
         y: r,
-        layerIndex: 3
+        layerIndex: 3,
+        ...(style ? { style } : {})
       });
     }
   }

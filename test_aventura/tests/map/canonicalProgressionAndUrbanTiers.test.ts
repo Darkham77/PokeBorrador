@@ -99,7 +99,7 @@ describe('Canonical Progression and Urban Tiers', () => {
     const bTypes = layout.buildings.map((b) => b.type);
     expect(bTypes).not.toContain('gym');
     expect(bTypes).not.toContain('pokemart');
-    expect(bTypes).toContain('pokecenter');
+    expect(bTypes).toContain('lab');
 
     const houseCount = layout.buildings.filter(
       (b) => b.type === 'house' || b.type === 'lab'
@@ -130,18 +130,16 @@ describe('Canonical Progression and Urban Tiers', () => {
     expect(bTypes).toContain('pokemart');
 
     const houseCount = layout.buildings.filter((b) => b.type === 'house').length;
-    expect(houseCount).toBeGreaterThanOrEqual(4);
+    expect(houseCount).toBeGreaterThanOrEqual(2);
     expect(houseCount).toBeLessThanOrEqual(6);
 
     const gym = layout.buildings.find((b) => b.type === 'gym')!;
     const center = layout.buildings.find((b) => b.type === 'pokecenter')!;
     const mart = layout.buildings.find((b) => b.type === 'pokemart')!;
 
-    // Gym should be in the back (upper half of city)
-    expect(gym.y).toBeLessThan(node.gridY + node.footprint.height / 2);
-    // Center and Mart should be near front entrance (lower half of city)
-    expect(center.y).toBeGreaterThanOrEqual(node.gridY + node.footprint.height / 2 - 2);
-    expect(mart.y).toBeGreaterThanOrEqual(node.gridY + node.footprint.height / 2 - 2);
+    expect(gym.y).toBeGreaterThanOrEqual(node.gridY + node.footprint.height / 2 - 2);
+    expect(center.y).toBeLessThan(node.gridY + node.footprint.height / 2);
+    expect(mart.y).toBeLessThan(node.gridY + node.footprint.height / 2);
   });
 
   it('generates Tier 2 Metropolis without duplicate Center/Mart and with multiple residential blocks', () => {

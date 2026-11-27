@@ -1,0 +1,12 @@
+# Ignored files and dependencies for Docker image builds
+node_modules
+.git
+dist
+scratch
+.env*
+*.log
+
+# Supabase Docker managed artifacts
+supabase/docker
+supabase/generated
+supabase/.env*

@@ -65,7 +65,7 @@ async function setupTestEnvironment(dockerInfo: DockerDiscovery): Promise<{
 
   const cleanupContainer = (): void => {
     if (containerStarted && dockerBin) {
-      stopPostgresTestContainer(dockerBin);
+      stopPostgresTestContainer();
     }
   };
 

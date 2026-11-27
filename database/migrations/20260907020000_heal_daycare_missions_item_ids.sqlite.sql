@@ -10,7 +10,7 @@ SET save_data = json_set(
   '$.daycare_missions',
   json(
     coalesce(
-      (
+      json((
         SELECT json_group_array(
           json_set(
             mission_item.value,
@@ -25,7 +25,7 @@ SET save_data = json_set(
           )
         )
         FROM json_each(json_extract(game_saves.save_data, '$.daycare_missions')) mission_item
-      ),
+      )),
       '[]'
     )
   )

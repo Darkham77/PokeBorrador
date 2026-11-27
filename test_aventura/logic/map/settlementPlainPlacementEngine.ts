@@ -417,6 +417,11 @@ export function placePlainSettlements(ctx: PlainSettlementsContext): void {
       if (tmpl.type === 'metropolis') {
         plainCandidates.sort((a, b) => a.distToCenter - b.distToCenter);
         chosen = plainCandidates[0]!;
+      } else if (tmpl.progressionIndex === 0) {
+        const swCandidates = plainCandidates.filter((c) => c.x < W * 0.45 && c.y > H * 0.55);
+        const pool = swCandidates.length > 0 ? swCandidates : plainCandidates;
+        pool.sort((a, b) => b.distToPlaced - a.distToPlaced);
+        chosen = pool[0]!;
       } else {
         plainCandidates.sort((a, b) => b.distToPlaced - a.distToPlaced);
         chosen = plainCandidates[0]!;
@@ -447,6 +452,15 @@ export function placePlainSettlements(ctx: PlainSettlementsContext): void {
         currentHeight,
         tmpl.type
       );
+      const PROCEDURAL_THEMES = [
+        'garden_oasis',
+        'maritime_harbor',
+        'geology_quarry',
+        'forest_glade',
+        'amber_market',
+        'highland_terrace'
+      ] as const;
+      const urbanTheme = PROCEDURAL_THEMES[placedNodes.length % PROCEDURAL_THEMES.length]!;
       const node: POINode = {
         id: tmpl.id,
         name: tmpl.name,
@@ -457,7 +471,10 @@ export function placePlainSettlements(ctx: PlainSettlementsContext): void {
         gridY: chosen.y,
         elevation: 0,
         gateways,
-        hasGym: tmpl.hasGym ?? false
+        hasGym: tmpl.hasGym ?? false,
+        ...(tmpl.tier !== undefined ? { tier: tmpl.tier } : {}),
+        ...(tmpl.progressionIndex !== undefined ? { progressionIndex: tmpl.progressionIndex } : {}),
+        urbanTheme
       };
 
       const layout = generateSettlementLayout(node, getSettlementContext());

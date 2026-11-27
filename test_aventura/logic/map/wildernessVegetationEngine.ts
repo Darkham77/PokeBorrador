@@ -198,6 +198,41 @@ export function generateWildernessLayer(
     }
   }
 
+  // 5b. TransitableGrid Perimeter Barrier Sealing
+  // Seal 1-tile non-transitable flat-grass margin adjacent to transitableGrid so BFS cannot slip around blocked cities
+  if (transitableGrid) {
+    const occupiedPropCells = new Set<string>(props.map((p) => `${p.x}_${p.y}`));
+    for (const t of rawTrees) {
+      for (let ty = t.y; ty < t.y + t.height; ty++) {
+        for (let tx = t.x; tx < t.x + t.width; tx++) {
+          occupiedPropCells.add(`${tx}_${ty}`);
+        }
+      }
+    }
+    for (let y = 1; y < H - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        if (transitableGrid[y]?.[x]) continue;
+        if (continent.terrainMatrix[y]?.[x] !== 'grass') continue;
+        if ((continent.heightmap[y]?.[x] ?? 0) !== 0) continue;
+        if (pathGrid[y]?.[x] || urbanBlocked[y]?.[x] || stairBlocked[y]?.[x]) continue;
+        if (occupiedPropCells.has(`${x}_${y}`)) continue;
+        const bordersTransitable =
+          Boolean(transitableGrid[y - 1]?.[x]) ||
+          Boolean(transitableGrid[y + 1]?.[x]) ||
+          Boolean(transitableGrid[y]?.[x - 1]) ||
+          Boolean(transitableGrid[y]?.[x + 1]);
+        if (bordersTransitable) {
+          props.push({
+            type: 'boulder',
+            prefabFile: 'poke_cave_boulder_rock.png',
+            x,
+            y
+          });
+        }
+      }
+    }
+  }
+
   // 6. Strict Y-Sorting Guarantee:
   // Sort trees by Y ascending so that north trees blit first, and south tree canopies overlap their bases!
   const trees = [...rawTrees].sort((a, b) => a.y - b.y || a.x - b.x);

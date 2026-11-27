@@ -22803,7 +22803,7 @@ UPDATE war_defenders SET pokemon_data = replace(pokemon_data, '"id":"wingattack"
 UPDATE passive_teams SET team_data = replace(team_data, '"id":"quickattack"', '"id":"swift"') WHERE team_data LIKE '%"id":"starmie"%' OR team_data LIKE '%"species":"starmie"%';
 UPDATE passive_teams SET team_data = replace(team_data, '"id":"lockon"', '"id":"defensecurl"') WHERE team_data LIKE '%"id":"golem"%' OR team_data LIKE '%"species":"golem"%';
 
-UPDATE passive_teams SET team_data = (
+UPDATE passive_teams SET team_data = json((
   SELECT json_group_array(
     json_set(
       value,
@@ -22814,7 +22814,7 @@ UPDATE passive_teams SET team_data = (
     )
   )
   FROM json_each(passive_teams.team_data)
-)
+))
 WHERE team_data IS NOT NULL;
 
 

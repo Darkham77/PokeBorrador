@@ -92,7 +92,6 @@ const LOCKED_SKILLS_IGNORE_PATTERNS = [
   '.agents/skills/awesome-design-md/**',
   '.agents/skills/ci-cd-and-automation/**',
   '.agents/skills/code-review/**',
-  '.agents/skills/code-simplification/**',
   '.agents/skills/codebase-design/**',
   '.agents/skills/context-engineering/**',
   '.agents/skills/create-adaptable-composable/**',
@@ -104,24 +103,19 @@ const LOCKED_SKILLS_IGNORE_PATTERNS = [
   '.agents/skills/fallow-review/**',
   '.agents/skills/fallow-setup/**',
   '.agents/skills/find-skills/**',
-  '.agents/skills/frontend-design/**',
   '.agents/skills/grill-with-docs/**',
   '.agents/skills/grilling/**',
   '.agents/skills/gsap-core/**',
   '.agents/skills/gsap-frameworks/**',
   '.agents/skills/gsap-performance/**',
   '.agents/skills/gsap-plugins/**',
-  '.agents/skills/gsap-react/**',
   '.agents/skills/gsap-scrolltrigger/**',
   '.agents/skills/gsap-timeline/**',
   '.agents/skills/gsap-utils/**',
   '.agents/skills/handoff/**',
-  '.agents/skills/implement-spec/**',
-  '.agents/skills/improve-codebase-architecture/**',
   '.agents/skills/incremental-implementation/**',
   '.agents/skills/mcp-builder/**',
   '.agents/skills/performance-optimization/**',
-  '.agents/skills/pinia/**',
   '.agents/skills/playwright-cli/**',
   '.agents/skills/ponytail/**',
   '.agents/skills/ponytail-audit/**',
@@ -133,13 +127,11 @@ const LOCKED_SKILLS_IGNORE_PATTERNS = [
   '.agents/skills/security-review/**',
   '.agents/skills/skill-creator/**',
   '.agents/skills/tdd/**',
-  '.agents/skills/to-spec/**',
   '.agents/skills/valibot/**',
   '.agents/skills/vite/**',
   '.agents/skills/vitest/**',
   '.agents/skills/vue-best-practices/**',
   '.agents/skills/vue-debug-guides/**',
-  '.agents/skills/vue-jsx-best-practices/**',
   '.agents/skills/vue-options-api-best-practices/**',
   '.agents/skills/vue-pinia-best-practices/**',
   '.agents/skills/vue-router-best-practices/**',
@@ -631,6 +623,9 @@ export default defineConfig({
       '@francogp/domain-type/auditor-class-inheritance': 'error',
       '@francogp/domain-type/no-homebrew-file-walker': 'error',
       '@francogp/domain-type/auditor-rule-description-limit': 'error',
+      '@francogp/domain-type/no-dom-intersection-reveal': 'error',
+      '@francogp/domain-type/no-scroll-mousemove-style-mutation': 'error',
+      '@francogp/domain-type/no-smooth-scroll-into-view': 'error',
       'typescript/consistent-type-imports': [
         'error',
         {
@@ -731,11 +726,14 @@ export default defineConfig({
           '@francogp/domain-type/no-literal-suffix-constant': 'off',
           '@francogp/domain-type/no-raw-html-injection': 'off',
           '@francogp/domain-type/no-tautological-integration-mocks': 'off',
-          'unicorn/no-thenable': 'off'
+          'unicorn/no-thenable': 'off',
+          '@francogp/domain-type/no-dom-intersection-reveal': 'off',
+          '@francogp/domain-type/no-scroll-mousemove-style-mutation': 'off',
+          '@francogp/domain-type/no-smooth-scroll-into-view': 'off'
         }
       },
       {
-        files: ['**/scripts/**', '**/supabase/**'],
+        files: ['**/scripts/**'],
         rules: {
           'no-console': 'off',
           'unicorn/prefer-global-this': 'off',
@@ -769,7 +767,10 @@ export default defineConfig({
           '@francogp/domain-type/no-insecure-random': 'off',
           '@francogp/domain-type/no-broad-string-array': 'off',
           '@francogp/domain-type/no-gsap-layout-properties': 'off',
-          '@francogp/domain-type/no-record-string-key': 'off'
+          '@francogp/domain-type/no-record-string-key': 'off',
+          '@francogp/domain-type/no-dom-intersection-reveal': 'off',
+          '@francogp/domain-type/no-scroll-mousemove-style-mutation': 'off',
+          '@francogp/domain-type/no-smooth-scroll-into-view': 'off'
         }
       },
       {

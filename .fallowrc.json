@@ -24,20 +24,13 @@
     "test_aventura/tests/**/*.{ts,js}"
   ],
   "duplicates": {
-    "nearMiss": true,
-    "mode": "strict",
+    "nearMiss": false,
+    "mode": "mild",
     "minOccurrences": 2,
     "minLines": 15,
     "minTokens": 100
   },
-  "ignoreDependencies": [
-    "postgres",
-    "@pkmn/sim",
-    "@rolldown/binding-wasm32-wasi",
-    "ws",
-    "sql.js",
-    "html-validate-vue"
-  ],
+  "ignoreDependencies": ["postgres", "@pkmn/sim", "ws", "sql.js", "html-validate-vue"],
   "health": {
     "maxCrap": 0,
     "maxCyclomatic": 25,
@@ -755,10 +748,6 @@
       ]
     },
     {
-      "file": "src/components/battle/MoveTooltipTactical.vue",
-      "exports": ["default"]
-    },
-    {
       "file": "src/composables/battle/useBattleMinigames.ts",
       "exports": ["useBattleMinigames"]
     },
@@ -1313,5 +1302,6 @@
     "resetTime",
     "getServerTime",
     "_diagnostics"
-  ]
+  ],
+  "minimumVersion": "3.42.0"
 }

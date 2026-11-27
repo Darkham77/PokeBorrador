@@ -558,7 +558,7 @@ npm run assets:convert
 - `/src`: Application source code (Vue 3 Components, Pinia Stores, Views, Showdown Bridge `@pkmn/sim`, DBRouter).
 - `/public`: Public static assets (Maps, Audio, processed WebP Sprites).
 - `/database`: Incremental SQL migrations (`.sql` PostgreSQL and `.sqlite.sql` SQLite), backups, and schemas.
-- `/supabase`: Docker orchestrator and automation for Supabase microservices (`setup_supabase.ts`).
+- `/supabase`: Declarative Supabase Docker orchestration via `@francogp/auditor/supabase` (`auditor-supabase`, `npm run supabase:manage`, `npm run supabase:local:up`, `npm run supabase:local:down`, `npm run supabase:local:status`), configured in `.auditor/audit.config.ts`.
 - `/scripts`: Multi-threaded fuzzers, Playwright E2E simulations, data compilers, and maintenance utilities.
 - `/tests`: Unit testing suites (JSDOM) and node test suites (multi-engine Vite+ SQLite/PostgreSQL).
 - `/.agents`: DOX hierarchy containing agent skills, architectural standards, and reference manuals.

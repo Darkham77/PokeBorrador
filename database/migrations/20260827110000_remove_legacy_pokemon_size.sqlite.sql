@@ -12,20 +12,20 @@ SET save_data = json_set(
   save_data,
   '$.team',
   coalesce(
-    (
+    json((
       SELECT json_group_array(json_remove(p.value, '$.size'))
       FROM json_each(json_extract(game_saves.save_data, '$.team')) p
       WHERE p.value IS NOT NULL AND json_type(p.value) = 'object'
-    ),
+    )),
     json('[]')
   ),
   '$.box',
   coalesce(
-    (
+    json((
       SELECT json_group_array(json_remove(p.value, '$.size'))
       FROM json_each(json_extract(game_saves.save_data, '$.box')) p
       WHERE p.value IS NOT NULL AND json_type(p.value) = 'object'
-    ),
+    )),
     json('[]')
   )
 )
